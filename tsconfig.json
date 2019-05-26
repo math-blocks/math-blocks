@@ -1,8 +1,11 @@
 {
     "compilerOptions": {
-        "module": "system",
+        "allowSyntheticDefaultImports": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "removeComments": true,
+        "resolveJsonModule": true,
         "preserveConstEnums": true,
         "sourceMap": true,
         "strict": true,

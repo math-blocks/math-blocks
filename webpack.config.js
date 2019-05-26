@@ -7,7 +7,7 @@ module.exports = {
         "index": "./src/index.ts",
     },
     output: {
-        publicPath: "dist/",
+        publicPath: "/",
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle.js',
         path: path.resolve(__dirname, "dist"),
@@ -23,7 +23,10 @@ module.exports = {
             },
         ]
     },
-    plugins: [new HtmlWebpackPlugin()],
+    plugins: [new HtmlWebpackPlugin({
+        template: "index.html",
+        title: "math-toolbox",
+    })],
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json']
     },
