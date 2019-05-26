@@ -1,7 +1,7 @@
 import {Expression} from "./ast";
 import print from "./print";
-import typeset from "./typeset";
-import {hpackNat} from "./layout";
+import typeset from "./render";
+import {hpackNat, makeFract} from "./layout";
 
 import fontMetrics from "../metrics/comic-sans.json";
 
@@ -34,6 +34,26 @@ const ctx = canvas.getContext("2d");
 const fontSize = 64;
 const kernSize = fontSize / 4;
 
+const numerator = hpackNat([
+    {
+        id: 2,
+        type: "Glyph",
+        char: "5",
+        size: fontSize,
+        metrics: fontMetrics,
+    },
+]);
+
+const denominator = hpackNat([
+    {
+        id: 2,
+        type: "Glyph",
+        char: "x",
+        size: fontSize,
+        metrics: fontMetrics,
+    },
+]);
+
 const layout = hpackNat([
     {
         id: 0,
@@ -45,7 +65,7 @@ const layout = hpackNat([
     {
         id: -1,
         type: "Kern",
-        dist: kernSize,
+        size: kernSize,
     },
     {
         id: 1,
@@ -57,19 +77,18 @@ const layout = hpackNat([
     {
         id: -1,
         type: "Kern",
-        dist: kernSize,
+        size: kernSize,
     },
-    {
-        id: 2,
-        type: "Glyph",
-        char: "5",
-        size: fontSize,
-        metrics: fontMetrics,
-    },
+    makeFract(
+        5, 
+        Math.max(numerator.width, denominator.width),
+        numerator,
+        denominator,
+    ),
     {
         id: -1,
         type: "Kern",
-        dist: kernSize,
+        size: kernSize,
     },
     {
         id: 3,
@@ -81,7 +100,7 @@ const layout = hpackNat([
     {
         id: -1,
         type: "Kern",
-        dist: kernSize,
+        size: kernSize,
     },
     {
         id: 4,
