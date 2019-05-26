@@ -1,52 +1,52 @@
 
 
 type NumberNode = {
-    kind: "number",
-    value: string,
-    // TODO: unit
-    // without 'unit', the number is considered dimensionless
+  kind: "number",
+  value: string,
+  // TODO: unit
+  // without 'unit', the number is considered dimensionless
 };
 
 type InfinityNode = {
-    kind: "infinity",
+  kind: "infinity",
 };
 
 type PiNode = {
-    kind: "pi",
+  kind: "pi",
 };
 
 type IdentifierNode = {
-    kind: "identifier",
-    name: string,
-    // TODO: unit
-    // it's possible that variables could have units associated with them as well
-    // it seems like a bit of an edge case though
+  kind: "identifier",
+  name: string,
+  // TODO: unit
+  // it's possible that variables could have units associated with them as well
+  // it seems like a bit of an edge case though
 
-    subscript?: NumericExpression,
+  subscript?: NumericExpression,
 };
 
 type EllipsisNode = {
-    kind: "ellipsis",
+  kind: "ellipsis",
 };
 
 type AddNode = {
-    kind: "add",
-    args: NumericExpression[],
+  kind: "add",
+  args: NumericExpression[],
 };
 
 type MulNode = {
-    kind: "mul",
-    implicit: boolean,
-    args: NumericExpression[],
+  kind: "mul",
+  implicit: boolean,
+  args: NumericExpression[],
 };
 
 type FuncNode = {
-    kind: "func",
-    // We want to limit this to identifiers and expression of identifiers
-    // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-    func: NumericExpression | LogicExpression,
-    // There's a special case when each of the args is a variable then it could be a variable definition
-    args: (NumericExpression | LogicExpression)[],
+  kind: "func",
+  // We want to limit this to identifiers and expression of identifiers
+  // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
+  func: NumericExpression | LogicExpression,
+  // There's a special case when each of the args is a variable then it could be a variable definition
+  args: (NumericExpression | LogicExpression)[],
 };
 
 // I'm not sure how useful having a special node for this is given we'll have 
@@ -69,92 +69,92 @@ type FuncNode = {
 // from the separate parts
 
 type DivNode = {
-    kind: "div",
-    dividend: NumericExpression,
-    divisor: NumericExpression,
+  kind: "div",
+  dividend: NumericExpression,
+  divisor: NumericExpression,
 };
 
 type ModNode = {
-    kind: "mod",
-    dividend: NumericExpression,
-    divisor: NumericExpression,
+  kind: "mod",
+  dividend: NumericExpression,
+  divisor: NumericExpression,
 };
 
 type RootNode = {
-    kind: "root",
-    index: NumericExpression,
-    radicand: NumericExpression,
+  kind: "root",
+  index: NumericExpression,
+  radicand: NumericExpression,
 };
 
 type ExpNode = {
-    kind: "exp",
-    base: NumericExpression,
-    exp: NumericExpression,
+  kind: "exp",
+  base: NumericExpression,
+  exp: NumericExpression,
 };
 
 type LogNode = {
-    kind: "log",
-    base: NumericExpression,
-    arg: NumericExpression,
+  kind: "log",
+  base: NumericExpression,
+  arg: NumericExpression,
 };
 
 type NegNode = {
-    kind: "neg",
-    subtraction: boolean,
-    arg: NumericExpression
+  kind: "neg",
+  subtraction: boolean,
+  arg: NumericExpression
 };
 
 type AbsNode = {
-    kind: "abs",
-    arg: NumericExpression,
+  kind: "abs",
+  arg: NumericExpression,
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
 type Limits = {
-    kind: "limits",
-    lower: NumericExpression,
-    upper: NumericExpression,
+  kind: "limits",
+  lower: NumericExpression,
+  upper: NumericExpression,
 }
 
 type SumNode = {
-    kind: "sum",
-    arg: NumericExpression,
-    bvar: IdentifierNode,
-    limits: Limits,
+  kind: "sum",
+  arg: NumericExpression,
+  bvar: IdentifierNode,
+  limits: Limits,
 };
 
 type ProdNode = {
-    kind: "prod",
-    arg: NumericExpression,
-    bvar: IdentifierNode,
-    limits: Limits,
+  kind: "prod",
+  arg: NumericExpression,
+  bvar: IdentifierNode,
+  limits: Limits,
 };
 
 type LimitNode = {
-    kind: "limit",
-    side: "left" | "right" | "both",
-    bvar: IdentifierNode,
-    // TODOO: add target 
-    arg: NumericExpression,
+  kind: "limit",
+  side: "left" | "right" | "both",
+  bvar: IdentifierNode,
+  // TODOO: add target 
+  arg: NumericExpression,
 };
 
 // TODO: think about partial derivatives
 type DiffNode = {
-    kind: "diff",
-    arg: NumericExpression,
-    degree: NumericExpression,
-    
-    // If there's a bvar we use liebniz notation, if not
-    // we use prime notation.
-    bvar?: IdentifierNode,
+  kind: "diff",
+  arg: NumericExpression,
+  degree: NumericExpression,
+
+  // If there's a bvar we use liebniz notation, if not
+  // we use prime notation.
+  bvar?: IdentifierNode,
 };
 
 // TODO: think about multiple integrals
 type IntNode = {
-    kind: "int",
-    arg: NumericExpression,
-    bvar: IdentifierNode,
-    limits: Limits,
+  kind: "int",
+  arg: NumericExpression,
+  bvar: IdentifierNode,
+  limits: Limits,
 };
 
 // TODO
@@ -162,168 +162,168 @@ type IntNode = {
 // - Round, Ceil, Floor, etc.
 
 export type NumericExpression =
-    // numbers
-    | NumberNode
-    | InfinityNode
-    | PiNode
+  // numbers
+  | NumberNode
+  | InfinityNode
+  | PiNode
 
-    | IdentifierNode
-    | EllipsisNode
+  | IdentifierNode
+  | EllipsisNode
 
-    // n-ary
-    | AddNode
-    | MulNode
-    | FuncNode
-    
-    // binary
-    | DivNode
-    | ModNode
-    | RootNode
-    | ExpNode
-    | LogNode
+  // n-ary
+  | AddNode
+  | MulNode
+  | FuncNode
 
-    // unary
-    | NegNode
-    | AbsNode
-    
-    | SumNode
-    | ProdNode
-    | LimitNode
-    | DiffNode
-    | IntNode
-    ;
+  // binary
+  | DivNode
+  | ModNode
+  | RootNode
+  | ExpNode
+  | LogNode
+
+  // unary
+  | NegNode
+  | AbsNode
+
+  | SumNode
+  | ProdNode
+  | LimitNode
+  | DiffNode
+  | IntNode
+  ;
 
 type EqNode = {
-    kind: "eq",
-    args: NumericExpression[],
+  kind: "eq",
+  args: NumericExpression[],
 };
 
 type NeqNode = {
-    kind: "neq",
-    args: NumericExpression[],
+  kind: "neq",
+  args: NumericExpression[],
 };
 
 type LtNode = {
-    kind: "lt",
-    args: NumericExpression[],
+  kind: "lt",
+  args: NumericExpression[],
 };
 
 type LteNode = {
-    kind: "lte",
-    args: NumericExpression[],
+  kind: "lte",
+  args: NumericExpression[],
 };
 
 type GtNode = {
-    kind: "gt",
-    args: NumericExpression[],
+  kind: "gt",
+  args: NumericExpression[],
 };
 
 type GteNode = {
-    kind: "gte",
-    args: NumericExpression[],
+  kind: "gte",
+  args: NumericExpression[],
 };
 
 type AndNode = {
-    kind: "and",
-    args: LogicExpression[],
+  kind: "and",
+  args: LogicExpression[],
 };
 
 type OrNode = {
-    kind: "or",
-    args: LogicExpression[],
+  kind: "or",
+  args: LogicExpression[],
 };
 
 type XorNode = {
-    kind: "xor",
-    args: LogicExpression[],
+  kind: "xor",
+  args: LogicExpression[],
 };
 
 type NotNode = {
-    kind: "not",
-    arg: LogicExpression,
+  kind: "not",
+  arg: LogicExpression,
 };
 
 type ImpliesNode = {
-    kind: "implies",
-    args: [LogicExpression, LogicExpression],
+  kind: "implies",
+  args: [LogicExpression, LogicExpression],
 };
 
 type IffNode = {
-    kind: "iff",
-    args: [LogicExpression, LogicExpression],
+  kind: "iff",
+  args: [LogicExpression, LogicExpression],
 };
 
 type TrueNode = {
-    kind: "true",
+  kind: "true",
 };
 
 type FalseNode = {
-    kind: "false",
+  kind: "false",
 };
 
 type SubsetNode = {
-    kind: "subset",
-    args: SetExpression[],
+  kind: "subset",
+  args: SetExpression[],
 };
 
 type ProperSubsetNode = {
-    kind: "prsubset",
-    args: SetExpression[],
+  kind: "prsubset",
+  args: SetExpression[],
 };
 
 type NotSubsetNode = {
-    kind: "notsubset",
-    args: SetExpression[],
+  kind: "notsubset",
+  args: SetExpression[],
 };
 
 type NotProperSubsetNode = {
-    kind: "notprsubset",
-    args: SetExpression[],
+  kind: "notprsubset",
+  args: SetExpression[],
 };
 
 type InNode = {
-    kind: "in",
-    element: IdentifierNode,
-    set: SetExpression,
+  kind: "in",
+  element: IdentifierNode,
+  set: SetExpression,
 };
 
 type NotInNode = {
-    kind: "notin",
-    element: IdentifierNode,
-    set: SetExpression,
+  kind: "notin",
+  element: IdentifierNode,
+  set: SetExpression,
 };
 
-export type LogicExpression = 
-    | IdentifierNode 
+export type LogicExpression =
+  | IdentifierNode
 
-    // values
-    | TrueNode
-    | FalseNode
+  // values
+  | TrueNode
+  | FalseNode
 
-    // operations
-    | AndNode 
-    | OrNode 
-    | NotNode
-    | XorNode
-    | ImpliesNode
-    | IffNode
+  // operations
+  | AndNode
+  | OrNode
+  | NotNode
+  | XorNode
+  | ImpliesNode
+  | IffNode
 
-    // relations, result in a LogicExpression which may be evaluated to True or False
-    | EqNode
-    | NeqNode
-    | LtNode
-    | LteNode
-    | GtNode
-    | GteNode
+  // relations, result in a LogicExpression which may be evaluated to True or False
+  | EqNode
+  | NeqNode
+  | LtNode
+  | LteNode
+  | GtNode
+  | GteNode
 
-    // set relations
-    | InNode
-    | NotInNode
-    | SubsetNode
-    | ProperSubsetNode
-    | NotSubsetNode
-    | NotProperSubsetNode
-    ;
+  // set relations
+  | InNode
+  | NotInNode
+  | SubsetNode
+  | ProperSubsetNode
+  | NotSubsetNode
+  | NotProperSubsetNode
+  ;
 
 
 // TODO: Predicate Logic
@@ -344,78 +344,78 @@ export type LogicExpression =
 // };
 
 type SetNode = {
-    kind: "set"
-    elements: Expression[], // could also include shapes, strings, images, etc.
+  kind: "set"
+  elements: Expression[], // could also include shapes, strings, images, etc.
 };
 
 type EmptySetNode = {
-    kind: "empty",
+  kind: "empty",
 };
 
 type UnionNode = {
-    kind: "union",
-    args: SetExpression[],
+  kind: "union",
+  args: SetExpression[],
 };
 
 type IntersectionNode = {
-    kind: "intersection",
-    args: SetExpression[],
+  kind: "intersection",
+  args: SetExpression[],
 };
 
 type SetDiffNode = {
-    kind: "setdiff",
-    args: [SetExpression, SetExpression],
+  kind: "setdiff",
+  args: [SetExpression, SetExpression],
 };
 
 type CartesianProductNode = {
-    kind: "cartesianproduct",
-    args: SetExpression[],
+  kind: "cartesianproduct",
+  args: SetExpression[],
 };
 
 type NaturalsNode = {
-    kind: "naturals",
+  kind: "naturals",
 };
 
 type IntegersNode = {
-    kind: "integers",
+  kind: "integers",
 };
 
 type RationalsNode = {
-    kind: "rationals",
+  kind: "rationals",
 };
 
 type RealsNode = {
-    kind: "reals",
+  kind: "reals",
 };
 
 type ComplexesNode = {
-    kind: "complexes",
+  kind: "complexes",
 };
 
 export type SetExpression =
-    | SetNode
-    | EmptySetNode
+  | SetNode
+  | EmptySetNode
 
-    // set operations
-    | UnionNode
-    | IntersectionNode
-    | SetDiffNode
-    | CartesianProductNode
+  // set operations
+  | UnionNode
+  | IntersectionNode
+  | SetDiffNode
+  | CartesianProductNode
 
-    // number sets
-    | NaturalsNode
-    | IntegersNode
-    | RationalsNode
-    | RealsNode
-    | ComplexesNode
-    ;
+  // number sets
+  | NaturalsNode
+  | IntegersNode
+  | RationalsNode
+  | RealsNode
+  | ComplexesNode
+  ;
 
 
-export type Expression = 
-    | NumericExpression
-    | LogicExpression
-    | SetExpression
-    ;
+export type Expression =
+  | NumericExpression
+  | LogicExpression
+  | SetExpression
+  ;
 
 
 // TODO: vectors and matrices
