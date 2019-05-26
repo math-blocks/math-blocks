@@ -1,7 +1,7 @@
-import { Expression } from "./ast";
+import {Expression} from "./ast";
 import print from "./print";
 import typeset from "./render";
-import { hpackNat, makeFract } from "./layout";
+import {hpackNat, makeFract} from "./layout";
 
 import fontMetrics from "../metrics/comic-sans.json";
 

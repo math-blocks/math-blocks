@@ -1,7 +1,7 @@
-import { NumericExpression } from "./ast";
-import { UnreachableCaseError } from "./util";
+import {NumericExpression} from "./ast";
+import {UnreachableCaseError} from "./util";
 
-type VarDict = { [key: string]: number };
+type VarDict = {[key: string]: number};
 
 const add = (a: number, b: number) => a + b;
 const mul = (a: number, b: number) => a * b;
@@ -24,21 +24,21 @@ const evaluate = (expr: NumericExpression, varDict: VarDict): number => {
       }
 
     case "add": {
-      const { args } = expr;
+      const {args} = expr;
       return sum(args.map(arg => evaluate(arg, varDict)));
     }
     case "mul":
       return prod(expr.args.map(arg => evaluate(arg, varDict)));
     case "div": {
-      const { dividend, divisor } = expr;
+      const {dividend, divisor} = expr;
       return div(evaluate(dividend, varDict), evaluate(divisor, varDict));
     }
     case "mod": {
-      const { dividend, divisor } = expr;
+      const {dividend, divisor} = expr;
       return evaluate(dividend, varDict) % evaluate(divisor, varDict);
     }
     case "exp": {
-      const { base, exp } = expr;
+      const {base, exp} = expr;
       return Math.pow(evaluate(base, varDict), evaluate(exp, varDict));
     }
     case "neg":
@@ -46,11 +46,11 @@ const evaluate = (expr: NumericExpression, varDict: VarDict): number => {
     case "abs":
       return Math.abs(evaluate(expr.arg, varDict));
     case "root": {
-      const { index, radicand } = expr;
+      const {index, radicand} = expr;
       return Math.pow(evaluate(radicand, varDict), 1 / evaluate(index, varDict));
     }
     case "log": {
-      const { base, arg } = expr;
+      const {base, arg} = expr;
       return Math.log(evaluate(arg, varDict)) / Math.log(evaluate(base, varDict));
     }
 

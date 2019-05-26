@@ -1,4 +1,6 @@
-
+/**
+ * AST describing semantic expression of mathematic expressions.
+ */
 
 type NumberNode = {
   kind: "number",

@@ -1,5 +1,5 @@
-import { UnreachableCaseError } from "./util";
-import { LayoutNode, width, vsize, getCharBearingX, getCharHeight } from "./layout";
+import {UnreachableCaseError} from "./util";
+import {LayoutNode, width, vsize, getCharBearingX, getCharHeight} from "./layout";
 
 const render = (layout: LayoutNode, ctx: CanvasRenderingContext2D) => {
   switch (layout.type) {

@@ -1,5 +1,5 @@
-import { FontMetrics } from "./metrics";
-import { UnreachableCaseError } from "./util";
+import {FontMetrics} from "./metrics";
+import {UnreachableCaseError} from "./util";
 
 type Dist = number;
 
@@ -208,7 +208,7 @@ const makeVBox = (width: Dist, node: LayoutNode, upList: LayoutNode[], dnList: L
 }
 
 const rebox = (newWidth: Dist, box: Box): Box => {
-  let { kind, width, height, depth, content } = box;
+  let {kind, width, height, depth, content} = box;
   if (newWidth == width) {
     return box;
   } else if (content == []) {
@@ -216,10 +216,7 @@ const rebox = (newWidth: Dist, box: Box): Box => {
   } else {
     const hl = kind === "hbox"
       ? content
-      : [{
-        ...box,
-        id: -1,
-      }]
+      : [{...box, id: -1}]
 
     const glue: Glue = {
       type: "Glue",
@@ -229,13 +226,13 @@ const rebox = (newWidth: Dist, box: Box): Box => {
       shrink: 1,
     }
 
-    return makeBox("hbox", { width: newWidth, height, depth }, [glue, ...hl, glue])
+    return makeBox("hbox", {width: newWidth, height, depth}, [glue, ...hl, glue])
   }
 }
 
 const makeList = (size: Dist, box: Box): LayoutNode[] => [
   makeKern(size),
-  { ...box, shift: 0 },
+  {...box, shift: 0},
 ];
 
 // TODO: compute width from numBox and denBox
@@ -244,7 +241,7 @@ export const makeFract = (thickness: Dist, width: Dist, numBox: Box, denBox: Box
 
   const depth = halfThickness;
   const height = halfThickness;
-  const stroke = makeRule({ width, depth, height });
+  const stroke = makeRule({width, depth, height});
 
   const upList = makeList(10, rebox(width, numBox));
   const dnList = makeList(10, rebox(width, denBox));

@@ -1,4 +1,4 @@
-import { UnreachableCaseError } from './util';
+import {UnreachableCaseError} from './util';
 
 type ReplaceType<T, Search, Replace> = {
   [P in keyof T]: T[P] extends Search
@@ -58,7 +58,7 @@ const one = 1;
 const sum = (nums: number[]) => nums.reduce(add, zero);
 const prod = (nums: number[]) => nums.reduce(mul, one);
 
-type ExtractFromUnion<A, Disc extends string, Value> = A extends { [key in Disc]: Value } ? A : never;
+type ExtractFromUnion<A, Disc extends string, Value> = A extends {[key in Disc]: Value} ? A : never;
 type KindToMapFnMap = {
   [K in ExprF<number>["kind"]]: (expr: ExtractFromUnion<ExprF<number>, "kind", K>) => number;
 };
@@ -108,11 +108,11 @@ const expr: Expr = {
     {
       kind: "mul",
       args: [
-        { kind: "number", value: "2" },
-        { kind: "number", value: "3" },
+        {kind: "number", value: "2"},
+        {kind: "number", value: "3"},
       ],
     },
-    { kind: "number", value: "1" },
+    {kind: "number", value: "1"},
   ],
 };
 
