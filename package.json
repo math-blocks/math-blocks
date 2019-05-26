@@ -1,0 +1,25 @@
+{
+  "name": "math-toolbox",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Kevin Barabash",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-typescript": "^7.3.3",
+    "babel-loader": "^8.0.6",
+    "flow-bin": "^0.98.0",
+    "flow-remove-types": "^1.2.3",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.32.2",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.4.1"
+  },
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack -w",
+    "start": "webpack-dev-server --open"
+  }
+}
