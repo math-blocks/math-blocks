@@ -1,4 +1,4 @@
-import {Node, Glyph} from "./editor-ast";
+import {Node} from "./editor-ast";
 
 export type Cursor = {
   path: Node[],
@@ -21,6 +21,7 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
     switch (e.keyCode) {
       // left arrow
       case 37: {
+        // TODO: handle navigating into fractions
         if (cursor.prev != null) {
           cursor.next = cursor.prev;
           if (cursor.prev > 0) {
@@ -28,17 +29,64 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
           } else {
             cursor.prev = null;
           }
+        } else {
+          if (cursor.path.length > 1) {
+            const parent = cursor.path[cursor.path.length - 2];
+            if (parent.type === "frac") {
+              if (currentNode === parent.denominator) {
+                cursor.path.pop();
+                cursor.path.push(parent.numerator);
+                cursor.next = null;
+                cursor.prev = parent.denominator.children.length > 0
+                  ? parent.denominator.children.length - 1
+                  : null;
+              } else if (currentNode === parent.numerator) {
+                const grandparent = cursor.path[cursor.path.length - 3];
+                cursor.path.pop();
+                cursor.path.pop();
+                if (grandparent.type === "frac" || grandparent.type === "glyph") {
+                  throw new Error("grandparent has no children array");
+                }
+                cursor.next = grandparent.children.indexOf(parent);
+                cursor.prev = cursor.next > 0 ? cursor.next - 1 : null;
+              }
+            }
+          }
         }
         break;
       }
       // right arrow
       case 39: {
+        // TODO: handle navigating into fractions
         if (cursor.next != null) {
           cursor.prev = cursor.next;
           if (cursor.next < currentNode.children.length - 1) {
             cursor.next++;
           } else {
             cursor.next = null;
+          }
+        } else {
+          if (cursor.path.length > 1) {
+            const parent = cursor.path[cursor.path.length - 2];
+            if (parent.type === "frac") {
+              if (currentNode === parent.numerator) {
+                cursor.path.pop();
+                cursor.path.push(parent.denominator);
+                cursor.prev = null;
+                cursor.next = parent.denominator.children.length > 0 ? 0 : null;
+              } else if (currentNode === parent.denominator) {
+                const grandparent = cursor.path[cursor.path.length - 3];
+                cursor.path.pop();
+                cursor.path.pop();
+                if (grandparent.type === "frac" || grandparent.type === "glyph") {
+                  throw new Error("grandparent has no children array");
+                }
+                cursor.prev = grandparent.children.indexOf(parent);
+                cursor.next = cursor.prev < grandparent.children.length - 1
+                  ? cursor.prev + 1
+                  : null;
+              }
+            }
           }
         }
         break;
@@ -70,22 +118,45 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
 
     const char = String.fromCharCode(e.keyCode);
     
-    const glyph: Glyph = {
-      type: "glyph",
-      char,
-    };
+    let newNode: Node;
+    if (char === "/") {
+      newNode = {
+        type: "frac",
+        numerator: {
+          type: "row",
+          children: [],
+        },
+        denominator: {
+          type: "row",
+          children: [],
+        },
+      }
+    } else {
+      newNode = {
+        type: "glyph",
+        char,
+      };
+    }
+
 
     if (cursor.next == null) {
-      currentNode.children.push(glyph);
+      currentNode.children.push(newNode);
       cursor.prev = currentNode.children.length - 1;
     } else {
       currentNode.children = [
         ...currentNode.children.slice(0, cursor.next),
-        glyph,
+        newNode,
         ...currentNode.children.slice(cursor.next),
       ];
       cursor.next++;
       cursor.prev = cursor.next - 1;
+    }
+
+    if (newNode.type === "frac") {
+      cursor.path.push(newNode);
+      cursor.path.push(newNode.numerator);
+      cursor.next = null;
+      cursor.prev = null;
     }
 
     callback();

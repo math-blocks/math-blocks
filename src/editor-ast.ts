@@ -19,8 +19,8 @@ type Sub = {
 type Frac = {
   id?: number,
   type: "frac",
-  numerator: Node[],
-  denominator: Node[],
+  numerator: Row,
+  denominator: Row,
 };
 
 // TODO: allow different types of parens
