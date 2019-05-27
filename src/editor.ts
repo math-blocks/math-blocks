@@ -15,8 +15,11 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
     if (currentNode.type === "frac") {
       throw new Error("current node can't be a fraction... yet");
     }
+
+    console.log(e.keyCode);
   
     switch (e.keyCode) {
+      // left arrow
       case 37: {
         if (cursor.prev != null) {
           cursor.next = cursor.prev;
@@ -28,6 +31,7 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
         }
         break;
       }
+      // right arrow
       case 39: {
         if (cursor.next != null) {
           cursor.prev = cursor.next;
@@ -38,6 +42,17 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
           }
         }
         break;
+      }
+      // backspace
+      case 8: {
+        if (cursor.prev != null) {
+          currentNode.children = [
+            ...currentNode.children.slice(0, cursor.prev),
+            ...currentNode.children.slice(cursor.prev + 1),
+          ];
+          cursor.prev = cursor.prev === 0 ? null : cursor.prev - 1;
+          cursor.next = cursor.next === null ? null : cursor.next - 1;
+        }
       }
     }
 
