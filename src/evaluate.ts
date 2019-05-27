@@ -1,4 +1,4 @@
-import {NumericExpression} from "./ast";
+import {NumericExpression} from "./semantic-ast";
 import {UnreachableCaseError} from "./util";
 
 type VarDict = {[key: string]: number};

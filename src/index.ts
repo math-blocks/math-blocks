@@ -1,7 +1,10 @@
-import {Expression} from "./ast";
+import {Expression} from "./semantic-ast";
 import print from "./print";
 import {renderBox} from "./render";
 import {hpackNat, makeFract} from "./layout";
+import {Node} from "./editor-ast";
+import {createEditor, Cursor} from "./editor";
+import typeset from "./typeset";
 
 import fontMetrics from "../metrics/comic-sans.json";
 
@@ -145,6 +148,36 @@ const box = hpackNat([
 console.log(box);
 
 if (ctx) {
+  ctx.save();
   ctx.translate(50, 150);
   renderBox(box, ctx);
+  ctx.restore();
 }
+
+const root: Node = {
+  id: -1,
+  type: "row",
+  children: [],
+};
+
+const cursor: Cursor = {
+  path: [root],
+  prev: null,
+  next: null,
+};
+
+createEditor(root, cursor, () => {
+  console.log(root);
+  console.log(cursor);
+
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(50, 150);
+    const box = typeset(fontMetrics)(fontSize)(root);
+    if (box.type === "Box") {
+      renderBox(box, ctx);
+    }
+    ctx.restore();
+  }  
+});

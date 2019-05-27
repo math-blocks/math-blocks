@@ -1,4 +1,4 @@
-import { Expression } from "./ast";
+import { Expression } from "./semantic-ast";
 import { UnreachableCaseError } from "./util";
 
 // TODO: determine when to wrap subexpressions in parens

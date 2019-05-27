@@ -62,7 +62,7 @@ const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => ({
   content,
 });
 
-const makeKern = (size: Dist): Kern => ({
+export const makeKern = (size: Dist): Kern => ({
   type: "Kern",
   id: -1,
   size,
@@ -73,6 +73,16 @@ const makeRule = (dim: Dim): Rule => ({
   id: -1,
   ...dim,
 });
+
+export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (char: string): Glyph => {
+  return {
+    type: "Glyph",
+    id: -1, // TODO: generate id
+    char,
+    size: fontSize,
+    metrics: fontMetrics,
+  }
+};
 
 const getCharAdvance = (glyph: Glyph) => {
   const charCode = glyph.char.charCodeAt(0);

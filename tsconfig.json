@@ -4,11 +4,13 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "noImplicitReturns": true,
     "removeComments": true,
     "resolveJsonModule": true,
     "preserveConstEnums": true,
     "sourceMap": true,
     "strict": true,
+    "noEmit": true,
   },
   "include": [
     "src/**/*"
