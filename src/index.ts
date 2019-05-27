@@ -1,6 +1,6 @@
 import {Expression} from "./ast";
 import print from "./print";
-import typeset from "./render";
+import {renderBox} from "./render";
 import {hpackNat, makeFract} from "./layout";
 
 import fontMetrics from "../metrics/comic-sans.json";
@@ -52,9 +52,33 @@ const denominator = hpackNat([
     size: fontSize,
     metrics: fontMetrics,
   },
+  {
+    id: -1,
+    type: "Kern",
+    size: kernSize,
+  },
+  {
+    id: 2,
+    type: "Glyph",
+    char: "-",
+    size: fontSize,
+    metrics: fontMetrics,
+  },
+  {
+    id: -1,
+    type: "Kern",
+    size: kernSize,
+  },
+  {
+    id: 2,
+    type: "Glyph",
+    char: "1",
+    size: fontSize,
+    metrics: fontMetrics,
+  },
 ]);
 
-const layout = hpackNat([
+const box = hpackNat([
   {
     id: 0,
     type: "Glyph",
@@ -118,9 +142,9 @@ const layout = hpackNat([
   }
 ])
 
-console.log(layout);
+console.log(box);
 
 if (ctx) {
   ctx.translate(50, 150);
-  typeset(layout, ctx);
+  renderBox(box, ctx);
 }
