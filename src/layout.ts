@@ -19,7 +19,7 @@ export type Box = {
   content: LayoutNode[],
 } & Dim;
 
-type Glue = {
+export type Glue = {
   type: "Glue",
   id: number,
   size: Dist,
@@ -35,7 +35,7 @@ export type Glyph = {
   metrics: FontMetrics,
 };
 
-type Kern = {
+export type Kern = {
   type: "Kern",
   id: number,
   size: Dist,
@@ -53,7 +53,7 @@ export type LayoutNode =
   | Kern
   | Rule;
 
-const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => ({
+export const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => ({
   type: "Box",
   id: -1, // TOOD: generate incrementing ids
   kind,
@@ -68,7 +68,7 @@ export const makeKern = (size: Dist): Kern => ({
   size,
 });
 
-const makeRule = (dim: Dim): Rule => ({
+export const makeRule = (dim: Dim): Rule => ({
   type: "Rule",
   id: -1,
   ...dim,
@@ -84,7 +84,7 @@ export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (ch
   }
 };
 
-const getCharAdvance = (glyph: Glyph) => {
+export const getCharAdvance = (glyph: Glyph) => {
   const charCode = glyph.char.charCodeAt(0);
   const fontMetrics = glyph.metrics;
   const glyphMetrics = fontMetrics.glyphMetrics;
@@ -128,7 +128,7 @@ export const getCharHeight = (glyph: Glyph) => {
   return metrics.bearingY * glyph.size / fontMetrics.unitsPerEm;
 };
 
-const getCharDepth = (glyph: Glyph) => {
+export const getCharDepth = (glyph: Glyph) => {
   const charCode = glyph.char.charCodeAt(0);
   const fontMetrics = glyph.metrics;
   const glyphMetrics = fontMetrics.glyphMetrics;
@@ -139,7 +139,7 @@ const getCharDepth = (glyph: Glyph) => {
   return (metrics.height - metrics.bearingY) * glyph.size / fontMetrics.unitsPerEm;
 };
 
-export const width = (node: LayoutNode) => {
+export const getWidth = (node: LayoutNode) => {
   switch (node.type) {
     case "Box": return node.width
     case "Glue": return node.size
@@ -150,7 +150,7 @@ export const width = (node: LayoutNode) => {
   }
 }
 
-export const height = (node: LayoutNode) => {
+export const getHeight = (node: LayoutNode) => {
   switch (node.type) {
     case "Box": return node.height - node.shift
     case "Glue": return 0
@@ -161,7 +161,7 @@ export const height = (node: LayoutNode) => {
   }
 }
 
-export const depth = (node: LayoutNode) => {
+export const getDepth = (node: LayoutNode) => {
   switch (node.type) {
     case "Box": return node.depth + node.shift
     case "Glue": return 0
@@ -199,9 +199,9 @@ const zero = 0;
 const sum = (values: number[]) => values.reduce(add, zero);
 const max = (values: number[]) => Math.max(...values);
 
-export const hlistWidth = (nodes: LayoutNode[]) => sum(nodes.map(width));
-const hlistHeight = (nodes: LayoutNode[]) => max(nodes.map(height));
-const hlistDepth = (nodes: LayoutNode[]) => max(nodes.map(depth))
+export const hlistWidth = (nodes: LayoutNode[]) => sum(nodes.map(getWidth));
+const hlistHeight = (nodes: LayoutNode[]) => max(nodes.map(getHeight));
+const hlistDepth = (nodes: LayoutNode[]) => max(nodes.map(getDepth))
 const vlistWidth = (nodes: LayoutNode[]) => max(nodes.map(vwidth))
 const vlistVsize = (nodes: LayoutNode[]) => sum(nodes.map(vsize))
 
@@ -217,8 +217,8 @@ export const hpackNat = (nl: LayoutNode[]) => {
 const makeVBox = (width: Dist, node: LayoutNode, upList: LayoutNode[], dnList: LayoutNode[]) => {
   const dim = {
     width,
-    depth: vlistVsize(dnList) + depth(node),
-    height: vlistVsize(upList) + height(node),
+    depth: vlistVsize(dnList) + getDepth(node),
+    height: vlistVsize(upList) + getHeight(node),
   }
   const nodeList = [
     ...upList.reverse(),
@@ -259,12 +259,13 @@ const makeList = (size: Dist, box: Box): LayoutNode[] => [
 ];
 
 // TODO: compute width from numBox and denBox
-export const makeFract = (thickness: Dist, width: Dist, numBox: Box, denBox: Box): Box => {
+export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   const halfThickness = 0.5 * thickness
 
+  const width = Math.max(getWidth(numBox), getWidth(denBox))
   const depth = halfThickness;
   const height = halfThickness;
-  const stroke = makeRule({width, depth, height});
+  const stroke = makeRule({width: width, depth, height});
 
   const upList = makeList(10, rebox(width, numBox));
   const dnList = makeList(10, rebox(width, denBox));

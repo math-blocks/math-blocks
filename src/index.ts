@@ -106,12 +106,7 @@ const box = hpackNat([
     type: "Kern",
     size: kernSize,
   },
-  makeFract(
-    5,
-    Math.max(numerator.width, denominator.width),
-    numerator,
-    denominator,
-  ),
+  makeFract(5, numerator, denominator),
   {
     id: -1,
     type: "Kern",

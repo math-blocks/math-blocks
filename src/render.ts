@@ -1,12 +1,12 @@
 import {UnreachableCaseError} from "./util";
-import {Box, Glyph, Rule, width, height, depth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
+import {Box, Glyph, Rule, getWidth, getHeight, getDepth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
 
 const DEBUG = true;
 
 export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
   if (DEBUG) {
     ctx.strokeStyle = "blue";
-    ctx.strokeRect(0, -box.height, width(box), vsize(box));
+    ctx.strokeRect(0, -box.height, getWidth(box), vsize(box));
   }
 
   switch (box.kind) {
@@ -38,7 +38,7 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
           case "Kern": break;
           default: throw new UnreachableCaseError(node);
         }
-        ctx.translate(width(node), 0);
+        ctx.translate(getWidth(node), 0);
       });
       ctx.restore();
       break;
@@ -50,21 +50,21 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
       box.content.forEach(node => {
         switch (node.type) {
           case "Box": {
-            ctx.translate(0, height(node));
+            ctx.translate(0, getHeight(node));
             renderBox(node, ctx);
-            ctx.translate(0, depth(node));
+            ctx.translate(0, getDepth(node));
             break;
           }
           case "Rule": {
-            ctx.translate(0, height(node));
+            ctx.translate(0, getHeight(node));
             renderRule(node, ctx);
-            ctx.translate(0, depth(node));
+            ctx.translate(0, getDepth(node));
             break;
           }
           case "Glyph": {
-            ctx.translate(0, height(node));
+            ctx.translate(0, getHeight(node));
             renderGlyph(node, ctx);
-            ctx.translate(0, depth(node));
+            ctx.translate(0, getDepth(node));
             break;
           }
           case "Kern": {
@@ -87,7 +87,7 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
 };
 
 const renderRule = (rule: Rule, ctx: CanvasRenderingContext2D) => {
-  ctx.fillRect(0, -rule.height, width(rule), vsize(rule));
+  ctx.fillRect(0, -rule.height, getWidth(rule), vsize(rule));
 }
 
 const renderGlyph = (glyph: Glyph, ctx: CanvasRenderingContext2D) => {

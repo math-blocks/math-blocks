@@ -1,5 +1,5 @@
 import {Node as EditorNode} from "./editor-ast";
-import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, width} from "./layout";
+import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract} from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
@@ -20,13 +20,10 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
       return box;
     }
     case "frac": {
-      const numerator = hpackNat(node.numerator.children.map(_typeset));
-      const denominator = hpackNat(node.denominator.children.map(_typeset));
       return makeFract(
         5,
-        Math.max(width(numerator), width(denominator)),
-        numerator,
-        denominator,
+        hpackNat(node.numerator.children.map(_typeset)),
+        hpackNat(node.denominator.children.map(_typeset)),
       );
     }
     case "parens": 
