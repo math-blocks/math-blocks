@@ -8,7 +8,11 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
   const _makeGlyph = makeGlyph(fontMetrics)(fontSize);
 
   switch (node.type) {
-    case "row": return hpackNat(node.children.map(_typeset));
+    case "row": {
+      const row = hpackNat(node.children.map(_typeset));
+      row.id = node.id;
+      return row;
+    }
     case "sup": {
       const box = hpackNat(node.children.map(_typeset));
       box.shift = -20;
@@ -20,27 +24,36 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
       return box;
     }
     case "frac": {
-      return makeFract(
-        5,
-        hpackNat(node.numerator.children.map(_typeset)),
-        hpackNat(node.denominator.children.map(_typeset)),
-      );
+      const numerator = hpackNat(node.numerator.children.map(_typeset));
+      const denominator = hpackNat(node.denominator.children.map(_typeset));
+
+      numerator.id = node.numerator.id;
+      denominator.id = node.denominator.id;
+
+      const frac = makeFract(5, numerator, denominator);
+      frac.id = node.id;
+      return frac;
     }
-    case "parens": 
-      return hpackNat([
+    case "parens": {
+      const parens = hpackNat([
         _makeGlyph("("),
         ...node.children.map(_typeset),
         _makeGlyph(")"),
       ]);
+      parens.id = node.id;
+      return parens;
+    }
     case "glyph": {
+      const glyph = _makeGlyph(node.char);
+      glyph.id = node.id;
       if (/[=\+\-]/.test(node.char)) {
         return hpackNat([
           makeKern(fontSize / 4),
-          _makeGlyph(node.char),
+          glyph,
           makeKern(fontSize / 4),
         ]);
       } else {
-        return _makeGlyph(node.char);
+        return glyph;
       }
     }
     default: throw new UnreachableCaseError(node);

@@ -13,7 +13,7 @@ type BoxKind = "hbox" | "vbox";
 
 export type Box = {
   type: "Box",
-  id: number,
+  id?: number,
   kind: BoxKind,
   shift: Dist,
   content: LayoutNode[],
@@ -21,7 +21,7 @@ export type Box = {
 
 export type Glue = {
   type: "Glue",
-  id: number,
+  id?: number,
   size: Dist,
   stretch: Dist,
   shrink: Dist,
@@ -29,7 +29,7 @@ export type Glue = {
 
 export type Glyph = {
   type: "Glyph",
-  id: number,
+  id?: number,
   char: string,
   size: number,
   metrics: FontMetrics,
@@ -37,13 +37,13 @@ export type Glyph = {
 
 export type Kern = {
   type: "Kern",
-  id: number,
+  id?: number,
   size: Dist,
 };
 
 export type Rule = {
   type: "Rule",
-  id: number,
+  id?: number,
 } & Dim;
 
 export type LayoutNode =
@@ -55,7 +55,6 @@ export type LayoutNode =
 
 export const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => ({
   type: "Box",
-  id: -1, // TOOD: generate incrementing ids
   kind,
   ...dim,
   shift: 0,
@@ -64,20 +63,17 @@ export const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => 
 
 export const makeKern = (size: Dist): Kern => ({
   type: "Kern",
-  id: -1,
   size,
 });
 
 export const makeRule = (dim: Dim): Rule => ({
   type: "Rule",
-  id: -1,
   ...dim,
 });
 
 export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (char: string): Glyph => {
   return {
     type: "Glyph",
-    id: -1, // TODO: generate id
     char,
     size: fontSize,
     metrics: fontMetrics,
@@ -237,18 +233,17 @@ const rebox = (newWidth: Dist, box: Box): Box => {
   } else {
     const hl = kind === "hbox"
       ? content
-      : [{...box, id: -1}]
+      : [box]
 
     const glue: Glue = {
       type: "Glue",
-      id: -1,
       size: 0,
       stretch: 1,
       shrink: 1,
     }
 
     const result = makeBox("hbox", {width: newWidth, height, depth}, [glue, ...hl, glue])
-    console.log(result);
+    result.id = box.id;
     return result;
   }
 }
@@ -265,7 +260,7 @@ export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   const width = Math.max(getWidth(numBox), getWidth(denBox))
   const depth = halfThickness;
   const height = halfThickness;
-  const stroke = makeRule({width: width, depth, height});
+  const stroke = makeRule({width, depth, height});
 
   const upList = makeList(10, rebox(width, numBox));
   const dnList = makeList(10, rebox(width, denBox));

@@ -1,9 +1,10 @@
 import {UnreachableCaseError} from "./util";
+import {Cursor} from "./editor";
 import {Box, Glyph, Rule, getWidth, getHeight, getDepth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
 
-const DEBUG = true;
+const DEBUG = false;
 
-export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
+export const renderBox = (box: Box, cursor: Cursor, ctx: CanvasRenderingContext2D) => {
   if (DEBUG) {
     ctx.strokeStyle = "blue";
     ctx.strokeRect(0, -box.height, getWidth(box), vsize(box));
@@ -12,12 +13,18 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
   switch (box.kind) {
     case "hbox": {
       const availableSpace = box.width - hlistWidth(box.content);
+      const parent = cursor.path[cursor.path.length - 1];
       ctx.save();
-      box.content.forEach(node => {
+      console.log(`parent.id = ${parent.id}`);
+      console.log(`box.id = ${box.id}`);
+      if (parent.id === box.id && cursor.prev === null) {
+        ctx.fillRect(-1, -64 * 0.85, 2, 64);
+      }
+      box.content.forEach((node, index) => {
         switch (node.type) {
           case "Box": {
             ctx.translate(0, node.shift);
-            renderBox(node, ctx);
+            renderBox(node, cursor, ctx);
             ctx.translate(0, -node.shift);
             break;
           }
@@ -39,6 +46,11 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
           default: throw new UnreachableCaseError(node);
         }
         ctx.translate(getWidth(node), 0);
+        // TODO: index is unreliable here since the layout has more
+        // nodes in it than the editor tree.
+        if (parent.id === box.id && cursor.prev === index) {
+          ctx.fillRect(-1, -64 * 0.85, 2, 64);
+        }
       });
       ctx.restore();
       break;
@@ -51,7 +63,7 @@ export const renderBox = (box: Box, ctx: CanvasRenderingContext2D) => {
         switch (node.type) {
           case "Box": {
             ctx.translate(0, getHeight(node));
-            renderBox(node, ctx);
+            renderBox(node, cursor, ctx);
             ctx.translate(0, getDepth(node));
             break;
           }

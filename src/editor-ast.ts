@@ -1,23 +1,23 @@
 type Row = {
-  id?: number,
+  id: number,
   type: "row",
   children: Node[],
 };
 
 type Sup = {
-  id?: number,
+  id: number,
   type: "sup",
   children: Node[],
 };
 
 type Sub = {
-  id?: number,
+  id: number,
   type: "sub",
   children: Node[],
 };
 
 type Frac = {
-  id?: number,
+  id: number,
   type: "frac",
   numerator: Row,
   denominator: Row,
@@ -25,13 +25,13 @@ type Frac = {
 
 // TODO: allow different types of parens
 type Parens = {
-  id?: number,
+  id: number,
   type: "parens",
   children: Node[],
 };
 
 export type Glyph = {
-  id?: number,
+  id: number,
   type: "glyph",
   char: string,
 };

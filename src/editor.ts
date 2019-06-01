@@ -1,4 +1,5 @@
 import {Node} from "./editor-ast";
+import {getId} from "./unique-id";
 
 export type Cursor = {
   path: Node[],
@@ -6,7 +7,12 @@ export type Cursor = {
   next: number | null,
 };
 
+const firstIndex = (items: any[]) => items.length > 0 ? 0 : null;
+const lastIndex = (items: any[]) => items.length > 0 ? items.length - 1 : null;
+
 export const createEditor = (root: Node, cursor: Cursor, callback: () => void) => {
+  callback();
+
   document.body.addEventListener("keydown", (e) => {  
     const currentNode = cursor.path[cursor.path.length - 1];
     if (currentNode.type === "glyph") {
@@ -23,11 +29,19 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
       case 37: {
         // TODO: handle navigating into fractions
         if (cursor.prev != null) {
-          cursor.next = cursor.prev;
-          if (cursor.prev > 0) {
-            cursor.prev--;
+          const prevNode = currentNode.children[cursor.prev];
+          if (prevNode && prevNode.type === "frac") {
+            cursor.path.push(prevNode);
+            cursor.path.push(prevNode.denominator);
+            cursor.next = null;
+            cursor.prev = lastIndex(prevNode.denominator.children);
           } else {
-            cursor.prev = null;
+            cursor.next = cursor.prev;
+            if (cursor.prev > 0) {
+              cursor.prev--;
+            } else {
+              cursor.prev = null;
+            }
           }
         } else {
           if (cursor.path.length > 1) {
@@ -37,9 +51,7 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
                 cursor.path.pop();
                 cursor.path.push(parent.numerator);
                 cursor.next = null;
-                cursor.prev = parent.denominator.children.length > 0
-                  ? parent.denominator.children.length - 1
-                  : null;
+                cursor.prev = lastIndex(parent.denominator.children);
               } else if (currentNode === parent.numerator) {
                 const grandparent = cursor.path[cursor.path.length - 3];
                 cursor.path.pop();
@@ -59,11 +71,19 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
       case 39: {
         // TODO: handle navigating into fractions
         if (cursor.next != null) {
-          cursor.prev = cursor.next;
-          if (cursor.next < currentNode.children.length - 1) {
-            cursor.next++;
+          const nextNode = currentNode.children[cursor.next];
+          if (nextNode && nextNode.type === "frac") {
+            cursor.path.push(nextNode);
+            cursor.path.push(nextNode.numerator);
+            cursor.prev = null;
+            cursor.next = firstIndex(nextNode.numerator.children);
           } else {
-            cursor.next = null;
+            cursor.prev = cursor.next;
+            if (cursor.next < currentNode.children.length - 1) {
+              cursor.next++;
+            } else {
+              cursor.next = null;
+            }
           }
         } else {
           if (cursor.path.length > 1) {
@@ -73,7 +93,7 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
                 cursor.path.pop();
                 cursor.path.push(parent.denominator);
                 cursor.prev = null;
-                cursor.next = parent.denominator.children.length > 0 ? 0 : null;
+                cursor.next = firstIndex(parent.denominator.children);
               } else if (currentNode === parent.denominator) {
                 const grandparent = cursor.path[cursor.path.length - 3];
                 cursor.path.pop();
@@ -121,18 +141,22 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
     let newNode: Node;
     if (char === "/") {
       newNode = {
+        id: getId(),
         type: "frac",
         numerator: {
+          id: getId(),
           type: "row",
           children: [],
         },
         denominator: {
+          id: getId(),
           type: "row",
           children: [],
         },
       }
     } else {
       newNode = {
+        id: getId(),
         type: "glyph",
         char,
       };
