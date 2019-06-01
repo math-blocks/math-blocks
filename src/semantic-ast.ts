@@ -1,6 +1,7 @@
 /**
  * AST describing semantic expression of mathematic expressions.
  */
+type TwoOrMore<T> = [T, T, ...T[]];
 
 type NumberNode = {
   kind: "number",
@@ -33,13 +34,13 @@ type EllipsisNode = {
 
 type AddNode = {
   kind: "add",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type MulNode = {
   kind: "mul",
   implicit: boolean,
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type FuncNode = {
@@ -197,47 +198,47 @@ export type NumericExpression =
 
 type EqNode = {
   kind: "eq",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type NeqNode = {
   kind: "neq",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type LtNode = {
   kind: "lt",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type LteNode = {
   kind: "lte",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type GtNode = {
   kind: "gt",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type GteNode = {
   kind: "gte",
-  args: NumericExpression[],
+  args: TwoOrMore<NumericExpression>,
 };
 
 type AndNode = {
   kind: "and",
-  args: LogicExpression[],
+  args: TwoOrMore<LogicExpression>,
 };
 
 type OrNode = {
   kind: "or",
-  args: LogicExpression[],
+  args: TwoOrMore<LogicExpression>,
 };
 
 type XorNode = {
   kind: "xor",
-  args: LogicExpression[],
+  args: TwoOrMore<LogicExpression>,
 };
 
 type NotNode = {
@@ -265,22 +266,22 @@ type FalseNode = {
 
 type SubsetNode = {
   kind: "subset",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type ProperSubsetNode = {
   kind: "prsubset",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type NotSubsetNode = {
   kind: "notsubset",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type NotProperSubsetNode = {
   kind: "notprsubset",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type InNode = {
@@ -347,7 +348,7 @@ export type LogicExpression =
 
 type SetNode = {
   kind: "set"
-  elements: Expression[], // could also include shapes, strings, images, etc.
+  elements: TwoOrMore<Expression>, // could also include shapes, strings, images, etc.
 };
 
 type EmptySetNode = {
@@ -356,12 +357,12 @@ type EmptySetNode = {
 
 type UnionNode = {
   kind: "union",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type IntersectionNode = {
   kind: "intersection",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type SetDiffNode = {
@@ -371,7 +372,7 @@ type SetDiffNode = {
 
 type CartesianProductNode = {
   kind: "cartesianproduct",
-  args: SetExpression[],
+  args: TwoOrMore<SetExpression>,
 };
 
 type NaturalsNode = {
