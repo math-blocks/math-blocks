@@ -44,3 +44,10 @@ export type Node =
   | Parens
   | Glyph
   ;
+
+export type HasChildren =
+  | Row
+  | Sup
+  | Sub
+  | Parens
+  ;
