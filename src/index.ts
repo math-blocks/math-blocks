@@ -1,7 +1,7 @@
 import {renderBox} from "./render";
 import {Node} from "./editor-ast";
-import {createEditor, Cursor} from "./editor";
-import typeset from "./typeset";
+import {createEditor, EditorCursor} from "./editor";
+import typeset, {getRenderCursor} from "./typeset";
 import {getId} from "./unique-id";
 
 import fontMetrics from "../metrics/comic-sans.json";
@@ -31,7 +31,7 @@ const root: Node = {
   }],
 };
 
-const cursor: Cursor = {
+const cursor: EditorCursor = {
   path: [root],
   prev: null,
   next: 0,
@@ -42,15 +42,11 @@ if (ctx) {
     const fontSize = 64;
     const box = typeset(fontMetrics)(fontSize)(root);
 
-    console.log("edit tree: ", root);
-    console.log("layout tree: ", box);
-    console.log(cursor);
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(50, 150);
     if (box.type === "Box") {
-      renderBox(box, cursor, ctx);
+      renderBox(box, getRenderCursor(cursor, root), ctx);
     }
     ctx.restore();
   });

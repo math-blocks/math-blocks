@@ -1,7 +1,33 @@
+import {EditorCursor} from "./editor";
 import {Node as EditorNode} from "./editor-ast";
 import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract} from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
+
+export type LayoutCursor = {
+  path: EditorNode[],
+  // these are node ids instead of indices
+  prev: number | null,
+  next: number | null,
+};
+
+export const getRenderCursor = (cursor: EditorCursor, node: EditorNode): LayoutCursor => {
+  const currentNode = cursor.path[cursor.path.length - 1];
+  switch (currentNode.type) {
+    case "row":
+    case "sup":
+    case "sub":
+    case "parens": {
+      const result = {
+        path: cursor.path,
+        prev: cursor.prev != null ? currentNode.children[cursor.prev].id : null,
+        next: cursor.next != null ? currentNode.children[cursor.next].id : null,
+      };
+      return result;
+    }
+    default: throw new Error("Can't get render cursor");
+  }
+};
 
 const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: EditorNode): LayoutNode => {
   const _typeset = typeset(fontMetrics)(fontSize);
@@ -16,11 +42,13 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
     case "sup": {
       const box = hpackNat(node.children.map(_typeset));
       box.shift = -20;
+      box.id = node.id;
       return box;
     }
     case "sub": {
       const box = hpackNat(node.children.map(_typeset));
       box.shift = 20;
+      box.id = node.id;
       return box;
     }
     case "frac": {
@@ -45,14 +73,16 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
     }
     case "glyph": {
       const glyph = _makeGlyph(node.char);
-      glyph.id = node.id;
       if (/[=\+\-]/.test(node.char)) {
-        return hpackNat([
+        const box = hpackNat([
           makeKern(fontSize / 4),
           glyph,
           makeKern(fontSize / 4),
         ]);
+        box.id = node.id;
+        return box;
       } else {
+        glyph.id = node.id;
         return glyph;
       }
     }

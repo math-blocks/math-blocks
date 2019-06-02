@@ -1,10 +1,10 @@
 import {UnreachableCaseError} from "./util";
-import {Cursor} from "./editor";
+import {EditorCursor} from "./editor";
 import {Box, Glyph, Rule, getWidth, getHeight, getDepth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
 
 const DEBUG = false;
 
-export const renderBox = (box: Box, cursor: Cursor, ctx: CanvasRenderingContext2D) => {
+export const renderBox = (box: Box, cursor: EditorCursor, ctx: CanvasRenderingContext2D) => {
   if (DEBUG) {
     ctx.strokeStyle = "blue";
     ctx.strokeRect(0, -box.height, getWidth(box), vsize(box));
@@ -15,12 +15,11 @@ export const renderBox = (box: Box, cursor: Cursor, ctx: CanvasRenderingContext2
       const availableSpace = box.width - hlistWidth(box.content);
       const parent = cursor.path[cursor.path.length - 1];
       ctx.save();
-      console.log(`parent.id = ${parent.id}`);
-      console.log(`box.id = ${box.id}`);
-      if (parent.id === box.id && cursor.prev === null) {
-        ctx.fillRect(-1, -64 * 0.85, 2, 64);
-      }
-      box.content.forEach((node, index) => {
+
+      box.content.forEach(node => {
+        if (parent.id === box.id && cursor.next === node.id) {
+          ctx.fillRect(-1, -64 * 0.85, 2, 64);
+        }
         switch (node.type) {
           case "Box": {
             ctx.translate(0, node.shift);
@@ -46,9 +45,7 @@ export const renderBox = (box: Box, cursor: Cursor, ctx: CanvasRenderingContext2
           default: throw new UnreachableCaseError(node);
         }
         ctx.translate(getWidth(node), 0);
-        // TODO: index is unreliable here since the layout has more
-        // nodes in it than the editor tree.
-        if (parent.id === box.id && cursor.prev === index) {
+        if (parent.id === box.id && cursor.prev === node.id) {
           ctx.fillRect(-1, -64 * 0.85, 2, 64);
         }
       });

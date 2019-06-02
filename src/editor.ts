@@ -1,8 +1,9 @@
 import {Node} from "./editor-ast";
 import {getId} from "./unique-id";
 
-export type Cursor = {
+export type EditorCursor = {
   path: Node[],
+  // these are indices of the node inside the parent
   prev: number | null,
   next: number | null,
 };
@@ -10,7 +11,7 @@ export type Cursor = {
 const firstIndex = (items: any[]) => items.length > 0 ? 0 : null;
 const lastIndex = (items: any[]) => items.length > 0 ? items.length - 1 : null;
 
-export const createEditor = (root: Node, cursor: Cursor, callback: () => void) => {
+export const createEditor = (root: Node, cursor: EditorCursor, callback: () => void) => {
   callback();
 
   document.body.addEventListener("keydown", (e) => {  
@@ -21,8 +22,6 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
     if (currentNode.type === "frac") {
       throw new Error("current node can't be a fraction... yet");
     }
-
-    console.log(e.keyCode);
   
     switch (e.keyCode) {
       // left arrow
@@ -51,7 +50,8 @@ export const createEditor = (root: Node, cursor: Cursor, callback: () => void) =
                 cursor.path.pop();
                 cursor.path.push(parent.numerator);
                 cursor.next = null;
-                cursor.prev = lastIndex(parent.denominator.children);
+                cursor.prev = lastIndex(parent.numerator.children);
+                console.log(cursor);
               } else if (currentNode === parent.numerator) {
                 const grandparent = cursor.path[cursor.path.length - 3];
                 cursor.path.pop();
