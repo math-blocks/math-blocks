@@ -24,6 +24,11 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
       cursor.path.push(prevNode.denominator);
       cursor.next = null;
       cursor.prev = lastIndex(prevNode.denominator.children);
+    } else if (prevNode && (prevNode.type === "sub" || prevNode.type === "sup")) {
+      // enter sup/sub
+      cursor.path.push(prevNode);
+      cursor.next = null;
+      cursor.prev = lastIndex(prevNode.children);
     } else {
       // move to the left
       cursor.next = cursor.prev;
@@ -32,7 +37,11 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
   } else if (cursor.path.length > 1) {
     const parent = cursor.path[cursor.path.length - 2];
 
-    if (parent.type === "frac" && cursor.path.length > 2) {
+    if ((currentNode.type === "sub" || currentNode.type === "sup") && hasChildren(parent)) {
+      cursor.path = cursor.path.slice(0, -1);
+      cursor.next = parent.children.indexOf(currentNode);
+      cursor.prev = cursor.next > 0 ? cursor.next - 1 : null; 
+    } else if (parent.type === "frac" && cursor.path.length > 2) {
       const grandparent = cursor.path[cursor.path.length - 3];
 
       if (currentNode === parent.denominator) {
@@ -59,6 +68,11 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor) => {
       cursor.path.push(nextNode.numerator);
       cursor.prev = null;
       cursor.next = firstIndex(nextNode.numerator.children);
+    } else if (nextNode && (nextNode.type === "sub" || nextNode.type === "sup")) {
+      // enter sup/sub
+      cursor.path.push(nextNode);
+      cursor.prev = null;
+      cursor.next = firstIndex(nextNode.children);
     } else {
       // move to the right
       cursor.prev = cursor.next;
@@ -69,7 +83,11 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor) => {
   } else if (cursor.path.length > 1) {
     const parent = cursor.path[cursor.path.length - 2];
 
-    if (parent.type === "frac" && cursor.path.length > 2) {
+    if ((currentNode.type === "sub" || currentNode.type === "sup") && hasChildren(parent)) {
+      cursor.path = cursor.path.slice(0, -1);
+      cursor.prev = parent.children.indexOf(currentNode);
+      cursor.next = cursor.prev < parent.children.length - 1 ? cursor.prev + 1 : null; 
+    } else if (parent.type === "frac" && cursor.path.length > 2) {
       const grandparent = cursor.path[cursor.path.length - 3];
 
       if (currentNode === parent.numerator) {
@@ -151,6 +169,18 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: () => v
           children: [],
         },
       }
+    } else if (char === "^") {
+      newNode = {
+        id: getId(),
+        type: "sup",
+        children: [],
+      };
+    } else if (char === "_") {
+      newNode = {
+        id: getId(),
+        type: "sub",
+        children: [],
+      };
     } else {
       newNode = {
         id: getId(),
@@ -176,6 +206,10 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: () => v
     if (newNode.type === "frac") {
       cursor.path.push(newNode);
       cursor.path.push(newNode.numerator);
+      cursor.next = null;
+      cursor.prev = null;
+    } else if (newNode.type === "sup" || newNode.type === "sub") {
+      cursor.path.push(newNode);
       cursor.next = null;
       cursor.prev = null;
     }
