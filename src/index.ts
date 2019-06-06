@@ -40,9 +40,12 @@ const cursor: EditorCursor = {
 if (ctx) {
   createEditor(root, cursor, () => {
     const fontSize = 64;
+    console.log(root);
     const box = typeset(fontMetrics)(fontSize)(root);
+    console.log(box);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
     ctx.save();
     ctx.translate(50, 150);
     if (box.type === "Box") {

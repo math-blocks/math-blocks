@@ -15,6 +15,13 @@ const hasChildren = (node: Node): node is HasChildren => {
   return node.type !== "frac" && node.type !== "glyph";
 }
 
+const removeIndex = <T>(array: T[], index: number): T[] => {
+  return [
+    ...array.slice(0, index),
+    ...array.slice(index + 1),
+  ];
+}
+
 const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
   if (cursor.prev != null) {
     const prevNode = currentNode.children[cursor.prev];
@@ -129,12 +136,24 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: () => v
       // backspace
       case 8: {
         if (cursor.prev != null) {
-          currentNode.children = [
-            ...currentNode.children.slice(0, cursor.prev),
-            ...currentNode.children.slice(cursor.prev + 1),
-          ];
+          currentNode.children = removeIndex(currentNode.children, cursor.prev);
           cursor.prev = cursor.prev === 0 ? null : cursor.prev - 1;
           cursor.next = cursor.next === null ? null : cursor.next - 1;
+        } else if (cursor.path.length > 1) {
+          const parent = cursor.path[cursor.path.length - 2];
+          if (parent.type === "row") {
+            if (currentNode.type === "sup" || currentNode.type === "sub") {
+              if (currentNode.children.length === 0) {
+                cursor.path = cursor.path.slice(0, -1);
+                const currentIndex = parent.children.indexOf(currentNode);
+                parent.children = removeIndex(parent.children, currentIndex);
+                cursor.next = currentIndex < parent.children.length
+                  ? currentIndex
+                  : null;
+                cursor.prev = currentIndex > 0 ? currentIndex - 1 : null;
+              }
+            }
+          }
         }
       }
     }
@@ -181,12 +200,14 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: () => v
         type: "sub",
         children: [],
       };
-    } else {
+    } else if (char.charCodeAt(0) >= 32) {
       newNode = {
         id: getId(),
         type: "glyph",
         char,
       };
+    } else {
+      return;
     }
 
 
