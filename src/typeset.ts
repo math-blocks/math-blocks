@@ -20,8 +20,8 @@ export const getRenderCursor = (cursor: EditorCursor, node: EditorNode): LayoutC
     case "parens": {
       const result = {
         path: cursor.path,
-        prev: cursor.prev != null ? currentNode.children[cursor.prev].id : null,
-        next: cursor.next != null ? currentNode.children[cursor.next].id : null,
+        prev: cursor.prev != null ? cursor.prev : null,
+        next: cursor.next != null ? cursor.next : null,
       };
       return result;
     }
