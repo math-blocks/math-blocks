@@ -142,8 +142,13 @@ class MathRenderer extends React.Component<Props> {
 
   render() {
     const {box} = this.props;
-    return <svg style={{marginLeft: 100}}>
-      <g transform="translate(0, 100)" fill="currentColor">
+    const height = getHeight(box);
+    const depth = getDepth(box);
+    const width = getWidth(box);
+    const viewBox = `0 -${height} ${width} ${height + depth}`;
+
+    return <svg style={{marginLeft: 100}} width={width} viewBox={viewBox}>
+      <g fill="currentColor">
         {this.renderBox(box)}
       </g>
     </svg>;
