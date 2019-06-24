@@ -29,8 +29,14 @@ export const getRenderCursor = (cursor: EditorCursor, node: EditorNode): LayoutC
   }
 };
 
-const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: EditorNode): LayoutNode => {
-  const _typeset = typeset(fontMetrics)(fontSize);
+const typeset = 
+  (fontMetrics: FontMetrics) => 
+  (baseFontSize: number) => 
+  (multiplier: number = 1) => 
+  (node: EditorNode): LayoutNode => 
+{
+  const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
+  const fontSize = multiplier * baseFontSize;
   const _makeGlyph = makeGlyph(fontMetrics)(fontSize);
 
   switch (node.type) {
@@ -40,14 +46,16 @@ const typeset = (fontMetrics: FontMetrics) => (fontSize: number) => (node: Edito
       return row;
     }
     case "sup": {
+      const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
       const box = hpackNat(node.children.map(_typeset));
-      box.shift = -20;
+      box.shift = -0.5 * fontSize;
       box.id = node.id;
       return box;
     }
     case "sub": {
+      const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
       const box = hpackNat(node.children.map(_typeset));
-      box.shift = 20;
+      box.shift = 0.35 * fontSize;
       box.id = node.id;
       return box;
     }

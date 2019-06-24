@@ -75,7 +75,7 @@ export default class MathEditor extends React.Component<Props, State> {
 
 
     const fontSize = 64;
-    const box = typeset(fontMetrics)(fontSize)(root) as Box;
+    const box = typeset(fontMetrics)(fontSize)(1.0)(root) as Box;
 
     this.state = {cursor, box, root};
   }
@@ -84,7 +84,7 @@ export default class MathEditor extends React.Component<Props, State> {
     const {root, cursor} = this.state;
     createEditor(root, cursor, (cursor) => {
       const fontSize = 64;
-      const box = typeset(fontMetrics)(fontSize)(root);
+      const box = typeset(fontMetrics)(fontSize)(1.0)(root);
   
       if (box.type === "Box") {
         this.setState({
