@@ -180,18 +180,33 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           currentNode.children = removeChildWithId(currentNode.children, removeId);
         } else if (cursor.path.length > 1) {
           const parent = cursor.path[cursor.path.length - 2];
-          if (parent.type === "row") {
-            if (currentNode.type === "sup" || currentNode.type === "sub") {
-              if (currentNode.children.length === 0) {
-                cursor.path = cursor.path.slice(0, -1);
-                const currentIndex = parent.children.indexOf(currentNode);
-                parent.children = removeIndex(parent.children, currentIndex);
-                cursor.next = currentIndex < parent.children.length
-                  ? currentIndex
-                  : null;
-                cursor.prev = currentIndex > 0 ? currentIndex - 1 : null;
-              }
+
+          if (currentNode.type === "sup" || currentNode.type === "sub") {
+            if (!hasChildren(parent)) {
+              return;
             }
+
+            const index = parent.children.findIndex(child => child.id === currentNode.id);
+            const newChildren = index === -1
+              ? parent.children
+              // replace currentNode with currentNode's children
+              : [
+                ...parent.children.slice(0, index),
+                ...currentNode.children,
+                ...parent.children.slice(index + 1),
+              ];
+
+            // update cursor
+            if (currentNode.children.length > 0) {
+              cursor.next = currentNode.children[0].id;
+            } else {
+              cursor.next = nextId(parent.children, currentNode.id);
+            }
+            cursor.prev = prevId(parent.children, currentNode.id);
+            cursor.path.pop(); // pop b/c we move up a level
+
+            // update children
+            parent.children = newChildren;
           }
         }
       }
