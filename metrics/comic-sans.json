@@ -1,12 +1,12 @@
 {
   "unitsPerEm": 2048,
+  "ascender": 2257,
+  "descender": -597,
   "glyphMetrics": {
     "32": {
       "advance": 612,
-      "bearingX": 0,
-      "bearingY": 0,
-      "width": 0,
-      "height": 0
+      "width": null,
+      "height": null
     },
     "33": {
       "advance": 487,
@@ -668,10 +668,8 @@
     },
     "160": {
       "advance": 612,
-      "bearingX": 0,
-      "bearingY": 0,
-      "width": 0,
-      "height": 0
+      "width": null,
+      "height": null
     },
     "161": {
       "advance": 487,
