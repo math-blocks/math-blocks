@@ -8,6 +8,8 @@ export type GlyphMetrics = {
 
 export type FontMetrics = {
   unitsPerEm: number,
+  ascender: number,
+  descender: number,
   glyphMetrics: Partial<{
     [charCode: number]: GlyphMetrics,
   }>,

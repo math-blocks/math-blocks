@@ -63,6 +63,22 @@ const typeset =
       const numerator = hpackNat(node.numerator.children.map(_typeset));
       const denominator = hpackNat(node.denominator.children.map(_typeset));
 
+      console.log(numerator.depth);
+
+      const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
+      // TODO: try to reuse getCharDepth
+      if (jmetrics) {
+        const jDepth = baseFontSize * multiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
+        numerator.depth = Math.max(numerator.depth, jDepth);
+      }
+
+      const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
+      // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+      if (Emetrics) {
+        const EHeight = baseFontSize * multiplier * Emetrics.bearingY / fontMetrics.unitsPerEm;
+        denominator.height = Math.max(denominator.height, EHeight);
+      }
+
       numerator.id = node.numerator.id;
       denominator.id = node.denominator.id;
 

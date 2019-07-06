@@ -262,7 +262,7 @@ export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   const height = halfThickness;
   const stroke = makeRule({width, depth, height});
 
-  const upList = makeList(10, rebox(width, numBox));
+  const upList = makeList(2, rebox(width, numBox));
   const dnList = makeList(10, rebox(width, denBox));
 
   const fracBox = makeVBox(width, stroke, upList, dnList);
