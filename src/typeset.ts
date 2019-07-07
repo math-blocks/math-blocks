@@ -1,6 +1,6 @@
 import {EditorCursor} from "./editor";
 import {Node as EditorNode} from "./editor-ast";
-import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract} from "./layout";
+import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeBox} from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
@@ -47,23 +47,25 @@ const typeset =
     }
     case "sup": {
       const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
-      const box = hpackNat(node.children.map(_typeset));
-      box.shift = -0.5 * fontSize;
-      box.id = node.id;
-      return box;
+      const box = hpackNat(node.children.children.map(_typeset));
+      box.id = node.children.id;
+      const parentBox = makeBox("hbox", box, [box]);
+      parentBox.id = node.id;
+      parentBox.shift = -0.5 * fontSize;
+      return parentBox;
     }
     case "sub": {
       const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
-      const box = hpackNat(node.children.map(_typeset));
-      box.shift = 0.35 * fontSize;
-      box.id = node.id;
-      return box;
+      const box = hpackNat(node.children.children.map(_typeset));
+      box.id = node.children.id;
+      const parentBox = makeBox("hbox", box, [box]);
+      parentBox.id = node.id;
+      parentBox.shift = 0.35 * fontSize;
+      return parentBox;
     }
     case "frac": {
       const numerator = hpackNat(node.numerator.children.map(_typeset));
       const denominator = hpackNat(node.denominator.children.map(_typeset));
-
-      console.log(numerator.depth);
 
       const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
       // TODO: try to reuse getCharDepth

@@ -7,13 +7,13 @@ type Row = {
 type Sup = {
   id: number,
   type: "sup",
-  children: Node[],
+  children: Row,
 };
 
 type Sub = {
   id: number,
   type: "sub",
-  children: Node[],
+  children: Row,
 };
 
 type Frac = {
@@ -47,7 +47,5 @@ export type Node =
 
 export type HasChildren =
   | Row
-  | Sup
-  | Sub
   | Parens
   ;

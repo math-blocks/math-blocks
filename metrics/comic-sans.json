@@ -5,8 +5,10 @@
   "glyphMetrics": {
     "32": {
       "advance": 612,
-      "width": null,
-      "height": null
+      "bearingX": 0,
+      "bearingY": 0,
+      "width": 0,
+      "height": 0
     },
     "33": {
       "advance": 487,
@@ -668,8 +670,10 @@
     },
     "160": {
       "advance": 612,
-      "width": null,
-      "height": null
+      "bearingX": 0,
+      "bearingY": 0,
+      "width": 0,
+      "height": 0
     },
     "161": {
       "advance": 487,
