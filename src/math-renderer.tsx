@@ -87,6 +87,9 @@ class MathRenderer extends React.Component<Props> {
           switch (node.type) {
             case "Box": {
               pen.y += getHeight(node);
+              if (Number.isNaN(pen.y)) {
+                debugger;
+              }
               result.push(<g 
                 key={index} 
                 transform={`translate(${pen.x}, ${pen.y})`}

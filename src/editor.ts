@@ -1,6 +1,5 @@
 import {Node, HasChildren} from "./editor-ast";
 import {getId} from "./unique-id";
-import {cursorTo} from "readline";
 
 export type EditorCursor = {
   path: Node[],
@@ -74,12 +73,17 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
       cursor.path.push(prevNode.denominator);
       cursor.next = null;
       cursor.prev = lastId(prevNode.denominator.children);
-    } else if (prevNode && (prevNode.type === "sub" || prevNode.type === "sup")) {
+    } else if (prevNode && prevNode.type === "subsup") {
       // enter sup/sub
       cursor.path.push(prevNode);
-      cursor.path.push(prevNode.children);
       cursor.next = null;
-      cursor.prev = lastId(prevNode.children.children);
+      if (prevNode.sub) {
+        cursor.path.push(prevNode.sub);
+        cursor.prev = lastId(prevNode.sub.children);
+      } else if (prevNode.sup) {
+        cursor.path.push(prevNode.sup);
+        cursor.prev = lastId(prevNode.sup.children);
+      }
     } else {
       // move to the left
       cursor.next = cursor.prev;
@@ -88,11 +92,16 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
   } else if (cursor.path.length > 1) {
     const parent = cursor.path[cursor.path.length - 2];
 
-    if ((parent.type === "sub" || parent.type === "sup") && cursor.path.length > 2) {
+    if (parent.type === "subsup" && cursor.path.length > 2) {
       const grandparent = cursor.path[cursor.path.length - 3];
 
-      if (currentNode === parent.children && hasChildren(grandparent)) {
+      if (currentNode === parent.sup && hasChildren(grandparent)) {
         // exit sup or sup to the left
+        cursor.path = cursor.path.slice(0, -2);
+        cursor.next = parent.id;
+        cursor.prev = prevId(grandparent.children, cursor.next);
+      } else if (currentNode === parent.sub && hasChildren(grandparent)) {
+        // TODO: check if there's a sup we can move to
         cursor.path = cursor.path.slice(0, -2);
         cursor.next = parent.id;
         cursor.prev = prevId(grandparent.children, cursor.next);
@@ -125,12 +134,17 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor) => {
       cursor.path.push(nextNode.numerator);
       cursor.prev = null;
       cursor.next = firstId(nextNode.numerator.children);
-    } else if (nextNode && (nextNode.type === "sub" || nextNode.type === "sup")) {
+    } else if (nextNode && (nextNode.type === "subsup")) {
       // enter sup/sub
       cursor.path.push(nextNode);
-      cursor.path.push(nextNode.children);
       cursor.prev = null;
-      cursor.next = firstId(nextNode.children.children);
+      if (nextNode.sub) {
+        cursor.path.push(nextNode.sub);
+        cursor.next = firstId(nextNode.sub.children);
+      } else if (nextNode.sup) {
+        cursor.path.push(nextNode.sup);
+        cursor.next = firstId(nextNode.sup.children);
+      }
     } else {
       // move to the right
       cursor.prev = cursor.next;
@@ -139,11 +153,16 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor) => {
   } else if (cursor.path.length > 1) {
     const parent = cursor.path[cursor.path.length - 2];
 
-    if ((parent.type === "sub" || parent.type === "sup") && cursor.path.length > 2) {
+    if ((parent.type === "subsup") && cursor.path.length > 2) {
       const grandparent = cursor.path[cursor.path.length - 3];
 
-      if (currentNode === parent.children && hasChildren(grandparent)) {
-        // exit sup or sup to the right
+      if (currentNode === parent.sub && hasChildren(grandparent)) {
+        // exit sub to the right
+        cursor.path = cursor.path.slice(0, -2);
+        cursor.prev = parent.id;
+        cursor.next = nextId(grandparent.children, cursor.prev);
+      } else if (currentNode === parent.sup && hasChildren(grandparent)) {
+        // TODO: check if there's a sub we can move to
         cursor.path = cursor.path.slice(0, -2);
         cursor.prev = parent.id;
         cursor.next = nextId(grandparent.children, cursor.prev);
@@ -196,7 +215,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           const parent = cursor.path[cursor.path.length - 2];
           const grandparent = cursor.path[cursor.path.length - 3];
 
-          if (parent.type === "sup" || parent.type === "sub") {
+          if (parent.type === "subsup") {
             if (!hasChildren(grandparent)) {
               return;
             }
@@ -215,9 +234,13 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
             if (currentNode.children.length > 0) {
               cursor.next = currentNode.children[0].id;
             } else {
-              cursor.next = nextId(grandparent.children, currentNode.id);
+              cursor.next = nextId(grandparent.children, parent.id);
             }
-            cursor.prev = prevId(grandparent.children, currentNode.id);
+            if (cursor.next) {
+              cursor.prev = prevId(newChildren, cursor.next);
+            } else {
+              cursor.prev = firstId(grandparent.children);
+            }
             cursor.path = cursor.path.slice(0, -2); // move up two levels
 
             // update children
@@ -238,11 +261,8 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     if (currentNode.type === "frac") {
       throw new Error("current node can't be a fraction... yet");
     }
-    if (currentNode.type === "sup") {
-      throw new Error("current node can't be a sup... yet");
-    }
-    if (currentNode.type === "sub") {
-      throw new Error("current node can't be a sub... yet");
+    if (currentNode.type === "subsup") {
+      throw new Error("current node can't be a subsup... yet");
     }
 
     const char = String.fromCharCode(e.keyCode);
@@ -266,8 +286,8 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "^") {
       newNode = {
         id: getId(),
-        type: "sup",
-        children: {
+        type: "subsup",
+        sup: {
           id: getId(),
           type: "row",
           children: [],
@@ -276,8 +296,8 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "_") {
       newNode = {
         id: getId(),
-        type: "sub",
-        children: {
+        type: "subsup",
+        sub: {
           id: getId(),
           type: "row",
           children: [],
@@ -306,9 +326,13 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
       cursor.path.push(newNode.numerator);
       cursor.next = null;
       cursor.prev = null;
-    } else if (newNode.type === "sup" || newNode.type === "sub") {
+    } else if (newNode.type === "subsup") {
       cursor.path.push(newNode);
-      cursor.path.push(newNode.children);
+      if (newNode.sup) {
+        cursor.path.push(newNode.sup);
+      } else if (newNode.sub) {
+        cursor.path.push(newNode.sub);
+      }
       cursor.next = null;
       cursor.prev = null;
     }

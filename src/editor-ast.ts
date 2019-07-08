@@ -4,16 +4,11 @@ type Row = {
   children: Node[],
 };
 
-type Sup = {
+type SubSup = {
   id: number,
-  type: "sup",
-  children: Row,
-};
-
-type Sub = {
-  id: number,
-  type: "sub",
-  children: Row,
+  type: "subsup",
+  sub?: Row,
+  sup?: Row,
 };
 
 type Frac = {
@@ -38,8 +33,7 @@ export type Glyph = {
 
 export type Node =
   | Row
-  | Sup
-  | Sub
+  | SubSup
   | Frac
   | Parens
   | Glyph

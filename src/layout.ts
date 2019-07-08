@@ -270,3 +270,20 @@ export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   fracBox.shift = -20;
   return fracBox;
 };
+
+export const makeSubSup = (subBox?: Box, supBox?: Box): Box => {
+  if (!supBox && !subBox) {
+    throw new Error("at least one of supBox and subBox must be defined");
+  }
+
+  const width = Math.max(supBox ? getWidth(supBox) : 0, subBox ? getWidth(subBox) : 0);
+  const upList = supBox ? makeList(10, rebox(width, supBox)) : [];
+  const dnList = subBox ? makeList(10, rebox(width, subBox)) : [];
+  // we can't have a non-zero kern b/c it has no height/depth
+  const gap = makeKern(0);
+
+  const subsupBox = makeVBox(width, gap, upList, dnList);
+  // TODO: calculate this based on current font size
+  subsupBox.shift = -20;
+  return subsupBox;
+};

@@ -1,6 +1,6 @@
 import {EditorCursor} from "./editor";
 import {Node as EditorNode} from "./editor-ast";
-import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeBox} from "./layout";
+import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeSubSup, makeBox} from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
@@ -15,8 +15,7 @@ export const getRenderCursor = (cursor: EditorCursor, node: EditorNode): LayoutC
   const currentNode = cursor.path[cursor.path.length - 1];
   switch (currentNode.type) {
     case "row":
-    case "sup":
-    case "sub":
+    case "subsup":
     case "parens": {
       const result = {
         path: cursor.path,
@@ -38,6 +37,8 @@ const typeset =
   const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
   const fontSize = multiplier * baseFontSize;
   const _makeGlyph = makeGlyph(fontMetrics)(fontSize);
+  const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
+  const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
   switch (node.type) {
     case "row": {
@@ -45,36 +46,55 @@ const typeset =
       row.id = node.id;
       return row;
     }
-    case "sup": {
-      const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
-      const box = hpackNat(node.children.children.map(_typeset));
-      box.id = node.children.id;
-      const parentBox = makeBox("hbox", box, [box]);
+    case "subsup": {
+      const newMultiplier = multiplier === 1.0 ? 0.8 : 0.64;
+      const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
+      let subBox;
+      if (node.sub) {
+        subBox = hpackNat(node.sub.children.map(_typeset));
+        subBox.id = node.sub.id;
+        // TODO: try to reuse getCharDepth
+        if (jmetrics) {
+          const jDepth = baseFontSize * newMultiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
+          subBox.depth = Math.max(subBox.depth, jDepth);
+        }
+
+        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+        if (Emetrics) {
+          const EHeight = baseFontSize * newMultiplier * Emetrics.bearingY / fontMetrics.unitsPerEm;
+          subBox.height = Math.max(subBox.height, EHeight);
+        }
+      } 
+      let supBox;
+      if (node.sup) {
+        supBox = hpackNat(node.sup.children.map(_typeset));
+        supBox.id = node.sup.id;
+        // TODO: try to reuse getCharDepth
+        if (jmetrics) {
+          const jDepth = baseFontSize * newMultiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
+          supBox.depth = Math.max(supBox.depth, jDepth);
+        }
+
+        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+        if (Emetrics) {
+          const EHeight = baseFontSize * newMultiplier * Emetrics.bearingY / fontMetrics.unitsPerEm;
+          supBox.height = Math.max(supBox.height, EHeight);
+        }
+      }
+      const parentBox = makeSubSup(subBox, supBox);
       parentBox.id = node.id;
-      parentBox.shift = -0.5 * fontSize;
-      return parentBox;
-    }
-    case "sub": {
-      const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier === 1.0 ? 0.8 : 0.64);
-      const box = hpackNat(node.children.children.map(_typeset));
-      box.id = node.children.id;
-      const parentBox = makeBox("hbox", box, [box]);
-      parentBox.id = node.id;
-      parentBox.shift = 0.35 * fontSize;
       return parentBox;
     }
     case "frac": {
       const numerator = hpackNat(node.numerator.children.map(_typeset));
       const denominator = hpackNat(node.denominator.children.map(_typeset));
 
-      const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
       // TODO: try to reuse getCharDepth
       if (jmetrics) {
         const jDepth = baseFontSize * multiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
         numerator.depth = Math.max(numerator.depth, jDepth);
       }
 
-      const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
       // TODO: grab the max bearingY of all of [0-9a-zA-Z]
       if (Emetrics) {
         const EHeight = baseFontSize * multiplier * Emetrics.bearingY / fontMetrics.unitsPerEm;
