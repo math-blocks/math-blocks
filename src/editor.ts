@@ -77,12 +77,12 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
       // enter sup/sub
       cursor.path.push(prevNode);
       cursor.next = null;
-      if (prevNode.sub) {
-        cursor.path.push(prevNode.sub);
-        cursor.prev = lastId(prevNode.sub.children);
-      } else if (prevNode.sup) {
+      if (prevNode.sup) {
         cursor.path.push(prevNode.sup);
         cursor.prev = lastId(prevNode.sup.children);
+      } else if (prevNode.sub) {
+        cursor.path.push(prevNode.sub);
+        cursor.prev = lastId(prevNode.sub.children);
       }
     } else {
       // move to the left
@@ -96,12 +96,17 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor) => {
       const grandparent = cursor.path[cursor.path.length - 3];
 
       if (currentNode === parent.sup && hasChildren(grandparent)) {
-        // exit sup or sup to the left
-        cursor.path = cursor.path.slice(0, -2);
-        cursor.next = parent.id;
-        cursor.prev = prevId(grandparent.children, cursor.next);
+        if (parent.sub) {
+          cursor.path.pop();
+          cursor.path.push(parent.sub);
+          cursor.next = null;
+          cursor.prev = lastId(parent.sub.children);
+        } else {
+          cursor.path = cursor.path.slice(0, -2);
+          cursor.next = parent.id;
+          cursor.prev = prevId(grandparent.children, cursor.next);
+        }
       } else if (currentNode === parent.sub && hasChildren(grandparent)) {
-        // TODO: check if there's a sup we can move to
         cursor.path = cursor.path.slice(0, -2);
         cursor.next = parent.id;
         cursor.prev = prevId(grandparent.children, cursor.next);
@@ -157,12 +162,17 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor) => {
       const grandparent = cursor.path[cursor.path.length - 3];
 
       if (currentNode === parent.sub && hasChildren(grandparent)) {
-        // exit sub to the right
-        cursor.path = cursor.path.slice(0, -2);
-        cursor.prev = parent.id;
-        cursor.next = nextId(grandparent.children, cursor.prev);
+        if (parent.sup) {
+          cursor.path.pop();
+          cursor.path.push(parent.sup);
+          cursor.prev = null;
+          cursor.next = firstId(parent.sup.children);
+        } else {
+          cursor.path = cursor.path.slice(0, -2);
+          cursor.prev = parent.id;
+          cursor.next = nextId(grandparent.children, cursor.prev);
+        }
       } else if (currentNode === parent.sup && hasChildren(grandparent)) {
-        // TODO: check if there's a sub we can move to
         cursor.path = cursor.path.slice(0, -2);
         cursor.prev = parent.id;
         cursor.next = nextId(grandparent.children, cursor.prev);
@@ -265,6 +275,11 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
       throw new Error("current node can't be a subsup... yet");
     }
 
+    const nextNode = cursor.next && hasChildren(currentNode)
+      ? currentNode.children.find(child => child.id === cursor.next)
+      : null;
+    console.log(`nextNode = %o`, nextNode);
+
     const char = String.fromCharCode(e.keyCode);
     
     let newNode: Node;
@@ -284,25 +299,57 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
         },
       }
     } else if (char === "^") {
-      newNode = {
-        id: getId(),
-        type: "subsup",
-        sup: {
+      if (nextNode && nextNode.type === "subsup") {
+        if (!nextNode.sup) {
+          nextNode.sup = {
+            id: getId(),
+            type: "row",
+            children: [],
+          };
+        }
+        cursor.path.push(nextNode);
+        cursor.path.push(nextNode.sup);
+        cursor.prev = null;
+        cursor.next = firstId(nextNode.sup.children);
+        callback(cursor);
+        return;
+      } else {
+        newNode = {
           id: getId(),
-          type: "row",
-          children: [],
-        },
-      };
+          type: "subsup",
+          sup: {
+            id: getId(),
+            type: "row",
+            children: [],
+          },
+        };
+      }
     } else if (char === "_") {
-      newNode = {
-        id: getId(),
-        type: "subsup",
-        sub: {
+      if (nextNode && nextNode.type === "subsup") {
+        if (!nextNode.sub) {
+          nextNode.sub = {
+            id: getId(),
+            type: "row",
+            children: [],
+          };
+        }
+        cursor.path.push(nextNode);
+        cursor.path.push(nextNode.sub);
+        cursor.prev = null;
+        cursor.next = firstId(nextNode.sub.children);
+        callback(cursor);
+        return;
+      } else {
+        newNode = {
           id: getId(),
-          type: "row",
-          children: [],
-        },
-      };
+          type: "subsup",
+          sub: {
+            id: getId(),
+            type: "row",
+            children: [],
+          },
+        };
+      }
     } else if (char.charCodeAt(0) >= 32) {
       newNode = {
         id: getId(),

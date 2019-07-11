@@ -277,8 +277,8 @@ export const makeSubSup = (subBox?: Box, supBox?: Box): Box => {
   }
 
   const width = Math.max(supBox ? getWidth(supBox) : 0, subBox ? getWidth(subBox) : 0);
-  const upList = supBox ? makeList(10, rebox(width, supBox)) : [];
-  const dnList = subBox ? makeList(10, rebox(width, subBox)) : [];
+  const upList = supBox ? makeList(10, supBox) : [];
+  const dnList = subBox ? makeList(10, subBox) : [];
   // we can't have a non-zero kern b/c it has no height/depth
   const gap = makeKern(0);
 
