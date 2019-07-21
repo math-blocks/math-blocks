@@ -271,7 +271,7 @@ export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   return fracBox;
 };
 
-export const makeSubSup = (subBox?: Box, supBox?: Box): Box => {
+export const makeSubSup = (multiplier: number, subBox?: Box, supBox?: Box): Box => {
   if (!supBox && !subBox) {
     throw new Error("at least one of supBox and subBox must be defined");
   }
@@ -284,6 +284,6 @@ export const makeSubSup = (subBox?: Box, supBox?: Box): Box => {
 
   const subsupBox = makeVBox(width, gap, upList, dnList);
   // TODO: calculate this based on current font size
-  subsupBox.shift = -20;
+  subsupBox.shift = -20 * multiplier;
   return subsupBox;
 };

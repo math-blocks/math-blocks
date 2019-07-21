@@ -278,7 +278,6 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     const nextNode = cursor.next && hasChildren(currentNode)
       ? currentNode.children.find(child => child.id === cursor.next)
       : null;
-    console.log(`nextNode = %o`, nextNode);
 
     const char = String.fromCharCode(e.keyCode);
     

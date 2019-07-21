@@ -47,7 +47,7 @@ const typeset =
       return row;
     }
     case "subsup": {
-      const newMultiplier = multiplier === 1.0 ? 0.8 : 0.64;
+      const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
       const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
       let subBox;
       if (node.sub) {
@@ -81,7 +81,7 @@ const typeset =
           supBox.height = Math.max(supBox.height, EHeight);
         }
       }
-      const parentBox = makeSubSup(subBox, supBox);
+      const parentBox = makeSubSup(multiplier, subBox, supBox);
       parentBox.id = node.id;
       return parentBox;
     }
