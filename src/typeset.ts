@@ -93,11 +93,13 @@ const typeset =
       if (jmetrics) {
         const jDepth = baseFontSize * multiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
         numerator.depth = Math.max(numerator.depth, jDepth);
+        denominator.depth = Math.max(denominator.depth, jDepth);
       }
 
       // TODO: grab the max bearingY of all of [0-9a-zA-Z]
       if (Emetrics) {
         const EHeight = baseFontSize * multiplier * Emetrics.bearingY / fontMetrics.unitsPerEm;
+        numerator.height = Math.max(numerator.height, EHeight);
         denominator.height = Math.max(denominator.height, EHeight);
       }
 
