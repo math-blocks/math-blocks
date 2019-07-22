@@ -59,7 +59,7 @@ export default class MathEditor extends React.Component<Props, State> {
       }, {
         id: getId(),
         type: "glyph",
-        char: "-",
+        char: "\u2212",
       }, {
         id: getId(),
         type: "glyph",

@@ -106,7 +106,7 @@ const typeset =
       numerator.id = node.numerator.id;
       denominator.id = node.denominator.id;
 
-      const frac = makeFract(5, numerator, denominator);
+      const frac = makeFract(multiplier, 5, numerator, denominator);
       frac.id = node.id;
       return frac;
     }
@@ -121,7 +121,7 @@ const typeset =
     }
     case "glyph": {
       const glyph = _makeGlyph(node.char);
-      if (/[=\+\-]/.test(node.char)) {
+      if (/[=\+\-\u00B7\u2212]/.test(node.char)) {
         const box = hpackNat([
           makeKern(fontSize / 4),
           glyph,

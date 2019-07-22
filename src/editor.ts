@@ -349,6 +349,18 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           },
         };
       }
+    } else if (char === "*") {
+      newNode = {
+        id: getId(),
+        type: "glyph",
+        char: "\u00B7",
+      };
+    } else if (char === "-") {
+      newNode = {
+        id: getId(),
+        type: "glyph",
+        char: "\u2212",
+      };
     } else if (char.charCodeAt(0) >= 32) {
       newNode = {
         id: getId(),

@@ -254,7 +254,7 @@ const makeList = (size: Dist, box: Box): LayoutNode[] => [
 ];
 
 // TODO: compute width from numBox and denBox
-export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
+export const makeFract = (multiplier: number, thickness: Dist, numBox: Box, denBox: Box): Box => {
   const halfThickness = 0.5 * thickness
 
   const width = Math.max(getWidth(numBox), getWidth(denBox))
@@ -262,12 +262,12 @@ export const makeFract = (thickness: Dist, numBox: Box, denBox: Box): Box => {
   const height = halfThickness;
   const stroke = makeRule({width, depth, height});
 
-  const upList = makeList(2, rebox(width, numBox));
-  const dnList = makeList(10, rebox(width, denBox));
+  const upList = makeList(2 * multiplier, rebox(width, numBox));
+  const dnList = makeList(4 * multiplier, rebox(width, denBox));
 
   const fracBox = makeVBox(width, stroke, upList, dnList);
   // TODO: calculate this based on current font size
-  fracBox.shift = -20;
+  fracBox.shift = -20 * multiplier;
   return fracBox;
 };
 
@@ -284,6 +284,6 @@ export const makeSubSup = (multiplier: number, subBox?: Box, supBox?: Box): Box 
 
   const subsupBox = makeVBox(width, gap, upList, dnList);
   // TODO: calculate this based on current font size
-  subsupBox.shift = -20 * multiplier;
+  subsupBox.shift = -16 * multiplier;
   return subsupBox;
 };
