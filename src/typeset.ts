@@ -11,23 +11,6 @@ export type LayoutCursor = {
   next: number | null,
 };
 
-export const getRenderCursor = (cursor: EditorCursor, node: EditorNode): LayoutCursor => {
-  const currentNode = cursor.path[cursor.path.length - 1];
-  switch (currentNode.type) {
-    case "row":
-    case "subsup":
-    case "parens": {
-      const result = {
-        path: cursor.path,
-        prev: cursor.prev != null ? cursor.prev : null,
-        next: cursor.next != null ? cursor.next : null,
-      };
-      return result;
-    }
-    default: throw new Error("Can't get render cursor");
-  }
-};
-
 const typeset = 
   (fontMetrics: FontMetrics) => 
   (baseFontSize: number) => 

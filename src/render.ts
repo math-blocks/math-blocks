@@ -13,11 +13,11 @@ export const renderBox = (box: Box, cursor: EditorCursor, ctx: CanvasRenderingCo
   switch (box.kind) {
     case "hbox": {
       const availableSpace = box.width - hlistWidth(box.content);
-      const parent = cursor.path[cursor.path.length - 1];
+      const parentId = cursor.path[cursor.path.length - 1];
       ctx.save();
 
       box.content.forEach(node => {
-        if (parent.id === box.id && cursor.next === node.id) {
+        if (parentId === box.id && cursor.next === node.id) {
           ctx.fillRect(-1, -64 * 0.85, 2, 64);
         }
         switch (node.type) {
@@ -45,7 +45,7 @@ export const renderBox = (box: Box, cursor: EditorCursor, ctx: CanvasRenderingCo
           default: throw new UnreachableCaseError(node);
         }
         ctx.translate(getWidth(node), 0);
-        if (parent.id === box.id && cursor.prev === node.id) {
+        if (parentId === box.id && cursor.prev === node.id) {
           ctx.fillRect(-1, -64 * 0.85, 2, 64);
         }
       });

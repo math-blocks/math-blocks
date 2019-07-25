@@ -17,12 +17,12 @@ class MathRenderer extends React.Component<Props> {
     switch (box.kind) {
       case "hbox": {
         const availableSpace = box.width - hlistWidth(box.content);
-        const parent = cursor.path[cursor.path.length - 1];
+        const parentId = cursor.path[cursor.path.length - 1];
 
         return box.content.flatMap((node, index) => {
           const result = [];
 
-          if (parent.id === box.id && cursor.next === node.id) {
+          if (parentId === box.id && cursor.next === node.id) {
             result.push(<rect 
               key="cursor-1" x={pen.x - 1} y={-64 * 0.85} width={2} height={64} 
             />)
@@ -68,7 +68,7 @@ class MathRenderer extends React.Component<Props> {
               throw new UnreachableCaseError(node);
           }
 
-          if (parent.id === box.id && cursor.prev === node.id) {
+          if (parentId === box.id && cursor.prev === node.id) {
             result.push(<rect 
               key="cursor-2" x={pen.x - 1} y={-64 * 0.85} width={2} height={64} 
             />)

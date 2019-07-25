@@ -1,8 +1,8 @@
-import {Node, HasChildren} from "./editor-ast";
+import {Node, HasChildren, findNode, findNode_} from "./editor-ast";
 import {getId} from "./unique-id";
 
 export type EditorCursor = Readonly<{
-  path: ReadonlyArray<Node>,
+  path: ReadonlyArray<number>,
   // these are indices of the node inside the parent
   prev: number | null,
   next: number | null,
@@ -63,14 +63,14 @@ const prevId = (children: Node[], childId: number) => {
   return index > 0 ? children[index - 1].id : null;
 }
 
-const moveLeft = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
+const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
   const {children} = currentNode;
   if (cursor.prev != null) {
     const prevNode = getChildWithId(currentNode.children, cursor.prev);
     if (prevNode && prevNode.type === "frac") {
       // enter fraction (denominator)
       return {
-        path: [...cursor.path, prevNode, prevNode.denominator],
+        path: [...cursor.path, prevNode.id, prevNode.denominator.id],
         next: null,
         prev: lastId(prevNode.denominator.children),
       };
@@ -78,13 +78,13 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor 
       // enter sup/sub
       if (prevNode.sup) {
         return {
-          path: [...cursor.path, prevNode, prevNode.sup],
+          path: [...cursor.path, prevNode.id, prevNode.sup.id],
           next: null,
           prev: lastId(prevNode.sup.children),
         };
       } else if (prevNode.sub) {
         return {
-          path: [...cursor.path, prevNode, prevNode.sub],
+          path: [...cursor.path, prevNode.id, prevNode.sub.id],
           next: null,
           prev: lastId(prevNode.sub.children),
         };
@@ -100,15 +100,15 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor 
       };
     }
   } else if (cursor.path.length > 1) {
-    const parent = cursor.path[cursor.path.length - 2];
+    const parent = findNode_(root, cursor.path[cursor.path.length - 2])
 
     if (parent.type === "subsup" && cursor.path.length > 2) {
-      const grandparent = cursor.path[cursor.path.length - 3];
+      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.sup && hasChildren(grandparent)) {
         if (parent.sub) {
           return {
-            path: [...cursor.path.slice(0, -1), parent.sub],
+            path: [...cursor.path.slice(0, -1), parent.sub.id],
             next: null,
             prev: lastId(parent.sub.children),
           };
@@ -127,12 +127,12 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor 
         };
       }
     } else if (parent.type === "frac" && cursor.path.length > 2) {
-      const grandparent = cursor.path[cursor.path.length - 3];
+      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.denominator) {
         // move from denominator to numerator
         return {
-          path: [...cursor.path.slice(0, -1), parent.numerator],
+          path: [...cursor.path.slice(0, -1), parent.numerator.id],
           next: null,
           prev: lastId(parent.numerator.children),
         };
@@ -149,14 +149,14 @@ const moveLeft = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor 
   return cursor;
 }
 
-const moveRight = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
+const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
   const {children} = currentNode;
   if (cursor.next != null) {
     const nextNode = getChildWithId(currentNode.children, cursor.next);
     if (nextNode && nextNode.type === "frac") {
       // enter fraction (numerator)
       return {
-        path: [...cursor.path, nextNode, nextNode.numerator],
+        path: [...cursor.path, nextNode.id, nextNode.numerator.id],
         prev: null,
         next: firstId(nextNode.numerator.children),
       };
@@ -164,13 +164,13 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor
       // enter sup/sub
       if (nextNode.sub) {
         return {
-          path: [...cursor.path, nextNode, nextNode.sub],
+          path: [...cursor.path, nextNode.id, nextNode.sub.id],
           prev: null,
           next: firstId(nextNode.sub.children),
         };
       } else if (nextNode.sup) {
         return {
-          path: [...cursor.path, nextNode, nextNode.sup],
+          path: [...cursor.path, nextNode.id, nextNode.sup.id],
           prev: null,
           next: firstId(nextNode.sup.children),
         };
@@ -186,15 +186,15 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor
       };
     }
   } else if (cursor.path.length > 1) {
-    const parent = cursor.path[cursor.path.length - 2];
+    const parent = findNode_(root, cursor.path[cursor.path.length - 2]);
 
     if ((parent.type === "subsup") && cursor.path.length > 2) {
-      const grandparent = cursor.path[cursor.path.length - 3];
+      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.sub && hasChildren(grandparent)) {
         if (parent.sup) {
           return {
-            path: [...cursor.path.slice(0, -1), parent.sup],
+            path: [...cursor.path.slice(0, -1), parent.sup.id],
             prev: null,
             next: firstId(parent.sup.children),
           };
@@ -213,12 +213,12 @@ const moveRight = (currentNode: HasChildren, cursor: EditorCursor): EditorCursor
         }
       }
     } else if (parent.type === "frac" && cursor.path.length > 2) {
-      const grandparent = cursor.path[cursor.path.length - 3];
+      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.numerator) {
         // move from numerator to denominator
         return {
-          path: [...cursor.path.slice(0, -1), parent.denominator],
+          path: [...cursor.path.slice(0, -1), parent.denominator.id],
           prev: null,
           next: firstId(parent.denominator.children),
         };
@@ -239,7 +239,8 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
   callback(cursor);
 
   document.body.addEventListener("keydown", (e) => {  
-    const currentNode = cursor.path[cursor.path.length - 1];
+    const currentNode = findNode_(root, cursor.path[cursor.path.length - 1]);
+
     if (!hasChildren(currentNode)) {
       throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
     }
@@ -247,13 +248,13 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
   
     switch (e.keyCode) {
       case 37: {
-        const newCursor = moveLeft(currentNode, cursor);
+        const newCursor = moveLeft(root, currentNode, cursor);
         callback(newCursor);
         cursor = newCursor;
         break;
       }
       case 39: {
-        const newCursor = moveRight(currentNode, cursor);
+        const newCursor = moveRight(root, currentNode, cursor);
         callback(newCursor);
         cursor = newCursor;
         break;
@@ -271,8 +272,8 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           cursor = newCursor;
           return;
         } else if (cursor.path.length > 1) {
-          const parent = cursor.path[cursor.path.length - 2];
-          const grandparent = cursor.path[cursor.path.length - 3];
+          const parent = findNode_(root, cursor.path[cursor.path.length - 2]);
+          const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
 
           if (parent.type === "subsup") {
             if (!hasChildren(grandparent)) {
@@ -315,7 +316,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
   });
 
   document.body.addEventListener("keypress", (e) => {  
-    const currentNode = cursor.path[cursor.path.length - 1];
+    const currentNode = findNode_(root, cursor.path[cursor.path.length - 1]);
     if (currentNode.type === "glyph") {
       throw new Error("current node can't be a glyph");
     }
@@ -358,7 +359,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           };
         }
         const newCursor = {
-          path: [...cursor.path, nextNode, nextNode.sup],
+          path: [...cursor.path, nextNode.id, nextNode.sup.id],
           prev: null,
           next: firstId(nextNode.sup.children),
         };
@@ -386,7 +387,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
           };
         }
         const newCursor = {
-          path: [...cursor.path, nextNode, nextNode.sub],
+          path: [...cursor.path, nextNode.id, nextNode.sub.id],
           prev: null,
           next: firstId(nextNode.sub.children),
         };
@@ -434,7 +435,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
 
     if (newNode.type === "frac") {
       const newCursor = {
-        path: [...cursor.path, newNode, newNode.numerator],
+        path: [...cursor.path, newNode.id, newNode.numerator.id],
         next: null,
         prev: null,
       };
@@ -443,7 +444,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (newNode.type === "subsup") {
       if (newNode.sup) {
         const newCursor = {
-          path: [...cursor.path, newNode, newNode.sup],
+          path: [...cursor.path, newNode.id, newNode.sup.id],
           next: null,
           prev: null,
         };
@@ -451,7 +452,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
         cursor = newCursor;
       } else if (newNode.sub) {
         const newCursor = {
-          path: [...cursor.path, newNode, newNode.sub],
+          path: [...cursor.path, newNode.id, newNode.sub.id],
           next: null,
           prev: null,
         };

@@ -4,8 +4,8 @@ import MathRenderer from "./math-renderer";
 import {Box} from "./layout";
 import {createEditor, EditorCursor} from "./editor";
 import {getId} from "./unique-id";
-import {Node} from "./editor-ast";
-import typeset, {getRenderCursor} from "./typeset";
+import {Node, findNode} from "./editor-ast";
+import typeset from "./typeset";
 import fontMetrics from "../metrics/comic-sans.json";
 
 type Props = {};
@@ -68,11 +68,10 @@ export default class MathEditor extends React.Component<Props, State> {
     };
     
     const cursor: EditorCursor = {
-      path: [root],
+      path: [root.id],
       prev: root.children[1].id,
       next: root.children[2].id,
     };
-
 
     const fontSize = 64;
     const box = typeset(fontMetrics)(fontSize)(1.0)(root) as Box;

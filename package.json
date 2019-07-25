@@ -26,7 +26,8 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack -w",
-    "start": "webpack-dev-server --open"
+    "start": "webpack-dev-server --open",
+    "typecheck": "./node_modules/.bin/tsc --noEmit"
   },
   "dependencies": {
     "opentype.js": "^1.1.0",
