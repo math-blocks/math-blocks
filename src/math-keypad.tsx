@@ -20,7 +20,7 @@ const buttons = [
   { name: "Delta", char: "\u0394" },
   { name: "int", char: "\u222B" },
   { name: "prime", char: "\u2032" },
-  { name: "Sigma", char: "\u2202" }
+  { name: "partial", char: "\u2202" }
 ];
 
 class MathKeypad extends React.Component<{}> {

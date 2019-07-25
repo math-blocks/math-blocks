@@ -284,6 +284,6 @@ export const makeSubSup = (multiplier: number, subBox?: Box, supBox?: Box): Box 
 
   const subsupBox = makeVBox(width, gap, upList, dnList);
   // TODO: calculate this based on current font size
-  subsupBox.shift = -16 * multiplier;
+  subsupBox.shift = -10 * multiplier;
   return subsupBox;
 };
