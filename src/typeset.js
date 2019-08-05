@@ -1,7 +1,8 @@
-import {EditorCursor} from "./editor";
-import {Node as EditorNode} from "./editor-ast";
-import {LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeSubSup, makeBox} from "./layout";
-import {FontMetrics} from "./metrics";
+// @flow
+import {type EditorCursor} from "./editor";
+import {type Node as EditorNode} from "./editor-ast";
+import {type LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeSubSup, makeBox} from "./layout";
+import {type FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
 export type LayoutCursor = {
@@ -34,8 +35,9 @@ const typeset =
       const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
       let subBox;
       if (node.sub) {
-        subBox = hpackNat(node.sub.children.map(_typeset));
-        subBox.id = node.sub.id;
+        const {sub} = node;
+        subBox = hpackNat(sub.children.map(_typeset));
+        subBox.id = sub.id;
         // TODO: try to reuse getCharDepth
         if (jmetrics) {
           const jDepth = baseFontSize * newMultiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;
@@ -50,8 +52,9 @@ const typeset =
       } 
       let supBox;
       if (node.sup) {
-        supBox = hpackNat(node.sup.children.map(_typeset));
-        supBox.id = node.sup.id;
+        const {sup} = node;
+        supBox = hpackNat(sup.children.map(_typeset));
+        supBox.id = sup.id;
         // TODO: try to reuse getCharDepth
         if (jmetrics) {
           const jDepth = baseFontSize * newMultiplier * (jmetrics.height - jmetrics.bearingY) / fontMetrics.unitsPerEm;

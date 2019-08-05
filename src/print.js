@@ -1,5 +1,6 @@
-import { Expression } from "./semantic-ast";
-import { UnreachableCaseError } from "./util";
+// @flow
+import {type Expression} from "./semantic-ast";
+import {UnreachableCaseError} from "./util";
 
 // TODO: determine when to wrap subexpressions in parens
 
@@ -24,7 +25,10 @@ const print = (expr: Expression): string => {
     case "sum": return `Σ_(${print(expr.bvar)}=${print(expr.limits.lower)})^${print(expr.limits.upper)} ${print(expr.arg)}`;
     case "prod": return `Π_(${print(expr.bvar)}=${print(expr.limits.lower)})^${print(expr.limits.upper)} ${print(expr.arg)}`;
     case "limit": return `lim_(${print(expr.bvar)}→value) ${print(expr.arg)}`;
-    case "diff": return expr.bvar ? `d${print(expr.arg)}/d${print(expr.bvar)}` : `${print(expr.arg)}'`; // TODO: handle expr.degree > 1
+    case "diff": {
+      const {arg, bvar} = expr;
+      return bvar ? `d${print(arg)}/d${print(bvar)}` : `${print(arg)}'`; // TODO: handle expr.degree > 1
+    }
     case "int": return `∫_(${print(expr.limits.lower)})^(${print(expr.limits.upper)}) ${print(expr.arg)} ${print(expr.bvar)}`;
 
     case "ellipsis": return "⋯";
@@ -55,7 +59,7 @@ const print = (expr: Expression): string => {
     case "set": return `{${expr.elements.map(print).join(", ")}}`;
     case "union": return expr.args.map(print).join(" ⋃ ");
     case "intersection": return expr.args.map(print).join(" ⋂ ");
-    case "setdiff": return `${expr.args[0]} ∖ ${expr.args[1]}`;
+    case "setdiff": return `${print(expr.args[0])} ∖ ${print(expr.args[1])}`;
     case "cartesianproduct": return expr.args.map(print).join(" × ");
 
     case "in": return `${print(expr.element)} ∈ ${print(expr.set)}`;

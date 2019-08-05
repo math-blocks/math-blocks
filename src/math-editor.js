@@ -1,10 +1,11 @@
+// @flow
 import * as React from "react";
 
 import MathRenderer from "./math-renderer";
-import {Box} from "./layout";
-import {createEditor, EditorCursor} from "./editor";
+import {type Box} from "./layout";
+import {createEditor, type EditorCursor} from "./editor";
 import {getId} from "./unique-id";
-import {Node, findNode} from "./editor-ast";
+import {type Row, findNode} from "./editor-ast";
 import typeset from "./typeset";
 import fontMetrics from "../metrics/comic-sans.json";
 
@@ -12,7 +13,7 @@ type Props = {};
 
 type State = {
   box: Box,
-  root: Node,
+  root: Row,
   cursor: EditorCursor,
 };
 
@@ -20,7 +21,7 @@ export default class MathEditor extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 
-    const root: Node = {
+    const root: Row = {
       id: getId(),
       type: "row",
       children: [{
@@ -74,7 +75,8 @@ export default class MathEditor extends React.Component<Props, State> {
     };
 
     const fontSize = 64;
-    const box = typeset(fontMetrics)(fontSize)(1.0)(root) as Box;
+    // $FlowFixMe: make typeset returrn a Box
+    const box = (typeset(fontMetrics)(fontSize)(1.0)(root): Box);
 
     this.state = {cursor, box, root};
   }

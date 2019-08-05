@@ -8,16 +8,11 @@
     "@babel/core": "^7.4.5",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/preset-env": "^7.4.5",
+    "@babel/preset-flow": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
-    "@babel/preset-typescript": "^7.3.3",
-    "@types/node": "^12.0.8",
-    "@types/react": "^16.8.19",
-    "@types/react-dom": "^16.8.4",
-    "@types/react-redux": "^7.1.1",
-    "@types/redux": "^3.6.0",
     "aphrodite": "^2.3.1",
     "babel-loader": "^8.0.6",
-    "flow-bin": "^0.98.0",
+    "flow-bin": "^0.104.0",
     "flow-remove-types": "^1.2.3",
     "html-webpack-plugin": "^3.2.0",
     "typescript": "^3.4.5",
@@ -29,12 +24,13 @@
     "build": "webpack",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
-    "typecheck": "./node_modules/.bin/tsc --noEmit"
+    "flow": "flow"
   },
   "dependencies": {
     "opentype.js": "^1.1.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-redux": "^7.1.0"
+    "react-redux": "^7.1.0",
+    "redux": "^4.0.4"
   }
 }

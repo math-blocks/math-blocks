@@ -1,8 +1,9 @@
+// @flow
 import * as React from "react";
 
-import {Box, getWidth, vsize, hlistWidth, getHeight, getDepth} from "./layout";
+import {type Box, getWidth, vsize, hlistWidth, getHeight, getDepth} from "./layout";
 import {UnreachableCaseError} from "./util";
-import {EditorCursor} from "./editor";
+import {type EditorCursor} from "./editor";
 
 type Props = {
   box: Box,
@@ -10,7 +11,7 @@ type Props = {
 };
 
 class MathRenderer extends React.Component<Props> {
-  renderBox(box: Box): React.ReactNode {
+  renderBox(box: Box): React.Node {
     const pen = {x: 0, y: 0};
     const {cursor} = this.props;
 

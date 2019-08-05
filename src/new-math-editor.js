@@ -1,7 +1,8 @@
+// @flow
 import * as React from "react";
 import {useStore, useDispatch} from "react-redux";
 
-import {Box} from "./layout";
+import {type Box} from "./layout";
 import typeset from "./typeset";
 import fontMetrics from "../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
@@ -19,7 +20,8 @@ const NewMathEditor = () => {
   const {math, cursor} = store.getState();
 
   const fontSize = 64;
-  const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
+  // $FlowFixMe: make typeset return a Box
+  const box = (typeset(fontMetrics)(fontSize)(1.0)(math): Box);
 
   return <MathRenderer box={box} cursor={cursor} />;
 }

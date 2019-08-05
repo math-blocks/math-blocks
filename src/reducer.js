@@ -1,13 +1,14 @@
-import {Node} from "./editor-ast";
-import {EditorCursor} from "./editor";
+// @flow
+import {type Node, type Row} from "./editor-ast";
+import {type EditorCursor} from "./editor";
 import {getId} from "./unique-id";
 
 export type State = {
-  math: Node,
+  math: Row,
   cursor: EditorCursor,
 };
 
-const root: Node = {
+const root: Row = {
   id: getId(),
   type: "row",
   children: [{

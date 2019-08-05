@@ -1,35 +1,36 @@
-type Row = {
+// @flow
+export type Row = $ReadOnly<{|
   id: number,
   type: "row",
   children: Node[],
-};
+|}>;
 
-type SubSup = {
+type SubSup = $ReadOnly<{|
   id: number,
   type: "subsup",
   sub?: Row,
   sup?: Row,
-};
+|}>;
 
-type Frac = {
+type Frac = $ReadOnly<{|
   id: number,
   type: "frac",
   numerator: Row,
   denominator: Row,
-};
+|}>;
 
 // TODO: allow different types of parens
-type Parens = {
+type Parens = $ReadOnly<{|
   id: number,
   type: "parens",
   children: Node[],
-};
+|}>;
 
-export type Glyph = {
+export type Glyph = $ReadOnly<{|
   id: number,
   type: "glyph",
   char: string,
-};
+|}>;
 
 export type Node =
   | Row
@@ -44,7 +45,7 @@ export type HasChildren =
   | Parens
   ;
 
-const findNode = (root: Node, id: number): Node | undefined => {
+const findNode = (root: Node, id: number): Node | void => {
   // base case
   if (root.id === id) {
     return root;

@@ -1,7 +1,10 @@
+// @flow
 /**
  * AST describing semantic expression of mathematic expressions.
  */
-type TwoOrMore<T> = [T, T, ...T[]];
+
+// TODO: figure out how to type this properly in flow
+type TwoOrMore<T> = Array<T>;
 
 type NumberNode = {
   kind: "number",
@@ -347,7 +350,7 @@ export type LogicExpression =
 // };
 
 type SetNode = {
-  kind: "set"
+  kind: "set",
   elements: TwoOrMore<Expression>, // could also include shapes, strings, images, etc.
 };
 

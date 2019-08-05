@@ -1,4 +1,5 @@
-import {NumericExpression} from "./semantic-ast";
+// @flow
+import {type NumericExpression} from "./semantic-ast";
 import {UnreachableCaseError} from "./util";
 
 type VarDict = {[key: string]: number};

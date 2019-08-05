@@ -1,3 +1,4 @@
+// @flow
 export type GlyphMetrics = {
   advance: number,
   bearingX: number,
@@ -10,7 +11,7 @@ export type FontMetrics = {
   unitsPerEm: number,
   ascender: number,
   descender: number,
-  glyphMetrics: Partial<{
+  glyphMetrics: $Shape<{
     [charCode: number]: GlyphMetrics,
   }>,
 };

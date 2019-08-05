@@ -1,6 +1,11 @@
+// @flow
 import {useEffect, useRef} from "react";
 
-export default function useEventListener(eventName: "keypress" | "keydown", handler: (event: KeyboardEvent) => void, element = window){
+export default function useEventListener(
+  eventName: "keypress" | "keydown",
+  handler: (event: KeyboardEvent) => void,
+  element: WindowProxy = window)
+{
   // Create a ref that stores handler
   const savedHandler = useRef<(event: KeyboardEvent) => void>(handler);
   

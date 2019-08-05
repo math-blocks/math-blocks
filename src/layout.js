@@ -1,4 +1,5 @@
-import {FontMetrics} from "./metrics";
+// @flow
+import {type FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "./util";
 
 type Dist = number;
@@ -250,7 +251,7 @@ const rebox = (newWidth: Dist, box: Box): Box => {
 
 const makeList = (size: Dist, box: Box): LayoutNode[] => [
   makeKern(size),
-  {...box, shift: 0},
+  ({...box, shift: 0}: Box),
 ];
 
 // TODO: compute width from numBox and denBox

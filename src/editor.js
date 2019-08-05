@@ -1,23 +1,28 @@
-import {Node, HasChildren, findNode, findNode_} from "./editor-ast";
+// @flow
+import {type Node, type HasChildren, findNode, findNode_} from "./editor-ast";
 import {getId} from "./unique-id";
 
-export type EditorCursor = Readonly<{
-  path: ReadonlyArray<number>,
+export type EditorCursor = {|
+  +path: $ReadOnlyArray<number>,
   // these are indices of the node inside the parent
-  prev: number | null,
-  next: number | null,
-}>;
+  +prev: ?number,
+  +next: ?number,
+|};
 
-const hasChildren = (node: Node): node is HasChildren => {
+const hasChildren = (node: Node): %checks => {
   return node.type === "row" || node.type === "parens";
 }
 
-const getChildWithId = <T extends {id: number}>(children: T[], childId: number): T | undefined => {
+const getChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<T>, childId: number): T | void => {
   return children.find(child => child.id === childId);
 }
 
-const firstId = <T extends {id: number}>(items: T[]) => items.length > 0 ? items[0].id : null;
-const lastId = <T extends {id: number}>(items: T[]) => items.length > 0 ? items[items.length - 1].id : null;
+const firstId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
+  return items.length > 0 ? items[0].id : null;
+}
+const lastId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
+  return items.length > 0 ? items[items.length - 1].id : null;
+}
 
 const removeIndex = <T>(array: T[], index: number): T[] => {
   return [
@@ -26,7 +31,7 @@ const removeIndex = <T>(array: T[], index: number): T[] => {
   ];
 }
 
-const removeChildWithId = <T extends {id: number}>(children: T[], id: number): T[] => {
+const removeChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<T>, id: number): $ReadOnlyArray<T> => {
   const index = children.findIndex(child => child.id === id);
   return index === -1
     ? children
@@ -36,7 +41,7 @@ const removeChildWithId = <T extends {id: number}>(children: T[], id: number): T
     ];
 }
 
-const insertBeforeChildWithId = <T extends {id: number}>(children: T[], id: number, newChild: T): T[] => {
+const insertBeforeChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<T>, id: number, newChild: T): $ReadOnlyArray<T> => {
   const index = children.findIndex(child => child.id === id);
   return index === -1
     ? children
@@ -66,6 +71,7 @@ const prevId = (children: Node[], childId: number) => {
 const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
   const {children} = currentNode;
   if (cursor.prev != null) {
+    const {prev} = cursor;
     const prevNode = getChildWithId(currentNode.children, cursor.prev);
     if (prevNode && prevNode.type === "frac") {
       // enter fraction (denominator)
@@ -96,7 +102,7 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
       return {
         path: cursor.path,
         next: cursor.prev,
-        prev: prevId(children, cursor.prev),
+        prev: prevId(children, prev),
       };
     }
   } else if (cursor.path.length > 1) {
@@ -104,13 +110,13 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
 
     if (parent.type === "subsup" && cursor.path.length > 2) {
       const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
-
-      if (currentNode === parent.sup && hasChildren(grandparent)) {
-        if (parent.sub) {
+      const {sub, sup} = parent;
+      if (currentNode === sup && hasChildren(grandparent)) {
+        if (sub) {
           return {
-            path: [...cursor.path.slice(0, -1), parent.sub.id],
+            path: [...cursor.path.slice(0, -1), sub.id],
             next: null,
-            prev: lastId(parent.sub.children),
+            prev: lastId(sub.children),
           };
         } else {
           return {
@@ -119,7 +125,7 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
             prev: prevId(grandparent.children, parent.id),
           };
         }
-      } else if (currentNode === parent.sub && hasChildren(grandparent)) {
+      } else if (currentNode === sub && hasChildren(grandparent)) {
         return {
           path: cursor.path.slice(0, -2),
           next: parent.id,
@@ -152,6 +158,7 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
 const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
   const {children} = currentNode;
   if (cursor.next != null) {
+    const {next} = cursor;
     const nextNode = getChildWithId(currentNode.children, cursor.next);
     if (nextNode && nextNode.type === "frac") {
       // enter fraction (numerator)
@@ -182,7 +189,7 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
       return {
         path: cursor.path,
         prev: cursor.next,
-        next: nextId(children, cursor.next),
+        next: nextId(children, next),
       };
     }
   } else if (cursor.path.length > 1) {
@@ -193,10 +200,11 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
 
       if (currentNode === parent.sub && hasChildren(grandparent)) {
         if (parent.sup) {
+          const {sup} = parent;
           return {
-            path: [...cursor.path.slice(0, -1), parent.sup.id],
+            path: [...cursor.path.slice(0, -1), sup.id],
             prev: null,
-            next: firstId(parent.sup.children),
+            next: firstId(sup.children),
           };
         } else {
           return {
@@ -238,7 +246,12 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
 export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor: EditorCursor) => void) => {
   callback(cursor);
 
-  document.body.addEventListener("keydown", (e) => {  
+  const {body} = document;
+  if (!body) {
+    return;
+  }
+
+  body.addEventListener("keydown", (e: KeyboardEvent) => {  
     const currentNode = findNode_(root, cursor.path[cursor.path.length - 1]);
 
     if (!hasChildren(currentNode)) {
@@ -262,12 +275,14 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
       // backspace
       case 8: {
         if (cursor.prev != null) {
+          const {children} = currentNode;
           const removeId = cursor.prev;
           const newCursor = {
             ...cursor,
             prev: prevId(currentNode.children, cursor.prev),
           };
-          currentNode.children = removeChildWithId(currentNode.children, removeId);
+          // $FlowFixMe: use immer.js to update the AST
+          currentNode.children = removeChildWithId(children, removeId);
           callback(newCursor);
           cursor = newCursor;
           return;
@@ -302,6 +317,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
             };
 
             // update children
+            // $FlowFixMe: use immer.js to update the AST
             grandparent.children = newChildren;
 
             callback(newCursor);
@@ -315,7 +331,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     // don't bother triggering an update
   });
 
-  document.body.addEventListener("keypress", (e) => {  
+  body.addEventListener("keypress", (e: KeyboardEvent) => {  
     const currentNode = findNode_(root, cursor.path[cursor.path.length - 1]);
     if (currentNode.type === "glyph") {
       throw new Error("current node can't be a glyph");
@@ -352,6 +368,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "^") {
       if (nextNode && nextNode.type === "subsup") {
         if (!nextNode.sup) {
+          // $FlowFixMe: use immer.js to update the AST
           nextNode.sup = {
             id: getId(),
             type: "row",
@@ -380,6 +397,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "_") {
       if (nextNode && nextNode.type === "subsup") {
         if (!nextNode.sub) {
+          // $FlowFixMe: use immer.js to update the AST
           nextNode.sub = {
             id: getId(),
             type: "row",
@@ -430,6 +448,7 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     if (cursor.next == null) {
       currentNode.children.push(newNode);
     } else {
+      // $FlowFixMe: use immer.js to update the AST
       currentNode.children = insertBeforeChildWithId(currentNode.children, cursor.next, newNode);
     }
 

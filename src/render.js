@@ -1,6 +1,7 @@
+// @flow
 import {UnreachableCaseError} from "./util";
-import {EditorCursor} from "./editor";
-import {Box, Glyph, Rule, getWidth, getHeight, getDepth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
+import {type EditorCursor} from "./editor";
+import {type Box, type Glyph, type Rule, getWidth, getHeight, getDepth, vsize, getCharBearingX, getCharWidth, hlistWidth, getCharHeight} from "./layout";
 
 const DEBUG = false;
 

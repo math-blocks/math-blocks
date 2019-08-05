@@ -1,5 +1,6 @@
+// @flow
 export class UnreachableCaseError extends Error {
-  constructor(val: never) {
+  constructor(val: empty) {
     super(`Unreachable case: ${val}`);
   }
 }
