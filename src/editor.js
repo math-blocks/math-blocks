@@ -3,10 +3,10 @@ import {type Node, type HasChildren, findNode, findNode_} from "./editor-ast";
 import {getId} from "./unique-id";
 
 export type EditorCursor = {|
-  +path: $ReadOnlyArray<number>,
+  path: $ReadOnlyArray<number>,
   // these are indices of the node inside the parent
-  +prev: ?number,
-  +next: ?number,
+  prev: ?number,
+  next: ?number,
 |};
 
 const hasChildren = (node: Node): %checks => {
@@ -29,7 +29,7 @@ const removeIndex = <T>(array: T[], index: number): T[] => {
     ...array.slice(0, index),
     ...array.slice(index + 1),
   ];
-}
+};
 
 const removeChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<T>, id: number): $ReadOnlyArray<T> => {
   const index = children.findIndex(child => child.id === id);
@@ -39,7 +39,7 @@ const removeChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<
       ...children.slice(0, index),
       ...children.slice(index + 1),
     ];
-}
+};
 
 const insertBeforeChildWithId = <T: $ReadOnly<{id: number}>>(children: $ReadOnlyArray<T>, id: number, newChild: T): $ReadOnlyArray<T> => {
   const index = children.findIndex(child => child.id === id);
@@ -317,7 +317,6 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
             };
 
             // update children
-            // $FlowFixMe: use immer.js to update the AST
             grandparent.children = newChildren;
 
             callback(newCursor);
@@ -368,7 +367,6 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "^") {
       if (nextNode && nextNode.type === "subsup") {
         if (!nextNode.sup) {
-          // $FlowFixMe: use immer.js to update the AST
           nextNode.sup = {
             id: getId(),
             type: "row",
@@ -397,7 +395,6 @@ export const createEditor = (root: Node, cursor: EditorCursor, callback: (cursor
     } else if (char === "_") {
       if (nextNode && nextNode.type === "subsup") {
         if (!nextNode.sub) {
-          // $FlowFixMe: use immer.js to update the AST
           nextNode.sub = {
             id: getId(),
             type: "row",

@@ -1,6 +1,6 @@
 // @flow
 import * as React from "react";
-import {useStore, useDispatch} from "react-redux";
+import {useSelector, useDispatch} from "react-redux";
 
 import {type Box} from "./layout";
 import typeset from "./typeset";
@@ -9,15 +9,16 @@ import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
 const NewMathEditor = () => {
-  const store = useStore();
+  const math = useSelector(state => state.math);
+  const cursor = useSelector(state => state.cursor);
   const dispatch = useDispatch();
+
   useEventListener("keydown", (e: KeyboardEvent) => {
+    console.log(e.key);
     dispatch({
       type: e.key,
     });
   });
-
-  const {math, cursor} = store.getState();
 
   const fontSize = 64;
   // $FlowFixMe: make typeset return a Box

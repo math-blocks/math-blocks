@@ -1,36 +1,36 @@
 // @flow
-export type Row = $ReadOnly<{|
+export type Row = {|
   id: number,
   type: "row",
   children: Node[],
-|}>;
+|};
 
-type SubSup = $ReadOnly<{|
+type SubSup = {|
   id: number,
   type: "subsup",
   sub?: Row,
   sup?: Row,
-|}>;
+|};
 
-type Frac = $ReadOnly<{|
+type Frac = {|
   id: number,
   type: "frac",
   numerator: Row,
   denominator: Row,
-|}>;
+|};
 
 // TODO: allow different types of parens
-type Parens = $ReadOnly<{|
+type Parens = {|
   id: number,
   type: "parens",
   children: Node[],
-|}>;
+|};
 
-export type Glyph = $ReadOnly<{|
+export type Glyph = {|
   id: number,
   type: "glyph",
   char: string,
-|}>;
+|};
 
 export type Node =
   | Row
@@ -56,7 +56,7 @@ const findNode = (root: Node, id: number): Node | void => {
       return [root.denominator, root.numerator].map(node => findNode(node, id)).find(Boolean);
     case "subsup":
       // @ts-ignore: switch to flow
-      return [root.sub, root.sub].filter(Boolean).map(node => findNode(node, id)).find(Boolean);
+      return [root.sub, root.sup].filter(Boolean).map(node => findNode(node, id)).find(Boolean);
     case "row":
       return root.children.map(node => findNode(node, id)).find(Boolean);
     default:

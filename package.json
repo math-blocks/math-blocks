@@ -27,6 +27,7 @@
     "flow": "flow"
   },
   "dependencies": {
+    "immer": "^3.2.0",
     "opentype.js": "^1.1.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
