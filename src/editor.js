@@ -1,18 +1,20 @@
 // @flow
+import {getId} from "./unique-id";
+
 export type Row = {|
   id: number,
   type: "row",
   children: Node[],
 |};
 
-type SubSup = {|
+export type SubSup = {|
   id: number,
   type: "subsup",
   sub?: Row,
   sup?: Row,
 |};
 
-type Frac = {|
+export type Frac = {|
   id: number,
   type: "frac",
   numerator: Row,
@@ -20,7 +22,7 @@ type Frac = {|
 |};
 
 // TODO: allow different types of parens
-type Parens = {|
+export type Parens = {|
   id: number,
   type: "parens",
   children: Node[],
@@ -44,6 +46,38 @@ export type HasChildren =
   | Row
   | Parens
   ;
+
+export const row = (children: Node[]): Row => ({
+  id: getId(),
+  type: "row",
+  children,
+});
+
+export const subsup = (sub?: Row, sup?: Row): SubSup => ({
+  id: getId(),
+  type: "subsup",
+  sub,
+  sup,
+});
+
+export const frac = (numerator: Row, denominator: Row): Frac => ({
+  id: getId(),
+  type: "frac",
+  numerator,
+  denominator,
+});
+
+export const parens = (children: Node[]): Parens => ({
+  id: getId(),
+  type: "parens",
+  children,
+});
+
+export const glyph = (char: string): Glyph => ({
+  id: getId(),
+  type: "glyph",
+  char,
+});
 
 export const findNode = (root: Node, id: number): Node | void => {
   // base case
@@ -71,7 +105,7 @@ export const findNode_ = (root: Node, id: number): Node => {
     throw new Error(`node with id ${id} could not be found`);
   }
   return result;
-}
+};
 
 export type Cursor = {|
   path: $ReadOnlyArray<number>,

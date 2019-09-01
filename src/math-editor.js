@@ -8,12 +8,14 @@ import fontMetrics from "../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
-import type {Dispatch} from "./reducer";
+import {type Dispatch} from "./reducer";
 
 const MathEditor = () => {
   const math = useSelector(state => state.math);
   const cursor = useSelector(state => state.cursor);
   const dispatch = useDispatch<Dispatch>();
+
+  console.log(math);
 
   useEventListener("keydown", (e: KeyboardEvent) => {
     console.log(e.key);

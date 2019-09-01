@@ -9,52 +9,19 @@ export type State = {
   cursor: Editor.Cursor,
 };
 
-const root: Editor.Row = {
-  id: getId(),
-  type: "row",
-  children: [{
-    id: getId(),
-    type: "glyph",
-    char: "1",
-  }, {
-    id: getId(),
-    type: "glyph",
-    char: "+",
-  }, {
-    id: getId(),
-    type: "frac", 
-    numerator: {
-      id: getId(),
-      type: "row",
-      children: [{
-        id: getId(),
-        type: "glyph",
-        char: "1",
-      }],
-    },
-    denominator: {
-      id: getId(),
-      type: "row",
-      children: [{
-        id: getId(),
-        type: "glyph",
-        char: "2",
-      }, {
-        id: getId(),
-        type: "glyph",
-        char: "y",
-      }],
-    },
-  }, {
-    id: getId(),
-    type: "glyph",
-    char: "\u2212",
-  }, {
-    id: getId(),
-    type: "glyph",
-    char: "x",
-  }],
-};
+const {row, glyph, frac} = Editor;
+
+const root: Editor.Row = 
+  row([
+    glyph("1"),
+    glyph("+"),
+    frac(
+      row([glyph("1")]),
+      row([glyph("2"), glyph("y")]),
+    ),
+    glyph("\u2212"),
+    glyph("x"),
+  ]);
 
 const initialState: State = {
   math: root,
@@ -357,7 +324,7 @@ const backspace = (currentNode: Editor.Node, draft: State) => {
 }
 
 export type Action = {type: string};
-export type Dispatch = (Action) => mixed;
+export type Dispatch = (Action) => void;
 
 const reducer = (state: State = initialState, action: Action) => {
   return produce(state, (draft) => {
