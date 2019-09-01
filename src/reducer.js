@@ -356,7 +356,10 @@ const backspace = (currentNode: Editor.Node, draft: State) => {
   }
 }
 
-const reducer = (state: State = initialState, action: any) => {
+export type Action = {type: string};
+export type Dispatch = (Action) => mixed;
+
+const reducer = (state: State = initialState, action: Action) => {
   return produce(state, (draft) => {
     const {cursor} = draft;    
     const currentNode = Editor.findNode_(draft.math, cursor.path[cursor.path.length - 1]);

@@ -1,46 +1,61 @@
 // @flow
 import * as React from "react";
-import { css, StyleSheet } from "aphrodite";
+import {css, StyleSheet} from "aphrodite";
+import {useDispatch} from "react-redux";
 
-const buttons = [
-  { name: "pm", char: "\u00B1" },
-  { name: "infinity", char: "\u221E" },
-  { name: "sqrt", char: "\u221A" },
-  { name: "neq", char: "\u2260" },
+import type {Dispatch} from "./reducer";
 
-  { name: "le", char: "<" },
-  { name: "lte", char: "\u2264" },
-  { name: "ge", char: ">" },
-  { name: "gte", char: "\u2265" },
+type Button = {|
+  char: string, 
+  name: string,
+|};
 
-  { name: "theta", char: "\u03B8" },
-  { name: "pi", char: "\u03C0" },
-  { name: "PI", char: "\u03A0" },
-  { name: "Sigma", char: "\u03A3" },
+const buttons: Button[] = [
+  {name: "pm", char: "\u00B1"},
+  {name: "infinity", char: "\u221E"},
+  {name: "sqrt", char: "\u221A"},
+  {name: "neq", char: "\u2260"},
 
-  { name: "Delta", char: "\u0394" },
-  { name: "int", char: "\u222B" },
-  { name: "prime", char: "\u2032" },
-  { name: "partial", char: "\u2202" }
+  {name: "le", char: "<"},
+  {name: "lte", char: "\u2264"},
+  {name: "ge", char: ">"},
+  {name: "gte", char: "\u2265"},
+
+  {name: "theta", char: "\u03B8"},
+  {name: "pi", char: "\u03C0"},
+  {name: "PI", char: "\u03A0"},
+  {name: "Sigma", char: "\u03A3"},
+
+  {name: "Delta", char: "\u0394"},
+  {name: "int", char: "\u222B"},
+  {name: "prime", char: "\u2032"},
+  {name: "partial", char: "\u2202"},
 ];
 
-class MathKeypad extends React.Component<{}> {
-  render() {
-return (
-      <div className={css(styles.container)}>
-        {buttons.map((button, index) => (
-          <div
-            className={css(styles.item)}
-            key={button.name}
-            onClick={() => console.log(`'${button.char}' was pressed`)}
-          >
-            {button.char}
-          </div>
-        ))}
-      </div>
-    );
-  }
-}
+const MathKeypad = () => {
+  const dispatch = useDispatch<Dispatch>();
+
+  const handleClick = (button) => {
+    console.log(`'${button.char}' was pressed`);
+    dispatch({
+      type: button.char,
+    });
+  };
+
+  return (
+    <div className={css(styles.container)}>
+      {buttons.map((button, index) => (
+        <div
+          className={css(styles.item)}
+          key={button.name}
+          onClick={() => handleClick(button)}
+        >
+          {button.char}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
