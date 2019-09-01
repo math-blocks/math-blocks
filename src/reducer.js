@@ -1,16 +1,15 @@
 // @flow
 import produce from "immer";
 
-import {type Node, type Row, type HasChildren, findNode_} from "./editor-ast";
-import {type EditorCursor} from "./editor";
+import * as Editor from "./editor";
 import {getId} from "./unique-id";
 
 export type State = {
-  math: Row,
-  cursor: EditorCursor,
+  math: Editor.Row,
+  cursor: Editor.Cursor,
 };
 
-const root: Row = {
+const root: Editor.Row = {
   id: getId(),
   type: "row",
   children: [{
@@ -66,7 +65,7 @@ const initialState: State = {
   },
 };
 
-const hasChildren = (node: Node): %checks => {
+const hasChildren = (node: Editor.Node): %checks => {
   return node.type === "row" || node.type === "parens";
 }
 
@@ -82,7 +81,7 @@ const lastId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
   return items.length > 0 ? items[items.length - 1].id : null;
 }
 
-const nextId = (children: Node[], childId: number) => {
+const nextId = (children: Editor.Node[], childId: number) => {
   const index = children.findIndex(child => child.id === childId);
   if (index === -1) {
     return null;
@@ -90,7 +89,7 @@ const nextId = (children: Node[], childId: number) => {
   return index < children.length - 1 ? children[index + 1].id : null;
 }
 
-const prevId = (children: Node[], childId: number) => {
+const prevId = (children: Editor.Node[], childId: number) => {
   const index = children.findIndex(child => child.id === childId);
   if (index === -1) {
     return null;
@@ -126,7 +125,7 @@ const insertBeforeChildWithId = <T: {id: number}>(children: T[], id: number, new
     ];
 }
 
-const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
+const moveLeft = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: Editor.Cursor): Editor.Cursor => {
   const {children} = currentNode;
   if (cursor.prev != null) {
     const {prev} = cursor;
@@ -164,10 +163,10 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
       };
     }
   } else if (cursor.path.length > 1) {
-    const parent = findNode_(root, cursor.path[cursor.path.length - 2])
+    const parent = Editor.findNode_(root, cursor.path[cursor.path.length - 2])
 
     if (parent.type === "subsup" && cursor.path.length > 2) {
-      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
+      const grandparent = Editor.findNode_(root, cursor.path[cursor.path.length - 3]);
       const {sub, sup} = parent;
       if (currentNode === sup && hasChildren(grandparent)) {
         if (sub) {
@@ -191,7 +190,7 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
         };
       }
     } else if (parent.type === "frac" && cursor.path.length > 2) {
-      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
+      const grandparent = Editor.findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.denominator) {
         // move from denominator to numerator
@@ -213,7 +212,7 @@ const moveLeft = (root: Node, currentNode: HasChildren, cursor: EditorCursor): E
   return cursor;
 }
 
-const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): EditorCursor => {
+const moveRight = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: Editor.Cursor): Editor.Cursor => {
   const {children} = currentNode;
   if (cursor.next != null) {
     const {next} = cursor;
@@ -251,10 +250,10 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
       };
     }
   } else if (cursor.path.length > 1) {
-    const parent = findNode_(root, cursor.path[cursor.path.length - 2]);
+    const parent = Editor.findNode_(root, cursor.path[cursor.path.length - 2]);
 
     if ((parent.type === "subsup") && cursor.path.length > 2) {
-      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
+      const grandparent = Editor.findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.sub && hasChildren(grandparent)) {
         if (parent.sup) {
@@ -279,7 +278,7 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
         }
       }
     } else if (parent.type === "frac" && cursor.path.length > 2) {
-      const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
+      const grandparent = Editor.findNode_(root, cursor.path[cursor.path.length - 3]);
 
       if (currentNode === parent.numerator) {
         // move from numerator to denominator
@@ -302,7 +301,7 @@ const moveRight = (root: Node, currentNode: HasChildren, cursor: EditorCursor): 
 }
 
 
-const backspace = (currentNode: Node, draft: State) => {
+const backspace = (currentNode: Editor.Node, draft: State) => {
   if (!hasChildren(currentNode)) {
     throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
   }
@@ -319,8 +318,8 @@ const backspace = (currentNode: Node, draft: State) => {
     draft.cursor = newCursor;
     return;
   } else if (cursor.path.length > 1) {
-    const parent = findNode_(root, cursor.path[cursor.path.length - 2]);
-    const grandparent = findNode_(root, cursor.path[cursor.path.length - 3]);
+    const parent = Editor.findNode_(root, cursor.path[cursor.path.length - 2]);
+    const grandparent = Editor.findNode_(root, cursor.path[cursor.path.length - 3]);
 
     if (parent.type === "subsup") {
       if (!hasChildren(grandparent)) {
@@ -360,7 +359,7 @@ const backspace = (currentNode: Node, draft: State) => {
 const reducer = (state: State = initialState, action: any) => {
   return produce(state, (draft) => {
     const {cursor} = draft;    
-    const currentNode = findNode_(draft.math, cursor.path[cursor.path.length - 1]);
+    const currentNode = Editor.findNode_(draft.math, cursor.path[cursor.path.length - 1]);
 
     if (!hasChildren(currentNode)) {
       throw new Error("currentNode can't be a glyph, fraction, sup, or sub");

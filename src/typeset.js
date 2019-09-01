@@ -1,12 +1,11 @@
 // @flow
-import {type EditorCursor} from "./editor";
-import {type Node as EditorNode} from "./editor-ast";
-import {type LayoutNode, hpackNat, makeGlyph, makeKern, makeFract, makeSubSup, makeBox} from "./layout";
+import * as Editor from "./editor";
+import * as Layout from "./layout";
 import {type FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
 export type LayoutCursor = {
-  path: EditorNode[],
+  path: Editor.Node[],
   // these are node ids instead of indices
   prev: number | null,
   next: number | null,
@@ -16,17 +15,17 @@ const typeset =
   (fontMetrics: FontMetrics) => 
   (baseFontSize: number) => 
   (multiplier: number = 1) => 
-  (node: EditorNode): LayoutNode => 
+  (node: Editor.Node): Layout.Node => 
 {
   const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
   const fontSize = multiplier * baseFontSize;
-  const _makeGlyph = makeGlyph(fontMetrics)(fontSize);
+  const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
   const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
   const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
   switch (node.type) {
     case "row": {
-      const row = hpackNat(node.children.map(_typeset));
+      const row = Layout.hpackNat(node.children.map(_typeset));
       row.id = node.id;
       return row;
     }
@@ -36,7 +35,7 @@ const typeset =
       let subBox;
       if (node.sub) {
         const {sub} = node;
-        subBox = hpackNat(sub.children.map(_typeset));
+        subBox = Layout.hpackNat(sub.children.map(_typeset));
         subBox.id = sub.id;
         // TODO: try to reuse getCharDepth
         if (jmetrics) {
@@ -53,7 +52,7 @@ const typeset =
       let supBox;
       if (node.sup) {
         const {sup} = node;
-        supBox = hpackNat(sup.children.map(_typeset));
+        supBox = Layout.hpackNat(sup.children.map(_typeset));
         supBox.id = sup.id;
         // TODO: try to reuse getCharDepth
         if (jmetrics) {
@@ -67,13 +66,13 @@ const typeset =
           supBox.height = Math.max(supBox.height, EHeight);
         }
       }
-      const parentBox = makeSubSup(multiplier, subBox, supBox);
+      const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
       parentBox.id = node.id;
       return parentBox;
     }
     case "frac": {
-      const numerator = hpackNat(node.numerator.children.map(_typeset));
-      const denominator = hpackNat(node.denominator.children.map(_typeset));
+      const numerator = Layout.hpackNat(node.numerator.children.map(_typeset));
+      const denominator = Layout.hpackNat(node.denominator.children.map(_typeset));
 
       // TODO: try to reuse getCharDepth
       if (jmetrics) {
@@ -92,12 +91,12 @@ const typeset =
       numerator.id = node.numerator.id;
       denominator.id = node.denominator.id;
 
-      const frac = makeFract(multiplier, 5, numerator, denominator);
+      const frac = Layout.makeFract(multiplier, 5, numerator, denominator);
       frac.id = node.id;
       return frac;
     }
     case "parens": {
-      const parens = hpackNat([
+      const parens = Layout.hpackNat([
         _makeGlyph("("),
         ...node.children.map(_typeset),
         _makeGlyph(")"),
@@ -108,10 +107,10 @@ const typeset =
     case "glyph": {
       const glyph = _makeGlyph(node.char);
       if (/[=\+\-\u00B7\u2212]/.test(node.char)) {
-        const box = hpackNat([
-          makeKern(fontSize / 4),
+        const box = Layout.hpackNat([
+          Layout.makeKern(fontSize / 4),
           glyph,
-          makeKern(fontSize / 4),
+          Layout.makeKern(fontSize / 4),
         ]);
         box.id = node.id;
         return box;

@@ -17,7 +17,7 @@ export type Box = {
   id?: number,
   kind: BoxKind,
   shift: Dist,
-  content: LayoutNode[],
+  content: Node[],
 } & Dim;
 
 export type Glue = {
@@ -47,14 +47,14 @@ export type Rule = {
   id?: number,
 } & Dim;
 
-export type LayoutNode =
+export type Node =
   | Box
   | Glyph
   | Glue
   | Kern
   | Rule;
 
-export const makeBox = (kind: BoxKind, dim: Dim, content: LayoutNode[]): Box => ({
+export const makeBox = (kind: BoxKind, dim: Dim, content: Node[]): Box => ({
   type: "Box",
   kind,
   ...dim,
@@ -136,7 +136,7 @@ export const getCharDepth = (glyph: Glyph) => {
   return (metrics.height - metrics.bearingY) * glyph.size / fontMetrics.unitsPerEm;
 };
 
-export const getWidth = (node: LayoutNode) => {
+export const getWidth = (node: Node) => {
   switch (node.type) {
     case "Box": return node.width
     case "Glue": return node.size
@@ -147,7 +147,7 @@ export const getWidth = (node: LayoutNode) => {
   }
 }
 
-export const getHeight = (node: LayoutNode) => {
+export const getHeight = (node: Node) => {
   switch (node.type) {
     case "Box": return node.height - node.shift
     case "Glue": return 0
@@ -158,7 +158,7 @@ export const getHeight = (node: LayoutNode) => {
   }
 }
 
-export const getDepth = (node: LayoutNode) => {
+export const getDepth = (node: Node) => {
   switch (node.type) {
     case "Box": return node.depth + node.shift
     case "Glue": return 0
@@ -169,7 +169,7 @@ export const getDepth = (node: LayoutNode) => {
   }
 }
 
-const vwidth = (node: LayoutNode) => {
+const vwidth = (node: Node) => {
   switch (node.type) {
     case "Box": return node.width + node.shift
     case "Glue": return 0
@@ -180,7 +180,7 @@ const vwidth = (node: LayoutNode) => {
   }
 }
 
-export const vsize = (node: LayoutNode) => {
+export const vsize = (node: Node) => {
   switch (node.type) {
     case "Box": return node.height + node.depth
     case "Glue": return node.size
@@ -196,13 +196,13 @@ const zero = 0;
 const sum = (values: number[]) => values.reduce(add, zero);
 const max = (values: number[]) => Math.max(...values);
 
-export const hlistWidth = (nodes: LayoutNode[]) => sum(nodes.map(getWidth));
-const hlistHeight = (nodes: LayoutNode[]) => max(nodes.map(getHeight));
-const hlistDepth = (nodes: LayoutNode[]) => max(nodes.map(getDepth))
-const vlistWidth = (nodes: LayoutNode[]) => max(nodes.map(vwidth))
-const vlistVsize = (nodes: LayoutNode[]) => sum(nodes.map(vsize))
+export const hlistWidth = (nodes: Node[]) => sum(nodes.map(getWidth));
+const hlistHeight = (nodes: Node[]) => max(nodes.map(getHeight));
+const hlistDepth = (nodes: Node[]) => max(nodes.map(getDepth))
+const vlistWidth = (nodes: Node[]) => max(nodes.map(vwidth))
+const vlistVsize = (nodes: Node[]) => sum(nodes.map(vsize))
 
-export const hpackNat = (nl: LayoutNode[]) => {
+export const hpackNat = (nl: Node[]) => {
   const dim = {
     width: hlistWidth(nl),
     height: hlistHeight(nl),
@@ -211,7 +211,7 @@ export const hpackNat = (nl: LayoutNode[]) => {
   return makeBox("hbox", dim, nl)
 }
 
-const makeVBox = (width: Dist, node: LayoutNode, upList: LayoutNode[], dnList: LayoutNode[]) => {
+const makeVBox = (width: Dist, node: Node, upList: Node[], dnList: Node[]) => {
   const dim = {
     width,
     depth: vlistVsize(dnList) + getDepth(node),
@@ -249,7 +249,7 @@ const rebox = (newWidth: Dist, box: Box): Box => {
   }
 }
 
-const makeList = (size: Dist, box: Box): LayoutNode[] => [
+const makeList = (size: Dist, box: Box): Node[] => [
   makeKern(size),
   ({...box, shift: 0}: Box),
 ];

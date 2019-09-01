@@ -1,9 +1,9 @@
 // @flow
 import * as React from "react";
 
+import * as Editor from "./editor";
 import * as Layout from "./layout";
 import {UnreachableCaseError} from "./util";
-import {type EditorCursor} from "./editor";
 
 type GlyphProps = {glyph: Layout.Glyph, x: number, y: number};
 
@@ -19,7 +19,7 @@ const Rule = ({rule, x, y}: RuleProps): React.Node => {
   return <rect x={x} y={y - Layout.getHeight(rule)} width={Layout.getWidth(rule)} height={Layout.vsize(rule)} />;
 }
 
-type BoxProps = {+box: Layout.Box, +cursor: EditorCursor, x?: number, y?: number};
+type BoxProps = {+box: Layout.Box, +cursor: Editor.Cursor, x?: number, y?: number};
 
 const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
   const pen = {x: 0, y: 0};
@@ -145,7 +145,7 @@ const Box = (props: BoxProps): React.Node => {
 
 type Props = {
   box: Layout.Box,
-  cursor: EditorCursor,
+  cursor: Editor.Cursor,
 };
 
 const MathRenderer = (props: Props) => {
