@@ -199,13 +199,13 @@ const lexRow = (row: Editor.Row<Editor.Glyph>): Editor.Row<Token> => {
     };
 };
 
-const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
+export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
     switch (node.type) {
         case "row":
             return {
                 id: node.id,
                 type: "row",
-                children: node.children.map(lex),
+                children: lexChildren(node.children),
             };
         case "subsup":
             return {
