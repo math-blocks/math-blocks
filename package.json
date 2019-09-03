@@ -30,7 +30,7 @@
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
     "flow": "flow",
-    "prettier": "pretty-quick",
+    "prettier": "pretty-quick --stage",
     "test": "jest"
   },
   "dependencies": {

@@ -1,3 +1,4 @@
 *.html
 *.md
 *.json
+flow-typed/**/*.js
