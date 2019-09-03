@@ -5,7 +5,7 @@ import {type FontMetrics} from "./metrics";
 import {UnreachableCaseError} from './util';
 
 export type LayoutCursor = {
-  path: Editor.Node[],
+  path: Editor.Node<Editor.Glyph>[],
   // these are node ids instead of indices
   prev: number | null,
   next: number | null,
@@ -15,7 +15,7 @@ const typeset =
   (fontMetrics: FontMetrics) => 
   (baseFontSize: number) => 
   (multiplier: number = 1) => 
-  (node: Editor.Node): Layout.Node => 
+  (node: Editor.Node<Editor.Glyph>): Layout.Node => 
 {
   const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
   const fontSize = multiplier * baseFontSize;

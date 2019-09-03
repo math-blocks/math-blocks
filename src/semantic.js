@@ -6,22 +6,22 @@
 // TODO: figure out how to type this properly in flow
 type TwoOrMore<T> = Array<T>;
 
-type NumberNode = {
+export type NumberNode = {
   kind: "number",
   value: string,
   // TODO: unit
   // without 'unit', the number is considered dimensionless
 };
 
-type InfinityNode = {
+export type InfinityNode = {
   kind: "infinity",
 };
 
-type PiNode = {
+export type PiNode = {
   kind: "pi",
 };
 
-type IdentifierNode = {
+export type IdentifierNode = {
   kind: "identifier",
   name: string,
   // TODO: unit
@@ -31,22 +31,22 @@ type IdentifierNode = {
   subscript?: NumericExpression,
 };
 
-type EllipsisNode = {
+export type EllipsisNode = {
   kind: "ellipsis",
 };
 
-type AddNode = {
+export type AddNode = {
   kind: "add",
   args: TwoOrMore<NumericExpression>,
 };
 
-type MulNode = {
+export type MulNode = {
   kind: "mul",
   implicit: boolean,
   args: TwoOrMore<NumericExpression>,
 };
 
-type FuncNode = {
+export type FuncNode = {
   kind: "func",
   // We want to limit this to identifiers and expression of identifiers
   // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
@@ -74,69 +74,69 @@ type FuncNode = {
 // given a statement like this we can derive a deeper semantic meaning
 // from the separate parts
 
-type DivNode = {
+export type DivNode = {
   kind: "div",
   dividend: NumericExpression,
   divisor: NumericExpression,
 };
 
-type ModNode = {
+export type ModNode = {
   kind: "mod",
   dividend: NumericExpression,
   divisor: NumericExpression,
 };
 
-type RootNode = {
+export type RootNode = {
   kind: "root",
   index: NumericExpression,
   radicand: NumericExpression,
 };
 
-type ExpNode = {
+export type ExpNode = {
   kind: "exp",
   base: NumericExpression,
   exp: NumericExpression,
 };
 
-type LogNode = {
+export type LogNode = {
   kind: "log",
   base: NumericExpression,
   arg: NumericExpression,
 };
 
-type NegNode = {
+export type NegNode = {
   kind: "neg",
   subtraction: boolean,
   arg: NumericExpression
 };
 
-type AbsNode = {
+export type AbsNode = {
   kind: "abs",
   arg: NumericExpression,
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
-type Limits = {
+export type Limits = {
   kind: "limits",
   lower: NumericExpression,
   upper: NumericExpression,
 }
 
-type SumNode = {
+export type SumNode = {
   kind: "sum",
   arg: NumericExpression,
   bvar: IdentifierNode,
   limits: Limits,
 };
 
-type ProdNode = {
+export type ProdNode = {
   kind: "prod",
   arg: NumericExpression,
   bvar: IdentifierNode,
   limits: Limits,
 };
 
-type LimitNode = {
+export type LimitNode = {
   kind: "limit",
   side: "left" | "right" | "both",
   bvar: IdentifierNode,
@@ -145,7 +145,7 @@ type LimitNode = {
 };
 
 // TODO: think about partial derivatives
-type DiffNode = {
+export type DiffNode = {
   kind: "diff",
   arg: NumericExpression,
   degree: NumericExpression,
@@ -156,7 +156,7 @@ type DiffNode = {
 };
 
 // TODO: think about multiple integrals
-type IntNode = {
+export type IntNode = {
   kind: "int",
   arg: NumericExpression,
   bvar: IdentifierNode,
@@ -199,101 +199,101 @@ export type NumericExpression =
   | IntNode
   ;
 
-type EqNode = {
+export type EqNode = {
   kind: "eq",
   args: TwoOrMore<NumericExpression>,
 };
 
-type NeqNode = {
+export type NeqNode = {
   kind: "neq",
   args: TwoOrMore<NumericExpression>,
 };
 
-type LtNode = {
+export type LtNode = {
   kind: "lt",
   args: TwoOrMore<NumericExpression>,
 };
 
-type LteNode = {
+export type LteNode = {
   kind: "lte",
   args: TwoOrMore<NumericExpression>,
 };
 
-type GtNode = {
+export type GtNode = {
   kind: "gt",
   args: TwoOrMore<NumericExpression>,
 };
 
-type GteNode = {
+export type GteNode = {
   kind: "gte",
   args: TwoOrMore<NumericExpression>,
 };
 
-type AndNode = {
+export type AndNode = {
   kind: "and",
   args: TwoOrMore<LogicExpression>,
 };
 
-type OrNode = {
+export type OrNode = {
   kind: "or",
   args: TwoOrMore<LogicExpression>,
 };
 
-type XorNode = {
+export type XorNode = {
   kind: "xor",
   args: TwoOrMore<LogicExpression>,
 };
 
-type NotNode = {
+export type NotNode = {
   kind: "not",
   arg: LogicExpression,
 };
 
-type ImpliesNode = {
+export type ImpliesNode = {
   kind: "implies",
   args: [LogicExpression, LogicExpression],
 };
 
-type IffNode = {
+export type IffNode = {
   kind: "iff",
   args: [LogicExpression, LogicExpression],
 };
 
-type TrueNode = {
+export type TrueNode = {
   kind: "true",
 };
 
-type FalseNode = {
+export type FalseNode = {
   kind: "false",
 };
 
-type SubsetNode = {
+export type SubsetNode = {
   kind: "subset",
   args: TwoOrMore<SetExpression>,
 };
 
-type ProperSubsetNode = {
+export type ProperSubsetNode = {
   kind: "prsubset",
   args: TwoOrMore<SetExpression>,
 };
 
-type NotSubsetNode = {
+export type NotSubsetNode = {
   kind: "notsubset",
   args: TwoOrMore<SetExpression>,
 };
 
-type NotProperSubsetNode = {
+export type NotProperSubsetNode = {
   kind: "notprsubset",
   args: TwoOrMore<SetExpression>,
 };
 
-type InNode = {
+export type InNode = {
   kind: "in",
   element: IdentifierNode,
   set: SetExpression,
 };
 
-type NotInNode = {
+export type NotInNode = {
   kind: "notin",
   element: IdentifierNode,
   set: SetExpression,
@@ -349,52 +349,52 @@ export type LogicExpression =
 // type PredicateNode = {
 // };
 
-type SetNode = {
+export type SetNode = {
   kind: "set",
   elements: TwoOrMore<Expression>, // could also include shapes, strings, images, etc.
 };
 
-type EmptySetNode = {
+export type EmptySetNode = {
   kind: "empty",
 };
 
-type UnionNode = {
+export type UnionNode = {
   kind: "union",
   args: TwoOrMore<SetExpression>,
 };
 
-type IntersectionNode = {
+export type IntersectionNode = {
   kind: "intersection",
   args: TwoOrMore<SetExpression>,
 };
 
-type SetDiffNode = {
+export type SetDiffNode = {
   kind: "setdiff",
   args: [SetExpression, SetExpression],
 };
 
-type CartesianProductNode = {
+export type CartesianProductNode = {
   kind: "cartesianproduct",
   args: TwoOrMore<SetExpression>,
 };
 
-type NaturalsNode = {
+export type NaturalsNode = {
   kind: "naturals",
 };
 
-type IntegersNode = {
+export type IntegersNode = {
   kind: "integers",
 };
 
-type RationalsNode = {
+export type RationalsNode = {
   kind: "rationals",
 };
 
-type RealsNode = {
+export type RealsNode = {
   kind: "reals",
 };
 
-type ComplexesNode = {
+export type ComplexesNode = {
   kind: "complexes",
 };
 

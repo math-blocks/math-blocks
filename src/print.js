@@ -1,11 +1,11 @@
 // @flow
-import {type Expression} from "./semantic-ast";
+import * as Semantic from "./semantic";
 import {UnreachableCaseError} from "./util";
 
 // TODO: determine when to wrap subexpressions in parens
 
 // NOTE: This is mainly for debugging purposes
-const print = (expr: Expression): string => {
+const print = (expr: Semantic.Expression): string => {
   switch (expr.kind) {
     case "number": return expr.value;
     case "identifier": return expr.name;

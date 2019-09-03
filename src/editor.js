@@ -1,31 +1,31 @@
 // @flow
 import {getId} from "./unique-id";
 
-export type Row = {|
+export type Row<T> = {|
   id: number,
   type: "row",
-  children: Node[],
+  children: Node<T>[],
 |};
 
-export type SubSup = {|
+export type SubSup<T> = {|
   id: number,
   type: "subsup",
-  sub?: Row,
-  sup?: Row,
+  sub?: Row<T>,
+  sup?: Row<T>,
 |};
 
-export type Frac = {|
+export type Frac<T> = {|
   id: number,
   type: "frac",
-  numerator: Row,
-  denominator: Row,
+  numerator: Row<T>,
+  denominator: Row<T>,
 |};
 
 // TODO: allow different types of parens
-export type Parens = {|
+export type Parens<T> = {|
   id: number,
   type: "parens",
-  children: Node[],
+  children: Node<T>[],
 |};
 
 export type Glyph = {|
@@ -34,44 +34,52 @@ export type Glyph = {|
   char: string,
 |};
 
-export type Node =
-  | Row
-  | SubSup
-  | Frac
-  | Parens
-  | Glyph
+export type Node<T: {+id: number, +type: string}> =
+  | Row<T>
+  | SubSup<T>
+  | Frac<T>
+  | Parens<T>
+  | T // leaf node
   ;
 
-export type HasChildren =
-  | Row
-  | Parens
+export type HasChildren<T> =
+  | Row<T>
+  | Parens<T>
   ;
 
-export const row = (children: Node[]): Row => ({
-  id: getId(),
-  type: "row",
-  children,
-});
+export function row<T>(children: Node<T>[]): Row<T> {
+  return {
+    id: getId(),
+    type: "row",
+    children,
+  };
+}
 
-export const subsup = (sub?: Row, sup?: Row): SubSup => ({
-  id: getId(),
-  type: "subsup",
-  sub,
-  sup,
-});
+export function subsup<T>(sub?: Row<T>, sup?: Row<T>): SubSup<T> {
+  return {
+    id: getId(),
+    type: "subsup",
+    sub,
+    sup,
+  };
+}
 
-export const frac = (numerator: Row, denominator: Row): Frac => ({
-  id: getId(),
-  type: "frac",
-  numerator,
-  denominator,
-});
+export function frac<T>(numerator: Row<T>, denominator: Row<T>): Frac<T> {
+  return {
+    id: getId(),
+    type: "frac",
+    numerator,
+    denominator,
+  };
+}
 
-export const parens = (children: Node[]): Parens => ({
-  id: getId(),
-  type: "parens",
-  children,
-});
+export function parens<T>(children: Node<T>[]): Parens<T> {
+  return {
+    id: getId(),
+    type: "parens",
+    children,
+  };
+}
 
 export const glyph = (char: string): Glyph => ({
   id: getId(),
@@ -79,7 +87,7 @@ export const glyph = (char: string): Glyph => ({
   char,
 });
 
-export const findNode = (root: Node, id: number): Node | void => {
+export function findNode<T: {+id: number, +type: "glyph"}>(root: Node<T>, id: number): Node<T> | void {
   // base case
   if (root.id === id) {
     return root;
@@ -99,7 +107,7 @@ export const findNode = (root: Node, id: number): Node | void => {
   }
 };
 
-export const findNode_ = (root: Node, id: number): Node => {
+export function findNode_<T: {+id: number, +type: "glyph"}>(root: Node<T>, id: number): Node<T> {
   const result = findNode(root, id);
   if (!result) {
     throw new Error(`node with id ${id} could not be found`);

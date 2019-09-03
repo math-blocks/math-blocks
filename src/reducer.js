@@ -5,13 +5,13 @@ import * as Editor from "./editor";
 import {getId} from "./unique-id";
 
 export type State = {
-  math: Editor.Row,
+  math: Editor.Row<Editor.Glyph>,
   cursor: Editor.Cursor,
 };
 
 const {row, glyph, frac} = Editor;
 
-const root: Editor.Row = 
+const root: Editor.Row<Editor.Glyph> = 
   row([
     glyph("1"),
     glyph("+"),
@@ -32,7 +32,7 @@ const initialState: State = {
   },
 };
 
-const hasChildren = (node: Editor.Node): %checks => {
+const hasChildren = (node: Editor.Node<Editor.Glyph>): %checks => {
   return node.type === "row" || node.type === "parens";
 }
 
@@ -48,7 +48,7 @@ const lastId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
   return items.length > 0 ? items[items.length - 1].id : null;
 }
 
-const nextId = (children: Editor.Node[], childId: number) => {
+const nextId = (children: Editor.Node<Editor.Glyph>[], childId: number) => {
   const index = children.findIndex(child => child.id === childId);
   if (index === -1) {
     return null;
@@ -56,7 +56,7 @@ const nextId = (children: Editor.Node[], childId: number) => {
   return index < children.length - 1 ? children[index + 1].id : null;
 }
 
-const prevId = (children: Editor.Node[], childId: number) => {
+const prevId = (children: Editor.Node<Editor.Glyph>[], childId: number) => {
   const index = children.findIndex(child => child.id === childId);
   if (index === -1) {
     return null;
@@ -92,7 +92,7 @@ const insertBeforeChildWithId = <T: {id: number}>(children: T[], id: number, new
     ];
 }
 
-const moveLeft = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: Editor.Cursor): Editor.Cursor => {
+const moveLeft = (root: Editor.Node<Editor.Glyph>, currentNode: Editor.HasChildren<Editor.Glyph>, cursor: Editor.Cursor): Editor.Cursor => {
   const {children} = currentNode;
   if (cursor.prev != null) {
     const {prev} = cursor;
@@ -179,7 +179,7 @@ const moveLeft = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: Ed
   return cursor;
 }
 
-const moveRight = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: Editor.Cursor): Editor.Cursor => {
+const moveRight = (root: Editor.Node<Editor.Glyph>, currentNode: Editor.HasChildren<Editor.Glyph>, cursor: Editor.Cursor): Editor.Cursor => {
   const {children} = currentNode;
   if (cursor.next != null) {
     const {next} = cursor;
@@ -268,7 +268,7 @@ const moveRight = (root: Editor.Node, currentNode: Editor.HasChildren, cursor: E
 }
 
 
-const backspace = (currentNode: Editor.Node, draft: State) => {
+const backspace = (currentNode: Editor.Node<Editor.Glyph>, draft: State) => {
   if (!hasChildren(currentNode)) {
     throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
   }
