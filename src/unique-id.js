@@ -1,5 +1,5 @@
 // @flow
 export const getId = (() => {
-  let id = 0;
-  return () => id++;
+    let id = 0;
+    return () => id++;
 })();

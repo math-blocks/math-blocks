@@ -10,14 +10,14 @@ import reducer from "./reducer";
 const container = document.createElement("div");
 
 if (document.body) {
-  document.body.appendChild(container);
+    document.body.appendChild(container);
 }
 
 const store = createStore(reducer);
 
 ReactDOM.render(
-  <Provider store={store}>
-    <App/>
-  </Provider>, 
-  container,
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    container,
 );

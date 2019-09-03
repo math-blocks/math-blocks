@@ -15,6 +15,9 @@
     "flow-bin": "^0.104.0",
     "flow-remove-types": "^1.2.3",
     "html-webpack-plugin": "^3.2.0",
+    "husky": "^3.0.5",
+    "prettier": "^1.18.2",
+    "pretty-quick": "^1.11.1",
     "typescript": "^3.4.5",
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
@@ -24,7 +27,8 @@
     "build": "webpack",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
-    "flow": "flow"
+    "flow": "flow",
+    "prettier": "pretty-quick"
   },
   "dependencies": {
     "immer": "^3.2.0",
@@ -33,5 +37,10 @@
     "react-dom": "^16.8.6",
     "react-redux": "^7.1.0",
     "redux": "^4.0.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick"
+    }
   }
 }
