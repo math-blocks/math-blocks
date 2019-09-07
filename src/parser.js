@@ -52,18 +52,26 @@ const parse = (node: Editor.Node<Lexer.Token>): Semantic.Expression => {
             return parseFrac(node);
 
         // These should be parsed
-        case "number":
-            return {
-                kind: "number",
-                value: node.value,
-            };
-        case "identifier":
-            return {
-                kind: "identifier",
-                name: node.name,
-            };
-        case "symbol":
-            throw new Error("this symbol should already be parsed");
+        case "atom": {
+            const {value} = node;
+            switch (value.kind) {
+                case "number":
+                    return {
+                        kind: "number",
+                        value: value.value,
+                    };
+                case "identifier":
+                    return {
+                        kind: "identifier",
+                        name: value.name,
+                    };
+                case "symbol":
+                    throw new Error("this symbol should already be parsed");
+                default:
+                    throw new UnreachableCaseError(value);
+            }
+        }
+
         default:
             throw new UnreachableCaseError(node);
     }

@@ -2,14 +2,19 @@
 import * as Lexer from "../lexer";
 import * as Editor from "../editor";
 
-const {row, glyph} = Editor;
+const {row, glyph, frac} = Editor;
+const {identifier, number, symbol} = Lexer;
 
 function isRow(node: Editor.Node<Lexer.Token>): %checks {
     return node.type === "row";
 }
 
-function isNumber(node: Editor.Node<Lexer.Token>): %checks {
-    return node.type === "number";
+function isAtom(node: Editor.Node<Lexer.Token>): %checks {
+    return node.type === "atom";
+}
+
+function isFrac(node: Editor.Node<Lexer.Token>): %checks {
+    return node.type === "frac";
 }
 
 describe("Lexer", () => {
@@ -26,11 +31,11 @@ describe("Lexer", () => {
 
             const number = tokenTree.children[0];
 
-            if (!isNumber(number)) {
-                throw new Error("not a number");
+            if (!isAtom(number)) {
+                throw new Error("not an atom");
             }
 
-            expect(number.value).toBe("123");
+            expect(number.value).toHaveProperty("value", "123");
         });
 
         it("should coalesce reals", () => {
@@ -45,18 +50,82 @@ describe("Lexer", () => {
 
             const number = tokenTree.children[0];
 
-            if (!isNumber(number)) {
-                throw new Error("not a number");
+            if (!isAtom(number)) {
+                throw new Error("not an atom");
             }
 
-            expect(number.value).toBe("1.3");
+            expect(number.value).toHaveProperty("value", "1.3");
         });
 
-        it("should throw with more than one decimal", () => {
+        it.skip("should throw with more than one decimal", () => {
             expect(() => {
                 const glyphTree = row([glyph("1"), glyph("."), glyph(".")]);
                 const tokenTree = Lexer.lex(glyphTree);
             }).toThrowError();
+        });
+
+        it("should parse `1 + a`", () => {
+            const glyphTree = row([glyph("1"), glyph("+"), glyph("a")]);
+            const tokenTree = Lexer.lex(glyphTree);
+
+            if (!isRow(tokenTree)) {
+                throw new Error("not a row");
+            }
+
+            expect(tokenTree.children).toHaveLength(3);
+
+            const [number, symbol, identifier] = tokenTree.children;
+
+            if (!isAtom(number)) {
+                throw new Error("`number` is not an atom");
+            }
+
+            expect(number.value).toHaveProperty("value", "1");
+
+            if (!isAtom(symbol)) {
+                throw new Error("`symbol` is not an atom");
+            }
+
+            expect(symbol.value).toHaveProperty("symbol", "+");
+
+            if (!isAtom(identifier)) {
+                throw new Error("`identifier` is not an atom");
+            }
+
+            expect(identifier.value).toHaveProperty("name", "a");
+        });
+
+        it("should parse `1 + 1/x`", () => {
+            // TODO: create builder functions for token versions of
+            // the tree and then compare the trees, minus the ids
+            const glyphTree = row([
+                glyph("1"),
+                glyph("+"),
+                frac(row([glyph("1")]), row([glyph("x")])),
+            ]);
+            const tokenTree = Lexer.lex(glyphTree);
+
+            const expectedTokenTree = row([
+                number("1"),
+                symbol("+"),
+                frac(row([number("1")]), row([identifier("x")])),
+            ]);
+
+            if (!isRow(tokenTree)) {
+                throw new Error("not a row");
+            }
+
+            if (!isAtom(tokenTree.children[0])) {
+                throw new Error("not an atom");
+            }
+
+            if (!isAtom(tokenTree.children[1])) {
+                throw new Error("not an atom");
+            }
+
+            if (!isFrac(tokenTree.children[2])) {
+                throw new Error("not a frac");
+            }
         });
     });
 });

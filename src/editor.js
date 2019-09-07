@@ -28,19 +28,13 @@ export type Parens<T> = {|
     children: Node<T>[],
 |};
 
-export type Glyph = {|
+export type Atom<T> = {|
     id: number,
-    type: "glyph",
-    char: string,
+    type: "atom",
+    value: T,
 |};
 
-export // leaf node
-type Node<T: {+id: number, +type: string}> =
-    | Row<T>
-    | SubSup<T>
-    | Frac<T>
-    | Parens<T>
-    | T;
+export type Node<T> = Row<T> | SubSup<T> | Frac<T> | Parens<T> | Atom<T>;
 
 export type HasChildren<T> = Row<T> | Parens<T>;
 
@@ -78,16 +72,18 @@ export function parens<T>(children: Node<T>[]): Parens<T> {
     };
 }
 
-export const glyph = (char: string): Glyph => ({
+export type Glyph = {|
+    kind: "glyph",
+    char: string,
+|};
+
+export const glyph = (char: string): Atom<Glyph> => ({
     id: getId(),
-    type: "glyph",
-    char,
+    type: "atom",
+    value: {kind: "glyph", char},
 });
 
-export function findNode<T: {+id: number, +type: "glyph"}>(
-    root: Node<T>,
-    id: number,
-): Node<T> | void {
+export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
     // base case
     if (root.id === id) {
         return root;
@@ -99,7 +95,6 @@ export function findNode<T: {+id: number, +type: "glyph"}>(
                 .map(node => findNode(node, id))
                 .find(Boolean);
         case "subsup":
-            // @ts-ignore: switch to flow
             return [root.sub, root.sup]
                 .filter(Boolean)
                 .map(node => findNode(node, id))
@@ -112,10 +107,7 @@ export function findNode<T: {+id: number, +type: "glyph"}>(
     }
 }
 
-export function findNode_<T: {+id: number, +type: "glyph"}>(
-    root: Node<T>,
-    id: number,
-): Node<T> {
+export function findNode_<T>(root: Node<T>, id: number): Node<T> {
     const result = findNode(root, id);
     if (!result) {
         throw new Error(`node with id ${id} could not be found`);

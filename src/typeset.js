@@ -128,9 +128,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             parens.id = node.id;
             return parens;
         }
-        case "glyph": {
-            const glyph = _makeGlyph(node.char);
-            if (/[=\+\-\u00B7\u2212]/.test(node.char)) {
+        case "atom": {
+            const {value} = node;
+            const glyph = _makeGlyph(value.char);
+            if (/[=\+\-\u00B7\u2212]/.test(value.char)) {
                 const box = Layout.hpackNat([
                     Layout.makeKern(fontSize / 4),
                     glyph,

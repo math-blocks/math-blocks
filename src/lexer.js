@@ -7,6 +7,8 @@
  * - identifiers
  * - symbols
  */
+import matchAll from "string.prototype.matchall";
+
 import * as Editor from "./editor";
 import {UnreachableCaseError} from "./util";
 import {getId} from "./unique-id";
@@ -18,8 +20,7 @@ import {getId} from "./unique-id";
 const funcs = ["sin", "cos", "tan", "log", "lim"];
 
 type Identifier = {
-    id: number,
-    type: "identifier",
+    kind: "identifier",
     name: string,
 };
 
@@ -28,164 +29,111 @@ type Symbols = "+" | "\u2212" | "=" | "<" | ">";
 const symbols: Symbols[] = ["+", "\u2212", "=", "<", ">"];
 
 type Symbol = {
-    id: number,
-    type: "symbol",
+    kind: "symbol",
     symbol: Symbols, // add more
 };
 
 type Number = {
-    id: number,
-    type: "number",
+    kind: "number",
     value: string,
 };
 
-function identifier(name: string): Identifier {
+export function identifier(name: string): Editor.Atom<Token> {
     return {
         id: getId(),
-        type: "identifier",
-        name,
+        type: "atom",
+        value: {
+            kind: "identifier",
+            name,
+        },
     };
 }
 
-function number(value: string): Number {
+export function number(value: string): Editor.Atom<Token> {
     return {
         id: getId(),
-        type: "number",
-        value,
+        type: "atom",
+        value: {
+            kind: "number",
+            value,
+        },
     };
 }
 
-function symbol(symbol: Symbols): Symbol {
+export function symbol(symbol: Symbols): Editor.Atom<Token> {
     return {
         id: getId(),
-        type: "symbol",
-        symbol,
+        type: "atom",
+        value: {
+            kind: "symbol",
+            symbol,
+        },
     };
 }
 
 export type Token = Identifier | Symbol | Number;
 
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\-|\=)|(sin|cos|tan|[a-z])/gi;
+
 type LexState = "new_token" | "integer" | "real" | "identifier";
+
+// TODO: include ids of source glyphs in parsed tokens
 
 const lexChildren = (
     nodes: Editor.Node<Editor.Glyph>[],
 ): Editor.Node<Token>[] => {
     const tokens: Editor.Node<Token>[] = [];
 
+    // const matches = matchAll()
+
     let glyphs: Editor.Glyph[] = [];
     let state: LexState = "new_token";
 
     for (const node of nodes) {
-        if (node.type === "glyph") {
-            switch (state) {
-                case "new_token": {
-                    if (/[0-9]/.test(node.char)) {
-                        state = "integer";
-                    } else if (/[a-z]/.test(node.char)) {
-                        state = "identifier";
-                    } else if (symbols.includes(node.char)) {
-                        tokens.push(symbol(((node.char: any): Symbols)));
-                    } else {
-                        throw new Error("unexpected glyph");
-                    }
-                    glyphs.push(node);
-                    break;
-                }
-                case "integer": {
-                    if (/[0-9]/.test(node.char)) {
-                    } else if (node.char === ".") {
-                        state = "real";
-                    } else {
-                        throw new Error("unexpected glyph");
-                    }
-                    glyphs.push(node);
-                    break;
-                }
-                case "real": {
-                    if (/[0-9]/.test(node.char)) {
-                    } else if (node.char === ".") {
-                        throw new Error(
-                            "real number already contains a decimal",
-                        );
-                    } else {
-                        throw new Error("unexpected glyph");
-                    }
-                    glyphs.push(node);
-                    break;
-                }
-                case "identifier": {
-                    if (/[a-z]/.test(node.char)) {
-                        glyphs.push(node);
-                        const name = glyphs.map(x => x.char).join("");
-                        if (funcs.includes(name)) {
-                            tokens.push(identifier(name));
-                            state = "new_token";
-                            glyphs = [];
-                        }
-                    } else {
-                        throw new Error("unexpected glyph");
-                    }
-                    break;
-                }
-                default:
-                    throw new UnreachableCaseError(state);
-            }
+        if (node.type === "atom") {
+            const {value} = node;
+            glyphs.push(value);
         } else {
-            // check whatever state we're currently in and complete processing for that state
-            switch (state) {
-                case "new_token": {
-                    tokens.push(lex(node));
-                    break;
-                }
-                case "integer":
-                case "real": {
-                    tokens.push(number(glyphs.map(x => x.char).join("")));
-                    break;
-                }
-                case "identifier": {
-                    const name = glyphs.map(x => x.char).join("");
-                    if (funcs.includes(name)) {
+            if (glyphs.length > 0) {
+                const str = glyphs.map(glyph => glyph.char).join("");
+                const matches = matchAll(str, TOKEN_REGEX);
+
+                for (const match of matches) {
+                    const [, value, sym, name] = match;
+                    if (value) {
+                        tokens.push(number(value));
+                    } else if (sym) {
+                        tokens.push(symbol(sym));
+                    } else if (name) {
                         tokens.push(identifier(name));
-                    } else {
-                        // identifier doesn't match any of the function names so split
-                        // them into single character identifiers
-                        tokens.push(...glyphs.map(x => identifier(x.char)));
                     }
-                    break;
+                    // TODO: check if there are leftover characters between token matches
                 }
-                default:
-                    throw new UnreachableCaseError(state);
+                // TODO: check if there are leftover characters after the last token match
+                glyphs = [];
             }
 
-            state = "new_token"; // reset the state
-            glyphs = [];
+            tokens.push(lex(node));
         }
     }
 
-    // The last node might have been a glyph so make sure we flush the remaining glyphs
-    switch (state) {
-        case "new_token": {
-            // We've already handled the last node
-            break;
-        }
-        case "integer":
-        case "real": {
-            tokens.push(number(glyphs.map(x => x.char).join("")));
-            break;
-        }
-        case "identifier": {
-            const name = glyphs.map(x => x.char).join("");
-            if (funcs.includes(name)) {
+    if (glyphs.length > 0) {
+        const str = glyphs.map(glyph => glyph.char).join("");
+        const matches = matchAll(str, TOKEN_REGEX);
+
+        for (const match of matches) {
+            const [, value, sym, name] = match;
+            if (value) {
+                tokens.push(number(value));
+            } else if (sym) {
+                tokens.push(symbol(sym));
+            } else if (name) {
                 tokens.push(identifier(name));
-            } else {
-                // identifier doesn't match any of the function names so split
-                // them into single character identifiers
-                tokens.push(...glyphs.map(x => identifier(x.char)));
             }
-            break;
+            // TODO: check if there are leftover characters between token matches
         }
-        default:
-            throw new UnreachableCaseError(state);
+        // TODO: check if there are leftover characters after the last token match
+        glyphs = [];
     }
 
     return tokens;
@@ -230,12 +178,8 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
             };
         // We should never read this case since lexChildren will coalesce glyphs
         // into tokens for us.
-        case "glyph":
-            return {
-                id: node.id,
-                type: "identifier",
-                name: node.char,
-            };
+        case "atom":
+            throw new Error("FooBar");
         default:
             throw new UnreachableCaseError(node);
     }

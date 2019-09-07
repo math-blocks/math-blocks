@@ -400,8 +400,11 @@ const reducer = (state: State = initialState, action: Action) => {
             case "-": {
                 newNode = {
                     id: getId(),
-                    type: "glyph",
-                    char: "\u2212",
+                    type: "atom",
+                    value: {
+                        kind: "glyph",
+                        char: "\u2212",
+                    },
                 };
                 draft.cursor.prev = newNode.id;
                 break;
@@ -409,8 +412,11 @@ const reducer = (state: State = initialState, action: Action) => {
             case "*": {
                 newNode = {
                     id: getId(),
-                    type: "glyph",
-                    char: "\u00B7",
+                    type: "atom",
+                    value: {
+                        kind: "glyph",
+                        char: "\u00B7",
+                    },
                 };
                 draft.cursor.prev = newNode.id;
                 break;
@@ -493,8 +499,11 @@ const reducer = (state: State = initialState, action: Action) => {
                 ) {
                     newNode = {
                         id: getId(),
-                        type: "glyph",
-                        char: action.type,
+                        type: "atom",
+                        value: {
+                            type: "kind",
+                            char: action.type,
+                        },
                     };
                     draft.cursor.prev = newNode.id;
                     break;
