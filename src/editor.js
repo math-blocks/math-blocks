@@ -72,16 +72,20 @@ export function parens<T>(children: Node<T>[]): Parens<T> {
     };
 }
 
+export function atom<T>(value: T): Atom<T> {
+    return {
+        id: getId(),
+        type: "atom",
+        value,
+    };
+}
+
 export type Glyph = {|
     kind: "glyph",
     char: string,
 |};
 
-export const glyph = (char: string): Atom<Glyph> => ({
-    id: getId(),
-    type: "atom",
-    value: {kind: "glyph", char},
-});
+export const glyph = (char: string): Atom<Glyph> => atom({kind: "glyph", char});
 
 export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
     // base case

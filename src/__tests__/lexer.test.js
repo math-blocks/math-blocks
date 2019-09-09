@@ -57,13 +57,6 @@ describe("Lexer", () => {
             expect(number.value).toHaveProperty("value", "1.3");
         });
 
-        it.skip("should throw with more than one decimal", () => {
-            expect(() => {
-                const glyphTree = row([glyph("1"), glyph("."), glyph(".")]);
-                const tokenTree = Lexer.lex(glyphTree);
-            }).toThrowError();
-        });
-
         it("should parse `1 + a`", () => {
             const glyphTree = row([glyph("1"), glyph("+"), glyph("a")]);
             const tokenTree = Lexer.lex(glyphTree);
@@ -126,6 +119,24 @@ describe("Lexer", () => {
             if (!isFrac(tokenTree.children[2])) {
                 throw new Error("not a frac");
             }
+        });
+
+        it("should parse multi character identifiers", () => {
+            const glyphTree = row([glyph("s"), glyph("i"), glyph("n")]);
+
+            const tokenTree = Lexer.lex(glyphTree);
+
+            if (!isRow(tokenTree)) {
+                throw new Error("not a row");
+            }
+
+            expect(tokenTree.children).toHaveLength(1);
+
+            if (!isAtom(tokenTree.children[0])) {
+                throw new Error("`identifier` is not an atom");
+            }
+
+            expect(tokenTree.children[0].value).toHaveProperty("name", "sin");
         });
     });
 });

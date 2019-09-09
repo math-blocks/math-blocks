@@ -38,38 +38,14 @@ type Number = {
     value: string,
 };
 
-export function identifier(name: string): Editor.Atom<Token> {
-    return {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "identifier",
-            name,
-        },
-    };
-}
+export const identifier = (name: string): Editor.Atom<Token> =>
+    Editor.atom({kind: "identifier", name});
 
-export function number(value: string): Editor.Atom<Token> {
-    return {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "number",
-            value,
-        },
-    };
-}
+export const number = (value: string): Editor.Atom<Token> =>
+    Editor.atom({kind: "number", value});
 
-export function symbol(symbol: Symbols): Editor.Atom<Token> {
-    return {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "symbol",
-            symbol,
-        },
-    };
-}
+export const symbol = (symbol: Symbols): Editor.Atom<Token> =>
+    Editor.atom({kind: "symbol", symbol});
 
 export type Token = Identifier | Symbol | Number;
 
@@ -79,44 +55,8 @@ type LexState = "new_token" | "integer" | "real" | "identifier";
 
 // TODO: include ids of source glyphs in parsed tokens
 
-const lexChildren = (
-    nodes: Editor.Node<Editor.Glyph>[],
-): Editor.Node<Token>[] => {
-    const tokens: Editor.Node<Token>[] = [];
-
-    // const matches = matchAll()
-
-    let glyphs: Editor.Glyph[] = [];
-    let state: LexState = "new_token";
-
-    for (const node of nodes) {
-        if (node.type === "atom") {
-            const {value} = node;
-            glyphs.push(value);
-        } else {
-            if (glyphs.length > 0) {
-                const str = glyphs.map(glyph => glyph.char).join("");
-                const matches = matchAll(str, TOKEN_REGEX);
-
-                for (const match of matches) {
-                    const [, value, sym, name] = match;
-                    if (value) {
-                        tokens.push(number(value));
-                    } else if (sym) {
-                        tokens.push(symbol(sym));
-                    } else if (name) {
-                        tokens.push(identifier(name));
-                    }
-                    // TODO: check if there are leftover characters between token matches
-                }
-                // TODO: check if there are leftover characters after the last token match
-                glyphs = [];
-            }
-
-            tokens.push(lex(node));
-        }
-    }
-
+const processGlyphs = glyphs => {
+    const tokens = [];
     if (glyphs.length > 0) {
         const str = glyphs.map(glyph => glyph.char).join("");
         const matches = matchAll(str, TOKEN_REGEX);
@@ -135,6 +75,29 @@ const lexChildren = (
         // TODO: check if there are leftover characters after the last token match
         glyphs = [];
     }
+    return tokens;
+};
+
+const lexChildren = (
+    nodes: Editor.Node<Editor.Glyph>[],
+): Editor.Node<Token>[] => {
+    const tokens: Editor.Node<Token>[] = [];
+
+    let glyphs: Editor.Glyph[] = [];
+    let state: LexState = "new_token";
+
+    for (const node of nodes) {
+        if (node.type === "atom") {
+            const {value} = node;
+            glyphs.push(value);
+        } else {
+            tokens.push(...processGlyphs(glyphs));
+            tokens.push(lex(node));
+            glyphs = [];
+        }
+    }
+
+    tokens.push(...processGlyphs(glyphs));
 
     return tokens;
 };
