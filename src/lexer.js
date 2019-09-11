@@ -19,7 +19,7 @@ import {getId} from "./unique-id";
 
 const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-type Identifier = {
+export type Identifier = {
     kind: "identifier",
     name: string,
 };
@@ -28,12 +28,12 @@ type Symbols = "+" | "\u2212" | "=" | "<" | ">";
 
 const symbols: Symbols[] = ["+", "\u2212", "=", "<", ">"];
 
-type Symbol = {
+export type Symbol = {
     kind: "symbol",
     symbol: Symbols, // add more
 };
 
-type Number = {
+export type Number = {
     kind: "number",
     value: string,
 };
