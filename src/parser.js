@@ -15,49 +15,69 @@ const parseChildren = (
     // Instead of a for loop we need a while loop and a way to consume
     // the next token.  That way when we encounter a minus, we can grab
     // the next token right away.
-    for (const node of nodes) {
-        if (node.type === "atom") {
-            if (node.value.kind === "number") {
-                operands.push(node.value);
-            } else if (node.value.kind === "identifier") {
-                operands.push({
-                    kind: "identifier",
-                    name: node.value.name,
-                });
-            } else {
-                const lastOperator = operators[operators.length - 1];
-                if (lastOperator && lastOperator.symbol === node.value.symbol) {
-                    continue;
+    let i = 0;
+    const hasNodesLeft = () => i < nodes.length;
+    const getNode = () => nodes[i++];
+
+    // TODO:
+    // expand parseAtom into parseInfix
+    // create a parsePrefix to handle unary minus
+
+    const parseAtom = (atom: {|
+        id: number,
+        type: "atom",
+        value: Lexer.Token,
+    |}) => {
+        if (atom.value.kind === "number") {
+            operands.push(atom.value);
+        } else if (atom.value.kind === "identifier") {
+            operands.push({
+                kind: "identifier",
+                name: atom.value.name,
+            });
+        } else {
+            let op = atom.value.symbol;
+            if (op === "\u2212") {
+                const nextNode = getNode();
+                if (!nextNode) {
+                    throw new Error("expected a node after the operator");
                 }
-                operators.push(node.value);
+                if (nextNode.type === "atom") {
+                    // TODO: handle unary minus
+                    parseAtom(nextNode);
+
+                    // wrap the last operand in a "neg" node
+                    const lastArg = operands.pop();
+                    operands.push({
+                        kind: "neg",
+                        subtraction: true,
+                        arg: lastArg,
+                    });
+                }
+                op = "+";
             }
+            const lastOperator = operators[operators.length - 1];
+            if (lastOperator && lastOperator.symbol === op) {
+                return;
+            }
+            operators.push({kind: "symbol", symbol: op});
         }
-        console.log(node);
+    };
+
+    while (hasNodesLeft()) {
+        const node = getNode();
+        if (node.type === "atom") {
+            parseAtom(node);
+        }
     }
 
-    console.log(operators);
-    console.log(operands);
+    // console.log(operators);
+    // console.log(operands);
 
     for (const operator of operators) {
         if (operator.symbol === "+") {
             const args = [...operands]; // copy operands
             operands.length = 0; // empty operands
-            const result: Semantic.AddNode = {
-                kind: "add",
-                args,
-            };
-            operands.push(result);
-        } else if (operator.symbol === "\u2212") {
-            const lastArg = operands.pop();
-            const args = [
-                ...operands,
-                {
-                    kind: "neg",
-                    subtraction: true,
-                    arg: lastArg,
-                },
-            ];
-            operands.length = 0;
             const result: Semantic.AddNode = {
                 kind: "add",
                 args,

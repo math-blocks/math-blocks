@@ -86,7 +86,7 @@ describe("Parser", () => {
             `);
         });
 
-        it.skip("should parse subtraction before the end of a long expression", () => {
+        it("should parse subtraction before the end of a long expression", () => {
             const lexTree: Editor.Node<Lexer.Token> = Editor.row([
                 Lexer.number("1"),
                 Lexer.symbol("\u2212"),
@@ -111,6 +111,10 @@ describe("Parser", () => {
                       },
                       "kind": "neg",
                       "subtraction": true,
+                    },
+                    Object {
+                      "kind": "number",
+                      "value": "3",
                     },
                   ],
                   "kind": "add",
