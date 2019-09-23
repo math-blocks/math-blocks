@@ -6,22 +6,22 @@
 // TODO: figure out how to type this properly in flow
 type TwoOrMore<T> = Array<T>;
 
-export type NumberNode = {
+export type Number = {
     kind: "number",
     value: string,
     // TODO: unit
     // without 'unit', the number is considered dimensionless
 };
 
-export type InfinityNode = {
+export type Infinity = {
     kind: "infinity",
 };
 
-export type PiNode = {
+export type Pi = {
     kind: "pi",
 };
 
-export type IdentifierNode = {
+export type Identifier = {
     kind: "identifier",
     name: string,
     // TODO: unit
@@ -31,22 +31,22 @@ export type IdentifierNode = {
     subscript?: NumericExpression,
 };
 
-export type EllipsisNode = {
+export type Ellipsis = {
     kind: "ellipsis",
 };
 
-export type AddNode = {
+export type Add = {
     kind: "add",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type MulNode = {
+export type Mul = {
     kind: "mul",
     implicit: boolean,
     args: TwoOrMore<NumericExpression>,
 };
 
-export type FuncNode = {
+export type Func = {
     kind: "func",
     // We want to limit this to identifiers and expression of identifiers
     // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
@@ -58,10 +58,10 @@ export type FuncNode = {
 // I'm not sure how useful having a special node for this is given we'll have
 // a separate table for looking up the value of variables, constants, and other
 // things that can be defined include functions
-// type FuncDefNode = {
+// type FuncDef = {
 //     kind: "funcdef",
 //     func: NumericExpression | LogicExpression,
-//     bvars: IdentifierNode[],
+//     bvars: Identifier[],
 //     value: NumericExpression,
 // }
 
@@ -74,43 +74,43 @@ export type FuncNode = {
 // given a statement like this we can derive a deeper semantic meaning
 // from the separate parts
 
-export type DivNode = {
+export type Div = {
     kind: "div",
     dividend: NumericExpression,
     divisor: NumericExpression,
 };
 
-export type ModNode = {
+export type Mod = {
     kind: "mod",
     dividend: NumericExpression,
     divisor: NumericExpression,
 };
 
-export type RootNode = {
+export type Root = {
     kind: "root",
     index: NumericExpression,
     radicand: NumericExpression,
 };
 
-export type ExpNode = {
+export type Exp = {
     kind: "exp",
     base: NumericExpression,
     exp: NumericExpression,
 };
 
-export type LogNode = {
+export type Log = {
     kind: "log",
     base: NumericExpression,
     arg: NumericExpression,
 };
 
-export type NegNode = {
+export type Neg = {
     kind: "neg",
     subtraction: boolean,
     arg: NumericExpression,
 };
 
-export type AbsNode = {
+export type Abs = {
     kind: "abs",
     arg: NumericExpression,
 };
@@ -122,44 +122,44 @@ export type Limits = {
     upper: NumericExpression,
 };
 
-export type SumNode = {
+export type Sum = {
     kind: "sum",
     arg: NumericExpression,
-    bvar: IdentifierNode,
+    bvar: Identifier,
     limits: Limits,
 };
 
-export type ProdNode = {
+export type Prod = {
     kind: "prod",
     arg: NumericExpression,
-    bvar: IdentifierNode,
+    bvar: Identifier,
     limits: Limits,
 };
 
-export type LimitNode = {
+export type Limit = {
     kind: "limit",
     side: "left" | "right" | "both",
-    bvar: IdentifierNode,
+    bvar: Identifier,
     // TODOO: add target
     arg: NumericExpression,
 };
 
 // TODO: think about partial derivatives
-export type DiffNode = {
+export type Diff = {
     kind: "diff",
     arg: NumericExpression,
     degree: NumericExpression,
 
     // If there's a bvar we use liebniz notation, if not
     // we use prime notation.
-    bvar?: IdentifierNode,
+    bvar?: Identifier,
 };
 
 // TODO: think about multiple integrals
-export type IntNode = {
+export type Int = {
     kind: "int",
     arg: NumericExpression,
-    bvar: IdentifierNode,
+    bvar: Identifier,
     limits: Limits,
 };
 
@@ -169,246 +169,246 @@ export type IntNode = {
 
 export type NumericExpression =
     // numbers
-    | NumberNode
-    | InfinityNode
-    | PiNode
-    | IdentifierNode
-    | EllipsisNode
+    | Number
+    | Infinity
+    | Pi
+    | Identifier
+    | Ellipsis
 
     // n-ary
-    | AddNode
-    | MulNode
-    | FuncNode
+    | Add
+    | Mul
+    | Func
 
     // binary
-    | DivNode
-    | ModNode
-    | RootNode
-    | ExpNode
-    | LogNode
+    | Div
+    | Mod
+    | Root
+    | Exp
+    | Log
 
     // unary
-    | NegNode
-    | AbsNode
-    | SumNode
-    | ProdNode
-    | LimitNode
-    | DiffNode
-    | IntNode;
+    | Neg
+    | Abs
+    | Sum
+    | Prod
+    | Limit
+    | Diff
+    | Int;
 
-export type EqNode = {
+export type Eq = {
     kind: "eq",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type NeqNode = {
+export type Neq = {
     kind: "neq",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type LtNode = {
+export type Lt = {
     kind: "lt",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type LteNode = {
+export type Lte = {
     kind: "lte",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type GtNode = {
+export type Gt = {
     kind: "gt",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type GteNode = {
+export type Gte = {
     kind: "gte",
     args: TwoOrMore<NumericExpression>,
 };
 
-export type AndNode = {
+export type And = {
     kind: "and",
     args: TwoOrMore<LogicExpression>,
 };
 
-export type OrNode = {
+export type Or = {
     kind: "or",
     args: TwoOrMore<LogicExpression>,
 };
 
-export type XorNode = {
+export type Xor = {
     kind: "xor",
     args: TwoOrMore<LogicExpression>,
 };
 
-export type NotNode = {
+export type Not = {
     kind: "not",
     arg: LogicExpression,
 };
 
-export type ImpliesNode = {
+export type Implies = {
     kind: "implies",
     args: [LogicExpression, LogicExpression],
 };
 
-export type IffNode = {
+export type Iff = {
     kind: "iff",
     args: [LogicExpression, LogicExpression],
 };
 
-export type TrueNode = {
+export type True = {
     kind: "true",
 };
 
-export type FalseNode = {
+export type False = {
     kind: "false",
 };
 
-export type SubsetNode = {
+export type Subset = {
     kind: "subset",
     args: TwoOrMore<SetExpression>,
 };
 
-export type ProperSubsetNode = {
+export type ProperSubset = {
     kind: "prsubset",
     args: TwoOrMore<SetExpression>,
 };
 
-export type NotSubsetNode = {
+export type NotSubset = {
     kind: "notsubset",
     args: TwoOrMore<SetExpression>,
 };
 
-export type NotProperSubsetNode = {
+export type NotProperSubset = {
     kind: "notprsubset",
     args: TwoOrMore<SetExpression>,
 };
 
-export type InNode = {
+export type In = {
     kind: "in",
-    element: IdentifierNode,
+    element: Identifier,
     set: SetExpression,
 };
 
-export type NotInNode = {
+export type NotIn = {
     kind: "notin",
-    element: IdentifierNode,
+    element: Identifier,
     set: SetExpression,
 };
 
 export type LogicExpression =
-    | IdentifierNode
+    | Identifier
 
     // values
-    | TrueNode
-    | FalseNode
+    | True
+    | False
 
     // operations
-    | AndNode
-    | OrNode
-    | NotNode
-    | XorNode
-    | ImpliesNode
-    | IffNode
+    | And
+    | Or
+    | Not
+    | Xor
+    | Implies
+    | Iff
 
     // relations, result in a LogicExpression which may be evaluated to True or False
-    | EqNode
-    | NeqNode
-    | LtNode
-    | LteNode
-    | GtNode
-    | GteNode
+    | Eq
+    | Neq
+    | Lt
+    | Lte
+    | Gt
+    | Gte
 
     // set relations
-    | InNode
-    | NotInNode
-    | SubsetNode
-    | ProperSubsetNode
-    | NotSubsetNode
-    | NotProperSubsetNode;
+    | In
+    | NotIn
+    | Subset
+    | ProperSubset
+    | NotSubset
+    | NotProperSubset;
 
 // TODO: Predicate Logic
 
-// type UniversalNode = {
+// type Universal = {
 //     kind: "univ",
-//     bvar: IdentifierNode,
+//     bvar: Identifier,
 //     arg: LogicExpression,
 // };
 
-// type ExistentialNode = {
+// type Existential = {
 //     kind: "exist",
-//     bvar: IdentifierNode,
+//     bvar: Identifier,
 //     arg: LogicExpression,
 // };
 
-// type PredicateNode = {
+// type Predicate = {
 // };
 
-export type SetNode = {
+export type Set = {
     kind: "set",
     elements: TwoOrMore<Expression>, // could also include shapes, strings, images, etc.
 };
 
-export type EmptySetNode = {
+export type EmptySet = {
     kind: "empty",
 };
 
-export type UnionNode = {
+export type Union = {
     kind: "union",
     args: TwoOrMore<SetExpression>,
 };
 
-export type IntersectionNode = {
+export type Intersection = {
     kind: "intersection",
     args: TwoOrMore<SetExpression>,
 };
 
-export type SetDiffNode = {
+export type SetDiff = {
     kind: "setdiff",
     args: [SetExpression, SetExpression],
 };
 
-export type CartesianProductNode = {
+export type CartesianProduct = {
     kind: "cartesianproduct",
     args: TwoOrMore<SetExpression>,
 };
 
-export type NaturalsNode = {
+export type Naturals = {
     kind: "naturals",
 };
 
-export type IntegersNode = {
+export type Integers = {
     kind: "integers",
 };
 
-export type RationalsNode = {
+export type Rationals = {
     kind: "rationals",
 };
 
-export type RealsNode = {
+export type Reals = {
     kind: "reals",
 };
 
-export type ComplexesNode = {
+export type Complexes = {
     kind: "complexes",
 };
 
 export type SetExpression =
-    | SetNode
-    | EmptySetNode
+    | Set
+    | EmptySet
 
     // set operations
-    | UnionNode
-    | IntersectionNode
-    | SetDiffNode
-    | CartesianProductNode
+    | Union
+    | Intersection
+    | SetDiff
+    | CartesianProduct
 
     // number sets
-    | NaturalsNode
-    | IntegersNode
-    | RationalsNode
-    | RealsNode
-    | ComplexesNode;
+    | Naturals
+    | Integers
+    | Rationals
+    | Reals
+    | Complexes;
 
 export type Expression = NumericExpression | LogicExpression | SetExpression;
 
