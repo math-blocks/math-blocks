@@ -8,7 +8,7 @@
  * - O: Operator
  */
 
-export class Parser<T: {+type: string}, N, O> {
+export class Parser<T: {+type: string, ...}, N, O> {
     // Machinery
     index: number;
     tokens: Array<T>;
@@ -78,19 +78,21 @@ export class Parser<T: {+type: string}, N, O> {
     }
 }
 
-type InfixParselet<T, N, O> = {|
+type InfixParselet<T, N, O> = {
     op: O,
     parse: (Parser<T, N, O>, N) => N,
-|};
+};
 
-type PrefixParselet<T, N, O> = {|
+type PrefixParselet<T, N, O> = {
     parse: (Parser<T, N, O>, T) => N,
-|};
+};
 
 export type InfixParseletMap<T, N, O> = {
     [$PropertyType<T, "type">]: InfixParselet<T, N, O>,
+    ...,
 };
 
 export type PrefixParseletMap<T, N, O> = {
     [$PropertyType<T, "type">]: PrefixParselet<T, N, O>,
+    ...,
 };

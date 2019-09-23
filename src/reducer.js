@@ -28,22 +28,24 @@ const initialState: State = {
     },
 };
 
+type Identifiable = $ReadOnly<{id: number, ...}>;
+
 const hasChildren = (node: Editor.Node<Editor.Glyph>): %checks => {
     return node.type === "row" || node.type === "parens";
 };
 
-const getChildWithId = <T: $ReadOnly<{id: number}>>(
+const getChildWithId = <T: Identifiable>(
     children: $ReadOnlyArray<T>,
     childId: number,
 ): T | void => {
     return children.find(child => child.id === childId);
 };
 
-const firstId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
+const firstId = <T: Identifiable>(items: $ReadOnlyArray<T>) => {
     return items.length > 0 ? items[0].id : null;
 };
 
-const lastId = <T: $ReadOnly<{id: number}>>(items: $ReadOnlyArray<T>) => {
+const lastId = <T: Identifiable>(items: $ReadOnlyArray<T>) => {
     return items.length > 0 ? items[items.length - 1].id : null;
 };
 
@@ -67,14 +69,14 @@ const removeIndex = <T>(array: T[], index: number): T[] => {
     return [...array.slice(0, index), ...array.slice(index + 1)];
 };
 
-const removeChildWithId = <T: {id: number}>(children: T[], id: number): T[] => {
+const removeChildWithId = <T: Identifiable>(children: T[], id: number): T[] => {
     const index = children.findIndex(child => child.id === id);
     return index === -1
         ? children
         : [...children.slice(0, index), ...children.slice(index + 1)];
 };
 
-const insertBeforeChildWithId = <T: {id: number}>(
+const insertBeforeChildWithId = <T: Identifiable>(
     children: T[],
     id: number,
     newChild: T,

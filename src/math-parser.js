@@ -23,11 +23,11 @@ const parseChildren = (
     // expand parseAtom into parseInfix
     // create a parsePrefix to handle unary minus
 
-    const parseAtom = (atom: {|
+    const parseAtom = (atom: {
         id: number,
         type: "atom",
         value: Lexer.Token,
-    |}) => {
+    }) => {
         if (atom.value.kind === "number") {
             operands.push(atom.value);
         } else if (atom.value.kind === "identifier") {
@@ -78,7 +78,7 @@ const parseChildren = (
         if (operator.symbol === "+") {
             const args = [...operands]; // copy operands
             operands.length = 0; // empty operands
-            const result: Semantic.AddNode = {
+            const result: Semantic.Add = {
                 kind: "add",
                 args,
             };
@@ -94,7 +94,7 @@ const parseChildren = (
     return operands[0];
 };
 
-const parseFrac = (frac: Editor.Frac<Lexer.Token>): Semantic.DivNode => {
+const parseFrac = (frac: Editor.Frac<Lexer.Token>): Semantic.Div => {
     const dividend = parseChildren(frac.numerator.children);
     const divisor = parseChildren(frac.denominator.children);
     return {

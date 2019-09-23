@@ -11,10 +11,10 @@ export type TokenType =
     | "identifier"
     | "eol";
 
-export type Token = {|
+export type Token = {
     type: TokenType,
     value: string,
-|};
+};
 
 export type Number = {
     type: "number",

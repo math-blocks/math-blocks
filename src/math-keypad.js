@@ -5,10 +5,10 @@ import {useDispatch} from "react-redux";
 
 import type {Dispatch} from "./reducer";
 
-type Button = {|
+type Button = {
     char: string,
     name: string,
-|};
+};
 
 const buttons: Button[] = [
     {name: "pm", char: "\u00B1"},

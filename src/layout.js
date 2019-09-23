@@ -18,7 +18,8 @@ export type Box = {
     kind: BoxKind,
     shift: Dist,
     content: Node[],
-} & Dim;
+    ...Dim,
+};
 
 export type Glue = {
     type: "Glue",
@@ -45,7 +46,8 @@ export type Kern = {
 export type Rule = {
     type: "Rule",
     id?: number,
-} & Dim;
+    ...Dim,
+};
 
 export type Node = Box | Glyph | Glue | Kern | Rule;
 

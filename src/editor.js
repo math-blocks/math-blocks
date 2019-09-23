@@ -1,38 +1,38 @@
 // @flow
 import {getId} from "./unique-id";
 
-export type Row<T> = {|
+export type Row<T> = {
     id: number,
     type: "row",
     children: Node<T>[],
-|};
+};
 
-export type SubSup<T> = {|
+export type SubSup<T> = {
     id: number,
     type: "subsup",
     sub?: Row<T>,
     sup?: Row<T>,
-|};
+};
 
-export type Frac<T> = {|
+export type Frac<T> = {
     id: number,
     type: "frac",
     numerator: Row<T>,
     denominator: Row<T>,
-|};
+};
 
 // TODO: allow different types of parens
-export type Parens<T> = {|
+export type Parens<T> = {
     id: number,
     type: "parens",
     children: Node<T>[],
-|};
+};
 
-export type Atom<T> = {|
+export type Atom<T> = {
     id: number,
     type: "atom",
     value: T,
-|};
+};
 
 export type Node<T> = Row<T> | SubSup<T> | Frac<T> | Parens<T> | Atom<T>;
 
@@ -80,10 +80,10 @@ export function atom<T>(value: T): Atom<T> {
     };
 }
 
-export type Glyph = {|
+export type Glyph = {
     kind: "glyph",
     char: string,
-|};
+};
 
 export const glyph = (char: string): Atom<Glyph> => atom({kind: "glyph", char});
 
@@ -119,9 +119,9 @@ export function findNode_<T>(root: Node<T>, id: number): Node<T> {
     return result;
 }
 
-export type Cursor = {|
+export type Cursor = {
     path: $ReadOnlyArray<number>,
     // these are indices of the node inside the parent
     prev: ?number,
     next: ?number,
-|};
+};
