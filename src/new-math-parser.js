@@ -8,7 +8,13 @@ export type TokenType =
     | "star"
     | "equal"
     | "number"
-    | "identifier";
+    | "identifier"
+    | "eol";
+
+export type Token = {|
+    type: TokenType,
+    value: string,
+|};
 
 export type Number = {
     type: "number",
@@ -21,7 +27,7 @@ export type Identifier = {
 };
 
 // TOODO: fill out this list
-export type Operator = "add" | "mul" | "div" | "eq" | "neg";
+export type Operator = "add" | "sub" | "mul" | "div" | "eq" | "neg";
 
 export type Apply = {
     type: Operator,
@@ -30,9 +36,9 @@ export type Apply = {
 
 export type Node = Number | Identifier | Apply;
 
-type MathParser = Parser.Parser<TokenType, Node, Operator>;
+type MathParser = Parser.Parser<Token, Node, Operator>;
 
-const prefixParseletMap: Parser.PrefixParseletMap<TokenType, Node, Operator> = {
+const prefixParseletMap: Parser.PrefixParseletMap<Token, Node, Operator> = {
     minus: {
         parse: (parser, _) => ({
             type: "neg",
@@ -83,7 +89,11 @@ const parseNaryArgs = (parser: MathParser, op: Operator) => {
     } else {
         parser.consume();
     }
-    const expr = parser.parseWithPrecedence(parser.getOpPrecedence(op));
+    let expr = parser.parseWithPrecedence(parser.getOpPrecedence(op));
+    if (op === "sub") {
+        expr = {type: "neg", args: [expr]};
+        op = "add";
+    }
     const nextToken = parser.peek();
     if (op === "add" && nextToken.type === "plus") {
         return [expr, ...parseNaryArgs(parser, op)];
@@ -95,8 +105,9 @@ const parseNaryArgs = (parser: MathParser, op: Operator) => {
     }
 };
 
-const infixParseletMap: Parser.InfixParseletMap<TokenType, Node, Operator> = {
+const infixParseletMap: Parser.InfixParseletMap<Token, Node, Operator> = {
     plus: {op: "add", parse: parseNaryInfix("add")},
+    minus: {op: "add", parse: parseNaryInfix("sub")},
     equal: {op: "eq", parse: parseNaryInfix("eq")},
     identifier: {op: "mul", parse: parseNaryInfix("mul")},
 };
@@ -106,6 +117,8 @@ const getOpPrecedence = (op: Operator) => {
         case "eq":
             return 2;
         case "add":
+            return 3;
+        case "sub":
             return 3;
         case "mul":
             return 5;
@@ -119,10 +132,16 @@ const getOpPrecedence = (op: Operator) => {
     }
 };
 
-const parser = new Parser.Parser<TokenType, Node, Operator>(
+const EOL = {
+    type: "eol",
+    value: "",
+};
+
+const parser = new Parser.Parser<Token, Node, Operator>(
     infixParseletMap,
     prefixParseletMap,
     getOpPrecedence,
+    EOL,
 );
 
 export default parser;

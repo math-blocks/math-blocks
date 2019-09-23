@@ -1,39 +1,20 @@
 // @flow
 /**
  * Generic Pratt (Top-Down Operator Precedence) parser.
+ *
+ * Generic parameters used in this file:
+ * - T: Token
+ * - N: Node
+ * - O: Operator
  */
 
-export type Token<T> =
-    | {|
-          type: T,
-          value: string,
-      |}
-    | {|
-          type: "eol",
-          value: "",
-      |};
-
-type InfixParselet<T, N, O> = {|
-    op: O,
-    parse: (Parser<T, N, O>, N) => N,
-|};
-
-type PrefixParselet<T, N, O> = {|
-    parse: (Parser<T, N, O>, Token<T>) => N,
-|};
-
-export type InfixParseletMap<T, N, O> = {
-    [T]: InfixParselet<T, N, O>,
-    eol?: InfixParselet<T, N, O>,
-};
-export type PrefixParseletMap<T, N, O> = {
-    [T]: PrefixParselet<T, N, O>,
-    eol?: PrefixParselet<T, N, O>,
-};
-
-export class Parser<T, N, O> {
+export class Parser<T: {+type: string}, N, O> {
+    // Machinery
     index: number;
-    tokens: Array<Token<T>>;
+    tokens: Array<T>;
+
+    // Configration
+    EOL: T;
     infixParseletMap: InfixParseletMap<T, N, O>;
     prefixParseletMap: PrefixParseletMap<T, N, O>;
     getOpPrecedence: O => number;
@@ -42,32 +23,29 @@ export class Parser<T, N, O> {
         infixParseletMap: InfixParseletMap<T, N, O>,
         prefixParseletMap: PrefixParseletMap<T, N, O>,
         getOpPrecedence: O => number,
+        EOL: T,
     ) {
         this.infixParseletMap = infixParseletMap;
         this.prefixParseletMap = prefixParseletMap;
         this.getOpPrecedence = getOpPrecedence;
+        this.EOL = EOL;
     }
 
     // returns the next token but does not consume
-    peek(): Token<T> {
-        const EOL = {type: "eol", value: ""};
-        return this.tokens[this.index] || EOL;
+    peek(): T {
+        return this.tokens[this.index] || this.EOL;
     }
 
-    consume(): Token<T> {
-        const EOL = {type: "eol", value: ""};
+    consume(): T {
         return this.index < this.tokens.length
             ? this.tokens[this.index++]
-            : EOL;
+            : this.EOL;
     }
 
     getPrecedence() {
         const token = this.peek();
         const parselet = this.infixParseletMap[token.type];
-        if (parselet) {
-            return this.getOpPrecedence(parselet.op);
-        }
-        return 0;
+        return parselet ? this.getOpPrecedence(parselet.op) : 0;
     }
 
     parseInfix(left: N): N {
@@ -93,9 +71,26 @@ export class Parser<T, N, O> {
         return left;
     }
 
-    parse(tokens: Array<Token<T>>) {
+    parse(tokens: Array<T>) {
         this.tokens = tokens;
         this.index = 0;
         return this.parseWithPrecedence(0);
     }
 }
+
+type InfixParselet<T, N, O> = {|
+    op: O,
+    parse: (Parser<T, N, O>, N) => N,
+|};
+
+type PrefixParselet<T, N, O> = {|
+    parse: (Parser<T, N, O>, T) => N,
+|};
+
+export type InfixParseletMap<T, N, O> = {
+    [$PropertyType<T, "type">]: InfixParselet<T, N, O>,
+};
+
+export type PrefixParseletMap<T, N, O> = {
+    [$PropertyType<T, "type">]: PrefixParselet<T, N, O>,
+};

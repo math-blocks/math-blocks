@@ -2,7 +2,7 @@
 import parser from "../new-math-parser.js";
 import * as Parser from "../parser.js";
 
-import type {TokenType} from "../new-math-parser.js";
+import type {Token} from "../new-math-parser.js";
 
 const number = (value: string) => ({type: "number", value});
 const identifier = (value: string) => ({type: "identifier", value});
@@ -10,8 +10,114 @@ const plus = () => ({type: "plus", value: "+"});
 const minus = () => ({type: "minus", value: "-"});
 
 describe("NewMathParser", () => {
-    it("should do something", () => {
-        const tokens: Array<Parser.Token<TokenType>> = [
+    it("should parse binary expressions containing subtraction", () => {
+        const tokens = [number("1"), minus(), number("2")];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "neg",
+                },
+              ],
+              "type": "sub",
+            }
+        `);
+    });
+
+    it("should parse n-ary expressions containing subtraction", () => {
+        const tokens = [
+            number("1"),
+            minus(),
+            number("2"),
+            minus(),
+            number("3"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "1",
+                    },
+                    Object {
+                      "args": Array [
+                        Object {
+                          "type": "number",
+                          "value": "2",
+                        },
+                      ],
+                      "type": "neg",
+                    },
+                  ],
+                  "type": "sub",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "3",
+                    },
+                  ],
+                  "type": "neg",
+                },
+              ],
+              "type": "sub",
+            }
+        `);
+    });
+
+    it("should handle subtracting negative numbers", () => {
+        const tokens = [number("1"), minus(), minus(), number("2")];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "args": Array [
+                        Object {
+                          "type": "number",
+                          "value": "2",
+                        },
+                      ],
+                      "type": "neg",
+                    },
+                  ],
+                  "type": "neg",
+                },
+              ],
+              "type": "sub",
+            }
+        `);
+    });
+
+    it("should parse expressions containing unary minus", () => {
+        const tokens = [
             number("1"),
             plus(),
             minus(),
@@ -49,7 +155,7 @@ describe("NewMathParser", () => {
     });
 
     it("should parse implicit multiplication", () => {
-        const tokens: Array<Parser.Token<TokenType>> = [
+        const tokens: Array<Token> = [
             identifier("a"),
             identifier("b"),
             identifier("c"),
