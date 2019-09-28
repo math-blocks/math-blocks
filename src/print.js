@@ -6,7 +6,7 @@ import {UnreachableCaseError} from "./util";
 
 // NOTE: This is mainly for debugging purposes
 const print = (expr: Semantic.Expression): string => {
-    switch (expr.kind) {
+    switch (expr.type) {
         case "number":
             return expr.value;
         case "identifier":

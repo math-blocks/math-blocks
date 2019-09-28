@@ -1,5 +1,5 @@
 // @flow
-import {type NumericExpression} from "./semantic";
+import {type Expression} from "./semantic";
 import {UnreachableCaseError} from "./util";
 
 type VarDict = {[key: string]: number};
@@ -12,8 +12,8 @@ const sum = (args: number[]) => args.reduce(add, zero);
 const prod = (args: number[]) => args.reduce(mul, one);
 const div = (num: number, den: number) => num / den;
 
-const evaluate = (expr: NumericExpression, varDict: VarDict): number => {
-    switch (expr.kind) {
+const evaluate = (expr: Expression, varDict: VarDict): number => {
+    switch (expr.type) {
         case "number":
             return parseFloat(expr.value);
         case "identifier":
@@ -83,6 +83,7 @@ const evaluate = (expr: NumericExpression, varDict: VarDict): number => {
             throw new Error("can't evaluate func nodes");
 
         default:
+            // $FlowFixMe: handle the other cases
             throw new UnreachableCaseError(expr);
     }
 };

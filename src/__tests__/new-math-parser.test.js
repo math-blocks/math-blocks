@@ -23,16 +23,15 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                  ],
+                  "arg": Object {
+                    "type": "number",
+                    "value": "2",
+                  },
+                  "subtraction": true,
                   "type": "neg",
                 },
               ],
-              "type": "sub",
+              "type": "add",
             }
         `);
     });
@@ -58,28 +57,26 @@ describe("NewMathParser", () => {
                       "value": "1",
                     },
                     Object {
-                      "args": Array [
-                        Object {
-                          "type": "number",
-                          "value": "2",
-                        },
-                      ],
+                      "arg": Object {
+                        "type": "number",
+                        "value": "2",
+                      },
+                      "subtraction": true,
                       "type": "neg",
                     },
                   ],
-                  "type": "sub",
+                  "type": "add",
                 },
                 Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "3",
-                    },
-                  ],
+                  "arg": Object {
+                    "type": "number",
+                    "value": "3",
+                  },
+                  "subtraction": true,
                   "type": "neg",
                 },
               ],
-              "type": "sub",
+              "type": "add",
             }
         `);
     });
@@ -97,21 +94,19 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "args": Array [
-                    Object {
-                      "args": Array [
-                        Object {
-                          "type": "number",
-                          "value": "2",
-                        },
-                      ],
-                      "type": "neg",
+                  "arg": Object {
+                    "arg": Object {
+                      "type": "number",
+                      "value": "2",
                     },
-                  ],
+                    "subtraction": true,
+                    "type": "neg",
+                  },
+                  "subtraction": true,
                   "type": "neg",
                 },
               ],
-              "type": "sub",
+              "type": "add",
             }
         `);
     });
@@ -136,12 +131,11 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                  ],
+                  "arg": Object {
+                    "type": "number",
+                    "value": "2",
+                  },
+                  "subtraction": true,
                   "type": "neg",
                 },
                 Object {
@@ -179,6 +173,7 @@ describe("NewMathParser", () => {
                   "type": "identifier",
                 },
               ],
+              "implicit": true,
               "type": "mul",
             }
         `);

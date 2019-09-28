@@ -14,14 +14,14 @@ describe("Parser", () => {
 
             const parseTree = parse(lexTree);
 
-            expect(parseTree.kind).toEqual("add");
+            expect(parseTree.type).toEqual("add");
 
-            if (parseTree.kind !== "add") {
+            if (parseTree.type !== "add") {
                 throw new Error("not an add");
             }
 
-            expect(parseTree.args[0]).toEqual({kind: "number", value: "1"});
-            expect(parseTree.args[1]).toEqual({kind: "number", value: "2"});
+            expect(parseTree.args[0]).toEqual({type: "number", value: "1"});
+            expect(parseTree.args[1]).toEqual({type: "number", value: "2"});
         });
 
         it("should parse ternary addition", () => {
@@ -39,19 +39,19 @@ describe("Parser", () => {
                 Object {
                   "args": Array [
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "1",
                     },
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "2",
                     },
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "3",
                     },
                   ],
-                  "kind": "add",
+                  "type": "add",
                 }
             `);
         });
@@ -69,19 +69,19 @@ describe("Parser", () => {
                 Object {
                   "args": Array [
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "1",
                     },
                     Object {
                       "arg": Object {
-                        "kind": "number",
+                        "type": "number",
                         "value": "2",
                       },
-                      "kind": "neg",
                       "subtraction": true,
+                      "type": "neg",
                     },
                   ],
-                  "kind": "add",
+                  "type": "add",
                 }
             `);
         });
@@ -101,23 +101,23 @@ describe("Parser", () => {
                 Object {
                   "args": Array [
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "1",
                     },
                     Object {
                       "arg": Object {
-                        "kind": "number",
+                        "type": "number",
                         "value": "2",
                       },
-                      "kind": "neg",
                       "subtraction": true,
+                      "type": "neg",
                     },
                     Object {
-                      "kind": "number",
+                      "type": "number",
                       "value": "3",
                     },
                   ],
-                  "kind": "add",
+                  "type": "add",
                 }
             `);
         });

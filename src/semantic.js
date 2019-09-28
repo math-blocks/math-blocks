@@ -7,62 +7,62 @@
 type TwoOrMore<T> = Array<T>;
 
 export type Number = {
-    kind: "number",
+    type: "number",
     value: string,
     // TODO: unit
     // without 'unit', the number is considered dimensionless
 };
 
 export type Infinity = {
-    kind: "infinity",
+    type: "infinity",
 };
 
 export type Pi = {
-    kind: "pi",
+    type: "pi",
 };
 
 export type Identifier = {
-    kind: "identifier",
+    type: "identifier",
     name: string,
     // TODO: unit
     // it's possible that variables could have units associated with them as well
     // it seems like a bit of an edge case though
 
-    subscript?: NumericExpression,
+    subscript?: Expression,
 };
 
 export type Ellipsis = {
-    kind: "ellipsis",
+    type: "ellipsis",
 };
 
 export type Add = {
-    kind: "add",
-    args: TwoOrMore<NumericExpression>,
+    type: "add",
+    args: TwoOrMore<Expression>,
 };
 
 export type Mul = {
-    kind: "mul",
+    type: "mul",
     implicit: boolean,
-    args: TwoOrMore<NumericExpression>,
+    args: TwoOrMore<Expression>,
 };
 
 export type Func = {
-    kind: "func",
+    type: "func",
     // We want to limit this to identifiers and expression of identifiers
     // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-    func: NumericExpression | LogicExpression,
+    func: Expression | Expression,
     // There's a special case when each of the args is a variable then it could be a variable definition
-    args: (NumericExpression | LogicExpression)[],
+    args: (Expression | Expression)[],
 };
 
 // I'm not sure how useful having a special node for this is given we'll have
 // a separate table for looking up the value of variables, constants, and other
 // things that can be defined include functions
 // type FuncDef = {
-//     kind: "funcdef",
-//     func: NumericExpression | LogicExpression,
+//     type: "funcdef",
+//     func: Expression | Expression,
 //     bvars: Identifier[],
-//     value: NumericExpression,
+//     value: Expression,
 // }
 
 // f(x, y) = 2x + y
@@ -75,80 +75,80 @@ export type Func = {
 // from the separate parts
 
 export type Div = {
-    kind: "div",
-    dividend: NumericExpression,
-    divisor: NumericExpression,
+    type: "div",
+    dividend: Expression,
+    divisor: Expression,
 };
 
 export type Mod = {
-    kind: "mod",
-    dividend: NumericExpression,
-    divisor: NumericExpression,
+    type: "mod",
+    dividend: Expression,
+    divisor: Expression,
 };
 
 export type Root = {
-    kind: "root",
-    index: NumericExpression,
-    radicand: NumericExpression,
+    type: "root",
+    index: Expression,
+    radicand: Expression,
 };
 
 export type Exp = {
-    kind: "exp",
-    base: NumericExpression,
-    exp: NumericExpression,
+    type: "exp",
+    base: Expression,
+    exp: Expression,
 };
 
 export type Log = {
-    kind: "log",
-    base: NumericExpression,
-    arg: NumericExpression,
+    type: "log",
+    base: Expression,
+    arg: Expression,
 };
 
 export type Neg = {
-    kind: "neg",
+    type: "neg",
     subtraction: boolean,
-    arg: NumericExpression,
+    arg: Expression,
 };
 
 export type Abs = {
-    kind: "abs",
-    arg: NumericExpression,
+    type: "abs",
+    arg: Expression,
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
 export type Limits = {
-    kind: "limits",
-    lower: NumericExpression,
-    upper: NumericExpression,
+    type: "limits",
+    lower: Expression,
+    upper: Expression,
 };
 
 export type Sum = {
-    kind: "sum",
-    arg: NumericExpression,
+    type: "sum",
+    arg: Expression,
     bvar: Identifier,
     limits: Limits,
 };
 
 export type Prod = {
-    kind: "prod",
-    arg: NumericExpression,
+    type: "prod",
+    arg: Expression,
     bvar: Identifier,
     limits: Limits,
 };
 
 export type Limit = {
-    kind: "limit",
+    type: "limit",
     side: "left" | "right" | "both",
     bvar: Identifier,
     // TODOO: add target
-    arg: NumericExpression,
+    arg: Expression,
 };
 
 // TODO: think about partial derivatives
 export type Diff = {
-    kind: "diff",
-    arg: NumericExpression,
-    degree: NumericExpression,
+    type: "diff",
+    arg: Expression,
+    degree: Expression,
 
     // If there's a bvar we use liebniz notation, if not
     // we use prime notation.
@@ -157,8 +157,8 @@ export type Diff = {
 
 // TODO: think about multiple integrals
 export type Int = {
-    kind: "int",
-    arg: NumericExpression,
+    type: "int",
+    arg: Expression,
     bvar: Identifier,
     limits: Limits,
 };
@@ -197,103 +197,103 @@ export type NumericExpression =
     | Int;
 
 export type Eq = {
-    kind: "eq",
-    args: TwoOrMore<NumericExpression>,
+    type: "eq",
+    args: TwoOrMore<Expression>,
 };
 
 export type Neq = {
-    kind: "neq",
-    args: TwoOrMore<NumericExpression>,
+    type: "neq",
+    args: TwoOrMore<Expression>,
 };
 
 export type Lt = {
-    kind: "lt",
-    args: TwoOrMore<NumericExpression>,
+    type: "lt",
+    args: TwoOrMore<Expression>,
 };
 
 export type Lte = {
-    kind: "lte",
-    args: TwoOrMore<NumericExpression>,
+    type: "lte",
+    args: TwoOrMore<Expression>,
 };
 
 export type Gt = {
-    kind: "gt",
-    args: TwoOrMore<NumericExpression>,
+    type: "gt",
+    args: TwoOrMore<Expression>,
 };
 
 export type Gte = {
-    kind: "gte",
-    args: TwoOrMore<NumericExpression>,
+    type: "gte",
+    args: TwoOrMore<Expression>,
 };
 
 export type And = {
-    kind: "and",
-    args: TwoOrMore<LogicExpression>,
+    type: "and",
+    args: TwoOrMore<Expression>,
 };
 
 export type Or = {
-    kind: "or",
-    args: TwoOrMore<LogicExpression>,
+    type: "or",
+    args: TwoOrMore<Expression>,
 };
 
 export type Xor = {
-    kind: "xor",
-    args: TwoOrMore<LogicExpression>,
+    type: "xor",
+    args: TwoOrMore<Expression>,
 };
 
 export type Not = {
-    kind: "not",
-    arg: LogicExpression,
+    type: "not",
+    arg: Expression,
 };
 
 export type Implies = {
-    kind: "implies",
-    args: [LogicExpression, LogicExpression],
+    type: "implies",
+    args: [Expression, Expression],
 };
 
 export type Iff = {
-    kind: "iff",
-    args: [LogicExpression, LogicExpression],
+    type: "iff",
+    args: [Expression, Expression],
 };
 
 export type True = {
-    kind: "true",
+    type: "true",
 };
 
 export type False = {
-    kind: "false",
+    type: "false",
 };
 
 export type Subset = {
-    kind: "subset",
-    args: TwoOrMore<SetExpression>,
+    type: "subset",
+    args: TwoOrMore<Expression>,
 };
 
 export type ProperSubset = {
-    kind: "prsubset",
-    args: TwoOrMore<SetExpression>,
+    type: "prsubset",
+    args: TwoOrMore<Expression>,
 };
 
 export type NotSubset = {
-    kind: "notsubset",
-    args: TwoOrMore<SetExpression>,
+    type: "notsubset",
+    args: TwoOrMore<Expression>,
 };
 
 export type NotProperSubset = {
-    kind: "notprsubset",
-    args: TwoOrMore<SetExpression>,
+    type: "notprsubset",
+    args: TwoOrMore<Expression>,
 };
 
 export type In = {
-    kind: "in",
+    type: "in",
     element: Identifier,
-    set: SetExpression,
+    set: Expression,
 };
 
 export type NotIn = {
-    kind: "notin",
+    type: "notin",
     element: Identifier,
-    set: SetExpression,
+    set: Expression,
 };
 
 export type LogicExpression =
@@ -311,7 +311,7 @@ export type LogicExpression =
     | Implies
     | Iff
 
-    // relations, result in a LogicExpression which may be evaluated to True or False
+    // relations, result in a Expression which may be evaluated to True or False
     | Eq
     | Neq
     | Lt
@@ -330,67 +330,67 @@ export type LogicExpression =
 // TODO: Predicate Logic
 
 // type Universal = {
-//     kind: "univ",
+//     type: "univ",
 //     bvar: Identifier,
-//     arg: LogicExpression,
+//     arg: Expression,
 // };
 
 // type Existential = {
-//     kind: "exist",
+//     type: "exist",
 //     bvar: Identifier,
-//     arg: LogicExpression,
+//     arg: Expression,
 // };
 
 // type Predicate = {
 // };
 
 export type Set = {
-    kind: "set",
+    type: "set",
     elements: TwoOrMore<Expression>, // could also include shapes, strings, images, etc.
 };
 
 export type EmptySet = {
-    kind: "empty",
+    type: "empty",
 };
 
 export type Union = {
-    kind: "union",
-    args: TwoOrMore<SetExpression>,
+    type: "union",
+    args: TwoOrMore<Expression>,
 };
 
 export type Intersection = {
-    kind: "intersection",
-    args: TwoOrMore<SetExpression>,
+    type: "intersection",
+    args: TwoOrMore<Expression>,
 };
 
 export type SetDiff = {
-    kind: "setdiff",
-    args: [SetExpression, SetExpression],
+    type: "setdiff",
+    args: [Expression, Expression],
 };
 
 export type CartesianProduct = {
-    kind: "cartesianproduct",
-    args: TwoOrMore<SetExpression>,
+    type: "cartesianproduct",
+    args: TwoOrMore<Expression>,
 };
 
 export type Naturals = {
-    kind: "naturals",
+    type: "naturals",
 };
 
 export type Integers = {
-    kind: "integers",
+    type: "integers",
 };
 
 export type Rationals = {
-    kind: "rationals",
+    type: "rationals",
 };
 
 export type Reals = {
-    kind: "reals",
+    type: "reals",
 };
 
 export type Complexes = {
-    kind: "complexes",
+    type: "complexes",
 };
 
 export type SetExpression =

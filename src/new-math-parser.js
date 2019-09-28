@@ -1,5 +1,6 @@
 // @flow
 import * as Parser from "./parser.js";
+import * as Semantic from "./semantic.js";
 
 // TODO: fill this list out
 export type TokenType =
@@ -16,72 +17,83 @@ export type Token = {
     value: string,
 };
 
-export type Number = {
-    type: "number",
-    value: string,
-};
-
-export type Identifier = {
-    type: "identifier",
-    name: string,
-};
-
 // TOODO: fill out this list
-export type Operator = "add" | "sub" | "mul" | "div" | "eq" | "neg";
+export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq";
 
-export type Apply = {
-    type: Operator,
-    args: Array<Node>,
-};
-
-export type Node = Number | Identifier | Apply;
+export type Node = Semantic.Expression;
 
 type MathParser = Parser.Parser<Token, Node, Operator>;
 
+const identifier = (name: string): Semantic.Identifier => ({
+    type: "identifier",
+    name,
+});
+const number = (value: string): Semantic.Number => ({type: "number", value});
+
+const add = (args: Node[]): Semantic.Add => ({
+    type: "add",
+    args,
+});
+
+const mul = (args: Node[], implicit: boolean = false): Semantic.Mul => ({
+    type: "mul",
+    implicit,
+    args,
+});
+
+const eq = (args: Node[]): Semantic.Eq => ({
+    type: "eq",
+    args,
+});
+
+const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
+    type: "neg",
+    arg,
+    subtraction,
+});
+
 const prefixParseletMap: Parser.PrefixParseletMap<Token, Node, Operator> = {
     minus: {
-        parse: (parser, _) => ({
-            type: "neg",
-            args: [parser.parseWithPrecedence(parser.getOpPrecedence("neg"))],
-        }),
+        parse: (parser, _) =>
+            neg(
+                parser.parseWithPrecedence(parser.getOpPrecedence("neg")),
+                true,
+            ),
     },
     identifier: {
-        parse: (_, token) => ({
-            type: "identifier",
-            name: token.value,
-        }),
+        parse: (_, token) => identifier(token.value),
     },
     number: {
-        parse: (_, token) => ({
-            type: "number",
-            value: token.value,
-        }),
+        parse: (_, token) => number(token.value),
     },
 };
 
 // most (all?) of the binary only operations will be handled by the editor
-const parseBinaryInfix = (op: Operator) => (
-    parser: MathParser,
-    left: Node,
-): Node => {
-    parser.consume();
-    return {
-        type: op,
-        args: [left, parser.parseWithPrecedence(parser.getOpPrecedence(op))],
-    };
-};
+// const parseBinaryInfix = (op: Operator) => (
+//     parser: MathParser,
+//     left: Node,
+// ): Node => {
+//     parser.consume();
+//     return {
+//         type: op,
+//         args: [left, parser.parseWithPrecedence(parser.getOpPrecedence(op))],
+//     };
+// };
 
 const parseNaryInfix = (op: Operator) => (
     parser: MathParser,
     left: Node,
 ): Node => {
-    return {
-        type: op,
-        args: [left, ...parseNaryArgs(parser, op)],
-    };
+    if (op === "add" || op === "sub") {
+        return add([left, ...parseNaryArgs(parser, op)]);
+    } else if (op === "mul") {
+        return mul([left, ...parseNaryArgs(parser, op)], true);
+    } else {
+        return eq([left, ...parseNaryArgs(parser, op)]);
+    }
 };
 
-const parseNaryArgs = (parser: MathParser, op: Operator) => {
+const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "identifier") {
@@ -89,9 +101,9 @@ const parseNaryArgs = (parser: MathParser, op: Operator) => {
     } else {
         parser.consume();
     }
-    let expr = parser.parseWithPrecedence(parser.getOpPrecedence(op));
+    let expr: Node = parser.parseWithPrecedence(parser.getOpPrecedence(op));
     if (op === "sub") {
-        expr = {type: "neg", args: [expr]};
+        expr = {type: "neg", subtraction: true, arg: expr};
         op = "add";
     }
     const nextToken = parser.peek();

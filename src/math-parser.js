@@ -29,10 +29,13 @@ const parseChildren = (
         value: Lexer.Token,
     }) => {
         if (atom.value.kind === "number") {
-            operands.push(atom.value);
+            operands.push({
+                type: "number",
+                value: atom.value.value,
+            });
         } else if (atom.value.kind === "identifier") {
             operands.push({
-                kind: "identifier",
+                type: "identifier",
                 name: atom.value.name,
             });
         } else {
@@ -49,7 +52,7 @@ const parseChildren = (
                     // wrap the last operand in a "neg" node
                     const lastArg = operands.pop();
                     operands.push({
-                        kind: "neg",
+                        type: "neg",
                         subtraction: true,
                         arg: lastArg,
                     });
@@ -79,7 +82,7 @@ const parseChildren = (
             const args = [...operands]; // copy operands
             operands.length = 0; // empty operands
             const result: Semantic.Add = {
-                kind: "add",
+                type: "add",
                 args,
             };
             operands.push(result);
@@ -98,7 +101,7 @@ const parseFrac = (frac: Editor.Frac<Lexer.Token>): Semantic.Div => {
     const dividend = parseChildren(frac.numerator.children);
     const divisor = parseChildren(frac.denominator.children);
     return {
-        kind: "div",
+        type: "div",
         dividend,
         divisor,
     };
@@ -119,7 +122,7 @@ export const parse = (node: Editor.Node<Lexer.Token>): Semantic.Expression => {
 
             // Placeholder, returns "0"
             return {
-                kind: "number",
+                type: "number",
                 value: "0",
             };
         }
@@ -132,12 +135,12 @@ export const parse = (node: Editor.Node<Lexer.Token>): Semantic.Expression => {
             switch (value.kind) {
                 case "number":
                     return {
-                        kind: "number",
+                        type: "number",
                         value: value.value,
                     };
                 case "identifier":
                     return {
-                        kind: "identifier",
+                        type: "identifier",
                         name: value.name,
                     };
                 case "symbol":
