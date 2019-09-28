@@ -39,8 +39,8 @@ const parseChildren = (
                 name: atom.value.name,
             });
         } else {
-            let op = atom.value.symbol;
-            if (op === "\u2212") {
+            let op = atom.value;
+            if (op.kind === "minus") {
                 const nextNode = getNode();
                 if (!nextNode) {
                     throw new Error("expected a node after the operator");
@@ -57,13 +57,13 @@ const parseChildren = (
                         arg: lastArg,
                     });
                 }
-                op = "+";
+                op = {kind: "plus"};
             }
             const lastOperator = operators[operators.length - 1];
-            if (lastOperator && lastOperator.symbol === op) {
+            if (lastOperator && lastOperator.kind === op.kind) {
                 return;
             }
-            operators.push({kind: "symbol", symbol: op});
+            operators.push(op);
         }
     };
 
@@ -78,7 +78,7 @@ const parseChildren = (
     // console.log(operands);
 
     for (const operator of operators) {
-        if (operator.symbol === "+") {
+        if (operator.kind === "plus") {
             const args = [...operands]; // copy operands
             operands.length = 0; // empty operands
             const result: Semantic.Add = {
@@ -146,6 +146,7 @@ export const parse = (node: Editor.Node<Lexer.Token>): Semantic.Expression => {
                 case "symbol":
                     throw new Error("this symbol should already be parsed");
                 default:
+                    // $FlowFixMe
                     throw new UnreachableCaseError(value);
             }
         }

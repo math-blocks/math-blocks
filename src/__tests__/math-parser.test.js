@@ -8,7 +8,7 @@ describe("Parser", () => {
         it("should parse binary addition", () => {
             const lexTree: Editor.Node<Lexer.Token> = Editor.row([
                 Lexer.number("1"),
-                Lexer.symbol("+"),
+                Lexer.plus(),
                 Lexer.number("2"),
             ]);
 
@@ -27,9 +27,9 @@ describe("Parser", () => {
         it("should parse ternary addition", () => {
             const lexTree: Editor.Node<Lexer.Token> = Editor.row([
                 Lexer.number("1"),
-                Lexer.symbol("+"),
+                Lexer.plus(),
                 Lexer.number("2"),
-                Lexer.symbol("+"),
+                Lexer.plus(),
                 Lexer.number("3"),
             ]);
 
@@ -59,7 +59,7 @@ describe("Parser", () => {
         it("should parse subtraction as adding the additive inverse", () => {
             const lexTree: Editor.Node<Lexer.Token> = Editor.row([
                 Lexer.number("1"),
-                Lexer.symbol("\u2212"),
+                Lexer.minus(),
                 Lexer.number("2"),
             ]);
 
@@ -89,9 +89,9 @@ describe("Parser", () => {
         it("should parse subtraction before the end of a long expression", () => {
             const lexTree: Editor.Node<Lexer.Token> = Editor.row([
                 Lexer.number("1"),
-                Lexer.symbol("\u2212"),
+                Lexer.minus(),
                 Lexer.number("2"),
-                Lexer.symbol("+"),
+                Lexer.plus(),
                 Lexer.number("3"),
             ]);
 

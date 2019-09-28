@@ -3,7 +3,7 @@ import * as Lexer from "../lexer";
 import * as Editor from "../editor";
 
 const {row, glyph, frac} = Editor;
-const {identifier, number, symbol} = Lexer;
+const {identifier, number, plus, minus, eq} = Lexer;
 
 function isRow(node: Editor.Node<Lexer.Token>): %checks {
     return node.type === "row";
@@ -100,7 +100,7 @@ describe("Lexer", () => {
 
             const expectedTokenTree = row([
                 number("1"),
-                symbol("+"),
+                plus(),
                 frac(row([number("1")]), row([identifier("x")])),
             ]);
 

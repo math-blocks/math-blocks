@@ -15,18 +15,18 @@ export class Parser<T: {+type: string, ...}, N, O> {
 
     // Configration
     EOL: T;
-    infixParseletMap: InfixParseletMap<T, N, O>;
-    prefixParseletMap: PrefixParseletMap<T, N, O>;
+    getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>;
+    getInfixParselet: (token: T) => ?InfixParselet<T, N, O>;
     getOpPrecedence: O => number;
 
     constructor(
-        infixParseletMap: InfixParseletMap<T, N, O>,
-        prefixParseletMap: PrefixParseletMap<T, N, O>,
+        getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>,
+        getInfixParselet: (token: T) => ?InfixParselet<T, N, O>,
         getOpPrecedence: O => number,
         EOL: T,
     ) {
-        this.infixParseletMap = infixParseletMap;
-        this.prefixParseletMap = prefixParseletMap;
+        this.getInfixParselet = getInfixParselet;
+        this.getPrefixParselet = getPrefixParselet;
         this.getOpPrecedence = getOpPrecedence;
         this.EOL = EOL;
     }
@@ -44,19 +44,19 @@ export class Parser<T: {+type: string, ...}, N, O> {
 
     getPrecedence() {
         const token = this.peek();
-        const parselet = this.infixParseletMap[token.type];
+        const parselet = this.getInfixParselet(token);
         return parselet ? this.getOpPrecedence(parselet.op) : 0;
     }
 
     parseInfix(left: N): N {
         const token = this.peek();
-        const parselet = this.infixParseletMap[token.type];
+        const parselet = this.getInfixParselet(token);
         return parselet ? parselet.parse(this, left) : left;
     }
 
     parsePrefix(): N {
         const token = this.consume();
-        const parselet = this.prefixParseletMap[token.type];
+        const parselet = this.getPrefixParselet(token);
         if (!parselet) {
             throw new Error("Unexpected token");
         }
@@ -78,21 +78,11 @@ export class Parser<T: {+type: string, ...}, N, O> {
     }
 }
 
-type InfixParselet<T, N, O> = {
+export type InfixParselet<T, N, O> = {
     op: O,
     parse: (Parser<T, N, O>, N) => N,
 };
 
-type PrefixParselet<T, N, O> = {
+export type PrefixParselet<T, N, O> = {
     parse: (Parser<T, N, O>, T) => N,
-};
-
-export type InfixParseletMap<T, N, O> = {
-    [$PropertyType<T, "type">]: InfixParselet<T, N, O>,
-    ...,
-};
-
-export type PrefixParseletMap<T, N, O> = {
-    [$PropertyType<T, "type">]: PrefixParselet<T, N, O>,
-    ...,
 };

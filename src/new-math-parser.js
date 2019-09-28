@@ -1,6 +1,8 @@
 // @flow
 import * as Parser from "./parser.js";
 import * as Semantic from "./semantic.js";
+import * as Lexer from "./lexer.js";
+import * as Editor from "./editor.js";
 
 // TODO: fill this list out
 export type TokenType =
@@ -10,12 +12,20 @@ export type TokenType =
     | "equal"
     | "number"
     | "identifier"
+
+    // from editor
+    | "frac"
+    | "subsup"
+    | "parens"
+
+    // EOL
     | "eol";
 
-export type Token = {
-    type: TokenType,
-    value: string,
-};
+// export type Token = {
+//     type: TokenType,
+//     value: string,
+// };
+export type Token = Editor.Node<Lexer.Token>;
 
 // TOODO: fill out this list
 export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq";
@@ -52,20 +62,47 @@ const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
     subtraction,
 });
 
-const prefixParseletMap: Parser.PrefixParseletMap<Token, Node, Operator> = {
-    minus: {
-        parse: (parser, _) =>
-            neg(
-                parser.parseWithPrecedence(parser.getOpPrecedence("neg")),
-                true,
-            ),
-    },
-    identifier: {
-        parse: (_, token) => identifier(token.value),
-    },
-    number: {
-        parse: (_, token) => number(token.value),
-    },
+const getPrefixParselet = (
+    token: Token,
+): ?Parser.PrefixParselet<Token, Node, Operator> => {
+    switch (token.type) {
+        case "atom": {
+            const atom = token.value;
+            switch (atom.kind) {
+                case "identifier":
+                    return {
+                        parse: (_, token) => identifier(atom.name),
+                    };
+                case "number":
+                    return {
+                        parse: (_, token) => number(atom.value),
+                    };
+                case "minus":
+                    return {
+                        parse: (parser, _) =>
+                            neg(
+                                parser.parseWithPrecedence(
+                                    parser.getOpPrecedence("neg"),
+                                ),
+                                true,
+                            ),
+                    };
+                default:
+                    return null;
+            }
+        }
+        case "frac":
+            return null;
+        case "subsup":
+            return null;
+        case "row":
+            return null;
+        case "parens":
+            return null;
+        default:
+            (token: empty);
+            throw new Error("unexpected token");
+    }
 };
 
 // most (all?) of the binary only operations will be handled by the editor
@@ -96,32 +133,61 @@ const parseNaryInfix = (op: Operator) => (
 const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
-    if (token.type === "identifier") {
-        // implicit multiplication
+    if (token.type === "atom") {
+        const atom = token.value;
+        if (atom.kind === "identifier") {
+            // implicit multiplication
+        } else {
+            parser.consume();
+        }
+        let expr: Node = parser.parseWithPrecedence(parser.getOpPrecedence(op));
+        if (op === "sub") {
+            expr = {type: "neg", subtraction: true, arg: expr};
+            op = "add";
+        }
+        const nextToken = parser.peek();
+        if (nextToken.type === "atom") {
+            const nextAtom = nextToken.value;
+            if (op === "add" && nextAtom.kind === "plus") {
+                return [expr, ...parseNaryArgs(parser, op)];
+            } else if (op === "mul" && nextAtom.kind === "identifier") {
+                // implicit multiplication
+                return [expr, ...parseNaryArgs(parser, op)];
+            } else {
+                return [expr];
+            }
+        } else {
+            throw new Error(`we don't handle ${nextToken.type} nextTokens yet`);
+            // TODO: deal with frac, subsup, etc.
+        }
     } else {
-        parser.consume();
-    }
-    let expr: Node = parser.parseWithPrecedence(parser.getOpPrecedence(op));
-    if (op === "sub") {
-        expr = {type: "neg", subtraction: true, arg: expr};
-        op = "add";
-    }
-    const nextToken = parser.peek();
-    if (op === "add" && nextToken.type === "plus") {
-        return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === "mul" && nextToken.type === "identifier") {
-        // implicit multiplication
-        return [expr, ...parseNaryArgs(parser, op)];
-    } else {
-        return [expr];
+        throw new Error(`we don't handle ${token.type} tokens yet`);
+        // TODO: deal with frac, subsup, etc.
     }
 };
 
-const infixParseletMap: Parser.InfixParseletMap<Token, Node, Operator> = {
-    plus: {op: "add", parse: parseNaryInfix("add")},
-    minus: {op: "add", parse: parseNaryInfix("sub")},
-    equal: {op: "eq", parse: parseNaryInfix("eq")},
-    identifier: {op: "mul", parse: parseNaryInfix("mul")},
+const getInfixParselet = (
+    token: Token,
+): ?Parser.InfixParselet<Token, Node, Operator> => {
+    switch (token.type) {
+        case "atom": {
+            const atom = token.value;
+            switch (atom.kind) {
+                case "plus":
+                    return {op: "add", parse: parseNaryInfix("add")};
+                case "minus":
+                    return {op: "add", parse: parseNaryInfix("sub")};
+                case "equal":
+                    return {op: "eq", parse: parseNaryInfix("eq")};
+                case "identifier":
+                    return {op: "mul", parse: parseNaryInfix("mul")};
+                default:
+                    return null;
+            }
+        }
+        default:
+            return null;
+    }
 };
 
 const getOpPrecedence = (op: Operator) => {
@@ -144,14 +210,11 @@ const getOpPrecedence = (op: Operator) => {
     }
 };
 
-const EOL = {
-    type: "eol",
-    value: "",
-};
+const EOL: Token = Editor.atom({kind: "eol"});
 
 const parser = new Parser.Parser<Token, Node, Operator>(
-    infixParseletMap,
-    prefixParseletMap,
+    getPrefixParselet,
+    getInfixParselet,
     getOpPrecedence,
     EOL,
 );

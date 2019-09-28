@@ -24,14 +24,11 @@ export type Identifier = {
     name: string,
 };
 
-type Symbols = "+" | "\u2212" | "=" | "<" | ">";
+export type Plus = {kind: "plus"};
+export type Minus = {kind: "minus"};
+export type Eq = {kind: "eq"};
 
-const symbols: Symbols[] = ["+", "\u2212", "=", "<", ">"];
-
-export type Symbol = {
-    kind: "symbol",
-    symbol: Symbols, // add more
-};
+export type Symbol = Plus | Minus | Eq | EOL;
 
 export type Number = {
     kind: "number",
@@ -44,10 +41,13 @@ export const identifier = (name: string): Editor.Atom<Token> =>
 export const number = (value: string): Editor.Atom<Token> =>
     Editor.atom({kind: "number", value});
 
-export const symbol = (symbol: Symbols): Editor.Atom<Token> =>
-    Editor.atom({kind: "symbol", symbol});
+export const plus = () => Editor.atom<Token>({kind: "plus"});
+export const minus = () => Editor.atom<Token>({kind: "minus"});
+export const eq = () => Editor.atom<Token>({kind: "eq"});
 
-export type Token = Identifier | Symbol | Number;
+type EOL = {kind: "eol"};
+
+export type Token = Identifier | Number | Plus | Minus | Eq | EOL;
 
 const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\-|\=)|(sin|cos|tan|[a-z])/gi;
 
@@ -66,7 +66,13 @@ const processGlyphs = glyphs => {
             if (value) {
                 tokens.push(number(value));
             } else if (sym) {
-                tokens.push(symbol(sym));
+                if (sym === "=") {
+                    tokens.push(eq());
+                } else if (sym === "+") {
+                    tokens.push(plus());
+                } else if (sym === "\u2212") {
+                    tokens.push(minus());
+                }
             } else if (name) {
                 tokens.push(identifier(name));
             }

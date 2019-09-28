@@ -1,17 +1,13 @@
 // @flow
 import parser from "../new-math-parser.js";
 import * as Parser from "../parser.js";
+import * as Lexer from "../lexer.js";
 
 import type {Token} from "../new-math-parser.js";
 
-const number = (value: string) => ({type: "number", value});
-const identifier = (value: string) => ({type: "identifier", value});
-const plus = () => ({type: "plus", value: "+"});
-const minus = () => ({type: "minus", value: "-"});
-
 describe("NewMathParser", () => {
     it("should parse binary expressions containing subtraction", () => {
-        const tokens = [number("1"), minus(), number("2")];
+        const tokens = [Lexer.number("1"), Lexer.minus(), Lexer.number("2")];
 
         const ast = parser.parse(tokens);
 
@@ -38,11 +34,11 @@ describe("NewMathParser", () => {
 
     it("should parse n-ary expressions containing subtraction", () => {
         const tokens = [
-            number("1"),
-            minus(),
-            number("2"),
-            minus(),
-            number("3"),
+            Lexer.number("1"),
+            Lexer.minus(),
+            Lexer.number("2"),
+            Lexer.minus(),
+            Lexer.number("3"),
         ];
 
         const ast = parser.parse(tokens);
@@ -82,7 +78,12 @@ describe("NewMathParser", () => {
     });
 
     it("should handle subtracting negative numbers", () => {
-        const tokens = [number("1"), minus(), minus(), number("2")];
+        const tokens = [
+            Lexer.number("1"),
+            Lexer.minus(),
+            Lexer.minus(),
+            Lexer.number("2"),
+        ];
 
         const ast = parser.parse(tokens);
 
@@ -111,14 +112,14 @@ describe("NewMathParser", () => {
         `);
     });
 
-    it("should parse expressions containing unary minus", () => {
+    it.only("should parse expressions containing unary minus", () => {
         const tokens = [
-            number("1"),
-            plus(),
-            minus(),
-            number("2"),
-            plus(),
-            number("3"),
+            Lexer.number("1"),
+            Lexer.plus(),
+            Lexer.minus(),
+            Lexer.number("2"),
+            Lexer.plus(),
+            Lexer.number("3"),
         ];
 
         const ast = parser.parse(tokens);
@@ -150,9 +151,9 @@ describe("NewMathParser", () => {
 
     it("should parse implicit multiplication", () => {
         const tokens: Array<Token> = [
-            identifier("a"),
-            identifier("b"),
-            identifier("c"),
+            Lexer.identifier("a"),
+            Lexer.identifier("b"),
+            Lexer.identifier("c"),
         ];
 
         const ast = parser.parse(tokens);
