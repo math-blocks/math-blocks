@@ -14,7 +14,7 @@ const {row, glyph, frac} = Editor;
 const root: Editor.Row<Editor.Glyph> = row([
     glyph("1"),
     glyph("+"),
-    frac(row([glyph("1")]), row([glyph("2"), glyph("y")])),
+    frac([glyph("1")], [glyph("2"), glyph("y")]),
     glyph("\u2212"),
     glyph("x"),
 ]);

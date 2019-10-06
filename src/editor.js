@@ -46,21 +46,21 @@ export function row<T>(children: Node<T>[]): Row<T> {
     };
 }
 
-export function subsup<T>(sub?: Row<T>, sup?: Row<T>): SubSup<T> {
+export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T> {
     return {
         id: getId(),
         type: "subsup",
-        sub,
-        sup,
+        sub: sub ? row(sub) : sub,
+        sup: sup ? row(sup) : sup,
     };
 }
 
-export function frac<T>(numerator: Row<T>, denominator: Row<T>): Frac<T> {
+export function frac<T>(numerator: Node<T>[], denominator: Node<T>[]): Frac<T> {
     return {
         id: getId(),
         type: "frac",
-        numerator,
-        denominator,
+        numerator: row(numerator),
+        denominator: row(denominator),
     };
 }
 

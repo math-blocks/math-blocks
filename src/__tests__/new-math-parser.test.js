@@ -222,10 +222,7 @@ describe("NewMathParser", () => {
         const tokens: Array<Token> = [
             Lexer.number("1"),
             Lexer.plus(),
-            Editor.frac(
-                Editor.row([Lexer.number("1")]),
-                Editor.row([Lexer.identifier("x")]),
-            ),
+            Editor.frac([Lexer.number("1")], [Lexer.identifier("x")]),
         ];
 
         const parseTree = parser.parse(tokens);
@@ -257,7 +254,7 @@ describe("NewMathParser", () => {
     it("should handle exponents", () => {
         const tokens: Array<Token> = [
             Lexer.identifier("x"),
-            Editor.subsup(undefined, Editor.row([Lexer.number("2")])),
+            Editor.subsup(undefined, [Lexer.number("2")]),
         ];
 
         const parseTree = parser.parse(tokens);
@@ -280,13 +277,10 @@ describe("NewMathParser", () => {
     it("should handle nested exponents", () => {
         const tokens: Array<Token> = [
             Lexer.identifier("x"),
-            Editor.subsup(
-                undefined,
-                Editor.row([
-                    Lexer.number("y"),
-                    Editor.subsup(undefined, Editor.row([Lexer.number("2")])),
-                ]),
-            ),
+            Editor.subsup(undefined, [
+                Lexer.number("y"),
+                Editor.subsup(undefined, [Lexer.number("2")]),
+            ]),
         ];
 
         const parseTree = parser.parse(tokens);
@@ -317,11 +311,7 @@ describe("NewMathParser", () => {
         const tokens: Array<Token> = [
             Lexer.identifier("a"),
             Editor.subsup(
-                Editor.row([
-                    Lexer.identifier("n"),
-                    Lexer.plus(),
-                    Lexer.number("1"),
-                ]),
+                [Lexer.identifier("n"), Lexer.plus(), Lexer.number("1")],
                 undefined,
             ),
         ];
@@ -353,12 +343,8 @@ describe("NewMathParser", () => {
         const tokens: Array<Token> = [
             Lexer.identifier("a"),
             Editor.subsup(
-                Editor.row([
-                    Lexer.identifier("n"),
-                    Lexer.plus(),
-                    Lexer.number("1"),
-                ]),
-                Editor.row([Lexer.number("2")]),
+                [Lexer.identifier("n"), Lexer.plus(), Lexer.number("1")],
+                [Lexer.number("2")],
             ),
         ];
 
@@ -395,7 +381,7 @@ describe("NewMathParser", () => {
     it("should throw when a subscript is being used on a number", () => {
         const tokens: Array<Token> = [
             Lexer.number("2"),
-            Editor.subsup(Editor.row([Lexer.number("0")]), undefined),
+            Editor.subsup([Lexer.number("0")], undefined),
         ];
 
         expect(() => parser.parse(tokens)).toThrowErrorMatchingInlineSnapshot(

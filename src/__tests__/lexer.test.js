@@ -94,14 +94,14 @@ describe("Lexer", () => {
             const glyphTree = row([
                 glyph("1"),
                 glyph("+"),
-                frac(row([glyph("1")]), row([glyph("x")])),
+                frac([glyph("1")], [glyph("x")]),
             ]);
             const tokenTree = Lexer.lex(glyphTree);
 
             const expectedTokenTree = row([
                 number("1"),
                 plus(),
-                frac(row([number("1")]), row([identifier("x")])),
+                frac([number("1")], [identifier("x")]),
             ]);
 
             if (!isRow(tokenTree)) {
