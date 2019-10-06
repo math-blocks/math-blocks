@@ -138,5 +138,51 @@ describe("Lexer", () => {
 
             expect(tokenTree.children[0].value).toHaveProperty("name", "sin");
         });
+
+        it("should parse a minus sign", () => {
+            const glyphTree = row([glyph("1"), glyph("\u2212"), glyph("2")]);
+
+            const tokenTree = Lexer.lex(glyphTree);
+
+            if (!isRow(tokenTree)) {
+                throw new Error("not a row");
+            }
+
+            const [number, minus, identifier] = tokenTree.children;
+
+            if (!isAtom(minus)) {
+                throw new Error("`minus` is not an atom");
+            }
+
+            expect(minus.value).toHaveProperty("kind", "minus");
+        });
+
+        it("should parse an ellipsis", () => {
+            const glyphTree = row([
+                glyph("1"),
+                glyph("+"),
+                glyph("."),
+                glyph("."),
+                glyph("."),
+                glyph("+"),
+                glyph("n"),
+            ]);
+
+            const tokenTree = Lexer.lex(glyphTree);
+
+            if (!isRow(tokenTree)) {
+                throw new Error("not a row");
+            }
+
+            expect(tokenTree.children).toHaveLength(5);
+
+            const [, , ellipsis, ,] = tokenTree.children;
+
+            if (!isAtom(ellipsis)) {
+                throw new Error("`ellipsis` is not an atom");
+            }
+
+            expect(ellipsis.value).toHaveProperty("kind", "ellipsis");
+        });
     });
 });

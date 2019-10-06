@@ -39,6 +39,7 @@ const identifier = (name: string): Semantic.Identifier => ({
     name,
 });
 const number = (value: string): Semantic.Number => ({type: "number", value});
+const ellipsis = (): Semantic.Ellipsis => ({type: "ellipsis"});
 
 const add = (args: Node[]): Semantic.Add => ({
     type: "add",
@@ -93,6 +94,10 @@ const getPrefixParselet = (
                     return {
                         parse: parser =>
                             neg(parser.parseWithOperator("neg"), true),
+                    };
+                case "ellipsis":
+                    return {
+                        parse: _ => ellipsis(),
                     };
                 default:
                     return null;

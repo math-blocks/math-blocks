@@ -19,44 +19,31 @@ import {getId} from "./unique-id";
 
 const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-export type Identifier = {
-    kind: "identifier",
-    name: string,
-};
-
-export type Plus = {kind: "plus"};
-export type Minus = {kind: "minus"};
-export type Eq = {kind: "eq"};
-
-export type Symbol = Plus | Minus | Eq | EOL;
-
-export type Number = {
-    kind: "number",
-    value: string,
-};
+type Identifier = {kind: "identifier", name: string};
+type Number = {kind: "number", value: string};
+type Plus = {kind: "plus"};
+type Minus = {kind: "minus"};
+type Eq = {kind: "eq"};
+type Ellipsis = {kind: "ellipsis"};
+type EOL = {kind: "eol"};
 
 export const identifier = (name: string): Editor.Atom<Token> =>
     Editor.atom({kind: "identifier", name});
-
 export const number = (value: string): Editor.Atom<Token> =>
     Editor.atom({kind: "number", value});
-
 export const plus = () => Editor.atom<Token>({kind: "plus"});
 export const minus = () => Editor.atom<Token>({kind: "minus"});
+export const ellipsis = () => Editor.atom<Token>({kind: "ellipsis"});
 export const eq = () => Editor.atom<Token>({kind: "eq"});
 
-type EOL = {kind: "eol"};
+export type Token = Identifier | Number | Plus | Minus | Eq | Ellipsis | EOL;
 
-export type Token = Identifier | Number | Plus | Minus | Eq | EOL;
-
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\-|\=)|(sin|cos|tan|[a-z])/gi;
-
-type LexState = "new_token" | "integer" | "real" | "identifier";
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|\=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
-const processGlyphs = glyphs => {
-    const tokens = [];
+const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
+    const tokens: Editor.Atom<Token>[] = [];
     if (glyphs.length > 0) {
         const str = glyphs.map(glyph => glyph.char).join("");
         const matches = matchAll(str, TOKEN_REGEX);
@@ -66,12 +53,21 @@ const processGlyphs = glyphs => {
             if (value) {
                 tokens.push(number(value));
             } else if (sym) {
-                if (sym === "=") {
-                    tokens.push(eq());
-                } else if (sym === "+") {
-                    tokens.push(plus());
-                } else if (sym === "\u2212") {
-                    tokens.push(minus());
+                switch (sym) {
+                    case "=":
+                        tokens.push(eq());
+                        break;
+                    case "+":
+                        tokens.push(plus());
+                        break;
+                    case "\u2212":
+                        tokens.push(minus());
+                        break;
+                    case "...":
+                        tokens.push(ellipsis());
+                        break;
+                    default:
+                        throw new Error(`Unexpected symbol token: ${sym}`);
                 }
             } else if (name) {
                 tokens.push(identifier(name));
@@ -90,7 +86,6 @@ const lexChildren = (
     const tokens: Editor.Node<Token>[] = [];
 
     let glyphs: Editor.Glyph[] = [];
-    let state: LexState = "new_token";
 
     for (const node of nodes) {
         if (node.type === "atom") {

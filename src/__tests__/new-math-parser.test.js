@@ -388,4 +388,35 @@ describe("NewMathParser", () => {
             `"subscripts aren't allowed on number nodes"`,
         );
     });
+
+    it("should handle an ellispis", () => {
+        const tokens = [
+            Lexer.number("1"),
+            Lexer.plus(),
+            Lexer.ellipsis(),
+            Lexer.plus(),
+            Lexer.identifier("n"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
+                  "type": "ellipsis",
+                },
+                Object {
+                  "name": "n",
+                  "type": "identifier",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
 });
