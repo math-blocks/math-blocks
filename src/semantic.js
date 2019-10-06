@@ -50,9 +50,9 @@ export type Func = {
     type: "func",
     // We want to limit this to identifiers and expression of identifiers
     // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-    func: Expression | Expression,
+    func: Expression,
     // There's a special case when each of the args is a variable then it could be a variable definition
-    args: (Expression | Expression)[],
+    args: Expression[],
 };
 
 // I'm not sure how useful having a special node for this is given we'll have

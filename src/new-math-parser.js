@@ -28,7 +28,7 @@ export type TokenType =
 export type Token = Editor.Node<Lexer.Token>;
 
 // TOODO: fill out this list
-export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq";
+export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq" | "supsub";
 
 export type Node = Semantic.Expression;
 
@@ -62,6 +62,18 @@ const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
     subtraction,
 });
 
+const div = (num: Node, den: Node): Semantic.Div => ({
+    type: "div",
+    dividend: num,
+    divisor: den,
+});
+
+const exp = (base: Node, exp: Node): Semantic.Exp => ({
+    type: "exp",
+    base,
+    exp,
+});
+
 const getPrefixParselet = (
     token: Token,
 ): ?Parser.PrefixParselet<Token, Node, Operator> => {
@@ -71,15 +83,15 @@ const getPrefixParselet = (
             switch (atom.kind) {
                 case "identifier":
                     return {
-                        parse: (_, token) => identifier(atom.name),
+                        parse: _ => identifier(atom.name),
                     };
                 case "number":
                     return {
-                        parse: (_, token) => number(atom.value),
+                        parse: _ => number(atom.value),
                     };
                 case "minus":
                     return {
-                        parse: (parser, _) =>
+                        parse: parser =>
                             neg(
                                 parser.parseWithPrecedence(
                                     parser.getOpPrecedence("neg"),
@@ -92,7 +104,26 @@ const getPrefixParselet = (
             }
         }
         case "frac":
-            return null;
+            // We have to create a new parser for each row we parse
+            const numParser = new Parser.Parser<Token, Node, Operator>(
+                getPrefixParselet,
+                getInfixParselet,
+                getOpPrecedence,
+                EOL,
+            );
+            const denParser = new Parser.Parser<Token, Node, Operator>(
+                getPrefixParselet,
+                getInfixParselet,
+                getOpPrecedence,
+                EOL,
+            );
+            return {
+                parse: _ =>
+                    div(
+                        numParser.parse(token.numerator.children),
+                        denParser.parse(token.denominator.children),
+                    ),
+            };
         case "subsup":
             return null;
         case "row":
@@ -185,6 +216,27 @@ const getInfixParselet = (
                     return null;
             }
         }
+        case "subsup": {
+            // TODO: we need to look the previous node so we know if we should
+            // be generating a sum or product node or an exponent node.  It also
+            // means we have to replace the current last.  It's essentially a
+            // postfix operator like ! (factorial).
+            const expParser = new Parser.Parser<Token, Node, Operator>(
+                getPrefixParselet,
+                getInfixParselet,
+                getOpPrecedence,
+                EOL,
+            );
+            // TODO: determine the "op" based on what left is, but we can't currently do that
+            return {
+                op: "supsub",
+                parse: (parser: MathParser, left: Node) => {
+                    parser.consume(); // consume the subsup
+                    const sup = expParser.parse(token.sup.children);
+                    return exp(left, sup);
+                },
+            };
+        }
         default:
             return null;
     }
@@ -204,6 +256,8 @@ const getOpPrecedence = (op: Operator) => {
             return 6;
         case "neg":
             return 8;
+        case "supsub":
+            return 10;
         default:
             (op: empty);
             throw new Error("foo");

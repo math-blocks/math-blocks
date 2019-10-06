@@ -2,6 +2,7 @@
 import parser from "../new-math-parser.js";
 import * as Parser from "../parser.js";
 import * as Lexer from "../lexer.js";
+import * as Editor from "../editor.js";
 
 import type {Token} from "../new-math-parser.js";
 
@@ -112,7 +113,7 @@ describe("NewMathParser", () => {
         `);
     });
 
-    it.only("should parse expressions containing unary minus", () => {
+    it("should parse expressions containing unary minus", () => {
         const tokens = [
             Lexer.number("1"),
             Lexer.plus(),
@@ -176,6 +177,101 @@ describe("NewMathParser", () => {
               ],
               "implicit": true,
               "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle fractions", () => {
+        const tokens: Array<Token> = [
+            Lexer.number("1"),
+            Lexer.plus(),
+            Editor.frac(
+                Editor.row([Lexer.number("1")]),
+                Editor.row([Lexer.identifier("x")]),
+            ),
+        ];
+
+        const parseTree = parser.parse(tokens);
+
+        expect(parseTree).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
+                  "dividend": Object {
+                    "type": "number",
+                    "value": "1",
+                  },
+                  "divisor": Object {
+                    "name": "x",
+                    "type": "identifier",
+                  },
+                  "type": "div",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
+
+    it("should handle exponents", () => {
+        const tokens: Array<Token> = [
+            Lexer.identifier("x"),
+            Editor.subsup(undefined, Editor.row([Lexer.number("2")])),
+        ];
+
+        const parseTree = parser.parse(tokens);
+
+        expect(parseTree).toMatchInlineSnapshot(`
+            Object {
+              "base": Object {
+                "name": "x",
+                "type": "identifier",
+              },
+              "exp": Object {
+                "type": "number",
+                "value": "2",
+              },
+              "type": "exp",
+            }
+        `);
+    });
+
+    it("should handle nested exponents", () => {
+        const tokens: Array<Token> = [
+            Lexer.identifier("x"),
+            Editor.subsup(
+                undefined,
+                Editor.row([
+                    Lexer.number("y"),
+                    Editor.subsup(undefined, Editor.row([Lexer.number("2")])),
+                ]),
+            ),
+        ];
+
+        const parseTree = parser.parse(tokens);
+
+        expect(parseTree).toMatchInlineSnapshot(`
+            Object {
+              "base": Object {
+                "name": "x",
+                "type": "identifier",
+              },
+              "exp": Object {
+                "base": Object {
+                  "type": "number",
+                  "value": "y",
+                },
+                "exp": Object {
+                  "type": "number",
+                  "value": "2",
+                },
+                "type": "exp",
+              },
+              "type": "exp",
             }
         `);
     });

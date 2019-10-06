@@ -67,7 +67,7 @@ describe("Lexer", () => {
 
             expect(tokenTree.children).toHaveLength(3);
 
-            const [number, symbol, identifier] = tokenTree.children;
+            const [number, plus, identifier] = tokenTree.children;
 
             if (!isAtom(number)) {
                 throw new Error("`number` is not an atom");
@@ -75,11 +75,11 @@ describe("Lexer", () => {
 
             expect(number.value).toHaveProperty("value", "1");
 
-            if (!isAtom(symbol)) {
-                throw new Error("`symbol` is not an atom");
+            if (!isAtom(plus)) {
+                throw new Error("`plus` is not an atom");
             }
 
-            expect(symbol.value).toHaveProperty("symbol", "+");
+            expect(plus.value).toHaveProperty("kind", "plus");
 
             if (!isAtom(identifier)) {
                 throw new Error("`identifier` is not an atom");
