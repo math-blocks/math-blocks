@@ -92,36 +92,18 @@ const getPrefixParselet = (
                 case "minus":
                     return {
                         parse: parser =>
-                            neg(
-                                parser.parseWithPrecedence(
-                                    parser.getOpPrecedence("neg"),
-                                ),
-                                true,
-                            ),
+                            neg(parser.parseWithOperator("neg"), true),
                     };
                 default:
                     return null;
             }
         }
         case "frac":
-            // We have to create a new parser for each row we parse
-            const numParser = new Parser.Parser<Token, Node, Operator>(
-                getPrefixParselet,
-                getInfixParselet,
-                getOpPrecedence,
-                EOL,
-            );
-            const denParser = new Parser.Parser<Token, Node, Operator>(
-                getPrefixParselet,
-                getInfixParselet,
-                getOpPrecedence,
-                EOL,
-            );
             return {
                 parse: _ =>
                     div(
-                        numParser.parse(token.numerator.children),
-                        denParser.parse(token.denominator.children),
+                        parser.parse(token.numerator.children),
+                        parser.parse(token.denominator.children),
                     ),
             };
         case "subsup":
@@ -171,7 +153,7 @@ const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
         } else {
             parser.consume();
         }
-        let expr: Node = parser.parseWithPrecedence(parser.getOpPrecedence(op));
+        let expr: Node = parser.parseWithOperator(op);
         if (op === "sub") {
             expr = {type: "neg", subtraction: true, arg: expr};
             op = "add";
@@ -208,7 +190,7 @@ const getInfixParselet = (
                     return {op: "add", parse: parseNaryInfix("add")};
                 case "minus":
                     return {op: "add", parse: parseNaryInfix("sub")};
-                case "equal":
+                case "eq":
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":
                     return {op: "mul", parse: parseNaryInfix("mul")};
@@ -221,19 +203,29 @@ const getInfixParselet = (
             // be generating a sum or product node or an exponent node.  It also
             // means we have to replace the current last.  It's essentially a
             // postfix operator like ! (factorial).
-            const expParser = new Parser.Parser<Token, Node, Operator>(
-                getPrefixParselet,
-                getInfixParselet,
-                getOpPrecedence,
-                EOL,
-            );
+            const {parse} = parser;
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
                 parse: (parser: MathParser, left: Node) => {
                     parser.consume(); // consume the subsup
-                    const sup = expParser.parse(token.sup.children);
-                    return exp(left, sup);
+                    if (left.type === "identifier") {
+                        if (token.sub) {
+                            left.subscript = parse(token.sub.children);
+                        }
+                    } else {
+                        if (token.sub) {
+                            throw new Error(
+                                `subscripts aren't allowed on ${left.type} nodes`,
+                            );
+                        }
+                    }
+                    if (token.sup) {
+                        const sup = parse(token.sup.children);
+                        return exp(left, sup);
+                    }
+
+                    return left;
                 },
             };
         }
@@ -266,7 +258,7 @@ const getOpPrecedence = (op: Operator) => {
 
 const EOL: Token = Editor.atom({kind: "eol"});
 
-const parser = new Parser.Parser<Token, Node, Operator>(
+const parser = Parser.parserFactory<Token, Node, Operator>(
     getPrefixParselet,
     getInfixParselet,
     getOpPrecedence,

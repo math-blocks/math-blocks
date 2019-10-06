@@ -7,6 +7,43 @@ import * as Editor from "../editor.js";
 import type {Token} from "../new-math-parser.js";
 
 describe("NewMathParser", () => {
+    it("should handle equations", () => {
+        const tokens = [
+            Lexer.number("2"),
+            Lexer.identifier("x"),
+            Lexer.eq(),
+            Lexer.number("10"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                    Object {
+                      "name": "x",
+                      "type": "identifier",
+                    },
+                  ],
+                  "implicit": true,
+                  "type": "mul",
+                },
+                Object {
+                  "type": "number",
+                  "value": "10",
+                },
+              ],
+              "type": "eq",
+            }
+        `);
+    });
+
     it("should parse binary expressions containing subtraction", () => {
         const tokens = [Lexer.number("1"), Lexer.minus(), Lexer.number("2")];
 
@@ -274,5 +311,95 @@ describe("NewMathParser", () => {
               "type": "exp",
             }
         `);
+    });
+
+    it("should handle subscripts on identifiers", () => {
+        const tokens: Array<Token> = [
+            Lexer.identifier("a"),
+            Editor.subsup(
+                Editor.row([
+                    Lexer.identifier("n"),
+                    Lexer.plus(),
+                    Lexer.number("1"),
+                ]),
+                undefined,
+            ),
+        ];
+
+        const parseTree = parser.parse(tokens);
+
+        expect(parseTree).toMatchInlineSnapshot(`
+            Object {
+              "name": "a",
+              "subscript": Object {
+                "args": Array [
+                  Object {
+                    "name": "n",
+                    "type": "identifier",
+                  },
+                  Object {
+                    "type": "number",
+                    "value": "1",
+                  },
+                ],
+                "type": "add",
+              },
+              "type": "identifier",
+            }
+        `);
+    });
+
+    it("should handle subscripts and superscripts identifiers", () => {
+        const tokens: Array<Token> = [
+            Lexer.identifier("a"),
+            Editor.subsup(
+                Editor.row([
+                    Lexer.identifier("n"),
+                    Lexer.plus(),
+                    Lexer.number("1"),
+                ]),
+                Editor.row([Lexer.number("2")]),
+            ),
+        ];
+
+        const parseTree = parser.parse(tokens);
+
+        expect(parseTree).toMatchInlineSnapshot(`
+            Object {
+              "base": Object {
+                "name": "a",
+                "subscript": Object {
+                  "args": Array [
+                    Object {
+                      "name": "n",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "1",
+                    },
+                  ],
+                  "type": "add",
+                },
+                "type": "identifier",
+              },
+              "exp": Object {
+                "type": "number",
+                "value": "2",
+              },
+              "type": "exp",
+            }
+        `);
+    });
+
+    it("should throw when a subscript is being used on a number", () => {
+        const tokens: Array<Token> = [
+            Lexer.number("2"),
+            Editor.subsup(Editor.row([Lexer.number("0")]), undefined),
+        ];
+
+        expect(() => parser.parse(tokens)).toThrowErrorMatchingInlineSnapshot(
+            `"subscripts aren't allowed on number nodes"`,
+        );
     });
 });

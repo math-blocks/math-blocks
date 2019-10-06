@@ -8,80 +8,74 @@
  * - O: Operator
  */
 
-export class Parser<T: {+type: string, ...}, N, O> {
-    // Machinery
-    index: number;
-    tokens: Array<T>;
+export interface Parser<T, N, O> {
+    +parseWithOperator: (op: O) => N;
+    +peek: () => T;
+    +consume: () => T;
+}
 
-    // Configration
-    EOL: T;
-    getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>;
-    getInfixParselet: (token: T) => ?InfixParselet<T, N, O>;
-    getOpPrecedence: O => number;
+export function parserFactory<T: {+type: string, ...}, N, O>(
+    getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>,
+    getInfixParselet: (token: T) => ?InfixParselet<T, N, O>,
+    getOpPrecedence: O => number,
+    EOL: T,
+): {parse: (Array<T>) => N} {
+    return {
+        parse: (tokens: Array<T>): N => {
+            let index: number = 0;
 
-    // TODO #1: instead of having a complex constructor we should have
-    // a parser factory function which returns a simple parser constructor
-    // TODO #2: if we weren't using classes we could just call `parse` and
-    // wouldn't have to worry about initializing things because it would do
-    // it for us and all state would be caught in the closure.
-    constructor(
-        getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>,
-        getInfixParselet: (token: T) => ?InfixParselet<T, N, O>,
-        getOpPrecedence: O => number,
-        EOL: T,
-    ) {
-        this.getInfixParselet = getInfixParselet;
-        this.getPrefixParselet = getPrefixParselet;
-        this.getOpPrecedence = getOpPrecedence;
-        this.EOL = EOL;
-    }
+            // returns the next token but does not consume
+            const peek = (): T => {
+                return tokens[index] || EOL;
+            };
 
-    // returns the next token but does not consume
-    peek(): T {
-        return this.tokens[this.index] || this.EOL;
-    }
+            const consume = (): T => {
+                return index < tokens.length ? tokens[index++] : EOL;
+            };
 
-    consume(): T {
-        return this.index < this.tokens.length
-            ? this.tokens[this.index++]
-            : this.EOL;
-    }
+            const getPrecedence = (): number => {
+                const token = peek();
+                const parselet = getInfixParselet(token);
+                return parselet ? getOpPrecedence(parselet.op) : 0;
+            };
 
-    getPrecedence() {
-        const token = this.peek();
-        const parselet = this.getInfixParselet(token);
-        return parselet ? this.getOpPrecedence(parselet.op) : 0;
-    }
+            const parseInfix = (left: N): N => {
+                const token = peek();
+                const parselet = getInfixParselet(token);
+                return parselet
+                    ? parselet.parse({parseWithOperator, peek, consume}, left)
+                    : left;
+            };
 
-    parseInfix(left: N): N {
-        const token = this.peek();
-        const parselet = this.getInfixParselet(token);
-        return parselet ? parselet.parse(this, left) : left;
-    }
+            const parsePrefix = (): N => {
+                const token = consume();
+                // TODO: combine getPrefixParselet and parselet.parse
+                const parselet = getPrefixParselet(token);
+                if (!parselet) {
+                    throw new Error("Unexpected token");
+                }
+                return parselet.parse({
+                    parseWithOperator,
+                    peek,
+                    consume,
+                });
+            };
 
-    parsePrefix(): N {
-        const token = this.consume();
-        // TODO: combine getPrefixParselet and parselet.parse
-        const parselet = this.getPrefixParselet(token);
-        if (!parselet) {
-            throw new Error("Unexpected token");
-        }
-        return parselet.parse(this);
-    }
+            const parseWithPrecedence = (precedence: number): N => {
+                let left: N = parsePrefix();
+                while (precedence < getPrecedence()) {
+                    left = parseInfix(left);
+                }
+                return left;
+            };
 
-    parseWithPrecedence(precedence: number): N {
-        let left: N = this.parsePrefix();
-        while (precedence < this.getPrecedence()) {
-            left = this.parseInfix(left);
-        }
-        return left;
-    }
+            const parseWithOperator = (op: O): N => {
+                return parseWithPrecedence(getOpPrecedence(op));
+            };
 
-    parse(tokens: Array<T>): N {
-        this.tokens = tokens;
-        this.index = 0;
-        return this.parseWithPrecedence(0);
-    }
+            return parseWithPrecedence(0);
+        },
+    };
 }
 
 export type InfixParselet<T, N, O> = {
