@@ -24,7 +24,7 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
-  coverage:
+  flow:
     runs-on: ubuntu-latest
     env:
       CI: true
