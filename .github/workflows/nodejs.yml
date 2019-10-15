@@ -3,28 +3,57 @@ name: Node CI
 on: [push]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - name: flow
+        run: yarn flow
+      - name: test
+        run: yarn coverage
+      - name: codecov
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
 
-        strategy:
-            matrix:
-                node-version: [8.x] #, 10.x, 12.x
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - name: flow
+        run: yarn flow
 
-        steps:
-            - uses: actions/checkout@v1
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
-              with:
-                  node-version: ${{ matrix.node-version }}
-            - name: yarn install
-              run: yarn install
-            - name: flow
-              run: yarn flow
-            - name: test
-              run: yarn coverage
-              env:
-                  CI: true
-            - name: codecov
-              uses: codecov/codecov-action@v1.0.2
-              with:
-                  token: ${{secrets.CODECOV_TOKEN}}
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: yarn install
+        run: yarn install
+      - name: test
+        run: yarn test
+  
