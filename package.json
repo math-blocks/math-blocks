@@ -32,7 +32,8 @@
     "start": "webpack-dev-server --open",
     "flow": "flow",
     "prettier": "pretty-quick --stage",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "dependencies": {
     "immer": "^3.2.0",
