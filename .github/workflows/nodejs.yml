@@ -17,10 +17,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: yarn install, flow check, and test
-      run: |
-        yarn install
-        yarn flow
-        yarn test
+    - name: yarn install
+      run: yarn install
+    - name: flow
+      run: yarn flow
+    - name: test
+      run: yarn test
       env:
         CI: true
