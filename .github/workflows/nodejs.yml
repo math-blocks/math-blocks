@@ -24,7 +24,7 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
-  coverage:
+  flow:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -56,4 +56,3 @@ jobs:
         run: yarn install
       - name: test
         run: yarn test
-  
