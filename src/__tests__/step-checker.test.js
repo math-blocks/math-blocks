@@ -1,6 +1,6 @@
 // @flow
 import * as Semantic from "../semantic.js";
-import {compare} from "../transforms.js";
+import {compare} from "../step-checker.js";
 
 const add = (...args: Semantic.Expression[]): Semantic.Add => ({
     type: "add",
