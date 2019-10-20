@@ -21,42 +21,149 @@ const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 // What if whenever we spot a difference, we check in our library of possible
 // rules and if we match one of our rules then compare actually return true
 
-export const compare = (
+// TODO: have a separate function that checks recursively
+// TODO: provide a rational
+const assert_valid = (node: Semantic.Expression) => {
+    switch (node.type) {
+        case "mul":
+        case "add": {
+            if (node.args.length < 2) {
+                throw new Error(
+                    `${node} is not valid because it has less than two args`,
+                );
+            }
+        }
+    }
+};
+
+// TODO: make Reasons more structural in the future
+type Reason = {
+    type: "commuative" | "associative" | "distributive",
+    nodes: Semantic.Expression[],
+};
+
+// TODO: instead of defining this in code, we could have a JSON file that
+// defines the properties of different operations, e.g.
+// We can also use this file to generaate semantic.js
+// TODO: figure out how to link to different properties as data, e.g.
+// symmetric property (of equality), reflexive property (of equality), etc.
+// Maybe that doesn't make sense becuase the properties are so closely tied
+// to the operators.
+/**
+ * add: {
+ *   can_commute: true,
+ *   arg_count: [2, Math.infinity],
+ *   identity_element: ZERO,
+ *   inverse: neg,
+ *   ...
+ * }
+ * neg: {
+ *   arg_count: 1,
+ *   ...
+ * }
+ */
+const can_commute = (a: Semantic.Expression): boolean %checks =>
+    a.type === "add" || a.type === "mul" || a.type === "eq";
+
+const has_args = (a: Semantic.Expression): boolean %checks =>
+    a.type === "add" ||
+    a.type === "mul" ||
+    a.type === "eq" ||
+    a.type === "neq" ||
+    a.type === "lt" ||
+    a.type === "lte" ||
+    a.type === "gt" ||
+    a.type === "gte";
+
+// TODO: write a function to determine if an equation is true or not
+// e.g. 2 = 5 -> false, 5 = 5 -> true
+
+const ZERO = {
+    type: "number",
+    value: "0",
+};
+
+const ONE = {
+    type: "number",
+    value: "1",
+};
+
+const rec_compare = (
     a: Semantic.Expression,
     b: Semantic.Expression,
+    reasons: string[],
 ): boolean => {
-    if (a.type === "add" && b.type === "add") {
-        if (a.args.length !== b.args.length) {
-            return false;
-        }
-        // instead of checking if at least some of the args are different, we want
-        // check if they're the same but in a different order
-        // const result = zip(a.args, b.args).some(pair =>
-        //     compare(...pair, nodes),
-        // );
-        // nodes.push([a, b]);
-        // return result;
+    assert_valid(a);
+    assert_valid(b);
 
-        // If the length is greater than 2 then we need to do pairwise comparison, e.g.
-        // (0, 1), (1, 2), ..., (n - 1, n)
-        if (a.args.length === 2 && b.args.length === 2) {
-            if (
-                compare(a.args[0], b.args[0]) &&
-                compare(a.args[1], b.args[1])
-            ) {
-                return true;
-            } else if (
-                compare(b.args[0], a.args[1]) &&
-                compare(b.args[1], a.args[0])
-            ) {
-                // reason: commutative rule
-                // evidence: [a, b];
-                return true;
+    // The nice thing about these checks is that they go both ways, so it's
+    // completely reasonable for someone to start with `a` and then go to
+    // `a + 0` and then `a + (b - b)` and so on... aas well as the reverse
+    // We should be able to do something to verify this by auto reversing tests
+    // or something like that.
+    if (a.type !== b.type) {
+        if (a.type === "add") {
+            const nonZeroArgs = a.args.filter(arg => !compare(arg, ZERO, []));
+            if (nonZeroArgs.length === 1) {
+                const areEqual = compare(nonZeroArgs[0], b, reasons);
+                if (areEqual) {
+                    reasons.push("addition with identity");
+                }
+                return areEqual;
             }
-            return false;
-        } else {
-            throw new Error("we don't handle more than two args");
         }
+        if (b.type === "add") {
+            const nonZeroArgs = b.args.filter(arg => !compare(arg, ZERO, []));
+            if (nonZeroArgs.length === 1) {
+                const areEqual = compare(nonZeroArgs[0], a, reasons);
+                if (areEqual) {
+                    reasons.push("addition with identity");
+                }
+                return areEqual;
+            }
+        }
+        return false;
+    }
+
+    // we've now assumed that both types are the same
+    if (has_args(a) && has_args(b)) {
+        if (a.args.length !== b.args.length) {
+            // TODO: handle `a + b + 0` being equivalent to `a + b`
+            // What if we jump from things like `a + (b - b)` to `a`?
+            // We could check if any of the args are equivalent to ZERO
+            return false;
+        }
+
+        const areEqual = a.args.every(ai => {
+            return b.args.some(bi => {
+                return compare(ai, bi, []);
+            });
+        });
+
+        // If the expressions aren't equal
+        if (!areEqual) {
+            return false;
+        }
+
+        // We allow any reordering of args, but we may want to restrict to
+        // pair-wise reorderings in the future.
+        // Not everything that has args can commute, for instance 3 > 1 is not
+        // the same as 1 > 3 (the first is true, the latter is not)
+        if (can_commute(a) && can_commute(b)) {
+            const pairs = zip(a.args, b.args);
+            const commutative = pairs.some(pair => !compare(...pair, reasons));
+
+            // The rationale for equality is different
+            if (commutative) {
+                if (a.type === "eq") {
+                    reasons.push("symmetric property");
+                } else {
+                    reasons.push("commutative property");
+                }
+            }
+        }
+
+        return true;
     } else if (a.type === "number" && b.type === "number") {
         return a.value === b.value;
     } else if (a.type === "identifier" && b.type === "identifier") {
@@ -66,9 +173,4 @@ export const compare = (
     }
 };
 
-const isCommutative = (before, after) => {
-    // recursively check if there are any differences
-    // once a difference is located, determine if the difference matches the transform we're looking for
-};
-
-// ... + a + b + ... -> ... + b + a + ...
+export const compare = rec_compare;
