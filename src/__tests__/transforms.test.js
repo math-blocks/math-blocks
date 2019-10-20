@@ -99,7 +99,7 @@ describe.only("transforms", () => {
         expect(result).toBe(false);
     });
 
-    it("addition with zero", () => {
+    it("addition with zero: a + 0 -> a", () => {
         const before = add(ident("a"), number("0"));
         const after = ident("a");
 
@@ -110,7 +110,7 @@ describe.only("transforms", () => {
         expect(reasons).toEqual(["addition with identity"]);
     });
 
-    it("addition with zero", () => {
+    it("addition with zero: a -> a + 0", () => {
         const before = ident("a");
         const after = add(ident("a"), number("0"));
 
@@ -119,5 +119,71 @@ describe.only("transforms", () => {
 
         expect(result).toBe(true);
         expect(reasons).toEqual(["addition with identity"]);
+    });
+
+    it("addition with zero: a + b -> a + b + 0", () => {
+        const before = add(ident("a"), ident("b"));
+        const after = add(ident("a"), ident("b"), number("0"));
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["addition with identity"]);
+    });
+
+    it("addition with zero: any number of args, zero anywhere", () => {
+        const before = add(ident("a"), ident("b"));
+        const after = add(ident("a"), number("0"), ident("b"));
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["addition with identity"]);
+    });
+
+    it("addition with zero: any number of args, any number of zeros", () => {
+        const before = add(ident("a"), ident("b"));
+        const after = add(ident("a"), number("0"), ident("b"), number("0"));
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["addition with identity"]);
+    });
+
+    it("multiplication by 1", () => {
+        const before = mul(ident("a"), number("1"));
+        const after = ident("a");
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["multiplication with identity"]);
+    });
+
+    it("multiplication by 1 reversed", () => {
+        const before = ident("a");
+        const after = mul(ident("a"), number("1"));
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["multiplication with identity"]);
+    });
+
+    it("multiplication by on: any number of args, any number of ones", () => {
+        const before = mul(ident("a"), ident("b"));
+        const after = mul(ident("a"), number("1"), ident("b"), number("1"));
+
+        const reasons = [];
+        const result = compare(before, after, reasons);
+
+        expect(result).toBe(true);
+        expect(reasons).toEqual(["multiplication with identity"]);
     });
 });

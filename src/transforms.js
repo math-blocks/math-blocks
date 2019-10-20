@@ -37,10 +37,11 @@ const assert_valid = (node: Semantic.Expression) => {
 };
 
 // TODO: make Reasons more structural in the future
-type Reason = {
-    type: "commuative" | "associative" | "distributive",
-    nodes: Semantic.Expression[],
-};
+// type Reason = {
+//     type: "commuative" | "associative" | "distributive",
+//     nodes: Semantic.Expression[],
+// };
+type Reason = string;
 
 // TODO: instead of defining this in code, we could have a JSON file that
 // defines the properties of different operations, e.g.
@@ -88,20 +89,36 @@ const ONE = {
     value: "1",
 };
 
+const add = (args: Semantic.Expression[]): Semantic.Add => ({
+    type: "add",
+    args,
+});
+
+const mul = (implicit: boolean) => (
+    args: Semantic.Expression[],
+): Semantic.Mul => ({
+    type: "mul",
+    implicit,
+    args,
+});
+
 const rec_compare = (
     a: Semantic.Expression,
     b: Semantic.Expression,
-    reasons: string[],
+    reasons: Reason[],
 ): boolean => {
     assert_valid(a);
     assert_valid(b);
 
     // The nice thing about these checks is that they go both ways, so it's
     // completely reasonable for someone to start with `a` and then go to
-    // `a + 0` and then `a + (b - b)` and so on... aas well as the reverse
+    // `a + 0` and then `a + (b - b)` and so on... as well as the reverse
     // We should be able to do something to verify this by auto reversing tests
     // or something like that.
+    // The reversability sometimes must be defined, e.g. in the case of a + 0 = a
     if (a.type !== b.type) {
+        // TODO: figure out how to de-dupe this and multiplication which also
+        // has an identity
         if (a.type === "add") {
             const nonZeroArgs = a.args.filter(arg => !compare(arg, ZERO, []));
             if (nonZeroArgs.length === 1) {
@@ -122,15 +139,82 @@ const rec_compare = (
                 return areEqual;
             }
         }
+        if (a.type === "mul") {
+            const nonOneArgs = a.args.filter(arg => !compare(arg, ONE, []));
+            if (nonOneArgs.length === 1) {
+                const areEqual = compare(nonOneArgs[0], b, reasons);
+                if (areEqual) {
+                    reasons.push("multiplication with identity");
+                }
+                return areEqual;
+            }
+        }
+        if (b.type === "mul") {
+            const nonOneArgs = b.args.filter(arg => !compare(arg, ONE, []));
+            if (nonOneArgs.length === 1) {
+                const areEqual = compare(nonOneArgs[0], a, reasons);
+                if (areEqual) {
+                    reasons.push("multiplication with identity");
+                }
+                return areEqual;
+            }
+        }
         return false;
     }
 
     // we've now assumed that both types are the same
     if (has_args(a) && has_args(b)) {
         if (a.args.length !== b.args.length) {
-            // TODO: handle `a + b + 0` being equivalent to `a + b`
-            // What if we jump from things like `a + (b - b)` to `a`?
-            // We could check if any of the args are equivalent to ZERO
+            // Addition by zero with more than one non-zero arg.
+            // TODO: figure out how to de-dupe this and multiplication which also
+            // has an identity
+            if (a.type === "add" && b.type === "add") {
+                const hasZeroA = a.args.some(arg => compare(arg, ZERO, []));
+                const nonZeroArgsA = a.args.filter(
+                    arg => !compare(arg, ZERO, []),
+                );
+                const hasZeroB = b.args.some(arg => compare(arg, ZERO, []));
+                const nonZeroArgsB = b.args.filter(
+                    arg => !compare(arg, ZERO, []),
+                );
+                if (hasZeroA || hasZeroB) {
+                    const areEqual = compare(
+                        add(nonZeroArgsA),
+                        add(nonZeroArgsB),
+                        reasons,
+                    );
+                    if (areEqual) {
+                        reasons.push("addition with identity");
+                    }
+                    return areEqual;
+                }
+            }
+
+            // Multiplication by one with more than one non-one arg.
+            // TODO: figure out how to de-dupe this and multiplication which also
+            // has an identity
+            if (a.type === "mul" && b.type === "mul") {
+                const hasOneA = a.args.some(arg => compare(arg, ONE, []));
+                const nonOneArgsA = a.args.filter(
+                    arg => !compare(arg, ONE, []),
+                );
+                const hasOneB = b.args.some(arg => compare(arg, ONE, []));
+                const nonOneArgsB = b.args.filter(
+                    arg => !compare(arg, ONE, []),
+                );
+                if (hasOneA || hasOneB) {
+                    const areEqual = compare(
+                        mul(a.implicit)(nonOneArgsA),
+                        mul(b.implicit)(nonOneArgsB),
+                        reasons,
+                    );
+                    if (areEqual) {
+                        reasons.push("multiplication with identity");
+                    }
+                    return areEqual;
+                }
+            }
+
             return false;
         }
 
