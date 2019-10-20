@@ -1,6 +1,6 @@
 // @flow
 import * as Semantic from "../semantic.js";
-import {compare} from "../step-checker.js";
+import {checkStep} from "../step-checker.js";
 
 const add = (...args: Semantic.Expression[]): Semantic.Add => ({
     type: "add",
@@ -36,11 +36,11 @@ describe.only("transforms", () => {
         const after = add(number("2"), number("1"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
         console.log(reasons);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["commutative property"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["commutative property"]);
     });
 
     it("multiplication in the wrong order are equivalent", () => {
@@ -48,11 +48,11 @@ describe.only("transforms", () => {
         const after = mul(number("2"), number("1"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
         console.log(reasons);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["commutative property"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["commutative property"]);
     });
 
     it("equality in the wrong order are equivalent", () => {
@@ -60,11 +60,11 @@ describe.only("transforms", () => {
         const after = eq(number("2"), number("1"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
         console.log(reasons);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["symmetric property"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["symmetric property"]);
     });
 
     it("should find differences deeper in the tree", () => {
@@ -72,10 +72,10 @@ describe.only("transforms", () => {
         const after = add(ident("x"), add(number("2"), ident("a")));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["commutative property"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["commutative property"]);
     });
 
     it("should return true if children of and 'add' node have been reordered", () => {
@@ -83,10 +83,10 @@ describe.only("transforms", () => {
         const after = add(ident("x"), number("2"), ident("a"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["commutative property"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["commutative property"]);
     });
 
     it("should return false if the expressions are different", () => {
@@ -94,9 +94,9 @@ describe.only("transforms", () => {
         const after = add(ident("x"), number("2"), ident("b"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(false);
+        expect(result.equivalent).toBe(false);
     });
 
     it("addition with zero: a + 0 -> a", () => {
@@ -104,10 +104,10 @@ describe.only("transforms", () => {
         const after = ident("a");
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["addition with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
     });
 
     it("addition with zero: a -> a + 0", () => {
@@ -115,10 +115,10 @@ describe.only("transforms", () => {
         const after = add(ident("a"), number("0"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["addition with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
     });
 
     it("addition with zero: a + b -> a + b + 0", () => {
@@ -126,10 +126,10 @@ describe.only("transforms", () => {
         const after = add(ident("a"), ident("b"), number("0"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["addition with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
     });
 
     it("addition with zero: any number of args, zero anywhere", () => {
@@ -137,10 +137,10 @@ describe.only("transforms", () => {
         const after = add(ident("a"), number("0"), ident("b"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["addition with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
     });
 
     it("addition with zero: any number of args, any number of zeros", () => {
@@ -148,10 +148,10 @@ describe.only("transforms", () => {
         const after = add(ident("a"), number("0"), ident("b"), number("0"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["addition with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
     });
 
     it("multiplication by 1", () => {
@@ -159,10 +159,10 @@ describe.only("transforms", () => {
         const after = ident("a");
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["multiplication with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplication with identity"]);
     });
 
     it("multiplication by 1 reversed", () => {
@@ -170,10 +170,10 @@ describe.only("transforms", () => {
         const after = mul(ident("a"), number("1"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["multiplication with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplication with identity"]);
     });
 
     it("multiplication by on: any number of args, any number of ones", () => {
@@ -181,9 +181,9 @@ describe.only("transforms", () => {
         const after = mul(ident("a"), number("1"), ident("b"), number("1"));
 
         const reasons = [];
-        const result = compare(before, after, reasons);
+        const result = checkStep(before, after);
 
-        expect(result).toBe(true);
-        expect(reasons).toEqual(["multiplication with identity"]);
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplication with identity"]);
     });
 });

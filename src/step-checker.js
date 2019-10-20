@@ -105,14 +105,10 @@ const mul = (implicit: boolean) => (
 const implicitMul = mul(true);
 const explicitMul = mul(false);
 
-type Result =
-    | {|
-          equivalent: false,
-      |}
-    | {|
-          equivalent: true,
-          reasons: Reason[],
-      |};
+type Result = {|
+    equivalent: boolean,
+    reasons: Reason[],
+|};
 
 const check_identity = <T: Semantic.Add | Semantic.Mul>(
     a: T,
@@ -121,16 +117,20 @@ const check_identity = <T: Semantic.Add | Semantic.Mul>(
     op: (Semantic.Expression[]) => Semantic.Expression,
     reason: string,
 ): Result => {
-    const hasIdentityA = a.args.some(arg => compare(arg, identity, []));
-    const hasIdentityB = b.args.some(arg => compare(arg, identity, []));
-    const nonIdentityArgsA = a.args.filter(arg => !compare(arg, identity, []));
-    const nonIdentityArgsB = b.args.filter(arg => !compare(arg, identity, []));
+    const hasIdentityA = a.args.some(
+        arg => checkStep(arg, identity).equivalent,
+    );
+    const hasIdentityB = b.args.some(
+        arg => checkStep(arg, identity).equivalent,
+    );
+    const nonIdentityArgsA = a.args.filter(
+        arg => !checkStep(arg, identity).equivalent,
+    );
+    const nonIdentityArgsB = b.args.filter(
+        arg => !checkStep(arg, identity).equivalent,
+    );
     if (hasIdentityA || hasIdentityB) {
-        const areEqual = compare(
-            op(nonIdentityArgsA),
-            op(nonIdentityArgsB),
-            [],
-        );
+        const areEqual = checkStep(op(nonIdentityArgsA), op(nonIdentityArgsB));
         if (areEqual) {
             return {
                 equivalent: true,
@@ -140,6 +140,7 @@ const check_identity = <T: Semantic.Add | Semantic.Mul>(
     }
     return {
         equivalent: false,
+        reasons: [],
     };
 };
 
@@ -167,11 +168,7 @@ const ops: {
     },
 };
 
-const rec_compare = (
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    reasons: Reason[],
-): boolean => {
+const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assert_valid(a);
     assert_valid(b);
 
@@ -189,23 +186,25 @@ const rec_compare = (
                 if (prev.type === type) {
                     const {identity, reason} = ops[type];
                     const nonIdentityArgs = prev.args.filter(
-                        arg => !compare(arg, identity, []),
+                        arg => !checkStep(arg, identity).equivalent,
                     );
                     if (nonIdentityArgs.length === 1) {
-                        const areEqual = compare(
-                            nonIdentityArgs[0],
-                            next,
-                            reasons,
-                        );
-                        if (areEqual) {
-                            reasons.push(reason);
+                        const result = checkStep(nonIdentityArgs[0], next);
+                        if (result.equivalent) {
+                            return {
+                                ...result,
+                                reasons: [...result.reasons, reason],
+                            };
                         }
-                        return areEqual;
+                        return result;
                     }
                 }
             }
         }
-        return false;
+        return {
+            equivalent: false,
+            reasons: [],
+        };
     }
 
     // we've now assumed that both types are the same
@@ -224,10 +223,7 @@ const rec_compare = (
                     // e.g., "addition with zero"
                     "addition with identity",
                 );
-                if (result.equivalent) {
-                    reasons.push(...result.reasons);
-                }
-                return result.equivalent;
+                return result;
             }
 
             // Multiplication by one with more than one non-one arg.
@@ -246,22 +242,30 @@ const rec_compare = (
                     // e.g., "multiplication by one"
                     "multiplication with identity",
                 );
-                if (result.equivalent) {
-                    reasons.push(...result.reasons);
-                }
-                return result.equivalent;
+                return result;
             }
 
-            return false;
+            return {
+                equivalent: false,
+                reasons: [],
+            };
         }
 
+        // TOOD: rewrite this as a reduce
+        const _reasons = [];
         const areEqual = a.args.every(ai =>
-            b.args.some(bi => compare(ai, bi, [])),
+            b.args.some(bi => {
+                const {equivalent, reasons} = checkStep(ai, bi);
+                if (equivalent) {
+                    _reasons.push(...reasons);
+                }
+                return equivalent;
+            }),
         );
 
         // If the expressions aren't equal
         if (!areEqual) {
-            return false;
+            return {equivalent: false, reasons: []};
         }
 
         // We allow any reordering of args, but we may want to restrict to
@@ -270,26 +274,40 @@ const rec_compare = (
         // the same as 1 > 3 (the first is true, the latter is not)
         if (can_commute(a) && can_commute(b)) {
             const pairs = zip(a.args, b.args);
-            const commutative = pairs.some(pair => !compare(...pair, reasons));
+            const commutative = pairs.some(
+                pair => !checkStep(...pair).equivalent,
+            );
 
             // The rationale for equality is different
             if (commutative) {
                 if (a.type === "eq") {
-                    reasons.push("symmetric property");
+                    _reasons.push("symmetric property");
                 } else {
-                    reasons.push("commutative property");
+                    _reasons.push("commutative property");
                 }
             }
         }
 
-        return true;
+        return {
+            equivalent: true,
+            reasons: _reasons,
+        };
     } else if (a.type === "number" && b.type === "number") {
-        return a.value === b.value;
+        return {
+            equivalent: a.value === b.value,
+            reasons: [],
+        };
     } else if (a.type === "identifier" && b.type === "identifier") {
-        return a.name === b.name;
+        return {
+            equivalent: a.name === b.name,
+            reasons: [],
+        };
     } else {
-        return false;
+        return {
+            equivalent: false,
+            reasons: [],
+        };
     }
 };
 
-export const compare = rec_compare;
+export {checkStep};
