@@ -220,14 +220,16 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                         arg => !checkStep(arg, identity).equivalent,
                     );
                     if (nonIdentityArgs.length === 1) {
-                        const result = checkStep(nonIdentityArgs[0], next);
-                        if (result.equivalent) {
-                            return {
-                                ...result,
-                                reasons: [...result.reasons, reason],
-                            };
-                        }
-                        return result;
+                        const {equivalent, reasons} = checkStep(
+                            nonIdentityArgs[0],
+                            next,
+                        );
+                        return {
+                            equivalent,
+                            reasons: equivalent
+                                ? [...reasons, reason]
+                                : reasons,
+                        };
                     }
                 }
             }
@@ -254,7 +256,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             };
         }
 
-        const {reasons: _reasons, equivalent} = checkArgs(a, b);
+        const {reasons, equivalent} = checkArgs(a, b);
 
         // If the expressions aren't equal
         if (!equivalent) {
@@ -274,17 +276,20 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
             // The rationale for equality is different
             if (commutative) {
-                if (a.type === "eq") {
-                    _reasons.push("symmetric property");
-                } else {
-                    _reasons.push("commutative property");
-                }
+                const reason =
+                    a.type === "eq"
+                        ? "symmetric property"
+                        : "commutative property";
+                return {
+                    equivalent,
+                    reasons: [...reasons, reason],
+                };
             }
         }
 
         return {
-            equivalent: true,
-            reasons: _reasons,
+            equivalent,
+            reasons,
         };
     } else if (a.type === "number" && b.type === "number") {
         return {
