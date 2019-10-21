@@ -71,7 +71,6 @@ describe.only("transforms", () => {
         const before = add(ident("x"), add(ident("a"), number("2")));
         const after = add(ident("x"), add(number("2"), ident("a")));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -82,7 +81,6 @@ describe.only("transforms", () => {
         const before = add(ident("x"), ident("a"), number("2"));
         const after = add(ident("x"), number("2"), ident("a"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);

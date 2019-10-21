@@ -23,7 +23,7 @@ const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
-const assert_valid = (node: Semantic.Expression) => {
+const assertValid = (node: Semantic.Expression) => {
     switch (node.type) {
         case "mul":
         case "add": {
@@ -66,7 +66,17 @@ type Reason = string;
 const can_commute = (a: Semantic.Expression): boolean %checks =>
     a.type === "add" || a.type === "mul" || a.type === "eq";
 
-const has_args = (a: Semantic.Expression): boolean %checks =>
+type HasArgs =
+    | Semantic.Add
+    | Semantic.Mul
+    | Semantic.Eq
+    | Semantic.Neq
+    | Semantic.Lt
+    | Semantic.Lte
+    | Semantic.Gt
+    | Semantic.Gte;
+
+const hasArgs = (a: Semantic.Expression): boolean %checks =>
     a.type === "add" ||
     a.type === "mul" ||
     a.type === "eq" ||
@@ -110,28 +120,24 @@ type Result = {|
     reasons: Reason[],
 |};
 
-const check_identity = <T: Semantic.Add | Semantic.Mul>(
-    a: T,
-    b: T,
-    identity: Semantic.Number,
-    op: (Semantic.Expression[]) => Semantic.Expression,
-    reason: string,
-): Result => {
-    const hasIdentityA = a.args.some(
-        arg => checkStep(arg, identity).equivalent,
-    );
-    const hasIdentityB = b.args.some(
-        arg => checkStep(arg, identity).equivalent,
-    );
-    const nonIdentityArgsA = a.args.filter(
-        arg => !checkStep(arg, identity).equivalent,
-    );
-    const nonIdentityArgsB = b.args.filter(
-        arg => !checkStep(arg, identity).equivalent,
-    );
+const hasIdentity = <T: Semantic.Add | Semantic.Mul>(node: T) =>
+    node.args.some(arg => checkStep(arg, ops[node.type].identity).equivalent);
+
+const filterIdentity = <T: Semantic.Add | Semantic.Mul>(node: T) => {
+    const {identity, op} = ops[node.type];
+    return op(node.args.filter(arg => !checkStep(arg, identity).equivalent));
+};
+
+// Checks either additive or multiplicative identity.
+const check_identity = <T: Semantic.Add | Semantic.Mul>(a: T, b: T): Result => {
+    const hasIdentityA = hasIdentity(a);
+    const hasIdentityB = hasIdentity(b);
+    const nonIdentityArgsA = filterIdentity(a);
+    const nonIdentityArgsB = filterIdentity(b);
     if (hasIdentityA || hasIdentityB) {
-        const areEqual = checkStep(op(nonIdentityArgsA), op(nonIdentityArgsB));
+        const areEqual = checkStep(nonIdentityArgsA, nonIdentityArgsB);
         if (areEqual) {
+            const {reason} = ops[a.type];
             return {
                 equivalent: true,
                 reasons: [reason],
@@ -159,18 +165,43 @@ const ops: {
     add: {
         identity: ZERO,
         op: add,
+        // TODO: have a variety of different ways of stating this
+        // e.g., "addition with zero"
         reason: "addition with identity",
     },
     mul: {
         identity: ONE,
         op: implicitMul,
+        // TODO: have a variety of different ways of stating this
+        // e.g., "multiplication by one"
         reason: "multiplication with identity",
     },
 };
 
+/**
+ * checkArgs will return true if each node has the same args even if the
+ * order doesn't match.
+ */
+const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
+    const _reasons = [];
+    const equivalent = a.args.every(ai =>
+        b.args.some(bi => {
+            const {equivalent, reasons} = checkStep(ai, bi);
+            if (equivalent) {
+                _reasons.push(...reasons);
+            }
+            return equivalent;
+        }),
+    );
+    return {
+        equivalent,
+        reasons: _reasons,
+    };
+};
+
 const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
-    assert_valid(a);
-    assert_valid(b);
+    assertValid(a);
+    assertValid(b);
 
     // The nice thing about these checks is that they go both ways, so it's
     // completely reasonable for someone to start with `a` and then go to
@@ -208,41 +239,13 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     }
 
     // we've now assumed that both types are the same
-    if (has_args(a) && has_args(b)) {
+    if (hasArgs(a) && hasArgs(b)) {
         if (a.args.length !== b.args.length) {
-            // Addition by zero with more than one non-zero arg.
-            // TODO: figure out how to de-dupe this and multiplication which also
-            // has an identity
             if (a.type === "add" && b.type === "add") {
-                const result = check_identity(
-                    a,
-                    b,
-                    ZERO,
-                    add,
-                    // TODO: have a variety of different ways of stating this
-                    // e.g., "addition with zero"
-                    "addition with identity",
-                );
-                return result;
+                return check_identity(a, b);
             }
-
-            // Multiplication by one with more than one non-one arg.
-            // TODO: figure out how to de-dupe this and multiplication which also
-            // has an identity
             if (a.type === "mul" && b.type === "mul") {
-                // We don't care to maintain the implicitness of this operation
-                // since check_identity doesn't hold onto the nodes to creates
-                // using its `op` param.
-                const result = check_identity(
-                    a,
-                    b,
-                    ONE,
-                    implicitMul,
-                    // TODO: have a variety of different ways of stating this
-                    // e.g., "multiplication by one"
-                    "multiplication with identity",
-                );
-                return result;
+                return check_identity(a, b);
             }
 
             return {
@@ -251,20 +254,10 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             };
         }
 
-        // TOOD: rewrite this as a reduce
-        const _reasons = [];
-        const areEqual = a.args.every(ai =>
-            b.args.some(bi => {
-                const {equivalent, reasons} = checkStep(ai, bi);
-                if (equivalent) {
-                    _reasons.push(...reasons);
-                }
-                return equivalent;
-            }),
-        );
+        const {reasons: _reasons, equivalent} = checkArgs(a, b);
 
         // If the expressions aren't equal
-        if (!areEqual) {
+        if (!equivalent) {
             return {equivalent: false, reasons: []};
         }
 
@@ -274,6 +267,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         // the same as 1 > 3 (the first is true, the latter is not)
         if (can_commute(a) && can_commute(b)) {
             const pairs = zip(a.args, b.args);
+            console.log(pairs);
             const commutative = pairs.some(
                 pair => !checkStep(...pair).equivalent,
             );
