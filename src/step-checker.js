@@ -234,6 +234,22 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                 }
             }
         }
+        for (const [prev, next] of [[a, b], [b, a]]) {
+            if (prev.type === "mul") {
+                // TODO: ensure that reasons from these calls to checkStep
+                // are captured.
+                const hasZero = prev.args.some(
+                    arg => checkStep(arg, ZERO).equivalent,
+                );
+                const {equivalent, reasons} = checkStep(next, ZERO);
+                if (hasZero && equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: [...reasons, "multiplication by zero"],
+                    };
+                }
+            }
+        }
         return {
             equivalent: false,
             reasons: [],
@@ -269,7 +285,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         // the same as 1 > 3 (the first is true, the latter is not)
         if (can_commute(a) && can_commute(b)) {
             const pairs = zip(a.args, b.args);
-            console.log(pairs);
             const commutative = pairs.some(
                 pair => !checkStep(...pair).equivalent,
             );

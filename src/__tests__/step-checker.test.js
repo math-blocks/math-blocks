@@ -37,7 +37,6 @@ describe.only("transforms", () => {
 
         const reasons = [];
         const result = checkStep(before, after);
-        console.log(reasons);
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["commutative property"]);
@@ -49,7 +48,6 @@ describe.only("transforms", () => {
 
         const reasons = [];
         const result = checkStep(before, after);
-        console.log(reasons);
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["commutative property"]);
@@ -61,7 +59,6 @@ describe.only("transforms", () => {
 
         const reasons = [];
         const result = checkStep(before, after);
-        console.log(reasons);
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["symmetric property"]);
@@ -183,5 +180,16 @@ describe.only("transforms", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["multiplication with identity"]);
+    });
+
+    it("multiplication by zero", () => {
+        const before = mul(ident("a"), number("0"), ident("b"));
+        const after = number("0");
+
+        const reasons = [];
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplication by zero"]);
     });
 });
