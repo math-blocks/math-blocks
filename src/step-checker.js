@@ -128,6 +128,9 @@ const filterIdentity = <T: Semantic.Add | Semantic.Mul>(node: T) => {
     return op(node.args.filter(arg => !checkStep(arg, identity).equivalent));
 };
 
+const isSubtraction = (node: Semantic.Expression): boolean %checks =>
+    node.type === "neg" && node.subtraction;
+
 // Checks either additive or multiplicative identity.
 const check_identity = <T: Semantic.Add | Semantic.Mul>(a: T, b: T): Result => {
     const hasIdentityA = hasIdentity(a);
@@ -196,6 +199,108 @@ const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
     return {
         equivalent,
         reasons: _reasons,
+    };
+};
+
+const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
+    const [lhsA, rhsA] = a.args;
+    const [lhsB, rhsB] = b.args;
+    if (lhsB.type === rhsB.type) {
+        if (lhsB.type === "add" && rhsB.type === "add") {
+            const lhsRemainingValues =
+                lhsA.type === "add"
+                    ? lhsB.args.filter(
+                          argB =>
+                              !lhsA.args.some(
+                                  argA => checkStep(argA, argB).equivalent,
+                              ),
+                      )
+                    : lhsB.args.filter(arg => !checkStep(lhsA, arg).equivalent);
+
+            const rhsRemainingValues =
+                rhsA.type === "add"
+                    ? rhsB.args.filter(
+                          argB =>
+                              !rhsA.args.some(
+                                  argA => checkStep(argA, argB).equivalent,
+                              ),
+                      )
+                    : rhsB.args.filter(arg => !checkStep(rhsA, arg).equivalent);
+
+            if (
+                lhsRemainingValues.length === 1 &&
+                rhsRemainingValues.length === 1
+            ) {
+                const {equivalent, reasons} = checkStep(
+                    lhsRemainingValues[0],
+                    rhsRemainingValues[0],
+                );
+
+                // TODO: do we want to enforce that the thing being added is exactly
+                // the same or do we want to allow equivalent expressions?
+                if (equivalent && reasons.length === 0) {
+                    if (
+                        isSubtraction(lhsRemainingValues[0]) &&
+                        isSubtraction(rhsRemainingValues[0])
+                    ) {
+                        return {
+                            equivalent: true,
+                            reasons: [
+                                "subtracting the same value from both sides",
+                            ],
+                        };
+                    }
+                    return {
+                        equivalent: true,
+                        reasons: ["adding the same value to both sides"],
+                    };
+                }
+            }
+        }
+        if (lhsB.type === "mul" && rhsB.type === "mul") {
+            const lhsRemainingValues =
+                lhsA.type === "mul"
+                    ? lhsB.args.filter(
+                          argB =>
+                              !lhsA.args.some(
+                                  argA => checkStep(argA, argB).equivalent,
+                              ),
+                      )
+                    : lhsB.args.filter(arg => !checkStep(lhsA, arg).equivalent);
+
+            const rhsRemainingValues =
+                rhsA.type === "mul"
+                    ? rhsB.args.filter(
+                          argB =>
+                              !rhsA.args.some(
+                                  argA => checkStep(argA, argB).equivalent,
+                              ),
+                      )
+                    : rhsB.args.filter(arg => !checkStep(rhsA, arg).equivalent);
+
+            if (
+                lhsRemainingValues.length === 1 &&
+                rhsRemainingValues.length === 1
+            ) {
+                const {equivalent, reasons} = checkStep(
+                    lhsRemainingValues[0],
+                    rhsRemainingValues[0],
+                );
+
+                // TODO: do we want to enforce that the thing being added is exactly
+                // the same or do we want to allow equivalent expressions?
+                if (equivalent && reasons.length === 0) {
+                    return {
+                        equivalent: true,
+                        reasons: ["multiplying both sides by the same value"],
+                    };
+                }
+            }
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
     };
 };
 
@@ -272,6 +377,14 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             };
         }
 
+        if (a.type === "eq" && b.type === "eq") {
+            // We can't just return the result here because chekcEquationStep doesn't
+            // check for swapping sides.
+            const result = checkEquationStep(a, b);
+            if (result.equivalent) {
+                return result;
+            }
+        }
         const {reasons, equivalent} = checkArgs(a, b);
 
         // If the expressions aren't equal
@@ -316,6 +429,8 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             equivalent: a.name === b.name,
             reasons: [],
         };
+    } else if (a.type === "neg" && b.type === "neg") {
+        return checkStep(a.arg, b.arg);
     } else {
         return {
             equivalent: false,
