@@ -18,30 +18,30 @@ const print = (expr: Semantic.Expression): string => {
         case "mul":
             return expr.args.map(print).join(" * "); // TODO: handle implicit mulitplication
         case "div":
-            return `${print(expr.dividend)} / ${print(expr.divisor)}`;
+            return `${print(expr.args[0])} / ${print(expr.args[1])}`;
         case "mod":
-            return `${print(expr.dividend)} mod ${print(expr.divisor)}`;
+            return `${print(expr.args[0])} mod ${print(expr.args[1])}`;
         case "neg":
             return expr.subtraction ? `${print(expr)}` : `-${print(expr)}`;
         case "root":
             return `√(${print(expr.radicand)})`; // TODO: index
         case "log":
-            return `log_${print(expr.base)}(${print(expr.arg)})`;
+            return `log_${print(expr.args[0])}(${print(expr.args[1])})`;
         case "exp":
-            return `${print(expr.base)}^${print(expr.exp)}`;
+            return `${print(expr.args[0])}^${print(expr.args[1])}`;
         case "abs":
-            return `|${print(expr.arg)}|`;
+            return `|${print(expr.args[0])}|`;
         case "func":
             return `${print(expr.func)}(${expr.args.map(print).join(", ")})`;
 
         case "sum":
-            return `Σ_(${print(expr.bvar)}=${print(expr.limits.lower)})^${print(
-                expr.limits.upper,
-            )} ${print(expr.arg)}`;
+            return `Σ_(${print(expr.bvar)}=${print(
+                expr.limits.args[0],
+            )})^${print(expr.limits.args[1])} ${print(expr.arg)}`;
         case "prod":
-            return `Π_(${print(expr.bvar)}=${print(expr.limits.lower)})^${print(
-                expr.limits.upper,
-            )} ${print(expr.arg)}`;
+            return `Π_(${print(expr.bvar)}=${print(
+                expr.limits.args[0],
+            )})^${print(expr.limits.args[1])} ${print(expr.arg)}`;
         case "limit":
             return `lim_(${print(expr.bvar)}→value) ${print(expr.arg)}`;
         case "diff": {
@@ -49,8 +49,8 @@ const print = (expr: Semantic.Expression): string => {
             return bvar ? `d${print(arg)}/d${print(bvar)}` : `${print(arg)}'`; // TODO: handle expr.degree > 1
         }
         case "int":
-            return `∫_(${print(expr.limits.lower)})^(${print(
-                expr.limits.upper,
+            return `∫_(${print(expr.limits.args[0])})^(${print(
+                expr.limits.args[1],
             )}) ${print(expr.arg)} ${print(expr.bvar)}`;
 
         case "ellipsis":
@@ -86,7 +86,7 @@ const print = (expr: Semantic.Expression): string => {
         case "iff":
             return `${print(expr.args[0])} ⇔ ${print(expr.args[1])}`;
         case "not":
-            return "¬" + print(expr.arg);
+            return "¬" + print(expr.args[0]);
 
         // Logical (Boolean) values
         case "true":

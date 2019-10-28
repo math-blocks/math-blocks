@@ -430,7 +430,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             reasons: [],
         };
     } else if (a.type === "neg" && b.type === "neg") {
-        return checkStep(a.arg, b.arg);
+        return checkStep(a.args[0], b.args[0]);
     } else {
         return {
             equivalent: false,

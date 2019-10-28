@@ -59,20 +59,18 @@ const eq = (args: Node[]): Semantic.Eq => ({
 
 const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
     type: "neg",
-    arg,
+    args: [arg],
     subtraction,
 });
 
 const div = (num: Node, den: Node): Semantic.Div => ({
     type: "div",
-    dividend: num,
-    divisor: den,
+    args: [num, den],
 });
 
 const exp = (base: Node, exp: Node): Semantic.Exp => ({
     type: "exp",
-    base,
-    exp,
+    args: [base, exp],
 });
 
 const getPrefixParselet = (
@@ -160,7 +158,7 @@ const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
         }
         let expr: Node = parser.parseWithOperator(op);
         if (op === "sub") {
-            expr = {type: "neg", subtraction: true, arg: expr};
+            expr = neg(expr, true);
             op = "add";
         }
         const nextToken = parser.peek();

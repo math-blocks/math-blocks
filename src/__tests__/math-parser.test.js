@@ -57,10 +57,12 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "arg": Object {
-                    "type": "number",
-                    "value": "2",
-                  },
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
                   "subtraction": true,
                   "type": "neg",
                 },
@@ -91,10 +93,12 @@ describe("NewMathParser", () => {
                       "value": "1",
                     },
                     Object {
-                      "arg": Object {
-                        "type": "number",
-                        "value": "2",
-                      },
+                      "args": Array [
+                        Object {
+                          "type": "number",
+                          "value": "2",
+                        },
+                      ],
                       "subtraction": true,
                       "type": "neg",
                     },
@@ -102,10 +106,12 @@ describe("NewMathParser", () => {
                   "type": "add",
                 },
                 Object {
-                  "arg": Object {
-                    "type": "number",
-                    "value": "3",
-                  },
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "3",
+                    },
+                  ],
                   "subtraction": true,
                   "type": "neg",
                 },
@@ -133,14 +139,18 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "arg": Object {
-                    "arg": Object {
-                      "type": "number",
-                      "value": "2",
+                  "args": Array [
+                    Object {
+                      "args": Array [
+                        Object {
+                          "type": "number",
+                          "value": "2",
+                        },
+                      ],
+                      "subtraction": true,
+                      "type": "neg",
                     },
-                    "subtraction": true,
-                    "type": "neg",
-                  },
+                  ],
                   "subtraction": true,
                   "type": "neg",
                 },
@@ -170,10 +180,12 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "arg": Object {
-                    "type": "number",
-                    "value": "2",
-                  },
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
                   "subtraction": true,
                   "type": "neg",
                 },
@@ -235,14 +247,16 @@ describe("NewMathParser", () => {
                   "value": "1",
                 },
                 Object {
-                  "dividend": Object {
-                    "type": "number",
-                    "value": "1",
-                  },
-                  "divisor": Object {
-                    "name": "x",
-                    "type": "identifier",
-                  },
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "1",
+                    },
+                    Object {
+                      "name": "x",
+                      "type": "identifier",
+                    },
+                  ],
                   "type": "div",
                 },
               ],
@@ -261,14 +275,16 @@ describe("NewMathParser", () => {
 
         expect(parseTree).toMatchInlineSnapshot(`
             Object {
-              "base": Object {
-                "name": "x",
-                "type": "identifier",
-              },
-              "exp": Object {
-                "type": "number",
-                "value": "2",
-              },
+              "args": Array [
+                Object {
+                  "name": "x",
+                  "type": "identifier",
+                },
+                Object {
+                  "type": "number",
+                  "value": "2",
+                },
+              ],
               "type": "exp",
             }
         `);
@@ -287,21 +303,25 @@ describe("NewMathParser", () => {
 
         expect(parseTree).toMatchInlineSnapshot(`
             Object {
-              "base": Object {
-                "name": "x",
-                "type": "identifier",
-              },
-              "exp": Object {
-                "base": Object {
-                  "type": "number",
-                  "value": "y",
+              "args": Array [
+                Object {
+                  "name": "x",
+                  "type": "identifier",
                 },
-                "exp": Object {
-                  "type": "number",
-                  "value": "2",
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "y",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "exp",
                 },
-                "type": "exp",
-              },
+              ],
               "type": "exp",
             }
         `);
@@ -352,27 +372,29 @@ describe("NewMathParser", () => {
 
         expect(parseTree).toMatchInlineSnapshot(`
             Object {
-              "base": Object {
-                "name": "a",
-                "subscript": Object {
-                  "args": Array [
-                    Object {
-                      "name": "n",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "1",
-                    },
-                  ],
-                  "type": "add",
+              "args": Array [
+                Object {
+                  "name": "a",
+                  "subscript": Object {
+                    "args": Array [
+                      Object {
+                        "name": "n",
+                        "type": "identifier",
+                      },
+                      Object {
+                        "type": "number",
+                        "value": "1",
+                      },
+                    ],
+                    "type": "add",
+                  },
+                  "type": "identifier",
                 },
-                "type": "identifier",
-              },
-              "exp": Object {
-                "type": "number",
-                "value": "2",
-              },
+                Object {
+                  "type": "number",
+                  "value": "2",
+                },
+              ],
               "type": "exp",
             }
         `);

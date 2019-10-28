@@ -36,7 +36,7 @@ const ident = (name: string): Semantic.Identifier => {
 const neg = (arg: Semantic.Expression): Semantic.Neg => ({
     type: "neg",
     subtraction: true,
-    arg,
+    args: [arg],
 });
 
 // a + b -> b + a

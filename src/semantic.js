@@ -76,14 +76,12 @@ export type Func = {
 
 export type Div = {
     type: "div",
-    dividend: Expression,
-    divisor: Expression,
+    args: [Expression, Expression],
 };
 
 export type Mod = {
     type: "mod",
-    dividend: Expression,
-    divisor: Expression,
+    args: [Expression, Expression],
 };
 
 export type Root = {
@@ -94,32 +92,29 @@ export type Root = {
 
 export type Exp = {
     type: "exp",
-    base: Expression,
-    exp: Expression,
+    args: [Expression, Expression], // base, exp
 };
 
 export type Log = {
     type: "log",
-    base: Expression,
-    arg: Expression,
+    args: [Expression, Expression], // base, arg
 };
 
 export type Neg = {
     type: "neg",
     subtraction: boolean,
-    arg: Expression,
+    args: [Expression],
 };
 
 export type Abs = {
     type: "abs",
-    arg: Expression,
+    args: [Expression],
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
 export type Limits = {
     type: "limits",
-    lower: Expression,
-    upper: Expression,
+    args: [Expression, Expression], // lower, upper
 };
 
 export type Sum = {
@@ -243,7 +238,7 @@ export type Xor = {
 
 export type Not = {
     type: "not",
-    arg: Expression,
+    args: [Expression],
 };
 
 export type Implies = {
