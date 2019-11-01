@@ -177,7 +177,7 @@ const MathRenderer = (props: Props) => {
     const viewBox = `0 -${height} ${width} ${height + depth}`;
 
     return (
-        <svg style={{marginLeft: 100}} width={width} viewBox={viewBox}>
+        <svg style={{margin: 8}} width={width} viewBox={viewBox}>
             <g fill="currentColor">
                 <Box box={box} cursor={cursor} />
             </g>
