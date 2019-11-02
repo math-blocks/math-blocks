@@ -10,7 +10,7 @@
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-flow": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
-    "aphrodite": "^2.3.1",
+    "aphrodite": "^2.4.0",
     "babel-jest": "^24.9.0",
     "babel-loader": "^8.0.6",
     "core-js": "3",
