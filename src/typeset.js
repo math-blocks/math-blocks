@@ -81,10 +81,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         }
         case "frac": {
             const numerator = Layout.hpackNat(
-                node.numerator.children.map(_typeset),
+                node.children[0].children.map(_typeset),
             );
             const denominator = Layout.hpackNat(
-                node.denominator.children.map(_typeset),
+                node.children[1].children.map(_typeset),
             );
 
             // TODO: try to reuse getCharDepth
@@ -107,8 +107,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 denominator.height = Math.max(denominator.height, EHeight);
             }
 
-            numerator.id = node.numerator.id;
-            denominator.id = node.denominator.id;
+            numerator.id = node.children[0].id;
+            denominator.id = node.children[1].id;
 
             const frac = Layout.makeFract(
                 multiplier,

@@ -98,10 +98,11 @@ const moveLeft = (
         const prevNode = getChildWithId(currentNode.children, cursor.prev);
         if (prevNode && prevNode.type === "frac") {
             // enter fraction (denominator)
+            const denominator = prevNode.children[1];
             return {
-                path: [...cursor.path, prevNode.id, prevNode.denominator.id],
+                path: [...cursor.path, prevNode.id, denominator.id],
                 next: null,
-                prev: lastId(prevNode.denominator.children),
+                prev: lastId(denominator.children),
             };
         } else if (prevNode && prevNode.type === "subsup") {
             // enter sup/sub
@@ -167,17 +168,16 @@ const moveLeft = (
                 cursor.path[cursor.path.length - 3],
             );
 
-            if (currentNode === parent.denominator) {
+            const [numerator, denominator] = parent.children;
+
+            if (currentNode === denominator) {
                 // move from denominator to numerator
                 return {
-                    path: [...cursor.path.slice(0, -1), parent.numerator.id],
+                    path: [...cursor.path.slice(0, -1), numerator.id],
                     next: null,
-                    prev: lastId(parent.numerator.children),
+                    prev: lastId(numerator.children),
                 };
-            } else if (
-                currentNode === parent.numerator &&
-                hasChildren(grandparent)
-            ) {
+            } else if (currentNode === numerator && hasChildren(grandparent)) {
                 // exit fraction to the left
                 return {
                     path: cursor.path.slice(0, -2),
@@ -201,10 +201,11 @@ const moveRight = (
         const nextNode = getChildWithId(currentNode.children, cursor.next);
         if (nextNode && nextNode.type === "frac") {
             // enter fraction (numerator)
+            const numerator = nextNode.children[0];
             return {
-                path: [...cursor.path, nextNode.id, nextNode.numerator.id],
+                path: [...cursor.path, nextNode.id, numerator.id],
                 prev: null,
-                next: firstId(nextNode.numerator.children),
+                next: firstId(numerator.children),
             };
         } else if (nextNode && nextNode.type === "subsup") {
             // enter sup/sub
@@ -271,15 +272,17 @@ const moveRight = (
                 cursor.path[cursor.path.length - 3],
             );
 
-            if (currentNode === parent.numerator) {
+            const [numerator, denominator] = parent.children;
+
+            if (currentNode === numerator) {
                 // move from numerator to denominator
                 return {
-                    path: [...cursor.path.slice(0, -1), parent.denominator.id],
+                    path: [...cursor.path.slice(0, -1), denominator.id],
                     prev: null,
-                    next: firstId(parent.denominator.children),
+                    next: firstId(denominator.children),
                 };
             } else if (
-                currentNode === parent.denominator &&
+                currentNode === denominator &&
                 hasChildren(grandparent)
             ) {
                 // exit fraction to the right
@@ -427,16 +430,18 @@ const reducer = (state: State = initialState, action: Action) => {
                 newNode = {
                     id: getId(),
                     type: "frac",
-                    numerator: {
-                        id: getId(),
-                        type: "row",
-                        children: [],
-                    },
-                    denominator: {
-                        id: getId(),
-                        type: "row",
-                        children: [],
-                    },
+                    children: [
+                        {
+                            id: getId(),
+                            type: "row",
+                            children: [],
+                        },
+                        {
+                            id: getId(),
+                            type: "row",
+                            children: [],
+                        },
+                    ],
                 };
                 break;
             }
@@ -520,8 +525,9 @@ const reducer = (state: State = initialState, action: Action) => {
         }
 
         if (newNode.type === "frac") {
+            const numerator = newNode.children[0];
             draft.cursor = {
-                path: [...cursor.path, newNode.id, newNode.numerator.id],
+                path: [...cursor.path, newNode.id, numerator.id],
                 next: null,
                 prev: null,
             };

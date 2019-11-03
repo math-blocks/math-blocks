@@ -6,7 +6,7 @@ const {row, glyph, frac, subsup} = Editor;
 
 import type {State} from "../reducer.js";
 
-describe.only("reducer", () => {
+describe("reducer", () => {
     describe("inserting", () => {
         it("insert a charcater and advance the cursor", () => {
             const math = row([glyph("1"), glyph("+")]);

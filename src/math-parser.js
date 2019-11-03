@@ -105,8 +105,8 @@ const getPrefixParselet = (
             return {
                 parse: _ =>
                     div(
-                        parser.parse(token.numerator.children),
-                        parser.parse(token.denominator.children),
+                        parser.parse(token.children[0].children),
+                        parser.parse(token.children[1].children),
                     ),
             };
         case "subsup":

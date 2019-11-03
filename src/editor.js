@@ -17,8 +17,7 @@ export type SubSup<T, ID = number> = {
 export type Frac<T, ID = number> = {
     id: ID,
     type: "frac",
-    numerator: Row<T, ID>,
-    denominator: Row<T, ID>,
+    children: [Row<T, ID>, Row<T, ID>], // numerator, denominator
 };
 
 // TODO: allow different types of parens
@@ -74,8 +73,7 @@ export function frac<T>(
     return {
         id: getId(),
         type: "frac",
-        numerator: row(numerator),
-        denominator: row(denominator),
+        children: [row(numerator), row(denominator)],
     };
 }
 
@@ -111,9 +109,7 @@ export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
 
     switch (root.type) {
         case "frac":
-            return [root.denominator, root.numerator]
-                .map(node => findNode(node, id))
-                .find(Boolean);
+            return root.children.map(node => findNode(node, id)).find(Boolean);
         case "subsup":
             return [root.sub, root.sup]
                 .filter(Boolean)
@@ -133,17 +129,6 @@ export function getPath<T>(root: Node<T>, id: number): Array<number> | void {
     }
 
     switch (root.type) {
-        case "frac": {
-            const numPath = getPath(root.numerator, id);
-            if (numPath) {
-                return [root.id, ...numPath];
-            }
-            const denPath = getPath(root.denominator, id);
-            if (denPath) {
-                return [root.id, ...denPath];
-            }
-            return undefined;
-        }
         case "subsup": {
             if (root.sub) {
                 const subPath = getPath(root.sub, id);
@@ -159,6 +144,7 @@ export function getPath<T>(root: Node<T>, id: number): Array<number> | void {
             }
             return undefined;
         }
+        case "frac":
         case "parens":
         case "row": {
             for (const child of root.children) {
@@ -177,20 +163,22 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
         case "frac": {
             return {
                 type: "frac",
-                denominator: {
-                    type: "row",
-                    children: root.denominator.children.map<
-                        NodeWithID<T, void>,
-                    >(stripIDs),
-                    id: undefined,
-                },
-                numerator: {
-                    type: "row",
-                    children: root.numerator.children.map<NodeWithID<T, void>>(
-                        stripIDs,
-                    ),
-                    id: undefined,
-                },
+                children: [
+                    {
+                        type: "row",
+                        children: root.children[0].children.map<
+                            NodeWithID<T, void>,
+                        >(stripIDs),
+                        id: undefined,
+                    },
+                    {
+                        type: "row",
+                        children: root.children[1].children.map<
+                            NodeWithID<T, void>,
+                        >(stripIDs),
+                        id: undefined,
+                    },
+                ],
                 id: undefined,
             };
         }

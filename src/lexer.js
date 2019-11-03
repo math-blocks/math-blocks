@@ -131,8 +131,7 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
             return {
                 id: node.id,
                 type: "frac",
-                numerator: lexRow(node.numerator),
-                denominator: lexRow(node.denominator),
+                children: [lexRow(node.children[0]), lexRow(node.children[1])],
             };
         case "parens":
             return {
