@@ -383,7 +383,7 @@ const reducer = (state: State = initialState, action: Action) => {
                 ? currentNode.children.find(child => child.id === cursor.next)
                 : null;
 
-        let newNode;
+        let newNode: Editor.Node<Editor.Glyph>;
         const {next} = cursor;
 
         switch (action.type) {
@@ -464,6 +464,7 @@ const reducer = (state: State = initialState, action: Action) => {
                         type: "row",
                         children: [],
                     },
+                    sub: undefined,
                 };
                 break;
             }
@@ -491,6 +492,7 @@ const reducer = (state: State = initialState, action: Action) => {
                         type: "row",
                         children: [],
                     },
+                    sup: undefined,
                 };
                 break;
             }
@@ -499,14 +501,7 @@ const reducer = (state: State = initialState, action: Action) => {
                     action.type.length === 1 &&
                     action.type.charCodeAt(0) >= 32
                 ) {
-                    newNode = {
-                        id: getId(),
-                        type: "atom",
-                        value: {
-                            type: "kind",
-                            char: action.type,
-                        },
-                    };
+                    newNode = glyph(action.type);
                     draft.cursor.prev = newNode.id;
                     break;
                 }

@@ -1,44 +1,56 @@
 // @flow
 import {getId} from "./unique-id";
 
-export type Row<T> = {
-    id: number,
+export type Row<T, ID = number> = {
+    id: ID,
     type: "row",
-    children: Node<T>[],
+    children: NodeWithID<T, ID>[],
 };
 
-export type SubSup<T> = {
-    id: number,
+export type SubSup<T, ID = number> = {
+    id: ID,
     type: "subsup",
-    sub?: Row<T>,
-    sup?: Row<T>,
+    sub: Row<T, ID> | void,
+    sup: Row<T, ID> | void,
 };
 
-export type Frac<T> = {
-    id: number,
+export type Frac<T, ID = number> = {
+    id: ID,
     type: "frac",
-    numerator: Row<T>,
-    denominator: Row<T>,
+    numerator: Row<T, ID>,
+    denominator: Row<T, ID>,
 };
 
 // TODO: allow different types of parens
-export type Parens<T> = {
-    id: number,
+export type Parens<T, ID = number> = {
+    id: ID,
     type: "parens",
-    children: Node<T>[],
+    children: NodeWithID<T, ID>[],
 };
 
-export type Atom<T> = {
-    id: number,
+export type Atom<T, ID = number> = {
+    id: ID,
     type: "atom",
     value: T,
 };
 
-export type Node<T> = Row<T> | SubSup<T> | Frac<T> | Parens<T> | Atom<T>;
+export type NodeWithID<T, ID> =
+    | Row<T, ID>
+    | SubSup<T, ID>
+    | Frac<T, ID>
+    | Parens<T, ID>
+    | Atom<T, ID>;
+
+export type Node<T> =
+    | Row<T, number>
+    | SubSup<T, number>
+    | Frac<T, number>
+    | Parens<T, number>
+    | Atom<T, number>;
 
 export type HasChildren<T> = Row<T> | Parens<T>;
 
-export function row<T>(children: Node<T>[]): Row<T> {
+export function row<T>(children: Node<T>[]): Row<T, number> {
     return {
         id: getId(),
         type: "row",
@@ -46,7 +58,7 @@ export function row<T>(children: Node<T>[]): Row<T> {
     };
 }
 
-export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T> {
+export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T, number> {
     return {
         id: getId(),
         type: "subsup",
@@ -55,7 +67,10 @@ export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T> {
     };
 }
 
-export function frac<T>(numerator: Node<T>[], denominator: Node<T>[]): Frac<T> {
+export function frac<T>(
+    numerator: Node<T>[],
+    denominator: Node<T>[],
+): Frac<T, number> {
     return {
         id: getId(),
         type: "frac",
@@ -64,7 +79,7 @@ export function frac<T>(numerator: Node<T>[], denominator: Node<T>[]): Frac<T> {
     };
 }
 
-export function parens<T>(children: Node<T>[]): Parens<T> {
+export function parens<T>(children: Node<T>[]): Parens<T, number> {
     return {
         id: getId(),
         type: "parens",
@@ -72,7 +87,7 @@ export function parens<T>(children: Node<T>[]): Parens<T> {
     };
 }
 
-export function atom<T>(value: T): Atom<T> {
+export function atom<T>(value: T): Atom<T, number> {
     return {
         id: getId(),
         type: "atom",
@@ -85,7 +100,8 @@ export type Glyph = {
     char: string,
 };
 
-export const glyph = (char: string): Atom<Glyph> => atom({kind: "glyph", char});
+export const glyph = (char: string): Atom<Glyph, number> =>
+    atom({kind: "glyph", char});
 
 export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
     // base case
@@ -108,6 +124,127 @@ export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
         default:
             // remaining nodes are leaf nodes
             return undefined;
+    }
+}
+
+export function getPath<T>(root: Node<T>, id: number): Array<number> | void {
+    if (root.id === id) {
+        return [];
+    }
+
+    switch (root.type) {
+        case "frac": {
+            const numPath = getPath(root.numerator, id);
+            if (numPath) {
+                return [root.id, ...numPath];
+            }
+            const denPath = getPath(root.denominator, id);
+            if (denPath) {
+                return [root.id, ...denPath];
+            }
+            return undefined;
+        }
+        case "subsup": {
+            if (root.sub) {
+                const subPath = getPath(root.sub, id);
+                if (subPath) {
+                    return [root.id, ...subPath];
+                }
+            }
+            if (root.sup) {
+                const supPath = getPath(root.sup, id);
+                if (supPath) {
+                    return [root.id, ...supPath];
+                }
+            }
+            return undefined;
+        }
+        case "parens":
+        case "row": {
+            for (const child of root.children) {
+                const path = getPath(child, id);
+                if (path) {
+                    return [root.id, ...path];
+                }
+            }
+            return undefined;
+        }
+    }
+}
+
+export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
+    switch (root.type) {
+        case "frac": {
+            return {
+                type: "frac",
+                denominator: {
+                    type: "row",
+                    children: root.denominator.children.map<
+                        NodeWithID<T, void>,
+                    >(stripIDs),
+                    id: undefined,
+                },
+                numerator: {
+                    type: "row",
+                    children: root.numerator.children.map<NodeWithID<T, void>>(
+                        stripIDs,
+                    ),
+                    id: undefined,
+                },
+                id: undefined,
+            };
+        }
+        case "subsup": {
+            return {
+                type: "subsup",
+                sub: root.sub
+                    ? {
+                          type: "row",
+                          children: root.sub.children.map<NodeWithID<T, void>>(
+                              stripIDs,
+                          ),
+                          id: undefined,
+                      }
+                    : undefined,
+                sup: root.sup
+                    ? {
+                          type: "row",
+                          children: root.sup.children.map<NodeWithID<T, void>>(
+                              stripIDs,
+                          ),
+                          id: undefined,
+                      }
+                    : undefined,
+                id: undefined,
+            };
+        }
+        case "row": {
+            const result: Row<T, void> = {
+                type: "row",
+                children: root.children.map<NodeWithID<T, void>>(stripIDs),
+                id: undefined,
+            };
+            return result;
+        }
+        case "parens": {
+            const result: Parens<T, void> = {
+                type: "parens",
+                children: root.children.map<NodeWithID<T, void>>(stripIDs),
+                id: undefined,
+            };
+            return result;
+        }
+        case "atom": {
+            const result: Atom<T, void> = {
+                type: "atom",
+                value: root.value,
+                id: undefined,
+            };
+            return result;
+        }
+        default:
+            throw new Error("foo");
+        // (root: empty);
     }
 }
 
