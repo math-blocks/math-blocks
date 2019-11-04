@@ -106,17 +106,18 @@ const moveLeft = (
             };
         } else if (prevNode && prevNode.type === "subsup") {
             // enter sup/sub
-            if (prevNode.sup) {
+            const [sub, sup] = prevNode.children;
+            if (sup) {
                 return {
-                    path: [...cursor.path, prevNode.id, prevNode.sup.id],
+                    path: [...cursor.path, prevNode.id, sup.id],
                     next: null,
-                    prev: lastId(prevNode.sup.children),
+                    prev: lastId(sup.children),
                 };
-            } else if (prevNode.sub) {
+            } else if (sub) {
                 return {
-                    path: [...cursor.path, prevNode.id, prevNode.sub.id],
+                    path: [...cursor.path, prevNode.id, sub.id],
                     next: null,
-                    prev: lastId(prevNode.sub.children),
+                    prev: lastId(sub.children),
                 };
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
@@ -140,7 +141,7 @@ const moveLeft = (
                 root,
                 cursor.path[cursor.path.length - 3],
             );
-            const {sub, sup} = parent;
+            const [sub, sup] = parent.children;
             if (currentNode === sup && hasChildren(grandparent)) {
                 if (sub) {
                     return {
@@ -209,17 +210,18 @@ const moveRight = (
             };
         } else if (nextNode && nextNode.type === "subsup") {
             // enter sup/sub
-            if (nextNode.sub) {
+            const [sub, sup] = nextNode.children;
+            if (sub) {
                 return {
-                    path: [...cursor.path, nextNode.id, nextNode.sub.id],
+                    path: [...cursor.path, nextNode.id, sub.id],
                     prev: null,
-                    next: firstId(nextNode.sub.children),
+                    next: firstId(sub.children),
                 };
-            } else if (nextNode.sup) {
+            } else if (sup) {
                 return {
-                    path: [...cursor.path, nextNode.id, nextNode.sup.id],
+                    path: [...cursor.path, nextNode.id, sup.id],
                     prev: null,
-                    next: firstId(nextNode.sup.children),
+                    next: firstId(sup.children),
                 };
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
@@ -244,9 +246,10 @@ const moveRight = (
                 cursor.path[cursor.path.length - 3],
             );
 
-            if (currentNode === parent.sub && hasChildren(grandparent)) {
-                if (parent.sup) {
-                    const {sup} = parent;
+            const [sub, sup] = parent.children;
+
+            if (currentNode === sub && hasChildren(grandparent)) {
+                if (sup) {
                     return {
                         path: [...cursor.path.slice(0, -1), sup.id],
                         prev: null,
@@ -259,7 +262,7 @@ const moveRight = (
                         next: nextId(grandparent.children, parent.id),
                     };
                 }
-            } else if (currentNode === parent.sup && hasChildren(grandparent)) {
+            } else if (currentNode === sup && hasChildren(grandparent)) {
                 return {
                     path: cursor.path.slice(0, -2),
                     prev: parent.id,
@@ -447,57 +450,57 @@ const reducer = (state: State = initialState, action: Action) => {
             }
             case "^": {
                 if (nextNode && nextNode.type === "subsup") {
-                    if (!nextNode.sup) {
-                        nextNode.sup = {
-                            id: getId(),
-                            type: "row",
-                            children: [],
-                        };
-                    }
-                    draft.cursor = {
-                        path: [...cursor.path, nextNode.id, nextNode.sup.id],
-                        prev: null,
-                        next: firstId(nextNode.sup.children),
-                    };
-                    return;
-                }
-                newNode = {
-                    id: getId(),
-                    type: "subsup",
-                    sup: {
+                    const sub = nextNode.children[0];
+                    const sup = nextNode.children[1] || {
                         id: getId(),
                         type: "row",
                         children: [],
-                    },
-                    sub: undefined,
+                    };
+                    nextNode.children = [sub, sup];
+                    draft.cursor = {
+                        path: [...cursor.path, nextNode.id, sup.id],
+                        prev: null,
+                        next: firstId(sup.children),
+                    };
+                    return;
+                }
+                const sup = {
+                    id: getId(),
+                    type: "row",
+                    children: [],
+                };
+                newNode = {
+                    id: getId(),
+                    type: "subsup",
+                    children: [null, sup],
                 };
                 break;
             }
             case "_": {
                 if (nextNode && nextNode.type === "subsup") {
-                    if (!nextNode.sub) {
-                        nextNode.sub = {
-                            id: getId(),
-                            type: "row",
-                            children: [],
-                        };
-                    }
-                    draft.cursor = {
-                        path: [...cursor.path, nextNode.id, nextNode.sub.id],
-                        prev: null,
-                        next: firstId(nextNode.sub.children),
-                    };
-                    return;
-                }
-                newNode = {
-                    id: getId(),
-                    type: "subsup",
-                    sub: {
+                    const sub = nextNode.children[0] || {
                         id: getId(),
                         type: "row",
                         children: [],
-                    },
-                    sup: undefined,
+                    };
+                    const sup = nextNode.children[1];
+                    nextNode.children = [sub, sup];
+                    draft.cursor = {
+                        path: [...cursor.path, nextNode.id, sub.id],
+                        prev: null,
+                        next: firstId(sub.children),
+                    };
+                    return;
+                }
+                const sub = {
+                    id: getId(),
+                    type: "row",
+                    children: [],
+                };
+                newNode = {
+                    id: getId(),
+                    type: "subsup",
+                    children: [sub, null],
                 };
                 break;
             }
@@ -532,15 +535,16 @@ const reducer = (state: State = initialState, action: Action) => {
                 prev: null,
             };
         } else if (newNode.type === "subsup") {
-            if (newNode.sup) {
+            const [sub, sup] = newNode.children;
+            if (sup) {
                 draft.cursor = {
-                    path: [...cursor.path, newNode.id, newNode.sup.id],
+                    path: [...cursor.path, newNode.id, sup.id],
                     next: null,
                     prev: null,
                 };
-            } else if (newNode.sub) {
+            } else if (sub) {
                 draft.cursor = {
-                    path: [...cursor.path, newNode.id, newNode.sub.id],
+                    path: [...cursor.path, newNode.id, sub.id],
                     next: null,
                     prev: null,
                 };

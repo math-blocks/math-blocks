@@ -10,8 +10,7 @@ export type Row<T, ID = number> = {
 export type SubSup<T, ID = number> = {
     id: ID,
     type: "subsup",
-    sub: Row<T, ID> | void,
-    sup: Row<T, ID> | void,
+    children: [?Row<T, ID>, ?Row<T, ID>],
 };
 
 export type Frac<T, ID = number> = {
@@ -61,8 +60,7 @@ export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T, number> {
     return {
         id: getId(),
         type: "subsup",
-        sub: sub ? row(sub) : sub,
-        sup: sup ? row(sup) : sup,
+        children: [sub ? row(sub) : null, sup ? row(sup) : null],
     };
 }
 
@@ -108,13 +106,13 @@ export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
     }
 
     switch (root.type) {
-        case "frac":
-            return root.children.map(node => findNode(node, id)).find(Boolean);
         case "subsup":
-            return [root.sub, root.sup]
+            return root.children
                 .filter(Boolean)
                 .map(node => findNode(node, id))
                 .find(Boolean);
+        case "frac":
+        case "parens":
         case "row":
             return root.children.map(node => findNode(node, id)).find(Boolean);
         default:
@@ -130,16 +128,13 @@ export function getPath<T>(root: Node<T>, id: number): Array<number> | void {
 
     switch (root.type) {
         case "subsup": {
-            if (root.sub) {
-                const subPath = getPath(root.sub, id);
-                if (subPath) {
-                    return [root.id, ...subPath];
+            for (const child of root.children) {
+                if (!child) {
+                    continue;
                 }
-            }
-            if (root.sup) {
-                const supPath = getPath(root.sup, id);
-                if (supPath) {
-                    return [root.id, ...supPath];
+                const path = getPath(child, id);
+                if (path) {
+                    return [root.id, ...path];
                 }
             }
             return undefined;
@@ -183,26 +178,29 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
             };
         }
         case "subsup": {
+            const [sub, sup] = root.children;
             return {
                 type: "subsup",
-                sub: root.sub
-                    ? {
-                          type: "row",
-                          children: root.sub.children.map<NodeWithID<T, void>>(
-                              stripIDs,
-                          ),
-                          id: undefined,
-                      }
-                    : undefined,
-                sup: root.sup
-                    ? {
-                          type: "row",
-                          children: root.sup.children.map<NodeWithID<T, void>>(
-                              stripIDs,
-                          ),
-                          id: undefined,
-                      }
-                    : undefined,
+                children: [
+                    sub
+                        ? {
+                              type: "row",
+                              children: sub.children.map<NodeWithID<T, void>>(
+                                  stripIDs,
+                              ),
+                              id: undefined,
+                          }
+                        : null,
+                    sup
+                        ? {
+                              type: "row",
+                              children: sup.children.map<NodeWithID<T, void>>(
+                                  stripIDs,
+                              ),
+                              id: undefined,
+                          }
+                        : sup,
+                ],
                 id: undefined,
             };
         }

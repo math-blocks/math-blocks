@@ -212,20 +212,20 @@ const getInfixParselet = (
                 op: "supsub",
                 parse: (parser: MathParser, left: Node) => {
                     parser.consume(); // consume the subsup
+                    const [sub, sup] = token.children;
                     if (left.type === "identifier") {
-                        if (token.sub) {
-                            left.subscript = parse(token.sub.children);
+                        if (sub) {
+                            left.subscript = parse(sub.children);
                         }
                     } else {
-                        if (token.sub) {
+                        if (sub) {
                             throw new Error(
                                 `subscripts aren't allowed on ${left.type} nodes`,
                             );
                         }
                     }
-                    if (token.sup) {
-                        const sup = parse(token.sup.children);
-                        return exp(left, sup);
+                    if (sup) {
+                        return exp(left, parse(sup.children));
                     }
 
                     return left;

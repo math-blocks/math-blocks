@@ -30,8 +30,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             let subBox;
-            if (node.sub) {
-                const {sub} = node;
+            const [sub, sup] = node.children;
+            if (sub) {
                 subBox = Layout.hpackNat(sub.children.map(_typeset));
                 subBox.id = sub.id;
                 // TODO: try to reuse getCharDepth
@@ -53,8 +53,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 }
             }
             let supBox;
-            if (node.sup) {
-                const {sup} = node;
+            if (sup) {
                 supBox = Layout.hpackNat(sup.children.map(_typeset));
                 supBox.id = sup.id;
                 // TODO: try to reuse getCharDepth

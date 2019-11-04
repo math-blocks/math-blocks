@@ -119,14 +119,15 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
                 type: "row",
                 children: lexChildren(node.children),
             };
-        case "subsup":
+        case "subsup": {
+            const [sub, sup] = node.children;
             return {
                 id: node.id,
                 type: "subsup",
                 // TODO: use null-coalescing
-                sub: node.sub && lexRow(node.sub),
-                sup: node.sup && lexRow(node.sup),
+                children: [sub ? lexRow(sub) : null, sup ? lexRow(sup) : null],
             };
+        }
         case "frac":
             return {
                 id: node.id,
