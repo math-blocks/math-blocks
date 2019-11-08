@@ -11,8 +11,8 @@ describe("reducer", () => {
         it("insert a charcater and advance the cursor", () => {
             const math = row([glyph("1"), glyph("+")]);
             const cursor = {
-                path: [math.id],
-                prev: math.children[1].id,
+                path: [],
+                prev: 1,
                 next: null,
             };
 
@@ -24,8 +24,8 @@ describe("reducer", () => {
             );
 
             expect(newState.cursor).toEqual({
-                path: [newState.math.id],
-                prev: newState.math.children[2].id,
+                path: [],
+                prev: 2,
                 next: null,
             });
         });
@@ -36,8 +36,8 @@ describe("reducer", () => {
             it("from the back should delete the last character and the cursor should remain at the end", () => {
                 const math = row([glyph("1"), glyph("+")]);
                 const cursor = {
-                    path: [math.id],
-                    prev: math.children[1].id,
+                    path: [],
+                    prev: 1,
                     next: null,
                 };
 
@@ -49,8 +49,8 @@ describe("reducer", () => {
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [newState.math.id],
-                    prev: newState.math.children[0].id,
+                    path: [],
+                    prev: 0,
                     next: null,
                 });
             });
@@ -58,9 +58,9 @@ describe("reducer", () => {
             it("from the front should do nothing", () => {
                 const math = row([glyph("1"), glyph("+")]);
                 const cursor = {
-                    path: [math.id],
+                    path: [],
                     prev: null,
-                    next: math.children[0].id,
+                    next: 0,
                 };
 
                 const state: State = {math, cursor};
@@ -71,34 +71,55 @@ describe("reducer", () => {
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [newState.math.id],
+                    path: [],
                     prev: null,
-                    next: newState.math.children[0].id,
+                    next: 0,
                 });
             });
         });
 
-        describe.skip("subsup", () => {
-            it("from the back should delete the last character and the cursor should remain at the end", () => {
+        describe("subsup", () => {
+            it("from the back should delete the last character in the sup", () => {
                 const x = glyph("x");
                 const math = row([glyph("e"), subsup(undefined, [x])]);
-                const path = Editor.getPath(math, x.id); // ?
                 const cursor = {
-                    path: path || [],
-                    prev: x.id,
+                    path: [1, 1],
+                    prev: 0,
                     next: null,
                 };
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "Backspace"});
-                console.log(newState);
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
                     Editor.stripIDs(row([glyph("e"), subsup(undefined, [])])),
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [],
+                    path: [1, 1],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("from the back should delete the last character in the sub", () => {
+                const x = glyph("x");
+                const math = row([glyph("e"), subsup([x], undefined)]);
+                const cursor = {
+                    path: [1, 0],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "Backspace"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("e"), subsup([], undefined)])),
+                );
+
+                expect(newState.cursor).toEqual({
+                    path: [1, 0],
                     prev: null,
                     next: null,
                 });

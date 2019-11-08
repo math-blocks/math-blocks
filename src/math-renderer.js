@@ -28,9 +28,14 @@ const Rule = ({rule, x, y}: RuleProps): React.Node => {
     );
 };
 
+type LayoutCursor = {
+    prev: ?number,
+    next: ?number,
+};
+
 type BoxProps = {
     +box: Layout.Box,
-    +cursor: ?Editor.Cursor,
+    +cursor: ?LayoutCursor,
     x?: number,
     y?: number,
 };
@@ -39,14 +44,13 @@ const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
     const pen = {x: 0, y: 0};
 
     const availableSpace = box.width - Layout.hlistWidth(box.content);
-    const parentId = cursor ? cursor.path[cursor.path.length - 1] : null;
 
     let cursorPos: ?{x: number, y: number} = null;
 
     const result = box.content.map((node, index) => {
         let result = null;
 
-        if (parentId === box.id && cursor && cursor.next === node.id) {
+        if (cursor && cursor.next === node.id) {
             cursorPos = {x: pen.x - 1, y: -64 * 0.85};
         }
 
@@ -82,7 +86,7 @@ const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
                 throw new UnreachableCaseError(node);
         }
 
-        if (parentId === box.id && cursor && cursor.prev === node.id) {
+        if (cursor && cursor.prev === node.id) {
             cursorPos = {x: pen.x - 1, y: -64 * 0.85};
         }
 
@@ -166,7 +170,7 @@ const Box = (props: BoxProps): React.Node => {
 
 type Props = {
     box: Layout.Box,
-    cursor: ?Editor.Cursor,
+    cursor: ?LayoutCursor,
 };
 
 const MathRenderer = (props: Props) => {

@@ -109,12 +109,14 @@ export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
         case "subsup":
             return root.children
                 .filter(Boolean)
-                .map(node => findNode(node, id))
+                .map<Node<T> | void>(node => findNode(node, id))
                 .find(Boolean);
         case "frac":
         case "parens":
         case "row":
-            return root.children.map(node => findNode(node, id)).find(Boolean);
+            return root.children
+                .map<Node<T> | void>(node => findNode(node, id))
+                .find(Boolean);
         default:
             // remaining nodes are leaf nodes
             return undefined;
@@ -234,12 +236,40 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
     }
 }
 
-export function findNode_<T>(root: Node<T>, id: number): Node<T> {
-    const result = findNode(root, id);
-    if (!result) {
-        throw new Error(`node with id ${id} could not be found`);
+// export function findNode_<T>(root: Node<T>, id: number): Node<T> {
+//     const result = findNode(root, id);
+//     if (!result) {
+//         throw new Error(`node with id ${id} could not be found`);
+//     }
+//     return result;
+// }
+
+export function nodeAtPath<T>(
+    root: Node<T>,
+    path: $ReadOnlyArray<number>,
+): Node<T> {
+    if (path.length === 0) {
+        return root;
+    } else {
+        switch (root.type) {
+            case "atom":
+                throw new Error("invalid path");
+            case "subsup": {
+                const [head, ...tail] = path;
+                if (head > 1) {
+                    throw new Error("invalid path");
+                }
+                if (!root.children[head]) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(root.children[head], tail);
+            }
+            default: {
+                const [head, ...tail] = path;
+                return nodeAtPath(root.children[head], tail);
+            }
+        }
     }
-    return result;
 }
 
 export type Cursor = {

@@ -30,9 +30,9 @@ const MathEditor = (props: Props) => {
     const [state, setState] = useState({
         math: props.value,
         cursor: {
-            path: [props.value.id],
+            path: [],
             prev: null,
-            next: props.value.children[0].id,
+            next: 0,
         },
     });
     const dispatch = useDispatch<Dispatch>();
@@ -47,7 +47,6 @@ const MathEditor = (props: Props) => {
             const action = {
                 type: e.key,
             };
-            console.log(e.key);
             if (e.key === "Enter" && props.onSubmit) {
                 props.onSubmit(state.math);
             }
@@ -62,6 +61,27 @@ const MathEditor = (props: Props) => {
     // $FlowFixMe: make typeset return a Box
     const box = (typeset(fontMetrics)(fontSize)(1.0)(math): Box);
 
+    // TODO: find id of nodes from the cursor and create a cursor that contains ids
+    // so that we can render the cursor properly.  The need for the change is that
+    // typesetting introduces additional nodes so we can't rely on the position like
+    // we did in the reducer.
+
+    type LayoutCursor = {
+        prev: ?number,
+        next: ?number,
+    };
+
+    const layoutCursor: LayoutCursor = {
+        prev:
+            cursor.prev != null
+                ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev]).id
+                : null,
+        next:
+            cursor.next != null
+                ? Editor.nodeAtPath(math, [...cursor.path, cursor.next]).id
+                : null,
+    };
+
     return (
         <div
             tabIndex={!props.readonly ? 0 : undefined}
@@ -71,7 +91,7 @@ const MathEditor = (props: Props) => {
             className={css(styles.container)}
             style={style}
         >
-            <MathRenderer box={box} cursor={active ? cursor : null} />
+            <MathRenderer box={box} cursor={active ? layoutCursor : null} />
         </div>
     );
 };
