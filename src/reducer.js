@@ -12,16 +12,14 @@ export type State = {
 
 const {row, glyph, frac} = Editor;
 
-const root: Editor.Row<Editor.Glyph> = row([
-    glyph("1"),
-    glyph("+"),
-    frac([glyph("1")], [glyph("2"), glyph("y")]),
-    glyph("\u2212"),
-    glyph("x"),
-]);
-
 const initialState: State = {
-    math: root,
+    math: row([
+        glyph("1"),
+        glyph("+"),
+        frac([glyph("1")], [glyph("2"), glyph("y")]),
+        glyph("\u2212"),
+        glyph("x"),
+    ]),
     cursor: {
         path: [],
         prev: null,
@@ -301,7 +299,11 @@ const moveRight = (
     return cursor;
 };
 
-const backspace = (currentNode: Editor.Node<Editor.Glyph>, draft: State) => {
+const backspace = (
+    root: Editor.Node<Editor.Glyph>,
+    currentNode: Editor.Node<Editor.Glyph>,
+    draft: State,
+) => {
     if (!hasChildren(currentNode)) {
         throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
     }
@@ -330,6 +332,7 @@ const backspace = (currentNode: Editor.Node<Editor.Glyph>, draft: State) => {
             root,
             cursor.path.slice(0, cursor.path.length - 2),
         );
+        const parentIndex = cursor.path[cursor.path.length - 2];
 
         if (parent.type === "subsup") {
             if (!hasChildren(grandparent)) {
@@ -350,10 +353,7 @@ const backspace = (currentNode: Editor.Node<Editor.Glyph>, draft: State) => {
                       ];
 
             // update cursor
-            const next =
-                currentNode.children.length > 0
-                    ? currentNode.children[0].id
-                    : nextIndex(grandparent.children, parent.id);
+            const next = parentIndex;
             const prev = next
                 ? prevIndex(newChildren, next)
                 : firstIndex(grandparent.children);
@@ -404,7 +404,7 @@ const reducer = (state: State = initialState, action: Action) => {
                 return;
             }
             case "Backspace": {
-                backspace(currentNode, draft);
+                backspace(draft.math, currentNode, draft);
                 return;
             }
             case "-": {

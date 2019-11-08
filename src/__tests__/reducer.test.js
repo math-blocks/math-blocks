@@ -124,6 +124,60 @@ describe("reducer", () => {
                     next: null,
                 });
             });
+
+            it("should delete the sup after if there are no children", () => {
+                const x = glyph("x");
+                const math = row([
+                    glyph("e"),
+                    subsup([], undefined),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, 0],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "Backspace"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("e"), glyph("g")])),
+                );
+
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+
+            it("should delete the sub after if there are no children", () => {
+                const x = glyph("x");
+                const math = row([
+                    glyph("e"),
+                    subsup(undefined, []),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, 1],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "Backspace"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("e"), glyph("g")])),
+                );
+
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
         });
     });
 });
