@@ -416,7 +416,9 @@ const reducer = (state: State = initialState, action: Action) => {
                         char: "\u2212",
                     },
                 };
-                draft.cursor.prev = newNode.id;
+                draft.cursor.next =
+                    cursor.next != null ? cursor.next + 1 : null;
+                draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
                 break;
             }
             case "*": {

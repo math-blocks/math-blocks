@@ -67,11 +67,13 @@ const MathEditor = (props: Props) => {
     // we did in the reducer.
 
     type LayoutCursor = {
+        parent: number,
         prev: ?number,
         next: ?number,
     };
 
     const layoutCursor: LayoutCursor = {
+        parent: Editor.nodeAtPath(math, cursor.path).id,
         prev:
             cursor.prev != null
                 ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev]).id

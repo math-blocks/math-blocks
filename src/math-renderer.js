@@ -29,6 +29,7 @@ const Rule = ({rule, x, y}: RuleProps): React.Node => {
 };
 
 type LayoutCursor = {
+    parent: number,
     prev: ?number,
     next: ?number,
 };
@@ -92,6 +93,10 @@ const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
 
         return result;
     });
+
+    if (box.content.length === 0 && cursor && cursor.parent === box.id) {
+        cursorPos = {x: pen.x - 1, y: -64 * 0.85};
+    }
 
     if (cursorPos) {
         result.push(<rect key="cursor" {...cursorPos} width={2} height={64} />);
