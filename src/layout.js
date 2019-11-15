@@ -262,27 +262,13 @@ const rebox = (newWidth: Dist, box: Box): Box => {
     } else {
         const hl = kind === "hbox" ? content : [box];
 
-        const glue: Glue = {
-            type: "Glue",
-            size: 0,
-            stretch: 1,
-            shrink: 1,
-        };
-
-        const result = makeBox("hbox", {width: newWidth, height, depth}, [
-            glue,
-            ...hl,
-            glue,
-        ]);
+        const result = makeBox("hbox", {width, height, depth}, [...hl]);
         result.id = box.id;
         return result;
     }
 };
 
-const makeList = (size: Dist, box: Box): Node[] => [
-    makeKern(size),
-    ({...box, shift: 0}: Box),
-];
+const makeList = (size: Dist, box: Box): Node[] => [makeKern(size), box];
 
 // TODO: compute width from numBox and denBox
 export const makeFract = (
@@ -293,17 +279,33 @@ export const makeFract = (
 ): Box => {
     const halfThickness = 0.5 * thickness;
 
-    const width = Math.max(getWidth(numBox), getWidth(denBox));
+    const width = Math.max(
+        Math.max(getWidth(numBox), getWidth(denBox)),
+        // TODO: calculate this based on current font size
+        30 * multiplier,
+    );
     const depth = halfThickness;
     const height = halfThickness;
     const stroke = makeRule({width, depth, height});
 
-    const upList = makeList(2 * multiplier, rebox(width, numBox));
-    const dnList = makeList(4 * multiplier, rebox(width, denBox));
+    console.log(`denBox.shift = ${denBox.shift}`);
+
+    const upList = makeList(2 * multiplier, numBox);
+    const dnList = makeList(4 * multiplier, denBox);
 
     const fracBox = makeVBox(width, stroke, upList, dnList);
     // TODO: calculate this based on current font size
     fracBox.shift = -20 * multiplier;
+
+    if (getWidth(numBox) < width) {
+        numBox.shift = (width - getWidth(numBox)) / 2;
+    }
+
+    if (getWidth(denBox) < width) {
+        denBox.shift = (width - getWidth(denBox)) / 2;
+    }
+
+    console.log(fracBox);
     return fracBox;
 };
 

@@ -79,6 +79,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return parentBox;
         }
         case "frac": {
+            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             const numerator = Layout.hpackNat(
                 node.children[0].children.map(_typeset),
             );
@@ -90,7 +92,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             if (jmetrics) {
                 const jDepth =
                     (baseFontSize *
-                        multiplier *
+                        newMultiplier *
                         (jmetrics.height - jmetrics.bearingY)) /
                     fontMetrics.unitsPerEm;
                 numerator.depth = Math.max(numerator.depth, jDepth);
@@ -100,7 +102,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             // TODO: grab the max bearingY of all of [0-9a-zA-Z]
             if (Emetrics) {
                 const EHeight =
-                    (baseFontSize * multiplier * Emetrics.bearingY) /
+                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
                     fontMetrics.unitsPerEm;
                 numerator.height = Math.max(numerator.height, EHeight);
                 denominator.height = Math.max(denominator.height, EHeight);

@@ -95,7 +95,7 @@ const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
     });
 
     if (box.content.length === 0 && cursor && cursor.parent === box.id) {
-        cursorPos = {x: pen.x - 1, y: -64 * 0.85};
+        cursorPos = {x: pen.x - 1 + box.width / 2, y: -64 * 0.85};
     }
 
     if (cursorPos) {
@@ -116,14 +116,21 @@ const VBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
 
         switch (node.type) {
             case "Box": {
-                pen.y += Layout.getHeight(node);
+                pen.y += Layout.getHeight({...node, shift: 0});
                 if (Number.isNaN(pen.y)) {
                     debugger;
                 }
                 result = (
-                    <Box key={index} box={node} cursor={cursor} {...pen} />
+                    <Box
+                        key={index}
+                        box={node}
+                        cursor={cursor}
+                        x={pen.x + node.shift}
+                        y={pen.y}
+                    />
                 );
-                pen.y += Layout.getDepth(node);
+                console.log(node.kind);
+                pen.y += Layout.getDepth({...node, shift: 0});
                 break;
             }
             case "Rule": {
