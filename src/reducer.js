@@ -312,6 +312,11 @@ const backspace = (
     if (cursor.prev != null) {
         const {children} = currentNode;
         const removeIndex = cursor.prev;
+        const prevNode = children[removeIndex];
+        if (prevNode.type === "subsup" || prevNode.type === "frac") {
+            draft.cursor = moveLeft(root, currentNode, cursor);
+            return;
+        }
         const newCursor = {
             ...cursor,
             prev: prevIndex(currentNode.children, cursor.prev),
@@ -332,7 +337,7 @@ const backspace = (
             root,
             cursor.path.slice(0, cursor.path.length - 2),
         );
-        const parentIndex = cursor.path[cursor.path.length - 2];
+        let parentIndex = cursor.path[cursor.path.length - 2];
 
         if (parent.type === "subsup") {
             if (!hasChildren(grandparent)) {
@@ -342,25 +347,88 @@ const backspace = (
             const index = grandparent.children.findIndex(
                 child => child.id === parent.id,
             );
-            const newChildren =
-                index === -1
-                    ? grandparent.children
-                    : // replace currentNode with currentNode's children
-                      [
-                          ...grandparent.children.slice(0, index),
-                          ...currentNode.children,
-                          ...grandparent.children.slice(index + 1),
-                      ];
+
+            let newChildren = grandparent.children;
+            if (index !== -1) {
+                if (parent.children[0] && parent.children[1]) {
+                    if (cursor.path[cursor.path.length - 1] === 0) {
+                        newChildren = [
+                            ...grandparent.children.slice(0, index),
+                            // place contents of sub before subsup
+                            ...currentNode.children,
+                            ...grandparent.children.slice(index),
+                        ];
+                        parent.children[0] = undefined;
+                    } else {
+                        newChildren = [
+                            ...grandparent.children.slice(0, index + 1),
+                            // place contents of sup after the subsup
+                            ...currentNode.children,
+                            ...grandparent.children.slice(index + 1),
+                        ];
+                        parent.children[1] = undefined;
+                        // position the cursor after the subsup
+                        parentIndex++;
+                    }
+                } else {
+                    // replace currentNode with currentNode's children
+                    newChildren = [
+                        ...grandparent.children.slice(0, index),
+                        ...currentNode.children,
+                        ...grandparent.children.slice(index + 1),
+                    ];
+                }
+            }
 
             // update cursor
-            const next = parentIndex;
-            const prev = next
-                ? prevIndex(newChildren, next)
-                : firstIndex(grandparent.children);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev,
-                next,
+                prev:
+                    parentIndex != null
+                        ? prevIndex(newChildren, parentIndex)
+                        : firstIndex(grandparent.children),
+                next: parentIndex,
+            };
+
+            // update children
+            grandparent.children = newChildren;
+
+            draft.cursor = newCursor;
+            return;
+        } else if (parent.type === "frac") {
+            if (!hasChildren(grandparent)) {
+                return;
+            }
+
+            const index = grandparent.children.findIndex(
+                child => child.id === parent.id,
+            );
+
+            let newChildren = grandparent.children;
+            if (index !== -1) {
+                if (parent.children[0] && parent.children[1]) {
+                    newChildren = [
+                        ...grandparent.children.slice(0, index),
+                        ...parent.children[0].children,
+                        ...parent.children[1].children,
+                        ...grandparent.children.slice(index + 1),
+                    ];
+                    if (cursor.path[cursor.path.length - 1] === 1) {
+                        parentIndex += parent.children[0].children.length;
+                    }
+                } else {
+                    throw new Error("invalid fraction");
+                }
+            }
+
+            // update cursor
+            const newCursor = {
+                path: cursor.path.slice(0, -2), // move up two levels
+                prev:
+                    parentIndex != null
+                        ? prevIndex(newChildren, parentIndex)
+                        : firstIndex(grandparent.children),
+                next: parentIndex,
             };
 
             // update children
@@ -387,8 +455,8 @@ const reducer = (state: State = initialState, action: Action) => {
         }
 
         const nextNode =
-            cursor.next && hasChildren(currentNode)
-                ? currentNode.children.find(child => child.id === cursor.next)
+            cursor.next != null && hasChildren(currentNode)
+                ? currentNode.children[cursor.next]
                 : null;
 
         let newNode: Editor.Node<Editor.Glyph>;
@@ -455,7 +523,11 @@ const reducer = (state: State = initialState, action: Action) => {
                 break;
             }
             case "^": {
-                if (nextNode && nextNode.type === "subsup") {
+                if (
+                    cursor.next != null &&
+                    nextNode &&
+                    nextNode.type === "subsup"
+                ) {
                     const sub = nextNode.children[0];
                     const sup = nextNode.children[1] || {
                         id: getId(),
@@ -464,7 +536,7 @@ const reducer = (state: State = initialState, action: Action) => {
                     };
                     nextNode.children = [sub, sup];
                     draft.cursor = {
-                        path: [...cursor.path, cursor.next + 1, 1],
+                        path: [...cursor.path, cursor.next, 1],
                         prev: null,
                         next: sup.children.length > 0 ? 0 : null,
                     };
@@ -483,7 +555,11 @@ const reducer = (state: State = initialState, action: Action) => {
                 break;
             }
             case "_": {
-                if (nextNode && nextNode.type === "subsup") {
+                if (
+                    cursor.next != null &&
+                    nextNode &&
+                    nextNode.type === "subsup"
+                ) {
                     const sub = nextNode.children[0] || {
                         id: getId(),
                         type: "row",
@@ -492,7 +568,7 @@ const reducer = (state: State = initialState, action: Action) => {
                     const sup = nextNode.children[1];
                     nextNode.children = [sub, sup];
                     draft.cursor = {
-                        path: [...cursor.path, nextNode.id, sub.id],
+                        path: [...cursor.path, cursor.next, 0],
                         prev: null,
                         next: firstIndex(sub.children),
                     };

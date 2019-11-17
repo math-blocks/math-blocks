@@ -129,7 +129,6 @@ const VBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
                         y={pen.y}
                     />
                 );
-                console.log(node.kind);
                 pen.y += Layout.getDepth({...node, shift: 0});
                 break;
             }

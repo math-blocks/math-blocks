@@ -71,18 +71,23 @@ const MathEditor = (props: Props) => {
         prev: ?number,
         next: ?number,
     };
+    console.log(math);
+    console.log(cursor.path);
 
     const layoutCursor: LayoutCursor = {
         parent: Editor.nodeAtPath(math, cursor.path).id,
         prev:
             cursor.prev != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev]).id
+                ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev])?.id ??
+                  null
                 : null,
         next:
             cursor.next != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.next]).id
+                ? Editor.nodeAtPath(math, [...cursor.path, cursor.next])?.id ??
+                  null
                 : null,
     };
+    // console.log(layoutCursor);
 
     return (
         <div

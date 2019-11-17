@@ -12,5 +12,6 @@
 [options]
 exact_by_default=true
 esproposal.nullish_coalescing=enable
+esproposal.optional_chaining=enable
 
 [strict]
