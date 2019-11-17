@@ -22,7 +22,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
 
     switch (node.type) {
         case "row": {
-            const row = Layout.hpackNat(node.children.map(_typeset));
+            const row = Layout.hpackNat(
+                node.children.map(_typeset),
+                multiplier,
+            );
             row.id = node.id;
             return row;
         }
@@ -32,7 +35,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             let subBox;
             const [sub, sup] = node.children;
             if (sub) {
-                subBox = Layout.hpackNat(sub.children.map(_typeset));
+                subBox = Layout.hpackNat(
+                    sub.children.map(_typeset),
+                    newMultiplier,
+                );
                 subBox.id = sub.id;
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
@@ -54,7 +60,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             }
             let supBox;
             if (sup) {
-                supBox = Layout.hpackNat(sup.children.map(_typeset));
+                supBox = Layout.hpackNat(
+                    sup.children.map(_typeset),
+                    newMultiplier,
+                );
                 supBox.id = sup.id;
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
@@ -83,9 +92,11 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             const numerator = Layout.hpackNat(
                 node.children[0].children.map(_typeset),
+                newMultiplier,
             );
             const denominator = Layout.hpackNat(
                 node.children[1].children.map(_typeset),
+                newMultiplier,
             );
 
             // TODO: try to reuse getCharDepth
@@ -121,11 +132,14 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return frac;
         }
         case "parens": {
-            const parens = Layout.hpackNat([
-                _makeGlyph("("),
-                ...node.children.map(_typeset),
-                _makeGlyph(")"),
-            ]);
+            const parens = Layout.hpackNat(
+                [
+                    _makeGlyph("("),
+                    ...node.children.map(_typeset),
+                    _makeGlyph(")"),
+                ],
+                multiplier,
+            );
             parens.id = node.id;
             return parens;
         }
@@ -133,11 +147,14 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const {value} = node;
             const glyph = _makeGlyph(value.char);
             if (/[=\+\-\u00B7\u2212]/.test(value.char)) {
-                const box = Layout.hpackNat([
-                    Layout.makeKern(fontSize / 4),
-                    glyph,
-                    Layout.makeKern(fontSize / 4),
-                ]);
+                const box = Layout.hpackNat(
+                    [
+                        Layout.makeKern(fontSize / 4),
+                        glyph,
+                        Layout.makeKern(fontSize / 4),
+                    ],
+                    multiplier,
+                );
                 box.id = node.id;
                 return box;
             } else {

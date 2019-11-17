@@ -18,6 +18,7 @@ export type Box = {
     kind: BoxKind,
     shift: Dist,
     content: Node[],
+    multiplier: number, // used to determine the height of the cursor
     ...Dim,
 };
 
@@ -51,12 +52,18 @@ export type Rule = {
 
 export type Node = Box | Glyph | Glue | Kern | Rule;
 
-export const makeBox = (kind: BoxKind, dim: Dim, content: Node[]): Box => ({
+export const makeBox = (
+    kind: BoxKind,
+    dim: Dim,
+    content: Node[],
+    multiplier: number,
+): Box => ({
     type: "Box",
     kind,
     ...dim,
     shift: 0,
     content,
+    multiplier,
 });
 
 export const makeKern = (size: Dist): Kern => ({
@@ -234,38 +241,29 @@ const hlistDepth = (nodes: Node[]) => max(nodes.map(getDepth));
 const vlistWidth = (nodes: Node[]) => max(nodes.map(vwidth));
 const vlistVsize = (nodes: Node[]) => sum(nodes.map(vsize));
 
-export const hpackNat = (nl: Node[]) => {
+export const hpackNat = (nl: Node[], multiplier: number = 1) => {
     const dim = {
         width: hlistWidth(nl),
         height: hlistHeight(nl),
         depth: hlistDepth(nl),
     };
-    return makeBox("hbox", dim, nl);
+    return makeBox("hbox", dim, nl, multiplier);
 };
 
-const makeVBox = (width: Dist, node: Node, upList: Node[], dnList: Node[]) => {
+const makeVBox = (
+    width: Dist,
+    node: Node,
+    upList: Node[],
+    dnList: Node[],
+    multiplier: number = 1,
+) => {
     const dim = {
         width,
         depth: vlistVsize(dnList) + getDepth(node),
         height: vlistVsize(upList) + getHeight(node),
     };
     const nodeList = [...upList.reverse(), node, ...dnList];
-    return makeBox("vbox", dim, nodeList);
-};
-
-const rebox = (newWidth: Dist, box: Box): Box => {
-    let {kind, width, height, depth, content} = box;
-    if (newWidth == width) {
-        return box;
-    } else if (content == []) {
-        return hpackNat([makeKern(newWidth)]);
-    } else {
-        const hl = kind === "hbox" ? content : [box];
-
-        const result = makeBox("hbox", {width, height, depth}, [...hl]);
-        result.id = box.id;
-        return result;
-    }
+    return makeBox("vbox", dim, nodeList, multiplier);
 };
 
 const makeList = (size: Dist, box: Box): Node[] => [makeKern(size), box];
