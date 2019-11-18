@@ -29,7 +29,9 @@ const assertValid = (node: Semantic.Expression) => {
         case "add": {
             if (node.args.length < 2) {
                 throw new Error(
-                    `${node} is not valid because it has less than two args`,
+                    `${JSON.stringify(
+                        node,
+                    )} is not valid because it has less than two args`,
                 );
             }
         }
