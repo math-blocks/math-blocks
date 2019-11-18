@@ -15,15 +15,18 @@ const Glyph = ({glyph, x, y}: GlyphProps): React.Node => {
     );
 };
 
-type RuleProps = {rule: Layout.Rule, x: number, y: number};
+type HRuleProps = {rule: Layout.HRule, x: number, y: number};
 
-const Rule = ({rule, x, y}: RuleProps): React.Node => {
+const HRule = ({rule, x, y}: HRuleProps): React.Node => {
     return (
-        <rect
-            x={x}
-            y={y - Layout.getHeight(rule)}
-            width={Layout.getWidth(rule)}
-            height={Layout.vsize(rule)}
+        <line
+            stroke="white"
+            strokeWidth={rule.thickness}
+            strokeLinecap="round"
+            x0={x}
+            y0={y}
+            x1={x + Layout.getWidth(rule)}
+            y1={y}
         />
     );
 };
@@ -68,8 +71,8 @@ const HBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
                 );
                 pen.x += Layout.getWidth(node);
                 break;
-            case "Rule":
-                result = <Rule key={index} rule={node} {...pen} />;
+            case "HRule":
+                result = <HRule key={index} rule={node} {...pen} />;
                 pen.x += Layout.getWidth(node);
                 break;
             case "Glue":
@@ -139,9 +142,9 @@ const VBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
                 pen.y += Layout.getDepth({...node, shift: 0});
                 break;
             }
-            case "Rule": {
+            case "HRule": {
                 pen.y += Layout.getHeight(node);
-                result = <Rule key={index} rule={node} {...pen} />;
+                result = <HRule key={index} rule={node} {...pen} />;
                 pen.y += Layout.getDepth(node);
                 break;
             }

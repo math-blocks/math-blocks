@@ -44,13 +44,14 @@ export type Kern = {
     size: Dist,
 };
 
-export type Rule = {
-    type: "Rule",
+export type HRule = {
+    type: "HRule",
     id?: number,
-    ...Dim,
+    thickness: number,
+    width: number,
 };
 
-export type Node = Box | Glyph | Glue | Kern | Rule;
+export type Node = Box | Glyph | Glue | Kern | HRule;
 
 export const makeBox = (
     kind: BoxKind,
@@ -71,9 +72,10 @@ export const makeKern = (size: Dist): Kern => ({
     size,
 });
 
-export const makeRule = (dim: Dim): Rule => ({
-    type: "Rule",
-    ...dim,
+export const makeHRule = (thickness: number, width: number): HRule => ({
+    type: "HRule",
+    thickness,
+    width,
 });
 
 export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (
@@ -155,7 +157,7 @@ export const getWidth = (node: Node) => {
             return getCharAdvance(node);
         case "Kern":
             return node.size;
-        case "Rule":
+        case "HRule":
             return node.width;
         default:
             throw new UnreachableCaseError(node);
@@ -172,8 +174,8 @@ export const getHeight = (node: Node) => {
             return getCharHeight(node);
         case "Kern":
             return 0;
-        case "Rule":
-            return node.height;
+        case "HRule":
+            return node.thickness / 2;
         default:
             throw new UnreachableCaseError(node);
     }
@@ -189,8 +191,8 @@ export const getDepth = (node: Node) => {
             return getCharDepth(node);
         case "Kern":
             return 0;
-        case "Rule":
-            return node.depth;
+        case "HRule":
+            return node.thickness / 2;
         default:
             throw new UnreachableCaseError(node);
     }
@@ -206,7 +208,7 @@ const vwidth = (node: Node) => {
             return getCharAdvance(node);
         case "Kern":
             return 0;
-        case "Rule":
+        case "HRule":
             return node.width;
         default:
             throw new UnreachableCaseError(node);
@@ -223,8 +225,8 @@ export const vsize = (node: Node) => {
             return getCharHeight(node) + getCharDepth(node);
         case "Kern":
             return node.size;
-        case "Rule":
-            return node.height + node.depth;
+        case "HRule":
+            return node.thickness;
         default:
             throw new UnreachableCaseError(node);
     }
@@ -275,16 +277,12 @@ export const makeFract = (
     numBox: Box,
     denBox: Box,
 ): Box => {
-    const halfThickness = 0.5 * thickness;
-
     const width = Math.max(
         Math.max(getWidth(numBox), getWidth(denBox)),
         // TODO: calculate this based on current font size
         30 * multiplier,
     );
-    const depth = halfThickness;
-    const height = halfThickness;
-    const stroke = makeRule({width, depth, height});
+    const stroke = makeHRule(thickness * multiplier, width);
 
     const upList = makeList(2 * multiplier, numBox);
     const dnList = makeList(4 * multiplier, denBox);
