@@ -20,49 +20,53 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
+    // Adds appropriate padding around operators where appropriate
+    const typesetChildren = (
+        _typeset: (node: Editor.Node<Editor.Glyph>) => Layout.Node,
+        children: Array<Editor.Node<Editor.Glyph>>,
+    ) =>
+        children.map((child, index) => {
+            if (child.type === "atom") {
+                const {value} = child;
+                const prevChild = index > 0 ? children[index - 1] : null;
+                const unary =
+                    /[\+\u2212]/.test(value.char) &&
+                    (prevChild
+                        ? prevChild.type === "atom" &&
+                          /[\+\u2212<>\u2260=\u2264\u2265]/.test(
+                              prevChild.value.char,
+                          )
+                        : true);
+                const glyph = _typeset(child);
+
+                if (unary) {
+                    glyph.id = child.id;
+                    return glyph;
+                } else if (
+                    /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265]/.test(value.char)
+                ) {
+                    const box = Layout.hpackNat(
+                        [
+                            Layout.makeKern(fontSize / 4),
+                            glyph,
+                            Layout.makeKern(fontSize / 4),
+                        ],
+                        multiplier,
+                    );
+                    box.id = child.id;
+                    return box;
+                } else {
+                    glyph.id = child.id;
+                    return glyph;
+                }
+            }
+            return _typeset(child);
+        });
+
     switch (node.type) {
         case "row": {
             const row = Layout.hpackNat(
-                node.children.map((child, index) => {
-                    if (child.type === "atom") {
-                        const {value} = child;
-                        const prevChild =
-                            index > 0 ? node.children[index - 1] : null;
-                        const unary =
-                            /[\+\u2212]/.test(value.char) &&
-                            (prevChild
-                                ? prevChild.type === "atom" &&
-                                  /[\+\u2212<>\u2260=\u2264\u2265]/.test(
-                                      prevChild.value.char,
-                                  )
-                                : true);
-                        const glyph = _typeset(child);
-
-                        if (unary) {
-                            glyph.id = child.id;
-                            return glyph;
-                        } else if (
-                            /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265]/.test(
-                                value.char,
-                            )
-                        ) {
-                            const box = Layout.hpackNat(
-                                [
-                                    Layout.makeKern(fontSize / 4),
-                                    glyph,
-                                    Layout.makeKern(fontSize / 4),
-                                ],
-                                multiplier,
-                            );
-                            box.id = child.id;
-                            return box;
-                        } else {
-                            glyph.id = child.id;
-                            return glyph;
-                        }
-                    }
-                    return _typeset(child);
-                }),
+                typesetChildren(_typeset, node.children),
                 multiplier,
             );
             row.id = node.id;
@@ -75,7 +79,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const [sub, sup] = node.children;
             if (sub) {
                 subBox = Layout.hpackNat(
-                    sub.children.map(_typeset),
+                    typesetChildren(_typeset, sub.children),
                     newMultiplier,
                 );
                 subBox.id = sub.id;
@@ -100,7 +104,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             let supBox;
             if (sup) {
                 supBox = Layout.hpackNat(
-                    sup.children.map(_typeset),
+                    typesetChildren(_typeset, sup.children),
                     newMultiplier,
                 );
                 supBox.id = sup.id;
@@ -130,11 +134,11 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             const numerator = Layout.hpackNat(
-                node.children[0].children.map(_typeset),
+                typesetChildren(_typeset, node.children[0].children),
                 newMultiplier,
             );
             const denominator = Layout.hpackNat(
-                node.children[1].children.map(_typeset),
+                typesetChildren(_typeset, node.children[1].children),
                 newMultiplier,
             );
 
@@ -174,7 +178,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             const parens = Layout.hpackNat(
                 [
                     _makeGlyph("("),
-                    ...node.children.map(_typeset),
+                    ...typesetChildren(_typeset, node.children),
                     _makeGlyph(")"),
                 ],
                 multiplier,
