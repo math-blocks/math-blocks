@@ -23,7 +23,46 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     switch (node.type) {
         case "row": {
             const row = Layout.hpackNat(
-                node.children.map(_typeset),
+                node.children.map((child, index) => {
+                    if (child.type === "atom") {
+                        const {value} = child;
+                        const prevChild =
+                            index > 0 ? node.children[index - 1] : null;
+                        const unary =
+                            /[\+\u2212]/.test(value.char) &&
+                            (prevChild
+                                ? prevChild.type === "atom" &&
+                                  /[\+\u2212<>\u2260=\u2264\u2265]/.test(
+                                      prevChild.value.char,
+                                  )
+                                : true);
+                        const glyph = _typeset(child);
+
+                        if (unary) {
+                            glyph.id = child.id;
+                            return glyph;
+                        } else if (
+                            /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265]/.test(
+                                value.char,
+                            )
+                        ) {
+                            const box = Layout.hpackNat(
+                                [
+                                    Layout.makeKern(fontSize / 4),
+                                    glyph,
+                                    Layout.makeKern(fontSize / 4),
+                                ],
+                                multiplier,
+                            );
+                            box.id = child.id;
+                            return box;
+                        } else {
+                            glyph.id = child.id;
+                            return glyph;
+                        }
+                    }
+                    return _typeset(child);
+                }),
                 multiplier,
             );
             row.id = node.id;
@@ -145,22 +184,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         }
         case "atom": {
             const {value} = node;
-            const glyph = _makeGlyph(value.char);
-            if (/[=\+\-\u00B7\u2212]/.test(value.char)) {
-                const box = Layout.hpackNat(
-                    [
-                        Layout.makeKern(fontSize / 4),
-                        glyph,
-                        Layout.makeKern(fontSize / 4),
-                    ],
-                    multiplier,
-                );
-                box.id = node.id;
-                return box;
-            } else {
-                glyph.id = node.id;
-                return glyph;
-            }
+            return _makeGlyph(value.char);
         }
         default:
             throw new UnreachableCaseError(node);
