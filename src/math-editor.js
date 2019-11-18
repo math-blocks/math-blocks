@@ -1,7 +1,6 @@
 // @flow
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
-import {useSelector, useDispatch} from "react-redux";
 
 import {type Box} from "./layout";
 import typeset from "./typeset";
@@ -13,7 +12,6 @@ import * as Editor from "./editor.js";
 const {row, glyph, frac} = Editor;
 const {useEffect, useState, useRef} = React;
 
-import {type Dispatch, type State} from "./reducer";
 import reducer from "./reducer.js";
 
 type Props = {
@@ -35,7 +33,6 @@ const MathEditor = (props: Props) => {
             next: 0,
         },
     });
-    const dispatch = useDispatch<Dispatch>();
     useEffect(() => {
         if (props.focus && containerRef.current) {
             containerRef.current.focus();

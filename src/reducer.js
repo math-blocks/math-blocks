@@ -440,8 +440,7 @@ const backspace = (
     }
 };
 
-export type Action = {type: string};
-export type Dispatch = Action => void;
+type Action = {type: string};
 
 const reducer = (state: State = initialState, action: Action) => {
     return produce(state, draft => {

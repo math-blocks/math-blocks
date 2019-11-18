@@ -67,7 +67,7 @@ const App = () => {
                 />
             </div>
 
-            {/* <MathKeypad /> */}
+            <MathKeypad />
         </div>
     );
 };

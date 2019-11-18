@@ -1,9 +1,6 @@
 // @flow
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
-import {useDispatch} from "react-redux";
-
-import type {Dispatch} from "./reducer";
 
 type Button = {
     char: string,
@@ -33,13 +30,17 @@ const buttons: Button[] = [
 ];
 
 const MathKeypad = () => {
-    const dispatch = useDispatch<Dispatch>();
-
     const handleClick = button => {
         console.log(`'${button.char}' was pressed`);
-        dispatch({
-            type: button.char,
+        const event = new KeyboardEvent("keydown", {
+            bubbles: true,
+            cancelable: true,
+            key: button.char,
+            keyCode: button.char.charCodeAt(0),
         });
+        if (document.activeElement) {
+            document.activeElement.dispatchEvent(event);
+        }
     };
 
     return (
@@ -48,6 +49,7 @@ const MathKeypad = () => {
                 <div
                     className={css(styles.item)}
                     key={button.name}
+                    onMouseDown={e => e.preventDefault()}
                     onClick={() => handleClick(button)}
                 >
                     {button.char}
