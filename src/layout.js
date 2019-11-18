@@ -286,8 +286,6 @@ export const makeFract = (
     const height = halfThickness;
     const stroke = makeRule({width, depth, height});
 
-    console.log(`denBox.shift = ${denBox.shift}`);
-
     const upList = makeList(2 * multiplier, numBox);
     const dnList = makeList(4 * multiplier, denBox);
 
@@ -303,7 +301,6 @@ export const makeFract = (
         denBox.shift = (width - getWidth(denBox)) / 2;
     }
 
-    console.log(fracBox);
     return fracBox;
 };
 
