@@ -23,10 +23,10 @@ const HRule = ({rule, x, y}: HRuleProps): React.Node => {
             stroke="white"
             strokeWidth={rule.thickness}
             strokeLinecap="round"
-            x0={x}
-            y0={y}
-            x1={x + Layout.getWidth(rule)}
+            x1={x}
             y1={y}
+            x2={x + Layout.getWidth(rule)}
+            y2={y}
         />
     );
 };

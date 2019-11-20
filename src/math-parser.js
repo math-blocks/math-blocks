@@ -115,6 +115,8 @@ const getPrefixParselet = (
             return null;
         case "parens":
             return null;
+        case "root":
+            return null;
         default:
             (token: empty);
             throw new Error("unexpected token");

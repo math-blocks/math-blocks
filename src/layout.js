@@ -252,7 +252,7 @@ export const hpackNat = (nl: Node[], multiplier: number = 1) => {
     return makeBox("hbox", dim, nl, multiplier);
 };
 
-const makeVBox = (
+export const makeVBox = (
     width: Dist,
     node: Node,
     upList: Node[],

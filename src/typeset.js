@@ -33,7 +33,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     /[\+\u2212]/.test(value.char) &&
                     (prevChild
                         ? prevChild.type === "atom" &&
-                          /[\+\u2212<>\u2260=\u2264\u2265]/.test(
+                          /[\+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
                               prevChild.value.char,
                           )
                         : true);
@@ -43,7 +43,9 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     glyph.id = child.id;
                     return glyph;
                 } else if (
-                    /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265]/.test(value.char)
+                    /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
+                        value.char,
+                    )
                 ) {
                     const box = Layout.hpackNat(
                         [
@@ -185,6 +187,33 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             );
             parens.id = node.id;
             return parens;
+        }
+        case "root": {
+            const radicand = Layout.hpackNat(
+                typesetChildren(_typeset, node.children),
+                multiplier,
+            );
+            const E_height = 50;
+            radicand.width = Math.max(radicand.width, 30 * multiplier);
+            radicand.height = Math.max(radicand.height, E_height * multiplier);
+            radicand.depth = Math.max(radicand.depth, 0);
+            const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
+            const vbox = Layout.makeVBox(
+                radicand.width,
+                radicand,
+                [Layout.makeKern(6), stroke],
+                [],
+                multiplier,
+            );
+            // TODO: make the surd stretchy
+            const surd = Layout.hpackNat([_makeGlyph("\u221A")], multiplier);
+            surd.shift = surd.height - vbox.height;
+            const root = Layout.hpackNat(
+                [surd, Layout.makeKern(-10), vbox],
+                multiplier,
+            );
+            root.id = node.id;
+            return root;
         }
         case "atom": {
             const {value} = node;

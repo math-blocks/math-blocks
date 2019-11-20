@@ -26,6 +26,12 @@ export type Parens<T, ID = number> = {
     children: NodeWithID<T, ID>[],
 };
 
+export type Root<T, ID = number> = {
+    id: ID,
+    type: "root",
+    children: NodeWithID<T, ID>[],
+};
+
 export type Atom<T, ID = number> = {
     id: ID,
     type: "atom",
@@ -37,6 +43,7 @@ export type NodeWithID<T, ID> =
     | SubSup<T, ID>
     | Frac<T, ID>
     | Parens<T, ID>
+    | Root<T, ID>
     | Atom<T, ID>;
 
 export type Node<T> =
@@ -44,9 +51,10 @@ export type Node<T> =
     | SubSup<T, number>
     | Frac<T, number>
     | Parens<T, number>
+    | Root<T, number>
     | Atom<T, number>;
 
-export type HasChildren<T> = Row<T> | Parens<T>;
+export type HasChildren<T> = Row<T> | Parens<T> | Root<T>;
 
 export function row<T>(children: Node<T>[]): Row<T, number> {
     return {
