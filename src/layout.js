@@ -282,7 +282,10 @@ export const makeFract = (
         // TODO: calculate this based on current font size
         30 * multiplier,
     );
-    const stroke = makeHRule(thickness * multiplier, width);
+    const stroke = hpackNat([
+        makeHRule(thickness * multiplier, width - thickness),
+    ]);
+    stroke.shift = thickness / 2;
 
     const upList = makeList(2 * multiplier, numBox);
     const dnList = makeList(4 * multiplier, denBox);
