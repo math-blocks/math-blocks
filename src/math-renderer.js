@@ -201,11 +201,16 @@ const MathRenderer = (props: Props) => {
     const height = Layout.getHeight(box);
     const depth = Layout.getDepth(box);
     const width = Layout.getWidth(box) + CURSOR_WIDTH;
-    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width +
-        CURSOR_WIDTH} ${height + depth}`;
+    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height +
+        depth}`;
 
     return (
-        <svg style={{margin: 8}} width={width} viewBox={viewBox}>
+        <svg
+            style={{margin: 8}}
+            width={width}
+            height={height + depth}
+            viewBox={viewBox}
+        >
             <g fill="currentColor">
                 <Box box={box} cursor={cursor} />
             </g>

@@ -71,6 +71,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 typesetChildren(_typeset, node.children),
                 multiplier,
             );
+            row.height = Math.max(row.height, 0.85 * baseFontSize * multiplier);
+            row.depth = Math.max(row.depth, 0.15 * baseFontSize * multiplier);
             row.id = node.id;
             return row;
         }
