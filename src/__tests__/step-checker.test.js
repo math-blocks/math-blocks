@@ -238,6 +238,81 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["division by the same value"]);
     });
 
+    // TODO: 24ab / 6a -> 4b
+
+    it("2a/a -> 2", () => {
+        const before = div(mul(number("2"), ident("a")), ident("a"));
+        const after = number("2");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["canceling factors in division"]);
+    });
+
+    it("2a/a -> 2b [incorrect]", () => {
+        const before = div(mul(number("2"), ident("a")), ident("a"));
+        const after = mul(number("2"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(false);
+        expect(result.reasons).toEqual([]);
+    });
+
+    it("2abc/ab -> 2c", () => {
+        const before = div(
+            mul(number("2"), ident("a"), ident("b"), ident("c")),
+            mul(ident("a"), ident("b")),
+        );
+        const after = mul(number("2"), ident("c"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["canceling factors in division"]);
+    });
+
+    // don't cancel all common factors
+    it("2abc/ab -> 2bc/b", () => {
+        const before = div(
+            mul(number("2"), ident("a"), ident("b"), ident("c")),
+            mul(ident("a"), ident("b")),
+        );
+        const after = div(mul(number("2"), ident("b"), ident("c")), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["canceling factors in division"]);
+    });
+
+    it("2abc/abd -> 2c/d", () => {
+        const before = div(
+            mul(number("2"), ident("a"), ident("b"), ident("c")),
+            mul(ident("a"), ident("b"), ident("d")),
+        );
+        const after = div(mul(number("2"), ident("c")), ident("d"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["canceling factors in division"]);
+    });
+
+    it("ab/abde -> 1/de", () => {
+        const before = div(
+            mul(ident("a"), ident("b")),
+            mul(ident("a"), ident("b"), ident("d"), ident("e")),
+        );
+        const after = div(number("1"), mul(ident("d"), ident("e")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["canceling factors in division"]);
+    });
+
     it("a -> a * b/b", () => {
         const before = ident("a");
         const after = mul(ident("a"), div(ident("b"), ident("b")));

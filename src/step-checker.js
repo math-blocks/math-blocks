@@ -183,6 +183,14 @@ const ops: {
     },
 };
 
+const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> => {
+    if (node.type === "mul") {
+        return node.args;
+    } else {
+        return [node];
+    }
+};
+
 /**
  * checkArgs will return true if each node has the same args even if the
  * order doesn't match.
@@ -358,6 +366,110 @@ const checkDistributionFactoring = (
     };
 };
 
+const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
+    const [numeratorA, denominatorA] = a.args;
+    // Include ONE as a factor to handle cases where the denominator disappears
+    // or the numerator chnages to 1.
+    const numFactorsA = [...getFactors(numeratorA), ONE];
+    const denFactorsA = [...getFactors(denominatorA), ONE];
+    const cancelableFactors = numFactorsA.filter(numFactor =>
+        denFactorsA.some(
+            denFactor => checkStep(numFactor, denFactor).equivalent,
+        ),
+    );
+
+    const [numeratorB, denominatorB] = b.type === "div" ? b.args : [b, ONE];
+    // Include ONE as a factor to handle cases where the denominator disappears
+    // or the numerator chnages to 1.
+    const numFactorsB = [...getFactors(numeratorB), ONE];
+    const denFactorsB = [...getFactors(denominatorB), ONE];
+
+    // TODO: make sure that we didn't add any factors to either the numerator or denominator
+    const addedNumFactors = numFactorsB
+        .filter(
+            numFactorB =>
+                !numFactorsA.some(
+                    numFactorA => checkStep(numFactorA, numFactorB).equivalent,
+                ),
+        )
+        .filter(fact => !checkStep(fact, ONE).equivalent);
+
+    const addedDenFactors = denFactorsB
+        .filter(
+            denFactorB =>
+                !denFactorsA.some(
+                    denFactorA => checkStep(denFactorA, denFactorB).equivalent,
+                ),
+        )
+        .filter(fact => !checkStep(fact, ONE).equivalent);
+
+    // ensure that no extra factors were added to either the numerator
+    // or denominator
+    if (addedNumFactors.length > 0 || addedDenFactors.length > 0) {
+        // TODO: add reason for why the canceling check failed
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const removedNumFactors = numFactorsA.filter(
+        numFactorA =>
+            !numFactorsB.some(
+                numFactorB => checkStep(numFactorA, numFactorB).equivalent,
+            ),
+    );
+    const removedDenFactors = denFactorsA.filter(
+        denFactorA =>
+            !denFactorsB.some(
+                denFactorB => checkStep(denFactorA, denFactorB).equivalent,
+            ),
+    );
+
+    // TODO: memoize checkStep to avoid re-doing the same work
+
+    // check that the same factors were removed from the numerator and
+    // denominator.
+    if (
+        // TODO: helper function to check that two arrays of expressions
+        // are the same.  We should be able to leverage this for checking
+        // commutative property.  We'll want one version where order matters
+        // and one where it doesn't.
+        removedNumFactors.length === removedDenFactors.length &&
+        removedNumFactors.every(removedNumFactor =>
+            removedDenFactors.some(
+                remmovedDenFactor =>
+                    checkStep(removedNumFactor, remmovedDenFactor).equivalent,
+            ),
+        )
+    ) {
+        // check that the factors that were removed are a subset of the
+        // factors that could be canceled.
+        // TODO: figure out how to provide feedback that more factors could
+        // be cancelled.
+        if (
+            // TODO: helper function to check that one array is a subset
+            // of the other.
+            removedNumFactors.every(removedNumFactor =>
+                cancelableFactors.some(
+                    cancelableFactor =>
+                        checkStep(removedNumFactor, cancelableFactor)
+                            .equivalent,
+                ),
+            )
+        ) {
+            return {
+                equivalent: true,
+                reasons: ["canceling factors in division"],
+            };
+        }
+    }
+    return {
+        equivalant: false,
+        reasons: [],
+    };
+};
+
 const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
@@ -369,6 +481,14 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     // or something like that.
     // The reversability sometimes must be defined, e.g. in the case of a + 0 = a
     if (a.type !== b.type) {
+        // handle canceling
+        if (a.type === "div") {
+            const result = checkDisionCanceling(a, b);
+            if (result.equivalent) {
+                return result;
+            }
+        }
+
         // TODO: figure out how to de-dupe this and multiplication which also
         // has an identity
         for (const type: "add" | "mul" of ["add", "mul"]) {
@@ -451,6 +571,14 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             equivalent: false,
             reasons: [],
         };
+    }
+
+    // check canceling
+    if (a.type === "div" && b.type === "div") {
+        const result = checkDisionCanceling(a, b);
+        if (result.equivalent) {
+            return result;
+        }
     }
 
     // we've now assumed that both types are the same
