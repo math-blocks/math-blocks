@@ -204,6 +204,8 @@ const MathRenderer = (props: Props) => {
     const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height +
         depth}`;
 
+    console.log(cursor);
+
     return (
         <svg
             style={{margin: 8}}

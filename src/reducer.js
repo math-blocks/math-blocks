@@ -30,9 +30,7 @@ const initialState: State = {
 type Identifiable = $ReadOnly<{id: number, ...}>;
 
 const hasChildren = (node: Editor.Node<Editor.Glyph>): %checks => {
-    return (
-        node.type === "row" || node.type === "parens" || node.type === "root"
-    );
+    return node.type === "row" || node.type === "parens";
 };
 
 const getChildWithIndex = <T: Identifiable>(
@@ -97,9 +95,10 @@ const moveLeft = (
         const {prev} = cursor;
         const prevNode = getChildWithIndex(currentNode.children, prev);
         if (prevNode && prevNode.type === "root") {
+            const radicand = prevNode.children[0];
             return {
-                path: [...cursor.path, prev],
-                prev: lastIndex(prevNode.children),
+                path: [...cursor.path, prev, 0 /* radicand */],
+                prev: lastIndex(radicand.children),
                 next: null,
             };
         } else if (prevNode && prevNode.type === "frac") {
@@ -142,17 +141,20 @@ const moveLeft = (
             cursor.path.slice(0, cursor.path.length - 1),
         );
 
-        if (
-            currentNode.type === "root" &&
-            cursor.path.length >= 1 &&
-            hasChildren(parent)
-        ) {
-            const currentNodeIndex = cursor.path[cursor.path.length - 1];
-            return {
-                path: cursor.path.slice(0, -1),
-                prev: prevIndex(parent.children, currentNodeIndex),
-                next: currentNodeIndex,
-            };
+        if (parent.type === "root" && cursor.path.length >= 2) {
+            const grandparent = Editor.nodeAtPath(
+                root,
+                cursor.path.slice(0, cursor.path.length - 2),
+            );
+            const parentIndex = cursor.path[cursor.path.length - 2];
+            if (hasChildren(grandparent)) {
+                return {
+                    path: cursor.path.slice(0, -2),
+                    prev: prevIndex(grandparent.children, parentIndex),
+                    next: parentIndex,
+                };
+            }
+            // TODO: handle moving into the index if one exists
         } else if (parent.type === "subsup" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
                 root,
@@ -220,10 +222,12 @@ const moveRight = (
         const {next} = cursor;
         const nextNode = getChildWithIndex(currentNode.children, next);
         if (nextNode && nextNode.type === "root") {
+            const radicand = nextNode.children[0];
+            // TODO: handle navigating into the index
             return {
-                path: [...cursor.path, next],
+                path: [...cursor.path, next, 0 /* radicand */],
                 prev: null,
-                next: firstIndex(nextNode.children),
+                next: firstIndex(radicand.children),
             };
         } else if (nextNode && nextNode.type === "frac") {
             // enter fraction (numerator)
@@ -264,17 +268,20 @@ const moveRight = (
             root,
             cursor.path.slice(0, cursor.path.length - 1),
         );
-        if (
-            currentNode.type === "root" &&
-            cursor.path.length >= 1 &&
-            hasChildren(parent)
-        ) {
-            const currentNodeIndex = cursor.path[cursor.path.length - 1];
-            return {
-                path: cursor.path.slice(0, -1),
-                prev: currentNodeIndex,
-                next: nextIndex(parent.children, currentNodeIndex),
-            };
+        if (parent.type === "root" && cursor.path.length >= 2) {
+            const grandparent = Editor.nodeAtPath(
+                root,
+                cursor.path.slice(0, cursor.path.length - 2),
+            );
+            const parentIndex = cursor.path[cursor.path.length - 2];
+            if (hasChildren(grandparent)) {
+                return {
+                    path: cursor.path.slice(0, -2),
+                    prev: parentIndex,
+                    next: nextIndex(grandparent.children, parentIndex),
+                };
+            }
+            // TODO: handle moving out of the index if one exists
         } else if (parent.type === "subsup" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
                 root,
@@ -622,10 +629,16 @@ const reducer = (state: State = initialState, action: Action) => {
                 break;
             }
             case "\u221A": {
+                const radicand = {
+                    id: getId(),
+                    type: "row",
+                    children: [],
+                };
+                const index = null;
                 newNode = {
                     id: getId(),
                     type: "root",
-                    children: [],
+                    children: [radicand, index],
                 };
                 break;
             }
@@ -666,7 +679,7 @@ const reducer = (state: State = initialState, action: Action) => {
         } else if (newNode.type === "root") {
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
-                path: [...cursor.path, index],
+                path: [...cursor.path, index, 0 /* radicand */],
                 next: null,
                 prev: null,
             };

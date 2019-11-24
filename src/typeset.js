@@ -192,7 +192,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         }
         case "root": {
             const radicand = Layout.hpackNat(
-                typesetChildren(_typeset, node.children),
+                typesetChildren(_typeset, node.children[0].children), // radicand
                 multiplier,
             );
             const E_height = 50;

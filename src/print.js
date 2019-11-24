@@ -24,7 +24,8 @@ const print = (expr: Semantic.Expression): string => {
         case "neg":
             return expr.subtraction ? `${print(expr)}` : `-${print(expr)}`;
         case "root":
-            return `√(${print(expr.radicand)})`; // TODO: index
+            const [radicand, index] = expr.args;
+            return `√(${print(radicand)})`; // TODO: index
         case "log":
             return `log_${print(expr.args[0])}(${print(expr.args[1])})`;
         case "exp":

@@ -407,7 +407,7 @@ describe("NewMathParser", () => {
         ];
 
         expect(() => parser.parse(tokens)).toThrowErrorMatchingInlineSnapshot(
-            `"subscripts aren't allowed on number nodes"`,
+            `"subscripts are only allowed on identifiers"`,
         );
     });
 
@@ -438,6 +438,332 @@ describe("NewMathParser", () => {
                 },
               ],
               "type": "add",
+            }
+        `);
+    });
+
+    it("should handle adding with parens", () => {
+        const tokens = [
+            Lexer.number("a"),
+            Lexer.plus(),
+            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "a",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication with parens", () => {
+        const tokens = [
+            Lexer.number("a"),
+            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "a",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication with multiple parens", () => {
+        const tokens = [
+            Lexer.number("a"),
+            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+            Editor.parens([Lexer.number("d"), Lexer.plus(), Lexer.number("e")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "a",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                  ],
+                  "type": "add",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "d",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "e",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication with parens at the start", () => {
+        const tokens = [
+            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+            Editor.parens([Lexer.number("d"), Lexer.plus(), Lexer.number("e")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                  ],
+                  "type": "add",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "d",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "e",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication with roots", () => {
+        const tokens = [
+            Lexer.number("a"),
+            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "a",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication with multiple roots", () => {
+        const tokens = [
+            Lexer.number("a"),
+            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
+            Editor.root([Lexer.number("c")], [Lexer.number("3")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "a",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "3",
+                    },
+                  ],
+                  "type": "root",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle implicit multiplication starting with a root", () => {
+        const tokens = [
+            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
+            Editor.root([Lexer.number("c")], [Lexer.number("3")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "b",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "c",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "3",
+                    },
+                  ],
+                  "type": "root",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle (√2)a", () => {
+        const tokens = [
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            Lexer.identifier("a"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+                Object {
+                  "name": "a",
+                  "type": "identifier",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
             }
         `);
     });

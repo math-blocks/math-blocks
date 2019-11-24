@@ -73,6 +73,16 @@ const exp = (base: Node, exp: Node): Semantic.Exp => ({
     args: [base, exp],
 });
 
+// NOTE: we don't use a default param here since we want individual
+// nodes to be created for the index of each root.
+const root = (radicand: Node, index?: Node): Semantic.Root => ({
+    type: "root",
+    args: [radicand, index || number("2")],
+});
+
+const isIdentifier = (node: Token): boolean %checks =>
+    node.type === "atom" && node.value.kind === "identifier";
+
 const getPrefixParselet = (
     token: Token,
 ): ?Parser.PrefixParselet<Token, Node, Operator> => {
@@ -103,20 +113,32 @@ const getPrefixParselet = (
         }
         case "frac":
             return {
-                parse: _ =>
-                    div(
-                        parser.parse(token.children[0].children),
-                        parser.parse(token.children[1].children),
-                    ),
+                parse: parser => {
+                    const [numerator, denominator] = token.children;
+                    return div(
+                        parser.parse(numerator.children),
+                        parser.parse(denominator.children),
+                    );
+                },
             };
         case "subsup":
             return null;
         case "row":
             return null;
         case "parens":
-            return null;
+            return {
+                parse: parser => parser.parse(token.children),
+            };
         case "root":
-            return null;
+            return {
+                parse: parser => {
+                    const [arg, index] = token.children;
+                    return root(
+                        parser.parse(arg.children),
+                        index ? parser.parse(index.children) : undefined,
+                    );
+                },
+            };
         default:
             (token: empty);
             throw new Error("unexpected token");
@@ -156,6 +178,7 @@ const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
         if (atom.kind === "identifier") {
             // implicit multiplication
         } else {
+            // an explicit operation, e.g. plus, times, etc.
             parser.consume();
         }
         let expr: Node = parser.parseWithOperator(op);
@@ -164,7 +187,7 @@ const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
             op = "add";
         }
         const nextToken = parser.peek();
-        if (nextToken.type === "atom") {
+        if (nextToken.type === token.type) {
             const nextAtom = nextToken.value;
             if (op === "add" && nextAtom.kind === "plus") {
                 return [expr, ...parseNaryArgs(parser, op)];
@@ -178,6 +201,28 @@ const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
             throw new Error(`we don't handle ${nextToken.type} nextTokens yet`);
             // TODO: deal with frac, subsup, etc.
         }
+    } else if (token.type === "parens") {
+        parser.consume();
+        const expr = parser.parse(token.children);
+        const nextToken = parser.peek();
+        if (nextToken.type === token.type) {
+            return [expr, ...parseNaryArgs(parser, "mul")];
+        } else {
+            return [expr];
+        }
+    } else if (token.type === "root") {
+        parser.consume();
+        const [arg, index] = token.children;
+        const expr = root(
+            parser.parse(arg.children),
+            index ? parser.parse(index.children) : undefined,
+        );
+        const nextToken = parser.peek();
+        if (nextToken.type === "root" || isIdentifier(nextToken)) {
+            return [expr, ...parseNaryArgs(parser, "mul")];
+        } else {
+            return [expr];
+        }
     } else {
         throw new Error(`we don't handle ${token.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.
@@ -189,7 +234,7 @@ const getInfixParselet = (
 ): ?Parser.InfixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "atom": {
-            const atom = token.value;
+            const atom = token.value; // ?
             switch (atom.kind) {
                 case "plus":
                     return {op: "add", parse: parseNaryInfix("add")};
@@ -208,7 +253,6 @@ const getInfixParselet = (
             // be generating a sum or product node or an exponent node.  It also
             // means we have to replace the current last.  It's essentially a
             // postfix operator like ! (factorial).
-            const {parse} = parser;
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
@@ -217,22 +261,29 @@ const getInfixParselet = (
                     const [sub, sup] = token.children;
                     if (left.type === "identifier") {
                         if (sub) {
-                            left.subscript = parse(sub.children);
+                            left.subscript = parser.parse(sub.children);
                         }
                     } else {
                         if (sub) {
                             throw new Error(
-                                `subscripts aren't allowed on ${left.type} nodes`,
+                                "subscripts are only allowed on identifiers",
                             );
                         }
                     }
                     if (sup) {
-                        return exp(left, parse(sup.children));
+                        return exp(left, parser.parse(sup.children));
                     }
 
                     return left;
                 },
             };
+        }
+        case "parens": {
+            // TODO: handle function application, e.g. f(x)
+            return {op: "mul", parse: parseNaryInfix("mul")};
+        }
+        case "root": {
+            return {op: "mul", parse: parseNaryInfix("mul")};
         }
         default:
             return null;
@@ -263,11 +314,9 @@ const getOpPrecedence = (op: Operator) => {
 
 const EOL: Token = Editor.atom({kind: "eol"});
 
-const parser = Parser.parserFactory<Token, Node, Operator>(
+export default Parser.parserFactory<Token, Node, Operator>(
     getPrefixParselet,
     getInfixParselet,
     getOpPrecedence,
     EOL,
 );
-
-export default parser;

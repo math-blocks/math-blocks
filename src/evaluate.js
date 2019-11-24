@@ -47,7 +47,7 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
         case "abs":
             return Math.abs(evaluate(expr.args[0], varDict));
         case "root": {
-            const {index, radicand} = expr;
+            const [radicand, index] = expr.args;
             return Math.pow(
                 evaluate(radicand, varDict),
                 1 / evaluate(index, varDict),

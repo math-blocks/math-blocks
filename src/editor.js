@@ -29,7 +29,7 @@ export type Parens<T, ID = number> = {
 export type Root<T, ID = number> = {
     id: ID,
     type: "root",
-    children: NodeWithID<T, ID>[],
+    children: [Row<T, ID>, ?Row<T, ID>], // radicand, index
 };
 
 export type Atom<T, ID = number> = {
@@ -54,7 +54,7 @@ export type Node<T> =
     | Root<T, number>
     | Atom<T, number>;
 
-export type HasChildren<T> = Row<T> | Parens<T> | Root<T>;
+export type HasChildren<T> = Row<T> | Parens<T>;
 
 export function row<T>(children: Node<T>[]): Row<T, number> {
     return {
@@ -88,6 +88,16 @@ export function parens<T>(children: Node<T>[]): Parens<T, number> {
         id: getId(),
         type: "parens",
         children,
+    };
+}
+
+// It would be nice if we could provide defaults to parameterized functions
+// We'd need type-classes for that but thye don't exist in JavaScript.
+export function root<T>(arg: Node<T>[], index: Node<T>[]): Root<T, number> {
+    return {
+        id: getId(),
+        type: "root",
+        children: [row(arg), row(index)],
     };
 }
 
@@ -263,6 +273,16 @@ export function nodeAtPath<T>(
             case "atom":
                 throw new Error("invalid path");
             case "subsup": {
+                const [head, ...tail] = path;
+                if (head > 1) {
+                    throw new Error("invalid path");
+                }
+                if (!root.children[head]) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(root.children[head], tail);
+            }
+            case "root": {
                 const [head, ...tail] = path;
                 if (head > 1) {
                     throw new Error("invalid path");

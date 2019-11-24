@@ -86,8 +86,12 @@ export type Mod = {
 
 export type Root = {
     type: "root",
-    index: Expression,
-    radicand: Expression,
+    args: [
+        Expression, // radicand
+        Expression, // index
+    ],
+    // index: Expression,
+    // radicand: Expression,
 };
 
 export type Exp = {

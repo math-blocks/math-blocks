@@ -140,12 +140,14 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
                 type: "parens",
                 children: node.children.map(lex),
             };
-        case "root":
+        case "root": {
+            const [radicand, index] = node.children;
             return {
                 id: node.id,
                 type: "root",
-                children: node.children.map(lex),
+                children: [lexRow(radicand), index ? lexRow(index) : null],
             };
+        }
         // We should never read this case since lexChildren will coalesce glyphs
         // into tokens for us.
         case "atom":
