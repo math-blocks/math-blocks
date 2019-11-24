@@ -77,10 +77,11 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return row;
         }
         case "subsup": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const newMultiplier = multiplier === 1.0 ? 0.5 : 0.35;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             let subBox;
             const [sub, sup] = node.children;
+            // TODO: document this better so I know what's going on here.
             if (sub) {
                 subBox = Layout.hpackNat(
                     typesetChildren(_typeset, sub.children),
@@ -106,6 +107,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 }
             }
             let supBox;
+            // TODO: document this better so I know what's going on here.
             if (sup) {
                 supBox = Layout.hpackNat(
                     typesetChildren(_typeset, sup.children),
@@ -135,7 +137,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return parentBox;
         }
         case "frac": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const newMultiplier = multiplier; // === 1.0 ? 0.7 : 0.5;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             const numerator = Layout.hpackNat(
                 typesetChildren(_typeset, node.children[0].children),

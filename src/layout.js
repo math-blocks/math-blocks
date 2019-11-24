@@ -287,12 +287,13 @@ export const makeFract = (
     ]);
     stroke.shift = thickness / 2;
 
-    const upList = makeList(2 * multiplier, numBox);
-    const dnList = makeList(4 * multiplier, denBox);
+    // TODO: try to figure out the baseline and use that to space this our right
+    const upList = makeList(-10 * multiplier, numBox);
+    const dnList = makeList(6 * multiplier, denBox);
 
     const fracBox = makeVBox(width, stroke, upList, dnList);
     // TODO: calculate this based on current font size
-    fracBox.shift = -20 * multiplier;
+    fracBox.shift = -22 * multiplier;
 
     if (getWidth(numBox) < width) {
         numBox.shift = (width - getWidth(numBox)) / 2;
@@ -319,6 +320,7 @@ export const makeSubSup = (
         subBox ? getWidth(subBox) : 0,
     );
     const upList = supBox ? makeList(10, supBox) : [];
+    // TODO: make the shift depend on the height of the subscript
     const dnList = subBox ? makeList(10, subBox) : [];
     // we can't have a non-zero kern b/c it has no height/depth
     const gap = makeKern(0);
