@@ -299,6 +299,58 @@ const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
                 }
             }
         }
+        if (lhsB.type === "div" && rhsB.type === "div") {
+            if (
+                checkStep(lhsA, lhsB.args[0]).equivalent &&
+                checkStep(rhsA, rhsB.args[0]).equivalent
+            ) {
+                if (checkStep(lhsB.args[1], rhsB.args[1]).equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: ["dividing both sides by the same value"],
+                    };
+                } else {
+                    // TODO: custom error message for this case
+                }
+            }
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+// TODO: check removal of parens, i.e. associative property
+
+const checkDistributionFactoring = (
+    prev: Semantic.Mul,
+    next: Semantic.Add,
+): Result => {
+    // TODO: handle distribution across n-ary multiplication later
+    if (prev.args.length === 2) {
+        const [left, right] = prev.args;
+        for (const [x, y] of [[left, right], [right, left]]) {
+            if (y.type === "add") {
+                if (y.args.length === next.args.length) {
+                    const equivalent = next.args.every((arg, index) => {
+                        return checkStep(
+                            arg,
+                            // NOTE: we don't care if multiplication is implicit
+                            // or not when checking steps
+                            mul(prev.implicit)([x, y.args[index]]),
+                        ).equivalent;
+                    });
+
+                    if (equivalent) {
+                        return {
+                            equivalent: true,
+                            reasons: [], // include sub-reasons from checkStep
+                        };
+                    }
+                }
+            }
+        }
     }
     return {
         equivalent: false,
@@ -326,6 +378,8 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                     const nonIdentityArgs = prev.args.filter(
                         arg => !checkStep(arg, identity).equivalent,
                     );
+                    // TODO: collect any reasons for why an arg is equivalent
+                    // to the identity
                     if (nonIdentityArgs.length === 1) {
                         const {equivalent, reasons} = checkStep(
                             nonIdentityArgs[0],
@@ -343,18 +397,54 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
         for (const [prev, next] of [[a, b], [b, a]]) {
             if (prev.type === "mul") {
-                // TODO: ensure that reasons from these calls to checkStep
-                // are captured.
-                const hasZero = prev.args.some(
-                    arg => checkStep(arg, ZERO).equivalent,
-                );
-                const {equivalent, reasons} = checkStep(next, ZERO);
-                if (hasZero && equivalent) {
+                if (next.type === "add") {
+                    // TODO: handle distribution across n-ary multiplication later
+                    const result = checkDistributionFactoring(prev, next);
+                    if (result.equivalent) {
+                        const reason =
+                            a.type === "mul" ? "distribution" : "factoring";
+                        return {
+                            equivalent: true,
+                            reasons: [reason],
+                        };
+                    }
+                } else {
+                    // TODO: ensure that reasons from these calls to checkStep
+                    // are captured.
+                    const hasZero = prev.args.some(
+                        arg => checkStep(arg, ZERO).equivalent,
+                    );
+                    const {equivalent, reasons} = checkStep(next, ZERO);
+                    if (hasZero && equivalent) {
+                        return {
+                            equivalent: true,
+                            reasons: [...reasons, "multiplication by zero"],
+                        };
+                    }
+                }
+            }
+            if (next.type === "div") {
+                // TODO: include reasons from this step as well
+                if (checkStep(next.args[1], ONE).equivalent) {
+                    const {equivalent, reasons} = checkStep(prev, next.args[0]);
+                    if (equivalent) {
+                        return {
+                            equivalent: true,
+                            reasons: [...reasons, "division by one"],
+                        };
+                    }
+                } else if (
+                    // should we ever check that something is exactly ONE?
+                    checkStep(prev, ONE).equivalent &&
+                    checkStep(...next.args).equivalent
+                ) {
                     return {
                         equivalent: true,
-                        reasons: [...reasons, "multiplication by zero"],
+                        reasons: ["division by the same value"],
                     };
                 }
+                // TODO: check multiplying by inverse
+                // TODO: check adding by inverse
             }
         }
         return {
