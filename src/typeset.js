@@ -77,7 +77,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return row;
         }
         case "subsup": {
-            const newMultiplier = multiplier === 1.0 ? 0.5 : 0.35;
+            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             let subBox;
             const [sub, sup] = node.children;
