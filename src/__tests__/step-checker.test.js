@@ -26,10 +26,15 @@ const eq = (...args: Semantic.Expression[]): Semantic.Eq => ({
     args,
 });
 
-const number = (value: string): Semantic.Number => ({
-    type: "number",
-    value,
-});
+const number = (value: string): Semantic.Number => {
+    if (/^[a-z]/.test(value)) {
+        throw new Error("numbers can't contain letters");
+    }
+    return {
+        type: "number",
+        value,
+    };
+};
 
 const ident = (name: string): Semantic.Identifier => {
     if (/^[0-9]/.test(name)) {
@@ -306,8 +311,20 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["multiplying fractions"]);
     });
 
-    // TODO: make these tests pass
-    describe.skip("reciprocals", () => {
+    describe("reciprocals", () => {
+        // TODO: make this pass
+        // If we make this pass, then we should get the others for free since
+        // we already handle multiplying by fractions
+        it.skip("a / b/c -> a * b/c", () => {
+            const before = div(ident("a"), div(ident("b"), ident("c")));
+            const after = mul(ident("a"), div(ident("b"), ident("a")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons).toEqual([]);
+        });
+
         it("1 / a/b -> b / a", () => {
             const before = div(number("1"), div(ident("a"), ident("b")));
             const after = div(ident("b"), ident("a"));
@@ -315,7 +332,9 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual(["multiplying fractions"]);
+            expect(result.reasons).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
         });
 
         it("1 / 1/a -> a", () => {
@@ -325,7 +344,21 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual(["multiplying fractions"]);
+            expect(result.reasons).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
+        });
+
+        it("a / 1/b -> ab", () => {
+            const before = div(ident("a"), div(number("1"), ident("b")));
+            const after = mul(ident("a"), ident("b"));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
         });
     });
 
@@ -417,6 +450,16 @@ describe("Expressions", () => {
     it("a -> a / 1", () => {
         const before = ident("a");
         const after = div(ident("a"), number("1"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["division by one"]);
+    });
+
+    it("ab -> ab / 1", () => {
+        const before = mul(ident("a"), ident("b"));
+        const after = div(mul(ident("a"), ident("b")), number("1"));
 
         const result = checkStep(before, after);
 

@@ -196,6 +196,23 @@ const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> => {
     }
 };
 
+// filters out ONEs and will return either a Mul node or a single Expression node
+const mulFactors = (
+    factors: Array<Semantic.Expression>,
+): SemanticExpression => {
+    const filteredFactors = factors.filter(
+        factor => !checkStep(factor, ONE).equivalent,
+    );
+    switch (filteredFactors.length) {
+        case 0:
+            return ONE;
+        case 1:
+            return filteredFactors[0];
+        default:
+            return explicitMul(filteredFactors);
+    }
+};
+
 /**
  * checkArgs will return true if each node has the same args even if the
  * order doesn't match.
@@ -478,6 +495,30 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
 const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
+
+    if (a.type === "div") {
+        const [numerator, denominator] = a.args;
+        if (denominator.type === "div") {
+            const numeratorFactors = [
+                numerator,
+                ...getFactors(denominator.args[1]),
+            ]; // ?
+            const denominatorFactors = getFactors(denominator.args[0]);
+
+            const newDenominator = mulFactors(denominatorFactors);
+            const newNumerator = mulFactors(numeratorFactors);
+            const result = checkStep(div(newNumerator, newDenominator), b);
+
+            if (result.equivalent) {
+                return {
+                    equivalent: true,
+                    reasons: [
+                        "dividing by a fraction is the same as multiplying by the reciprocal",
+                    ],
+                };
+            }
+        }
+    }
 
     // The nice thing about these checks is that they go both ways, so it's
     // completely reasonable for someone to start with `a` and then go to
