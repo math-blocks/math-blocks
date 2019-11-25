@@ -117,6 +117,11 @@ const mul = (implicit: boolean) => (
 const implicitMul = mul(true);
 const explicitMul = mul(false);
 
+const div = (num: Semantic.Expression, den: Semantic.Expression) => ({
+    type: "div",
+    args: [num, den],
+});
+
 type Result = {|
     equivalent: boolean,
     reasons: Reason[],
@@ -527,6 +532,46 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                             equivalent: true,
                             reasons: [reason],
                         };
+                    }
+                } else if (next.type === "div") {
+                    // Handle multiplying by a fraction
+                    if (prev.args.some(arg => arg.type === "div")) {
+                        const numFactors = [];
+                        const denFactors = [];
+                        for (const arg of prev.args) {
+                            if (arg.type === "div") {
+                                const [numerator, denominator] = arg.args;
+                                if (numerator.type === "mul") {
+                                    numFactors.push(...numerator.args);
+                                } else {
+                                    numFactors.push(numerator);
+                                }
+                                if (denominator.type === "mul") {
+                                    denFactors.push(...denominator.args);
+                                } else {
+                                    denFactors.push(denominator);
+                                }
+                            } else {
+                                const numerator = arg;
+                                if (numerator.type === "mul") {
+                                    numFactors.push(...numerator.args);
+                                } else {
+                                    numFactors.push(numerator);
+                                }
+                            }
+                        }
+                        const numerator = explicitMul(numFactors);
+                        const denominator = explicitMul(denFactors);
+                        const result = checkStep(
+                            next,
+                            div(numerator, denominator),
+                        );
+                        if (result.equivalent) {
+                            return {
+                                equivalent: true,
+                                reasons: ["multiplying fractions"],
+                            };
+                        }
                     }
                 } else {
                     // TODO: ensure that reasons from these calls to checkStep

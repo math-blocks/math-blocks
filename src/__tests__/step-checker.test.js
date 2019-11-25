@@ -238,6 +238,97 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["division by the same value"]);
     });
 
+    it("a/b * c/d -> ac / bd", () => {
+        const before = mul(
+            div(ident("a"), ident("b")),
+            div(ident("c"), ident("d")),
+        );
+        const after = div(
+            mul(ident("a"), ident("c")),
+            mul(ident("b"), ident("d")),
+        );
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplying fractions"]);
+    });
+
+    it("ab/cd * e/f -> abe / cdf", () => {
+        const before = mul(
+            div(mul(ident("a"), ident("b")), mul(ident("c"), ident("d"))),
+            div(ident("e"), ident("f")),
+        );
+        const after = div(
+            mul(ident("a"), ident("b"), ident("e")),
+            mul(ident("c"), ident("d"), ident("f")),
+        );
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplying fractions"]);
+    });
+
+    it("a/b * 1/d -> a / bd", () => {
+        const before = mul(
+            div(ident("a"), ident("b")),
+            div(number("1"), ident("d")),
+        );
+        const after = div(ident("a"), mul(ident("b"), ident("d")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplying fractions"]);
+    });
+
+    it("1/a * 1/b -> 1 / ab", () => {
+        const before = mul(
+            div(number("1"), ident("a")),
+            div(number("1"), ident("b")),
+        );
+        const after = div(number("1"), mul(ident("a"), ident("b")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplying fractions"]);
+    });
+
+    it("a * 1/b -> a / b", () => {
+        const before = mul(ident("a"), div(number("1"), ident("b")));
+        const after = div(ident("a"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplying fractions"]);
+    });
+
+    // TODO: make these tests pass
+    describe.skip("reciprocals", () => {
+        it("1 / a/b -> b / a", () => {
+            const before = div(number("1"), div(ident("a"), ident("b")));
+            const after = div(ident("b"), ident("a"));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons).toEqual(["multiplying fractions"]);
+        });
+
+        it("1 / 1/a -> a", () => {
+            const before = div(number("1"), div(number("1"), ident("a")));
+            const after = ident("a");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons).toEqual(["multiplying fractions"]);
+        });
+    });
+
     // TODO: 24ab / 6a -> 4b
 
     it("2a/a -> 2", () => {
