@@ -28,6 +28,7 @@ const assertValid = (node: Semantic.Expression) => {
         case "mul":
         case "add": {
             if (node.args.length < 2) {
+                debugger;
                 throw new Error(
                     `${JSON.stringify(
                         node,
@@ -457,6 +458,7 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
         // are the same.  We should be able to leverage this for checking
         // commutative property.  We'll want one version where order matters
         // and one where it doesn't.
+        removedNumFactors.length > 0 &&
         removedNumFactors.length === removedDenFactors.length &&
         removedNumFactors.every(removedNumFactor =>
             removedDenFactors.some(
@@ -498,18 +500,13 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
     if (a.type === "div") {
         const [numerator, denominator] = a.args;
-        if (denominator.type === "div") {
-            const numeratorFactors = [
-                numerator,
-                ...getFactors(denominator.args[1]),
-            ]; // ?
-            const denominatorFactors = getFactors(denominator.args[0]);
 
-            const newDenominator = mulFactors(denominatorFactors);
-            const newNumerator = mulFactors(numeratorFactors);
-            const result = checkStep(div(newNumerator, newDenominator), b);
+        if (denominator.type === "div") {
+            const reciprocal = div(denominator.args[1], denominator.args[0]);
+            const result = checkStep(explicitMul([numerator, reciprocal]), b);
 
             if (result.equivalent) {
+                console.log(result.reasons);
                 return {
                     equivalent: true,
                     reasons: [
@@ -601,8 +598,8 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                                 }
                             }
                         }
-                        const numerator = explicitMul(numFactors);
-                        const denominator = explicitMul(denFactors);
+                        const numerator = mulFactors(numFactors);
+                        const denominator = mulFactors(denFactors);
                         const result = checkStep(
                             next,
                             div(numerator, denominator),
@@ -661,6 +658,20 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
     // check canceling
     if (a.type === "div" && b.type === "div") {
+        // check that the numerators are equivalent and the
+        // denominators are equivalent.
+        if (
+            checkStep(a.args[0], b.args[0]).equivalent &&
+            checkStep(a.args[1], b.args[1]).equivalent
+        ) {
+            // TODO: report some sort of reason here
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+
+        // if they aren't, try canceling
         const result = checkDisionCanceling(a, b);
         if (result.equivalent) {
             return result;

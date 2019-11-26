@@ -315,14 +315,16 @@ describe("Expressions", () => {
         // TODO: make this pass
         // If we make this pass, then we should get the others for free since
         // we already handle multiplying by fractions
-        it.skip("a / b/c -> a * b/c", () => {
+        it("a / b/c -> a * c/b", () => {
             const before = div(ident("a"), div(ident("b"), ident("c")));
-            const after = mul(ident("a"), div(ident("b"), ident("a")));
+            const after = mul(ident("a"), div(ident("c"), ident("b")));
 
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([]);
+            expect(result.reasons).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
         });
 
         it("1 / a/b -> b / a", () => {
