@@ -113,6 +113,17 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["commutative property"]);
     });
 
+    it("2 + 0 -> 0 + 2", () => {
+        const before = add(number("2"), number("0"));
+        const after = add(number("0"), number("2"));
+
+        const reasons = [];
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["commutative property"]);
+    });
+
     it("2 * 3 -> 3 * 2", () => {
         const before = mul(number("3"), number("2"));
         const after = mul(number("2"), number("3"));
@@ -348,6 +359,8 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplying fractions",
+                "multiplying fractions",
             ]);
         });
 
@@ -378,7 +391,7 @@ describe("Expressions", () => {
             ]);
         });
 
-        it("a / 1/b -> ab", () => {
+        it("a / 1/b -> a * b/1 -> ab", () => {
             const before = div(ident("a"), div(number("1"), ident("b")));
             const after = mul(ident("a"), ident("b"));
 
@@ -387,7 +400,24 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplying fractions",
                 "division by one",
+            ]);
+        });
+
+        it("a/b * b/a -> ab/ba -> 1", () => {
+            const before = mul(
+                div(ident("a"), ident("b")),
+                div(ident("b"), ident("a")),
+            );
+            const after = number("1");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons).toEqual([
+                "multiplying fractions",
+                "division by the same value",
             ]);
         });
     });
@@ -418,6 +448,28 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(false);
         expect(result.reasons).toEqual([]);
+    });
+
+    it("0 + (a + b) -> a + b", () => {
+        const ZERO = number("0");
+        const before = add(ZERO, add(ident("a"), ident("b")));
+        const after = add(ident("a"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["addition with identity"]);
+    });
+
+    it("1 * (a * b) -> a * b", () => {
+        const ONE = number("1");
+        const before = mul(ONE, mul(ident("a"), ident("b")));
+        const after = mul(ident("a"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["multiplication with identity"]);
     });
 
     it("2abc/ab -> ab/ab * 2c/1 -> 1 * 2c/1 -> 2c", () => {
@@ -535,6 +587,19 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["division by one"]);
+    });
+
+    it("a * b -> b * a -> b * 1 * a", () => {
+        const before = mul(ident("a"), ident("b"));
+        const after = mul(ident("b"), number("1"), ident("a"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "commutative property",
+            "multiplication with identity",
+        ]);
     });
 
     it("a * b -> a * 1 * b * 1", () => {

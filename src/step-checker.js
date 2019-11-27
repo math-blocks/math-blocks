@@ -534,208 +534,8 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
 
-    if (a.type === "div") {
-        const [numerator, denominator] = a.args;
-
-        if (denominator.type === "div") {
-            const reciprocal = div(denominator.args[1], denominator.args[0]);
-            const result = checkStep(explicitMul([numerator, reciprocal]), b);
-
-            if (result.equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        "dividing by a fraction is the same as multiplying by the reciprocal",
-                        ...result.reasons,
-                    ],
-                };
-            }
-        }
-    }
-
-    // The nice thing about these checks is that they go both ways, so it's
-    // completely reasonable for someone to start with `a` and then go to
-    // `a + 0` and then `a + (b - b)` and so on... as well as the reverse
-    // We should be able to do something to verify this by auto reversing tests
-    // or something like that.
-    // The reversability sometimes must be defined, e.g. in the case of a + 0 = a
-    if (a.type !== b.type) {
-        // handle canceling
-        for (const [prev, next] of [[a, b], [b, a]]) {
-            if (prev.type === "div") {
-                // TODO: check if the numerator and denominator are the same
-                if (
-                    // should we ever check that something is exactly ONE?
-                    checkStep(...prev.args).equivalent &&
-                    checkStep(next, ONE).equivalent
-                ) {
-                    return {
-                        equivalent: true,
-                        reasons: ["division by the same value"],
-                    };
-                }
-
-                const result = checkDisionCanceling(prev, next);
-                if (result.equivalent) {
-                    return result;
-                }
-            }
-        }
-
-        // TODO: figure out how to de-dupe this and multiplication which also
-        // has an identity
-        for (const type: "add" | "mul" of ["add", "mul"]) {
-            for (const [prev, next] of [[a, b], [b, a]]) {
-                if (prev.type === type) {
-                    const {identity, reason} = ops[type];
-                    const identityReasons = [];
-                    const nonIdentityArgs = prev.args.filter(arg => {
-                        const {equivalent, reasons} = checkStep(arg, identity);
-                        if (equivalent) {
-                            identityReasons.push(...reasons);
-                        }
-                        return !equivalent;
-                    });
-                    // TODO: collect any reasons for why an arg is equivalent
-                    // to the identity
-                    if (nonIdentityArgs.length === 1) {
-                        const {equivalent, reasons} = checkStep(
-                            nonIdentityArgs[0],
-                            next,
-                        );
-                        if (equivalent) {
-                            return {
-                                equivalent: true,
-                                reasons: [
-                                    ...identityReasons,
-                                    reason,
-                                    ...reasons,
-                                ],
-                            };
-                        }
-                    }
-                }
-            }
-        }
-
-        for (const [prev, next] of [[a, b], [b, a]]) {
-            if (prev.type === "mul") {
-                if (next.type === "add") {
-                    // TODO: handle distribution across n-ary multiplication later
-                    const result = checkDistributionFactoring(prev, next);
-                    if (result.equivalent) {
-                        const reason =
-                            a.type === "mul" ? "distribution" : "factoring";
-                        return {
-                            equivalent: true,
-                            reasons: [reason],
-                        };
-                    }
-                } else if (next.type === "div") {
-                    // Handle multiplying by a fraction
-                    if (prev.args.some(arg => arg.type === "div")) {
-                        const numFactors = [];
-                        const denFactors = [];
-                        for (const arg of prev.args) {
-                            if (arg.type === "div") {
-                                const [numerator, denominator] = arg.args;
-                                if (numerator.type === "mul") {
-                                    numFactors.push(...numerator.args);
-                                } else {
-                                    numFactors.push(numerator);
-                                }
-                                if (denominator.type === "mul") {
-                                    denFactors.push(...denominator.args);
-                                } else {
-                                    denFactors.push(denominator);
-                                }
-                            } else {
-                                const numerator = arg;
-                                if (numerator.type === "mul") {
-                                    numFactors.push(...numerator.args);
-                                } else {
-                                    numFactors.push(numerator);
-                                }
-                            }
-                        }
-                        const numerator = mulFactors(numFactors);
-                        const denominator = mulFactors(denFactors);
-                        const result = checkStep(
-                            next,
-                            div(numerator, denominator),
-                        );
-                        if (result.equivalent) {
-                            return {
-                                equivalent: true,
-                                reasons: ["multiplying fractions"],
-                            };
-                        }
-                    }
-                } else {
-                    // TODO: ensure that reasons from these calls to checkStep
-                    // are captured.
-                    const hasZero = prev.args.some(
-                        arg => checkStep(arg, ZERO).equivalent,
-                    );
-                    const {equivalent, reasons} = checkStep(next, ZERO);
-                    if (hasZero && equivalent) {
-                        return {
-                            equivalent: true,
-                            reasons: [...reasons, "multiplication by zero"],
-                        };
-                    }
-                }
-            }
-            if (next.type === "div") {
-                // TODO: include reasons from this step as well
-                if (checkStep(next.args[1], ONE).equivalent) {
-                    const {equivalent, reasons} = checkStep(prev, next.args[0]);
-                    if (equivalent) {
-                        return {
-                            equivalent: true,
-                            reasons: [...reasons, "division by one"],
-                        };
-                    }
-                } else if (
-                    // should we ever check that something is exactly ONE?
-                    checkStep(prev, ONE).equivalent &&
-                    checkStep(...next.args).equivalent
-                ) {
-                    return {
-                        equivalent: true,
-                        reasons: ["division by the same value"],
-                    };
-                }
-                // TODO: check multiplying by inverse
-                // TODO: check adding by inverse
-            }
-        }
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    // check canceling
-    if (a.type === "div" && b.type === "div") {
-        // TODO: add an identity check for all operations
-        // identity check
-        if (
-            checkStep(a.args[0], b.args[0]).equivalent &&
-            checkStep(a.args[1], b.args[1]).equivalent
-        ) {
-            return {
-                equivalent: true,
-                reasons: [],
-            };
-        }
-
-        // if they aren't, try canceling
-        const result = checkDisionCanceling(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-    }
+    // TODO: check adding by inverse
+    // TODO: dividing a fraction: a/b / c -> a / bc
 
     // We allow any reordering of args, but we may want to restrict to
     // pair-wise reorderings in the future.
@@ -758,32 +558,159 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
-    // eliminate identity when the operations are the same
-    // TODO: dedupe this code with the code when the types are different
-    // TODO: also handle removing additive identity when the types are the same
-    if (a.type === "mul" && b.type === "mul") {
-        const [prev, next] = [a, b];
-        if (prev.type === "mul") {
-            const {identity, reason} = ops["mul"];
-            const identityReasons = [];
-            const nonIdentityArgs = prev.args.filter(arg => {
-                const {equivalent, reasons} = checkStep(arg, identity);
-                if (equivalent) {
-                    identityReasons.push(...reasons);
+    // Dividing by a fraction
+    if (a.type === "div") {
+        const [numerator, denominator] = a.args;
+
+        if (denominator.type === "div") {
+            const reciprocal = div(denominator.args[1], denominator.args[0]);
+            const result = checkStep(explicitMul([numerator, reciprocal]), b);
+
+            if (result.equivalent) {
+                return {
+                    equivalent: true,
+                    reasons: [
+                        "dividing by a fraction is the same as multiplying by the reciprocal",
+                        ...result.reasons,
+                    ],
+                };
+            }
+        }
+    }
+
+    // Eliminate identities
+    // [a, b] -> forward
+    // [b, a] -> backwards
+    for (const type: "add" | "mul" of ["add", "mul"]) {
+        for (const [prev, next] of [[a, b], [b, a]]) {
+            if (prev.type === type) {
+                const {identity, reason} = ops[type];
+                const identityReasons = [];
+                const nonIdentityArgs = prev.args.filter(arg => {
+                    const {equivalent, reasons} = checkStep(arg, identity);
+                    if (equivalent) {
+                        identityReasons.push(...reasons);
+                    }
+                    return !equivalent;
+                });
+                // TODO: collect any reasons for why an arg is equivalent
+                // to the identity
+                if (nonIdentityArgs.length === 1) {
+                    const {equivalent, reasons} = checkStep(
+                        nonIdentityArgs[0],
+                        next,
+                    );
+                    if (equivalent) {
+                        return {
+                            equivalent: true,
+                            reasons: [...identityReasons, reason, ...reasons],
+                        };
+                    }
                 }
-                return !equivalent;
-            });
-            // TODO: collect any reasons for why an arg is equivalent
-            // to the identity
-            if (nonIdentityArgs.length === 1) {
-                const {equivalent, reasons} = checkStep(
-                    nonIdentityArgs[0],
+            }
+        }
+    }
+
+    // Canceling in fractions
+    // [a, b] -> forward
+    // [b, a] -> backwards
+    for (const [prev, next] of [[a, b], [b, a]]) {
+        if (prev.type === "div") {
+            if (
+                // Check if the numerator and denominator are the same
+                checkStep(...prev.args).equivalent &&
+                // Should we ever check that something is exactly ONE?
+                checkStep(next, ONE).equivalent
+            ) {
+                return {
+                    equivalent: true,
+                    reasons: ["division by the same value"],
+                };
+            }
+
+            if (checkStep(prev.args[1], ONE).equivalent) {
+                const {equivalent, reasons} = checkStep(prev.args[0], next);
+                if (equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: [...reasons, "division by one"],
+                    };
+                }
+            }
+
+            const result = checkDisionCanceling(prev, next);
+            if (result.equivalent) {
+                return result;
+            }
+        }
+    }
+
+    // TODO: add an identity check for all operations
+    // identity check for division
+    if (a.type === "div" && b.type === "div") {
+        if (
+            checkStep(a.args[0], b.args[0]).equivalent &&
+            checkStep(a.args[1], b.args[1]).equivalent
+        ) {
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+    }
+
+    // Distribution, multiplying by a fraction, multiplying by zero
+    // [a, b] -> forward
+    // [b, a] -> backwards
+    for (const [prev, next] of [[a, b], [b, a]]) {
+        if (prev.type === "mul") {
+            if (next.type === "add") {
+                // TODO: handle distribution across n-ary multiplication
+                const {equivalent, reasons} = checkDistributionFactoring(
+                    prev,
                     next,
+                );
+                if (equivalent) {
+                    const reason =
+                        a.type === "mul" ? "distribution" : "factoring";
+                    return {
+                        equivalent: true,
+                        reasons: [...reasons, reason],
+                    };
+                }
+            } else if (prev.args.some(arg => arg.type === "div")) {
+                const numFactors = [];
+                const denFactors = [];
+                for (const arg of prev.args) {
+                    if (arg.type === "div") {
+                        const [numerator, denominator] = arg.args;
+                        numFactors.push(...getFactors(numerator));
+                        denFactors.push(...getFactors(denominator));
+                    } else {
+                        numFactors.push(...getFactors(arg));
+                    }
+                }
+                const {equivalent, reasons} = checkStep(
+                    next,
+                    div(mulFactors(numFactors), mulFactors(denFactors)),
                 );
                 if (equivalent) {
                     return {
                         equivalent: true,
-                        reasons: [...identityReasons, reason, ...reasons],
+                        reasons: ["multiplying fractions", ...reasons],
+                    };
+                }
+            } else {
+                // TODO: ensure that reasons from these calls to checkStep
+                // are captured.
+                const hasZero = prev.args.some(
+                    arg => checkStep(arg, ZERO).equivalent,
+                );
+                const {equivalent, reasons} = checkStep(next, ZERO);
+                if (hasZero && equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: [...reasons, "multiplication by zero"],
                     };
                 }
             }
@@ -792,7 +719,9 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
     // we've now assumed that both types are the same
     if (hasArgs(a) && hasArgs(b)) {
-        // identity check
+        // NOTE: this is not really an identity check since the
+        // number of args are different.  Here, we're checking if
+        // the expression contains any identities we can eliminate
         if (a.args.length !== b.args.length) {
             if (a.type === "add" && b.type === "add") {
                 return check_identity(a, b);
