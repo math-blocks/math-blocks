@@ -109,13 +109,8 @@ describe("Expressions", () => {
         const reasons = [];
         const result = checkStep(before, after);
 
-        // TODO: all commutative property win in this case
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
-            // "commutative property",
-            "multiplication with identity",
-            "multiplication with identity",
-        ]);
+        expect(result.reasons).toEqual(["commutative property"]);
     });
 
     it("2 * 3 -> 3 * 2", () => {
@@ -217,6 +212,19 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["addition with identity"]);
+    });
+
+    it("a + b -> b + a -> b + 0 + a", () => {
+        const before = add(ident("a"), ident("b"));
+        const after = add(ident("b"), number("0"), ident("a"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "commutative property",
+            "addition with identity",
+        ]);
     });
 
     it("a + b -> a + 0 + b + 0", () => {

@@ -146,14 +146,22 @@ const check_identity = <T: Semantic.Add | Semantic.Mul>(a: T, b: T): Result => {
     const nonIdentityArgsA = filterIdentity(a);
     const nonIdentityArgsB = filterIdentity(b);
     if (hasIdentityA || hasIdentityB) {
-        const areEqual = checkStep(nonIdentityArgsA, nonIdentityArgsB);
-        if (areEqual) {
+        const {equivalent, reasons} = checkStep(
+            nonIdentityArgsA,
+            nonIdentityArgsB,
+        );
+        if (equivalent) {
             const {reason} = ops[a.type];
             return {
                 equivalent: true,
-                reasons: [reason],
+                reasons: [...reasons, reason],
             };
         }
+        // TODO: figure out a test case for this case
+        return {
+            equivalent: false,
+            reasons: [],
+        };
     }
     return {
         equivalent: false,
@@ -729,7 +737,30 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
+    // We allow any reordering of args, but we may want to restrict to
+    // pair-wise reorderings in the future.
+    // Not everything that has args can commute, for instance 3 > 1 is not
+    // the same as 1 > 3 (the first is true, the latter is not)
+    // NOTE: we only check if something can commute when the number args match
+    // If the args don't match, then we first remove any identities if possible.
+    if (can_commute(a) && can_commute(b) && a.args.length === b.args.length) {
+        const pairs = zip(a.args, b.args);
+        const commutative = pairs.some(pair => !checkStep(...pair).equivalent);
+        const {reasons, equivalent} = checkArgs(a, b);
+        // The rationale for equality is different
+        if (commutative && equivalent) {
+            const reason =
+                a.type === "eq" ? "symmetric property" : "commutative property";
+            return {
+                equivalent,
+                reasons: [reason, ...reasons],
+            };
+        }
+    }
+
     // eliminate identity when the operations are the same
+    // TODO: dedupe this code with the code when the types are different
+    // TODO: also handle removing additive identity when the types are the same
     if (a.type === "mul" && b.type === "mul") {
         const [prev, next] = [a, b];
         if (prev.type === "mul") {
@@ -769,11 +800,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             if (a.type === "mul" && b.type === "mul") {
                 return check_identity(a, b);
             }
-
-            return {
-                equivalent: false,
-                reasons: [],
-            };
         }
 
         if (a.type === "eq" && b.type === "eq") {
@@ -789,29 +815,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         // If the expressions aren't equal
         if (!equivalent) {
             return {equivalent: false, reasons: []};
-        }
-
-        // We allow any reordering of args, but we may want to restrict to
-        // pair-wise reorderings in the future.
-        // Not everything that has args can commute, for instance 3 > 1 is not
-        // the same as 1 > 3 (the first is true, the latter is not)
-        if (can_commute(a) && can_commute(b)) {
-            const pairs = zip(a.args, b.args);
-            const commutative = pairs.some(
-                pair => !checkStep(...pair).equivalent,
-            );
-
-            // The rationale for equality is different
-            if (commutative) {
-                const reason =
-                    a.type === "eq"
-                        ? "symmetric property"
-                        : "commutative property";
-                return {
-                    equivalent,
-                    reasons: [reason, ...reasons],
-                };
-            }
         }
 
         return {
