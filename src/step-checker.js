@@ -161,6 +161,45 @@ const check_identity = <T: Semantic.Add | Semantic.Mul>(a: T, b: T): Result => {
     };
 };
 
+const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> => {
+    if (node.type === "mul") {
+        return node.args;
+    } else {
+        return [node];
+    }
+};
+
+// filters out ONEs and will return either a Mul node or a single Expression node
+const mulFactors = (
+    factors: Array<Semantic.Expression>,
+): Semantic.Expression => {
+    const filteredFactors = factors.filter(
+        factor => !checkStep(factor, ONE).equivalent,
+    );
+    switch (filteredFactors.length) {
+        case 0:
+            return ONE;
+        case 1:
+            return filteredFactors[0];
+        default:
+            return explicitMul(filteredFactors);
+    }
+};
+
+const addTerms = (terms: Array<Semantic.Expression>): Semantic.Expression => {
+    const filteredTerms = terms.filter(
+        term => !checkStep(term, ZERO).equivalent,
+    );
+    switch (filteredTerms.length) {
+        case 0:
+            return ONE;
+        case 1:
+            return filteredTerms[0];
+        default:
+            return add(filteredTerms);
+    }
+};
+
 const ops: {
     add: {
         identity: Semantic.Number,
@@ -175,43 +214,18 @@ const ops: {
 } = {
     add: {
         identity: ZERO,
-        op: add,
+        op: addTerms,
         // TODO: have a variety of different ways of stating this
         // e.g., "addition with zero"
         reason: "addition with identity",
     },
     mul: {
         identity: ONE,
-        op: implicitMul,
+        op: mulFactors,
         // TODO: have a variety of different ways of stating this
         // e.g., "multiplication by one"
         reason: "multiplication with identity",
     },
-};
-
-const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> => {
-    if (node.type === "mul") {
-        return node.args;
-    } else {
-        return [node];
-    }
-};
-
-// filters out ONEs and will return either a Mul node or a single Expression node
-const mulFactors = (
-    factors: Array<Semantic.Expression>,
-): SemanticExpression => {
-    const filteredFactors = factors.filter(
-        factor => !checkStep(factor, ONE).equivalent,
-    );
-    switch (filteredFactors.length) {
-        case 0:
-            return ONE;
-        case 1:
-            return filteredFactors[0];
-        default:
-            return explicitMul(filteredFactors);
-    }
 };
 
 /**
@@ -436,17 +450,28 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
         };
     }
 
+    // What about duplicate factors?
     const removedNumFactors = numFactorsA.filter(
         numFactorA =>
             !numFactorsB.some(
                 numFactorB => checkStep(numFactorA, numFactorB).equivalent,
             ),
     );
+    const remainingNumFactors = numFactorsA.filter(numFactorA =>
+        numFactorsB.some(
+            numFactorB => checkStep(numFactorA, numFactorB).equivalent,
+        ),
+    );
     const removedDenFactors = denFactorsA.filter(
         denFactorA =>
             !denFactorsB.some(
                 denFactorB => checkStep(denFactorA, denFactorB).equivalent,
             ),
+    );
+    const remainingDenFactors = denFactorsA.filter(denFactorA =>
+        denFactorsB.some(
+            denFactorB => checkStep(denFactorA, denFactorB).equivalent,
+        ),
     );
 
     // TODO: memoize checkStep to avoid re-doing the same work
@@ -467,24 +492,27 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
             ),
         )
     ) {
-        // check that the factors that were removed are a subset of the
-        // factors that could be canceled.
-        // TODO: figure out how to provide feedback that more factors could
-        // be cancelled.
-        if (
-            // TODO: helper function to check that one array is a subset
-            // of the other.
-            removedNumFactors.every(removedNumFactor =>
-                cancelableFactors.some(
-                    cancelableFactor =>
-                        checkStep(removedNumFactor, cancelableFactor)
-                            .equivalent,
-                ),
-            )
-        ) {
+        const productA = explicitMul([
+            div(mulFactors(removedNumFactors), mulFactors(removedDenFactors)),
+            div(
+                mulFactors(remainingNumFactors),
+                mulFactors(remainingDenFactors),
+            ),
+        ]);
+        remainingDenFactors; // ?
+
+        const productB = explicitMul([ONE, b]);
+        b; // ?
+        productA.args[0]; //?
+        productA.args[1]; //?
+
+        // TODO: uncomment after checking if the numerator and denominator are the same
+        const {equivalent, reasons} = checkStep(productA, b);
+
+        if (equivalent) {
             return {
                 equivalent: true,
-                reasons: ["canceling factors in division"],
+                reasons: ["canceling factors in division", ...reasons],
             };
         }
     }
@@ -506,11 +534,11 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             const result = checkStep(explicitMul([numerator, reciprocal]), b);
 
             if (result.equivalent) {
-                console.log(result.reasons);
                 return {
                     equivalent: true,
                     reasons: [
                         "dividing by a fraction is the same as multiplying by the reciprocal",
+                        ...result.reasons,
                     ],
                 };
             }
@@ -525,10 +553,24 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     // The reversability sometimes must be defined, e.g. in the case of a + 0 = a
     if (a.type !== b.type) {
         // handle canceling
-        if (a.type === "div") {
-            const result = checkDisionCanceling(a, b);
-            if (result.equivalent) {
-                return result;
+        for (const [prev, next] of [[a, b], [b, a]]) {
+            if (prev.type === "div") {
+                // TODO: check if the numerator and denominator are the same
+                if (
+                    // should we ever check that something is exactly ONE?
+                    checkStep(...prev.args).equivalent &&
+                    checkStep(next, ONE).equivalent
+                ) {
+                    return {
+                        equivalent: true,
+                        reasons: ["division by the same value"],
+                    };
+                }
+
+                const result = checkDisionCanceling(prev, next);
+                if (result.equivalent) {
+                    return result;
+                }
             }
         }
 
@@ -538,9 +580,14 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             for (const [prev, next] of [[a, b], [b, a]]) {
                 if (prev.type === type) {
                     const {identity, reason} = ops[type];
-                    const nonIdentityArgs = prev.args.filter(
-                        arg => !checkStep(arg, identity).equivalent,
-                    );
+                    const identityReasons = [];
+                    const nonIdentityArgs = prev.args.filter(arg => {
+                        const {equivalent, reasons} = checkStep(arg, identity);
+                        if (equivalent) {
+                            identityReasons.push(...reasons);
+                        }
+                        return !equivalent;
+                    });
                     // TODO: collect any reasons for why an arg is equivalent
                     // to the identity
                     if (nonIdentityArgs.length === 1) {
@@ -548,16 +595,21 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                             nonIdentityArgs[0],
                             next,
                         );
-                        return {
-                            equivalent,
-                            reasons: equivalent
-                                ? [...reasons, reason]
-                                : reasons,
-                        };
+                        if (equivalent) {
+                            return {
+                                equivalent: true,
+                                reasons: [
+                                    ...identityReasons,
+                                    reason,
+                                    ...reasons,
+                                ],
+                            };
+                        }
                     }
                 }
             }
         }
+
         for (const [prev, next] of [[a, b], [b, a]]) {
             if (prev.type === "mul") {
                 if (next.type === "add") {
@@ -658,13 +710,12 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
     // check canceling
     if (a.type === "div" && b.type === "div") {
-        // check that the numerators are equivalent and the
-        // denominators are equivalent.
+        // TODO: add an identity check for all operations
+        // identity check
         if (
             checkStep(a.args[0], b.args[0]).equivalent &&
             checkStep(a.args[1], b.args[1]).equivalent
         ) {
-            // TODO: report some sort of reason here
             return {
                 equivalent: true,
                 reasons: [],
@@ -678,8 +729,39 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
+    // eliminate identity when the operations are the same
+    if (a.type === "mul" && b.type === "mul") {
+        const [prev, next] = [a, b];
+        if (prev.type === "mul") {
+            const {identity, reason} = ops["mul"];
+            const identityReasons = [];
+            const nonIdentityArgs = prev.args.filter(arg => {
+                const {equivalent, reasons} = checkStep(arg, identity);
+                if (equivalent) {
+                    identityReasons.push(...reasons);
+                }
+                return !equivalent;
+            });
+            // TODO: collect any reasons for why an arg is equivalent
+            // to the identity
+            if (nonIdentityArgs.length === 1) {
+                const {equivalent, reasons} = checkStep(
+                    nonIdentityArgs[0],
+                    next,
+                );
+                if (equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: [...identityReasons, reason, ...reasons],
+                    };
+                }
+            }
+        }
+    }
+
     // we've now assumed that both types are the same
     if (hasArgs(a) && hasArgs(b)) {
+        // identity check
         if (a.args.length !== b.args.length) {
             if (a.type === "add" && b.type === "add") {
                 return check_identity(a, b);
@@ -727,7 +809,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                         : "commutative property";
                 return {
                     equivalent,
-                    reasons: [...reasons, reason],
+                    reasons: [reason, ...reasons],
                 };
             }
         }
@@ -736,7 +818,9 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             equivalent,
             reasons,
         };
-    } else if (a.type === "number" && b.type === "number") {
+    }
+
+    if (a.type === "number" && b.type === "number") {
         return {
             equivalent: a.value === b.value,
             reasons: [],

@@ -109,6 +109,22 @@ describe("Expressions", () => {
         const reasons = [];
         const result = checkStep(before, after);
 
+        // TODO: all commutative property win in this case
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            // "commutative property",
+            "multiplication with identity",
+            "multiplication with identity",
+        ]);
+    });
+
+    it("2 * 3 -> 3 * 2", () => {
+        const before = mul(number("3"), number("2"));
+        const after = mul(number("2"), number("3"));
+
+        const reasons = [];
+        const result = checkStep(before, after);
+
         expect(result.equivalent).toBe(true);
         expect(result.reasons).toEqual(["commutative property"]);
     });
@@ -336,6 +352,7 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplication with identity",
             ]);
         });
 
@@ -348,6 +365,8 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplication with identity",
+                "division by one",
             ]);
         });
 
@@ -360,20 +379,27 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "division by one",
             ]);
         });
     });
 
     // TODO: 24ab / 6a -> 4b
 
-    it("2a/a -> 2", () => {
+    // TODO: make this 2a/a -> a/a * 2 instead
+    it("2a/a -> a/a * 2/1 -> 1 * 2/1 -> 2/1 -> 2", () => {
         const before = div(mul(number("2"), ident("a")), ident("a"));
         const after = number("2");
 
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["canceling factors in division"]);
+        expect(result.reasons).toEqual([
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+            "division by one",
+        ]);
     });
 
     it("2a/a -> 2b [incorrect]", () => {
@@ -386,7 +412,7 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual([]);
     });
 
-    it("2abc/ab -> 2c", () => {
+    it("2abc/ab -> ab/ab * 2c/1 -> 1 * 2c/1 -> 2c", () => {
         const before = div(
             mul(number("2"), ident("a"), ident("b"), ident("c")),
             mul(ident("a"), ident("b")),
@@ -396,11 +422,16 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["canceling factors in division"]);
+        expect(result.reasons).toEqual([
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+            "division by one",
+        ]);
     });
 
     // don't cancel all common factors
-    it("2abc/ab -> 2bc/b", () => {
+    it("2abc/ab -> a/a * 2bc/b -> 1 * 2bc/b -> 2bc/c", () => {
         const before = div(
             mul(number("2"), ident("a"), ident("b"), ident("c")),
             mul(ident("a"), ident("b")),
@@ -410,7 +441,11 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["canceling factors in division"]);
+        expect(result.reasons).toEqual([
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+        ]);
     });
 
     it("2abc/abd -> 2c/d", () => {
@@ -423,10 +458,14 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["canceling factors in division"]);
+        expect(result.reasons).toEqual([
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+        ]);
     });
 
-    it("ab/abde -> 1/de", () => {
+    it("ab/abde -> ab/ab * 1/de -> 1 * 1/de -> 1/de", () => {
         const before = div(
             mul(ident("a"), ident("b")),
             mul(ident("a"), ident("b"), ident("d"), ident("e")),
@@ -436,17 +475,38 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["canceling factors in division"]);
+        expect(result.reasons).toEqual([
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+        ]);
     });
 
-    it("a -> a * b/b", () => {
+    it("a * b/b -> a * 1 -> a", () => {
+        const before = mul(ident("a"), div(ident("b"), ident("b")));
+        const after = ident("a");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "division by the same value",
+            "multiplication with identity",
+        ]);
+    });
+
+    it("a -> a * 1 -> a * b/b", () => {
         const before = ident("a");
         const after = mul(ident("a"), div(ident("b"), ident("b")));
 
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication with identity"]);
+        // TODO: order the substeps based on the order of the steps
+        expect(result.reasons).toEqual([
+            "division by the same value",
+            "multiplication with identity",
+        ]);
     });
 
     it("a -> a / 1", () => {
