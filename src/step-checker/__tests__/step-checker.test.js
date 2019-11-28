@@ -659,6 +659,19 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["distribution"]);
     });
 
+    it("(b + c) * a -> b * a + c * a", () => {
+        const before = mul(add(ident("b"), ident("c")), ident("a"));
+        const after = add(
+            mul(ident("b"), ident("a")),
+            mul(ident("c"), ident("a")),
+        );
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["distribution"]);
+    });
+
     it("a * (b + c) -> a * b + c [incorrect]", () => {
         const before = mul(ident("a"), add(ident("b"), ident("c")));
         const after = add(mul(ident("a"), ident("b")), ident("c"));

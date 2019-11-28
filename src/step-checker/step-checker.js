@@ -346,31 +346,74 @@ const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
     };
 };
 
-const checkDistributionFactoring = (
-    prev: Semantic.Mul,
-    next: Semantic.Add,
+const checkDistribution = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
 ): Result => {
+    if (prev.type !== "mul" || next.type !== "add") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
     // TODO: handle distribution across n-ary multiplication later
     if (prev.args.length === 2) {
         const [left, right] = prev.args;
         for (const [x, y] of [[left, right], [right, left]]) {
-            if (y.type === "add") {
-                if (y.args.length === next.args.length) {
-                    const equivalent = next.args.every((arg, index) => {
-                        return checkStep(
-                            arg,
-                            // NOTE: we don't care if multiplication is implicit
-                            // or not when checking steps
-                            mul(prev.implicit)([x, y.args[index]]),
-                        ).equivalent;
-                    });
+            if (y.type === "add" && y.args.length === next.args.length) {
+                const equivalent = next.args.every((arg, index) => {
+                    return checkStep(
+                        arg,
+                        // NOTE: we don't care if multiplication is implicit
+                        // or not when checking steps
+                        mul(prev.implicit)([x, y.args[index]]),
+                    ).equivalent;
+                });
 
-                    if (equivalent) {
-                        return {
-                            equivalent: true,
-                            reasons: [], // include sub-reasons from checkStep
-                        };
-                    }
+                if (equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: ["distribution"], // include sub-reasons from checkStep
+                    };
+                }
+            }
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const checkFactoring = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (prev.type !== "add" || next.type !== "mul") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+    // TODO: handle distribution across n-ary multiplication later
+    if (next.args.length === 2) {
+        const [left, right] = next.args;
+        for (const [x, y] of [[left, right], [right, left]]) {
+            if (y.type === "add" && y.args.length === prev.args.length) {
+                const equivalent = prev.args.every((arg, index) => {
+                    return checkStep(
+                        arg,
+                        // NOTE: we don't care if multiplication is implicit
+                        // or not when checking steps
+                        mul(next.implicit)([x, y.args[index]]),
+                    ).equivalent;
+                });
+
+                if (equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: ["factoring"], // include sub-reasons from checkStep
+                    };
                 }
             }
         }
@@ -454,6 +497,60 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
 
     return {
         equivalant: false,
+        reasons: [],
+    };
+};
+
+const mulByFrac = (prev: Semantic.Expression, next: Semantic.Expression) => {
+    // We need a multiplication node containing a fraction
+    if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const numFactors = [];
+    const denFactors = [];
+    for (const arg of prev.args) {
+        if (arg.type === "div") {
+            const [numerator, denominator] = arg.args;
+            numFactors.push(...getFactors(numerator));
+            denFactors.push(...getFactors(denominator));
+        } else {
+            numFactors.push(...getFactors(arg));
+        }
+    }
+    const {equivalent, reasons} = checkStep(
+        next,
+        div(mulFactors(numFactors), mulFactors(denFactors)),
+    );
+    return {
+        equivalent,
+        reasons: equivalent ? ["multiplying fractions", ...reasons] : [],
+    };
+};
+
+const mulByZero = (prev: Semantic.Expression, next: Semantic.Expression) => {
+    if (prev.type !== "mul") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    // TODO: ensure that reasons from these calls to checkStep
+    // are captured.
+    const hasZero = prev.args.some(arg => checkStep(arg, ZERO).equivalent);
+    const {equivalent, reasons} = checkStep(next, ZERO);
+    if (hasZero && equivalent) {
+        return {
+            equivalent: true,
+            reasons: [...reasons, "multiplication by zero"],
+        };
+    }
+    return {
+        equivalent: false,
         reasons: [],
     };
 };
@@ -576,62 +673,36 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
-    // Distribution, multiplying by a fraction, multiplying by zero
-    // [a, b] -> forward
-    // [b, a] -> backwards
-    for (const [prev, next] of [[a, b], [b, a]]) {
-        if (prev.type === "mul") {
-            if (next.type === "add") {
-                // TODO: handle distribution across n-ary multiplication
-                const {equivalent, reasons} = checkDistributionFactoring(
-                    prev,
-                    next,
-                );
-                if (equivalent) {
-                    const reason =
-                        a.type === "mul" ? "distribution" : "factoring";
-                    return {
-                        equivalent: true,
-                        reasons: [...reasons, reason],
-                    };
-                }
-            } else if (prev.args.some(arg => arg.type === "div")) {
-                const numFactors = [];
-                const denFactors = [];
-                for (const arg of prev.args) {
-                    if (arg.type === "div") {
-                        const [numerator, denominator] = arg.args;
-                        numFactors.push(...getFactors(numerator));
-                        denFactors.push(...getFactors(denominator));
-                    } else {
-                        numFactors.push(...getFactors(arg));
-                    }
-                }
-                const {equivalent, reasons} = checkStep(
-                    next,
-                    div(mulFactors(numFactors), mulFactors(denFactors)),
-                );
-                if (equivalent) {
-                    return {
-                        equivalent: true,
-                        reasons: ["multiplying fractions", ...reasons],
-                    };
-                }
-            } else {
-                // TODO: ensure that reasons from these calls to checkStep
-                // are captured.
-                const hasZero = prev.args.some(
-                    arg => checkStep(arg, ZERO).equivalent,
-                );
-                const {equivalent, reasons} = checkStep(next, ZERO);
-                if (hasZero && equivalent) {
-                    return {
-                        equivalent: true,
-                        reasons: [...reasons, "multiplication by zero"],
-                    };
-                }
-            }
-        }
+    let result;
+
+    result = checkDistribution(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = checkFactoring(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = mulByFrac(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = mulByFrac(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = mulByZero(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = mulByZero(b, a);
+    if (result.equivalent) {
+        return result;
     }
 
     // we've now assumed that both types are the same
