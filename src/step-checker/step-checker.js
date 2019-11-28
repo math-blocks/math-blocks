@@ -274,7 +274,17 @@ const exclusion = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
 const equality = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
     as.every(a => bs.some(b => checkStep(a, b).equivalent));
 
-const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
+const checkEquationStep = (
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+): Result => {
+    if (a.type !== "eq" || b.type !== "eq") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
     const [lhsA, rhsA] = a.args;
     const [lhsB, rhsB] = b.args;
     if (lhsB.type === rhsB.type) {
@@ -501,6 +511,78 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
     };
 };
 
+const divByFrac = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (prev.type !== "div") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const [numerator, denominator] = prev.args;
+
+    if (denominator.type === "div") {
+        const reciprocal = div(denominator.args[1], denominator.args[0]);
+        const result = checkStep(explicitMul([numerator, reciprocal]), next);
+
+        if (result.equivalent) {
+            return {
+                equivalent: true,
+                reasons: [
+                    "dividing by a fraction is the same as multiplying by the reciprocal",
+                    ...result.reasons,
+                ],
+            };
+        }
+    }
+
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const cancelingInFrac = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (prev.type === "div") {
+        if (
+            // Check if the numerator and denominator are the same
+            checkStep(...prev.args).equivalent &&
+            // Should we ever check that something is exactly ONE?
+            checkStep(next, ONE).equivalent
+        ) {
+            return {
+                equivalent: true,
+                reasons: ["division by the same value"],
+            };
+        }
+
+        if (checkStep(prev.args[1], ONE).equivalent) {
+            const {equivalent, reasons} = checkStep(prev.args[0], next);
+            if (equivalent) {
+                return {
+                    equivalent: true,
+                    reasons: [...reasons, "division by one"],
+                };
+            }
+        }
+
+        const result = checkDivisionCanceling(prev, next);
+        if (result.equivalent) {
+            return result;
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
 const mulByFrac = (prev: Semantic.Expression, next: Semantic.Expression) => {
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
@@ -562,6 +644,8 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
 
+    let result;
+
     // TODO: check adding by inverse
     // TODO: dividing a fraction: a/b / c -> a / bc
 
@@ -583,26 +667,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                 equivalent,
                 reasons: [reason, ...reasons],
             };
-        }
-    }
-
-    // Dividing by a fraction
-    if (a.type === "div") {
-        const [numerator, denominator] = a.args;
-
-        if (denominator.type === "div") {
-            const reciprocal = div(denominator.args[1], denominator.args[0]);
-            const result = checkStep(explicitMul([numerator, reciprocal]), b);
-
-            if (result.equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        "dividing by a fraction is the same as multiplying by the reciprocal",
-                        ...result.reasons,
-                    ],
-                };
-            }
         }
     }
 
@@ -639,41 +703,20 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
-    // Canceling in fractions
-    // [a, b] -> forward
-    // [b, a] -> backwards
-    for (const [prev, next] of [[a, b], [b, a]]) {
-        if (prev.type === "div") {
-            if (
-                // Check if the numerator and denominator are the same
-                checkStep(...prev.args).equivalent &&
-                // Should we ever check that something is exactly ONE?
-                checkStep(next, ONE).equivalent
-            ) {
-                return {
-                    equivalent: true,
-                    reasons: ["division by the same value"],
-                };
-            }
-
-            if (checkStep(prev.args[1], ONE).equivalent) {
-                const {equivalent, reasons} = checkStep(prev.args[0], next);
-                if (equivalent) {
-                    return {
-                        equivalent: true,
-                        reasons: [...reasons, "division by one"],
-                    };
-                }
-            }
-
-            const result = checkDivisionCanceling(prev, next);
-            if (result.equivalent) {
-                return result;
-            }
-        }
+    result = divByFrac(a, b);
+    if (result.equivalent) {
+        return result;
     }
 
-    let result;
+    result = cancelingInFrac(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = cancelingInFrac(b, a);
+    if (result.equivalent) {
+        return result;
+    }
 
     result = checkDistribution(a, b);
     if (result.equivalent) {
@@ -689,7 +732,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     if (result.equivalent) {
         return result;
     }
-
     result = mulByFrac(b, a);
     if (result.equivalent) {
         return result;
@@ -705,6 +747,11 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         return result;
     }
 
+    result = checkEquationStep(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
     // we've now assumed that both types are the same
     if (hasArgs(a) && hasArgs(b)) {
         // NOTE: this is not really an identity check since the
@@ -716,15 +763,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
             }
             if (a.type === "mul" && b.type === "mul") {
                 return check_identity(a, b);
-            }
-        }
-
-        if (a.type === "eq" && b.type === "eq") {
-            // We can't just return the result here because chekcEquationStep doesn't
-            // check for swapping sides.
-            const result = checkEquationStep(a, b);
-            if (result.equivalent) {
-                return result;
             }
         }
 
