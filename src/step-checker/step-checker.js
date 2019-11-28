@@ -1,5 +1,5 @@
 // @flow
-import * as Semantic from "./semantic.js";
+import * as Semantic from "../semantic.js";
 
 // A node is different if its children are different or if its type is different
 // How to do a parallel traversal
@@ -534,6 +534,9 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
 
+    // TODO: add an identity check for all operations
+    // identity check for division
+
     // TODO: check adding by inverse
     // TODO: dividing a fraction: a/b / c -> a / bc
 
@@ -645,20 +648,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         }
     }
 
-    // TODO: add an identity check for all operations
-    // identity check for division
-    if (a.type === "div" && b.type === "div") {
-        if (
-            checkStep(a.args[0], b.args[0]).equivalent &&
-            checkStep(a.args[1], b.args[1]).equivalent
-        ) {
-            return {
-                equivalent: true,
-                reasons: [],
-            };
-        }
-    }
-
     // Distribution, multiplying by a fraction, multiplying by zero
     // [a, b] -> forward
     // [b, a] -> backwards
@@ -739,19 +728,14 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                 return result;
             }
         }
-        const {reasons, equivalent} = checkArgs(a, b);
 
-        // If the expressions aren't equal
-        if (!equivalent) {
-            return {equivalent: false, reasons: []};
-        }
-
-        return {
-            equivalent,
-            reasons,
-        };
+        return checkArgs(a, b);
     }
 
+    // Identity Checks
+    // These checks verify that the atoms are the same or, if it's an
+    // operation, that the args are the same.
+    // TODO: add an identity check for all operations
     if (a.type === "number" && b.type === "number") {
         return {
             equivalent: a.value === b.value,
@@ -764,6 +748,20 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         };
     } else if (a.type === "neg" && b.type === "neg") {
         return checkStep(a.args[0], b.args[0]);
+    } else if (a.type === "div" && b.type === "div") {
+        if (
+            checkStep(a.args[0], b.args[0]).equivalent &&
+            checkStep(a.args[1], b.args[1]).equivalent
+        ) {
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+        return {
+            equivalent: false,
+            reasons: [],
+        };
     } else {
         return {
             equivalent: false,

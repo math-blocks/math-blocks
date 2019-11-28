@@ -1,5 +1,5 @@
 // @flow
-import * as Semantic from "../semantic.js";
+import * as Semantic from "../../semantic.js";
 import {checkStep} from "../step-checker.js";
 
 const add = (...args: Semantic.Expression[]): Semantic.Add => ({
@@ -102,6 +102,29 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["commutative property"]);
     });
 
+    // nested commutative property
+    it("(1 + 2) + (a + b) -> (2 + 1) + (b + a)", () => {
+        const before = add(
+            add(number("1"), number("2")),
+            add(ident("a"), ident("b")),
+        );
+        const after = add(
+            add(ident("b"), ident("a")),
+            add(number("2"), number("1")),
+        );
+
+        const reasons = [];
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "commutative property",
+            "commutative property",
+            "commutative property",
+        ]);
+    });
+
+    // commutative property with multiplicative identity
     it("1 * 2 -> 2 * 1", () => {
         const before = mul(number("1"), number("2"));
         const after = mul(number("2"), number("1"));
@@ -113,6 +136,7 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["commutative property"]);
     });
 
+    // commutative property with additive identity
     it("2 + 0 -> 0 + 2", () => {
         const before = add(number("2"), number("0"));
         const after = add(number("0"), number("2"));
