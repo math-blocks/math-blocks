@@ -169,13 +169,11 @@ const check_identity = <T: Semantic.Add | Semantic.Mul>(a: T, b: T): Result => {
     };
 };
 
-const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> => {
-    if (node.type === "mul") {
-        return node.args;
-    } else {
-        return [node];
-    }
-};
+const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> =>
+    node.type === "mul" ? node.args : [node];
+
+const getTerms = (node: Semantic.Expression): Array<Semantic.Expression> =>
+    node.type === "add" ? node.args : [node];
 
 // filters out ONEs and will return either a Mul node or a single Expression node
 const mulFactors = (
@@ -257,101 +255,75 @@ const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
     };
 };
 
+/**
+ * Returns all of the elements that appear in both as and bs.
+ */
+const intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
+    as.filter(a => bs.some(b => checkStep(a, b).equivalent));
+
+/**
+ * Returns all of the elements that appear in bs but not in as.
+ */
+const exclusion = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
+    as.filter(a => !bs.some(b => checkStep(a, b).equivalent));
+
+/**
+ * Returns true if all every element in as is equivalent to an element in bs
+ * and vice versa.
+ */
+const equality = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
+    as.every(a => bs.some(b => checkStep(a, b).equivalent));
+
 const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
     const [lhsA, rhsA] = a.args;
     const [lhsB, rhsB] = b.args;
     if (lhsB.type === rhsB.type) {
         if (lhsB.type === "add" && rhsB.type === "add") {
-            const lhsRemainingValues =
-                lhsA.type === "add"
-                    ? lhsB.args.filter(
-                          argB =>
-                              !lhsA.args.some(
-                                  argA => checkStep(argA, argB).equivalent,
-                              ),
-                      )
-                    : lhsB.args.filter(arg => !checkStep(lhsA, arg).equivalent);
+            const lhsNewTerms = exclusion(getTerms(lhsB), getTerms(lhsA));
+            const rhsNewTerms = exclusion(getTerms(rhsB), getTerms(rhsA));
+            const {equivalent, reasons} = checkStep(
+                addTerms(lhsNewTerms),
+                addTerms(rhsNewTerms),
+            );
 
-            const rhsRemainingValues =
-                rhsA.type === "add"
-                    ? rhsB.args.filter(
-                          argB =>
-                              !rhsA.args.some(
-                                  argA => checkStep(argA, argB).equivalent,
-                              ),
-                      )
-                    : rhsB.args.filter(arg => !checkStep(rhsA, arg).equivalent);
-
-            if (
-                lhsRemainingValues.length === 1 &&
-                rhsRemainingValues.length === 1
-            ) {
-                const {equivalent, reasons} = checkStep(
-                    lhsRemainingValues[0],
-                    rhsRemainingValues[0],
-                );
-
-                // TODO: do we want to enforce that the thing being added is exactly
-                // the same or do we want to allow equivalent expressions?
-                if (equivalent && reasons.length === 0) {
-                    if (
-                        isSubtraction(lhsRemainingValues[0]) &&
-                        isSubtraction(rhsRemainingValues[0])
-                    ) {
-                        return {
-                            equivalent: true,
-                            reasons: [
-                                "subtracting the same value from both sides",
-                            ],
-                        };
-                    }
+            // TODO: handle adding multiple things to lhs and rhs as the same time
+            // TODO: do we want to enforce that the thing being added is exactly
+            // the same or do we want to allow equivalent expressions?
+            if (equivalent && reasons.length === 0) {
+                if (
+                    isSubtraction(lhsNewTerms[0]) &&
+                    isSubtraction(rhsNewTerms[0])
+                ) {
                     return {
                         equivalent: true,
-                        reasons: ["adding the same value to both sides"],
+                        reasons: ["subtracting the same value from both sides"],
                     };
                 }
+                return {
+                    equivalent: true,
+                    reasons: ["adding the same value to both sides"],
+                };
             }
         }
+
         if (lhsB.type === "mul" && rhsB.type === "mul") {
-            const lhsRemainingValues =
-                lhsA.type === "mul"
-                    ? lhsB.args.filter(
-                          argB =>
-                              !lhsA.args.some(
-                                  argA => checkStep(argA, argB).equivalent,
-                              ),
-                      )
-                    : lhsB.args.filter(arg => !checkStep(lhsA, arg).equivalent);
+            const lhsNewFactors = exclusion(getFactors(lhsB), getFactors(lhsA));
+            const rhsNewFactors = exclusion(getFactors(rhsB), getFactors(rhsA));
+            const {equivalent, reasons} = checkStep(
+                mulFactors(lhsNewFactors),
+                mulFactors(rhsNewFactors),
+            );
 
-            const rhsRemainingValues =
-                rhsA.type === "mul"
-                    ? rhsB.args.filter(
-                          argB =>
-                              !rhsA.args.some(
-                                  argA => checkStep(argA, argB).equivalent,
-                              ),
-                      )
-                    : rhsB.args.filter(arg => !checkStep(rhsA, arg).equivalent);
-
-            if (
-                lhsRemainingValues.length === 1 &&
-                rhsRemainingValues.length === 1
-            ) {
-                const {equivalent, reasons} = checkStep(
-                    lhsRemainingValues[0],
-                    rhsRemainingValues[0],
-                );
-
-                // TODO: do we want to enforce that the thing being added is exactly
-                // the same or do we want to allow equivalent expressions?
-                if (equivalent && reasons.length === 0) {
-                    return {
-                        equivalent: true,
-                        reasons: ["multiplying both sides by the same value"],
-                    };
-                }
+            // TODO: do we want to enforce that the thing being added is exactly
+            // the same or do we want to allow equivalent expressions?
+            if (equivalent && reasons.length === 0) {
+                return {
+                    equivalent: true,
+                    reasons: ["multiplying both sides by the same value"],
+                };
             }
         }
+
         if (lhsB.type === "div" && rhsB.type === "div") {
             if (
                 checkStep(lhsA, lhsB.args[0]).equivalent &&
@@ -373,8 +345,6 @@ const checkEquationStep = (a: Semantic.Eq, b: Semantic.Eq): Result => {
         reasons: [],
     };
 };
-
-// TODO: check removal of parens, i.e. associative property
 
 const checkDistributionFactoring = (
     prev: Semantic.Mul,
@@ -411,94 +381,58 @@ const checkDistributionFactoring = (
     };
 };
 
-const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
+const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
     const [numeratorA, denominatorA] = a.args;
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
-    const numFactorsA = [...getFactors(numeratorA), ONE];
-    const denFactorsA = [...getFactors(denominatorA), ONE];
-    const cancelableFactors = numFactorsA.filter(numFactor =>
-        denFactorsA.some(
-            denFactor => checkStep(numFactor, denFactor).equivalent,
-        ),
-    );
+    const numFactorsA = getFactors(numeratorA);
+    const denFactorsA = getFactors(denominatorA);
 
+    // cases:
+    // - ab/ac -> a/a * b/c
+    // - ab/a -> a/1 -> a
     const [numeratorB, denominatorB] = b.type === "div" ? b.args : [b, ONE];
+
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
-    const numFactorsB = [...getFactors(numeratorB), ONE];
-    const denFactorsB = [...getFactors(denominatorB), ONE];
+    const numFactorsB = getFactors(numeratorB);
+    const denFactorsB = getFactors(denominatorB);
 
-    // TODO: make sure that we didn't add any factors to either the numerator or denominator
-    const addedNumFactors = numFactorsB
-        .filter(
-            numFactorB =>
-                !numFactorsA.some(
-                    numFactorA => checkStep(numFactorA, numFactorB).equivalent,
-                ),
-        )
-        .filter(fact => !checkStep(fact, ONE).equivalent);
-
-    const addedDenFactors = denFactorsB
-        .filter(
-            denFactorB =>
-                !denFactorsA.some(
-                    denFactorA => checkStep(denFactorA, denFactorB).equivalent,
-                ),
-        )
-        .filter(fact => !checkStep(fact, ONE).equivalent);
-
-    // ensure that no extra factors were added to either the numerator
-    // or denominator
-    if (addedNumFactors.length > 0 || addedDenFactors.length > 0) {
-        // TODO: add reason for why the canceling check failed
+    // Ensure that no extra factors were added to either the numerator
+    // or denominator.  It's okay to ignore factors that ONE since multiplying
+    // by 1 doesn't affect the value of the numerator or denominator.
+    const addedNumFactors = exclusion(numFactorsB, numFactorsA);
+    const addedDenFactors = exclusion(denFactorsB, denFactorsA);
+    if (
+        !checkStep(mulFactors(addedNumFactors), ONE).equivalent ||
+        !checkStep(mulFactors(addedDenFactors), ONE).equivalent
+    ) {
+        // TODO: Add reason for why the canceling check failed
         return {
             equivalent: false,
             reasons: [],
         };
     }
 
-    // What about duplicate factors?
-    const removedNumFactors = numFactorsA.filter(
-        numFactorA =>
-            !numFactorsB.some(
-                numFactorB => checkStep(numFactorA, numFactorB).equivalent,
-            ),
-    );
-    const remainingNumFactors = numFactorsA.filter(numFactorA =>
-        numFactorsB.some(
-            numFactorB => checkStep(numFactorA, numFactorB).equivalent,
-        ),
-    );
-    const removedDenFactors = denFactorsA.filter(
-        denFactorA =>
-            !denFactorsB.some(
-                denFactorB => checkStep(denFactorA, denFactorB).equivalent,
-            ),
-    );
-    const remainingDenFactors = denFactorsA.filter(denFactorA =>
-        denFactorsB.some(
-            denFactorB => checkStep(denFactorA, denFactorB).equivalent,
-        ),
-    );
+    // TODO: figure out how to handle duplicate factors
+    const removedNumFactors = exclusion(numFactorsA, numFactorsB);
+    const remainingNumFactors = intersection(numFactorsA, numFactorsB);
+    const removedDenFactors = exclusion(denFactorsA, denFactorsB);
+    const remainingDenFactors = intersection(denFactorsA, denFactorsB);
 
-    // TODO: memoize checkStep to avoid re-doing the same work
+    if (remainingNumFactors.length === 0) {
+        remainingNumFactors.push(ONE);
+    }
 
-    // check that the same factors were removed from the numerator and
-    // denominator.
+    if (remainingDenFactors.length === 0) {
+        remainingDenFactors.push(ONE);
+    }
+
+    // ab/ac -> a/a * b/c
     if (
-        // TODO: helper function to check that two arrays of expressions
-        // are the same.  We should be able to leverage this for checking
-        // commutative property.  We'll want one version where order matters
-        // and one where it doesn't.
         removedNumFactors.length > 0 &&
         removedNumFactors.length === removedDenFactors.length &&
-        removedNumFactors.every(removedNumFactor =>
-            removedDenFactors.some(
-                remmovedDenFactor =>
-                    checkStep(removedNumFactor, remmovedDenFactor).equivalent,
-            ),
-        )
+        equality(removedNumFactors, removedDenFactors)
     ) {
         const productA = explicitMul([
             div(mulFactors(removedNumFactors), mulFactors(removedDenFactors)),
@@ -507,16 +441,9 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
                 mulFactors(remainingDenFactors),
             ),
         ]);
-        remainingDenFactors; // ?
-
         const productB = explicitMul([ONE, b]);
-        b; // ?
-        productA.args[0]; //?
-        productA.args[1]; //?
 
-        // TODO: uncomment after checking if the numerator and denominator are the same
         const {equivalent, reasons} = checkStep(productA, b);
-
         if (equivalent) {
             return {
                 equivalent: true,
@@ -524,18 +451,19 @@ const checkDisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
             };
         }
     }
+
     return {
         equivalant: false,
         reasons: [],
     };
 };
 
+// TODO: add an identity check for all operations
+// TODO: check removal of parens, i.e. associative property
+// TODO: memoize checkStep to avoid re-doing the same work
 const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
-
-    // TODO: add an identity check for all operations
-    // identity check for division
 
     // TODO: check adding by inverse
     // TODO: dividing a fraction: a/b / c -> a / bc
@@ -641,7 +569,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
                 }
             }
 
-            const result = checkDisionCanceling(prev, next);
+            const result = checkDivisionCanceling(prev, next);
             if (result.equivalent) {
                 return result;
             }
