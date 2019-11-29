@@ -219,9 +219,9 @@ const intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
     as.filter(a => bs.some(b => checkStep(a, b).equivalent));
 
 /**
- * Returns all of the elements that appear in bs but not in as.
+ * Returns all of the elements that appear in as but not in bs.
  */
-const exclusion = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
+const difference = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
     as.filter(a => !bs.some(b => checkStep(a, b).equivalent));
 
 /**
@@ -246,8 +246,8 @@ const checkEquationStep = (
     const [lhsB, rhsB] = b.args;
     if (lhsB.type === rhsB.type) {
         if (lhsB.type === "add" && rhsB.type === "add") {
-            const lhsNewTerms = exclusion(getTerms(lhsB), getTerms(lhsA));
-            const rhsNewTerms = exclusion(getTerms(rhsB), getTerms(rhsA));
+            const lhsNewTerms = difference(getTerms(lhsB), getTerms(lhsA));
+            const rhsNewTerms = difference(getTerms(rhsB), getTerms(rhsA));
             const {equivalent, reasons} = checkStep(
                 addTerms(lhsNewTerms),
                 addTerms(rhsNewTerms),
@@ -274,8 +274,14 @@ const checkEquationStep = (
         }
 
         if (lhsB.type === "mul" && rhsB.type === "mul") {
-            const lhsNewFactors = exclusion(getFactors(lhsB), getFactors(lhsA));
-            const rhsNewFactors = exclusion(getFactors(rhsB), getFactors(rhsA));
+            const lhsNewFactors = difference(
+                getFactors(lhsB),
+                getFactors(lhsA),
+            );
+            const rhsNewFactors = difference(
+                getFactors(rhsB),
+                getFactors(rhsA),
+            );
             const {equivalent, reasons} = checkStep(
                 mulFactors(lhsNewFactors),
                 mulFactors(rhsNewFactors),
@@ -458,12 +464,15 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
     // Ensure that no extra factors were added to either the numerator
     // or denominator.  It's okay to ignore factors that ONE since multiplying
     // by 1 doesn't affect the value of the numerator or denominator.
-    const addedNumFactors = exclusion(numFactorsB, numFactorsA);
-    const addedDenFactors = exclusion(denFactorsB, denFactorsA);
+    const addedNumFactors = difference(numFactorsB, numFactorsA);
+    const addedDenFactors = difference(denFactorsB, denFactorsA);
     if (
         !checkStep(mulFactors(addedNumFactors), ONE).equivalent ||
         !checkStep(mulFactors(addedDenFactors), ONE).equivalent
     ) {
+        // TODO: check if there are any factors we can split up and then
+        // call checkDivisionCanceling again
+
         // TODO: Add reason for why the canceling check failed
         return {
             equivalent: false,
@@ -472,9 +481,9 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
     }
 
     // TODO: figure out how to handle duplicate factors
-    const removedNumFactors = exclusion(numFactorsA, numFactorsB);
+    const removedNumFactors = difference(numFactorsA, numFactorsB);
     const remainingNumFactors = intersection(numFactorsA, numFactorsB);
-    const removedDenFactors = exclusion(denFactorsA, denFactorsB);
+    const removedDenFactors = difference(denFactorsA, denFactorsB);
     const remainingDenFactors = intersection(denFactorsA, denFactorsB);
 
     if (remainingNumFactors.length === 0) {
@@ -665,6 +674,92 @@ const commuteAddition = (a: Semantic.Expression, b: Semantic.Expression) => {
     };
 };
 
+const evaluateMul = (a: Semantic.Expression, b: Semantic.Expression) => {
+    if (a.type !== "mul" && b.type !== "mul") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const aFactors = getFactors(a);
+    const bFactors = getFactors(b);
+
+    const aNumTerms = aFactors.filter(term => term.type === "number");
+    const bNumTerms = bFactors.filter(term => term.type === "number");
+
+    const commonTerms = intersection(aNumTerms, bNumTerms);
+    const aUniqFactors = difference(aNumTerms, commonTerms);
+    const bUniqFactors = difference(bNumTerms, commonTerms);
+
+    if (aUniqFactors.length > 0 && bUniqFactors.length > 0) {
+        const aValue = aUniqFactors.reduce<number>(
+            // $FlowFixMe
+            (prod, arg) => prod * parseFloat(arg.value),
+            1,
+        );
+        const bValue = bUniqFactors.reduce<number>(
+            // $FlowFixMe
+            (prod, arg) => prod * parseFloat(arg.value),
+            1,
+        );
+        if (aValue === bValue) {
+            return {
+                equivalent: true,
+                reasons: ["evaluation of multiplication"],
+            };
+        }
+    }
+
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const evaluateAdd = (a: Semantic.Expression, b: Semantic.Expression) => {
+    if (a.type !== "add" && b.type !== "add") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const aTerms = getTerms(a);
+    const bTerms = getTerms(b);
+
+    const aNumTerms = aTerms.filter(term => term.type === "number");
+    const bNumTerms = bTerms.filter(term => term.type === "number");
+
+    const commonTerms = intersection(aNumTerms, bNumTerms);
+    const aUniqTerms = difference(aNumTerms, commonTerms);
+    const bUniqTerms = difference(bNumTerms, commonTerms);
+
+    if (aUniqTerms.length > 0 && bUniqTerms.length > 0) {
+        const aValue = aUniqTerms.reduce<number>(
+            // $FlowFixMe
+            (sum, arg) => sum + parseFloat(arg.value),
+            0,
+        );
+        const bValue = bUniqTerms.reduce<number>(
+            // $FlowFixMe
+            (sum, arg) => sum + parseFloat(arg.value),
+            0,
+        );
+        if (aValue === bValue) {
+            return {
+                equivalent: true,
+                reasons: ["evaluation of addition"],
+            };
+        }
+    }
+
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
 const commuteMultiplication = (
     a: Semantic.Expression,
     b: Semantic.Expression,
@@ -722,6 +817,16 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(b);
 
     let result;
+
+    result = evaluateMul(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = evaluateAdd(a, b);
+    if (result.equivalent) {
+        return result;
+    }
 
     result = symmetricProperty(a, b);
     if (result.equivalent) {

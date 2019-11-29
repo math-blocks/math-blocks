@@ -395,10 +395,88 @@ describe("Expressions", () => {
         ]);
     });
 
+    it("2 * 3 -> 6", () => {
+        const before = mul(number("2"), number("3"));
+        const after = number("6");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+    });
+
+    // TODO: make the reason for this be factoring
+    it("6 -> 2 * 3", () => {
+        const before = number("6");
+        const after = mul(number("2"), number("3"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+    });
+
+    it.skip("24 / 6 -> 4*6 / 6 -> 4 * 1 -> 4", () => {
+        const before = div(number("24"), number("6"));
+        const after = number("4");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+    });
+
+    it("a * 2 * 3 -> a * 6", () => {
+        const before = mul(number("2"), number("3"));
+        const after = number("6");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+    });
+
+    it("2 * 3 * 4 -> 6 * 4", () => {
+        const before = mul(number("2"), number("3"));
+        const after = number("6");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+    });
+
+    it("2 + 3 -> 5", () => {
+        const before = add(number("2"), number("3"));
+        const after = number("5");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of addition"]);
+    });
+
+    it("a + 2 + 3 -> a + 5", () => {
+        const before = add(number("2"), number("3"));
+        const after = number("5");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of addition"]);
+    });
+
+    it("1 + 2 + 3 -> 1 + 5", () => {
+        const before = add(number("1"), number("2"), number("3"));
+        const after = add(number("1"), number("5"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual(["evaluation of addition"]);
+    });
+
     describe("reciprocals", () => {
-        // TODO: make this pass
-        // If we make this pass, then we should get the others for free since
-        // we already handle multiplying by fractions
         it("a / b/c -> a * c/b", () => {
             const before = div(ident("a"), div(ident("b"), ident("c")));
             const after = mul(ident("a"), div(ident("c"), ident("b")));
