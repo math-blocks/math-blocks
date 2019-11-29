@@ -418,8 +418,24 @@ describe("Expressions", () => {
 
     it("30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5", () => {
         const before = div(number("30"), number("6"));
-        // const before = div(mul(number("4"), number("6")), number("6"));
         const after = number("5");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "prime factorization",
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+            "division by one",
+            "division by one", // TODO: figure out why we have an extra reason here
+        ]);
+    });
+
+    it("24 / 6 -> 2*2*2*3 / 2*3 -> 2*3/2*3 * 2*2/1 -> 1 * 2*2/1 -> 2*2/1 -> 4/1 -> 4", () => {
+        const before = div(number("24"), number("6"));
+        const after = number("4");
 
         const result = checkStep(before, after);
 
@@ -558,6 +574,25 @@ describe("Expressions", () => {
     });
 
     // TODO: 24ab / 6a -> 4b
+    it("24ab / 6a -> 4b", () => {
+        const before = div(
+            mul(number("24"), ident("a"), ident("b")),
+            mul(number("6"), ident("a")),
+        );
+        const after = mul(number("4"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons).toEqual([
+            "prime factorization",
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+            "division by one",
+            "division by one", // TODO: figure out why there's an extra "division by one"
+        ]);
+    });
 
     // TODO: make this 2a/a -> a/a * 2 instead
     it("2a/a -> a/a * 2/1 -> 1 * 2/1 -> 2/1 -> 2", () => {

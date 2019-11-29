@@ -217,16 +217,39 @@ const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
 /**
  * Returns all of the elements that appear in both as and bs.
  */
-// TODO: fix this handle multipel equivalent expressions
-const intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
-    as.filter(a => bs.some(b => checkStep(a, b).equivalent));
+const intersection = (
+    as: $ReadOnlyArray<Semantic.Expression>,
+    bs: $ReadOnlyArray<Semantic.Expression>,
+) => {
+    const result = [];
+    for (const a of as) {
+        const index = bs.findIndex(b => checkStep(a, b).equivalent);
+        if (index !== -1) {
+            result.push(a);
+            bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+        }
+    }
+    return result;
+};
 
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
-// TODO: fix this handle multipel equivalent expressions
-const difference = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
-    as.filter(a => !bs.some(b => checkStep(a, b).equivalent));
+const difference = (
+    as: $ReadOnlyArray<Semantic.Expression>,
+    bs: $ReadOnlyArray<Semantic.Expression>,
+) => {
+    const result = [];
+    for (const a of as) {
+        const index = bs.findIndex(b => checkStep(a, b).equivalent);
+        if (index !== -1) {
+            bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+        } else {
+            result.push(a);
+        }
+    }
+    return result;
+};
 
 /**
  * Returns true if all every element in as is equivalent to an element in bs
