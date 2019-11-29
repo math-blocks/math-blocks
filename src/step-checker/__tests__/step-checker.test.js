@@ -416,14 +416,22 @@ describe("Expressions", () => {
         expect(result.reasons).toEqual(["evaluation of multiplication"]);
     });
 
-    it.skip("24 / 6 -> 4*6 / 6 -> 4 * 1 -> 4", () => {
-        const before = div(number("24"), number("6"));
-        const after = number("4");
+    it("30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5", () => {
+        const before = div(number("30"), number("6"));
+        // const before = div(mul(number("4"), number("6")), number("6"));
+        const after = number("5");
 
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+        expect(result.reasons).toEqual([
+            "prime factorization",
+            "canceling factors in division",
+            "division by the same value",
+            "multiplication with identity",
+            "division by one",
+            "division by one", // TODO: figure out why we have an extra reason here
+        ]);
     });
 
     it("a * 2 * 3 -> a * 6", () => {

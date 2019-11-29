@@ -1,6 +1,8 @@
 // @flow
 import * as Semantic from "../semantic.js";
 
+import {primeDecomp} from "./util.js";
+
 // A node is different if its children are different or if its type is different
 // How to do a parallel traversal
 
@@ -215,12 +217,14 @@ const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
 /**
  * Returns all of the elements that appear in both as and bs.
  */
+// TODO: fix this handle multipel equivalent expressions
 const intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
     as.filter(a => bs.some(b => checkStep(a, b).equivalent));
 
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
+// TODO: fix this handle multipel equivalent expressions
 const difference = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
     as.filter(a => !bs.some(b => checkStep(a, b).equivalent));
 
@@ -444,7 +448,27 @@ const distFact = (
     };
 };
 
-const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
+const num = (n: number): Semantic.Number => ({
+    type: "number",
+    value: String(n),
+});
+
+const decomposeFactors = (
+    factors: Semantic.Expression[],
+): Semantic.Expression[] =>
+    factors.reduce((result: Semantic.Expression[], factor) => {
+        // TODO: add decomposition of powers
+        if (factor.type === "number") {
+            return [...result, ...primeDecomp(parseInt(factor.value)).map(num)];
+        } else {
+            return [...result, factor];
+        }
+    }, []);
+
+const checkDivisionCanceling = (
+    a: Semantic.Div,
+    b: Semantic.Expression,
+): Result => {
     const [numeratorA, denominatorA] = a.args;
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
@@ -470,8 +494,38 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
         !checkStep(mulFactors(addedNumFactors), ONE).equivalent ||
         !checkStep(mulFactors(addedDenFactors), ONE).equivalent
     ) {
-        // TODO: check if there are any factors we can split up and then
-        // call checkDivisionCanceling again
+        // If the factors are different then it's possible that the user
+        // decomposed one or more of the factors.  We decompose all factors
+        // in both the current step `a` and the next step `b` and re-run
+        // checkDivisionCanceling on the new fractions to see if that's the
+        // case.
+        const factoredNumFactorsA = decomposeFactors(numFactorsA);
+        const factoredDenFactorsA = decomposeFactors(denFactorsA);
+        const factoredNumFactorsB = decomposeFactors(numFactorsB);
+        const factoredDenFactorsB = decomposeFactors(denFactorsB);
+
+        if (
+            factoredNumFactorsA.length !== numFactorsA.length ||
+            factoredDenFactorsA.length !== denFactorsA.length
+        ) {
+            const {equivalent, reasons} = checkDivisionCanceling(
+                div(
+                    mulFactors(factoredNumFactorsA),
+                    mulFactors(factoredDenFactorsA),
+                ),
+                div(
+                    mulFactors(factoredNumFactorsB),
+                    mulFactors(factoredDenFactorsB),
+                ),
+            );
+
+            if (equivalent) {
+                return {
+                    equivalent: true,
+                    reasons: ["prime factorization", ...reasons],
+                };
+            }
+        }
 
         // TODO: Add reason for why the canceling check failed
         return {
@@ -519,7 +573,7 @@ const checkDivisionCanceling = (a: Semantic.Div, b: Semantic.Expression) => {
     }
 
     return {
-        equivalant: false,
+        equivalent: false,
         reasons: [],
     };
 };
