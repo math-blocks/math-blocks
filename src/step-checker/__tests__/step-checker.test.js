@@ -65,7 +65,7 @@ describe("Expressions", () => {
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([]);
+            expect(result.reasons.map(reason => reason.message)).toEqual([]);
         });
 
         test("a -> a", () => {
@@ -76,7 +76,7 @@ describe("Expressions", () => {
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([]);
+            expect(result.reasons.map(reason => reason.message)).toEqual([]);
         });
 
         test("-1 -> -1", () => {
@@ -87,7 +87,7 @@ describe("Expressions", () => {
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([]);
+            expect(result.reasons.map(reason => reason.message)).toEqual([]);
         });
     });
 
@@ -99,7 +99,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     // nested commutative property
@@ -117,7 +119,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "commutative property",
             "commutative property",
             "commutative property",
@@ -133,7 +135,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     // commutative property with additive identity
@@ -145,7 +149,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     it("2 * 3 -> 3 * 2", () => {
@@ -156,7 +162,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     it("a = 3 -> 3 = a", () => {
@@ -167,7 +175,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["symmetric property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "symmetric property",
+        ]);
     });
 
     it("x + (a + 2) -> x + (2 + a)", () => {
@@ -177,7 +187,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     it("x + a + 2 -> x + 2 + a", () => {
@@ -187,7 +199,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     it("x + a + 2 -> a + x + 2", () => {
@@ -197,7 +211,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["commutative property"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
     });
 
     it("x + a + 2 -> x + 2 + b [incorrect step]", () => {
@@ -216,7 +232,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("a -> a + 0", () => {
@@ -226,7 +244,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("a + b -> a + b + 0", () => {
@@ -236,7 +256,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("a + b -> a + 0 + b", () => {
@@ -246,7 +268,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("a + b -> b + a + 0 -> b + 0 + a", () => {
@@ -256,7 +280,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "addition with identity",
             "commutative property",
         ]);
@@ -269,7 +293,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("1 * a -> a", () => {
@@ -279,7 +305,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication with identity",
+        ]);
     });
 
     it("a -> a * 1", () => {
@@ -289,7 +317,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication with identity",
+        ]);
     });
 
     it("1 -> a/a", () => {
@@ -299,7 +329,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["division by the same value"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "division by the same value",
+        ]);
     });
 
     it("a/b * c/d -> ac / bd", () => {
@@ -315,7 +347,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplying fractions"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+        ]);
     });
 
     it("ac / bd -> a/b * c/d", () => {
@@ -331,7 +365,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplying fractions"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+        ]);
     });
 
     it("ab/cd * e/f -> abe / cdf", () => {
@@ -347,7 +383,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplying fractions"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+        ]);
     });
 
     it("a/b * 1/d -> a*1 / bd -> a / bd", () => {
@@ -360,7 +398,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying fractions",
             "multiplication with identity",
         ]);
@@ -376,7 +414,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying fractions",
             "multiplication with identity",
         ]);
@@ -389,7 +427,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying fractions",
             "multiplication with identity",
         ]);
@@ -402,7 +440,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of multiplication",
+        ]);
     });
 
     // TODO: make the reason for this be factoring
@@ -413,7 +453,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of multiplication",
+        ]);
     });
 
     it("30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5", () => {
@@ -423,7 +465,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
             "canceling factors in division",
             "division by the same value",
@@ -440,7 +482,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
             "canceling factors in division",
             "division by the same value",
@@ -457,7 +499,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of multiplication",
+        ]);
     });
 
     it("2 * 3 * 4 -> 6 * 4", () => {
@@ -467,7 +511,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of multiplication"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of multiplication",
+        ]);
     });
 
     it("2 + 3 -> 5", () => {
@@ -477,7 +523,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of addition"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
     });
 
     it("a + 2 + 3 -> a + 5", () => {
@@ -487,7 +535,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of addition"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
     });
 
     it("1 + 2 + 3 -> 1 + 5", () => {
@@ -497,7 +547,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["evaluation of addition"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
     });
 
     describe("reciprocals", () => {
@@ -508,7 +560,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplying fractions",
                 "multiplying fractions",
@@ -522,7 +574,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplication with identity",
             ]);
@@ -535,7 +587,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplication with identity",
                 "division by one",
@@ -549,7 +601,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplying fractions",
                 "division by one",
@@ -566,7 +618,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "multiplying fractions",
                 "division by the same value",
             ]);
@@ -584,7 +636,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
             "canceling factors in division",
             "division by the same value",
@@ -602,7 +654,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "canceling factors in division",
             "division by the same value",
             "multiplication with identity",
@@ -617,7 +669,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(false);
-        expect(result.reasons).toEqual([]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([]);
     });
 
     it("0 + (a + b) -> a + b", () => {
@@ -628,7 +680,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["addition with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "addition with identity",
+        ]);
     });
 
     it("1 * (a * b) -> a * b", () => {
@@ -639,7 +693,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication with identity",
+        ]);
     });
 
     it("2abc/ab -> ab/ab * 2c/1 -> 1 * 2c/1 -> 2c", () => {
@@ -652,7 +708,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "canceling factors in division",
             "division by the same value",
             "multiplication with identity",
@@ -671,7 +727,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "canceling factors in division",
             "division by the same value",
             "multiplication with identity",
@@ -688,7 +744,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "canceling factors in division",
             "division by the same value",
             "multiplication with identity",
@@ -705,7 +761,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "canceling factors in division",
             "division by the same value",
             "multiplication with identity",
@@ -719,7 +775,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -733,7 +789,7 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         // TODO: order the substeps based on the order of the steps
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -746,7 +802,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["division by one"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "division by one",
+        ]);
     });
 
     it("ab -> ab / 1", () => {
@@ -756,7 +814,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["division by one"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "division by one",
+        ]);
     });
 
     it("a * b -> b * a * 1 -> b * 1 * a", () => {
@@ -766,7 +826,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual([
+        expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplication with identity",
             "commutative property",
         ]);
@@ -779,7 +839,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication with identity"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication with identity",
+        ]);
     });
 
     it("a * 0 * b -> 0", () => {
@@ -789,7 +851,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["multiplication by zero"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication by zero",
+        ]);
     });
 
     it("a * (b + c) -> a * b + a * c", () => {
@@ -802,7 +866,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["distribution"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
     });
 
     it("(b + c) * a -> b * a + c * a", () => {
@@ -815,7 +881,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["distribution"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
     });
 
     it("a * (b + c) -> a * b + c [incorrect]", () => {
@@ -825,7 +893,7 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(false);
-        expect(result.reasons).toEqual([]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([]);
     });
 
     // TODO: make this test pass
@@ -843,7 +911,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["distribution"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
     });
 
     it("(a + b) * (x + y) -> (a + b) * x + (a + b) * y", () => {
@@ -859,7 +929,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["distribution"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
     });
 
     it("(a + b) * (x + y) -> a * (x + y) + b * (x + y)", () => {
@@ -875,7 +947,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["distribution"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
     });
 
     it("a * b + a * c -> a * (b + c)", () => {
@@ -888,7 +962,9 @@ describe("Expressions", () => {
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons).toEqual(["factoring"]);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "factoring",
+        ]);
     });
 });
 
@@ -904,7 +980,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -919,7 +995,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -937,7 +1013,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -954,7 +1030,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
         });
@@ -972,7 +1048,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
         });
@@ -989,7 +1065,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "multiplying both sides by the same value",
             ]);
         });
@@ -1007,7 +1083,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "multiplying both sides by the same value",
             ]);
         });
@@ -1024,7 +1100,7 @@ describe("Equations", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.reasons).toEqual([
+            expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing both sides by the same value",
             ]);
         });

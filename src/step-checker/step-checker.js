@@ -40,12 +40,10 @@ const assertValid = (node: Semantic.Expression) => {
     }
 };
 
-// TODO: make Reasons more structural in the future
-// type Reason = {
-//     type: "commuative" | "associative" | "distributive",
-//     nodes: Semantic.Expression[],
-// };
-type Reason = string;
+type Reason = {
+    message: string,
+    nodes: Semantic.Expression[],
+};
 
 // TODO: instead of defining this in code, we could have a JSON file that
 // defines the properties of different operations, e.g.
@@ -275,10 +273,9 @@ const checkEquationStep = (
         if (lhsB.type === "add" && rhsB.type === "add") {
             const lhsNewTerms = difference(getTerms(lhsB), getTerms(lhsA));
             const rhsNewTerms = difference(getTerms(rhsB), getTerms(rhsA));
-            const {equivalent, reasons} = checkStep(
-                addTerms(lhsNewTerms),
-                addTerms(rhsNewTerms),
-            );
+            const lhsNew = addTerms(lhsNewTerms);
+            const rhsNew = addTerms(rhsNewTerms);
+            const {equivalent, reasons} = checkStep(lhsNew, rhsNew);
 
             // TODO: handle adding multiple things to lhs and rhs as the same time
             // TODO: do we want to enforce that the thing being added is exactly
@@ -290,12 +287,23 @@ const checkEquationStep = (
                 ) {
                     return {
                         equivalent: true,
-                        reasons: ["subtracting the same value from both sides"],
+                        reasons: [
+                            {
+                                message:
+                                    "subtracting the same value from both sides",
+                                nodes: [],
+                            },
+                        ],
                     };
                 }
                 return {
                     equivalent: true,
-                    reasons: ["adding the same value to both sides"],
+                    reasons: [
+                        {
+                            message: "adding the same value to both sides",
+                            nodes: [],
+                        },
+                    ],
                 };
             }
         }
@@ -319,7 +327,12 @@ const checkEquationStep = (
             if (equivalent && reasons.length === 0) {
                 return {
                     equivalent: true,
-                    reasons: ["multiplying both sides by the same value"],
+                    reasons: [
+                        {
+                            message: "multiplying both sides by the same value",
+                            nodes: [],
+                        },
+                    ],
                 };
             }
         }
@@ -332,7 +345,13 @@ const checkEquationStep = (
                 if (checkStep(lhsB.args[1], rhsB.args[1]).equivalent) {
                     return {
                         equivalent: true,
-                        reasons: ["dividing both sides by the same value"],
+                        reasons: [
+                            {
+                                message:
+                                    "dividing both sides by the same value",
+                                nodes: [],
+                            },
+                        ],
                     };
                 } else {
                     // TODO: custom error message for this case
@@ -381,7 +400,7 @@ const checkIdentity = <T: Semantic.Add | Semantic.Mul>(
     next: Semantic.Expression,
     identity: Semantic.Number, // conditional types would come in handy here
     reason: string,
-) => {
+): Result => {
     const identityReasons = [];
     const nonIdentityArgs = prev.args.filter(arg => {
         const {equivalent, reasons} = checkStep(arg, identity);
@@ -404,7 +423,14 @@ const checkIdentity = <T: Semantic.Add | Semantic.Mul>(
     if (equivalent) {
         return {
             equivalent: true,
-            reasons: [...identityReasons, reason, ...reasons],
+            reasons: [
+                ...identityReasons,
+                {
+                    message: reason,
+                    nodes: [],
+                },
+                ...reasons,
+            ],
         };
     }
 
@@ -444,7 +470,7 @@ const distFact = (
     addNode: Semantic.Add,
     mulNode: Semantic.Mul,
     reason: "distribution" | "factoring",
-) => {
+): Result => {
     // TODO: handle distribution across n-ary multiplication later
     if (mulNode.args.length === 2) {
         const [left, right] = mulNode.args;
@@ -459,7 +485,12 @@ const distFact = (
                     // TODO: include sub-reasons from checkStep
                     return {
                         equivalent: true,
-                        reasons: [reason],
+                        reasons: [
+                            {
+                                message: reason,
+                                nodes: [],
+                            },
+                        ],
                     };
                 }
             }
@@ -531,6 +562,9 @@ const checkDivisionCanceling = (
             factoredNumFactorsA.length !== numFactorsA.length ||
             factoredDenFactorsA.length !== denFactorsA.length
         ) {
+            // TODO: allow `nodes` in Reason type to have more than two nodes
+            // to handle cases where we modify both prev and next to work the
+            // problem from both sides essentially.
             const {equivalent, reasons} = checkDivisionCanceling(
                 div(
                     mulFactors(factoredNumFactorsA),
@@ -545,7 +579,13 @@ const checkDivisionCanceling = (
             if (equivalent) {
                 return {
                     equivalent: true,
-                    reasons: ["prime factorization", ...reasons],
+                    reasons: [
+                        {
+                            message: "prime factorization",
+                            nodes: [],
+                        },
+                        ...reasons,
+                    ],
                 };
             }
         }
@@ -590,7 +630,13 @@ const checkDivisionCanceling = (
         if (equivalent) {
             return {
                 equivalent: true,
-                reasons: ["canceling factors in division", ...reasons],
+                reasons: [
+                    {
+                        message: "canceling factors in division",
+                        nodes: [],
+                    },
+                    ...reasons,
+                ],
             };
         }
     }
@@ -622,7 +668,11 @@ const divByFrac = (
             return {
                 equivalent: true,
                 reasons: [
-                    "dividing by a fraction is the same as multiplying by the reciprocal",
+                    {
+                        message:
+                            "dividing by a fraction is the same as multiplying by the reciprocal",
+                        nodes: [],
+                    },
                     ...result.reasons,
                 ],
             };
@@ -648,7 +698,12 @@ const cancelingInFrac = (
         ) {
             return {
                 equivalent: true,
-                reasons: ["division by the same value"],
+                reasons: [
+                    {
+                        message: "division by the same value",
+                        nodes: [],
+                    },
+                ],
             };
         }
 
@@ -657,7 +712,13 @@ const cancelingInFrac = (
             if (equivalent) {
                 return {
                     equivalent: true,
-                    reasons: [...reasons, "division by one"],
+                    reasons: [
+                        ...reasons,
+                        {
+                            message: "division by one",
+                            nodes: [],
+                        },
+                    ],
                 };
             }
         }
@@ -673,7 +734,10 @@ const cancelingInFrac = (
     };
 };
 
-const mulByFrac = (prev: Semantic.Expression, next: Semantic.Expression) => {
+const mulByFrac = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
         return {
@@ -699,11 +763,22 @@ const mulByFrac = (prev: Semantic.Expression, next: Semantic.Expression) => {
     );
     return {
         equivalent,
-        reasons: equivalent ? ["multiplying fractions", ...reasons] : [],
+        reasons: equivalent
+            ? [
+                  {
+                      message: "multiplying fractions",
+                      nodes: [],
+                  },
+                  ...reasons,
+              ]
+            : [],
     };
 };
 
-const mulByZero = (prev: Semantic.Expression, next: Semantic.Expression) => {
+const mulByZero = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
     if (prev.type !== "mul") {
         return {
             equivalent: false,
@@ -718,7 +793,13 @@ const mulByZero = (prev: Semantic.Expression, next: Semantic.Expression) => {
     if (hasZero && equivalent) {
         return {
             equivalent: true,
-            reasons: [...reasons, "multiplication by zero"],
+            reasons: [
+                ...reasons,
+                {
+                    message: "multiplication by zero",
+                    nodes: [],
+                },
+            ],
         };
     }
     return {
@@ -727,7 +808,10 @@ const mulByZero = (prev: Semantic.Expression, next: Semantic.Expression) => {
     };
 };
 
-const commuteAddition = (a: Semantic.Expression, b: Semantic.Expression) => {
+const commuteAddition = (
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+): Result => {
     if (
         a.type === "add" &&
         b.type === "add" &&
@@ -740,7 +824,13 @@ const commuteAddition = (a: Semantic.Expression, b: Semantic.Expression) => {
         if (commutative && equivalent) {
             return {
                 equivalent,
-                reasons: ["commutative property", ...reasons],
+                reasons: [
+                    {
+                        message: "commutative property",
+                        nodes: [],
+                    },
+                    ...reasons,
+                ],
             };
         }
     }
@@ -751,7 +841,10 @@ const commuteAddition = (a: Semantic.Expression, b: Semantic.Expression) => {
     };
 };
 
-const evaluateMul = (a: Semantic.Expression, b: Semantic.Expression) => {
+const evaluateMul = (
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+): Result => {
     if (a.type !== "mul" && b.type !== "mul") {
         return {
             equivalent: false,
@@ -783,7 +876,12 @@ const evaluateMul = (a: Semantic.Expression, b: Semantic.Expression) => {
         if (aValue === bValue) {
             return {
                 equivalent: true,
-                reasons: ["evaluation of multiplication"],
+                reasons: [
+                    {
+                        message: "evaluation of multiplication",
+                        nodes: [],
+                    },
+                ],
             };
         }
     }
@@ -794,7 +892,10 @@ const evaluateMul = (a: Semantic.Expression, b: Semantic.Expression) => {
     };
 };
 
-const evaluateAdd = (a: Semantic.Expression, b: Semantic.Expression) => {
+const evaluateAdd = (
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+): Result => {
     if (a.type !== "add" && b.type !== "add") {
         return {
             equivalent: false,
@@ -826,7 +927,12 @@ const evaluateAdd = (a: Semantic.Expression, b: Semantic.Expression) => {
         if (aValue === bValue) {
             return {
                 equivalent: true,
-                reasons: ["evaluation of addition"],
+                reasons: [
+                    {
+                        message: "evaluation of addition",
+                        nodes: [],
+                    },
+                ],
             };
         }
     }
@@ -840,7 +946,7 @@ const evaluateAdd = (a: Semantic.Expression, b: Semantic.Expression) => {
 const commuteMultiplication = (
     a: Semantic.Expression,
     b: Semantic.Expression,
-) => {
+): Result => {
     if (
         a.type === "mul" &&
         b.type === "mul" &&
@@ -853,7 +959,13 @@ const commuteMultiplication = (
         if (commutative && equivalent) {
             return {
                 equivalent,
-                reasons: ["commutative property", ...reasons],
+                reasons: [
+                    {
+                        message: "commutative property",
+                        nodes: [],
+                    },
+                    ...reasons,
+                ],
             };
         }
     }
@@ -864,7 +976,10 @@ const commuteMultiplication = (
     };
 };
 
-const symmetricProperty = (a: Semantic.Expression, b: Semantic.Expression) => {
+const symmetricProperty = (
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+): Result => {
     if (a.type === "eq" && b.type === "eq" && a.args.length === b.args.length) {
         const pairs = zip(a.args, b.args);
         // TODO: get commutative reasons
@@ -873,7 +988,13 @@ const symmetricProperty = (a: Semantic.Expression, b: Semantic.Expression) => {
         if (commutative && equivalent) {
             return {
                 equivalent,
-                reasons: ["symmetric property", ...reasons],
+                reasons: [
+                    {
+                        message: "symmetric property",
+                        nodes: [],
+                    },
+                    ...reasons,
+                ],
             };
         }
     }
@@ -893,7 +1014,7 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(a);
     assertValid(b);
 
-    let result;
+    let result: Result;
 
     result = evaluateMul(a, b);
     if (result.equivalent) {
