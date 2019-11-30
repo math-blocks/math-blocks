@@ -46,9 +46,15 @@ const ident = (name: string): Semantic.Identifier => {
     };
 };
 
-const neg = (arg: Semantic.Expression): Semantic.Neg => ({
+const sub = (arg: Semantic.Expression): Semantic.Neg => ({
     type: "neg",
     subtraction: true,
+    args: [arg],
+});
+
+const neg = (arg: Semantic.Expression): Semantic.Neg => ({
+    type: "neg",
+    subtraction: false,
     args: [arg],
 });
 
@@ -80,8 +86,8 @@ describe("Expressions", () => {
         });
 
         test("-1 -> -1", () => {
-            const a = neg(number("1"));
-            const b = neg(number("1"));
+            const a = sub(number("1"));
+            const b = sub(number("1"));
 
             const reasons = [];
             const result = checkStep(a, b);
@@ -625,6 +631,127 @@ describe("Expressions", () => {
         });
     });
 
+    describe("additive inverse", () => {
+        it("a + -a -> 0", () => {
+            const before = add(ident("a"), neg(ident("a")));
+            const after = number("0");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "adding inverse",
+            ]);
+        });
+
+        it("0 -> a + -a", () => {
+            const before = number("0");
+            const after = add(ident("a"), neg(ident("a")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "adding inverse",
+            ]);
+        });
+
+        it("a + b + -a + c -> b + c", () => {
+            const before = add(
+                ident("a"),
+                ident("b"),
+                neg(ident("a")),
+                ident("c"),
+            );
+            const after = add(ident("b"), ident("c"));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "adding inverse",
+            ]);
+        });
+
+        it("a - b -> a + -b", () => {
+            const before = add(ident("a"), sub(ident("b")));
+            const after = add(ident("a"), neg(ident("b")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("a + -b -> a - b", () => {
+            const before = add(ident("a"), neg(ident("b")));
+            const after = add(ident("a"), sub(ident("b")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("a - a -> 0", () => {
+            const before = add(ident("a"), sub(ident("a")));
+            const after = number("0");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "adding inverse",
+            ]);
+        });
+
+        it("--a -> a", () => {
+            const before = neg(neg(ident("a")));
+            const after = ident("a");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+            ]);
+        });
+
+        it("----a -> --a", () => {
+            const before = neg(neg(neg(neg(ident("a")))));
+            const after = neg(neg(ident("a")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+
+            // TODO: add a way to do an exact check of two steps so that we
+            // can remove unnecessary reasons
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+                "negative of a negative is positive",
+                "negative of a negative is positive",
+            ]);
+        });
+
+        it("----a -> a", () => {
+            const before = neg(neg(neg(neg(ident("a")))));
+            const after = ident("a");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+                "negative of a negative is positive",
+            ]);
+        });
+    });
+
     // TODO: 24ab / 6a -> 4b
     it("24ab / 6a -> 4b", () => {
         const before = div(
@@ -1035,8 +1162,8 @@ describe("Equations", () => {
         it("x = y -> x - 5 = y - 5", () => {
             const before = eq(ident("x"), ident("y"));
             const after = eq(
-                add(ident("x"), neg(number("5"))),
-                add(ident("y"), neg(number("5"))),
+                add(ident("x"), sub(number("5"))),
+                add(ident("y"), sub(number("5"))),
             );
 
             const result = checkStep(before, after);
@@ -1053,8 +1180,8 @@ describe("Equations", () => {
                 add(ident("y"), number("15")),
             );
             const after = eq(
-                add(ident("x"), number("10"), neg(number("5"))),
-                add(ident("y"), number("15"), neg(number("5"))),
+                add(ident("x"), number("10"), sub(number("5"))),
+                add(ident("y"), number("15"), sub(number("5"))),
             );
 
             const result = checkStep(before, after);
@@ -1070,8 +1197,8 @@ describe("Equations", () => {
         it("should work when each side is an atom", () => {
             const before = eq(ident("x"), ident("y"));
             const after = eq(
-                mul(ident("x"), neg(number("5"))),
-                mul(ident("y"), neg(number("5"))),
+                mul(ident("x"), sub(number("5"))),
+                mul(ident("y"), sub(number("5"))),
             );
 
             const result = checkStep(before, after);
@@ -1088,8 +1215,8 @@ describe("Equations", () => {
                 mul(ident("y"), number("15")),
             );
             const after = eq(
-                mul(ident("x"), number("10"), neg(number("5"))),
-                mul(ident("y"), number("15"), neg(number("5"))),
+                mul(ident("x"), number("10"), sub(number("5"))),
+                mul(ident("y"), number("15"), sub(number("5"))),
             );
 
             const result = checkStep(before, after);
@@ -1105,8 +1232,8 @@ describe("Equations", () => {
         it("should work when each side is an atom", () => {
             const before = eq(ident("x"), ident("y"));
             const after = eq(
-                div(ident("x"), neg(number("5"))),
-                div(ident("y"), neg(number("5"))),
+                div(ident("x"), sub(number("5"))),
+                div(ident("y"), sub(number("5"))),
             );
 
             const result = checkStep(before, after);
@@ -1120,8 +1247,8 @@ describe("Equations", () => {
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
             const before = eq(ident("x"), ident("y"));
             const after = eq(
-                div(ident("x"), neg(number("5"))),
-                div(ident("y"), neg(number("10"))),
+                div(ident("x"), sub(number("5"))),
+                div(ident("y"), sub(number("10"))),
             );
 
             const result = checkStep(before, after);

@@ -108,6 +108,9 @@ const div = (num: Semantic.Expression, den: Semantic.Expression) => ({
 const isSubtraction = (node: Semantic.Expression): boolean %checks =>
     node.type === "neg" && node.subtraction;
 
+const isNegative = (node: Semantic.Expression): boolean %checks =>
+    node.type === "neg" && !node.subtraction;
+
 const getFactors = (node: Semantic.Expression): Semantic.Expression[] =>
     node.type === "mul" ? node.args : [node];
 
@@ -305,6 +308,116 @@ const checkEquationStep = (
             }
         }
     }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const addInverse = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (prev.type !== "add") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    const indicesToRemove = new Set();
+    const terms = getTerms(prev);
+    for (let i = 0; i < terms.length; i++) {
+        for (let j = 0; j < terms.length; j++) {
+            if (i === j) {
+                continue;
+            }
+            const a = terms[i];
+            const b = terms[j];
+            // TODO: add a sub-step in the subtraction case
+            if (isNegative(b) || isSubtraction(b)) {
+                const result = checkStep(a, b.args[0]);
+                if (result.equivalent) {
+                    // TODO: capture the reasons and include them down below
+                    indicesToRemove.add(i);
+                    indicesToRemove.add(j);
+                }
+            }
+        }
+    }
+    if (indicesToRemove.size > 0) {
+        const newPrev = add(
+            terms.filter((term, index) => !indicesToRemove.has(index)),
+        );
+        const {equivalent, reasons} = checkStep(newPrev, next);
+        if (equivalent) {
+            return {
+                equivalent: true,
+                reasons: [
+                    ...reasons,
+                    {
+                        message: "adding inverse",
+                        nodes: [],
+                    },
+                ],
+            };
+        }
+    }
+
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const doubleNegative = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (isNegative(prev) && isNegative(prev.args[0])) {
+        const newPrev = prev.args[0].args[0];
+        const {equivalent, reasons} = checkStep(newPrev, next);
+        if (equivalent) {
+            return {
+                equivalent: true,
+                reasons: [
+                    ...reasons,
+                    {
+                        message: "negative of a negative is positive",
+                        nodes: [],
+                    },
+                ],
+            };
+        }
+    }
+
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const subIsNeg = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (isSubtraction(prev) && isNegative(next)) {
+        const {equivalent, reasons} = checkStep(prev.args[0], next.args[0]);
+        if (equivalent) {
+            return {
+                equivalent: true,
+                reasons: [
+                    ...reasons,
+                    {
+                        message:
+                            "subtracting is the same as adding the inverse",
+                        nodes: [],
+                    },
+                ],
+            };
+        }
+    }
+
     return {
         equivalent: false,
         reasons: [],
@@ -998,6 +1111,36 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     }
 
     result = addZero(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = addInverse(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = addInverse(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = subIsNeg(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = subIsNeg(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = doubleNegative(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = doubleNegative(b, a);
     if (result.equivalent) {
         return result;
     }
