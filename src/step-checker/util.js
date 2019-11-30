@@ -1,5 +1,4 @@
 // @flow
-
 const isInteger = (n: number) => parseInt(n) === parseFloat(n);
 
 // TODO: handle negative numbers
@@ -21,4 +20,12 @@ export const primeDecomp = (n: number): number[] => {
     factors.push(n);
 
     return factors;
+};
+
+export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
+    const result = [];
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        result.push([a[i], b[i]]);
+    }
+    return result;
 };

@@ -844,6 +844,18 @@ describe("Expressions", () => {
         ]);
     });
 
+    it("0 -> 0 * a", () => {
+        const before = number("0");
+        const after = mul(number("0"), ident("a"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplication by zero",
+        ]);
+    });
+
     it("a * 0 * b -> 0", () => {
         const before = mul(ident("a"), number("0"), ident("b"));
         const after = number("0");

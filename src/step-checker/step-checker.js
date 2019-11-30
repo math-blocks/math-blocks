@@ -1,20 +1,12 @@
 // @flow
 import * as Semantic from "../semantic.js";
 
-import {primeDecomp} from "./util.js";
+import {primeDecomp, zip} from "./util.js";
 
 // A node is different if its children are different or if its type is different
 // How to do a parallel traversal
 
 // 1 = #/#
-
-const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
-    const result = [];
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
-        result.push([a[i], b[i]]);
-    }
-    return result;
-};
 
 // There could be something like: (1 + 2) + (a + b) -> (2 + 1) + (b + a)
 // How do we keep track of multiple changes to an expression tree
@@ -44,6 +36,11 @@ type Reason = {
     message: string,
     nodes: Semantic.Expression[],
 };
+
+type Result = {|
+    equivalent: boolean,
+    reasons: Reason[],
+|};
 
 // TODO: instead of defining this in code, we could have a JSON file that
 // defines the properties of different operations, e.g.
@@ -103,92 +100,47 @@ const ONE = {
     value: "1",
 };
 
-const add = (args: Semantic.Expression[]): Semantic.Add => ({
-    type: "add",
-    args,
-});
-
-const mul = (implicit: boolean) => (
-    args: Semantic.Expression[],
-): Semantic.Mul => ({
-    type: "mul",
-    implicit,
-    args,
-});
-
-const implicitMul = mul(true);
-const explicitMul = mul(false);
-
 const div = (num: Semantic.Expression, den: Semantic.Expression) => ({
     type: "div",
     args: [num, den],
 });
 
-type Result = {|
-    equivalent: boolean,
-    reasons: Reason[],
-|};
-
 const isSubtraction = (node: Semantic.Expression): boolean %checks =>
     node.type === "neg" && node.subtraction;
 
-const getFactors = (node: Semantic.Expression): Array<Semantic.Expression> =>
+const getFactors = (node: Semantic.Expression): Semantic.Expression[] =>
     node.type === "mul" ? node.args : [node];
 
-const getTerms = (node: Semantic.Expression): Array<Semantic.Expression> =>
+const getTerms = (node: Semantic.Expression): Semantic.Expression[] =>
     node.type === "add" ? node.args : [node];
 
-// filters out ONEs and will return either a Mul node or a single Expression node
-const mulFactors = (
-    factors: Array<Semantic.Expression>,
-): Semantic.Expression => {
+const mul = (factors: Semantic.Expression[]): Semantic.Expression => {
     switch (factors.length) {
         case 0:
             return ONE;
         case 1:
             return factors[0];
         default:
-            return explicitMul(factors);
+            return {
+                type: "mul",
+                implicit: false,
+                args: factors,
+            };
     }
 };
 
-const addTerms = (terms: Array<Semantic.Expression>): Semantic.Expression => {
+const add = (terms: Array<Semantic.Expression>): Semantic.Expression => {
     switch (terms.length) {
         case 0:
-            return ONE;
+            return ZERO;
         case 1:
             return terms[0];
         default:
-            return add(terms);
+            return {
+                type: "add",
+                args: terms,
+            };
     }
-};
-
-const ops: {
-    add: {
-        identity: Semantic.Number,
-        op: (Semantic.Expression[]) => Semantic.Expression,
-        reason: string,
-    },
-    mul: {
-        identity: Semantic.Number,
-        op: (Semantic.Expression[]) => Semantic.Expression,
-        reason: string,
-    },
-} = {
-    add: {
-        identity: ZERO,
-        op: addTerms,
-        // TODO: have a variety of different ways of stating this
-        // e.g., "addition with zero"
-        reason: "addition with identity",
-    },
-    mul: {
-        identity: ONE,
-        op: mulFactors,
-        // TODO: have a variety of different ways of stating this
-        // e.g., "multiplication by one"
-        reason: "multiplication with identity",
-    },
 };
 
 /**
@@ -215,10 +167,7 @@ const checkArgs = <T: HasArgs>(a: T, b: T): Result => {
 /**
  * Returns all of the elements that appear in both as and bs.
  */
-const intersection = (
-    as: $ReadOnlyArray<Semantic.Expression>,
-    bs: $ReadOnlyArray<Semantic.Expression>,
-) => {
+const intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) => {
     const result = [];
     for (const a of as) {
         const index = bs.findIndex(b => checkStep(a, b).equivalent);
@@ -233,10 +182,7 @@ const intersection = (
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
-const difference = (
-    as: $ReadOnlyArray<Semantic.Expression>,
-    bs: $ReadOnlyArray<Semantic.Expression>,
-) => {
+const difference = (as: Semantic.Expression[], bs: Semantic.Expression[]) => {
     const result = [];
     for (const a of as) {
         const index = bs.findIndex(b => checkStep(a, b).equivalent);
@@ -273,8 +219,8 @@ const checkEquationStep = (
         if (lhsB.type === "add" && rhsB.type === "add") {
             const lhsNewTerms = difference(getTerms(lhsB), getTerms(lhsA));
             const rhsNewTerms = difference(getTerms(rhsB), getTerms(rhsA));
-            const lhsNew = addTerms(lhsNewTerms);
-            const rhsNew = addTerms(rhsNewTerms);
+            const lhsNew = add(lhsNewTerms);
+            const rhsNew = add(rhsNewTerms);
             const {equivalent, reasons} = checkStep(lhsNew, rhsNew);
 
             // TODO: handle adding multiple things to lhs and rhs as the same time
@@ -318,8 +264,8 @@ const checkEquationStep = (
                 getFactors(rhsA),
             );
             const {equivalent, reasons} = checkStep(
-                mulFactors(lhsNewFactors),
-                mulFactors(rhsNewFactors),
+                mul(lhsNewFactors),
+                mul(rhsNewFactors),
             );
 
             // TODO: do we want to enforce that the thing being added is exactly
@@ -376,8 +322,15 @@ const addZero = (
         };
     }
 
-    const {identity, reason} = ops.add;
-    return checkIdentity(prev, next, identity, reason);
+    return checkIdentity(
+        prev,
+        next,
+        add,
+        ZERO,
+        // TODO: provide a way to have different levels of messages, e.g.
+        // "adding zero doesn't change an expression"
+        "addition with identity",
+    );
 };
 
 const mulOne = (
@@ -391,13 +344,21 @@ const mulOne = (
         };
     }
 
-    const {identity, reason} = ops.mul;
-    return checkIdentity(prev, next, identity, reason);
+    return checkIdentity(
+        prev,
+        next,
+        mul,
+        ONE,
+        // TODO: provide a way to have different levels of messages, e.g.
+        // "multiplying by one doesn't change an expression"
+        "multiplication with identity",
+    );
 };
 
 const checkIdentity = <T: Semantic.Add | Semantic.Mul>(
     prev: T,
     next: Semantic.Expression,
+    op: (Semantic.Expression[]) => Semantic.Expression,
     identity: Semantic.Number, // conditional types would come in handy here
     reason: string,
 ): Result => {
@@ -418,7 +379,7 @@ const checkIdentity = <T: Semantic.Add | Semantic.Mul>(
         };
     }
 
-    const newPrev = ops[prev.type].op(nonIdentityArgs);
+    const newPrev = op(nonIdentityArgs);
     const {equivalent, reasons} = checkStep(newPrev, next);
     if (equivalent) {
         return {
@@ -477,8 +438,7 @@ const distFact = (
         for (const [x, y] of [[left, right], [right, left]]) {
             if (y.type === "add" && y.args.length === addNode.args.length) {
                 const equivalent = addNode.args.every((arg, index) => {
-                    return checkStep(arg, mulFactors([x, y.args[index]]))
-                        .equivalent;
+                    return checkStep(arg, mul([x, y.args[index]])).equivalent;
                 });
 
                 if (equivalent) {
@@ -545,8 +505,8 @@ const checkDivisionCanceling = (
     const addedNumFactors = difference(numFactorsB, numFactorsA);
     const addedDenFactors = difference(denFactorsB, denFactorsA);
     if (
-        !checkStep(mulFactors(addedNumFactors), ONE).equivalent ||
-        !checkStep(mulFactors(addedDenFactors), ONE).equivalent
+        !checkStep(mul(addedNumFactors), ONE).equivalent ||
+        !checkStep(mul(addedDenFactors), ONE).equivalent
     ) {
         // If the factors are different then it's possible that the user
         // decomposed one or more of the factors.  We decompose all factors
@@ -566,14 +526,8 @@ const checkDivisionCanceling = (
             // to handle cases where we modify both prev and next to work the
             // problem from both sides essentially.
             const {equivalent, reasons} = checkDivisionCanceling(
-                div(
-                    mulFactors(factoredNumFactorsA),
-                    mulFactors(factoredDenFactorsA),
-                ),
-                div(
-                    mulFactors(factoredNumFactorsB),
-                    mulFactors(factoredDenFactorsB),
-                ),
+                div(mul(factoredNumFactorsA), mul(factoredDenFactorsA)),
+                div(mul(factoredNumFactorsB), mul(factoredDenFactorsB)),
             );
 
             if (equivalent) {
@@ -617,14 +571,11 @@ const checkDivisionCanceling = (
         removedNumFactors.length === removedDenFactors.length &&
         equality(removedNumFactors, removedDenFactors)
     ) {
-        const productA = explicitMul([
-            div(mulFactors(removedNumFactors), mulFactors(removedDenFactors)),
-            div(
-                mulFactors(remainingNumFactors),
-                mulFactors(remainingDenFactors),
-            ),
+        const productA = mul([
+            div(mul(removedNumFactors), mul(removedDenFactors)),
+            div(mul(remainingNumFactors), mul(remainingDenFactors)),
         ]);
-        const productB = explicitMul([ONE, b]);
+        const productB = mul([ONE, b]);
 
         const {equivalent, reasons} = checkStep(productA, b);
         if (equivalent) {
@@ -662,7 +613,7 @@ const divByFrac = (
 
     if (denominator.type === "div") {
         const reciprocal = div(denominator.args[1], denominator.args[0]);
-        const result = checkStep(explicitMul([numerator, reciprocal]), next);
+        const result = checkStep(mul([numerator, reciprocal]), next);
 
         if (result.equivalent) {
             return {
@@ -759,7 +710,7 @@ const mulByFrac = (
     }
     const {equivalent, reasons} = checkStep(
         next,
-        div(mulFactors(numFactors), mulFactors(denFactors)),
+        div(mul(numFactors), mul(denFactors)),
     );
     return {
         equivalent,
