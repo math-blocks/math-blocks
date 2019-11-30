@@ -473,11 +473,10 @@ describe("Expressions", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
             "division by one",
-            "division by one", // TODO: figure out why we have an extra reason here
         ]);
     });
 
@@ -490,11 +489,11 @@ describe("Expressions", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
+            "evaluation of multiplication",
             "division by one",
-            "division by one", // TODO: figure out why we have an extra reason here
         ]);
     });
 
@@ -568,8 +567,6 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
-                "multiplying fractions",
-                "multiplying fractions",
             ]);
         });
 
@@ -728,12 +725,7 @@ describe("Expressions", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-
-            // TODO: add a way to do an exact check of two steps so that we
-            // can remove unnecessary reasons
             expect(result.reasons.map(reason => reason.message)).toEqual([
-                "negative of a negative is positive",
-                "negative of a negative is positive",
                 "negative of a negative is positive",
             ]);
         });
@@ -752,8 +744,7 @@ describe("Expressions", () => {
         });
     });
 
-    // TODO: 24ab / 6a -> 4b
-    it("24ab / 6a -> 4b", () => {
+    it("24ab / 6a -> 2*2*2*3*a*b / 2*3*a -> 2*3*a/2*3*a * 2*2/1 -> 1 * 2*2/1 -> 2*2/1 -> 4/1 -> 4b", () => {
         const before = div(
             mul(number("24"), ident("a"), ident("b")),
             mul(number("6"), ident("a")),
@@ -765,11 +756,11 @@ describe("Expressions", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "prime factorization",
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
+            "evaluation of multiplication",
             "division by one",
-            "division by one", // TODO: figure out why there's an extra "division by one"
         ]);
     });
 
@@ -782,7 +773,7 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
             "division by one",
@@ -836,14 +827,14 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
             "division by one",
         ]);
     });
 
-    // don't cancel all common factors
+    // test that we don't cancel all common factors
     it("2abc/ab -> a/a * 2bc/b -> 1 * 2bc/b -> 2bc/c", () => {
         const before = div(
             mul(number("2"), ident("a"), ident("b"), ident("c")),
@@ -855,7 +846,7 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -872,7 +863,7 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -889,7 +880,7 @@ describe("Expressions", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "canceling factors in division",
+            "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
         ]);

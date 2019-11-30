@@ -550,6 +550,8 @@ const distFact = (
         const [left, right] = mulNode.args;
         for (const [x, y] of [[left, right], [right, left]]) {
             if (y.type === "add" && y.args.length === addNode.args.length) {
+                // TODO: use exactMatch instead here... or we'll have track all
+                // of the reasons that are generated
                 const equivalent = addNode.args.every((arg, index) => {
                     return checkStep(arg, mul([x, y.args[index]])).equivalent;
                 });
@@ -635,15 +637,25 @@ const checkDivisionCanceling = (
             factoredNumFactorsA.length !== numFactorsA.length ||
             factoredDenFactorsA.length !== denFactorsA.length
         ) {
+            const newPrev = div(
+                mul(factoredNumFactorsA),
+                mul(factoredDenFactorsA),
+            );
+            const newNext = div(
+                mul(factoredNumFactorsB),
+                mul(factoredDenFactorsB),
+            );
+
             // TODO: allow `nodes` in Reason type to have more than two nodes
             // to handle cases where we modify both prev and next to work the
             // problem from both sides essentially.
-            const {equivalent, reasons} = checkDivisionCanceling(
-                div(mul(factoredNumFactorsA), mul(factoredDenFactorsA)),
-                div(mul(factoredNumFactorsB), mul(factoredDenFactorsB)),
-            );
+            const result1 = checkDivisionCanceling(newPrev, newNext);
 
-            if (equivalent) {
+            // Because we're also creating a new step coming from the opposite
+            // direction, we need to check that that step will also work.
+            const result2 = checkStep(newNext, b);
+
+            if (result1.equivalent && result2.equivalent) {
                 return {
                     equivalent: true,
                     reasons: [
@@ -651,7 +663,8 @@ const checkDivisionCanceling = (
                             message: "prime factorization",
                             nodes: [],
                         },
-                        ...reasons,
+                        ...result1.reasons,
+                        ...result2.reasons,
                     ],
                 };
             }
@@ -688,7 +701,6 @@ const checkDivisionCanceling = (
             div(mul(removedNumFactors), mul(removedDenFactors)),
             div(mul(remainingNumFactors), mul(remainingDenFactors)),
         ]);
-        const productB = mul([ONE, b]);
 
         const {equivalent, reasons} = checkStep(productA, b);
         if (equivalent) {
@@ -696,7 +708,8 @@ const checkDivisionCanceling = (
                 equivalent: true,
                 reasons: [
                     {
-                        message: "canceling factors in division",
+                        message:
+                            "extract common factors from numerator and denominator",
                         nodes: [],
                     },
                     ...reasons,
@@ -726,7 +739,8 @@ const divByFrac = (
 
     if (denominator.type === "div") {
         const reciprocal = div(denominator.args[1], denominator.args[0]);
-        const result = checkStep(mul([numerator, reciprocal]), next);
+        const newPrev = mul([numerator, reciprocal]); // ?
+        const result = checkStep(newPrev, next);
 
         if (result.equivalent) {
             return {
@@ -821,10 +835,8 @@ const mulByFrac = (
             numFactors.push(...getFactors(arg));
         }
     }
-    const {equivalent, reasons} = checkStep(
-        next,
-        div(mul(numFactors), mul(denFactors)),
-    );
+    const newPrev = div(mul(numFactors), mul(denFactors));
+    const {equivalent, reasons} = checkStep(newPrev, next);
     return {
         equivalent,
         reasons: equivalent
@@ -1069,6 +1081,69 @@ const symmetricProperty = (
     };
 };
 
+const exactMatch = (a: Semantic.Expression, b: Semantic.Expression): Result => {
+    if (a.type !== b.type) {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    if (a.type === "neg" && b.type === "neg") {
+        if (a.subtraction !== b.subtraction) {
+            return {
+                equivalent: false,
+                reasons: [],
+            };
+        }
+        return exactMatch(a.args[0], b.args[0]);
+    } else if (hasArgs(a) && hasArgs(b)) {
+        if (a.args.length !== b.args.length) {
+            return {
+                equivalent: false,
+                reasons: [],
+            };
+        }
+        if (a.type === "mul" && b.type === "mul") {
+            // TODO: decide if we actually want to be this precise
+            if (a.implicit !== b.implicit) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
+        }
+        // $FlowFixMe: flow doesn't like passing tuples to functions expecting arrays
+        const allMatch = zip(a.args, b.args).every(
+            ([aArg, bArg]) => exactMatch(aArg, bArg).equivalent,
+        );
+        if (allMatch) {
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+    } else if (a.type === "number" && b.type === "number") {
+        if (a.value === b.value) {
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+    } else if (a.type === "identifier" && b.type === "identifier") {
+        if (a.name === b.name) {
+            return {
+                equivalent: true,
+                reasons: [],
+            };
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
 // TODO: check adding by inverse
 // TODO: dividing a fraction: a/b / c -> a / bc
 // TODO: add an identity check for all operations
@@ -1079,6 +1154,16 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
     assertValid(b);
 
     let result: Result;
+
+    result = exactMatch(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = checkEquationStep(a, b);
+    if (result.equivalent) {
+        return result;
+    }
 
     result = evaluateMul(a, b);
     if (result.equivalent) {
@@ -1200,11 +1285,6 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
 
     // 0 -> a * 0
     result = mulByZero(b, a);
-    if (result.equivalent) {
-        return result;
-    }
-
-    result = checkEquationStep(a, b);
     if (result.equivalent) {
         return result;
     }
