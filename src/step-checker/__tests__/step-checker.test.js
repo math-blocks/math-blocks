@@ -611,7 +611,7 @@ describe("Expressions", () => {
             ]);
         });
 
-        it("a/b * b/a -> ab/ba -> 1", () => {
+        it("a/b * b/a -> ab/ba -> ab/ab -> 1", () => {
             const before = mul(
                 div(ident("a"), ident("b")),
                 div(ident("b"), ident("a")),
@@ -623,6 +623,7 @@ describe("Expressions", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "multiplying fractions",
+                "commutative property",
                 "division by the same value",
             ]);
         });

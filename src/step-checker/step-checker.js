@@ -595,9 +595,15 @@ const decomposeFactors = (
     }, []);
 
 const checkDivisionCanceling = (
-    a: Semantic.Div,
+    a: Semantic.Expression,
     b: Semantic.Expression,
 ): Result => {
+    if (a.type !== "div") {
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
     const [numeratorA, denominatorA] = a.args;
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
@@ -763,47 +769,52 @@ const divByFrac = (
     };
 };
 
-const cancelingInFrac = (
+const divByOne = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+): Result => {
+    if (prev.type === "div" && checkStep(prev.args[1], ONE).equivalent) {
+        const {equivalent, reasons} = checkStep(prev.args[0], next);
+        if (equivalent) {
+            return {
+                equivalent: true,
+                reasons: [
+                    ...reasons,
+                    {
+                        message: "division by one",
+                        nodes: [],
+                    },
+                ],
+            };
+        }
+    }
+    return {
+        equivalent: false,
+        reasons: [],
+    };
+};
+
+const divBySame = (
     prev: Semantic.Expression,
     next: Semantic.Expression,
 ): Result => {
     if (prev.type === "div") {
-        if (
-            // Check if the numerator and denominator are the same
-            checkStep(...prev.args).equivalent &&
-            // Should we ever check that something is exactly ONE?
-            checkStep(next, ONE).equivalent
-        ) {
+        const [numerator, denominator] = prev.args;
+
+        const result1 = checkStep(numerator, denominator);
+        const result2 = checkStep(next, ONE);
+        if (result1.equivalent && result2.equivalent) {
             return {
                 equivalent: true,
                 reasons: [
+                    ...result1.reasons,
+                    ...result2.reasons,
                     {
                         message: "division by the same value",
                         nodes: [],
                     },
                 ],
             };
-        }
-
-        if (checkStep(prev.args[1], ONE).equivalent) {
-            const {equivalent, reasons} = checkStep(prev.args[0], next);
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "division by one",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
-        const result = checkDivisionCanceling(prev, next);
-        if (result.equivalent) {
-            return result;
         }
     }
     return {
@@ -1245,12 +1256,32 @@ const checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
         return result;
     }
 
-    result = cancelingInFrac(a, b);
+    result = divByOne(a, b);
     if (result.equivalent) {
         return result;
     }
 
-    result = cancelingInFrac(b, a);
+    result = divByOne(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = divBySame(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = divBySame(b, a);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = checkDivisionCanceling(a, b);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = checkDivisionCanceling(b, a);
     if (result.equivalent) {
         return result;
     }
