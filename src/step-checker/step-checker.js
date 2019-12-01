@@ -7,6 +7,7 @@ import {primeDecomp, zip} from "./util.js";
 
 import FractionChecker from "./fraction-checker.js";
 import EquationChecker from "./equation-checker.js";
+import IntegerChecker from "./integer-checker.js";
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
@@ -79,10 +80,12 @@ export interface IStepChecker {
 class StepChecker implements IStepChecker {
     fractionChecker: FractionChecker;
     equationChecker: EquationChecker;
+    integerChecker: IntegerChecker;
 
     constructor() {
         this.fractionChecker = new FractionChecker(this);
         this.equationChecker = new EquationChecker(this);
+        this.integerChecker = new IntegerChecker(this);
     }
 
     /**
@@ -143,113 +146,6 @@ class StepChecker implements IStepChecker {
      */
     equality(as: Semantic.Expression[], bs: Semantic.Expression[]): boolean {
         return as.every(a => bs.some(b => this.checkStep(a, b).equivalent));
-    }
-
-    addInverse(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (prev.type !== "add") {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        const indicesToRemove = new Set();
-        const terms = Arithmetic.getTerms(prev);
-        for (let i = 0; i < terms.length; i++) {
-            for (let j = 0; j < terms.length; j++) {
-                if (i === j) {
-                    continue;
-                }
-                const a = terms[i];
-                const b = terms[j];
-                // TODO: add a sub-step in the subtraction case
-                if (isNegative(b) || isSubtraction(b)) {
-                    const result = this.checkStep(a, b.args[0]);
-                    if (result.equivalent) {
-                        // TODO: capture the reasons and include them down below
-                        indicesToRemove.add(i);
-                        indicesToRemove.add(j);
-                    }
-                }
-            }
-        }
-        if (indicesToRemove.size > 0) {
-            const newPrev = Arithmetic.add(
-                terms.filter((term, index) => !indicesToRemove.has(index)),
-            );
-            const {equivalent, reasons} = this.checkStep(newPrev, next);
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "adding inverse",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    doubleNegative(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result {
-        if (isNegative(prev) && isNegative(prev.args[0])) {
-            const newPrev = prev.args[0].args[0];
-            const {equivalent, reasons} = this.checkStep(newPrev, next);
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "negative of a negative is positive",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    subIsNeg(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (isSubtraction(prev) && isNegative(next)) {
-            const {equivalent, reasons} = this.checkStep(
-                prev.args[0],
-                next.args[0],
-            );
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message:
-                                "subtracting is the same as adding the inverse",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
     }
 
     addZero(prev: Semantic.Expression, next: Semantic.Expression): Result {
@@ -748,32 +644,7 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.addInverse(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.addInverse(b, a);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.subIsNeg(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.subIsNeg(b, a);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.doubleNegative(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.doubleNegative(b, a);
+        result = this.integerChecker.checkStep(a, b);
         if (result.equivalent) {
             return result;
         }
