@@ -167,7 +167,7 @@ class StepChecker {
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
      */
-    checkArgs = <T: HasArgs>(a: T, b: T): Result => {
+    checkArgs<T: HasArgs>(a: T, b: T): Result {
         const _reasons = [];
         const equivalent = a.args.every(ai =>
             b.args.some(bi => {
@@ -182,12 +182,12 @@ class StepChecker {
             equivalent,
             reasons: _reasons,
         };
-    };
+    }
 
     /**
      * Returns all of the elements that appear in both as and bs.
      */
-    intersection = (as: Semantic.Expression[], bs: Semantic.Expression[]) => {
+    intersection(as: Semantic.Expression[], bs: Semantic.Expression[]) {
         const result = [];
         for (const a of as) {
             const index = bs.findIndex(b => this.checkStep(a, b).equivalent);
@@ -197,12 +197,12 @@ class StepChecker {
             }
         }
         return result;
-    };
+    }
 
     /**
      * Returns all of the elements that appear in as but not in bs.
      */
-    difference = (as: Semantic.Expression[], bs: Semantic.Expression[]) => {
+    difference(as: Semantic.Expression[], bs: Semantic.Expression[]) {
         const result = [];
         for (const a of as) {
             const index = bs.findIndex(b => this.checkStep(a, b).equivalent);
@@ -213,19 +213,17 @@ class StepChecker {
             }
         }
         return result;
-    };
+    }
 
     /**
      * Returns true if all every element in as is equivalent to an element in bs
      * and vice versa.
      */
-    equality = (as: Semantic.Expression[], bs: Semantic.Expression[]) =>
-        as.every(a => bs.some(b => this.checkStep(a, b).equivalent));
+    equality(as: Semantic.Expression[], bs: Semantic.Expression[]): boolean {
+        return as.every(a => bs.some(b => this.checkStep(a, b).equivalent));
+    }
 
-    checkEquationStep = (
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-    ): Result => {
+    checkEquationStep(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (a.type !== "eq" || b.type !== "eq") {
             return {
                 equivalent: false,
@@ -336,12 +334,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    addInverse = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    addInverse(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "add") {
             return {
                 equivalent: false,
@@ -392,12 +387,12 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    doubleNegative = (
+    doubleNegative(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-    ): Result => {
+    ): Result {
         if (isNegative(prev) && isNegative(prev.args[0])) {
             const newPrev = prev.args[0].args[0];
             const {equivalent, reasons} = this.checkStep(newPrev, next);
@@ -419,12 +414,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    subIsNeg = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    subIsNeg(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (isSubtraction(prev) && isNegative(next)) {
             const {equivalent, reasons} = this.checkStep(
                 prev.args[0],
@@ -449,12 +441,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    addZero = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    addZero(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "add") {
             return {
                 equivalent: false,
@@ -471,9 +460,9 @@ class StepChecker {
             // "adding zero doesn't change an expression"
             "addition with identity",
         );
-    };
+    }
 
-    mulOne = (prev: Semantic.Expression, next: Semantic.Expression): Result => {
+    mulOne(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
@@ -490,15 +479,15 @@ class StepChecker {
             // "multiplying by one doesn't change an expression"
             "multiplication with identity",
         );
-    };
+    }
 
-    checkIdentity = <T: Semantic.Add | Semantic.Mul>(
+    checkIdentity<T: Semantic.Add | Semantic.Mul>(
         prev: T,
         next: Semantic.Expression,
         op: (Semantic.Expression[]) => Semantic.Expression,
         identity: Semantic.Number, // conditional types would come in handy here
         reason: string,
-    ): Result => {
+    ): Result {
         const identityReasons = [];
         const nonIdentityArgs = prev.args.filter(arg => {
             const {equivalent, reasons} = this.checkStep(arg, identity);
@@ -536,12 +525,12 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    checkDistribution = (
+    checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-    ): Result => {
+    ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
                 equivalent: false,
@@ -549,12 +538,12 @@ class StepChecker {
             };
         }
         return this.distFact(next, prev, "distribution");
-    };
+    }
 
-    checkFactoring = (
+    checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-    ): Result => {
+    ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
                 equivalent: false,
@@ -562,13 +551,13 @@ class StepChecker {
             };
         }
         return this.distFact(prev, next, "factoring");
-    };
+    }
 
-    distFact = (
+    distFact(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
         reason: "distribution" | "factoring",
-    ): Result => {
+    ): Result {
         // TODO: handle distribution across n-ary multiplication later
         if (mulNode.args.length === 2) {
             const [left, right] = mulNode.args;
@@ -600,12 +589,10 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    decomposeFactors = (
-        factors: Semantic.Expression[],
-    ): Semantic.Expression[] =>
-        factors.reduce((result: Semantic.Expression[], factor) => {
+    decomposeFactors(factors: Semantic.Expression[]): Semantic.Expression[] {
+        return factors.reduce((result: Semantic.Expression[], factor) => {
             // TODO: add decomposition of powers
             if (factor.type === "number") {
                 return [
@@ -616,11 +603,12 @@ class StepChecker {
                 return [...result, factor];
             }
         }, []);
+    }
 
-    checkDivisionCanceling = (
+    checkDivisionCanceling(
         a: Semantic.Expression,
         b: Semantic.Expression,
-    ): Result => {
+    ): Result {
         if (a.type !== "div") {
             return {
                 equivalent: false,
@@ -751,12 +739,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    divByFrac = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    divByFrac(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "div") {
             return {
                 equivalent: false,
@@ -790,12 +775,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    divByOne = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    divByOne(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (
             prev.type === "div" &&
             this.checkStep(prev.args[1], ONE).equivalent
@@ -818,12 +800,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    divBySame = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    divBySame(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type === "div") {
             const [numerator, denominator] = prev.args;
             const result1 = this.checkStep(numerator, denominator);
@@ -846,12 +825,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    mulByFrac = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    mulByFrac(prev: Semantic.Expression, next: Semantic.Expression): Result {
         // We need a multiplication node containing a fraction
         if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
             return {
@@ -885,12 +861,9 @@ class StepChecker {
                   ]
                 : [],
         };
-    };
+    }
 
-    mulByZero = (
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result => {
+    mulByZero(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
@@ -920,12 +893,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    commuteAddition = (
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-    ): Result => {
+    commuteAddition(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (
             a.type === "add" &&
             b.type === "add" &&
@@ -955,9 +925,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    evaluateMul = (a: Semantic.Expression, b: Semantic.Expression): Result => {
+    evaluateMul(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (a.type !== "mul" && b.type !== "mul") {
             return {
                 equivalent: false,
@@ -1003,9 +973,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    evaluateAdd = (a: Semantic.Expression, b: Semantic.Expression): Result => {
+    evaluateAdd(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (a.type !== "add" && b.type !== "add") {
             return {
                 equivalent: false,
@@ -1051,12 +1021,12 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    commuteMultiplication = (
+    commuteMultiplication(
         a: Semantic.Expression,
         b: Semantic.Expression,
-    ): Result => {
+    ): Result {
         if (
             a.type === "mul" &&
             b.type === "mul" &&
@@ -1086,12 +1056,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    symmetricProperty = (
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-    ): Result => {
+    symmetricProperty(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (
             a.type === "eq" &&
             b.type === "eq" &&
@@ -1121,9 +1088,9 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
-    exactMatch = (a: Semantic.Expression, b: Semantic.Expression): Result => {
+    exactMatch(a: Semantic.Expression, b: Semantic.Expression): Result {
         if (a.type !== b.type) {
             return {
                 equivalent: false,
@@ -1184,14 +1151,14 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 
     // TODO: check adding by inverse
     // TODO: dividing a fraction: a/b / c -> a / bc
     // TODO: add an identity check for all operations
     // TODO: check removal of parens, i.e. associative property
     // TODO: memoize checkStep to avoid re-doing the same work
-    checkStep = (a: Semantic.Expression, b: Semantic.Expression): Result => {
+    checkStep(a: Semantic.Expression, b: Semantic.Expression): Result {
         assertValid(a);
         assertValid(b);
 
@@ -1373,7 +1340,7 @@ class StepChecker {
             equivalent: false,
             reasons: [],
         };
-    };
+    }
 }
 
 const checker = new StepChecker();
