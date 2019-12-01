@@ -1,30 +1,11 @@
 // @flow
+import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
 
+import {isNegative, isSubtraction} from "./arithmetic.js";
+
+import FractionChecker from "./fraction-checker.js";
 import {primeDecomp, zip} from "./util.js";
-
-// StepChecker class
-// methods:
-// - checkStep
-// - helper methods that use stepCheck: intersection, difference, etc.
-//
-// Other "checkers" can be created by passing an instance of a StepChecker as
-// a param.
-// What does the checkStep method do?
-// How do we register different checkers? basic arithmetic, powers/exponent laws,
-// trig, etc.
-
-// A node is different if its children are different or if its type is different
-// How to do a parallel traversal
-
-// 1 = #/#
-
-// There could be something like: (1 + 2) + (a + b) -> (2 + 1) + (b + a)
-// How do we keep track of multiple changes to an expression tree
-// What about something like: (1 + 2) + (a + b) -> (b + a) + (2 + 1) ?
-
-// What if whenever we spot a difference, we check in our library of possible
-// rules and if we match one of our rules then compare actually return true
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
@@ -48,31 +29,10 @@ type Reason = {
     nodes: Semantic.Expression[],
 };
 
-type Result = {|
+export type Result = {|
     equivalent: boolean,
     reasons: Reason[],
 |};
-
-// TODO: instead of defining this in code, we could have a JSON file that
-// defines the properties of different operations, e.g.
-// We can also use this file to generaate semantic.js
-// TODO: figure out how to link to different properties as data, e.g.
-// symmetric property (of equality), reflexive property (of equality), etc.
-// Maybe that doesn't make sense becuase the properties are so closely tied
-// to the operators.
-/**
- * add: {
- *   can_commute: true,
- *   arg_count: [2, Math.infinity],
- *   identity_element: ZERO,
- *   inverse: neg,
- *   ...
- * }
- * neg: {
- *   arg_count: 1,
- *   ...
- * }
- */
 
 type HasArgs =
     | Semantic.Add
@@ -101,68 +61,27 @@ const hasArgs = (a: Semantic.Expression): boolean %checks =>
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
 
-const ZERO = {
-    type: "number",
-    value: "0",
-};
+export interface IStepChecker {
+    checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result;
+    intersection(
+        as: Semantic.Expression[],
+        bs: Semantic.Expression[],
+    ): Semantic.Expression[];
+    difference(
+        as: Semantic.Expression[],
+        bs: Semantic.Expression[],
+    ): Semantic.Expression[];
+    // TODO: change this to return a Result
+    equality(as: Semantic.Expression[], bs: Semantic.Expression[]): boolean;
+}
 
-const ONE = {
-    type: "number",
-    value: "1",
-};
+class StepChecker implements IStepChecker {
+    fractionChecker: FractionChecker;
 
-const num = (n: number): Semantic.Number => ({
-    type: "number",
-    value: String(n),
-});
-
-const div = (num: Semantic.Expression, den: Semantic.Expression) => ({
-    type: "div",
-    args: [num, den],
-});
-
-const isSubtraction = (node: Semantic.Expression): boolean %checks =>
-    node.type === "neg" && node.subtraction;
-
-const isNegative = (node: Semantic.Expression): boolean %checks =>
-    node.type === "neg" && !node.subtraction;
-
-const getFactors = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "mul" ? node.args : [node];
-
-const getTerms = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "add" ? node.args : [node];
-
-const mul = (factors: Semantic.Expression[]): Semantic.Expression => {
-    switch (factors.length) {
-        case 0:
-            return ONE;
-        case 1:
-            return factors[0];
-        default:
-            return {
-                type: "mul",
-                implicit: false,
-                args: factors,
-            };
+    constructor() {
+        this.fractionChecker = new FractionChecker(this);
     }
-};
 
-const add = (terms: Array<Semantic.Expression>): Semantic.Expression => {
-    switch (terms.length) {
-        case 0:
-            return ZERO;
-        case 1:
-            return terms[0];
-        default:
-            return {
-                type: "add",
-                args: terms,
-            };
-    }
-};
-
-class StepChecker {
     /**
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
@@ -236,15 +155,15 @@ class StepChecker {
         if (lhsB.type === rhsB.type) {
             if (lhsB.type === "add" && rhsB.type === "add") {
                 const lhsNewTerms = this.difference(
-                    getTerms(lhsB),
-                    getTerms(lhsA),
+                    Arithmetic.getTerms(lhsB),
+                    Arithmetic.getTerms(lhsA),
                 );
                 const rhsNewTerms = this.difference(
-                    getTerms(rhsB),
-                    getTerms(rhsA),
+                    Arithmetic.getTerms(rhsB),
+                    Arithmetic.getTerms(rhsA),
                 );
-                const lhsNew = add(lhsNewTerms);
-                const rhsNew = add(rhsNewTerms);
+                const lhsNew = Arithmetic.add(lhsNewTerms);
+                const rhsNew = Arithmetic.add(rhsNewTerms);
                 const {equivalent, reasons} = this.checkStep(lhsNew, rhsNew);
 
                 // TODO: handle adding multiple things to lhs and rhs as the same time
@@ -280,16 +199,16 @@ class StepChecker {
 
             if (lhsB.type === "mul" && rhsB.type === "mul") {
                 const lhsNewFactors = this.difference(
-                    getFactors(lhsB),
-                    getFactors(lhsA),
+                    Arithmetic.getFactors(lhsB),
+                    Arithmetic.getFactors(lhsA),
                 );
                 const rhsNewFactors = this.difference(
-                    getFactors(rhsB),
-                    getFactors(rhsA),
+                    Arithmetic.getFactors(rhsB),
+                    Arithmetic.getFactors(rhsA),
                 );
                 const {equivalent, reasons} = this.checkStep(
-                    mul(lhsNewFactors),
-                    mul(rhsNewFactors),
+                    Arithmetic.mul(lhsNewFactors),
+                    Arithmetic.mul(rhsNewFactors),
                 );
 
                 // TODO: do we want to enforce that the thing being added is exactly
@@ -345,7 +264,7 @@ class StepChecker {
         }
 
         const indicesToRemove = new Set();
-        const terms = getTerms(prev);
+        const terms = Arithmetic.getTerms(prev);
         for (let i = 0; i < terms.length; i++) {
             for (let j = 0; j < terms.length; j++) {
                 if (i === j) {
@@ -365,7 +284,7 @@ class StepChecker {
             }
         }
         if (indicesToRemove.size > 0) {
-            const newPrev = add(
+            const newPrev = Arithmetic.add(
                 terms.filter((term, index) => !indicesToRemove.has(index)),
             );
             const {equivalent, reasons} = this.checkStep(newPrev, next);
@@ -454,8 +373,8 @@ class StepChecker {
         return this.checkIdentity(
             prev,
             next,
-            add,
-            ZERO,
+            Arithmetic.add,
+            Arithmetic.ZERO,
             // TODO: provide a way to have different levels of messages, e.g.
             // "adding zero doesn't change an expression"
             "addition with identity",
@@ -473,8 +392,8 @@ class StepChecker {
         return this.checkIdentity(
             prev,
             next,
-            mul,
-            ONE,
+            Arithmetic.mul,
+            Arithmetic.ONE,
             // TODO: provide a way to have different levels of messages, e.g.
             // "multiplying by one doesn't change an expression"
             "multiplication with identity",
@@ -537,7 +456,7 @@ class StepChecker {
                 reasons: [],
             };
         }
-        return this.distFact(next, prev, "distribution");
+        return this.distributionFactoring(next, prev, "distribution");
     }
 
     checkFactoring(
@@ -550,10 +469,10 @@ class StepChecker {
                 reasons: [],
             };
         }
-        return this.distFact(prev, next, "factoring");
+        return this.distributionFactoring(prev, next, "factoring");
     }
 
-    distFact(
+    distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
         reason: "distribution" | "factoring",
@@ -566,8 +485,10 @@ class StepChecker {
                     // TODO: use exactMatch instead here... or we'll have track all
                     // of the reasons that are generated
                     const equivalent = addNode.args.every((arg, index) => {
-                        return this.checkStep(arg, mul([x, y.args[index]]))
-                            .equivalent;
+                        return this.checkStep(
+                            arg,
+                            Arithmetic.mul([x, y.args[index]]),
+                        ).equivalent;
                     });
 
                     if (equivalent) {
@@ -591,278 +512,6 @@ class StepChecker {
         };
     }
 
-    decomposeFactors(factors: Semantic.Expression[]): Semantic.Expression[] {
-        return factors.reduce((result: Semantic.Expression[], factor) => {
-            // TODO: add decomposition of powers
-            if (factor.type === "number") {
-                return [
-                    ...result,
-                    ...primeDecomp(parseInt(factor.value)).map(num),
-                ];
-            } else {
-                return [...result, factor];
-            }
-        }, []);
-    }
-
-    checkDivisionCanceling(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-    ): Result {
-        if (a.type !== "div") {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-        const [numeratorA, denominatorA] = a.args;
-        // Include ONE as a factor to handle cases where the denominator disappears
-        // or the numerator chnages to 1.
-        const numFactorsA = getFactors(numeratorA);
-        const denFactorsA = getFactors(denominatorA);
-
-        // cases:
-        // - ab/ac -> a/a * b/c
-        // - ab/a -> a/1 -> a
-        const [numeratorB, denominatorB] = b.type === "div" ? b.args : [b, ONE];
-
-        // Include ONE as a factor to handle cases where the denominator disappears
-        // or the numerator chnages to 1.
-        const numFactorsB = getFactors(numeratorB);
-        const denFactorsB = getFactors(denominatorB);
-
-        // Ensure that no extra factors were added to either the numerator
-        // or denominator.  It's okay to ignore factors that ONE since multiplying
-        // by 1 doesn't affect the value of the numerator or denominator.
-        const addedNumFactors = this.difference(numFactorsB, numFactorsA);
-        const addedDenFactors = this.difference(denFactorsB, denFactorsA);
-        if (
-            !this.checkStep(mul(addedNumFactors), ONE).equivalent ||
-            !this.checkStep(mul(addedDenFactors), ONE).equivalent
-        ) {
-            // If the factors are different then it's possible that the user
-            // decomposed one or more of the factors.  We decompose all factors
-            // in both the current step `a` and the next step `b` and re-run
-            // checkDivisionCanceling on the new fractions to see if that's the
-            // case.
-            const factoredNumFactorsA = this.decomposeFactors(numFactorsA);
-            const factoredDenFactorsA = this.decomposeFactors(denFactorsA);
-            const factoredNumFactorsB = this.decomposeFactors(numFactorsB);
-            const factoredDenFactorsB = this.decomposeFactors(denFactorsB);
-
-            if (
-                factoredNumFactorsA.length !== numFactorsA.length ||
-                factoredDenFactorsA.length !== denFactorsA.length
-            ) {
-                const newPrev = div(
-                    mul(factoredNumFactorsA),
-                    mul(factoredDenFactorsA),
-                );
-                const newNext = div(
-                    mul(factoredNumFactorsB),
-                    mul(factoredDenFactorsB),
-                );
-
-                // TODO: allow `nodes` in Reason type to have more than two nodes
-                // to handle cases where we modify both prev and next to work the
-                // problem from both sides essentially.
-                const result1 = this.checkDivisionCanceling(newPrev, newNext);
-
-                // Because we're also creating a new step coming from the opposite
-                // direction, we need to check that that step will also work.
-                const result2 = this.checkStep(newNext, b);
-
-                if (result1.equivalent && result2.equivalent) {
-                    return {
-                        equivalent: true,
-                        reasons: [
-                            {
-                                message: "prime factorization",
-                                nodes: [],
-                            },
-                            ...result1.reasons,
-                            ...result2.reasons,
-                        ],
-                    };
-                }
-            }
-
-            // TODO: Add reason for why the canceling check failed
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        // TODO: figure out how to handle duplicate factors
-        const removedNumFactors = this.difference(numFactorsA, numFactorsB);
-        const remainingNumFactors = this.intersection(numFactorsA, numFactorsB);
-        const removedDenFactors = this.difference(denFactorsA, denFactorsB);
-        const remainingDenFactors = this.intersection(denFactorsA, denFactorsB);
-
-        if (remainingNumFactors.length === 0) {
-            remainingNumFactors.push(ONE);
-        }
-
-        if (remainingDenFactors.length === 0) {
-            remainingDenFactors.push(ONE);
-        }
-
-        // ab/ac -> a/a * b/c
-        if (
-            removedNumFactors.length > 0 &&
-            removedNumFactors.length === removedDenFactors.length &&
-            this.equality(removedNumFactors, removedDenFactors)
-        ) {
-            const productA = mul([
-                div(mul(removedNumFactors), mul(removedDenFactors)),
-                div(mul(remainingNumFactors), mul(remainingDenFactors)),
-            ]);
-
-            const {equivalent, reasons} = this.checkStep(productA, b);
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        {
-                            message:
-                                "extract common factors from numerator and denominator",
-                            nodes: [],
-                        },
-                        ...reasons,
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    divByFrac(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (prev.type !== "div") {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        const [numerator, denominator] = prev.args;
-
-        if (denominator.type === "div") {
-            const reciprocal = div(denominator.args[1], denominator.args[0]);
-            const newPrev = mul([numerator, reciprocal]); // ?
-            const result = this.checkStep(newPrev, next);
-
-            if (result.equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        {
-                            message:
-                                "dividing by a fraction is the same as multiplying by the reciprocal",
-                            nodes: [],
-                        },
-                        ...result.reasons,
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    divByOne(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (
-            prev.type === "div" &&
-            this.checkStep(prev.args[1], ONE).equivalent
-        ) {
-            const {equivalent, reasons} = this.checkStep(prev.args[0], next);
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "division by one",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    divBySame(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (prev.type === "div") {
-            const [numerator, denominator] = prev.args;
-            const result1 = this.checkStep(numerator, denominator);
-            const result2 = this.checkStep(next, ONE);
-            if (result1.equivalent && result2.equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...result1.reasons,
-                        {
-                            message: "division by the same value",
-                            nodes: [],
-                        },
-                        ...result2.reasons,
-                    ],
-                };
-            }
-        }
-        return {
-            equivalent: false,
-            reasons: [],
-        };
-    }
-
-    mulByFrac(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        // We need a multiplication node containing a fraction
-        if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        const numFactors = [];
-        const denFactors = [];
-        for (const arg of prev.args) {
-            if (arg.type === "div") {
-                const [numerator, denominator] = arg.args;
-                numFactors.push(...getFactors(numerator));
-                denFactors.push(...getFactors(denominator));
-            } else {
-                numFactors.push(...getFactors(arg));
-            }
-        }
-        const newPrev = div(mul(numFactors), mul(denFactors));
-        const {equivalent, reasons} = this.checkStep(newPrev, next);
-        return {
-            equivalent,
-            reasons: equivalent
-                ? [
-                      {
-                          message: "multiplying fractions",
-                          nodes: [],
-                      },
-                      ...reasons,
-                  ]
-                : [],
-        };
-    }
-
     mulByZero(prev: Semantic.Expression, next: Semantic.Expression): Result {
         if (prev.type !== "mul") {
             return {
@@ -874,9 +523,9 @@ class StepChecker {
         // TODO: ensure that reasons from these calls to checkStep
         // are captured.
         const hasZero = prev.args.some(
-            arg => this.checkStep(arg, ZERO).equivalent,
+            arg => this.checkStep(arg, Arithmetic.ZERO).equivalent,
         );
-        const {equivalent, reasons} = this.checkStep(next, ZERO);
+        const {equivalent, reasons} = this.checkStep(next, Arithmetic.ZERO);
         if (hasZero && equivalent) {
             return {
                 equivalent: true,
@@ -935,8 +584,8 @@ class StepChecker {
             };
         }
 
-        const aFactors = getFactors(a);
-        const bFactors = getFactors(b);
+        const aFactors = Arithmetic.getFactors(a);
+        const bFactors = Arithmetic.getFactors(b);
 
         const aNumTerms = aFactors.filter(term => term.type === "number");
         const bNumTerms = bFactors.filter(term => term.type === "number");
@@ -983,8 +632,8 @@ class StepChecker {
             };
         }
 
-        const aTerms = getTerms(a);
-        const bTerms = getTerms(b);
+        const aTerms = Arithmetic.getTerms(a);
+        const bTerms = Arithmetic.getTerms(b);
 
         const aNumTerms = aTerms.filter(term => term.type === "number");
         const bNumTerms = bTerms.filter(term => term.type === "number");
@@ -1249,37 +898,7 @@ class StepChecker {
             return result;
         }
 
-        result = this.divByFrac(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.divByOne(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.divByOne(b, a);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.divBySame(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.divBySame(b, a);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.checkDivisionCanceling(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.checkDivisionCanceling(b, a);
+        result = this.fractionChecker.checkStep(a, b);
         if (result.equivalent) {
             return result;
         }
@@ -1290,18 +909,6 @@ class StepChecker {
         }
 
         result = this.checkFactoring(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        // a * b/c -> ab / c
-        result = this.mulByFrac(a, b);
-        if (result.equivalent) {
-            return result;
-        }
-
-        // ab / c -> a * b/c
-        result = this.mulByFrac(b, a);
         if (result.equivalent) {
             return result;
         }
@@ -1343,9 +950,4 @@ class StepChecker {
     }
 }
 
-const checker = new StepChecker();
-
-const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
-    checker.checkStep(prev, next);
-
-export {checkStep};
+export default StepChecker;

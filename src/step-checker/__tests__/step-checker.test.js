@@ -2,7 +2,12 @@
 import * as Semantic from "../../semantic.js";
 import print from "../../print.js";
 
-import {checkStep} from "../step-checker.js";
+import StepChecker from "../step-checker.js";
+
+const checker = new StepChecker();
+
+const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
+    checker.checkStep(prev, next);
 
 const add = (...args: Semantic.Expression[]): Semantic.Add => ({
     type: "add",

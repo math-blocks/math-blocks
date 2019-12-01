@@ -1,4 +1,7 @@
 // @flow
+import * as Arithmetic from "./arithmetic.js";
+import * as Semantic from "../semantic.js";
+
 const isInteger = (n: number) => parseInt(n) === parseFloat(n);
 
 // TODO: handle negative numbers
@@ -28,4 +31,20 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
         result.push([a[i], b[i]]);
     }
     return result;
+};
+
+export const decomposeFactors = (
+    factors: Semantic.Expression[],
+): Semantic.Expression[] => {
+    return factors.reduce((result: Semantic.Expression[], factor) => {
+        // TODO: add decomposition of powers
+        if (factor.type === "number") {
+            return [
+                ...result,
+                ...primeDecomp(parseInt(factor.value)).map(Arithmetic.num),
+            ];
+        } else {
+            return [...result, factor];
+        }
+    }, []);
 };
