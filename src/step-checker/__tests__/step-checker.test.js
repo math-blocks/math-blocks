@@ -1,5 +1,7 @@
 // @flow
 import * as Semantic from "../../semantic.js";
+import print from "../../print.js";
+
 import {checkStep} from "../step-checker.js";
 
 const add = (...args: Semantic.Expression[]): Semantic.Add => ({
