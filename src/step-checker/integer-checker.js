@@ -125,35 +125,35 @@ class IntegerChecker {
 
     // TODO: rename these methods to differentiate the StepChecker method from
     // this method
-    checkStep(a: Semantic.Expression, b: Semantic.Expression): Result {
+    checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result {
         let result;
 
-        result = this.addInverse(a, b);
+        result = this.addInverse(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addInverse(b, a);
+        result = this.addInverse(next, prev);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.subIsNeg(a, b);
+        result = this.subIsNeg(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.subIsNeg(b, a);
+        result = this.subIsNeg(next, prev);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.doubleNegative(a, b);
+        result = this.doubleNegative(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.doubleNegative(b, a);
+        result = this.doubleNegative(next, prev);
         if (result.equivalent) {
             return result;
         }

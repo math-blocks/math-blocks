@@ -92,11 +92,11 @@ class StepChecker implements IStepChecker {
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
      */
-    checkArgs<T: HasArgs>(a: T, b: T): Result {
+    checkArgs<T: HasArgs>(prev: T, next: T): Result {
         const _reasons = [];
-        const equivalent = a.args.every(ai =>
-            b.args.some(bi => {
-                const {equivalent, reasons} = this.checkStep(ai, bi);
+        const equivalent = prev.args.every(prevArg =>
+            next.args.some(nextArg => {
+                const {equivalent, reasons} = this.checkStep(prevArg, nextArg);
                 if (equivalent) {
                     _reasons.push(...reasons);
                 }
@@ -330,18 +330,21 @@ class StepChecker implements IStepChecker {
         };
     }
 
-    commuteAddition(a: Semantic.Expression, b: Semantic.Expression): Result {
+    commuteAddition(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+    ): Result {
         if (
-            a.type === "add" &&
-            b.type === "add" &&
-            a.args.length === b.args.length
+            prev.type === "add" &&
+            next.type === "add" &&
+            prev.args.length === next.args.length
         ) {
-            const pairs = zip(a.args, b.args);
+            const pairs = zip(prev.args, next.args);
             // TODO: get commutative reasons
             const commutative = pairs.some(
                 pair => !this.checkStep(...pair).equivalent,
             );
-            const {reasons, equivalent} = this.checkArgs(a, b);
+            const {reasons, equivalent} = this.checkArgs(prev, next);
             if (commutative && equivalent) {
                 return {
                     equivalent,
@@ -459,20 +462,20 @@ class StepChecker implements IStepChecker {
     }
 
     commuteMultiplication(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
     ): Result {
         if (
-            a.type === "mul" &&
-            b.type === "mul" &&
-            a.args.length === b.args.length
+            prev.type === "mul" &&
+            next.type === "mul" &&
+            prev.args.length === next.args.length
         ) {
-            const pairs = zip(a.args, b.args);
+            const pairs = zip(prev.args, next.args);
             // TODO: get commutative reasons
             const commutative = pairs.some(
                 pair => !this.checkStep(...pair).equivalent,
             );
-            const {reasons, equivalent} = this.checkArgs(a, b);
+            const {reasons, equivalent} = this.checkArgs(prev, next);
             if (commutative && equivalent) {
                 return {
                     equivalent,
@@ -493,18 +496,21 @@ class StepChecker implements IStepChecker {
         };
     }
 
-    symmetricProperty(a: Semantic.Expression, b: Semantic.Expression): Result {
+    symmetricProperty(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+    ): Result {
         if (
-            a.type === "eq" &&
-            b.type === "eq" &&
-            a.args.length === b.args.length
+            prev.type === "eq" &&
+            next.type === "eq" &&
+            prev.args.length === next.args.length
         ) {
-            const pairs = zip(a.args, b.args);
+            const pairs = zip(prev.args, next.args);
             // TODO: get commutative reasons
             const commutative = pairs.some(
                 pair => !this.checkStep(...pair).equivalent,
             );
-            const {reasons, equivalent} = this.checkArgs(a, b);
+            const {reasons, equivalent} = this.checkArgs(prev, next);
             if (commutative && equivalent) {
                 return {
                     equivalent,
@@ -525,32 +531,32 @@ class StepChecker implements IStepChecker {
         };
     }
 
-    exactMatch(a: Semantic.Expression, b: Semantic.Expression): Result {
-        if (a.type !== b.type) {
+    exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result {
+        if (prev.type !== next.type) {
             return {
                 equivalent: false,
                 reasons: [],
             };
         }
 
-        if (a.type === "neg" && b.type === "neg") {
-            if (a.subtraction !== b.subtraction) {
+        if (prev.type === "neg" && next.type === "neg") {
+            if (prev.subtraction !== next.subtraction) {
                 return {
                     equivalent: false,
                     reasons: [],
                 };
             }
-            return this.exactMatch(a.args[0], b.args[0]);
-        } else if (hasArgs(a) && hasArgs(b)) {
-            if (a.args.length !== b.args.length) {
+            return this.exactMatch(prev.args[0], next.args[0]);
+        } else if (hasArgs(prev) && hasArgs(next)) {
+            if (prev.args.length !== next.args.length) {
                 return {
                     equivalent: false,
                     reasons: [],
                 };
             }
-            if (a.type === "mul" && b.type === "mul") {
+            if (prev.type === "mul" && next.type === "mul") {
                 // TODO: decide if we actually want to be this precise
-                if (a.implicit !== b.implicit) {
+                if (prev.implicit !== next.implicit) {
                     return {
                         equivalent: false,
                         reasons: [],
@@ -558,7 +564,7 @@ class StepChecker implements IStepChecker {
                 }
             }
             // $FlowFixMe: flow doesn't like passing tuples to functions expecting arrays
-            const allMatch = zip(a.args, b.args).every(
+            const allMatch = zip(prev.args, next.args).every(
                 ([aArg, bArg]) => this.exactMatch(aArg, bArg).equivalent,
             );
             if (allMatch) {
@@ -567,15 +573,15 @@ class StepChecker implements IStepChecker {
                     reasons: [],
                 };
             }
-        } else if (a.type === "number" && b.type === "number") {
-            if (a.value === b.value) {
+        } else if (prev.type === "number" && next.type === "number") {
+            if (prev.value === next.value) {
                 return {
                     equivalent: true,
                     reasons: [],
                 };
             }
-        } else if (a.type === "identifier" && b.type === "identifier") {
-            if (a.name === b.name) {
+        } else if (prev.type === "identifier" && next.type === "identifier") {
+            if (prev.name === next.name) {
                 return {
                     equivalent: true,
                     reasons: [],
@@ -593,113 +599,113 @@ class StepChecker implements IStepChecker {
     // TODO: add an identity check for all operations
     // TODO: check removal of parens, i.e. associative property
     // TODO: memoize checkStep to avoid re-doing the same work
-    checkStep(a: Semantic.Expression, b: Semantic.Expression): Result {
-        assertValid(a);
-        assertValid(b);
+    checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result {
+        assertValid(prev);
+        assertValid(next);
 
         let result: Result;
 
-        result = this.exactMatch(a, b);
+        result = this.exactMatch(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.equationChecker.checkStep(a, b);
+        result = this.equationChecker.checkStep(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.evaluateMul(a, b);
+        result = this.evaluateMul(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.evaluateAdd(a, b);
+        result = this.evaluateAdd(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.symmetricProperty(a, b);
+        result = this.symmetricProperty(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteAddition(a, b);
+        result = this.commuteAddition(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteMultiplication(a, b);
+        result = this.commuteMultiplication(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(a, b);
+        result = this.addZero(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(b, a);
+        result = this.addZero(next, prev);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.integerChecker.checkStep(a, b);
+        result = this.integerChecker.checkStep(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(a, b);
+        result = this.mulOne(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(b, a);
+        result = this.mulOne(next, prev);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.fractionChecker.checkStep(a, b);
+        result = this.fractionChecker.checkStep(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDistribution(a, b);
+        result = this.checkDistribution(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(a, b);
+        result = this.checkFactoring(prev, next);
         if (result.equivalent) {
             return result;
         }
 
         // a * 0 -> 0
-        result = this.mulByZero(a, b);
+        result = this.mulByZero(prev, next);
         if (result.equivalent) {
             return result;
         }
 
         // 0 -> a * 0
-        result = this.mulByZero(b, a);
+        result = this.mulByZero(next, prev);
         if (result.equivalent) {
             return result;
         }
 
         // General check if the args are equivalent for things with args
         // than are an array and not a tuple.
-        if (a.type === b.type && hasArgs(a) && hasArgs(b)) {
-            return this.checkArgs(a, b);
+        if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
+            return this.checkArgs(prev, next);
         }
 
-        if (a.type === "number" && b.type === "number") {
+        if (prev.type === "number" && next.type === "number") {
             return {
-                equivalent: a.value === b.value,
+                equivalent: prev.value === next.value,
                 reasons: [],
             };
-        } else if (a.type === "identifier" && b.type === "identifier") {
+        } else if (prev.type === "identifier" && next.type === "identifier") {
             return {
-                equivalent: a.name === b.name,
+                equivalent: prev.name === next.name,
                 reasons: [],
             };
         }
