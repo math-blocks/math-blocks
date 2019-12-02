@@ -61,3 +61,9 @@ export const add = (terms: Array<Semantic.Expression>): Semantic.Expression => {
             };
     }
 };
+
+export const neg = (arg: Semantic.Expression): Semantic.Neg => ({
+    type: "neg",
+    subtraction: false,
+    args: [arg],
+});

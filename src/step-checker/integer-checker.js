@@ -14,8 +14,15 @@ class IntegerChecker {
         this.checker = checker;
     }
 
-    addInverse(prev: Semantic.Expression, next: Semantic.Expression): Result {
+    addInverse(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        reverse: boolean,
+    ): Result {
         const {checker} = this;
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
         if (prev.type !== "add") {
             return {
                 equivalent: false,
@@ -51,13 +58,21 @@ class IntegerChecker {
             if (equivalent) {
                 return {
                     equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "adding inverse",
-                            nodes: [],
-                        },
-                    ],
+                    reasons: reverse
+                        ? [
+                              ...reasons,
+                              {
+                                  message: "adding inverse",
+                                  nodes: [newPrev, prev],
+                              },
+                          ]
+                        : [
+                              {
+                                  message: "adding inverse",
+                                  nodes: [prev, newPrev],
+                              },
+                              ...reasons,
+                          ],
                 };
             }
         }
@@ -110,25 +125,79 @@ class IntegerChecker {
         };
     }
 
-    subIsNeg(prev: Semantic.Expression, next: Semantic.Expression): Result {
+    // TODO: return the "add" node so there's more context
+    // This shouldn't be too hard because the position of the child shouldn't
+    // change.
+    subIsNeg(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        reverse: boolean,
+    ): Result {
         const {checker} = this;
-        if (isSubtraction(prev) && isNegative(next)) {
-            const {equivalent, reasons} = checker.checkStep(
-                prev.args[0],
-                next.args[0],
-            );
-            if (equivalent) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message:
-                                "subtracting is the same as adding the inverse",
-                            nodes: [],
-                        },
-                    ],
-                };
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
+        if (isSubtraction(prev)) {
+            if (isNegative(next)) {
+                // unwrap the subtraction
+                prev = prev.args[0];
+                // unwrap the negation
+                next = next.args[0];
+                const {equivalent, reasons} = reverse
+                    ? checker.checkStep(next, prev)
+                    : checker.checkStep(prev, next);
+                if (equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: reverse
+                            ? [
+                                  ...reasons,
+                                  {
+                                      message:
+                                          "subtracting is the same as adding the inverse",
+                                      nodes: [next, prev],
+                                  },
+                              ]
+                            : [
+                                  {
+                                      message:
+                                          "subtracting is the same as adding the inverse",
+                                      nodes: [prev, next],
+                                  },
+                                  ...reasons,
+                              ],
+                    };
+                }
+            } else {
+                // unwrap the subtraction
+                prev = prev.args[0];
+                const newPrev = Arithmetic.neg(prev);
+                const result = reverse
+                    ? checker.checkStep(next, newPrev)
+                    : checker.checkStep(newPrev, next);
+
+                if (result.equivalent) {
+                    return {
+                        equivalent: true,
+                        reasons: reverse
+                            ? [
+                                  ...result.reasons,
+                                  {
+                                      message:
+                                          "subtracting is the same as adding the inverse",
+                                      nodes: [newPrev, prev],
+                                  },
+                              ]
+                            : [
+                                  {
+                                      message:
+                                          "subtracting is the same as adding the inverse",
+                                      nodes: [prev, newPrev],
+                                  },
+                                  ...result.reasons,
+                              ],
+                    };
+                }
             }
         }
 
@@ -143,22 +212,22 @@ class IntegerChecker {
     checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result {
         let result;
 
-        result = this.addInverse(prev, next);
+        result = this.addInverse(prev, next, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addInverse(next, prev);
+        result = this.addInverse(prev, next, true);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.subIsNeg(prev, next);
+        result = this.subIsNeg(prev, next, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.subIsNeg(next, prev);
+        result = this.subIsNeg(prev, next, true);
         if (result.equivalent) {
             return result;
         }

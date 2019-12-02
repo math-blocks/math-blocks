@@ -647,6 +647,8 @@ describe("Expressions", () => {
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "adding inverse",
             ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("a + -a");
+            expect(print(result.reasons[0].nodes[1])).toEqual("0");
         });
 
         it("0 -> a + -a", () => {
@@ -659,6 +661,8 @@ describe("Expressions", () => {
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "adding inverse",
             ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("0");
+            expect(print(result.reasons[0].nodes[1])).toEqual("a + -a");
         });
 
         it("a + b + -a + c -> b + c", () => {
@@ -700,6 +704,40 @@ describe("Expressions", () => {
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
             ]);
+        });
+
+        it("a - -b -> a + --b -> a + b", () => {
+            const before = add(ident("a"), sub(neg(ident("b"))));
+            const after = add(ident("a"), ident("b"));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "negative of a negative is positive",
+            ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("-b");
+            expect(print(result.reasons[0].nodes[1])).toEqual("--b");
+            expect(print(result.reasons[1].nodes[0])).toEqual("--b");
+            expect(print(result.reasons[1].nodes[1])).toEqual("b");
+        });
+
+        it("a + b -> a + --b -> a - -b", () => {
+            const before = add(ident("a"), ident("b"));
+            const after = add(ident("a"), sub(neg(ident("b"))));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+                "subtracting is the same as adding the inverse",
+            ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("b");
+            expect(print(result.reasons[0].nodes[1])).toEqual("--b");
+            expect(print(result.reasons[1].nodes[0])).toEqual("--b");
+            expect(print(result.reasons[1].nodes[1])).toEqual("-b");
         });
 
         it("a - a -> 0", () => {
