@@ -11,13 +11,12 @@ import matchAll from "string.prototype.matchall";
 
 import * as Editor from "./editor";
 import {UnreachableCaseError} from "../util";
-import {getId} from "../unique-id";
 
 // operations / relations: + - = < <= > >= != sqrt
 // symbols: a - z, pi, theta, etc.
 // functions: sin, cos, tan, log, lim, etc.
 
-const funcs = ["sin", "cos", "tan", "log", "lim"];
+// const funcs = ["sin", "cos", "tan", "log", "lim"];
 
 type Identifier = {kind: "identifier", name: string};
 type Number = {kind: "number", value: string};
@@ -38,7 +37,7 @@ export const eq = () => Editor.atom<Token>({kind: "eq"});
 
 export type Token = Identifier | Number | Plus | Minus | Eq | Ellipsis | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|\=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 

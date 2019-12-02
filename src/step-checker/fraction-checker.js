@@ -5,6 +5,8 @@ import type {IStepChecker, Result} from "./step-checker.js";
 
 import {decomposeFactors} from "./util.js";
 
+import type {Expression} from "../semantic.js";
+
 class FractionChecker {
     checker: IStepChecker;
 

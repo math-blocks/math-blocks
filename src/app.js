@@ -1,6 +1,5 @@
 // @flow
 import * as React from "react";
-import {css} from "aphrodite";
 
 const {useState} = React;
 

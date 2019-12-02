@@ -16,14 +16,14 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
     switch (expr.type) {
         case "number":
             return parseFloat(expr.value);
-        case "identifier":
+        case "identifier": {
             const value = varDict[expr.name];
             if (value !== undefined) {
                 return value;
             } else {
                 throw new Error(`${expr.name} is not defined`);
             }
-
+        }
         case "add": {
             const {args} = expr;
             return sum(args.map(arg => evaluate(arg, varDict)));

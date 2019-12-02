@@ -1,6 +1,5 @@
 // @flow
 import produce from "immer";
-import {original} from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
@@ -62,9 +61,9 @@ const prevIndex = (
     return childIndex > 0 ? childIndex - 1 : null;
 };
 
-const removeIndex = <T>(array: T[], index: number): T[] => {
-    return [...array.slice(0, index), ...array.slice(index + 1)];
-};
+// const removeIndex = <T>(array: T[], index: number): T[] => {
+//     return [...array.slice(0, index), ...array.slice(index + 1)];
+// };
 
 const removeChildWithIndex = <T: Identifiable>(
     children: T[],
@@ -488,7 +487,7 @@ type Action = {type: string};
 const reducer = (state: State = initialState, action: Action) => {
     return produce(state, draft => {
         const {cursor, math} = draft;
-        const currentNode = Editor.nodeAtPath(draft.math, cursor.path);
+        const currentNode = Editor.nodeAtPath(math, cursor.path);
 
         if (!hasChildren(currentNode)) {
             throw new Error(
@@ -669,7 +668,6 @@ const reducer = (state: State = initialState, action: Action) => {
         }
 
         if (newNode.type === "frac") {
-            const numerator = newNode.children[0];
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
                 path: [...cursor.path, index, 0 /* numerator */],

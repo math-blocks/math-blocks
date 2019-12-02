@@ -1,6 +1,5 @@
 // @flow
 import * as Semantic from "../../semantic.js";
-import print from "../../print.js";
 
 import StepChecker from "../step-checker.js";
 

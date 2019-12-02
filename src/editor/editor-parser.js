@@ -92,11 +92,11 @@ const getPrefixParselet = (
             switch (atom.kind) {
                 case "identifier":
                     return {
-                        parse: _ => identifier(atom.name),
+                        parse: () => identifier(atom.name),
                     };
                 case "number":
                     return {
-                        parse: _ => number(atom.value),
+                        parse: () => number(atom.value),
                     };
                 case "minus":
                     return {
@@ -105,7 +105,7 @@ const getPrefixParselet = (
                     };
                 case "ellipsis":
                     return {
-                        parse: _ => ellipsis(),
+                        parse: () => ellipsis(),
                     };
                 default:
                     return null;

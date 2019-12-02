@@ -3,7 +3,6 @@ import * as Lexer from "../editor-lexer";
 import * as Editor from "../editor";
 
 const {row, glyph, frac} = Editor;
-const {identifier, number, plus, minus, eq} = Lexer;
 
 function isRow(node: Editor.Node<Lexer.Token>): %checks {
     return node.type === "row";
@@ -98,12 +97,6 @@ describe("Lexer", () => {
             ]);
             const tokenTree = Lexer.lex(glyphTree);
 
-            const expectedTokenTree = row([
-                number("1"),
-                plus(),
-                frac([number("1")], [identifier("x")]),
-            ]);
-
             if (!isRow(tokenTree)) {
                 throw new Error("not a row");
             }
@@ -148,6 +141,7 @@ describe("Lexer", () => {
                 throw new Error("not a row");
             }
 
+            // eslint-disable-next-line no-unused-vars
             const [number, minus, identifier] = tokenTree.children;
 
             if (!isAtom(minus)) {

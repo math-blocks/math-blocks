@@ -55,8 +55,6 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             // TODO: combine getPrefixParselet and parselet.parse
             const parselet = getPrefixParselet(token);
             if (!parselet) {
-                debugger;
-                console.log(token);
                 throw new Error("Unexpected token");
             }
             return parselet.parse({

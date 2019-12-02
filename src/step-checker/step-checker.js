@@ -2,12 +2,13 @@
 import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
 
-import {isNegative, isSubtraction} from "./arithmetic.js";
-import {primeDecomp, zip} from "./util.js";
+import {zip} from "./util.js";
 
 import FractionChecker from "./fraction-checker.js";
 import EquationChecker from "./equation-checker.js";
 import IntegerChecker from "./integer-checker.js";
+
+import type {Expression, Add, Mul} from "../semantic.js";
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
@@ -36,6 +37,8 @@ export type Result = {|
     reasons: Reason[],
 |};
 
+// TODO: fix flowtype/define-flow-type, HasArgs is used below
+// eslint-disable-next-line no-unused-vars
 type HasArgs =
     | Semantic.Add
     | Semantic.Mul

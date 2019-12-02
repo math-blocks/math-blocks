@@ -25,9 +25,11 @@ const print = (expr: Semantic.Expression): string => {
             return expr.subtraction
                 ? `${print(expr.args[0])}`
                 : `-${print(expr.args[0])}`;
-        case "root":
+        case "root": {
+            // eslint-disable-next-line no-unused-vars
             const [radicand, index] = expr.args;
             return `√(${print(radicand)})`; // TODO: index
+        }
         case "log":
             return `log_${print(expr.args[0])}(${print(expr.args[1])})`;
         case "exp":

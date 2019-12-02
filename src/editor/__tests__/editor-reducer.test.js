@@ -1,8 +1,7 @@
 // @flow
 import reducer from "../editor-reducer.js";
-import * as UniqueId from "../../unique-id.js";
 import * as Editor from "../editor.js";
-const {row, glyph, frac, subsup} = Editor;
+const {row, glyph, subsup} = Editor;
 
 import type {State} from "../editor-reducer.js";
 
@@ -126,7 +125,6 @@ describe("reducer", () => {
             });
 
             it("should delete the sup after if there are no children", () => {
-                const x = glyph("x");
                 const math = row([
                     glyph("e"),
                     subsup([], undefined),
@@ -153,7 +151,6 @@ describe("reducer", () => {
             });
 
             it("should delete the sub after if there are no children", () => {
-                const x = glyph("x");
                 const math = row([
                     glyph("e"),
                     subsup(undefined, []),

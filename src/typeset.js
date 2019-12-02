@@ -30,10 +30,10 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 const {value} = child;
                 const prevChild = index > 0 ? children[index - 1] : null;
                 const unary =
-                    /[\+\u2212]/.test(value.char) &&
+                    /[+\u2212]/.test(value.char) &&
                     (prevChild
                         ? prevChild.type === "atom" &&
-                          /[\+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
+                          /[+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
                               prevChild.value.char,
                           )
                         : true);
@@ -43,7 +43,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     glyph.id = child.id;
                     return glyph;
                 } else if (
-                    /[\+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
+                    /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
                         value.char,
                     )
                 ) {

@@ -1,7 +1,6 @@
 // @flow
 import * as React from "react";
 
-import * as Editor from "./editor/editor";
 import * as Layout from "./layout";
 import {UnreachableCaseError} from "./util";
 
@@ -128,6 +127,7 @@ const VBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
             case "Box": {
                 pen.y += Layout.getHeight({...node, shift: 0});
                 if (Number.isNaN(pen.y)) {
+                    // eslint-disable-next-line no-debugger
                     debugger;
                 }
                 result = (
@@ -174,8 +174,6 @@ const VBox = ({box, cursor, x = 0, y = 0}: BoxProps): React.Node => {
 };
 
 const Box = (props: BoxProps): React.Node => {
-    const pen = {x: 0, y: 0};
-
     switch (props.box.kind) {
         case "hbox": {
             return <HBox {...props} />;
@@ -203,8 +201,6 @@ const MathRenderer = (props: Props) => {
     const width = Layout.getWidth(box) + CURSOR_WIDTH;
     const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height +
         depth}`;
-
-    console.log(cursor);
 
     return (
         <svg

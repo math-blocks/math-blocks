@@ -45,7 +45,7 @@ const MathKeypad = () => {
 
     return (
         <div className={css(styles.container)}>
-            {buttons.map((button, index) => (
+            {buttons.map(button => (
                 <div
                     className={css(styles.item)}
                     key={button.name}

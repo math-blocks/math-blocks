@@ -1,6 +1,5 @@
 // @flow
 import * as Semantic from "../../semantic.js";
-import print from "../../print.js";
 
 import StepChecker from "../step-checker.js";
 
@@ -18,14 +17,6 @@ const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
     type: "mul",
     implicit: false,
     args,
-});
-
-const div = (
-    numerator: Semantic.Expression,
-    denominator: Semantic.Expression,
-): Semantic.Div => ({
-    type: "div",
-    args: [numerator, denominator],
 });
 
 const eq = (...args: Semantic.Expression[]): Semantic.Eq => ({
@@ -59,12 +50,6 @@ const sub = (arg: Semantic.Expression): Semantic.Neg => ({
     args: [arg],
 });
 
-const neg = (arg: Semantic.Expression): Semantic.Neg => ({
-    type: "neg",
-    subtraction: false,
-    args: [arg],
-});
-
 // TODO: create a test helper
 // TODO: rename checkStep to isEquivalent
 
@@ -74,7 +59,6 @@ describe("Expressions", () => {
             const a = number("1");
             const b = number("1");
 
-            const reasons = [];
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
@@ -85,7 +69,6 @@ describe("Expressions", () => {
             const a = ident("a");
             const b = ident("a");
 
-            const reasons = [];
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
@@ -96,7 +79,6 @@ describe("Expressions", () => {
             const a = sub(number("1"));
             const b = sub(number("1"));
 
-            const reasons = [];
             const result = checkStep(a, b);
 
             expect(result.equivalent).toBe(true);
@@ -108,7 +90,6 @@ describe("Expressions", () => {
         const before = add(number("1"), number("2"));
         const after = add(number("2"), number("1"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -128,7 +109,6 @@ describe("Expressions", () => {
             add(number("2"), number("1")),
         );
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -144,7 +124,6 @@ describe("Expressions", () => {
         const before = mul(number("1"), number("2"));
         const after = mul(number("2"), number("1"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -158,7 +137,6 @@ describe("Expressions", () => {
         const before = add(number("2"), number("0"));
         const after = add(number("0"), number("2"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -171,7 +149,6 @@ describe("Expressions", () => {
         const before = mul(number("3"), number("2"));
         const after = mul(number("2"), number("3"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);
@@ -184,7 +161,6 @@ describe("Expressions", () => {
         const before = eq(ident("a"), number("3"));
         const after = eq(number("3"), ident("a"));
 
-        const reasons = [];
         const result = checkStep(before, after);
 
         expect(result.equivalent).toBe(true);

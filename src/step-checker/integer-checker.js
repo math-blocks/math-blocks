@@ -1,11 +1,11 @@
 // @flow
 import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
-import print from "../print.js";
 
 import {isNegative, isSubtraction} from "./arithmetic.js";
 
 import type {IStepChecker, Result} from "./step-checker.js";
+import type {Expression} from "../semantic.js";
 
 class IntegerChecker {
     checker: IStepChecker;

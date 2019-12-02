@@ -5,6 +5,7 @@ import * as Semantic from "../semantic.js";
 import {isSubtraction} from "./arithmetic.js";
 
 import type {IStepChecker, Result} from "./step-checker.js";
+import type {Expression, Eq} from "../semantic.js";
 
 class EquationChecker {
     checker: IStepChecker;
@@ -142,7 +143,6 @@ class EquationChecker {
     }
 
     checkStep(a: Semantic.Expression, b: Semantic.Expression): Result {
-        const {checker} = this;
         if (a.type !== "eq" || b.type !== "eq") {
             return {
                 equivalent: false,

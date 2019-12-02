@@ -9,7 +9,6 @@ import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
 import * as Editor from "./editor/editor.js";
-const {row, glyph, frac} = Editor;
 const {useEffect, useState, useRef} = React;
 
 import reducer from "./editor/editor-reducer.js";

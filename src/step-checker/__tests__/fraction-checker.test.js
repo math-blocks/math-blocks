@@ -1,6 +1,5 @@
 // @flow
 import * as Semantic from "../../semantic.js";
-import print from "../../print.js";
 
 import StepChecker from "../step-checker.js";
 
@@ -28,17 +27,6 @@ const ident = (name: string): Semantic.Identifier => {
         name,
     };
 };
-
-const add = (...args: Semantic.Expression[]): Semantic.Add => ({
-    type: "add",
-    args,
-});
-
-const sub = (arg: Semantic.Expression): Semantic.Neg => ({
-    type: "neg",
-    subtraction: true,
-    args: [arg],
-});
 
 const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
     type: "mul",

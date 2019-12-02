@@ -240,6 +240,7 @@ const max = (values: number[]) => Math.max(...values);
 export const hlistWidth = (nodes: Node[]) => sum(nodes.map(getWidth));
 const hlistHeight = (nodes: Node[]) => max(nodes.map(getHeight));
 const hlistDepth = (nodes: Node[]) => max(nodes.map(getDepth));
+// eslint-disable-next-line no-unused-vars
 const vlistWidth = (nodes: Node[]) => max(nodes.map(vwidth));
 const vlistVsize = (nodes: Node[]) => sum(nodes.map(vsize));
 
