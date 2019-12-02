@@ -32,7 +32,7 @@ export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq" | "supsub";
 
 export type Node = Semantic.Expression;
 
-type MathParser = Parser.Parser<Token, Node, Operator>;
+type EditorParser = Parser.Parser<Token, Node, Operator>;
 
 const identifier = (name: string): Semantic.Identifier => ({
     type: "identifier",
@@ -147,7 +147,7 @@ const getPrefixParselet = (
 
 // most (all?) of the binary only operations will be handled by the editor
 // const parseBinaryInfix = (op: Operator) => (
-//     parser: MathParser,
+//     parser: EditorParser,
 //     left: Node,
 // ): Node => {
 //     parser.consume();
@@ -158,7 +158,7 @@ const getPrefixParselet = (
 // };
 
 const parseNaryInfix = (op: Operator) => (
-    parser: MathParser,
+    parser: EditorParser,
     left: Node,
 ): Node => {
     if (op === "add" || op === "sub") {
@@ -170,7 +170,7 @@ const parseNaryInfix = (op: Operator) => (
     }
 };
 
-const parseNaryArgs = (parser: MathParser, op: Operator): Node[] => {
+const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -256,7 +256,7 @@ const getInfixParselet = (
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
-                parse: (parser: MathParser, left: Node) => {
+                parse: (parser: EditorParser, left: Node) => {
                     parser.consume(); // consume the subsup
                     const [sub, sup] = token.children;
                     if (left.type === "identifier") {

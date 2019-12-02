@@ -1,10 +1,10 @@
 // @flow
-import parser from "../math-parser.js";
+import parser from "../editor-parser.js";
 import * as Parser from "../parser.js";
 import * as Lexer from "../lexer.js";
 import * as Editor from "../editor.js";
 
-import type {Token} from "../math-parser.js";
+import type {Token} from "../editor-parser.js";
 
 describe("NewMathParser", () => {
     it("should handle equations", () => {
