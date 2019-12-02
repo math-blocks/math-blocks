@@ -22,7 +22,9 @@ const print = (expr: Semantic.Expression): string => {
         case "mod":
             return `${print(expr.args[0])} mod ${print(expr.args[1])}`;
         case "neg":
-            return expr.subtraction ? `${print(expr)}` : `-${print(expr)}`;
+            return expr.subtraction
+                ? `${print(expr.args[0])}`
+                : `-${print(expr.args[0])}`;
         case "root":
             const [radicand, index] = expr.args;
             return `√(${print(radicand)})`; // TODO: index

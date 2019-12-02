@@ -1,6 +1,7 @@
 // @flow
 import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
+import print from "../print.js";
 
 import {isNegative, isSubtraction} from "./arithmetic.js";
 
@@ -70,21 +71,35 @@ class IntegerChecker {
     doubleNegative(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        reverse?: boolean,
     ): Result {
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
         const {checker} = this;
         if (isNegative(prev) && isNegative(prev.args[0])) {
             const newPrev = prev.args[0].args[0];
-            const {equivalent, reasons} = checker.checkStep(newPrev, next);
+            const {equivalent, reasons} = reverse
+                ? checker.checkStep(next, newPrev)
+                : checker.checkStep(newPrev, next);
             if (equivalent) {
                 return {
                     equivalent: true,
-                    reasons: [
-                        ...reasons,
-                        {
-                            message: "negative of a negative is positive",
-                            nodes: [],
-                        },
-                    ],
+                    reasons: reverse
+                        ? [
+                              ...reasons,
+                              {
+                                  message: "negative of a negative is positive",
+                                  nodes: [newPrev, prev],
+                              },
+                          ]
+                        : [
+                              {
+                                  message: "negative of a negative is positive",
+                                  nodes: [prev, newPrev],
+                              },
+                              ...reasons,
+                          ],
                 };
             }
         }
@@ -148,14 +163,19 @@ class IntegerChecker {
             return result;
         }
 
-        result = this.doubleNegative(prev, next);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.doubleNegative(next, prev);
-        if (result.equivalent) {
-            return result;
+        // Choose the fastest route when multiple paths exist.
+        const result1 = this.doubleNegative(prev, next, false);
+        const result2 = this.doubleNegative(prev, next, true);
+        if (result1.equivalent && result2.equivalent) {
+            if (result1.reasons.length < result2.reasons.length) {
+                return result1;
+            } else {
+                return result2;
+            }
+        } else if (result1.equivalent) {
+            return result1;
+        } else if (result2.equivalent) {
+            return result2;
         }
 
         return {

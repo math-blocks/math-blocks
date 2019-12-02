@@ -726,6 +726,20 @@ describe("Expressions", () => {
             ]);
         });
 
+        it("a -> --a", () => {
+            const before = ident("a");
+            const after = neg(neg(ident("a")));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+            ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("a");
+            expect(print(result.reasons[0].nodes[1])).toEqual("--a");
+        });
+
         it("----a -> --a", () => {
             const before = neg(neg(neg(neg(ident("a")))));
             const after = neg(neg(ident("a")));
@@ -736,6 +750,20 @@ describe("Expressions", () => {
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "negative of a negative is positive",
             ]);
+        });
+
+        it("--a -> ----a", () => {
+            const before = neg(neg(ident("a")));
+            const after = neg(neg(neg(neg(ident("a")))));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+            ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("--a");
+            expect(print(result.reasons[0].nodes[1])).toEqual("----a");
         });
 
         it("----a -> a", () => {
@@ -749,6 +777,27 @@ describe("Expressions", () => {
                 "negative of a negative is positive",
                 "negative of a negative is positive",
             ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("----a");
+            expect(print(result.reasons[0].nodes[1])).toEqual("--a");
+            expect(print(result.reasons[1].nodes[0])).toEqual("--a");
+            expect(print(result.reasons[1].nodes[1])).toEqual("a");
+        });
+
+        it("a -> ----a", () => {
+            const before = ident("a");
+            const after = neg(neg(neg(neg(ident("a")))));
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.reasons.map(reason => reason.message)).toEqual([
+                "negative of a negative is positive",
+                "negative of a negative is positive",
+            ]);
+            expect(print(result.reasons[0].nodes[0])).toEqual("a");
+            expect(print(result.reasons[0].nodes[1])).toEqual("--a");
+            expect(print(result.reasons[1].nodes[0])).toEqual("--a");
+            expect(print(result.reasons[1].nodes[1])).toEqual("----a");
         });
     });
 
