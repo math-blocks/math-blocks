@@ -1,7 +1,6 @@
 // @flow
 import parser from "../editor-parser.js";
-import * as Parser from "../parser.js";
-import * as Lexer from "../lexer.js";
+import * as Lexer from "../editor-lexer.js";
 import * as Editor from "../editor.js";
 
 import type {Token} from "../editor-parser.js";

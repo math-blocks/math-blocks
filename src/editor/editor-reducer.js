@@ -3,7 +3,7 @@ import produce from "immer";
 import {original} from "immer";
 
 import * as Editor from "./editor";
-import {getId} from "./unique-id";
+import {getId} from "../unique-id";
 
 export type State = {
     math: Editor.Row<Editor.Glyph>,

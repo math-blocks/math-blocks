@@ -1,7 +1,7 @@
 // @flow
 import * as React from "react";
 
-import * as Editor from "./editor";
+import * as Editor from "./editor/editor";
 import * as Layout from "./layout";
 import {UnreachableCaseError} from "./util";
 

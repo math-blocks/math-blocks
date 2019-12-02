@@ -1,5 +1,5 @@
 // @flow
-import * as Lexer from "../lexer";
+import * as Lexer from "../editor-lexer";
 import * as Editor from "../editor";
 
 const {row, glyph, frac} = Editor;

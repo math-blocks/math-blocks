@@ -6,7 +6,7 @@ const {useState} = React;
 
 import MathKeypad from "./math-keypad";
 import MathEditor from "./math-editor";
-import * as Editor from "./editor.js";
+import * as Editor from "./editor/editor.js";
 const {row, glyph, frac} = Editor;
 
 const question: Editor.Row<Editor.Glyph> = row([

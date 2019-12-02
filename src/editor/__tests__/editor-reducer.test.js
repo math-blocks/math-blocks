@@ -1,10 +1,10 @@
 // @flow
-import reducer from "../reducer.js";
-import * as UniqueId from "../unique-id.js";
+import reducer from "../editor-reducer.js";
+import * as UniqueId from "../../unique-id.js";
 import * as Editor from "../editor.js";
 const {row, glyph, frac, subsup} = Editor;
 
-import type {State} from "../reducer.js";
+import type {State} from "../editor-reducer.js";
 
 describe("reducer", () => {
     describe("inserting", () => {

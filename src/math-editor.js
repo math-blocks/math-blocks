@@ -8,11 +8,11 @@ import fontMetrics from "../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
-import * as Editor from "./editor.js";
+import * as Editor from "./editor/editor.js";
 const {row, glyph, frac} = Editor;
 const {useEffect, useState, useRef} = React;
 
-import reducer from "./reducer.js";
+import reducer from "./editor/editor-reducer.js";
 
 type Props = {
     value: Editor.Row<Editor.Glyph>,

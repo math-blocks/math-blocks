@@ -10,8 +10,8 @@
 import matchAll from "string.prototype.matchall";
 
 import * as Editor from "./editor";
-import {UnreachableCaseError} from "./util";
-import {getId} from "./unique-id";
+import {UnreachableCaseError} from "../util";
+import {getId} from "../unique-id";
 
 // operations / relations: + - = < <= > >= != sqrt
 // symbols: a - z, pi, theta, etc.

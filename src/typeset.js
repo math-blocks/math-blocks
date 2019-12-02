@@ -1,5 +1,5 @@
 // @flow
-import * as Editor from "./editor";
+import * as Editor from "./editor/editor";
 import * as Layout from "./layout";
 import {type FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "./util";

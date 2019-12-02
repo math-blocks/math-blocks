@@ -1,7 +1,7 @@
 // @flow
-import * as Parser from "./parser.js";
-import * as Semantic from "./semantic.js";
-import * as Lexer from "./lexer.js";
+import * as Parser from "../parser.js";
+import * as Semantic from "../semantic.js";
+import * as Lexer from "./editor-lexer.js";
 import * as Editor from "./editor.js";
 
 // TODO: fill this list out

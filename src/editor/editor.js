@@ -1,5 +1,5 @@
 // @flow
-import {getId} from "./unique-id";
+import {getId} from "../unique-id";
 
 export type Row<T, ID = number> = {
     id: ID,
