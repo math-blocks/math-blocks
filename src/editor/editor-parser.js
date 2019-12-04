@@ -4,33 +4,12 @@ import * as Semantic from "../semantic.js";
 import * as Lexer from "./editor-lexer.js";
 import * as Editor from "./editor.js";
 
-// TODO: fill this list out
-export type TokenType =
-    | "plus"
-    | "minus"
-    | "star"
-    | "equal"
-    | "number"
-    | "identifier"
-
-    // from editor
-    | "frac"
-    | "subsup"
-    | "parens"
-
-    // EOL
-    | "eol";
-
-// export type Token = {
-//     type: TokenType,
-//     value: string,
-// };
 export type Token = Editor.Node<Lexer.Token>;
 
-// TOODO: fill out this list
-export type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq" | "supsub";
+// TODO: fill out this list
+type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq" | "supsub";
 
-export type Node = Semantic.Expression;
+type Node = Semantic.Expression;
 
 type EditorParser = Parser.Parser<Token, Node, Operator>;
 

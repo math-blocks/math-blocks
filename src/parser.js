@@ -9,11 +9,13 @@
  */
 
 export interface Parser<T, N, O> {
-    +parseWithOperator: (op: O) => N;
+    +parseWithOperator: (op: O, associativity?: Associativity) => N;
     +peek: () => T;
     +consume: () => T;
     +parse: (Array<T>) => N;
 }
+
+type Associativity = "right" | "left";
 
 export function parserFactory<T: {+type: string, ...}, N, O>(
     getPrefixParselet: (token: T) => ?PrefixParselet<T, N, O>,
@@ -33,10 +35,16 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             return index < tokens.length ? tokens[index++] : EOL;
         };
 
-        const getPrecedence = (): number => {
+        const getPrecedence = (
+            associativity: Associativity = "left",
+        ): number => {
             const token = peek();
             const parselet = getInfixParselet(token);
-            return parselet ? getOpPrecedence(parselet.op) : 0;
+            if (parselet) {
+                const precedence = getOpPrecedence(parselet.op);
+                return associativity === "left" ? precedence : precedence + 1;
+            }
+            return 0;
         };
 
         const parseInfix = (left: N): N => {
@@ -55,6 +63,7 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             // TODO: combine getPrefixParselet and parselet.parse
             const parselet = getPrefixParselet(token);
             if (!parselet) {
+                console.log(token);
                 throw new Error("Unexpected token");
             }
             return parselet.parse({
@@ -65,16 +74,22 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             });
         };
 
-        const parseWithPrecedence = (precedence: number): N => {
+        const parseWithPrecedence = (
+            precedence: number,
+            associativity: Associativity = "left",
+        ): N => {
             let left: N = parsePrefix();
-            while (precedence < getPrecedence()) {
+            while (precedence < getPrecedence(associativity)) {
                 left = parseInfix(left);
             }
             return left;
         };
 
-        const parseWithOperator = (op: O): N => {
-            return parseWithPrecedence(getOpPrecedence(op));
+        const parseWithOperator = (
+            op: O,
+            associativity: Associativity = "left",
+        ): N => {
+            return parseWithPrecedence(getOpPrecedence(op), associativity);
         };
 
         return parseWithPrecedence(0);
