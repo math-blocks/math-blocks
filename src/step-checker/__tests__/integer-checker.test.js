@@ -40,6 +40,12 @@ const sub = (arg: Semantic.Expression): Semantic.Neg => ({
     args: [arg],
 });
 
+const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
+    type: "mul",
+    implicit: false,
+    args,
+});
+
 const neg = (arg: Semantic.Expression): Semantic.Neg => ({
     type: "neg",
     subtraction: false,
@@ -241,5 +247,79 @@ describe("IntegerChecker", () => {
         expect(print(result.reasons[0].nodes[1])).toEqual("--a");
         expect(print(result.reasons[1].nodes[0])).toEqual("--a");
         expect(print(result.reasons[1].nodes[1])).toEqual("----a");
+    });
+
+    it("-a -> -1*a", () => {
+        const before = neg(ident("a"));
+        const after = mul(number("-1"), ident("a"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "negation is the same as multipling by negative one",
+        ]);
+    });
+
+    it("-1*a -> -a", () => {
+        const before = mul(number("-1"), ident("a"));
+        const after = neg(ident("a"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "negation is the same as multipling by negative one",
+        ]);
+    });
+
+    it("(-a)(-b) -> ab", () => {
+        const before = mul(neg(ident("a")), neg(ident("b")));
+        const after = mul(ident("a"), ident("b"));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying two negatives is a positive",
+        ]);
+    });
+
+    it("ab -> (-a)(-b)", () => {
+        const before = mul(ident("a"), ident("b"));
+        const after = mul(neg(ident("a")), neg(ident("b")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying two negatives is a positive",
+        ]);
+    });
+
+    it("-(a + b) -> -a + -b", () => {
+        const before = neg(add(ident("a"), ident("b")));
+        const after = add(neg(ident("a")), neg(ident("b")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "negation is the same as multipling by negative one",
+            "distribution",
+        ]);
+    });
+
+    it("-a + -b -> -(a + b)", () => {
+        const before = add(neg(ident("a")), neg(ident("b")));
+        const after = neg(add(ident("a"), ident("b")));
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+            "negation is the same as multipling by negative one",
+        ]);
     });
 });

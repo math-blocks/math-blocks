@@ -207,6 +207,109 @@ class IntegerChecker {
         };
     }
 
+    negIsMulOne(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        reverse: boolean,
+    ): Result {
+        const {checker} = this;
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
+        if (prev.type === "neg") {
+            const newPrev = Arithmetic.mul([
+                Arithmetic.num(-1),
+                ...Arithmetic.getFactors(prev.args[0]),
+            ]);
+
+            const {equivalent, reasons} = checker.checkStep(newPrev, next);
+            if (equivalent) {
+                return {
+                    equivalent: true,
+                    reasons: reverse
+                        ? [
+                              ...reasons,
+                              {
+                                  message:
+                                      "negation is the same as multipling by negative one",
+                                  nodes: [],
+                              },
+                          ]
+                        : [
+                              {
+                                  message:
+                                      "negation is the same as multipling by negative one",
+                                  nodes: [],
+                              },
+                              ...reasons,
+                          ],
+                };
+            }
+        }
+
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    mulTwoNegsIsPos(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        reverse: boolean,
+    ): Result {
+        const {checker} = this;
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
+        if (prev.type === "mul" && next.type === "mul") {
+            // TODO: handle more factors
+            if (prev.args.length === 2 && next.args.length === 2) {
+                if (
+                    prev.args[0].type === "neg" &&
+                    prev.args[1].type === "neg"
+                ) {
+                    const newPrev = Arithmetic.mul([
+                        prev.args[0].args[0],
+                        prev.args[1].args[0],
+                    ]);
+
+                    const {equivalent, reasons} = checker.checkStep(
+                        newPrev,
+                        next,
+                    );
+                    if (equivalent) {
+                        return {
+                            equivalent: true,
+                            reasons: reverse
+                                ? [
+                                      ...reasons,
+                                      {
+                                          message:
+                                              "multiplying two negatives is a positive",
+                                          nodes: [],
+                                      },
+                                  ]
+                                : [
+                                      {
+                                          message:
+                                              "multiplying two negatives is a positive",
+                                          nodes: [],
+                                      },
+                                      ...reasons,
+                                  ],
+                        };
+                    }
+                }
+            }
+        }
+
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
     // TODO: rename these methods to differentiate the StepChecker method from
     // this method
     checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result {
@@ -232,6 +335,16 @@ class IntegerChecker {
             return result;
         }
 
+        result = this.mulTwoNegsIsPos(prev, next, false);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.mulTwoNegsIsPos(prev, next, true);
+        if (result.equivalent) {
+            return result;
+        }
+
         // Choose the fastest route when multiple paths exist.
         const result1 = this.doubleNegative(prev, next, false);
         const result2 = this.doubleNegative(prev, next, true);
@@ -245,6 +358,21 @@ class IntegerChecker {
             return result1;
         } else if (result2.equivalent) {
             return result2;
+        }
+
+        // It's important that these methods are called after doubleNegative.  This
+        // is because negatives can be interpreted as multiplying by -1 providing an
+        // alternative path from --a -> a.
+        // TODO: provide a way to show this more detailed version of --a -> a so that
+        // students know why --a -> a is true.
+        result = this.negIsMulOne(prev, next, false);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.negIsMulOne(prev, next, true);
+        if (result.equivalent) {
+            return result;
         }
 
         return {
