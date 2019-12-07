@@ -1,5 +1,6 @@
 // @flow
 import * as Semantic from "../../semantic.js";
+import {parse} from "../../text/text-parser.js";
 
 import StepChecker from "../step-checker.js";
 
@@ -44,8 +45,8 @@ const div = (
 
 describe("FractionChecker", () => {
     it("1 -> a/a", () => {
-        const before = number("1");
-        const after = div(ident("a"), ident("a"));
+        const before = parse("1");
+        const after = parse("a/a");
 
         const result = checkStep(before, after);
 
@@ -56,10 +57,7 @@ describe("FractionChecker", () => {
     });
 
     it("a/b * c/d -> ac / bd", () => {
-        const before = mul(
-            div(ident("a"), ident("b")),
-            div(ident("c"), ident("d")),
-        );
+        const before = parse("a/b * c/d");
         const after = div(
             mul(ident("a"), ident("c")),
             mul(ident("b"), ident("d")),
@@ -78,10 +76,7 @@ describe("FractionChecker", () => {
             mul(ident("a"), ident("c")),
             mul(ident("b"), ident("d")),
         );
-        const after = mul(
-            div(ident("a"), ident("b")),
-            div(ident("c"), ident("d")),
-        );
+        const after = parse("a/b * c/d");
 
         const result = checkStep(before, after);
 

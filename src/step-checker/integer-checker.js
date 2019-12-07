@@ -216,9 +216,13 @@ class IntegerChecker {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        if (prev.type === "neg") {
+        if (
+            prev.type === "neg" &&
+            // exclude -1 to avoid an infinite expansion
+            !(prev.args[0].type == "number" && prev.args[0].value == "1")
+        ) {
             const newPrev = Arithmetic.mul([
-                Arithmetic.num(-1),
+                Arithmetic.neg(Arithmetic.num(1)),
                 ...Arithmetic.getFactors(prev.args[0]),
             ]);
 

@@ -10,38 +10,6 @@ const checker = new StepChecker();
 const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
     checker.checkStep(prev, next);
 
-const number = (value: string): Semantic.Number => {
-    if (/^[a-z]/.test(value)) {
-        throw new Error("numbers can't contain letters");
-    }
-    return {
-        type: "number",
-        value,
-    };
-};
-
-const ident = (name: string): Semantic.Identifier => {
-    if (/^[0-9]/.test(name)) {
-        throw new Error("identifiers can't start with a number");
-    }
-    return {
-        type: "identifier",
-        name,
-    };
-};
-
-const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
-    type: "mul",
-    implicit: false,
-    args,
-});
-
-const neg = (arg: Semantic.Expression): Semantic.Neg => ({
-    type: "neg",
-    subtraction: false,
-    args: [arg],
-});
-
 describe("IntegerChecker", () => {
     it("a + -a -> 0", () => {
         const before = parse("a + -a");
@@ -241,7 +209,7 @@ describe("IntegerChecker", () => {
 
     it("-a -> -1 * a", () => {
         const before = parse("-a");
-        const after = mul(number("-1"), ident("a"));
+        const after = parse("-1 * a");
 
         const result = checkStep(before, after);
 
@@ -252,8 +220,8 @@ describe("IntegerChecker", () => {
     });
 
     it("-1*a -> -a", () => {
-        const before = mul(number("-1"), ident("a"));
-        const after = neg(ident("a"));
+        const before = parse("-1 * a");
+        const after = parse("-a");
 
         const result = checkStep(before, after);
 

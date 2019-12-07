@@ -167,6 +167,7 @@ const parseNaryInfix = (op: Operator) => (
     if (op === "add" || op === "sub") {
         return add([left, ...parseNaryArgs(parser, op)]);
     } else if (op === "mul") {
+        // TODO: make explicit mul a different operation with lower precedence
         return mul([left, ...parseNaryArgs(parser, op)], true);
     } else if (op === "eq") {
         return eq([left, ...parseNaryArgs(parser, op)]);
@@ -188,11 +189,18 @@ const parseNaryArgs = (parser: TextParser, op: Operator): Node[] => {
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
         expr = neg(expr, true);
-        op = "add";
     }
     const nextToken = parser.peek();
 
-    if (op === "add" && nextToken.type === "plus") {
+    if (
+        (op === "add" || op === "sub") &&
+        (nextToken.type === "plus" || nextToken.type === "minus")
+    ) {
+        if (nextToken.type === "minus") {
+            op = "sub";
+        }
+        return [expr, ...parseNaryArgs(parser, op)];
+    } else if (op === "mul" && nextToken.type === "times") {
         return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === "mul" && nextToken.type === "identifier") {
         // implicit multiplication

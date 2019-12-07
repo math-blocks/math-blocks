@@ -72,6 +72,46 @@ describe("TextParser", () => {
         `);
     });
 
+    it("parses minus in longer expression", () => {
+        const ast = parse("a + b - c + d");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "name": "a",
+                  "type": "identifier",
+                },
+                Object {
+                  "name": "b",
+                  "type": "identifier",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "c",
+                      "type": "identifier",
+                    },
+                  ],
+                  "subtraction": true,
+                  "type": "neg",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "d",
+                      "type": "identifier",
+                    },
+                  ],
+                  "subtraction": true,
+                  "type": "neg",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
+
     it("parses simple order of operations", () => {
         const ast = parse("1 + 2 * 3 - 4");
 
@@ -79,27 +119,22 @@ describe("TextParser", () => {
             Object {
               "args": Array [
                 Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
                   "args": Array [
                     Object {
                       "type": "number",
-                      "value": "1",
+                      "value": "2",
                     },
                     Object {
-                      "args": Array [
-                        Object {
-                          "type": "number",
-                          "value": "2",
-                        },
-                        Object {
-                          "type": "number",
-                          "value": "3",
-                        },
-                      ],
-                      "implicit": true,
-                      "type": "mul",
+                      "type": "number",
+                      "value": "3",
                     },
                   ],
-                  "type": "add",
+                  "implicit": true,
+                  "type": "mul",
                 },
                 Object {
                   "args": Array [
@@ -253,6 +288,31 @@ describe("TextParser", () => {
                 Object {
                   "name": "c",
                   "type": "identifier",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses explicit multiplication", () => {
+        const ast = parse("1 * 2 * 3");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "1",
+                },
+                Object {
+                  "type": "number",
+                  "value": "2",
+                },
+                Object {
+                  "type": "number",
+                  "value": "3",
                 },
               ],
               "implicit": true,
