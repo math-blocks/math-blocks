@@ -1,6 +1,7 @@
 // @flow
 import * as Semantic from "../../semantic.js";
 import print from "../../print.js";
+import {parse} from "../../text/text-parser.js";
 
 import StepChecker from "../step-checker.js";
 
@@ -29,17 +30,6 @@ const ident = (name: string): Semantic.Identifier => {
     };
 };
 
-const add = (...args: Semantic.Expression[]): Semantic.Add => ({
-    type: "add",
-    args,
-});
-
-const sub = (arg: Semantic.Expression): Semantic.Neg => ({
-    type: "neg",
-    subtraction: true,
-    args: [arg],
-});
-
 const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
     type: "mul",
     implicit: false,
@@ -54,8 +44,8 @@ const neg = (arg: Semantic.Expression): Semantic.Neg => ({
 
 describe("IntegerChecker", () => {
     it("a + -a -> 0", () => {
-        const before = add(ident("a"), neg(ident("a")));
-        const after = number("0");
+        const before = parse("a + -a");
+        const after = parse("0");
 
         const result = checkStep(before, after);
 
@@ -68,8 +58,8 @@ describe("IntegerChecker", () => {
     });
 
     it("0 -> a + -a", () => {
-        const before = number("0");
-        const after = add(ident("a"), neg(ident("a")));
+        const before = parse("0");
+        const after = parse("a + -a");
 
         const result = checkStep(before, after);
 
@@ -82,8 +72,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a + b + -a + c -> b + c", () => {
-        const before = add(ident("a"), ident("b"), neg(ident("a")), ident("c"));
-        const after = add(ident("b"), ident("c"));
+        const before = parse("a + b + -a + c");
+        const after = parse("b + c");
 
         const result = checkStep(before, after);
 
@@ -94,8 +84,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a - b -> a + -b", () => {
-        const before = add(ident("a"), sub(ident("b")));
-        const after = add(ident("a"), neg(ident("b")));
+        const before = parse("a - b");
+        const after = parse("a + -b");
 
         const result = checkStep(before, after);
 
@@ -106,8 +96,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a + -b -> a - b", () => {
-        const before = add(ident("a"), neg(ident("b")));
-        const after = add(ident("a"), sub(ident("b")));
+        const before = parse("a + -b");
+        const after = parse("a - b");
 
         const result = checkStep(before, after);
 
@@ -118,8 +108,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a - -b -> a + --b -> a + b", () => {
-        const before = add(ident("a"), sub(neg(ident("b"))));
-        const after = add(ident("a"), ident("b"));
+        const before = parse("a - -b");
+        const after = parse("a + b");
 
         const result = checkStep(before, after);
 
@@ -135,8 +125,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a + b -> a + --b -> a - -b", () => {
-        const before = add(ident("a"), ident("b"));
-        const after = add(ident("a"), sub(neg(ident("b"))));
+        const before = parse("a + b");
+        const after = parse("a - -b");
 
         const result = checkStep(before, after);
 
@@ -152,8 +142,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a - a -> 0", () => {
-        const before = add(ident("a"), sub(ident("a")));
-        const after = number("0");
+        const before = parse("a - a");
+        const after = parse("0");
 
         const result = checkStep(before, after);
 
@@ -164,8 +154,8 @@ describe("IntegerChecker", () => {
     });
 
     it("--a -> a", () => {
-        const before = neg(neg(ident("a")));
-        const after = ident("a");
+        const before = parse("--a");
+        const after = parse("a");
 
         const result = checkStep(before, after);
 
@@ -176,8 +166,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a -> --a", () => {
-        const before = ident("a");
-        const after = neg(neg(ident("a")));
+        const before = parse("a");
+        const after = parse("--a");
 
         const result = checkStep(before, after);
 
@@ -190,8 +180,8 @@ describe("IntegerChecker", () => {
     });
 
     it("----a -> --a", () => {
-        const before = neg(neg(neg(neg(ident("a")))));
-        const after = neg(neg(ident("a")));
+        const before = parse("----a");
+        const after = parse("--a");
 
         const result = checkStep(before, after);
 
@@ -202,8 +192,8 @@ describe("IntegerChecker", () => {
     });
 
     it("--a -> ----a", () => {
-        const before = neg(neg(ident("a")));
-        const after = neg(neg(neg(neg(ident("a")))));
+        const before = parse("--a");
+        const after = parse("----a");
 
         const result = checkStep(before, after);
 
@@ -216,8 +206,8 @@ describe("IntegerChecker", () => {
     });
 
     it("----a -> a", () => {
-        const before = neg(neg(neg(neg(ident("a")))));
-        const after = ident("a");
+        const before = parse("----a");
+        const after = parse("a");
 
         const result = checkStep(before, after);
 
@@ -233,8 +223,8 @@ describe("IntegerChecker", () => {
     });
 
     it("a -> ----a", () => {
-        const before = ident("a");
-        const after = neg(neg(neg(neg(ident("a")))));
+        const before = parse("a");
+        const after = parse("----a");
 
         const result = checkStep(before, after);
 
@@ -249,8 +239,8 @@ describe("IntegerChecker", () => {
         expect(print(result.reasons[1].nodes[1])).toEqual("----a");
     });
 
-    it("-a -> -1*a", () => {
-        const before = neg(ident("a"));
+    it("-a -> -1 * a", () => {
+        const before = parse("-a");
         const after = mul(number("-1"), ident("a"));
 
         const result = checkStep(before, after);
@@ -274,8 +264,8 @@ describe("IntegerChecker", () => {
     });
 
     it("(-a)(-b) -> ab", () => {
-        const before = mul(neg(ident("a")), neg(ident("b")));
-        const after = mul(ident("a"), ident("b"));
+        const before = parse("(-a)(-b)");
+        const after = parse("ab");
 
         const result = checkStep(before, after);
 
@@ -286,8 +276,8 @@ describe("IntegerChecker", () => {
     });
 
     it("ab -> (-a)(-b)", () => {
-        const before = mul(ident("a"), ident("b"));
-        const after = mul(neg(ident("a")), neg(ident("b")));
+        const before = parse("ab");
+        const after = parse("(-a)(-b)");
 
         const result = checkStep(before, after);
 
@@ -298,8 +288,8 @@ describe("IntegerChecker", () => {
     });
 
     it("-(a + b) -> -a + -b", () => {
-        const before = neg(add(ident("a"), ident("b")));
-        const after = add(neg(ident("a")), neg(ident("b")));
+        const before = parse("-(a + b)");
+        const after = parse("-a + -b");
 
         const result = checkStep(before, after);
 
@@ -311,8 +301,8 @@ describe("IntegerChecker", () => {
     });
 
     it("-a + -b -> -(a + b)", () => {
-        const before = add(neg(ident("a")), neg(ident("b")));
-        const after = neg(add(ident("a"), ident("b")));
+        const before = parse("-a + -b");
+        const after = parse("-(a + b)");
 
         const result = checkStep(before, after);
 

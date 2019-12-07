@@ -1,11 +1,9 @@
 // @flow
-import parser from "../text-parser.js";
-import {lex} from "../text-lexer.js";
+import {parse} from "../text-parser.js";
 
 describe("TextParser", () => {
     it("parse addition", () => {
-        const tokens = lex("1 + 2");
-        const ast = parser.parse(tokens);
+        const ast = parse("1 + 2");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -25,8 +23,7 @@ describe("TextParser", () => {
     });
 
     it("parse n-ary addition", () => {
-        const tokens = lex("1 + 2 + a");
-        const ast = parser.parse(tokens);
+        const ast = parse("1 + 2 + a");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -50,8 +47,7 @@ describe("TextParser", () => {
     });
 
     it("parses minus", () => {
-        const tokens = lex("a - b");
-        const ast = parser.parse(tokens);
+        const ast = parse("a - b");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -77,8 +73,7 @@ describe("TextParser", () => {
     });
 
     it("parses simple order of operations", () => {
-        const tokens = lex("1 + 2 * 3 - 4");
-        const ast = parser.parse(tokens);
+        const ast = parse("1 + 2 * 3 - 4");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -123,8 +118,7 @@ describe("TextParser", () => {
     });
 
     it("parses unary minus", () => {
-        const tokens = lex("-a");
-        const ast = parser.parse(tokens);
+        const ast = parse("-a");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -134,15 +128,40 @@ describe("TextParser", () => {
                   "type": "identifier",
                 },
               ],
-              "subtraction": true,
+              "subtraction": false,
               "type": "neg",
             }
         `);
     });
 
+    it("parses unary minus with addition", () => {
+        const ast = parse("a + -a");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "name": "a",
+                  "type": "identifier",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "a",
+                      "type": "identifier",
+                    },
+                  ],
+                  "subtraction": false,
+                  "type": "neg",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
+
     it("parses multiple unary minuses", () => {
-        const tokens = lex("--a");
-        const ast = parser.parse(tokens);
+        const ast = parse("--a");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -154,19 +173,18 @@ describe("TextParser", () => {
                       "type": "identifier",
                     },
                   ],
-                  "subtraction": true,
+                  "subtraction": false,
                   "type": "neg",
                 },
               ],
-              "subtraction": true,
+              "subtraction": false,
               "type": "neg",
             }
         `);
     });
 
     it("parses unary and binary minus", () => {
-        const tokens = lex("a - -b");
-        const ast = parser.parse(tokens);
+        const ast = parse("a - -b");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -184,7 +202,7 @@ describe("TextParser", () => {
                           "type": "identifier",
                         },
                       ],
-                      "subtraction": true,
+                      "subtraction": false,
                       "type": "neg",
                     },
                   ],
@@ -198,8 +216,7 @@ describe("TextParser", () => {
     });
 
     it("parses implicit multiplication", () => {
-        const tokens = lex("ab");
-        const ast = parser.parse(tokens);
+        const ast = parse("ab");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -220,8 +237,7 @@ describe("TextParser", () => {
     });
 
     it("parses n-ary implicit multiplication", () => {
-        const tokens = lex("abc");
-        const ast = parser.parse(tokens);
+        const ast = parse("abc");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -246,8 +262,7 @@ describe("TextParser", () => {
     });
 
     it("parses parenthesis", () => {
-        const tokens = lex("(x + y)");
-        const ast = parser.parse(tokens);
+        const ast = parse("(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -267,24 +282,19 @@ describe("TextParser", () => {
     });
 
     it("throws if lparen is missing", () => {
-        const tokens = lex("x + y)");
-
         expect(() => {
-            parser.parse(tokens);
+            parse("x + y)");
         }).toThrowErrorMatchingInlineSnapshot(`"unmatched right paren"`);
     });
 
     it("throws if rparen is missing", () => {
-        const tokens = lex("(x + y");
-
         expect(() => {
-            parser.parse(tokens);
+            parse("(x + y");
         }).toThrowErrorMatchingInlineSnapshot(`"unmatched left paren"`);
     });
 
     it("parses parenthesis", () => {
-        const tokens = lex("a(x + y)");
-        const ast = parser.parse(tokens);
+        const ast = parse("a(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -314,8 +324,7 @@ describe("TextParser", () => {
     });
 
     it("parses implicit multiplication by parens", () => {
-        const tokens = lex("(a + b)(x + y)");
-        const ast = parser.parse(tokens);
+        const ast = parse("(a + b)(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -354,8 +363,7 @@ describe("TextParser", () => {
     });
 
     it("parses n-ary implicit multiplication by parens", () => {
-        const tokens = lex("(a)(b)(c)");
-        const ast = parser.parse(tokens);
+        const ast = parse("(a)(b)(c)");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -380,8 +388,7 @@ describe("TextParser", () => {
     });
 
     it("parses division", () => {
-        const tokens = lex("x / y");
-        const ast = parser.parse(tokens);
+        const ast = parse("x / y");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -401,8 +408,7 @@ describe("TextParser", () => {
     });
 
     it("parses nested division", () => {
-        const tokens = lex("x / y / z");
-        const ast = parser.parse(tokens);
+        const ast = parse("x / y / z");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -431,8 +437,7 @@ describe("TextParser", () => {
     });
 
     it("parses exponents", () => {
-        const tokens = lex("x^2");
-        const ast = parser.parse(tokens);
+        const ast = parse("x^2");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -452,8 +457,7 @@ describe("TextParser", () => {
     });
 
     it("parses nested exponents", () => {
-        const tokens = lex("2^3^4");
-        const ast = parser.parse(tokens);
+        const ast = parse("2^3^4");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -482,8 +486,7 @@ describe("TextParser", () => {
     });
 
     it("parses equations", () => {
-        const tokens = lex("y = x + 1");
-        const ast = parser.parse(tokens);
+        const ast = parse("y = x + 1");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
@@ -512,8 +515,7 @@ describe("TextParser", () => {
     });
 
     it("parses equations", () => {
-        const tokens = lex("x = y = z");
-        const ast = parser.parse(tokens);
+        const ast = parse("x = y = z");
 
         expect(ast).toMatchInlineSnapshot(`
             Object {

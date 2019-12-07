@@ -2,6 +2,8 @@
 import * as Parser from "../parser.js";
 import * as Semantic from "../semantic.js";
 
+import {lex} from "./text-lexer.js";
+
 import type {Token} from "./text-lexer.js";
 
 // TODO: fill out this list
@@ -70,7 +72,7 @@ const getPrefixParselet = (
             };
         case "minus":
             return {
-                parse: parser => neg(parser.parseWithOperator("neg"), true),
+                parse: parser => neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
@@ -253,9 +255,11 @@ const getOpPrecedence = (op: Operator) => {
     }
 };
 
-export default Parser.parserFactory<Token, Node, Operator>(
+const textParser = Parser.parserFactory<Token, Node, Operator>(
     getPrefixParselet,
     getInfixParselet,
     getOpPrecedence,
     EOL,
 );
+
+export const parse = (input: string) => textParser.parse(lex(input));

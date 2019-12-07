@@ -766,4 +766,83 @@ describe("NewMathParser", () => {
             }
         `);
     });
+
+    it("should handle 5√2", () => {
+        const tokens = [
+            Lexer.number("5"),
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "type": "number",
+                  "value": "5",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("should handle √2√3", () => {
+        const tokens = [
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                    Object {
+                      "type": "number",
+                      "value": "2",
+                    },
+                  ],
+                  "type": "root",
+                },
+              ],
+              "implicit": true,
+              "type": "mul",
+            }
+        `);
+    });
 });
