@@ -245,14 +245,136 @@ describe("TextParser", () => {
         `);
     });
 
-    it.skip("parses implicit multiplication by parens", () => {
+    it("parses parenthesis", () => {
+        const tokens = lex("(x + y)");
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "name": "x",
+                  "type": "identifier",
+                },
+                Object {
+                  "name": "y",
+                  "type": "identifier",
+                },
+              ],
+              "type": "add",
+            }
+        `);
+    });
+
+    it("throws if lparen is missing", () => {
+        const tokens = lex("x + y)");
+
+        expect(() => {
+            parser.parse(tokens);
+        }).toThrowErrorMatchingInlineSnapshot(`"unmatched right paren"`);
+    });
+
+    it("throws if rparen is missing", () => {
+        const tokens = lex("(x + y");
+
+        expect(() => {
+            parser.parse(tokens);
+        }).toThrowErrorMatchingInlineSnapshot(`"unmatched left paren"`);
+    });
+
+    it("parses parenthesis", () => {
+        const tokens = lex("a(x + y)");
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "name": "a",
+                  "type": "identifier",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "x",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "y",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "implicit": false,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses implicit multiplication by parens", () => {
         const tokens = lex("(a + b)(x + y)");
         const ast = parser.parse(tokens);
 
         expect(ast).toMatchInlineSnapshot(`
             Object {
-              "name": "a",
-              "type": "identifier",
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "a",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "b",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "add",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "x",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "y",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "implicit": false,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses n-ary implicit multiplication by parens", () => {
+        const tokens = lex("(a)(b)(c)");
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "name": "a",
+                  "type": "identifier",
+                },
+                Object {
+                  "name": "b",
+                  "type": "identifier",
+                },
+                Object {
+                  "name": "c",
+                  "type": "identifier",
+                },
+              ],
+              "implicit": false,
+              "type": "mul",
             }
         `);
     });

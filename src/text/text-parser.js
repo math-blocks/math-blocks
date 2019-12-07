@@ -5,7 +5,7 @@ import * as Semantic from "../semantic.js";
 import type {Token} from "./text-lexer.js";
 
 // TODO: fill out this list
-type Operator = "add" | "sub" | "mul" | "div" | "neg" | "caret" | "eq";
+type Operator = "add" | "sub" | "mul" | "div" | "neg" | "caret" | "eq" | "nul";
 
 type Node = Semantic.Expression;
 
@@ -72,9 +72,37 @@ const getPrefixParselet = (
             return {
                 parse: parser => neg(parser.parseWithOperator("neg"), true),
             };
+        case "lparen":
+            return {
+                parse: parser => {
+                    const result = parser.parse();
+                    const nextToken = parser.consume();
+                    if (nextToken.type !== "rparen") {
+                        throw new Error("unmatched left paren");
+                    }
+                    return result;
+                },
+            };
         default:
             return null;
     }
+};
+
+// let rec parseMulByParens = (parser: Parser.parser) => {
+//   let expr = parser.parse(getOpPrecedence(Mul(`Implicit)));
+//   switch (parser.peek(0).t) {
+//   | LEFT_PAREN
+//   | ELLIPSES => [expr] @ parseMulByParens(parser)
+//   | _ => [expr]
+//   };
+// };
+
+const parseMulByParen = (parser: TextParser) => {
+    let expr = parser.parseWithOperator("mul");
+    if (parser.peek().type === "lparen") {
+        return [expr, ...parseMulByParen(parser)];
+    }
+    return [expr];
 };
 
 const getInfixParselet = (
@@ -111,6 +139,20 @@ const getInfixParselet = (
             };
         case "identifier":
             return {op: "mul", parse: parseNaryInfix("mul")};
+        case "lparen":
+            return {
+                op: "mul",
+                parse: (parser, left) => {
+                    return mul([left, ...parseMulByParen(parser)]);
+                },
+            };
+        case "rparen":
+            return {
+                op: "nul",
+                parse: () => {
+                    throw new Error("mismatched parens");
+                },
+            };
         default:
             return null;
     }
@@ -189,6 +231,8 @@ const parseNaryArgs = (parser: TextParser, op: Operator): Node[] => {
 
 const getOpPrecedence = (op: Operator) => {
     switch (op) {
+        case "nul":
+            return 0;
         case "eq":
             return 2;
         case "add":

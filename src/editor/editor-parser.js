@@ -92,11 +92,11 @@ const getPrefixParselet = (
         }
         case "frac":
             return {
-                parse: parser => {
+                parse: () => {
                     const [numerator, denominator] = token.children;
                     return div(
-                        parser.parse(numerator.children),
-                        parser.parse(denominator.children),
+                        editorParser.parse(numerator.children),
+                        editorParser.parse(denominator.children),
                     );
                 },
             };
@@ -106,15 +106,15 @@ const getPrefixParselet = (
             return null;
         case "parens":
             return {
-                parse: parser => parser.parse(token.children),
+                parse: () => editorParser.parse(token.children),
             };
         case "root":
             return {
-                parse: parser => {
+                parse: () => {
                     const [arg, index] = token.children;
                     return root(
-                        parser.parse(arg.children),
-                        index ? parser.parse(index.children) : undefined,
+                        editorParser.parse(arg.children),
+                        index ? editorParser.parse(index.children) : undefined,
                     );
                 },
             };
@@ -182,7 +182,7 @@ const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
         }
     } else if (token.type === "parens") {
         parser.consume();
-        const expr = parser.parse(token.children);
+        const expr = editorParser.parse(token.children);
         const nextToken = parser.peek();
         if (nextToken.type === token.type) {
             return [expr, ...parseNaryArgs(parser, "mul")];
@@ -193,8 +193,8 @@ const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
         parser.consume();
         const [arg, index] = token.children;
         const expr = root(
-            parser.parse(arg.children),
-            index ? parser.parse(index.children) : undefined,
+            editorParser.parse(arg.children),
+            index ? editorParser.parse(index.children) : undefined,
         );
         const nextToken = parser.peek();
         if (nextToken.type === "root" || isIdentifier(nextToken)) {
@@ -240,7 +240,7 @@ const getInfixParselet = (
                     const [sub, sup] = token.children;
                     if (left.type === "identifier") {
                         if (sub) {
-                            left.subscript = parser.parse(sub.children);
+                            left.subscript = editorParser.parse(sub.children);
                         }
                     } else {
                         if (sub) {
@@ -250,7 +250,7 @@ const getInfixParselet = (
                         }
                     }
                     if (sup) {
-                        return exp(left, parser.parse(sup.children));
+                        return exp(left, editorParser.parse(sup.children));
                     }
 
                     return left;
@@ -293,9 +293,11 @@ const getOpPrecedence = (op: Operator) => {
 
 const EOL: Token = Editor.atom({kind: "eol"});
 
-export default Parser.parserFactory<Token, Node, Operator>(
+const editorParser = Parser.parserFactory<Token, Node, Operator>(
     getPrefixParselet,
     getInfixParselet,
     getOpPrecedence,
     EOL,
 );
+
+export default editorParser;

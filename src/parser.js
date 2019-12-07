@@ -12,7 +12,7 @@ export interface Parser<T, N, O> {
     +parseWithOperator: (op: O, associativity?: Associativity) => N;
     +peek: () => T;
     +consume: () => T;
-    +parse: (Array<T>) => N;
+    +parse: () => N;
 }
 
 type Associativity = "right" | "left";
@@ -23,6 +23,7 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
     getOpPrecedence: O => number,
     EOL: T,
 ): {parse: (Array<T>) => N} {
+    // rewrite this as a class.
     const parse = (tokens: Array<T>): N => {
         let index: number = 0;
 
@@ -52,7 +53,12 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             const parselet = getInfixParselet(token);
             return parselet
                 ? parselet.parse(
-                      {parse, parseWithOperator, peek, consume},
+                      {
+                          parse: () => parseWithPrecedence(0),
+                          parseWithOperator,
+                          peek,
+                          consume,
+                      },
                       left,
                   )
                 : left;
@@ -67,7 +73,7 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
                 throw new Error("Unexpected token");
             }
             return parselet.parse({
-                parse,
+                parse: () => parseWithPrecedence(0),
                 parseWithOperator,
                 peek,
                 consume,
@@ -92,7 +98,15 @@ export function parserFactory<T: {+type: string, ...}, N, O>(
             return parseWithPrecedence(getOpPrecedence(op), associativity);
         };
 
-        return parseWithPrecedence(0);
+        const result = parseWithPrecedence(0);
+        const lastToken = peek();
+        if (lastToken !== EOL) {
+            if (lastToken.type === "rparen") {
+                throw new Error("unmatched right paren");
+            }
+            throw new Error("unexpected token");
+        }
+        return result;
     };
     return {parse};
 }
