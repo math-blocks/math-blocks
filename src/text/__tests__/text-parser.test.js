@@ -23,7 +23,7 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (add
               a
-              (neg b))
+              (neg.sub b))
         `);
     });
 
@@ -34,8 +34,8 @@ describe("TextParser", () => {
             (add
               a
               b
-              (neg c)
-              (neg d))
+              (neg.sub c)
+              d)
         `);
     });
 
@@ -46,7 +46,7 @@ describe("TextParser", () => {
             (add
               1
               (mul.exp 2 3)
-              (neg 4))
+              (neg.sub 4))
         `);
     });
 
@@ -81,7 +81,7 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (add
               a
-              (neg
+              (neg.sub
                 (neg b)))
         `);
     });

@@ -19,6 +19,9 @@ const print = (
         if (ast.type === "mul") {
             type = ast.implicit ? "mul.imp" : "mul.exp";
         }
+        if (ast.type === "neg") {
+            type = ast.subtraction ? "neg.sub" : "neg";
+        }
 
         // $FlowFixMe: handle all non-args nodes
         const args: Node[] = ast.args;

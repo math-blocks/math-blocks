@@ -206,9 +206,7 @@ const parseNaryArgs = (parser: TextParser, op: Operator): Node[] => {
         (op === "add" || op === "sub") &&
         (nextToken.type === "plus" || nextToken.type === "minus")
     ) {
-        if (nextToken.type === "minus") {
-            op = "sub";
-        }
+        op = nextToken.type === "minus" ? "sub" : "add";
         return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === "mul.exp" && nextToken.type === "times") {
         return [expr, ...parseNaryArgs(parser, op)];
