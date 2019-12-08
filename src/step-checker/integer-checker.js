@@ -1,6 +1,7 @@
 // @flow
 import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
+import print from "../print.js";
 
 import {isNegative, isSubtraction} from "./arithmetic.js";
 
@@ -206,7 +207,10 @@ class IntegerChecker {
                 ...Arithmetic.getFactors(prev.args[0]),
             ]);
 
-            const {equivalent, reasons} = checker.checkStep(newPrev, next);
+            const result = reverse
+                ? checker.checkStep(next, newPrev)
+                : checker.checkStep(newPrev, next);
+            const {equivalent, reasons} = result;
             if (equivalent) {
                 return {
                     equivalent: true,
@@ -216,14 +220,14 @@ class IntegerChecker {
                               {
                                   message:
                                       "negation is the same as multipling by negative one",
-                                  nodes: [],
+                                  nodes: [newPrev, prev],
                               },
                           ]
                         : [
                               {
                                   message:
                                       "negation is the same as multipling by negative one",
-                                  nodes: [],
+                                  nodes: [prev, newPrev],
                               },
                               ...reasons,
                           ],

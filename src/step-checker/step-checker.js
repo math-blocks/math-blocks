@@ -287,7 +287,10 @@ class StepChecker implements IStepChecker {
                             reasons: [
                                 {
                                     message: reason,
-                                    nodes: [],
+                                    nodes:
+                                        reason === "distribution"
+                                            ? [mulNode, addNode]
+                                            : [addNode, mulNode],
                                 },
                             ],
                         };

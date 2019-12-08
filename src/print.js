@@ -27,15 +27,24 @@ const print = (expr: Semantic.Expression): string => {
             return result;
         }
         case "mul":
-            return expr.args.map(print).join(" * "); // TODO: handle implicit mulitplication
+            return expr.args
+                .map(arg => {
+                    return arg.type === "add" ? `(${print(arg)})` : print(arg);
+                })
+                .join(" * "); // TODO: handle implicit mulitplication
         case "div":
             return `${print(expr.args[0])} / ${print(expr.args[1])}`;
         case "mod":
             return `${print(expr.args[0])} mod ${print(expr.args[1])}`;
-        case "neg":
-            return expr.subtraction
-                ? `${print(expr.args[0])}`
-                : `-${print(expr.args[0])}`;
+        case "neg": {
+            const arg = expr.args[0];
+            // Should we wrap an explicit "mul" node in parens too?
+            let printedArg =
+                arg.type === "add"
+                    ? `(${print(expr.args[0])})`
+                    : print(expr.args[0]);
+            return expr.subtraction ? printedArg : `-${printedArg}`;
+        }
         case "root": {
             // eslint-disable-next-line no-unused-vars
             const [radicand, index] = expr.args;
