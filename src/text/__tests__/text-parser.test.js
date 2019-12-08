@@ -1,74 +1,29 @@
 // @flow
 import {parse} from "../text-parser.js";
+import serializer from "../ast-serializer.js";
+
+expect.addSnapshotSerializer(serializer);
 
 describe("TextParser", () => {
     it("parse addition", () => {
         const ast = parse("1 + 2");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(add 1 2)`);
     });
 
     it("parse n-ary addition", () => {
         const ast = parse("1 + 2 + a");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(add 1 2 a)`);
     });
 
     it("parses minus", () => {
         const ast = parse("a - b");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "b",
-                      "type": "identifier",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              a
+              (neg b))
         `);
     });
 
@@ -76,39 +31,11 @@ describe("TextParser", () => {
         const ast = parse("a + b - c + d");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "b",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "c",
-                      "type": "identifier",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "d",
-                      "type": "identifier",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              a
+              b
+              (neg c)
+              (neg d))
         `);
     });
 
@@ -116,82 +43,26 @@ describe("TextParser", () => {
         const ast = parse("1 + 2 * 3 - 4");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "3",
-                    },
-                  ],
-                  "implicit": false,
-                  "type": "mul",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "4",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              1
+              (mul.exp 2 3)
+              (neg 4))
         `);
     });
 
     it("parses unary minus", () => {
         const ast = parse("-a");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-              ],
-              "subtraction": false,
-              "type": "neg",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(neg a)`);
     });
 
     it("parses unary minus with addition", () => {
         const ast = parse("a + -a");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                  ],
-                  "subtraction": false,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              a
+              (neg a))
         `);
     });
 
@@ -199,22 +70,8 @@ describe("TextParser", () => {
         const ast = parse("--a");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                  ],
-                  "subtraction": false,
-                  "type": "neg",
-                },
-              ],
-              "subtraction": false,
-              "type": "neg",
-            }
+            (neg
+              (neg a))
         `);
     });
 
@@ -222,143 +79,38 @@ describe("TextParser", () => {
         const ast = parse("a - -b");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "args": Array [
-                        Object {
-                          "name": "b",
-                          "type": "identifier",
-                        },
-                      ],
-                      "subtraction": false,
-                      "type": "neg",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              a
+              (neg
+                (neg b)))
         `);
     });
 
     it("parses implicit multiplication", () => {
         const ast = parse("ab");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "b",
-                  "type": "identifier",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(mul.imp a b)`);
     });
 
     it("parses n-ary implicit multiplication", () => {
         const ast = parse("abc");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "b",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "c",
-                  "type": "identifier",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(mul.imp a b c)`);
     });
 
     it("parses explicit multiplication", () => {
         const ast = parse("1 * 2 * 3");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-                Object {
-                  "type": "number",
-                  "value": "3",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(mul.exp 1 2 3)`);
     });
 
     it("parses explicit and implicit multiplication separately", () => {
         const ast = parse("ab * cd");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "b",
-                      "type": "identifier",
-                    },
-                  ],
-                  "implicit": true,
-                  "type": "mul",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "c",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "d",
-                      "type": "identifier",
-                    },
-                  ],
-                  "implicit": true,
-                  "type": "mul",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
+            (mul.exp
+              (mul.imp a b)
+              (mul.imp c d))
         `);
     });
 
@@ -366,38 +118,9 @@ describe("TextParser", () => {
         const ast = parse("a/b * c/d");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "b",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "div",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "c",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "d",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "div",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
+            (mul.exp
+              (div a b)
+              (div c d))
         `);
     });
 
@@ -405,99 +128,20 @@ describe("TextParser", () => {
         const ast = parse("ab/cd * uv/xy");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "args": Array [
-                        Object {
-                          "name": "a",
-                          "type": "identifier",
-                        },
-                        Object {
-                          "name": "b",
-                          "type": "identifier",
-                        },
-                      ],
-                      "implicit": true,
-                      "type": "mul",
-                    },
-                    Object {
-                      "args": Array [
-                        Object {
-                          "name": "c",
-                          "type": "identifier",
-                        },
-                        Object {
-                          "name": "d",
-                          "type": "identifier",
-                        },
-                      ],
-                      "implicit": true,
-                      "type": "mul",
-                    },
-                  ],
-                  "type": "div",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "args": Array [
-                        Object {
-                          "name": "u",
-                          "type": "identifier",
-                        },
-                        Object {
-                          "name": "v",
-                          "type": "identifier",
-                        },
-                      ],
-                      "implicit": true,
-                      "type": "mul",
-                    },
-                    Object {
-                      "args": Array [
-                        Object {
-                          "name": "x",
-                          "type": "identifier",
-                        },
-                        Object {
-                          "name": "y",
-                          "type": "identifier",
-                        },
-                      ],
-                      "implicit": true,
-                      "type": "mul",
-                    },
-                  ],
-                  "type": "div",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
+            (mul.exp
+              (div
+                (mul.imp a b)
+                (mul.imp c d))
+              (div
+                (mul.imp u v)
+                (mul.imp x y)))
         `);
     });
 
     it("parses parenthesis", () => {
         const ast = parse("(x + y)");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "y",
-                  "type": "identifier",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(add x y)`);
     });
 
     it("throws if lparen is missing", () => {
@@ -516,29 +160,9 @@ describe("TextParser", () => {
         const ast = parse("a(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "y",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
+            (mul.exp
+              a
+              (add x y))
         `);
     });
 
@@ -546,37 +170,9 @@ describe("TextParser", () => {
         const ast = parse("(a + b) + (x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "b",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "add",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "y",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "type": "add",
-            }
+            (add
+              (add a b)
+              (add x y))
         `);
     });
 
@@ -584,161 +180,47 @@ describe("TextParser", () => {
         const ast = parse("(a + b)(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "a",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "b",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "add",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "y",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
+            (mul.exp
+              (add a b)
+              (add x y))
         `);
     });
 
     it("parses n-ary implicit multiplication by parens", () => {
         const ast = parse("(a)(b)(c)");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "b",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "c",
-                  "type": "identifier",
-                },
-              ],
-              "implicit": false,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(mul.exp a b c)`);
     });
 
     it("parses division", () => {
         const ast = parse("x / y");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "y",
-                  "type": "identifier",
-                },
-              ],
-              "type": "div",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(div x y)`);
     });
 
     it("parses nested division", () => {
         const ast = parse("x / y / z");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "name": "y",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "div",
-                },
-                Object {
-                  "name": "z",
-                  "type": "identifier",
-                },
-              ],
-              "type": "div",
-            }
+            (div
+              (div x y)
+              z)
         `);
     });
 
     it("parses exponents", () => {
         const ast = parse("x^2");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-              ],
-              "type": "exp",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(exp x 2)`);
     });
 
     it("parses nested exponents", () => {
         const ast = parse("2^3^4");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "3",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "4",
-                    },
-                  ],
-                  "type": "exp",
-                },
-              ],
-              "type": "exp",
-            }
+            (exp
+              2
+              (exp 3 4))
         `);
     });
 
@@ -746,52 +228,15 @@ describe("TextParser", () => {
         const ast = parse("y = x + 1");
 
         expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "y",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "1",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "type": "eq",
-            }
+            (eq
+              y
+              (add x 1))
         `);
     });
 
     it("parses equations", () => {
         const ast = parse("x = y = z");
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "y",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "z",
-                  "type": "identifier",
-                },
-              ],
-              "type": "eq",
-            }
-        `);
+        expect(ast).toMatchInlineSnapshot(`(eq x y z)`);
     });
 });
