@@ -13,8 +13,19 @@ const print = (expr: Semantic.Expression): string => {
             return expr.name;
 
         // Arithmetic operations
-        case "add":
-            return expr.args.map(print).join(" + "); // TODO: handle args[i].kind === "neg" && args[i].subtraction
+        case "add": {
+            let result = print(expr.args[0]);
+            for (let i = 1; i < expr.args.length; i++) {
+                const arg = expr.args[i];
+                if (arg.type === "neg" && arg.subtraction) {
+                    result += " - ";
+                } else {
+                    result += " + ";
+                }
+                result += print(arg);
+            }
+            return result;
+        }
         case "mul":
             return expr.args.map(print).join(" * "); // TODO: handle implicit mulitplication
         case "div":

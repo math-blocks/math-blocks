@@ -75,6 +75,43 @@ describe("IntegerChecker", () => {
         ]);
     });
 
+    it("a + b - c -> a + b + -c", () => {
+        const before = parse("a + b - c");
+        const after = parse("a + b + -c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "subtracting is the same as adding the inverse",
+        ]);
+    });
+
+    it("a - b - c -> a + -b + -c", () => {
+        const before = parse("a - b - c");
+        const after = parse("a + -b + -c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "subtracting is the same as adding the inverse",
+            "subtracting is the same as adding the inverse",
+        ]);
+    });
+
+    it("a - b - c -> a - b + -c", () => {
+        const before = parse("a - b - c");
+        const after = parse("a - b + -c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "subtracting is the same as adding the inverse",
+        ]);
+    });
+
     it("a - -b -> a + --b -> a + b", () => {
         const before = parse("a - -b");
         const after = parse("a + b");
@@ -86,8 +123,8 @@ describe("IntegerChecker", () => {
             "subtracting is the same as adding the inverse",
             "negative of a negative is positive",
         ]);
-        expect(print(result.reasons[0].nodes[0])).toEqual("-b");
-        expect(print(result.reasons[0].nodes[1])).toEqual("--b");
+        expect(print(result.reasons[0].nodes[0])).toEqual("a - -b");
+        expect(print(result.reasons[0].nodes[1])).toEqual("a + --b");
         expect(print(result.reasons[1].nodes[0])).toEqual("--b");
         expect(print(result.reasons[1].nodes[1])).toEqual("b");
     });
@@ -105,8 +142,8 @@ describe("IntegerChecker", () => {
         ]);
         expect(print(result.reasons[0].nodes[0])).toEqual("b");
         expect(print(result.reasons[0].nodes[1])).toEqual("--b");
-        expect(print(result.reasons[1].nodes[0])).toEqual("--b");
-        expect(print(result.reasons[1].nodes[1])).toEqual("-b");
+        expect(print(result.reasons[1].nodes[0])).toEqual("a + --b");
+        expect(print(result.reasons[1].nodes[1])).toEqual("a - -b");
     });
 
     it("a - a -> 0", () => {

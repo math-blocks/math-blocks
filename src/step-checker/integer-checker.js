@@ -5,7 +5,7 @@ import * as Semantic from "../semantic.js";
 import {isNegative, isSubtraction} from "./arithmetic.js";
 
 import type {IStepChecker, Result} from "./step-checker.js";
-import type {Expression} from "../semantic.js";
+import type {Expression, Neg} from "../semantic.js";
 
 class IntegerChecker {
     checker: IStepChecker;
@@ -125,9 +125,6 @@ class IntegerChecker {
         };
     }
 
-    // TODO: return the "add" node so there's more context
-    // This shouldn't be too hard because the position of the child shouldn't
-    // change.
     subIsNeg(
         prev: Semantic.Expression,
         next: Semantic.Expression,
@@ -137,51 +134,34 @@ class IntegerChecker {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        if (isSubtraction(prev)) {
-            if (isNegative(next)) {
-                // unwrap the subtraction
-                prev = prev.args[0];
-                // unwrap the negation
-                next = next.args[0];
-                const {equivalent, reasons} = reverse
-                    ? checker.checkStep(next, prev)
-                    : checker.checkStep(prev, next);
+        if (prev.type === "add" && next.type === "add") {
+            // $FlowFixMe: use a proper predicate function
+            const subs: Semantic.Neg[] = prev.args.filter(isSubtraction);
+            for (const sub of subs) {
+                const index = prev.args.indexOf(sub);
+                // Either the corresponding arg in the next add node must be
+                // negative or the sub node must contain a negative.
+                // a - b -> a + -b or a - -b -> a + b
+                if (!isNegative(next.args[index]) && !isNegative(sub.args[0])) {
+                    continue;
+                }
+
+                const newPrev = Arithmetic.add([
+                    ...prev.args.slice(0, index),
+                    Arithmetic.neg(sub.args[0]),
+                    ...prev.args.slice(index + 1),
+                ]);
+
+                const result = reverse
+                    ? checker.checkStep(next, newPrev)
+                    : checker.checkStep(newPrev, next);
+                const {equivalent, reasons} = result;
                 if (equivalent) {
                     return {
                         equivalent: true,
                         reasons: reverse
                             ? [
                                   ...reasons,
-                                  {
-                                      message:
-                                          "subtracting is the same as adding the inverse",
-                                      nodes: [next, prev],
-                                  },
-                              ]
-                            : [
-                                  {
-                                      message:
-                                          "subtracting is the same as adding the inverse",
-                                      nodes: [prev, next],
-                                  },
-                                  ...reasons,
-                              ],
-                    };
-                }
-            } else {
-                // unwrap the subtraction
-                prev = prev.args[0];
-                const newPrev = Arithmetic.neg(prev);
-                const result = reverse
-                    ? checker.checkStep(next, newPrev)
-                    : checker.checkStep(newPrev, next);
-
-                if (result.equivalent) {
-                    return {
-                        equivalent: true,
-                        reasons: reverse
-                            ? [
-                                  ...result.reasons,
                                   {
                                       message:
                                           "subtracting is the same as adding the inverse",
@@ -194,7 +174,7 @@ class IntegerChecker {
                                           "subtracting is the same as adding the inverse",
                                       nodes: [prev, newPrev],
                                   },
-                                  ...result.reasons,
+                                  ...reasons,
                               ],
                     };
                 }
@@ -317,8 +297,7 @@ class IntegerChecker {
     // TODO: rename these methods to differentiate the StepChecker method from
     // this method
     checkStep(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        let result;
-
+        let result, result1, result2;
         result = this.addInverse(prev, next, false);
         if (result.equivalent) {
             return result;
@@ -329,14 +308,18 @@ class IntegerChecker {
             return result;
         }
 
-        result = this.subIsNeg(prev, next, false);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.subIsNeg(prev, next, true);
-        if (result.equivalent) {
-            return result;
+        result1 = this.subIsNeg(prev, next, false);
+        result2 = this.subIsNeg(prev, next, true);
+        if (result1.equivalent && result2.equivalent) {
+            if (result1.reasons.length < result2.reasons.length) {
+                return result1;
+            } else {
+                return result2;
+            }
+        } else if (result1.equivalent) {
+            return result1;
+        } else if (result2.equivalent) {
+            return result2;
         }
 
         result = this.mulTwoNegsIsPos(prev, next, false);
@@ -350,8 +333,8 @@ class IntegerChecker {
         }
 
         // Choose the fastest route when multiple paths exist.
-        const result1 = this.doubleNegative(prev, next, false);
-        const result2 = this.doubleNegative(prev, next, true);
+        result1 = this.doubleNegative(prev, next, false);
+        result2 = this.doubleNegative(prev, next, true);
         if (result1.equivalent && result2.equivalent) {
             if (result1.reasons.length < result2.reasons.length) {
                 return result1;
