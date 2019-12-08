@@ -9,40 +9,6 @@ const checker = new StepChecker();
 const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
     checker.checkStep(prev, next);
 
-const number = (value: string): Semantic.Number => {
-    if (/^[a-z]/.test(value)) {
-        throw new Error("numbers can't contain letters");
-    }
-    return {
-        type: "number",
-        value,
-    };
-};
-
-const ident = (name: string): Semantic.Identifier => {
-    if (/^[0-9]/.test(name)) {
-        throw new Error("identifiers can't start with a number");
-    }
-    return {
-        type: "identifier",
-        name,
-    };
-};
-
-const mul = (...args: Semantic.Expression[]): Semantic.Mul => ({
-    type: "mul",
-    implicit: false,
-    args,
-});
-
-const div = (
-    numerator: Semantic.Expression,
-    denominator: Semantic.Expression,
-): Semantic.Div => ({
-    type: "div",
-    args: [numerator, denominator],
-});
-
 describe("FractionChecker", () => {
     it("1 -> a/a", () => {
         const before = parse("1");
@@ -58,10 +24,7 @@ describe("FractionChecker", () => {
 
     it("a/b * c/d -> ac / bd", () => {
         const before = parse("a/b * c/d");
-        const after = div(
-            mul(ident("a"), ident("c")),
-            mul(ident("b"), ident("d")),
-        );
+        const after = parse("ac / bd");
 
         const result = checkStep(before, after);
 
@@ -72,10 +35,7 @@ describe("FractionChecker", () => {
     });
 
     it("ac / bd -> a/b * c/d", () => {
-        const before = div(
-            mul(ident("a"), ident("c")),
-            mul(ident("b"), ident("d")),
-        );
+        const before = parse("ac / bd");
         const after = parse("a/b * c/d");
 
         const result = checkStep(before, after);
@@ -87,14 +47,8 @@ describe("FractionChecker", () => {
     });
 
     it("ab/cd * e/f -> abe / cdf", () => {
-        const before = mul(
-            div(mul(ident("a"), ident("b")), mul(ident("c"), ident("d"))),
-            div(ident("e"), ident("f")),
-        );
-        const after = div(
-            mul(ident("a"), ident("b"), ident("e")),
-            mul(ident("c"), ident("d"), ident("f")),
-        );
+        const before = parse("ab/cd * e/f");
+        const after = parse("abe / cdf");
 
         const result = checkStep(before, after);
 
@@ -105,11 +59,8 @@ describe("FractionChecker", () => {
     });
 
     it("a/b * 1/d -> a*1 / bd -> a / bd", () => {
-        const before = mul(
-            div(ident("a"), ident("b")),
-            div(number("1"), ident("d")),
-        );
-        const after = div(ident("a"), mul(ident("b"), ident("d")));
+        const before = parse("a/b * 1/d");
+        const after = parse("a / bd");
 
         const result = checkStep(before, after);
 
@@ -121,11 +72,8 @@ describe("FractionChecker", () => {
     });
 
     it("1/a * 1/b -> 1*1 / a*b -> 1 / ab", () => {
-        const before = mul(
-            div(number("1"), ident("a")),
-            div(number("1"), ident("b")),
-        );
-        const after = div(number("1"), mul(ident("a"), ident("b")));
+        const before = parse("1/a * 1/b");
+        const after = parse("1 / ab");
 
         const result = checkStep(before, after);
 
@@ -137,8 +85,8 @@ describe("FractionChecker", () => {
     });
 
     it("a * 1/b -> a*1 / b -> a / b", () => {
-        const before = mul(ident("a"), div(number("1"), ident("b")));
-        const after = div(ident("a"), ident("b"));
+        const before = parse("a * 1/b");
+        const after = parse("a / b");
 
         const result = checkStep(before, after);
 
@@ -150,8 +98,8 @@ describe("FractionChecker", () => {
     });
 
     it("30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5", () => {
-        const before = div(number("30"), number("6"));
-        const after = number("5");
+        const before = parse("30 / 6");
+        const after = parse("5");
 
         const result = checkStep(before, after);
 
@@ -166,8 +114,8 @@ describe("FractionChecker", () => {
     });
 
     it("24 / 6 -> 2*2*2*3 / 2*3 -> 2*3/2*3 * 2*2/1 -> 1 * 2*2/1 -> 2*2/1 -> 4/1 -> 4", () => {
-        const before = div(number("24"), number("6"));
-        const after = number("4");
+        const before = parse("24 / 6");
+        const after = parse("4");
 
         const result = checkStep(before, after);
 
@@ -183,9 +131,9 @@ describe("FractionChecker", () => {
     });
 
     describe("reciprocals", () => {
-        it("a / b/c -> a * c/b", () => {
-            const before = div(ident("a"), div(ident("b"), ident("c")));
-            const after = mul(ident("a"), div(ident("c"), ident("b")));
+        it("a / (b/c) -> a * c/b", () => {
+            const before = parse("a / (b/c)");
+            const after = parse("a * c/b");
 
             const result = checkStep(before, after);
 
@@ -195,9 +143,9 @@ describe("FractionChecker", () => {
             ]);
         });
 
-        it("1 / a/b -> b / a", () => {
-            const before = div(number("1"), div(ident("a"), ident("b")));
-            const after = div(ident("b"), ident("a"));
+        it("1 / (a/b) -> b / a", () => {
+            const before = parse("1 / (a/b)");
+            const after = parse("b / a");
 
             const result = checkStep(before, after);
 
@@ -208,9 +156,9 @@ describe("FractionChecker", () => {
             ]);
         });
 
-        it("1 / 1/a -> a", () => {
-            const before = div(number("1"), div(number("1"), ident("a")));
-            const after = ident("a");
+        it("1 / (1/a) -> a", () => {
+            const before = parse("1 / (1/a)");
+            const after = parse("a");
 
             const result = checkStep(before, after);
 
@@ -222,9 +170,9 @@ describe("FractionChecker", () => {
             ]);
         });
 
-        it("a / 1/b -> a * b/1 -> ab", () => {
-            const before = div(ident("a"), div(number("1"), ident("b")));
-            const after = mul(ident("a"), ident("b"));
+        it("a / (1/b) -> a * b/1 -> ab", () => {
+            const before = parse("a / (1/b)");
+            const after = parse("ab");
 
             const result = checkStep(before, after);
 
@@ -237,11 +185,8 @@ describe("FractionChecker", () => {
         });
 
         it("a/b * b/a -> ab/ba -> ab/ab -> 1", () => {
-            const before = mul(
-                div(ident("a"), ident("b")),
-                div(ident("b"), ident("a")),
-            );
-            const after = number("1");
+            const before = parse("a/b * b/a");
+            const after = parse("1");
 
             const result = checkStep(before, after);
 
@@ -255,11 +200,8 @@ describe("FractionChecker", () => {
     });
 
     it("24ab / 6a -> 2*2*2*3*a*b / 2*3*a -> 2*3*a/2*3*a * 2*2/1 -> 1 * 2*2/1 -> 2*2/1 -> 4/1 -> 4b", () => {
-        const before = div(
-            mul(number("24"), ident("a"), ident("b")),
-            mul(number("6"), ident("a")),
-        );
-        const after = mul(number("4"), ident("b"));
+        const before = parse("24ab / 6a");
+        const after = parse("4b");
 
         const result = checkStep(before, after);
 
@@ -276,8 +218,8 @@ describe("FractionChecker", () => {
 
     // TODO: make this 2a/a -> a/a * 2 instead
     it("2a/a -> a/a * 2/1 -> 1 * 2/1 -> 2/1 -> 2", () => {
-        const before = div(mul(number("2"), ident("a")), ident("a"));
-        const after = number("2");
+        const before = parse("2a/a");
+        const after = parse("2");
 
         const result = checkStep(before, after);
 
@@ -291,8 +233,8 @@ describe("FractionChecker", () => {
     });
 
     it("2a/a -> 2b [incorrect]", () => {
-        const before = div(mul(number("2"), ident("a")), ident("a"));
-        const after = mul(number("2"), ident("b"));
+        const before = parse("2a/a");
+        const after = parse("2b");
 
         const result = checkStep(before, after);
 
@@ -301,11 +243,8 @@ describe("FractionChecker", () => {
     });
 
     it("2abc/ab -> ab/ab * 2c/1 -> 1 * 2c/1 -> 2c", () => {
-        const before = div(
-            mul(number("2"), ident("a"), ident("b"), ident("c")),
-            mul(ident("a"), ident("b")),
-        );
-        const after = mul(number("2"), ident("c"));
+        const before = parse("2abc/ab");
+        const after = parse("2c");
 
         const result = checkStep(before, after);
 
@@ -319,12 +258,9 @@ describe("FractionChecker", () => {
     });
 
     // test that we don't cancel all common factors
-    it("2abc/ab -> a/a * 2bc/b -> 1 * 2bc/b -> 2bc/c", () => {
-        const before = div(
-            mul(number("2"), ident("a"), ident("b"), ident("c")),
-            mul(ident("a"), ident("b")),
-        );
-        const after = div(mul(number("2"), ident("b"), ident("c")), ident("b"));
+    it("2abc/ab -> a/a * 2bc/b -> 1 * 2bc/b -> 2bc/b", () => {
+        const before = parse("2abc/ab");
+        const after = parse("2bc/b");
 
         const result = checkStep(before, after);
 
@@ -337,11 +273,8 @@ describe("FractionChecker", () => {
     });
 
     it("2abc/abd -> 2c/d", () => {
-        const before = div(
-            mul(number("2"), ident("a"), ident("b"), ident("c")),
-            mul(ident("a"), ident("b"), ident("d")),
-        );
-        const after = div(mul(number("2"), ident("c")), ident("d"));
+        const before = parse("2abc/abd");
+        const after = parse("2c/d");
 
         const result = checkStep(before, after);
 
@@ -354,11 +287,8 @@ describe("FractionChecker", () => {
     });
 
     it("ab/abde -> ab/ab * 1/de -> 1 * 1/de -> 1/de", () => {
-        const before = div(
-            mul(ident("a"), ident("b")),
-            mul(ident("a"), ident("b"), ident("d"), ident("e")),
-        );
-        const after = div(number("1"), mul(ident("d"), ident("e")));
+        const before = parse("ab/abde");
+        const after = parse("1/de");
 
         const result = checkStep(before, after);
 
@@ -371,8 +301,8 @@ describe("FractionChecker", () => {
     });
 
     it("a * b/b -> a * 1 -> a", () => {
-        const before = mul(ident("a"), div(ident("b"), ident("b")));
-        const after = ident("a");
+        const before = parse("a * b/b");
+        const after = parse("a");
 
         const result = checkStep(before, after);
 
@@ -384,8 +314,8 @@ describe("FractionChecker", () => {
     });
 
     it("a -> a * 1 -> a * b/b", () => {
-        const before = ident("a");
-        const after = mul(ident("a"), div(ident("b"), ident("b")));
+        const before = parse("a");
+        const after = parse("a * b/b");
 
         const result = checkStep(before, after);
 
@@ -398,8 +328,8 @@ describe("FractionChecker", () => {
     });
 
     it("a -> a / 1", () => {
-        const before = ident("a");
-        const after = div(ident("a"), number("1"));
+        const before = parse("a");
+        const after = parse("a / 1");
 
         const result = checkStep(before, after);
 
@@ -410,8 +340,8 @@ describe("FractionChecker", () => {
     });
 
     it("ab -> ab / 1", () => {
-        const before = mul(ident("a"), ident("b"));
-        const after = div(mul(ident("a"), ident("b")), number("1"));
+        const before = parse("ab");
+        const after = parse("ab / 1");
 
         const result = checkStep(before, after);
 

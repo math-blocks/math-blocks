@@ -133,7 +133,7 @@ describe("TextParser", () => {
                       "value": "3",
                     },
                   ],
-                  "implicit": true,
+                  "implicit": false,
                   "type": "mul",
                 },
                 Object {
@@ -315,7 +315,166 @@ describe("TextParser", () => {
                   "value": "3",
                 },
               ],
-              "implicit": true,
+              "implicit": false,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses explicit and implicit multiplication separately", () => {
+        const ast = parse("ab * cd");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "a",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "b",
+                      "type": "identifier",
+                    },
+                  ],
+                  "implicit": true,
+                  "type": "mul",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "c",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "d",
+                      "type": "identifier",
+                    },
+                  ],
+                  "implicit": true,
+                  "type": "mul",
+                },
+              ],
+              "implicit": false,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses division with higher precedence than explicit multiplication", () => {
+        const ast = parse("a/b * c/d");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "a",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "b",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "div",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "c",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "d",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "div",
+                },
+              ],
+              "implicit": false,
+              "type": "mul",
+            }
+        `);
+    });
+
+    it("parses division with lower precedence than implicit multiplication", () => {
+        const ast = parse("ab/cd * uv/xy");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "args": Array [
+                        Object {
+                          "name": "a",
+                          "type": "identifier",
+                        },
+                        Object {
+                          "name": "b",
+                          "type": "identifier",
+                        },
+                      ],
+                      "implicit": true,
+                      "type": "mul",
+                    },
+                    Object {
+                      "args": Array [
+                        Object {
+                          "name": "c",
+                          "type": "identifier",
+                        },
+                        Object {
+                          "name": "d",
+                          "type": "identifier",
+                        },
+                      ],
+                      "implicit": true,
+                      "type": "mul",
+                    },
+                  ],
+                  "type": "div",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "args": Array [
+                        Object {
+                          "name": "u",
+                          "type": "identifier",
+                        },
+                        Object {
+                          "name": "v",
+                          "type": "identifier",
+                        },
+                      ],
+                      "implicit": true,
+                      "type": "mul",
+                    },
+                    Object {
+                      "args": Array [
+                        Object {
+                          "name": "x",
+                          "type": "identifier",
+                        },
+                        Object {
+                          "name": "y",
+                          "type": "identifier",
+                        },
+                      ],
+                      "implicit": true,
+                      "type": "mul",
+                    },
+                  ],
+                  "type": "div",
+                },
+              ],
+              "implicit": false,
               "type": "mul",
             }
         `);
@@ -379,6 +538,44 @@ describe("TextParser", () => {
               ],
               "implicit": false,
               "type": "mul",
+            }
+        `);
+    });
+
+    it("parses adding parenthesis", () => {
+        const ast = parse("(a + b) + (x + y)");
+
+        expect(ast).toMatchInlineSnapshot(`
+            Object {
+              "args": Array [
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "a",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "b",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "add",
+                },
+                Object {
+                  "args": Array [
+                    Object {
+                      "name": "x",
+                      "type": "identifier",
+                    },
+                    Object {
+                      "name": "y",
+                      "type": "identifier",
+                    },
+                  ],
+                  "type": "add",
+                },
+              ],
+              "type": "add",
             }
         `);
     });

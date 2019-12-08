@@ -7,6 +7,11 @@ import {decomposeFactors} from "./util.js";
 
 import type {Expression} from "../semantic.js";
 
+// TODO: Consider simplifying substeps for dividing integers.  Right now
+// we do the following:
+// 30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5
+// There is precedent for this with evaluateMul, we could have evaluateDiv
+
 class FractionChecker {
     checker: IStepChecker;
 

@@ -7,7 +7,16 @@ import {lex} from "./text-lexer.js";
 import type {Token} from "./text-lexer.js";
 
 // TODO: fill out this list
-type Operator = "add" | "sub" | "mul" | "div" | "neg" | "caret" | "eq" | "nul";
+type Operator =
+    | "add"
+    | "sub"
+    | "mul.exp"
+    | "div"
+    | "mul.imp"
+    | "neg"
+    | "caret"
+    | "eq"
+    | "nul";
 
 type Node = Semantic.Expression;
 
@@ -100,7 +109,7 @@ const getPrefixParselet = (
 // };
 
 const parseMulByParen = (parser: TextParser) => {
-    let expr = parser.parseWithOperator("mul");
+    let expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
     }
@@ -118,7 +127,7 @@ const getInfixParselet = (
         case "minus":
             return {op: "add", parse: parseNaryInfix("sub")};
         case "times":
-            return {op: "mul", parse: parseNaryInfix("mul")};
+            return {op: "mul.exp", parse: parseNaryInfix("mul.exp")};
         case "slash":
             return {
                 op: "div",
@@ -140,10 +149,10 @@ const getInfixParselet = (
                 },
             };
         case "identifier":
-            return {op: "mul", parse: parseNaryInfix("mul")};
+            return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         case "lparen":
             return {
-                op: "mul",
+                op: "mul.imp",
                 parse: (parser, left) => {
                     return mul([left, ...parseMulByParen(parser)]);
                 },
@@ -166,9 +175,10 @@ const parseNaryInfix = (op: Operator) => (
 ): Node => {
     if (op === "add" || op === "sub") {
         return add([left, ...parseNaryArgs(parser, op)]);
-    } else if (op === "mul") {
-        // TODO: make explicit mul a different operation with lower precedence
+    } else if (op === "mul.imp") {
         return mul([left, ...parseNaryArgs(parser, op)], true);
+    } else if (op === "mul.exp") {
+        return mul([left, ...parseNaryArgs(parser, op)], false);
     } else if (op === "eq") {
         return eq([left, ...parseNaryArgs(parser, op)]);
     } else {
@@ -200,10 +210,9 @@ const parseNaryArgs = (parser: TextParser, op: Operator): Node[] => {
             op = "sub";
         }
         return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === "mul" && nextToken.type === "times") {
+    } else if (op === "mul.exp" && nextToken.type === "times") {
         return [expr, ...parseNaryArgs(parser, op)];
-    } else if (op === "mul" && nextToken.type === "identifier") {
-        // implicit multiplication
+    } else if (op === "mul.imp" && nextToken.type === "identifier") {
         return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === "eq" && nextToken.type === "eq") {
         return [expr, ...parseNaryArgs(parser, op)];
@@ -249,10 +258,12 @@ const getOpPrecedence = (op: Operator) => {
             return 3;
         case "sub":
             return 3;
-        case "mul":
+        case "mul.exp":
             return 5;
         case "div":
             return 6;
+        case "mul.imp":
+            return 7;
         case "neg":
             return 8;
         case "caret":
