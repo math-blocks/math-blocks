@@ -72,6 +72,15 @@ describe("EquationChecker", () => {
                 "subtracting the same value from both sides",
             ]);
         });
+
+        it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
+            const before = parse("2x + 5 = 10");
+            const after = parse("2x + 5 - 5 = 10 - 10");
+
+            const result = checkStep(before, after);
+
+            expect(result.equivalent).toBe(false);
+        });
     });
 
     describe("multiplying both sides by the same value", () => {

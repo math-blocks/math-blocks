@@ -349,6 +349,42 @@ describe("Expressions", () => {
         ]);
     });
 
+    it("10 - 5 -> 5", () => {
+        const before = parse("10 - 5");
+        const after = parse("5");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
+    it("10 - 5 + 2 -> 7", () => {
+        const before = parse("10 - 5 + 2");
+        const after = parse("7");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
+    it("10 - 5 + 2 -> 5 + 2", () => {
+        const before = parse("10 - 5 + 2");
+        const after = parse("5 + 2");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
     it("0 + (a + b) -> a + b", () => {
         const before = parse("0 + (a + b)");
         const after = parse("a + b");

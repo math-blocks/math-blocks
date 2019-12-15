@@ -430,8 +430,16 @@ class StepChecker implements IStepChecker {
         const aTerms = Arithmetic.getTerms(a);
         const bTerms = Arithmetic.getTerms(b);
 
-        const aNumTerms = aTerms.filter(term => term.type === "number");
-        const bNumTerms = bTerms.filter(term => term.type === "number");
+        const aNumTerms = aTerms.filter(
+            term =>
+                term.type === "number" ||
+                (term.type === "neg" && term.args[0].type === "number"),
+        );
+        const bNumTerms = bTerms.filter(
+            term =>
+                term.type === "number" ||
+                (term.type === "neg" && term.args[0].type === "number"),
+        );
 
         const commonTerms = this.intersection(aNumTerms, bNumTerms);
         const aUniqTerms = this.difference(aNumTerms, commonTerms);
@@ -439,13 +447,19 @@ class StepChecker implements IStepChecker {
 
         if (aUniqTerms.length > 0 && bUniqTerms.length > 0) {
             const aValue = aUniqTerms.reduce<number>(
-                // $FlowFixMe
-                (sum, arg) => sum + parseFloat(arg.value),
+                (sum, arg) =>
+                    sum +
+                    (arg.type === "neg"
+                        ? -parseFloat(arg.args[0].value)
+                        : parseFloat(arg.value)),
                 0,
             );
             const bValue = bUniqTerms.reduce<number>(
-                // $FlowFixMe
-                (sum, arg) => sum + parseFloat(arg.value),
+                (sum, arg) =>
+                    sum +
+                    (arg.type === "neg"
+                        ? -parseFloat(arg.args[0].value)
+                        : parseFloat(arg.value)),
                 0,
             );
             if (aValue === bValue) {

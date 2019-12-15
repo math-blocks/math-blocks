@@ -92,6 +92,7 @@ class IntegerChecker {
             [prev, next] = [next, prev];
         }
         const {checker} = this;
+        prev; // ?
         if (isNegative(prev) && isNegative(prev.args[0])) {
             const newPrev = prev.args[0].args[0];
             const {equivalent, reasons} = reverse
@@ -134,7 +135,11 @@ class IntegerChecker {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        if (prev.type === "add" && next.type === "add") {
+        if (
+            prev.type === "add" &&
+            next.type === "add" &&
+            prev.args.length === next.args.length
+        ) {
             // $FlowFixMe: use a proper predicate function
             const subs: Semantic.Neg[] = prev.args.filter(isSubtraction);
             for (const sub of subs) {
