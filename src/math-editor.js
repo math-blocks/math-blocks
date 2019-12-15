@@ -18,6 +18,7 @@ type Props = {
     readonly: boolean,
     focus?: boolean,
     onSubmit?: (value: Editor.Row<Editor.Glyph>) => mixed,
+    onChange?: (value: Editor.Row<Editor.Glyph>) => mixed,
     style: {[string]: any, ...},
 };
 
@@ -46,7 +47,11 @@ const MathEditor = (props: Props) => {
             if (e.key === "Enter" && props.onSubmit) {
                 props.onSubmit(state.math);
             }
-            setState(reducer(state, action));
+            const value = reducer(state, action);
+            setState(value);
+            if (props.onChange) {
+                props.onChange(value.math);
+            }
         }
     });
 

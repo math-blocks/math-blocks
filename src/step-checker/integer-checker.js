@@ -1,7 +1,6 @@
 // @flow
 import * as Arithmetic from "./arithmetic.js";
 import * as Semantic from "../semantic.js";
-import print from "../print.js";
 
 import {isNegative, isSubtraction} from "./arithmetic.js";
 

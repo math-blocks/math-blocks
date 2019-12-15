@@ -6,6 +6,13 @@ const {useState} = React;
 import MathKeypad from "./math-keypad";
 import MathEditor from "./math-editor";
 import * as Editor from "./editor/editor.js";
+import * as Lexer from "./editor/editor-lexer.js";
+import {lex} from "./editor/editor-lexer.js";
+import Parser from "./editor/editor-parser.js";
+import StepChecker from "./step-checker/step-checker.js";
+
+const checker = new StepChecker();
+
 const {row, glyph, frac} = Editor;
 
 const question: Editor.Row<Editor.Glyph> = row([
@@ -35,25 +42,85 @@ const answer: Editor.Row<Editor.Glyph> = row([
 ]);
 
 const App = () => {
-    const [steps, setSteps] = useState([question, step1]);
+    const [steps, setSteps] = useState<Editor.Row<Editor.Glyph>[]>([
+        question,
+        step1,
+    ]);
+
+    const handleCheckStep = (
+        prev: Editor.Row<Editor.Glyph>,
+        next: Editor.Row<Editor.Glyph>,
+    ) => {
+        const prevTokens: Editor.Node<Lexer.Token> = lex(prev);
+        const nextTokens: Editor.Node<Lexer.Token> = lex(next);
+
+        if (prevTokens.type === "row" && nextTokens.type === "row") {
+            const result = checker.checkStep(
+                Parser.parse(prevTokens.children),
+                Parser.parse(nextTokens.children),
+            );
+            console.log(result);
+            console.log(Parser.parse(prevTokens.children));
+            console.log(Parser.parse(nextTokens.children));
+            if (result.equivalent) {
+                setSteps([...steps, steps[steps.length - 1]]);
+            }
+        }
+    };
 
     return (
         <div style={{width: 800, margin: "auto"}}>
             <div style={{display: "flex", flexDirection: "column"}}>
-                {steps.flatMap((step, index) => {
-                    return [
-                        <MathEditor
-                            key={`step-${index}`}
-                            readonly={index === 0}
-                            value={step}
-                            focus={index === steps.length - 1}
-                            onSubmit={(value: Editor.Row<Editor.Glyph>) => {
-                                console.log(value);
-                                setSteps([...steps, value]);
+                <MathEditor
+                    key={`question`}
+                    readonly={true}
+                    value={steps[0]}
+                    focus={false}
+                    onSubmit={(value: Editor.Row<Editor.Glyph>) => {
+                        console.log(value);
+                        setSteps([...steps, value]);
+                    }}
+                    style={{marginTop: 8}}
+                />
+                {steps.slice(1).flatMap((step, index) => {
+                    return (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
                             }}
-                            style={{marginTop: 8}}
-                        />,
-                    ];
+                        >
+                            <MathEditor
+                                key={`step-${index}`}
+                                readonly={false}
+                                value={step}
+                                focus={index === steps.length - 2}
+                                onSubmit={(value: Editor.Row<Editor.Glyph>) => {
+                                    setSteps([...steps, value]);
+                                }}
+                                onChange={(value: Editor.Row<Editor.Glyph>) => {
+                                    setSteps([...steps.slice(0, -1), value]);
+                                }}
+                                style={{marginTop: 8, flexGrow: 1}}
+                            />
+                            <button
+                                style={{
+                                    marginTop: 8,
+                                    marginLeft: 8,
+                                    fontSize: 30,
+                                    borderRadius: 4,
+                                }}
+                                onClick={() =>
+                                    handleCheckStep(
+                                        steps[index],
+                                        steps[index + 1],
+                                    )
+                                }
+                            >
+                                Check
+                            </button>
+                        </div>
+                    );
                 })}
                 <MathEditor
                     readonly={true}
