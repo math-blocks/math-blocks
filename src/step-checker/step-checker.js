@@ -27,6 +27,16 @@ const assertValid = (node: Semantic.Expression) => {
     }
 };
 
+const parseNode = (node: Semantic.Expression) => {
+    if (node.type === "number") {
+        return parseFloat(node.value);
+    } else if (node.type === "neg") {
+        return -parseNode(node.args[0]);
+    } else {
+        throw new Error(`cannot parse a number from ${node.type} node`);
+    }
+};
+
 type Reason = {
     message: string,
     nodes: Semantic.Expression[],
@@ -447,19 +457,11 @@ class StepChecker implements IStepChecker {
 
         if (aUniqTerms.length > 0 && bUniqTerms.length > 0) {
             const aValue = aUniqTerms.reduce<number>(
-                (sum, arg) =>
-                    sum +
-                    (arg.type === "neg"
-                        ? -parseFloat(arg.args[0].value)
-                        : parseFloat(arg.value)),
+                (sum, arg) => sum + parseNode(arg),
                 0,
             );
             const bValue = bUniqTerms.reduce<number>(
-                (sum, arg) =>
-                    sum +
-                    (arg.type === "neg"
-                        ? -parseFloat(arg.args[0].value)
-                        : parseFloat(arg.value)),
+                (sum, arg) => sum + parseNode(arg),
                 0,
             );
             if (aValue === bValue) {
