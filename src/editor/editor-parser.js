@@ -7,7 +7,15 @@ import * as Editor from "./editor.js";
 export type Token = Editor.Node<Lexer.Token>;
 
 // TODO: fill out this list
-type Operator = "add" | "sub" | "mul" | "div" | "neg" | "eq" | "supsub";
+type Operator =
+    | "add"
+    | "sub"
+    | "mul.exp"
+    | "div"
+    | "mul.imp"
+    | "neg"
+    | "eq"
+    | "supsub";
 
 type Node = Semantic.Expression;
 
@@ -80,7 +88,7 @@ const getPrefixParselet = (
                 case "minus":
                     return {
                         parse: parser =>
-                            neg(parser.parseWithOperator("neg"), true),
+                            neg(parser.parseWithOperator("neg"), false),
                     };
                 case "ellipsis":
                     return {
@@ -142,8 +150,10 @@ const parseNaryInfix = (op: Operator) => (
 ): Node => {
     if (op === "add" || op === "sub") {
         return add([left, ...parseNaryArgs(parser, op)]);
-    } else if (op === "mul") {
+    } else if (op === "mul.imp") {
         return mul([left, ...parseNaryArgs(parser, op)], true);
+    } else if (op === "mul.exp") {
+        return mul([left, ...parseNaryArgs(parser, op)], false);
     } else {
         return eq([left, ...parseNaryArgs(parser, op)]);
     }
@@ -163,21 +173,26 @@ const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
         let expr: Node = parser.parseWithOperator(op);
         if (op === "sub") {
             expr = neg(expr, true);
-            op = "add";
         }
         const nextToken = parser.peek();
-        if (nextToken.type === token.type) {
-            const nextAtom = nextToken.value;
-            if (op === "add" && nextAtom.kind === "plus") {
-                return [expr, ...parseNaryArgs(parser, op)];
-            } else if (op === "mul" && nextAtom.kind === "identifier") {
-                // implicit multiplication
-                return [expr, ...parseNaryArgs(parser, op)];
-            } else {
-                return [expr];
-            }
+        if (nextToken.type !== "atom") {
+            throw new Error("atom expected");
+        }
+        const nextAtom = nextToken.value;
+        if (
+            (op === "add" || op === "sub") &&
+            (nextAtom.kind === "plus" || nextAtom.kind === "minus")
+        ) {
+            op = nextAtom.kind === "minus" ? "sub" : "add";
+            return [expr, ...parseNaryArgs(parser, op)];
+        } else if (op === "mul.exp" && nextAtom.kind === "times") {
+            return [expr, ...parseNaryArgs(parser, op)];
+        } else if (op === "mul.imp" && nextAtom.kind === "identifier") {
+            return [expr, ...parseNaryArgs(parser, op)];
+        } else if (op === "eq" && nextAtom.kind === "eq") {
+            return [expr, ...parseNaryArgs(parser, op)];
         } else {
-            throw new Error(`we don't handle ${nextToken.type} nextTokens yet`);
+            return [expr];
             // TODO: deal with frac, subsup, etc.
         }
     } else if (token.type === "parens") {
@@ -185,7 +200,7 @@ const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
         const expr = editorParser.parse(token.children);
         const nextToken = parser.peek();
         if (nextToken.type === token.type) {
-            return [expr, ...parseNaryArgs(parser, "mul")];
+            return [expr, ...parseNaryArgs(parser, "mul.imp")];
         } else {
             return [expr];
         }
@@ -198,7 +213,7 @@ const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
         );
         const nextToken = parser.peek();
         if (nextToken.type === "root" || isIdentifier(nextToken)) {
-            return [expr, ...parseNaryArgs(parser, "mul")];
+            return [expr, ...parseNaryArgs(parser, "mul.imp")];
         } else {
             return [expr];
         }
@@ -213,7 +228,7 @@ const getInfixParselet = (
 ): ?Parser.InfixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "atom": {
-            const atom = token.value; // ?
+            const atom = token.value;
             switch (atom.kind) {
                 case "plus":
                     return {op: "add", parse: parseNaryInfix("add")};
@@ -222,7 +237,7 @@ const getInfixParselet = (
                 case "eq":
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":
-                    return {op: "mul", parse: parseNaryInfix("mul")};
+                    return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
                 default:
                     return null;
             }
@@ -259,10 +274,10 @@ const getInfixParselet = (
         }
         case "parens": {
             // TODO: handle function application, e.g. f(x)
-            return {op: "mul", parse: parseNaryInfix("mul")};
+            return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         }
         case "root": {
-            return {op: "mul", parse: parseNaryInfix("mul")};
+            return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         }
         default:
             return null;
@@ -277,10 +292,12 @@ const getOpPrecedence = (op: Operator) => {
             return 3;
         case "sub":
             return 3;
-        case "mul":
+        case "mul.exp":
             return 5;
         case "div":
             return 6;
+        case "mul.imp":
+            return 7;
         case "neg":
             return 8;
         case "supsub":

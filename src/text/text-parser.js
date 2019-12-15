@@ -44,11 +44,14 @@ const div = (numerator: Node, denominator: Node): Semantic.Div => ({
     args: [numerator, denominator],
 });
 
-const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
-    type: "neg",
-    args: [arg],
-    subtraction,
-});
+const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => {
+    subtraction; // ?
+    return {
+        type: "neg",
+        args: [arg],
+        subtraction,
+    };
+};
 
 const exp = (base: Node, exp: Node): Semantic.Exp => ({
     type: "exp",
@@ -154,7 +157,7 @@ const getInfixParselet = (
             return {
                 op: "mul.imp",
                 parse: (parser, left) => {
-                    return mul([left, ...parseMulByParen(parser)]);
+                    return mul([left, ...parseMulByParen(parser)], true);
                 },
             };
         case "rparen":

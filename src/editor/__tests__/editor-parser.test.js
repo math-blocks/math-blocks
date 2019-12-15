@@ -1,5 +1,6 @@
 // @flow
 import parser from "../editor-parser.js";
+import {parse} from "../../text/text-parser.js";
 import * as Lexer from "../editor-lexer.js";
 import * as Editor from "../editor.js";
 
@@ -16,31 +17,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                  ],
-                  "implicit": true,
-                  "type": "mul",
-                },
-                Object {
-                  "type": "number",
-                  "value": "10",
-                },
-              ],
-              "type": "eq",
-            }
-        `);
+        expect(ast).toEqual(parse("2x = 10"));
     });
 
     it("should parse binary expressions containing subtraction", () => {
@@ -48,27 +25,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toEqual(parse("1 - 2"));
     });
 
     it("should parse n-ary expressions containing subtraction", () => {
@@ -82,42 +39,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "1",
-                    },
-                    Object {
-                      "args": Array [
-                        Object {
-                          "type": "number",
-                          "value": "2",
-                        },
-                      ],
-                      "subtraction": true,
-                      "type": "neg",
-                    },
-                  ],
-                  "type": "add",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "3",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toEqual(parse("1 - 2 - 3"));
     });
 
     it("should handle subtracting negative numbers", () => {
@@ -130,33 +52,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "args": Array [
-                        Object {
-                          "type": "number",
-                          "value": "2",
-                        },
-                      ],
-                      "subtraction": true,
-                      "type": "neg",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toEqual(parse("1 - -2"));
     });
 
     it("should parse expressions containing unary minus", () => {
@@ -171,31 +67,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                  ],
-                  "subtraction": true,
-                  "type": "neg",
-                },
-                Object {
-                  "type": "number",
-                  "value": "3",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toEqual(parse("1 + -2 + 3"));
     });
 
     it("should parse implicit multiplication", () => {
@@ -207,26 +79,7 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "a",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "b",
-                  "type": "identifier",
-                },
-                Object {
-                  "name": "c",
-                  "type": "identifier",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toEqual(parse("abc"));
     });
 
     it("should handle fractions", () => {
@@ -238,30 +91,7 @@ describe("NewMathParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "1",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "1",
-                    },
-                    Object {
-                      "name": "x",
-                      "type": "identifier",
-                    },
-                  ],
-                  "type": "div",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(parseTree).toEqual(parse("1 + 1/x"));
     });
 
     it("should handle exponents", () => {
@@ -272,58 +102,21 @@ describe("NewMathParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "type": "number",
-                  "value": "2",
-                },
-              ],
-              "type": "exp",
-            }
-        `);
+        expect(parseTree).toEqual(parse("x^2"));
     });
 
     it("should handle nested exponents", () => {
         const tokens: Array<Token> = [
             Lexer.identifier("x"),
             Editor.subsup(undefined, [
-                Lexer.number("y"),
+                Lexer.identifier("y"),
                 Editor.subsup(undefined, [Lexer.number("2")]),
             ]),
         ];
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "name": "x",
-                  "type": "identifier",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "y",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "2",
-                    },
-                  ],
-                  "type": "exp",
-                },
-              ],
-              "type": "exp",
-            }
-        `);
+        expect(parseTree).toEqual(parse("x^y^2"));
     });
 
     it("should handle subscripts on identifiers", () => {
@@ -443,171 +236,78 @@ describe("NewMathParser", () => {
 
     it("should handle adding with parens", () => {
         const tokens = [
-            Lexer.number("a"),
+            Lexer.identifier("a"),
             Lexer.plus(),
-            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+            Editor.parens([
+                Lexer.identifier("b"),
+                Lexer.plus(),
+                Lexer.identifier("c"),
+            ]),
         ];
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "a",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "b",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "c",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "type": "add",
-            }
-        `);
+        expect(ast).toEqual(parse("a + (b + c)"));
     });
 
     it("should handle implicit multiplication with parens", () => {
         const tokens = [
-            Lexer.number("a"),
-            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
+            Lexer.identifier("a"),
+            Editor.parens([
+                Lexer.identifier("b"),
+                Lexer.plus(),
+                Lexer.identifier("c"),
+            ]),
         ];
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "a",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "b",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "c",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toEqual(parse("a(b + c)"));
     });
 
     it("should handle implicit multiplication with multiple parens", () => {
         const tokens = [
-            Lexer.number("a"),
-            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
-            Editor.parens([Lexer.number("d"), Lexer.plus(), Lexer.number("e")]),
+            Lexer.identifier("a"),
+            Editor.parens([
+                Lexer.identifier("b"),
+                Lexer.plus(),
+                Lexer.identifier("c"),
+            ]),
+            Editor.parens([
+                Lexer.identifier("d"),
+                Lexer.plus(),
+                Lexer.identifier("e"),
+            ]),
         ];
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "type": "number",
-                  "value": "a",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "b",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "c",
-                    },
-                  ],
-                  "type": "add",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "d",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "e",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toEqual(parse("a(b + c)(d + e)"));
     });
 
     it("should handle implicit multiplication with parens at the start", () => {
         const tokens = [
-            Editor.parens([Lexer.number("b"), Lexer.plus(), Lexer.number("c")]),
-            Editor.parens([Lexer.number("d"), Lexer.plus(), Lexer.number("e")]),
+            Editor.parens([
+                Lexer.identifier("b"),
+                Lexer.plus(),
+                Lexer.identifier("c"),
+            ]),
+            Editor.parens([
+                Lexer.identifier("d"),
+                Lexer.plus(),
+                Lexer.identifier("e"),
+            ]),
         ];
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            Object {
-              "args": Array [
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "b",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "c",
-                    },
-                  ],
-                  "type": "add",
-                },
-                Object {
-                  "args": Array [
-                    Object {
-                      "type": "number",
-                      "value": "d",
-                    },
-                    Object {
-                      "type": "number",
-                      "value": "e",
-                    },
-                  ],
-                  "type": "add",
-                },
-              ],
-              "implicit": true,
-              "type": "mul",
-            }
-        `);
+        expect(ast).toEqual(parse("(b + c)(d + e)"));
     });
 
     it("should handle implicit multiplication with roots", () => {
         const tokens = [
-            Lexer.number("a"),
-            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
+            Lexer.identifier("a"),
+            Editor.root([Lexer.identifier("b")], [Lexer.number("2")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -616,14 +316,14 @@ describe("NewMathParser", () => {
             Object {
               "args": Array [
                 Object {
-                  "type": "number",
-                  "value": "a",
+                  "name": "a",
+                  "type": "identifier",
                 },
                 Object {
                   "args": Array [
                     Object {
-                      "type": "number",
-                      "value": "b",
+                      "name": "b",
+                      "type": "identifier",
                     },
                     Object {
                       "type": "number",

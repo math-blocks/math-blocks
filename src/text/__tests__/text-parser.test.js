@@ -160,7 +160,7 @@ describe("TextParser", () => {
         const ast = parse("a(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               a
               (add x y))
         `);
@@ -180,7 +180,7 @@ describe("TextParser", () => {
         const ast = parse("(a + b)(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (add a b)
               (add x y))
         `);
@@ -189,7 +189,7 @@ describe("TextParser", () => {
     it("parses n-ary implicit multiplication by parens", () => {
         const ast = parse("(a)(b)(c)");
 
-        expect(ast).toMatchInlineSnapshot(`(mul.exp a b c)`);
+        expect(ast).toMatchInlineSnapshot(`(mul.imp a b c)`);
     });
 
     it("parses division", () => {
