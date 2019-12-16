@@ -1,5 +1,4 @@
 import * as Semantic from "../semantic";
-import * as jest from "jest";
 
 type Node = Semantic.Expression;
 
