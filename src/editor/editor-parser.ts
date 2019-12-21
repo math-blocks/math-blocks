@@ -27,18 +27,21 @@ const identifier = (name: string): Semantic.Identifier => ({
 const number = (value: string): Semantic.Number => ({type: "number", value});
 const ellipsis = (): Semantic.Ellipsis => ({type: "ellipsis"});
 
-const add = (args: Node[]): Semantic.Add => ({
+const add = (args: TwoOrMore<Node>): Semantic.Add => ({
     type: "add",
     args,
 });
 
-const mul = (args: Node[], implicit: boolean = false): Semantic.Mul => ({
+const mul = (
+    args: TwoOrMore<Node>,
+    implicit: boolean = false,
+): Semantic.Mul => ({
     type: "mul",
     implicit,
     args,
 });
 
-const eq = (args: Node[]): Semantic.Eq => ({
+const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
     type: "eq",
     args,
 });
@@ -147,18 +150,19 @@ const parseNaryInfix = (op: Operator) => (
     parser: EditorParser,
     left: Node,
 ): Node => {
+    const [right, ...rest] = parseNaryArgs(parser, op);
     if (op === "add" || op === "sub") {
-        return add([left, ...parseNaryArgs(parser, op)]);
+        return add([left, right, ...rest]);
     } else if (op === "mul.imp") {
-        return mul([left, ...parseNaryArgs(parser, op)], true);
+        return mul([left, right, ...rest], true);
     } else if (op === "mul.exp") {
-        return mul([left, ...parseNaryArgs(parser, op)], false);
+        return mul([left, right, ...rest], false);
     } else {
-        return eq([left, ...parseNaryArgs(parser, op)]);
+        return eq([left, right, ...rest]);
     }
 };
 
-const parseNaryArgs = (parser: EditorParser, op: Operator): Node[] => {
+const parseNaryArgs = (parser: EditorParser, op: Operator): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {

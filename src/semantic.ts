@@ -2,9 +2,6 @@
  * AST describing semantic expression of mathematic expressions.
  */
 
-// TODO: figure out how to type this properly in flow
-type TwoOrMore<T> = Array<T>;
-
 export type Number = {
     type: "number";
     value: string;

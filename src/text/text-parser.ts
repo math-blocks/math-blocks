@@ -30,12 +30,15 @@ const identifier = (name: string): Semantic.Identifier => ({
 
 const number = (value: string): Semantic.Number => ({type: "number", value});
 
-const add = (args: Node[]): Semantic.Add => ({
+const add = (args: TwoOrMore<Node>): Semantic.Add => ({
     type: "add",
     args,
 });
 
-const mul = (args: Node[], implicit: boolean = false): Semantic.Mul => ({
+const mul = (
+    args: TwoOrMore<Node>,
+    implicit: boolean = false,
+): Semantic.Mul => ({
     type: "mul",
     implicit,
     args,
@@ -60,7 +63,7 @@ const exp = (base: Node, exp: Node): Semantic.Exp => ({
     args: [base, exp],
 });
 
-const eq = (args: Node[]): Semantic.Eq => ({
+const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
     type: "eq",
     args,
 });
@@ -113,7 +116,9 @@ const getPrefixParselet = (
 //   };
 // };
 
-const parseMulByParen = (parser: TextParser): Semantic.Expression[] => {
+const parseMulByParen = (
+    parser: TextParser,
+): OneOrMore<Semantic.Expression> => {
     let expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -159,7 +164,8 @@ const getInfixParselet = (
             return {
                 op: "mul.imp",
                 parse: (parser, left) => {
-                    return mul([left, ...parseMulByParen(parser)], true);
+                    const [right, ...rest] = parseMulByParen(parser);
+                    return mul([left, right, ...rest], true);
                 },
             };
         case "rparen":
@@ -178,20 +184,21 @@ const parseNaryInfix = (op: Operator) => (
     parser: TextParser,
     left: Node,
 ): Node => {
+    const [right, ...rest] = parseNaryArgs(parser, op);
     if (op === "add" || op === "sub") {
-        return add([left, ...parseNaryArgs(parser, op)]);
+        return add([left, right, ...rest]);
     } else if (op === "mul.imp") {
-        return mul([left, ...parseNaryArgs(parser, op)], true);
+        return mul([left, right, ...rest], true);
     } else if (op === "mul.exp") {
-        return mul([left, ...parseNaryArgs(parser, op)], false);
+        return mul([left, right, ...rest], false);
     } else if (op === "eq") {
-        return eq([left, ...parseNaryArgs(parser, op)]);
+        return eq([left, right, ...rest]);
     } else {
         throw new Error(`unexpected operation: ${op}`);
     }
 };
 
-const parseNaryArgs = (parser: TextParser, op: Operator): Node[] => {
+const parseNaryArgs = (parser: TextParser, op: Operator): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
 

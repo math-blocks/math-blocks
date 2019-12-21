@@ -46,7 +46,7 @@ export const mul = (factors: Semantic.Expression[]): Semantic.Expression => {
             return {
                 type: "mul",
                 implicit: false,
-                args: factors,
+                args: factors as TwoOrMore<Semantic.Expression>,
             };
     }
 };
@@ -60,7 +60,7 @@ export const add = (terms: Array<Semantic.Expression>): Semantic.Expression => {
         default:
             return {
                 type: "add",
-                args: terms,
+                args: terms as TwoOrMore<Semantic.Expression>,
             };
     }
 };
