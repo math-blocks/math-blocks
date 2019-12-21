@@ -6,7 +6,7 @@ import StepChecker from "../step-checker";
 const checker = new StepChecker();
 
 const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
-    checker.checkStep(prev, next);
+    checker.checkStep(prev, next, []);
 
 // TODO: create a test helper
 // TODO: rename checkStep to isEquivalent

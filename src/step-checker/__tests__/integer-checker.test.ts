@@ -8,7 +8,7 @@ import {Result} from "../step-checker";
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string) => {
-    return checker.checkStep(parse(prev), parse(next));
+    return checker.checkStep(parse(prev), parse(next), []);
 };
 
 expect.extend({

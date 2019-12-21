@@ -3,8 +3,7 @@ import * as Semantic from "../semantic";
 
 import {isSubtraction} from "./arithmetic";
 
-import {IStepChecker, Result} from "./step-checker";
-import {Expression, Eq} from "../semantic";
+import {IStepChecker, Result, Reason} from "./step-checker";
 
 class EquationChecker {
     checker: IStepChecker;
@@ -13,7 +12,7 @@ class EquationChecker {
         this.checker = checker;
     }
 
-    checkAddSub(a: Semantic.Eq, b: Semantic.Eq): Result {
+    checkAddSub(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -23,19 +22,21 @@ class EquationChecker {
             const lhsNewTerms = checker.difference(
                 Arithmetic.getTerms(lhsB),
                 Arithmetic.getTerms(lhsA),
+                reasons,
             );
             const rhsNewTerms = checker.difference(
                 Arithmetic.getTerms(rhsB),
                 Arithmetic.getTerms(rhsA),
+                reasons,
             );
             const lhsNew = Arithmetic.add(lhsNewTerms);
             const rhsNew = Arithmetic.add(rhsNewTerms);
-            const {equivalent, reasons} = checker.checkStep(lhsNew, rhsNew);
+            const result = checker.checkStep(lhsNew, rhsNew, reasons);
 
             // TODO: handle adding multiple things to lhs and rhs as the same time
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
-            if (equivalent && reasons.length === 0) {
+            if (result.equivalent && result.reasons.length === 0) {
                 if (
                     isSubtraction(lhsNewTerms[0]) &&
                     isSubtraction(rhsNewTerms[0])
@@ -68,7 +69,7 @@ class EquationChecker {
         };
     }
 
-    checkMul(a: Semantic.Eq, b: Semantic.Eq): Result {
+    checkMul(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -78,19 +79,22 @@ class EquationChecker {
             const lhsNewFactors = checker.difference(
                 Arithmetic.getFactors(lhsB),
                 Arithmetic.getFactors(lhsA),
+                reasons,
             );
             const rhsNewFactors = checker.difference(
                 Arithmetic.getFactors(rhsB),
                 Arithmetic.getFactors(rhsA),
+                reasons,
             );
-            const {equivalent, reasons} = checker.checkStep(
+            const result = checker.checkStep(
                 Arithmetic.mul(lhsNewFactors),
                 Arithmetic.mul(rhsNewFactors),
+                reasons,
             );
 
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
-            if (equivalent && reasons.length === 0) {
+            if (result.equivalent && result.reasons.length === 0) {
                 return {
                     equivalent: true,
                     reasons: [
@@ -108,7 +112,7 @@ class EquationChecker {
         };
     }
 
-    checkDiv(a: Semantic.Eq, b: Semantic.Eq): Result {
+    checkDiv(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -116,10 +120,13 @@ class EquationChecker {
 
         if (lhsB.type === "div" && rhsB.type === "div") {
             if (
-                checker.checkStep(lhsA, lhsB.args[0]).equivalent &&
-                checker.checkStep(rhsA, rhsB.args[0]).equivalent
+                checker.checkStep(lhsA, lhsB.args[0], reasons).equivalent &&
+                checker.checkStep(rhsA, rhsB.args[0], reasons).equivalent
             ) {
-                if (checker.checkStep(lhsB.args[1], rhsB.args[1]).equivalent) {
+                if (
+                    checker.checkStep(lhsB.args[1], rhsB.args[1], reasons)
+                        .equivalent
+                ) {
                     return {
                         equivalent: true,
                         reasons: [
@@ -141,7 +148,11 @@ class EquationChecker {
         };
     }
 
-    checkStep(a: Semantic.Expression, b: Semantic.Expression): Result {
+    checkStep(
+        a: Semantic.Expression,
+        b: Semantic.Expression,
+        reasons: Reason[],
+    ): Result {
         if (a.type !== "eq" || b.type !== "eq") {
             return {
                 equivalent: false,
@@ -151,17 +162,17 @@ class EquationChecker {
 
         let result;
 
-        result = this.checkAddSub(a, b);
+        result = this.checkAddSub(a, b, reasons);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkMul(a, b);
+        result = this.checkMul(a, b, reasons);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDiv(a, b);
+        result = this.checkDiv(a, b, reasons);
         if (result.equivalent) {
             return result;
         }
