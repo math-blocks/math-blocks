@@ -162,6 +162,12 @@ const parseNaryInfix = (op: Operator) => (
     }
 };
 
+/**
+ * Returns an array or one or more nodes that are arguments for the given
+ * operator.  All n-ary operators require at least two arguments, but the
+ * first argument is already parsed by parseNaryInfix so it makes sense
+ * that the return value is one or more.
+ */
 const parseNaryArgs = (parser: EditorParser, op: Operator): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
