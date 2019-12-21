@@ -2,8 +2,8 @@ import * as React from "react";
 
 const {useState} = React;
 
-import MathKeypad from "./math-keypad";
-import MathEditor from "./math-editor";
+import MathKeypad from "./components/math-keypad";
+import MathEditor from "./components/math-editor";
 import * as Editor from "./editor/editor";
 import * as Lexer from "./editor/editor-lexer";
 import {lex} from "./editor/editor-lexer";

@@ -1,5 +1,3 @@
-import {$Shape} from "utility-types";
-
 export type GlyphMetrics = {
     advance: number;
     bearingX: number;
@@ -12,7 +10,7 @@ export type FontMetrics = {
     unitsPerEm: number;
     ascender: number;
     descender: number;
-    glyphMetrics: $Shape<{
+    glyphMetrics: Partial<{
         [charCode: number]: GlyphMetrics;
     }>;
 };

@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import * as Layout from "./layout";
-import {UnreachableCaseError} from "./util";
+import * as Layout from "../layout";
+import {UnreachableCaseError} from "../util";
 
 type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
 

@@ -2,17 +2,17 @@
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
-import {Box} from "./layout";
-import typeset from "./typeset";
-import fontMetrics from "../metrics/comic-sans.json";
+import {Box} from "../layout";
+import typeset from "../typeset";
+import fontMetrics from "../../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
-import {State} from "./editor/editor-reducer";
+import {State} from "../editor/editor-reducer";
 
-import * as Editor from "./editor/editor";
+import * as Editor from "../editor/editor";
 const {useEffect, useState, useRef} = React;
 
-import reducer from "./editor/editor-reducer";
+import reducer from "../editor/editor-reducer";
 
 type Props = {
     value: Editor.Row<Editor.Glyph>;
