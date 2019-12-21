@@ -1,5 +1,5 @@
 import {FontMetrics} from "./metrics";
-import {UnreachableCaseError} from "./util";
+import {UnreachableCaseError} from "../util";
 
 type Dist = number;
 

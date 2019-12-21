@@ -2,8 +2,8 @@
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
-import {Box} from "../layout";
-import typeset from "../typeset";
+import {Box} from "../typesetting/layout";
+import typeset from "../typesetting/typeset";
 import fontMetrics from "../../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";

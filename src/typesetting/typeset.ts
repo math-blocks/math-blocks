@@ -1,7 +1,7 @@
-import * as Editor from "./editor/editor";
+import * as Editor from "../editor/editor";
 import * as Layout from "./layout";
 import {FontMetrics} from "./metrics";
-import {UnreachableCaseError} from "./util";
+import {UnreachableCaseError} from "../util";
 
 export type LayoutCursor = {
     path: Editor.Node<Editor.Glyph>[];

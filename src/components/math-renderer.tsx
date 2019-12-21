@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Layout from "../layout";
+import * as Layout from "../typesetting/layout";
 import {UnreachableCaseError} from "../util";
 
 type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
