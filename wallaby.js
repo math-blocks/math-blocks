@@ -1,12 +1,12 @@
 module.exports = function(wallaby) {
     return {
         files: [
-            "src/**/*.js",
+            "src/**/*.ts",
             "package.json", // <--
-            "!src/**/__tests__/*.js",
+            "!src/**/__tests__/*.ts",
         ],
 
-        tests: ["src/**/__tests__/*.js"],
+        tests: ["src/**/__tests__/*.ts"],
 
         env: {
             type: "node",
@@ -15,7 +15,7 @@ module.exports = function(wallaby) {
         testFramework: "jest",
 
         compilers: {
-            "**/*.js": wallaby.compilers.babel(),
+            "**/*.ts": wallaby.compilers.babel(),
         },
 
         setup: function(wallaby) {
