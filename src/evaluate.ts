@@ -5,13 +5,13 @@ type VarDict = {
     [key: string]: number;
 };
 
-const add = (a: number, b: number) => a + b;
-const mul = (a: number, b: number) => a * b;
+const add = (a: number, b: number): number => a + b;
+const mul = (a: number, b: number): number => a * b;
 const zero = 0;
 const one = 1;
-const sum = (args: number[]) => args.reduce(add, zero);
-const prod = (args: number[]) => args.reduce(mul, one);
-const div = (num: number, den: number) => num / den;
+const sum = (args: number[]): number => args.reduce(add, zero);
+const prod = (args: number[]): number => args.reduce(mul, one);
+const div = (num: number, den: number): number => num / den;
 
 const evaluate = (expr: Expression, varDict: VarDict): number => {
     switch (expr.type) {

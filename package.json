@@ -52,7 +52,7 @@
     "prettier": "pretty-quick --stage",
     "test": "jest",
     "coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts*"
+    "lint": "eslint 'src/**/*.{js,ts,tsx}'"
   },
   "dependencies": {
     "ajv": "^6.10.2",

@@ -18,13 +18,13 @@ type Operator =
 
 type Node = Semantic.Expression;
 
-type EditorParser = Parser.Parser<Token, Node, Operator>;
+type EditorParser = Parser.IParser<Token, Node, Operator>;
 
-const identifier = (name: string): Semantic.Identifier => ({
+const identifier = (name: string): Semantic.Ident => ({
     type: "identifier",
     name,
 });
-const number = (value: string): Semantic.Number => ({type: "number", value});
+const number = (value: string): Semantic.Num => ({type: "number", value});
 const ellipsis = (): Semantic.Ellipsis => ({type: "ellipsis"});
 
 const add = (args: TwoOrMore<Node>): Semantic.Add => ({

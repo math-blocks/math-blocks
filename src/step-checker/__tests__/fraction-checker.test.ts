@@ -1,18 +1,15 @@
 import {parse} from "../../text/text-parser";
 
-import StepChecker from "../step-checker";
+import StepChecker, {Result} from "../step-checker";
 
 const checker = new StepChecker();
 
-const checkStep = (prev: string, next: string) => {
+const checkStep = (prev: string, next: string): Result => {
     return checker.checkStep(parse(prev), parse(next), []);
 };
 
 describe("FractionChecker", () => {
     it("1 -> a/a", () => {
-        const before = parse("1");
-        const after = parse("a/a");
-
         const result = checkStep("1", "a/a");
 
         expect(result.equivalent).toBe(true);

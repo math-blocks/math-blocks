@@ -19,16 +19,16 @@ type Operator =
 
 type Node = Semantic.Expression;
 
-type TextParser = Parser.Parser<Token, Node, Operator>;
+type TextParser = Parser.IParser<Token, Node, Operator>;
 
 const EOL: Token = {type: "eol"};
 
-const identifier = (name: string): Semantic.Identifier => ({
+const identifier = (name: string): Semantic.Ident => ({
     type: "identifier",
     name,
 });
 
-const number = (value: string): Semantic.Number => ({type: "number", value});
+const number = (value: string): Semantic.Num => ({type: "number", value});
 
 const add = (args: TwoOrMore<Node>): Semantic.Add => ({
     type: "add",
@@ -78,11 +78,11 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Semantic.Identifier => identifier(token.name),
+                parse: (): Semantic.Ident => identifier(token.name),
             };
         case "number":
             return {
-                parse: (): Semantic.Number => number(token.value),
+                parse: (): Semantic.Num => number(token.value),
             };
         case "minus":
             return {

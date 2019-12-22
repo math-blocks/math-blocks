@@ -2,7 +2,7 @@
  * AST describing semantic expression of mathematic expressions.
  */
 
-export type Number = {
+export type Num = {
     type: "number";
     value: string;
     // TODO: unit
@@ -17,7 +17,7 @@ export type Pi = {
     type: "pi";
 };
 
-export type Identifier = {
+export type Ident = {
     type: "identifier";
     name: string;
     // TODO: unit
@@ -120,21 +120,21 @@ export type Limits = {
 export type Sum = {
     type: "sum";
     arg: Expression;
-    bvar: Identifier;
+    bvar: Ident;
     limits: Limits;
 };
 
 export type Prod = {
     type: "prod";
     arg: Expression;
-    bvar: Identifier;
+    bvar: Ident;
     limits: Limits;
 };
 
 export type Limit = {
     type: "limit";
     side: "left" | "right" | "both";
-    bvar: Identifier;
+    bvar: Ident;
     // TODOO: add target
     arg: Expression;
 };
@@ -147,14 +147,14 @@ export type Diff = {
 
     // If there's a bvar we use liebniz notation, if not
     // we use prime notation.
-    bvar?: Identifier;
+    bvar?: Ident;
 };
 
 // TODO: think about multiple integrals
 export type Int = {
     type: "int";
     arg: Expression;
-    bvar: Identifier;
+    bvar: Ident;
     limits: Limits;
 };
 
@@ -163,10 +163,10 @@ export type Int = {
 // - Round, Ceil, Floor, etc.
 
 export type NumericExpression =  // numbers
-    | Number
+    | Num
     | Infinity
     | Pi
-    | Identifier
+    | Ident
     | Ellipsis // n-ary
     | Add
     | Mul
@@ -274,18 +274,18 @@ export type NotProperSubset = {
 
 export type In = {
     type: "in";
-    element: Identifier;
+    element: Ident;
     set: Expression;
 };
 
 export type NotIn = {
     type: "notin";
-    element: Identifier;
+    element: Ident;
     set: Expression;
 };
 
 export type LogicExpression =
-    | Identifier // values
+    | Ident // values
     | True
     | False // operations
     | And

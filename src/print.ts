@@ -38,14 +38,14 @@ const print = (expr: Semantic.Expression): string => {
         case "neg": {
             const arg = expr.args[0];
             // Should we wrap an explicit "mul" node in parens too?
-            let printedArg =
+            const printedArg =
                 arg.type === "add"
                     ? `(${print(expr.args[0])})`
                     : print(expr.args[0]);
             return expr.subtraction ? printedArg : `-${printedArg}`;
         }
         case "root": {
-            // eslint-disable-next-line no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [radicand, index] = expr.args;
             return `√(${print(radicand)})`; // TODO: index
         }

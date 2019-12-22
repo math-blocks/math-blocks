@@ -243,7 +243,7 @@ class StepChecker implements IStepChecker {
         prev: T,
         next: Semantic.Expression,
         op: (arg0: Semantic.Expression[]) => Semantic.Expression,
-        identity: Semantic.Number, // conditional types would come in handy here
+        identity: Semantic.Num, // conditional types would come in handy here
         reason: string,
         reasons: Reason[],
     ): Result {

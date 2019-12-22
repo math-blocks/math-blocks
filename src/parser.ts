@@ -7,7 +7,7 @@
  * - O: Operator
  */
 
-export interface Parser<T, N, O> {
+export interface IParser<T, N, O> {
     readonly parseWithOperator: (op: O, associativity?: Associativity) => N;
     readonly peek: () => T;
     readonly consume: () => T;
@@ -24,7 +24,7 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
 ): {parse: (arg0: Array<T>) => N} {
     // rewrite this as a class.
     const parse = (tokens: Array<T>): N => {
-        let index: number = 0;
+        let index = 0;
 
         // returns the next token but does not consume
         const peek = (): T => {
@@ -112,9 +112,9 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
 
 export type InfixParselet<T, N, O> = {
     op: O;
-    parse: (arg0: Parser<T, N, O>, arg1: N) => N;
+    parse: (arg0: IParser<T, N, O>, arg1: N) => N;
 };
 
 export type PrefixParselet<T, N, O> = {
-    parse: (arg0: Parser<T, N, O>) => N;
+    parse: (arg0: IParser<T, N, O>) => N;
 };
