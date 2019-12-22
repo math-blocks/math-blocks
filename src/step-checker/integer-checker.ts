@@ -53,7 +53,9 @@ class IntegerChecker {
             const newPrev = Arithmetic.add(
                 terms.filter((term, index) => !indicesToRemove.has(index)),
             );
-            const result = checker.checkStep(newPrev, next, reasons);
+            const result = reverse
+                ? checker.checkStep(next, newPrev, reasons)
+                : checker.checkStep(newPrev, next, reasons);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -264,7 +266,9 @@ class IntegerChecker {
                         prev.args[1].args[0],
                     ]);
 
-                    const result = checker.checkStep(newPrev, next, reasons);
+                    const result = reverse
+                        ? checker.checkStep(next, newPrev, reasons)
+                        : checker.checkStep(newPrev, next, reasons);
                     if (result.equivalent) {
                         return {
                             equivalent: true,

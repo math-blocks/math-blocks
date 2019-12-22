@@ -73,10 +73,16 @@ const hasArgs = (a: Semantic.Expression): a is HasArgs =>
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
 
+// We'll want to eventually be able to describe hierarchical relations
+// between steps in addition sequential relations.
+// We still want each step to be responsible for deciding how to combine
+// the result of checkStep with the new reason.
+
 export interface IStepChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        // We pass an array of reasons since cycles may include multiple steps
         reasons: Reason[],
     ): Result;
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
@@ -325,11 +331,10 @@ class StepChecker implements IStepChecker {
                     // TODO: use exactMatch instead here... or we'll have track all
                     // of the reasons that are generated
                     const equivalent = addNode.args.every((arg, index) => {
-                        return this.checkStep(
-                            arg,
-                            Arithmetic.mul([x, y.args[index]]),
-                            reasons,
-                        ).equivalent;
+                        const term = Arithmetic.mul([x, y.args[index]]);
+                        // We reset the "reasons" parameter here because we checking
+                        // different nodes so we won't run into a cycle here.
+                        return this.checkStep(arg, term, []).equivalent;
                     });
 
                     if (equivalent) {
