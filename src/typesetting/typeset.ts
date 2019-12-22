@@ -11,7 +11,7 @@ export type LayoutCursor = {
 };
 
 const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
-    multiplier: number = 1,
+    multiplier = 1,
 ) => (node: Editor.Node<Editor.Glyph>): Layout.Node => {
     const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
     const fontSize = multiplier * baseFontSize;
@@ -22,8 +22,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     // Adds appropriate padding around operators where appropriate
     const typesetChildren = (
         _typeset: (node: Editor.Node<Editor.Glyph>) => Layout.Node,
-        children: Array<Editor.Node<Editor.Glyph>>,
-    ) =>
+        children: Editor.Node<Editor.Glyph>[],
+    ): Layout.Node[] =>
         children.map((child, index) => {
             if (child.type === "atom") {
                 const {value} = child;
@@ -196,9 +196,9 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 typesetChildren(_typeset, node.children[0].children), // radicand
                 multiplier,
             );
-            const E_height = 50;
+            const Eheight = 50;
             radicand.width = Math.max(radicand.width, 30 * multiplier);
-            radicand.height = Math.max(radicand.height, E_height * multiplier);
+            radicand.height = Math.max(radicand.height, Eheight * multiplier);
             radicand.depth = Math.max(radicand.depth, 0);
             const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
             const vbox = Layout.makeVBox(

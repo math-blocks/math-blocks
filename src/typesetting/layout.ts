@@ -87,7 +87,7 @@ export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (
     };
 };
 
-export const getCharAdvance = (glyph: Glyph) => {
+export const getCharAdvance = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
     const glyphMetrics = fontMetrics.glyphMetrics;
@@ -98,7 +98,7 @@ export const getCharAdvance = (glyph: Glyph) => {
     return (metrics.advance * glyph.size) / fontMetrics.unitsPerEm;
 };
 
-export const getCharBearingX = (glyph: Glyph) => {
+export const getCharBearingX = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
     const glyphMetrics = fontMetrics.glyphMetrics;
@@ -109,7 +109,7 @@ export const getCharBearingX = (glyph: Glyph) => {
     return (metrics.bearingX * glyph.size) / fontMetrics.unitsPerEm;
 };
 
-export const getCharWidth = (glyph: Glyph) => {
+export const getCharWidth = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
     const glyphMetrics = fontMetrics.glyphMetrics;
@@ -120,7 +120,7 @@ export const getCharWidth = (glyph: Glyph) => {
     return (metrics.width * glyph.size) / fontMetrics.unitsPerEm;
 };
 
-export const getCharHeight = (glyph: Glyph) => {
+export const getCharHeight = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
     const glyphMetrics = fontMetrics.glyphMetrics;
@@ -131,7 +131,7 @@ export const getCharHeight = (glyph: Glyph) => {
     return (metrics.bearingY * glyph.size) / fontMetrics.unitsPerEm;
 };
 
-export const getCharDepth = (glyph: Glyph) => {
+export const getCharDepth = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
     const glyphMetrics = fontMetrics.glyphMetrics;
@@ -145,7 +145,7 @@ export const getCharDepth = (glyph: Glyph) => {
     );
 };
 
-export const getWidth = (node: Node) => {
+export const getWidth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.width;
@@ -162,7 +162,7 @@ export const getWidth = (node: Node) => {
     }
 };
 
-export const getHeight = (node: Node) => {
+export const getHeight = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.height - node.shift;
@@ -179,7 +179,7 @@ export const getHeight = (node: Node) => {
     }
 };
 
-export const getDepth = (node: Node) => {
+export const getDepth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.depth + node.shift;
@@ -196,7 +196,7 @@ export const getDepth = (node: Node) => {
     }
 };
 
-const vwidth = (node: Node) => {
+const vwidth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.width + node.shift;
@@ -213,7 +213,7 @@ const vwidth = (node: Node) => {
     }
 };
 
-export const vsize = (node: Node) => {
+export const vsize = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.height + node.depth;
@@ -230,19 +230,19 @@ export const vsize = (node: Node) => {
     }
 };
 
-const add = (a: number, b: number) => a + b;
+const add = (a: number, b: number): number => a + b;
 const zero = 0;
-const sum = (values: number[]) => values.reduce(add, zero);
-const max = (values: number[]) => Math.max(...values);
+const sum = (values: number[]): number => values.reduce(add, zero);
+const max = (values: number[]): number => Math.max(...values);
 
-export const hlistWidth = (nodes: Node[]) => sum(nodes.map(getWidth));
-const hlistHeight = (nodes: Node[]) => max(nodes.map(getHeight));
-const hlistDepth = (nodes: Node[]) => max(nodes.map(getDepth));
-// eslint-disable-next-line no-unused-vars
-const vlistWidth = (nodes: Node[]) => max(nodes.map(vwidth));
-const vlistVsize = (nodes: Node[]) => sum(nodes.map(vsize));
+export const hlistWidth = (nodes: Node[]): number => sum(nodes.map(getWidth));
+const hlistHeight = (nodes: Node[]): number => max(nodes.map(getHeight));
+const hlistDepth = (nodes: Node[]): number => max(nodes.map(getDepth));
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const vlistWidth = (nodes: Node[]): number => max(nodes.map(vwidth));
+const vlistVsize = (nodes: Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (nl: Node[], multiplier: number = 1) => {
+export const hpackNat = (nl: Node[], multiplier = 1): Box => {
     const dim = {
         width: hlistWidth(nl),
         height: hlistHeight(nl),
@@ -256,8 +256,8 @@ export const makeVBox = (
     node: Node,
     upList: Node[],
     dnList: Node[],
-    multiplier: number = 1,
-) => {
+    multiplier = 1,
+): Box => {
     const dim = {
         width,
         depth: vlistVsize(dnList) + getDepth(node),

@@ -1,11 +1,10 @@
-import * as Semantic from "../../semantic";
 import {parse} from "../../text/text-parser";
 
-import StepChecker from "../step-checker";
+import StepChecker, {Result} from "../step-checker";
 
 const checker = new StepChecker();
 
-const checkStep = (prev: string, next: string) => {
+const checkStep = (prev: string, next: string): Result => {
     return checker.checkStep(parse(prev), parse(next), []);
 };
 

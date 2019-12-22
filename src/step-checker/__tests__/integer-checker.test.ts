@@ -1,13 +1,11 @@
 import print from "../../print";
 import {parse} from "../../text/text-parser";
 
-import StepChecker from "../step-checker";
-
-import {Result} from "../step-checker";
+import StepChecker, {Result} from "../step-checker";
 
 const checker = new StepChecker();
 
-const checkStep = (prev: string, next: string) => {
+const checkStep = (prev: string, next: string): Result => {
     return checker.checkStep(parse(prev), parse(next), []);
 };
 
@@ -63,7 +61,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + -a", "0");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps(["a + -a", "adding inverse", "0"]);
     });
 
@@ -118,7 +115,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("a - b - c", "a + -b + -c");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps([
             "a - b - c",
             "subtracting is the same as adding the inverse",
@@ -225,7 +221,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("----a", "a");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps([
             "----a",
             "negative of a negative is positive",
@@ -239,7 +234,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("a", "----a");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps([
             "a",
             "negative of a negative is positive",
@@ -289,7 +283,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("-(a + b)", "-a + -b");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps([
             "-(a + b)",
             "negation is the same as multipling by negative one",
@@ -303,7 +296,6 @@ describe("IntegerChecker", () => {
         const result = checkStep("-a + -b", "-(a + b)");
 
         expect(result.equivalent).toBe(true);
-        // @ts-ignore
         expect(result).toMatchSteps([
             "-a + -b",
             "factoring",

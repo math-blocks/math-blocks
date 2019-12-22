@@ -25,8 +25,8 @@ const buttons: Button[] = [
     {name: "partial", char: "\u2202"},
 ];
 
-const MathKeypad = () => {
-    const handleClick = (button: Button) => {
+const MathKeypad: React.SFC<{}> = () => {
+    const handleClick = (button: Button): void => {
         console.log(`'${button.char}' was pressed`);
         const event = new KeyboardEvent("keydown", {
             bubbles: true,

@@ -42,25 +42,29 @@ const getChildWithIndex = <T extends Identifiable>(
     return children[childIndex] || null;
 };
 
-const firstIndex = <T extends Identifiable>(items: ReadonlyArray<T>) => {
+const firstIndex = <T extends Identifiable>(
+    items: ReadonlyArray<T>,
+): number | null => {
     return items.length > 0 ? 0 : null;
 };
 
-const lastIndex = <T extends Identifiable>(items: ReadonlyArray<T>) => {
+const lastIndex = <T extends Identifiable>(
+    items: ReadonlyArray<T>,
+): number | null => {
     return items.length > 0 ? items.length - 1 : null;
 };
 
 const nextIndex = (
     children: Editor.Node<Editor.Glyph>[],
     childIndex: number,
-) => {
+): number | null => {
     return childIndex < children.length - 1 ? childIndex + 1 : null;
 };
 
 const prevIndex = (
     children: Editor.Node<Editor.Glyph>[],
     childIndex: number,
-) => {
+): number | null => {
     return childIndex > 0 ? childIndex - 1 : null;
 };
 
@@ -399,7 +403,7 @@ const backspace = (
     root: Editor.Node<Editor.Glyph>,
     currentNode: Editor.Node<Editor.Glyph>,
     draft: State,
-) => {
+): void => {
     if (!hasChildren(currentNode)) {
         throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
     }
@@ -536,7 +540,7 @@ const backspace = (
 
 type Action = {type: string};
 
-const reducer = (state: State = initialState, action: Action) => {
+const reducer = (state: State = initialState, action: Action): State => {
     return produce(state, draft => {
         const {cursor, math} = draft;
         const currentNode = Editor.nodeAtPath(math, cursor.path);

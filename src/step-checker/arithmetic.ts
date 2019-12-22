@@ -1,16 +1,16 @@
 import * as Semantic from "../semantic";
 
-export const ZERO: Semantic.Number = {
+export const ZERO: Semantic.Num = {
     type: "number",
     value: "0",
 };
 
-export const ONE: Semantic.Number = {
+export const ONE: Semantic.Num = {
     type: "number",
     value: "1",
 };
 
-export const num = (n: number): Semantic.Number => ({
+export const num = (n: number): Semantic.Num => ({
     type: "number",
     value: String(n),
 });

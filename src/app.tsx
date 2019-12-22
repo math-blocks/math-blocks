@@ -40,7 +40,7 @@ const answer: Editor.Row<Editor.Glyph> = row([
     frac([glyph("5")], [glyph("2")]),
 ]);
 
-const App = () => {
+const App: React.SFC<{}> = () => {
     const [steps, setSteps] = useState<Editor.Row<Editor.Glyph>[]>([
         question,
         step1,
@@ -49,7 +49,7 @@ const App = () => {
     const handleCheckStep = (
         prev: Editor.Row<Editor.Glyph>,
         next: Editor.Row<Editor.Glyph>,
-    ) => {
+    ): void => {
         const prevTokens: Editor.Node<Lexer.Token> = lex(prev);
         const nextTokens: Editor.Node<Lexer.Token> = lex(next);
 
@@ -57,6 +57,7 @@ const App = () => {
             const result = checker.checkStep(
                 Parser.parse(prevTokens.children),
                 Parser.parse(nextTokens.children),
+                [],
             );
             console.log(result);
             console.log(Parser.parse(prevTokens.children));

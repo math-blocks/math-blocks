@@ -4,7 +4,7 @@ export default function useEventListener(
     eventName: "keypress" | "keydown",
     handler: (event: KeyboardEvent) => void,
     element: WindowProxy = window,
-) {
+): void {
     // Create a ref that stores handler
     const savedHandler = useRef<(event: KeyboardEvent) => void>(handler);
 
@@ -24,7 +24,7 @@ export default function useEventListener(
             if (!isSupported) return;
 
             // Create event listener that calls handler function stored in ref
-            const eventListener = (event: KeyboardEvent) =>
+            const eventListener = (event: KeyboardEvent): void =>
                 savedHandler.current(event);
 
             // Add event listener

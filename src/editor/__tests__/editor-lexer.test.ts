@@ -15,7 +15,9 @@ function isAtom(
     return node.type === "atom";
 }
 
-function isFrac(node: Editor.Node<Lexer.Token>) {
+function isFrac(
+    node: Editor.Node<Lexer.Token>,
+): node is Editor.Frac<Lexer.Token> {
     return node.type === "frac";
 }
 
@@ -144,8 +146,7 @@ describe("Lexer", () => {
                 throw new Error("not a row");
             }
 
-            // eslint-disable-next-line no-unused-vars
-            const [number, minus, identifier] = tokenTree.children;
+            const minus = tokenTree.children[1];
 
             if (!isAtom(minus)) {
                 throw new Error("`minus` is not an atom");

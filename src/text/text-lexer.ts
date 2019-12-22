@@ -1,6 +1,6 @@
 // TODO: share these with editor-lexer.js
-type Identifier = {type: "identifier"; name: string};
-type Number = {type: "number"; value: string};
+type Ident = {type: "identifier"; name: string};
+type Num = {type: "number"; value: string};
 type Plus = {type: "plus"};
 type Minus = {type: "minus"};
 type Times = {type: "times"};
@@ -14,8 +14,8 @@ type Ellipsis = {type: "ellipsis"};
 type EOL = {type: "eol"};
 
 export type Token =
-    | Identifier
-    | Number
+    | Ident
+    | Num
     | Eq
     | Plus
     | Minus
