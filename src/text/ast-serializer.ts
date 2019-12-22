@@ -4,12 +4,8 @@ type Node = Semantic.Expression;
 
 const print = (
     ast: Node,
-    // @ts-ignore
-    serialize: JestPrettyFormatPrint,
-    // @ts-ignore
-    indent: JestPrettyFormatIndent,
-    // opts?: JestPrettyFormatOptions,
-    // colors?: JestPrettyFormatColors,
+    serialize: (ast: Node) => string,
+    indent: (str: string) => string,
 ): string => {
     if (ast.type === "number") {
         return `${ast.value}`;
@@ -44,7 +40,7 @@ const print = (
 
 const serializer = {
     print: print,
-    test: (val: any) => !!val.type,
+    test: (ast: Node) => !!ast.type,
 };
 
 export default serializer;
