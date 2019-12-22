@@ -70,6 +70,7 @@ describe("FractionChecker", () => {
         ]);
     });
 
+    // TODO: simplify this case
     it("1/a * 1/b -> 1*1 / a*b -> 1 / ab", () => {
         const before = parse("1/a * 1/b");
         const after = parse("1 / ab");
@@ -79,11 +80,13 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying fractions",
+            "fraction is the same as multiplying by one over",
+            "multiplication with identity",
             "multiplication with identity",
         ]);
     });
 
-    it("a * 1/b -> a*1 / b -> a / b", () => {
+    it("a * 1/b -> a / b", () => {
         const before = parse("a * 1/b");
         const after = parse("a / b");
 
@@ -91,8 +94,7 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-            "multiplication with identity",
+            "multiplying by one over something results in a fraction",
         ]);
     });
 
@@ -178,7 +180,6 @@ describe("FractionChecker", () => {
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
-                "multiplying fractions",
                 "division by one",
             ]);
         });
@@ -352,8 +353,8 @@ describe("FractionChecker", () => {
 
     // TODO: make sure distribution is including substeps
     // e.g. 1/c * a + 1/c * b
-    it.skip("1/c * (a + b) -> a/c + b/c", () => {
-        const before = parse("1/c * (a + b)");
+    it("(a + b) * 1/c -> a/c + b/c", () => {
+        const before = parse("(a + b) * 1/c");
         const after = parse("a/c  + b/c");
 
         const result = checkStep(before, after);
@@ -366,7 +367,7 @@ describe("FractionChecker", () => {
 
     // TODO: make sure factoring is including substeps
     // e.g. 1/c * a + 1/c * b
-    it.skip("a/c + b/c -> 1/c * (a + b)", () => {
+    it("a/c + b/c -> 1/c * (a + b)", () => {
         const before = parse("a/c  + b/c");
         const after = parse("1/c * (a + b)");
 
@@ -378,8 +379,7 @@ describe("FractionChecker", () => {
         ]);
     });
 
-    // TODO: make this pass
-    it.skip("(a + b) / c -> a/c + b/c", () => {
+    it("(a + b) / c -> a/c + b/c", () => {
         const before = parse("(a + b) / c");
         const after = parse("a/c  + b/c");
 
@@ -387,12 +387,24 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "division by one",
+            "fraction is the same as multiplying by one over",
+            "distribution",
         ]);
     });
 
-    // TODO: make this pass
-    it.skip("a/c + b/c -> a + b) / c", () => {
+    it("(a + b) / c -> (a + b) * 1/c", () => {
+        const before = parse("(a + b) / c");
+        const after = parse("(a + b) * 1/c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "fraction is the same as multiplying by one over",
+        ]);
+    });
+
+    it("a/c + b/c -> (a + b) / c", () => {
         const before = parse("a/c  + b/c");
         const after = parse("(a + b) / c");
 
@@ -400,12 +412,12 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "division by one",
+            "factoring",
+            "multiplying by one over something results in a fraction",
         ]);
     });
 
-    // TODO: this should be a single step
-    it.skip("a * 1/b -> a/b", () => {
+    it("a * 1/b -> a/b", () => {
         const before = parse("a * 1/b");
         const after = parse("a/b");
 
@@ -413,13 +425,11 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-            "multiplication with identity",
+            "multiplying by one over something results in a fraction",
         ]);
     });
 
-    // TODO: this should be a single step
-    it.skip("a/b -> a * 1/b", () => {
+    it("a/b -> a * 1/b", () => {
         const after = parse("a * 1/b");
         const before = parse("a/b");
 
@@ -427,8 +437,7 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-            "multiplication with identity",
+            "fraction is the same as multiplying by one over",
         ]);
     });
 });

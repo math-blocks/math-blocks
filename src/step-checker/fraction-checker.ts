@@ -302,6 +302,67 @@ class FractionChecker {
         };
     }
 
+    divIsMulByOneOver(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        reverse: boolean,
+        reasons: Reason[],
+    ): Result {
+        const {checker} = this;
+        if (reverse) {
+            [prev, next] = [next, prev];
+        }
+        // We found a cycle so let's abort
+        if (reasons.length > 0) {
+            if (
+                reasons[0].message ===
+                    "multiplying by one over something results in a fraction" ||
+                reasons[0].message ===
+                    "fraction is the same as multiplying by one over"
+            ) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
+        }
+
+        // TODO: check if the div is a child of a mul node
+        if (
+            prev.type === "div" &&
+            !checker.exactMatch(prev.args[0], Arithmetic.ONE).equivalent
+        ) {
+            const newPrev = Arithmetic.mul([
+                prev.args[0],
+                Arithmetic.div(Arithmetic.ONE, prev.args[1]),
+            ]);
+
+            const reason = {
+                message: reverse
+                    ? "multiplying by one over something results in a fraction"
+                    : "fraction is the same as multiplying by one over",
+                nodes: [prev, newPrev],
+            };
+
+            const result = reverse
+                ? checker.checkStep(next, newPrev, [reason, ...reasons])
+                : checker.checkStep(newPrev, next, [reason, ...reasons]);
+
+            const newReasons = reverse
+                ? [...result.reasons, reason]
+                : [reason, ...result.reasons];
+
+            return {
+                equivalent: result.equivalent,
+                reasons: result.equivalent ? newReasons : [],
+            };
+        }
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
     mulByFrac(
         prev: Semantic.Expression,
         next: Semantic.Expression,
@@ -314,6 +375,20 @@ class FractionChecker {
                 equivalent: false,
                 reasons: [],
             };
+        }
+
+        // We have another check method to handle a * 1/b
+        if (prev.type === "mul" && prev.args.length === 2) {
+            if (
+                prev.args[0].type !== "div" &&
+                prev.args[1].type === "div" &&
+                checker.exactMatch(prev.args[1].args[0], Arithmetic.ONE)
+            ) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
         }
 
         const numFactors = [];
@@ -384,16 +459,6 @@ class FractionChecker {
             return result;
         }
 
-        // result = this.mulByOneOver(prev, next, reasons);
-        // if (result.equivalent) {
-        //     return result;
-        // }
-
-        // result = this.divIsMulByOneOver(prev, next, reasons);
-        // if (result.equivalent) {
-        //     return result;
-        // }
-
         // a * b/c -> ab / c
         result = this.mulByFrac(prev, next, reasons);
         if (result.equivalent) {
@@ -402,6 +467,16 @@ class FractionChecker {
 
         // ab / c -> a * b/c
         result = this.mulByFrac(next, prev, reasons);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.divIsMulByOneOver(prev, next, false, reasons);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.divIsMulByOneOver(prev, next, true, reasons);
         if (result.equivalent) {
             return result;
         }
