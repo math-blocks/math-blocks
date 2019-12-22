@@ -5,16 +5,14 @@ import StepChecker from "../step-checker";
 
 const checker = new StepChecker();
 
-const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
-    checker.checkStep(prev, next, []);
+const checkStep = (prev: string, next: string) => {
+    return checker.checkStep(parse(prev), parse(next), []);
+};
 
 describe("EquationChecker", () => {
     describe("adding the same value to both sides", () => {
         it("x = y -> x + 5 = y + 5", () => {
-            const before = parse("x = y");
-            const after = parse("x + 5 = y + 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "x + 5 = y + 5");
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -23,10 +21,7 @@ describe("EquationChecker", () => {
         });
 
         it("x = y -> 5 + x = y + 5", () => {
-            const before = parse("x = y");
-            const after = parse("5 + x = y + 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "5 + x = y + 5");
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -35,10 +30,10 @@ describe("EquationChecker", () => {
         });
 
         it("x + 10 = y + 15 -> x + 10 + 5 = y + 15 + 5", () => {
-            const before = parse("x + 10 = y + 15");
-            const after = parse("x + 10 + 5 = y + 15 + 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep(
+                "x + 10 = y + 15",
+                "x + 10 + 5 = y + 15 + 5",
+            );
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -49,10 +44,7 @@ describe("EquationChecker", () => {
 
     describe("subtracting the same value from both sides", () => {
         it("x = y -> x - 5 = y - 5", () => {
-            const before = parse("x = y");
-            const after = parse("x - 5 = y - 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "x - 5 = y - 5");
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -61,10 +53,10 @@ describe("EquationChecker", () => {
         });
 
         it("x + 10 = y + 15 -> x + 10 - 5 -> y + 15 - 5", () => {
-            const before = parse("x + 10 = y + 15");
-            const after = parse("x + 10 - 5 = y + 15 - 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep(
+                "x + 10 = y + 15",
+                "x + 10 - 5 = y + 15 - 5",
+            );
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -73,10 +65,7 @@ describe("EquationChecker", () => {
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
-            const before = parse("2x + 5 = 10");
-            const after = parse("2x + 5 - 5 = 10 - 10");
-
-            const result = checkStep(before, after);
+            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
 
             expect(result.equivalent).toBe(false);
         });
@@ -84,10 +73,7 @@ describe("EquationChecker", () => {
 
     describe("multiplying both sides by the same value", () => {
         it("x = y -> x * 5 = y * 5", () => {
-            const before = parse("x = y");
-            const after = parse("x * 5 = y * 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "x * 5 = y * 5");
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -96,10 +82,10 @@ describe("EquationChecker", () => {
         });
 
         it("x * 10 = y * 15 -> x * 10 * 5 = y * 15 * 5", () => {
-            const before = parse("x * 10 = y * 15");
-            const after = parse("x * 10 * 5 = y * 15 * 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep(
+                "x * 10 = y * 15",
+                "x * 10 * 5 = y * 15 * 5",
+            );
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -110,10 +96,7 @@ describe("EquationChecker", () => {
 
     describe("dividing both sides", () => {
         it("x = y -> x / 5 = y / 5", () => {
-            const before = parse("x = y");
-            const after = parse("x / 5 = y / 5");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "x / 5 = y / 5");
 
             expect(result.equivalent).toBe(true);
             expect(result.reasons.map(reason => reason.message)).toEqual([
@@ -122,10 +105,7 @@ describe("EquationChecker", () => {
         });
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
-            const before = parse("x = y");
-            const after = parse("x / 5 = y / 10");
-
-            const result = checkStep(before, after);
+            const result = checkStep("x = y", "x / 5 = y / 10");
 
             expect(result.equivalent).toBe(false);
         });
