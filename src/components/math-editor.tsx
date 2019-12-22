@@ -20,10 +20,10 @@ type Props = {
     focus?: boolean;
     onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
     onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
-    style: {[key: string]: any};
+    style: React.CSSProperties;
 };
 
-const MathEditor = (props: Props) => {
+const MathEditor: React.SFC<Props> = props => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [state, setState] = useState<State>({

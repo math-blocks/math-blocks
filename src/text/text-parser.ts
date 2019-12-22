@@ -35,10 +35,7 @@ const add = (args: TwoOrMore<Node>): Semantic.Add => ({
     args,
 });
 
-const mul = (
-    args: TwoOrMore<Node>,
-    implicit: boolean = false,
-): Semantic.Mul => ({
+const mul = (args: TwoOrMore<Node>, implicit = false): Semantic.Mul => ({
     type: "mul",
     implicit,
     args,
@@ -49,7 +46,7 @@ const div = (numerator: Node, denominator: Node): Semantic.Div => ({
     args: [numerator, denominator],
 });
 
-const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => {
+const neg = (arg: Node, subtraction = false): Semantic.Neg => {
     subtraction; // ?
     return {
         type: "neg",
@@ -81,19 +78,20 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: () => identifier(token.name),
+                parse: (): Semantic.Identifier => identifier(token.name),
             };
         case "number":
             return {
-                parse: () => number(token.value),
+                parse: (): Semantic.Number => number(token.value),
             };
         case "minus":
             return {
-                parse: parser => neg(parser.parseWithOperator("neg"), false),
+                parse: (parser): Semantic.Neg =>
+                    neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
-                parse: parser => {
+                parse: (parser): Semantic.Expression => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
@@ -119,7 +117,7 @@ const getPrefixParselet = (
 const parseMulByParen = (
     parser: TextParser,
 ): OneOrMore<Semantic.Expression> => {
-    let expr = parser.parseWithOperator("mul.imp");
+    const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
     }
@@ -141,7 +139,7 @@ const getInfixParselet = (
         case "slash":
             return {
                 op: "div",
-                parse: (parser, left) => {
+                parse: (parser, left): Semantic.Div => {
                     parser.consume();
                     return div(left, parser.parseWithOperator("div"));
                 },
@@ -149,7 +147,7 @@ const getInfixParselet = (
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left) => {
+                parse: (parser, left): Semantic.Exp => {
                     parser.consume();
                     // exponents are right-associative
                     return exp(
@@ -163,7 +161,7 @@ const getInfixParselet = (
         case "lparen":
             return {
                 op: "mul.imp",
-                parse: (parser, left) => {
+                parse: (parser, left): Semantic.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
                     return mul([left, right, ...rest], true);
                 },
@@ -171,7 +169,7 @@ const getInfixParselet = (
         case "rparen":
             return {
                 op: "nul",
-                parse: () => {
+                parse: (): Semantic.Expression => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -258,7 +256,7 @@ const parseNaryArgs = (parser: TextParser, op: Operator): OneOrMore<Node> => {
     // }
 };
 
-const getOpPrecedence = (op: Operator) => {
+const getOpPrecedence = (op: Operator): number => {
     switch (op) {
         case "nul":
             return 0;
@@ -291,4 +289,4 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
     EOL,
 );
 
-export const parse = (input: string) => textParser.parse(lex(input));
+export const parse = (input: string): Node => textParser.parse(lex(input));

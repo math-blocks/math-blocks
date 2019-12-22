@@ -32,10 +32,7 @@ const add = (args: TwoOrMore<Node>): Semantic.Add => ({
     args,
 });
 
-const mul = (
-    args: TwoOrMore<Node>,
-    implicit: boolean = false,
-): Semantic.Mul => ({
+const mul = (args: TwoOrMore<Node>, implicit = false): Semantic.Mul => ({
     type: "mul",
     implicit,
     args,
@@ -46,7 +43,7 @@ const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
     args,
 });
 
-const neg = (arg: Node, subtraction: boolean = false): Semantic.Neg => ({
+const neg = (arg: Node, subtraction = false): Semantic.Neg => ({
     type: "neg",
     args: [arg],
     subtraction,
@@ -293,7 +290,7 @@ const getInfixParselet = (
     }
 };
 
-const getOpPrecedence = (op: Operator) => {
+const getOpPrecedence = (op: Operator): number => {
     switch (op) {
         case "eq":
             return 2;

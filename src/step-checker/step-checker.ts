@@ -9,7 +9,7 @@ import IntegerChecker from "./integer-checker";
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
-const assertValid = (node: Semantic.Expression) => {
+const assertValid = (node: Semantic.Expression): void => {
     switch (node.type) {
         case "mul":
         case "add": {
@@ -143,7 +143,7 @@ class StepChecker implements IStepChecker {
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
         reasons: Reason[],
-    ) {
+    ): Semantic.Expression[] {
         const result = [];
         for (const a of as) {
             const index = bs.findIndex(
@@ -164,7 +164,7 @@ class StepChecker implements IStepChecker {
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
         reasons: Reason[],
-    ) {
+    ): Semantic.Expression[] {
         const result = [];
         for (const a of as) {
             const index = bs.findIndex(
@@ -289,7 +289,6 @@ class StepChecker implements IStepChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
@@ -297,13 +296,12 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(next, prev, "distribution", reasons);
+        return this.distributionFactoring(next, prev, "distribution");
     }
 
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
@@ -311,14 +309,13 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(prev, next, "factoring", reasons);
+        return this.distributionFactoring(prev, next, "factoring");
     }
 
     distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
         reason: "distribution" | "factoring",
-        reasons: Reason[],
     ): Result {
         // TODO: handle distribution across n-ary multiplication later
         if (mulNode.args.length === 2) {
@@ -759,12 +756,12 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.checkDistribution(prev, next, reasons);
+        result = this.checkDistribution(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(prev, next, reasons);
+        result = this.checkFactoring(prev, next);
         if (result.equivalent) {
             return result;
         }

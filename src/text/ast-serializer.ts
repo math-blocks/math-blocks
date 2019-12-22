@@ -27,7 +27,7 @@ const print = (
         // @ts-ignore
         const args: Node[] = ast.args;
         const hasGrandchildren = args.some((arg: Node) =>
-            arg.hasOwnProperty("args"),
+            Object.prototype.hasOwnProperty.call(arg, "args"),
         );
 
         if (hasGrandchildren) {

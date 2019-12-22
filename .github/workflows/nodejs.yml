@@ -24,7 +24,7 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
-  flow:
+  lint:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -36,8 +36,23 @@ jobs:
           node-version: 12.x
       - name: yarn install
         run: yarn install
-      - name: flow
-        run: yarn flow
+      - name: lint
+        run: yarn lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - name: typecheck
+        run: yarn typecheck
 
   test:
     runs-on: ubuntu-latest

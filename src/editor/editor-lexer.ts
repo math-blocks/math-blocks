@@ -15,8 +15,8 @@ import {UnreachableCaseError} from "../util";
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-type Identifier = {kind: "identifier"; name: string};
-type Number = {kind: "number"; value: string};
+type Ident = {kind: "identifier"; name: string};
+type Num = {kind: "number"; value: string};
 type Plus = {kind: "plus"};
 type Minus = {kind: "minus"};
 type Times = {kind: "times"};
@@ -28,20 +28,15 @@ export const identifier = (name: string): Editor.Atom<Token> =>
     Editor.atom({kind: "identifier", name});
 export const number = (value: string): Editor.Atom<Token> =>
     Editor.atom({kind: "number", value});
-export const plus = () => Editor.atom<Token>({kind: "plus"});
-export const minus = () => Editor.atom<Token>({kind: "minus"});
-export const ellipsis = () => Editor.atom<Token>({kind: "ellipsis"});
-export const eq = () => Editor.atom<Token>({kind: "eq"});
+export const plus = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "plus"});
+export const minus = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "minus"});
+export const ellipsis = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "ellipsis"});
+export const eq = (): Editor.Atom<Token> => Editor.atom<Token>({kind: "eq"});
 
-export type Token =
-    | Identifier
-    | Number
-    | Plus
-    | Minus
-    | Times
-    | Eq
-    | Ellipsis
-    | EOL;
+export type Token = Ident | Num | Plus | Minus | Times | Eq | Ellipsis | EOL;
 
 const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
