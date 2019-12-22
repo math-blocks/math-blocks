@@ -6,7 +6,7 @@ import StepChecker from "../step-checker";
 const checker = new StepChecker();
 
 const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
-    checker.checkStep(prev, next);
+    checker.checkStep(prev, next, []);
 
 describe("EquationChecker", () => {
     describe("adding the same value to both sides", () => {

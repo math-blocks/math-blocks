@@ -6,7 +6,7 @@ import StepChecker from "../step-checker";
 const checker = new StepChecker();
 
 const checkStep = (prev: Semantic.Expression, next: Semantic.Expression) =>
-    checker.checkStep(prev, next);
+    checker.checkStep(prev, next, []);
 
 describe("FractionChecker", () => {
     it("1 -> a/a", () => {
@@ -347,6 +347,88 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "division by one",
+        ]);
+    });
+
+    // TODO: make sure distribution is including substeps
+    // e.g. 1/c * a + 1/c * b
+    it.skip("1/c * (a + b) -> a/c + b/c", () => {
+        const before = parse("1/c * (a + b)");
+        const after = parse("a/c  + b/c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "distribution",
+        ]);
+    });
+
+    // TODO: make sure factoring is including substeps
+    // e.g. 1/c * a + 1/c * b
+    it.skip("a/c + b/c -> 1/c * (a + b)", () => {
+        const before = parse("a/c  + b/c");
+        const after = parse("1/c * (a + b)");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "factoring",
+        ]);
+    });
+
+    // TODO: make this pass
+    it.skip("(a + b) / c -> a/c + b/c", () => {
+        const before = parse("(a + b) / c");
+        const after = parse("a/c  + b/c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "division by one",
+        ]);
+    });
+
+    // TODO: make this pass
+    it.skip("a/c + b/c -> a + b) / c", () => {
+        const before = parse("a/c  + b/c");
+        const after = parse("(a + b) / c");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "division by one",
+        ]);
+    });
+
+    // TODO: this should be a single step
+    it.skip("a * 1/b -> a/b", () => {
+        const before = parse("a * 1/b");
+        const after = parse("a/b");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+            "multiplication with identity",
+        ]);
+    });
+
+    // TODO: this should be a single step
+    it.skip("a/b -> a * 1/b", () => {
+        const after = parse("a * 1/b");
+        const before = parse("a/b");
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+            "multiplication with identity",
         ]);
     });
 });
