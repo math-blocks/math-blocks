@@ -51,7 +51,10 @@ class IntegerChecker {
         }
         if (indicesToRemove.size > 0) {
             const newPrev = Arithmetic.add(
-                terms.filter((term, index) => !indicesToRemove.has(index)),
+                terms.filter(
+                    (term: Semantic.Expression, index: number) =>
+                        !indicesToRemove.has(index),
+                ),
             );
             const result = reverse
                 ? checker.checkStep(next, newPrev, reasons)
@@ -308,7 +311,10 @@ class IntegerChecker {
         next: Semantic.Expression,
         reasons: Reason[],
     ): Result {
-        let result, result1, result2;
+        let result: Result;
+        let result1: Result;
+        let result2: Result;
+
         result = this.addInverse(prev, next, false, reasons);
         if (result.equivalent) {
             return result;

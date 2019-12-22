@@ -50,7 +50,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     let cursorPos: {x: number; y: number} | null = null;
 
     const result = box.content.map((node, index) => {
-        let result = null;
+        let result: React.ReactElement | null = null;
 
         if (cursor && cursor.next === node.id) {
             cursorPos = {x: pen.x - 1, y: -64 * 0.85 * multiplier};
@@ -120,7 +120,7 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     pen.y -= box.height;
 
     const result = box.content.map((node, index) => {
-        let result = null;
+        let result: React.ReactElement | null = null;
 
         switch (node.type) {
             case "Box": {

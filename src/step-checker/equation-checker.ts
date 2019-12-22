@@ -160,7 +160,7 @@ class EquationChecker {
             };
         }
 
-        let result;
+        let result: Result;
 
         result = this.checkAddSub(a, b, reasons);
         if (result.equivalent) {
