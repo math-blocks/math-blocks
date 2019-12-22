@@ -78,7 +78,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         case "subsup": {
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
-            let subBox;
+            let subBox: Layout.Box | undefined;
             const [sub, sup] = node.children;
             // TODO: document this better so I know what's going on here.
             if (sub) {
@@ -105,7 +105,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     subBox.height = Math.max(subBox.height, EHeight);
                 }
             }
-            let supBox;
+            let supBox: Layout.Box | undefined;
             // TODO: document this better so I know what's going on here.
             if (sup) {
                 supBox = Layout.hpackNat(

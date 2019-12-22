@@ -11,7 +11,9 @@ const checkStep = (prev: string, next: string): Result => {
 
 expect.extend({
     toMatchSteps(result: Result, steps: string[]) {
-        const nodes = steps.filter((step, index) => index % 2 == 0);
+        const nodes = steps.filter(
+            (step: string, index: number) => index % 2 == 0,
+        );
         for (let i = 0; i < nodes.length - 1; i++) {
             if (print(result.reasons[i].nodes[0]) !== nodes[i]) {
                 return {
@@ -32,7 +34,9 @@ expect.extend({
                 };
             }
         }
-        const messages = steps.filter((step, index) => index % 2);
+        const messages = steps.filter(
+            (step: string, index: number) => index % 2,
+        );
         if (result.reasons.length !== messages.length) {
             return {
                 message: () =>

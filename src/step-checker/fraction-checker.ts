@@ -426,7 +426,7 @@ class FractionChecker {
         next: Semantic.Expression,
         reasons: Reason[],
     ): Result {
-        let result;
+        let result: Result;
 
         result = this.divByFrac(prev, next, reasons);
         if (result.equivalent) {
