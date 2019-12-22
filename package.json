@@ -48,6 +48,7 @@
     "webpack-dev-server": "^3.4.1"
   },
   "scripts": {
+    "codechecks": "codechecks",
     "typecheck": "tsc --noEmit",
     "build": "webpack",
     "watch": "webpack -w",
