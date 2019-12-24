@@ -9,6 +9,7 @@ import * as Lexer from "./editor/editor-lexer";
 import {lex} from "./editor/editor-lexer";
 import Parser from "./editor/editor-parser";
 import StepChecker from "./step-checker/step-checker";
+import Icon from "./components/icon";
 
 const checker = new StepChecker();
 
@@ -40,10 +41,87 @@ const answer: Editor.Row<Editor.Glyph> = row([
     frac([glyph("5")], [glyph("2")]),
 ]);
 
+const isEqual = (
+    a: Editor.Node<Editor.Glyph>,
+    b: Editor.Node<Editor.Glyph>,
+): boolean => {
+    if (a.type !== b.type) {
+        return false;
+    } else if (a.type === "atom" && b.type === "atom") {
+        return a.value.char === b.value.char;
+    } else if (a.type === "parens" && b.type === "parens") {
+        if (a.children.length !== b.children.length) {
+            return false;
+        }
+        return a.children.every((aChild, index) =>
+            isEqual(aChild, b.children[index]),
+        );
+    } else if (a.type === "frac" && b.type === "frac") {
+        const [aNum, aDen] = a.children;
+        const [bNum, bDen] = b.children;
+        return isEqual(aNum, bNum) && isEqual(aDen, bDen);
+    } else if (a.type === "root" && b.type === "root") {
+        const [aRad, aIndex] = a.children;
+        const [bRad, bIndex] = b.children;
+        if (isEqual(aRad, bRad)) {
+            return aIndex != null && bIndex != null
+                ? isEqual(aIndex, bIndex)
+                : aIndex === bIndex;
+        } else {
+            return false;
+        }
+    } else if (a.type === "subsup" && b.type === "subsup") {
+        const [aSub, aSup] = a.children;
+        const [bSub, bSup] = b.children;
+
+        // TODO: finish this case
+        return false;
+    } else if (a.type === "row" && b.type === "row") {
+        if (a.children.length !== b.children.length) {
+            return false;
+        }
+        return a.children.every((aChild, index) =>
+            isEqual(aChild, b.children[index]),
+        );
+    } else {
+        return false;
+    }
+};
+
+enum StepState {
+    Correct,
+    Incorrect,
+    Duplicate,
+    Pending,
+}
+
+type Step = {
+    state: StepState;
+    value: Editor.Row<Editor.Glyph>;
+};
+
+enum ProblemState {
+    InProgress,
+    Complete,
+}
+
+// TODO: Create two modes: immediate and delayed
+// - Immediate feedback will show whether the current step is
+//   incorrect when the user submits it and will force the user to
+//   correct the issue before proceeding.
+// - Delayed feedback will conceal the correctness of each step
+//   until the user submits their answer.
 const App: React.SFC<{}> = () => {
-    const [steps, setSteps] = useState<Editor.Row<Editor.Glyph>[]>([
-        question,
-        step1,
+    const [problemState, setProblemState] = useState(ProblemState.InProgress);
+    const [steps, setSteps] = useState<Step[]>([
+        {
+            state: StepState.Correct,
+            value: question,
+        },
+        {
+            state: StepState.Duplicate,
+            value: step1,
+        },
     ]);
 
     const handleCheckStep = (
@@ -59,14 +137,43 @@ const App: React.SFC<{}> = () => {
                 Parser.parse(nextTokens.children),
                 [],
             );
-            console.log(result);
-            console.log(Parser.parse(prevTokens.children));
-            console.log(Parser.parse(nextTokens.children));
+
             if (result.equivalent) {
-                setSteps([...steps, steps[steps.length - 1]]);
+                if (isEqual(next, answer)) {
+                    setSteps([
+                        ...steps.slice(0, -1),
+                        {
+                            ...steps[steps.length - 1],
+                            state: StepState.Correct,
+                        },
+                    ]);
+                    setProblemState(ProblemState.Complete);
+                } else {
+                    setSteps([
+                        ...steps.slice(0, -1),
+                        {
+                            ...steps[steps.length - 1],
+                            state: StepState.Correct,
+                        },
+                        {
+                            ...steps[steps.length - 1],
+                            state: StepState.Duplicate,
+                        },
+                    ]);
+                }
+            } else {
+                setSteps([
+                    ...steps.slice(0, -1),
+                    {
+                        ...steps[steps.length - 1],
+                        state: StepState.Incorrect,
+                    },
+                ]);
             }
         }
     };
+
+    const isComplete = problemState === ProblemState.Complete;
 
     return (
         <div style={{width: 800, margin: "auto"}}>
@@ -74,66 +181,121 @@ const App: React.SFC<{}> = () => {
                 <MathEditor
                     key={`question`}
                     readonly={true}
-                    value={steps[0]}
+                    value={steps[0].value}
                     focus={false}
-                    onSubmit={(value: Editor.Row<Editor.Glyph>) => {
-                        console.log(value);
-                        setSteps([...steps, value]);
-                    }}
                     style={{marginTop: 8}}
                 />
                 {steps.slice(1).flatMap((step, index) => {
+                    const isLast = index !== steps.length - 2;
+                    const isPending = step.state !== StepState.Pending;
+                    let buttonOrIcon = (
+                        <button
+                            style={{
+                                fontSize: 30,
+                                borderRadius: 4,
+                            }}
+                            onClick={() =>
+                                handleCheckStep(
+                                    steps[index].value,
+                                    steps[index + 1].value,
+                                )
+                            }
+                            disabled={isLast || isPending || isComplete}
+                        >
+                            Check
+                        </button>
+                    );
+                    if (step.state === StepState.Incorrect) {
+                        buttonOrIcon = <Icon name="incorrect" size={48} />;
+                    } else if (step.state === StepState.Correct) {
+                        buttonOrIcon = <Icon name="correct" size={48} />;
+                    }
                     return (
                         <div
+                            key={`step-${index}`}
                             style={{
                                 display: "flex",
                                 flexDirection: "row",
+                                position: "relative",
+                                marginTop: 8,
                             }}
                         >
                             <MathEditor
-                                key={`step-${index}`}
-                                readonly={false}
-                                value={step}
+                                readonly={
+                                    index !== steps.length - 2 || isComplete
+                                }
+                                value={step.value}
                                 focus={index === steps.length - 2}
-                                onSubmit={(value: Editor.Row<Editor.Glyph>) => {
-                                    setSteps([...steps, value]);
+                                onSubmit={() => {
+                                    handleCheckStep(
+                                        steps[index].value,
+                                        steps[index + 1].value,
+                                    );
                                 }}
                                 onChange={(value: Editor.Row<Editor.Glyph>) => {
-                                    setSteps([...steps.slice(0, -1), value]);
-                                }}
-                                style={{marginTop: 8, flexGrow: 1}}
-                            />
-                            <button
-                                style={{
-                                    marginTop: 8,
-                                    marginLeft: 8,
-                                    fontSize: 30,
-                                    borderRadius: 4,
-                                }}
-                                onClick={() =>
-                                    handleCheckStep(
-                                        steps[index],
-                                        steps[index + 1],
+                                    const state = isEqual(
+                                        steps[index].value,
+                                        value,
                                     )
-                                }
+                                        ? StepState.Duplicate
+                                        : StepState.Pending;
+                                    setSteps([
+                                        ...steps.slice(0, -1),
+                                        {
+                                            state,
+                                            value,
+                                        },
+                                    ]);
+                                }}
+                                style={{flexGrow: 1}}
+                            />
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
+                                }}
                             >
-                                Check
-                            </button>
+                                <div
+                                    style={{
+                                        marginLeft: 8,
+                                        position: "absolute",
+                                        left: 800,
+                                    }}
+                                >
+                                    {buttonOrIcon}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
-                <MathEditor
+                {/* <MathEditor
                     readonly={true}
                     value={answer}
-                    onSubmit={(value: Editor.Row<Editor.Glyph>) => {
-                        console.log(value);
-                        setSteps([...steps, value]);
-                    }}
                     style={{marginTop: 8}}
-                />
+                /> */}
             </div>
-
-            <MathKeypad />
+            {isComplete && (
+                <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
+            )}
+            <div style={{position: "fixed", bottom: 0, left: 0}}>
+                <MathKeypad />
+            </div>
+            <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
+                <div>
+                    Icons made by{" "}
+                    <a
+                        href="https://www.flaticon.com/authors/pixel-perfect"
+                        title="Pixel perfect"
+                    >
+                        Pixel perfect
+                    </a>{" "}
+                    from{" "}
+                    <a href="https://www.flaticon.com/" title="Flaticon">
+                        www.flaticon.com
+                    </a>
+                </div>
+            </div>
         </div>
     );
 };
