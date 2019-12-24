@@ -62,7 +62,7 @@ type HasArgs =
     | Semantic.Div
     | Semantic.Neg;
 
-const hasArgs = (a: Semantic.Expression): a is HasArgs =>
+export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "add" ||
     a.type === "mul" ||
     a.type === "eq" ||
@@ -125,6 +125,12 @@ class StepChecker implements IStepChecker {
      */
     checkArgs<T extends HasArgs>(prev: T, next: T, reasons: Reason[]): Result {
         const _reasons: Reason[] = [];
+        if (prev.args.length !== next.args.length) {
+            return {
+                equivalent: false,
+                reasons: [],
+            };
+        }
         const equivalent = prev.args.every(prevArg =>
             next.args.some(nextArg => {
                 const result = this.checkStep(prevArg, nextArg, reasons);

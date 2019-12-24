@@ -1,6 +1,6 @@
 import {parse} from "../../text/text-parser";
 
-import StepChecker, {Result} from "../step-checker";
+import StepChecker, {Result, hasArgs} from "../step-checker";
 
 const checker = new StepChecker();
 
@@ -10,7 +10,7 @@ const checkStep = (prev: string, next: string): Result => {
 
 // TODO: create a test helper
 
-describe("Expressions", () => {
+describe("StepChecker", () => {
     describe("no change", () => {
         test("1 -> 1", () => {
             const result = checkStep("1", "1");
@@ -441,5 +441,21 @@ describe("Expressions", () => {
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "factoring",
         ]);
+    });
+
+    describe("checkArgs", () => {
+        it("should return false immediately if the number of steps are different", () => {
+            jest.spyOn(checker, "checkStep");
+            expect.assertions(2);
+
+            const sum1 = parse("1 + 2 + 3");
+            const sum2 = parse("1 + 2 + 3 + 4");
+            if (hasArgs(sum1) && hasArgs(sum2)) {
+                const result = checker.checkArgs(sum1, sum2, []);
+
+                expect(result.equivalent).toBe(false);
+                expect(checker.checkStep).not.toHaveBeenCalled();
+            }
+        });
     });
 });
