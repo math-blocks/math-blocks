@@ -92,11 +92,14 @@ export function parens<T>(children: Node<T>[]): Parens<T, number> {
 
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
-export function root<T>(arg: Node<T>[], index: Node<T>[]): Root<T, number> {
+export function root<T>(
+    arg: Node<T>[],
+    index: Node<T>[] | null,
+): Root<T, number> {
     return {
         id: getId(),
         type: "root",
-        children: [row(arg), row(index)],
+        children: [row(arg), index ? row(index) : null],
     };
 }
 

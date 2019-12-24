@@ -10,6 +10,7 @@ import {lex} from "./editor/editor-lexer";
 import Parser from "./editor/editor-parser";
 import StepChecker from "./step-checker/step-checker";
 import Icon from "./components/icon";
+import {isEqual} from "./editor/util";
 
 const checker = new StepChecker();
 
@@ -40,53 +41,6 @@ const answer: Editor.Row<Editor.Glyph> = row([
     glyph("="),
     frac([glyph("5")], [glyph("2")]),
 ]);
-
-const isEqual = (
-    a: Editor.Node<Editor.Glyph>,
-    b: Editor.Node<Editor.Glyph>,
-): boolean => {
-    if (a.type !== b.type) {
-        return false;
-    } else if (a.type === "atom" && b.type === "atom") {
-        return a.value.char === b.value.char;
-    } else if (a.type === "parens" && b.type === "parens") {
-        if (a.children.length !== b.children.length) {
-            return false;
-        }
-        return a.children.every((aChild, index) =>
-            isEqual(aChild, b.children[index]),
-        );
-    } else if (a.type === "frac" && b.type === "frac") {
-        const [aNum, aDen] = a.children;
-        const [bNum, bDen] = b.children;
-        return isEqual(aNum, bNum) && isEqual(aDen, bDen);
-    } else if (a.type === "root" && b.type === "root") {
-        const [aRad, aIndex] = a.children;
-        const [bRad, bIndex] = b.children;
-        if (isEqual(aRad, bRad)) {
-            return aIndex != null && bIndex != null
-                ? isEqual(aIndex, bIndex)
-                : aIndex === bIndex;
-        } else {
-            return false;
-        }
-    } else if (a.type === "subsup" && b.type === "subsup") {
-        const [aSub, aSup] = a.children;
-        const [bSub, bSup] = b.children;
-
-        // TODO: finish this case
-        return false;
-    } else if (a.type === "row" && b.type === "row") {
-        if (a.children.length !== b.children.length) {
-            return false;
-        }
-        return a.children.every((aChild, index) =>
-            isEqual(aChild, b.children[index]),
-        );
-    } else {
-        return false;
-    }
-};
 
 enum StepState {
     Correct,
