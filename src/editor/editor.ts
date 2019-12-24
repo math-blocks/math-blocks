@@ -9,7 +9,7 @@ export type Row<T, ID = number> = {
 export type SubSup<T, ID = number> = {
     id: ID;
     type: "subsup";
-    children: [Row<T, ID> | null, Row<T, ID> | null];
+    children: [Row<T, ID> | null, Row<T, ID> | null]; // sub, sup
 };
 
 export type Frac<T, ID = number> = {

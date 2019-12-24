@@ -47,11 +47,19 @@ const MathEditor: React.SFC<Props> = props => {
             };
             if (e.key === "Enter" && props.onSubmit) {
                 props.onSubmit(state.math);
-            }
-            const value = reducer(state, action);
-            setState(value);
-            if (props.onChange) {
-                props.onChange(value.math);
+                setActive(false);
+            } else {
+                const value = reducer(state, action);
+                setState(value);
+                if (
+                    props.onChange &&
+                    e.keyCode !== 37 &&
+                    e.keyCode !== 38 &&
+                    e.keyCode !== 39 &&
+                    e.keyCode !== 40
+                ) {
+                    props.onChange(value.math);
+                }
             }
         }
     });

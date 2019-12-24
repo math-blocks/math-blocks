@@ -39,6 +39,14 @@ describe("EquationChecker", () => {
                 "adding the same value to both sides",
             ]);
         });
+
+        // TODO: fix this test case
+        it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
+            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
+
+            expect(result.equivalent).toBe(false);
+            expect(result.reasons).toEqual([]);
+        });
     });
 
     describe("subtracting the same value from both sides", () => {
