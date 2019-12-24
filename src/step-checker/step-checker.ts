@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js";
+
 import * as Arithmetic from "./arithmetic";
 import * as Semantic from "../semantic";
 
@@ -24,11 +26,13 @@ const assertValid = (node: Semantic.Expression): void => {
     }
 };
 
-const parseNode = (node: Semantic.Expression): number => {
+const parseNode = (node: Semantic.Expression): BigNumber => {
     if (node.type === "number") {
-        return parseFloat(node.value);
+        return new BigNumber(node.value);
     } else if (node.type === "neg") {
-        return -parseNode(node.args[0]);
+        return parseNode(node.args[0]).times(new BigNumber(-1));
+    } else if (node.type === "div") {
+        return parseNode(node.args[0]).div(parseNode(node.args[1]));
     } else {
         throw new Error(`cannot parse a number from ${node.type} node`);
     }
@@ -454,15 +458,15 @@ class StepChecker implements IStepChecker {
         const bUniqFactors = this.difference(bNumTerms, commonTerms, reasons);
 
         if (aUniqFactors.length > 0 && bUniqFactors.length > 0) {
-            const aValue = aUniqFactors.reduce<number>(
-                (prod, arg) => prod * parseNode(arg),
-                1,
+            const aValue = aUniqFactors.reduce(
+                (prod, arg) => prod.times(parseNode(arg)),
+                new BigNumber(1),
             );
-            const bValue = bUniqFactors.reduce<number>(
-                (prod, arg) => prod * parseNode(arg),
-                1,
+            const bValue = bUniqFactors.reduce(
+                (prod, arg) => prod.times(parseNode(arg)),
+                new BigNumber(1),
             );
-            if (aValue === bValue) {
+            if (aValue.isEqualTo(bValue)) {
                 return {
                     equivalent: true,
                     reasons: [
@@ -496,31 +500,37 @@ class StepChecker implements IStepChecker {
         const aTerms = Arithmetic.getTerms(a);
         const bTerms = Arithmetic.getTerms(b);
 
-        const aNumTerms = aTerms.filter(
-            term =>
-                term.type === "number" ||
-                (term.type === "neg" && term.args[0].type === "number"),
-        );
-        const bNumTerms = bTerms.filter(
-            term =>
-                term.type === "number" ||
-                (term.type === "neg" && term.args[0].type === "number"),
-        );
+        const aNumTerms = aTerms.filter(term => {
+            try {
+                parseNode(term);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        });
+        const bNumTerms = bTerms.filter(term => {
+            try {
+                parseNode(term);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        });
 
         const commonTerms = this.intersection(aNumTerms, bNumTerms, reasons);
         const aUniqTerms = this.difference(aNumTerms, commonTerms, reasons);
         const bUniqTerms = this.difference(bNumTerms, commonTerms, reasons);
 
         if (aUniqTerms.length > 0 && bUniqTerms.length > 0) {
-            const aValue = aUniqTerms.reduce<number>(
-                (sum, arg) => sum + parseNode(arg),
-                0,
+            const aValue = aUniqTerms.reduce(
+                (sum, arg) => sum.plus(parseNode(arg)),
+                new BigNumber(0),
             );
-            const bValue = bUniqTerms.reduce<number>(
-                (sum, arg) => sum + parseNode(arg),
-                0,
+            const bValue = bUniqTerms.reduce(
+                (sum, arg) => sum.plus(parseNode(arg)),
+                new BigNumber(0),
             );
-            if (aValue === bValue) {
+            if (aValue.isEqualTo(bValue)) {
                 return {
                     equivalent: true,
                     reasons: [

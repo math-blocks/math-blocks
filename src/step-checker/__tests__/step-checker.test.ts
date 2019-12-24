@@ -278,6 +278,30 @@ describe("Expressions", () => {
         ]);
     });
 
+    it("1 - 1/3 -> 2/3", () => {
+        const before = "1 - 1/3";
+        const after = "2/3";
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
+    it("5 - 5/2 -> 5/2", () => {
+        const before = "5 - 5/2";
+        const after = "5/2";
+
+        const result = checkStep(before, after);
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
     it("10 - 5 + 2 -> 7", () => {
         const result = checkStep("10 - 5 + 2", "7");
 
