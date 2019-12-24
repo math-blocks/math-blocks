@@ -40,8 +40,7 @@ describe("EquationChecker", () => {
             ]);
         });
 
-        // TODO: fix this test case
-        it.skip("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
+        it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
             const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
 
             expect(result.equivalent).toBe(false);
@@ -75,6 +74,7 @@ describe("EquationChecker", () => {
             const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
 
             expect(result.equivalent).toBe(false);
+            expect(result.reasons).toEqual([]);
         });
     });
 
@@ -115,6 +115,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "x / 5 = y / 10");
 
             expect(result.equivalent).toBe(false);
+            expect(result.reasons).toEqual([]);
         });
     });
 });
