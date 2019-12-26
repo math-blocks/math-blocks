@@ -1,6 +1,6 @@
 import {$ReadOnly} from "utility-types";
 
-import produce, {original} from "immer";
+import produce from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
@@ -391,7 +391,6 @@ const backspace = (
         throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
     }
     const {cursor} = draft;
-    console.log(original(currentNode));
 
     if (cursor.prev != null) {
         const {children} = currentNode;
