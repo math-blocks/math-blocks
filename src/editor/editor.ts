@@ -119,63 +119,6 @@ export type Glyph = {
 export const glyph = (char: string): Atom<Glyph, number> =>
     atom({kind: "glyph", char});
 
-const isNotNull = <T>(value: T | null): value is T => Boolean(value);
-
-export function findNode<T>(root: Node<T>, id: number): Node<T> | void {
-    // base case
-    if (root.id === id) {
-        return root;
-    }
-
-    switch (root.type) {
-        case "subsup":
-            return root.children
-                .filter(isNotNull)
-                .map(node => findNode(node, id))
-                .find(Boolean);
-        case "frac":
-            return root.children.map(node => findNode(node, id)).find(Boolean);
-        case "parens":
-        case "row":
-            return root.children.map(node => findNode(node, id)).find(Boolean);
-        default:
-            // remaining nodes are leaf nodes
-            return undefined;
-    }
-}
-
-export function getPath<T>(root: Node<T>, id: number): Array<number> | void {
-    if (root.id === id) {
-        return [];
-    }
-
-    switch (root.type) {
-        case "subsup": {
-            for (const child of root.children) {
-                if (!child) {
-                    continue;
-                }
-                const path = getPath(child, id);
-                if (path) {
-                    return [root.id, ...path];
-                }
-            }
-            return undefined;
-        }
-        case "frac":
-        case "parens":
-        case "row": {
-            for (const child of root.children) {
-                const path = getPath(child, id);
-                if (path) {
-                    return [root.id, ...path];
-                }
-            }
-            return undefined;
-        }
-    }
-}
-
 export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
     switch (root.type) {
         case "frac": {
@@ -257,14 +200,6 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
         // (root: empty);
     }
 }
-
-// export function findNode_<T>(root: Node<T>, id: number): Node<T> {
-//     const result = findNode(root, id);
-//     if (!result) {
-//         throw new Error(`node with id ${id} could not be found`);
-//     }
-//     return result;
-// }
 
 export function nodeAtPath<T>(
     root: Node<T>,
