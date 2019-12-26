@@ -12,6 +12,12 @@ export type State = {
 
 const {row, glyph, frac} = Editor;
 
+const SUB = 0;
+const SUP = 1;
+const NUMERATOR = 0;
+const DENOMINATOR = 1;
+const RADICAND = 0;
+
 const initialState: State = {
     math: row([
         glyph("1"),
@@ -99,12 +105,7 @@ const moveLeft = (
         if (prevNode && prevNode.type === "root") {
             const radicand = prevNode.children[0];
             return {
-                path: [
-                    ...cursor.path,
-                    prev,
-                    0,
-                    /* radicand */
-                ],
+                path: [...cursor.path, prev, RADICAND],
                 prev: lastIndex(radicand.children),
                 next: null,
             };
@@ -121,23 +122,13 @@ const moveLeft = (
             const [sub, sup] = prevNode.children;
             if (sup) {
                 return {
-                    path: [
-                        ...cursor.path,
-                        prev,
-                        1,
-                        /* sup */
-                    ],
+                    path: [...cursor.path, prev, SUP],
                     prev: lastIndex(sup.children),
                     next: null,
                 };
             } else if (sub) {
                 return {
-                    path: [
-                        ...cursor.path,
-                        prev,
-                        0,
-                        /* sub */
-                    ],
+                    path: [...cursor.path, prev, SUB],
                     prev: lastIndex(sub.children),
                     next: null,
                 };
@@ -189,11 +180,7 @@ const moveLeft = (
             if (currentNode === sup && hasChildren(grandparent)) {
                 if (sub) {
                     return {
-                        path: [
-                            ...cursor.path.slice(0, -1),
-                            0,
-                            /* sub */
-                        ],
+                        path: [...cursor.path.slice(0, -1), SUB],
                         prev: lastIndex(sub.children),
                         next: null,
                     };
@@ -222,11 +209,7 @@ const moveLeft = (
             if (currentNode === denominator) {
                 // move from denominator to numerator
                 return {
-                    path: [
-                        ...cursor.path.slice(0, -1),
-                        0,
-                        /* numerator */
-                    ],
+                    path: [...cursor.path.slice(0, -1), NUMERATOR],
                     prev: lastIndex(numerator.children),
                     next: null,
                 };
@@ -266,12 +249,7 @@ const moveRight = (
             const radicand = nextNode.children[0];
             // TODO: handle navigating into the index
             return {
-                path: [
-                    ...cursor.path,
-                    next,
-                    0,
-                    /* radicand */
-                ],
+                path: [...cursor.path, next, RADICAND],
                 prev: null,
                 next: firstIndex(radicand.children),
             };
@@ -279,12 +257,7 @@ const moveRight = (
             // enter fraction (numerator)
             const numerator = nextNode.children[0];
             return {
-                path: [
-                    ...cursor.path,
-                    next,
-                    0,
-                    /* numerator */
-                ],
+                path: [...cursor.path, next, NUMERATOR],
                 prev: null,
                 next: firstIndex(numerator.children),
             };
@@ -293,23 +266,13 @@ const moveRight = (
             const [sub, sup] = nextNode.children;
             if (sub) {
                 return {
-                    path: [
-                        ...cursor.path,
-                        next,
-                        0,
-                        /* sub */
-                    ],
+                    path: [...cursor.path, next, SUB],
                     prev: null,
                     next: firstIndex(sub.children),
                 };
             } else if (sup) {
                 return {
-                    path: [
-                        ...cursor.path,
-                        next,
-                        1,
-                        /* sup */
-                    ],
+                    path: [...cursor.path, next, SUP],
                     prev: null,
                     next: firstIndex(sup.children),
                 };
@@ -360,11 +323,7 @@ const moveRight = (
             if (currentNode === sub && hasChildren(grandparent)) {
                 if (sup) {
                     return {
-                        path: [
-                            ...cursor.path.slice(0, -1),
-                            1,
-                            /* sup */
-                        ],
+                        path: [...cursor.path.slice(0, -1), SUP],
                         prev: null,
                         next: firstIndex(sup.children),
                     };
@@ -393,11 +352,7 @@ const moveRight = (
             if (currentNode === numerator) {
                 // move from numerator to denominator
                 return {
-                    path: [
-                        ...cursor.path.slice(0, -1),
-                        1,
-                        /* denominator */
-                    ],
+                    path: [...cursor.path.slice(0, -1), DENOMINATOR],
                     prev: null,
                     next: firstIndex(denominator.children),
                 };
@@ -756,24 +711,14 @@ const reducer = (state: State = initialState, action: Action): State => {
         if (newNode.type === "frac") {
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
-                path: [
-                    ...cursor.path,
-                    index,
-                    0,
-                    /* numerator */
-                ],
+                path: [...cursor.path, index, NUMERATOR],
                 next: null,
                 prev: null,
             };
         } else if (newNode.type === "root") {
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
-                path: [
-                    ...cursor.path,
-                    index,
-                    0,
-                    /* radicand */
-                ],
+                path: [...cursor.path, index, RADICAND],
                 next: null,
                 prev: null,
             };

@@ -7,32 +7,81 @@ import {State} from "../editor-reducer";
 
 const SUB = 0;
 const SUP = 1;
+const NUMERATOR = 0;
+const DENOMINATOR = 1;
+const RADICAND = 0;
 
 describe("reducer", () => {
     describe("inserting", () => {
-        it("insert a charcater and advance the cursor", () => {
-            const math = Util.row("1+");
-            const cursor = {
-                path: [],
-                prev: 1,
-                next: null,
-            };
+        describe("a regular character", () => {
+            it("a the start", () => {
+                const math = Util.row("+2");
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
 
-            const state: State = {math, cursor};
-            const newState = reducer(state, {type: "2"});
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "1"});
 
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(Util.row("1+2")),
-            );
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1+2")),
+                );
 
-            expect(newState.cursor).toEqual({
-                path: [],
-                prev: 2,
-                next: null,
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+
+            it("in the middle", () => {
+                const math = Util.row("12");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "+"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1+2")),
+                );
+
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            it("at the end", () => {
+                const math = Util.row("1+");
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "2"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1+2")),
+                );
+
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 2,
+                    next: null,
+                });
             });
         });
 
-        describe("inserting - inserts '\u2212'", () => {
+        describe("inserting '-' inserts '\u2212'", () => {
             test("in the middle of a row", () => {
                 const math = Util.row("ab");
                 const cursor = {
@@ -296,7 +345,7 @@ describe("reducer", () => {
                     ),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* numerator */],
+                    path: [1, NUMERATOR],
                     prev: null,
                     next: null,
                 });
@@ -714,7 +763,7 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* denominator */],
+                    path: [1, DENOMINATOR],
                     prev: 1,
                     next: null,
                 });
@@ -727,7 +776,7 @@ describe("reducer", () => {
                     glyph("2"),
                 ]);
                 const cursor = {
-                    path: [1, 1 /* denominator */],
+                    path: [1, DENOMINATOR],
                     prev: null,
                     next: 0,
                 };
@@ -752,7 +801,7 @@ describe("reducer", () => {
                     glyph("2"),
                 ]);
                 const cursor = {
-                    path: [1, 0 /* numerator */],
+                    path: [1, NUMERATOR],
                     prev: null,
                     next: 1,
                 };
@@ -841,6 +890,27 @@ describe("reducer", () => {
                 });
             });
 
+            it("should enter an empty sub from the right", () => {
+                const math = row([glyph("e"), Util.sub(""), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                });
+            });
+
             it("should enter a sup from the right", () => {
                 const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
                 const cursor = {
@@ -856,8 +926,29 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* sub */],
+                    path: [1, SUP],
                     prev: 2,
+                    next: null,
+                });
+            });
+
+            it("should enter an empty sup from the right", () => {
+                const math = row([glyph("e"), Util.sup(""), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
                     next: null,
                 });
             });
@@ -1000,8 +1091,29 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* denonminator */],
+                    path: [1, DENOMINATOR],
                     prev: 1,
+                    next: null,
+                });
+            });
+
+            test("entering an empty denominator from the right", () => {
+                const math = row([glyph("a"), Util.frac("xy", ""), glyph("b")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, DENOMINATOR],
+                    prev: null,
                     next: null,
                 });
             });
@@ -1013,7 +1125,7 @@ describe("reducer", () => {
                     glyph("b"),
                 ]);
                 const cursor = {
-                    path: [1, 1 /* denominator */],
+                    path: [1, DENOMINATOR],
                     prev: null,
                     next: 0,
                 };
@@ -1025,8 +1137,29 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* numerator */],
+                    path: [1, NUMERATOR],
                     prev: 1,
+                    next: null,
+                });
+            });
+
+            test("moving from the denonminator to an empty numerator", () => {
+                const math = row([glyph("a"), Util.frac("", "uv"), glyph("b")]);
+                const cursor = {
+                    path: [1, DENOMINATOR],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, NUMERATOR],
+                    prev: null,
                     next: null,
                 });
             });
@@ -1038,7 +1171,7 @@ describe("reducer", () => {
                     glyph("b"),
                 ]);
                 const cursor = {
-                    path: [1, 0 /* numerator */],
+                    path: [1, NUMERATOR],
                     prev: null,
                     next: 0,
                 };
@@ -1073,7 +1206,7 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* radicand */],
+                    path: [1, RADICAND],
                     prev: 1,
                     next: null,
                 });
@@ -1082,7 +1215,7 @@ describe("reducer", () => {
             test("exiting sqrt with surround glyphs", () => {
                 const math = row([glyph("a"), Util.sqrt("xy"), glyph("b")]);
                 const cursor = {
-                    path: [1, 0 /* radicand */],
+                    path: [1, RADICAND],
                     prev: null,
                     next: 0,
                 };
@@ -1103,7 +1236,7 @@ describe("reducer", () => {
             test("exiting sqrt without surround glyphs", () => {
                 const math = row([Util.sqrt("xy")]);
                 const cursor = {
-                    path: [0, 0 /* radicand */],
+                    path: [0, RADICAND],
                     prev: null,
                     next: 0,
                 };
@@ -1257,6 +1390,27 @@ describe("reducer", () => {
                 });
             });
 
+            it("should enter an empty sub from the left", () => {
+                const math = row([glyph("e"), Util.sub(""), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                });
+            });
+
             it("should enter a sup from the left", () => {
                 const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
                 const cursor = {
@@ -1272,9 +1426,30 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* sub */],
+                    path: [1, SUP],
                     prev: null,
                     next: 0,
+                });
+            });
+
+            it("should enter an empty sup from the left", () => {
+                const math = row([glyph("e"), Util.sup(""), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
                 });
             });
 
@@ -1398,7 +1573,11 @@ describe("reducer", () => {
 
         describe("frac", () => {
             test("entering the numerator from the left", () => {
-                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
                 const cursor = {
                     path: [],
                     prev: 0,
@@ -1412,16 +1591,41 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* numerator */],
+                    path: [1, NUMERATOR],
                     prev: null,
                     next: 0,
                 });
             });
 
-            test("moving from the numerator to the denominator", () => {
-                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+            test("entering an empty numerator from the left", () => {
+                const math = row([glyph("a"), Util.frac("", "uv"), glyph("b")]);
                 const cursor = {
-                    path: [1, 0 /* numerator */],
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, NUMERATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("moving from the numerator to the denominator", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, NUMERATOR],
                     prev: 0,
                     next: null,
                 };
@@ -1433,16 +1637,41 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* denominator */],
+                    path: [1, DENOMINATOR],
                     prev: null,
                     next: 0,
                 });
             });
 
-            test("exiting from the denominator to the right", () => {
-                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+            test("moving from the numerator to an empty denominator", () => {
+                const math = row([glyph("a"), Util.frac("xy", ""), glyph("b")]);
                 const cursor = {
-                    path: [1, 1 /* denominator */],
+                    path: [1, NUMERATOR],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("exiting from the denominator to the right", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, DENOMINATOR],
                     prev: 0,
                     next: null,
                 };
@@ -1477,7 +1706,7 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* radicand */],
+                    path: [1, RADICAND],
                     prev: null,
                     next: 0,
                 });
@@ -1486,7 +1715,7 @@ describe("reducer", () => {
             test("exiting sqrt with surround glyphs", () => {
                 const math = row([glyph("a"), Util.sqrt("xy"), glyph("b")]);
                 const cursor = {
-                    path: [1, 0 /* radicand */],
+                    path: [1, RADICAND],
                     prev: 1,
                     next: null,
                 };
@@ -1507,7 +1736,7 @@ describe("reducer", () => {
             test("exiting sqrt without surround glyphs", () => {
                 const math = row([Util.sqrt("xy")]);
                 const cursor = {
-                    path: [0, 0 /* radicand */],
+                    path: [0, RADICAND],
                     prev: 1,
                     next: null,
                 };
