@@ -127,8 +127,8 @@ const moveLeft = (
                         1,
                         /* sup */
                     ],
-                    next: null,
                     prev: lastIndex(sup.children),
+                    next: null,
                 };
             } else if (sub) {
                 return {
@@ -138,18 +138,24 @@ const moveLeft = (
                         0,
                         /* sub */
                     ],
-                    next: null,
                     prev: lastIndex(sub.children),
+                    next: null,
                 };
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
+        } else if (prevNode && prevNode.type === "parens") {
+            return {
+                path: [...cursor.path, prev],
+                prev: lastIndex(prevNode.children),
+                next: null,
+            };
         } else {
             // move to the left
             return {
                 path: cursor.path,
-                next: cursor.prev,
                 prev: prevIndex(children, prev),
+                next: cursor.prev,
             };
         }
     } else if (cursor.path.length >= 1) {
@@ -188,21 +194,21 @@ const moveLeft = (
                             0,
                             /* sub */
                         ],
-                        next: null,
                         prev: lastIndex(sub.children),
+                        next: null,
                     };
                 } else {
                     return {
                         path: cursor.path.slice(0, -2),
-                        next: grandparent.children.indexOf(parent),
                         prev: grandparent.children.indexOf(parent) - 1,
+                        next: grandparent.children.indexOf(parent),
                     };
                 }
             } else if (currentNode === sub && hasChildren(grandparent)) {
                 return {
                     path: cursor.path.slice(0, -2),
-                    next: parentIndex,
                     prev: prevIndex(grandparent.children, parentIndex),
+                    next: parentIndex,
                 };
             }
         } else if (parent.type === "frac" && cursor.path.length >= 2) {
@@ -221,15 +227,25 @@ const moveLeft = (
                         0,
                         /* numerator */
                     ],
-                    next: null,
                     prev: lastIndex(numerator.children),
+                    next: null,
                 };
             } else if (currentNode === numerator && hasChildren(grandparent)) {
                 // exit fraction to the left
                 return {
                     path: cursor.path.slice(0, -2),
-                    next: parentIndex,
                     prev: prevIndex(grandparent.children, parentIndex),
+                    next: parentIndex,
+                };
+            }
+        } else if (currentNode.type === "parens") {
+            const parentIndex = cursor.path[cursor.path.length - 1];
+            if (hasChildren(parent)) {
+                // exit parens to the left
+                return {
+                    path: cursor.path.slice(0, -1),
+                    prev: prevIndex(parent.children, parentIndex),
+                    next: parentIndex,
                 };
             }
         }
@@ -300,6 +316,12 @@ const moveRight = (
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
+        } else if (nextNode && nextNode.type === "parens") {
+            return {
+                path: [...cursor.path, next],
+                prev: null,
+                next: firstIndex(nextNode.children),
+            };
         } else {
             // move to the right
             return {
@@ -388,6 +410,16 @@ const moveRight = (
                     path: cursor.path.slice(0, -2),
                     prev: parentIndex,
                     next: nextIndex(grandparent.children, parentIndex),
+                };
+            }
+        } else if (currentNode.type === "parens") {
+            const parentIndex = cursor.path[cursor.path.length - 1];
+            if (hasChildren(parent)) {
+                // exit parens to the left
+                return {
+                    path: cursor.path.slice(0, -1),
+                    next: nextIndex(parent.children, parentIndex),
+                    prev: parentIndex,
                 };
             }
         }
