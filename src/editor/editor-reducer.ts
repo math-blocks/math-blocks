@@ -1,6 +1,6 @@
 import {$ReadOnly} from "utility-types";
 
-import produce from "immer";
+import produce, {original} from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
@@ -391,12 +391,18 @@ const backspace = (
         throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
     }
     const {cursor} = draft;
+    console.log(original(currentNode));
 
     if (cursor.prev != null) {
         const {children} = currentNode;
         const removeIndex = cursor.prev;
         const prevNode = children[removeIndex];
-        if (prevNode.type === "subsup" || prevNode.type === "frac") {
+        if (
+            prevNode.type === "subsup" ||
+            prevNode.type === "frac" ||
+            prevNode.type === "parens" ||
+            prevNode.type === "root"
+        ) {
             draft.cursor = moveLeft(root, currentNode, cursor);
             return;
         }
@@ -411,7 +417,39 @@ const backspace = (
         currentNode.children = removeChildWithIndex(children, removeIndex);
         draft.cursor = newCursor;
         return;
-    } else if (cursor.path.length > 1) {
+    }
+
+    if (cursor.path.length > 0) {
+        const parent = Editor.nodeAtPath(
+            root,
+            cursor.path.slice(0, cursor.path.length - 1),
+        );
+        if (currentNode.type === "parens") {
+            if (!hasChildren(parent)) {
+                return;
+            }
+
+            const index = cursor.path[cursor.path.length - 1];
+
+            const newChildren = [
+                ...parent.children.slice(0, index),
+                ...currentNode.children,
+                ...parent.children.slice(index + 1),
+            ];
+
+            const newCursor = {
+                path: cursor.path.slice(0, -1),
+                prev: prevIndex(newChildren, index),
+                next: index,
+            };
+
+            parent.children = newChildren;
+            draft.cursor = newCursor;
+            return;
+        }
+    }
+
+    if (cursor.path.length > 1) {
         const parent = Editor.nodeAtPath(
             root,
             cursor.path.slice(0, cursor.path.length - 1),
@@ -464,10 +502,7 @@ const backspace = (
             // update cursor
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev:
-                    parentIndex != null
-                        ? prevIndex(newChildren, parentIndex)
-                        : firstIndex(grandparent.children),
+                prev: prevIndex(newChildren, parentIndex),
                 next: parentIndex,
             };
 
@@ -505,10 +540,7 @@ const backspace = (
             // update cursor
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev:
-                    parentIndex != null
-                        ? prevIndex(newChildren, parentIndex)
-                        : firstIndex(grandparent.children),
+                prev: prevIndex(newChildren, parentIndex),
                 next: parentIndex,
             };
 
@@ -517,6 +549,8 @@ const backspace = (
 
             draft.cursor = newCursor;
             return;
+        } else if (parent.type === "root") {
+            // TODO
         }
     }
 };
@@ -682,6 +716,14 @@ const reducer = (state: State = initialState, action: Action): State => {
                 };
                 break;
             }
+            case "(": {
+                newNode = {
+                    id: getId(),
+                    type: "parens",
+                    children: [],
+                };
+                break;
+            }
             default: {
                 if (
                     action.type.length === 1 &&
@@ -712,6 +754,13 @@ const reducer = (state: State = initialState, action: Action): State => {
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
                 path: [...cursor.path, index, NUMERATOR],
+                next: null,
+                prev: null,
+            };
+        } else if (newNode.type === "parens") {
+            const index = currentNode.children.indexOf(newNode);
+            draft.cursor = {
+                path: [...cursor.path, index],
                 next: null,
                 prev: null,
             };
