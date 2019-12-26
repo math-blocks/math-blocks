@@ -5,6 +5,9 @@ const {row, glyph, subsup} = Editor;
 
 import {State} from "../editor-reducer";
 
+const SUB = 0;
+const SUP = 1;
+
 describe("reducer", () => {
     describe("inserting", () => {
         it("insert a charcater and advance the cursor", () => {
@@ -28,6 +31,277 @@ describe("reducer", () => {
                 next: null,
             });
         });
+
+        describe("inserting - inserts '\u2212'", () => {
+            test("in the middle of a row", () => {
+                const math = Util.row("ab");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "-"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("a\u2212b")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            test("at the end of a row", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "-"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("a\u2212")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: null,
+                });
+            });
+
+            test("at the start of a row", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "-"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("\u2212a")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+        });
+
+        describe("insert '*' inserts '\u00B7'", () => {
+            it("in the middle of the row", () => {
+                const math = Util.row("ab");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "*"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("a\u00B7b")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            it("at the end of a row", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "*"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("a\u00B7")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: null,
+                });
+            });
+
+            it("at the start of a row", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "*"});
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("\u00B7a")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+        });
+
+        describe("subsup", () => {
+            it("'^' should insert a new sup", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "^"});
+
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("'_' should insert a new sub", () => {
+                const math = Util.row("a");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "_"});
+
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("'^' should navigate into an existing sup", () => {
+                const math = row([glyph("a"), Util.sup("x")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "^"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: 0,
+                });
+            });
+
+            it("'_' should navigate into an existing sub", () => {
+                const math = row([glyph("a"), Util.sub("x")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "_"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: 0,
+                });
+            });
+
+            it("'^' should change an existing sub into an subsup", () => {
+                const math = row([glyph("a"), Util.sub("x")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "^"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("a"), Util.subsup("x", "")])),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("'^' should change an existing sup into an subsup", () => {
+                const math = row([glyph("a"), Util.sup("x")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "_"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("a"), Util.subsup("", "x")])),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                });
+            });
+        });
+
+        describe("frac", () => {
+            it("'/' should insert a fraction", () => {
+                const math = Util.row("eg");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("e"), Util.frac("", ""), glyph("g")]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 0 /* numerator */],
+                    prev: null,
+                    next: null,
+                });
+            });
+        });
     });
 
     describe("deleting", () => {
@@ -48,7 +322,6 @@ describe("reducer", () => {
                 expect(Editor.stripIDs(newState.math)).toEqual(
                     Editor.stripIDs(Util.row("1")),
                 );
-
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -198,7 +471,7 @@ describe("reducer", () => {
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [1, 0 /* sub */],
+                    path: [1, SUB],
                     prev: 2,
                     next: null,
                 });
@@ -224,7 +497,7 @@ describe("reducer", () => {
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* sup */],
+                    path: [1, SUP],
                     prev: 2,
                     next: null,
                 });
@@ -250,7 +523,7 @@ describe("reducer", () => {
                 );
 
                 expect(newState.cursor).toEqual({
-                    path: [1, 1 /* sup */],
+                    path: [1, SUP],
                     prev: 2,
                     next: null,
                 });
@@ -263,7 +536,7 @@ describe("reducer", () => {
                     glyph("g"),
                 ]);
                 const cursor = {
-                    path: [1, 0 /* sub */],
+                    path: [1, SUB],
                     prev: null,
                     next: 0,
                 };
@@ -289,7 +562,7 @@ describe("reducer", () => {
                     glyph("g"),
                 ]);
                 const cursor = {
-                    path: [1, 1 /* sup */],
+                    path: [1, SUP],
                     prev: null,
                     next: 0,
                 };
@@ -315,7 +588,7 @@ describe("reducer", () => {
                     glyph("g"),
                 ]);
                 const cursor = {
-                    path: [1, 0 /* sub */],
+                    path: [1, SUB],
                     prev: null,
                     next: 0,
                 };
@@ -348,7 +621,7 @@ describe("reducer", () => {
                     glyph("g"),
                 ]);
                 const cursor = {
-                    path: [1, 1 /* sup */],
+                    path: [1, SUP],
                     prev: null,
                     next: 0,
                 };
@@ -371,6 +644,71 @@ describe("reducer", () => {
                     path: [],
                     prev: 1,
                     next: 2,
+                });
+            });
+        });
+
+        describe("frac", () => {
+            test("from right enters denominator", () => {
+                const math = row([glyph("1"), Util.frac("a", "b"), glyph("2")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 1 /* denominator */],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("deleting from the start of the denominator", () => {
+                const math = row([glyph("1"), Util.frac("a", "b"), glyph("2")]);
+                const cursor = {
+                    path: [1, 1 /* denominator */],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1ab2")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            test("deleting from the start of the numerator", () => {
+                const math = row([glyph("1"), Util.frac("a", "b"), glyph("2")]);
+                const cursor = {
+                    path: [1, 0 /* numerator */],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1ab2")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 });
             });
         });
@@ -421,165 +759,230 @@ describe("reducer", () => {
                     next: 0,
                 });
             });
+        });
 
-            describe("subsup", () => {
-                it("should enter a sub from the right", () => {
-                    const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    };
+        describe("subsup", () => {
+            it("should enter a sub from the right", () => {
+                const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 0 /* sub */],
-                        prev: 2,
-                        next: null,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: 2,
+                    next: null,
                 });
+            });
 
-                it("should enter a sup from the right", () => {
-                    const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    };
+            it("should enter a sup from the right", () => {
+                const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 1 /* sub */],
-                        prev: 2,
-                        next: null,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 1 /* sub */],
+                    prev: 2,
+                    next: null,
                 });
+            });
 
-                it("should enter a subsup from the right", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    };
+            it("should enter a subsup from the right", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 1 /* sup */],
-                        prev: 0,
-                        next: null,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: 0,
+                    next: null,
                 });
+            });
 
-                it("should exit a sub to the left", () => {
-                    const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [1, 0 /* sub */],
-                        prev: null,
-                        next: 0,
-                    };
+            it("should exit a sub to the left", () => {
+                const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [1, SUB],
+                    prev: null,
+                    next: 0,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 });
+            });
 
-                it("should exit a sup to the left", () => {
-                    const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [1, 1 /* sup */],
-                        prev: null,
-                        next: 0,
-                    };
+            it("should exit a sup to the left", () => {
+                const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: null,
+                    next: 0,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 });
+            });
 
-                it("should exit a subsup to the left from within the sub", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [1, 0 /* sub */],
-                        prev: null,
-                        next: 0,
-                    };
+            it("should exit a subsup to the left from within the sub", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, SUB],
+                    prev: null,
+                    next: 0,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 });
+            });
 
-                it("should move from the sup to the sub", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [1, 1 /* sup */],
-                        prev: null,
-                        next: 0,
-                    };
+            it("should move from the sup to the sub", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: null,
+                    next: 0,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 0 /* sub */],
-                        prev: 0,
-                        next: null,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: 0,
+                    next: null,
+                });
+            });
+        });
+
+        describe("frac", () => {
+            test("entering the denominator from the right", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 1 /* denonminator */],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("moving from the denonminator to the numerator", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [1, 1 /* denominator */],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 0 /* numerator */],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("exiting from the numerator to the left", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [1, 0 /* numerator */],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 });
             });
         });
@@ -630,165 +1033,230 @@ describe("reducer", () => {
                     next: null,
                 });
             });
+        });
 
-            describe("subsup", () => {
-                it("should enter a sub from the left", () => {
-                    const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    };
+        describe("subsup", () => {
+            it("should enter a sub from the left", () => {
+                const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 0 /* sub */],
-                        prev: null,
-                        next: 0,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: 0,
                 });
+            });
 
-                it("should enter a sup from the left", () => {
-                    const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    };
+            it("should enter a sup from the left", () => {
+                const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 1 /* sub */],
-                        prev: null,
-                        next: 0,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 1 /* sub */],
+                    prev: null,
+                    next: 0,
                 });
+            });
 
-                it("should enter a subsup from the left", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [],
-                        prev: 0,
-                        next: 1,
-                    };
+            it("should enter a subsup from the left", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 0 /* sub */],
-                        prev: null,
-                        next: 0,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: 0,
                 });
+            });
 
-                it("should exit a sub to the right", () => {
-                    const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [1, 0 /* sub */],
-                        prev: 0,
-                        next: null,
-                    };
+            it("should exit a sub to the right", () => {
+                const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [1, SUB],
+                    prev: 0,
+                    next: null,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 });
+            });
 
-                it("should exit a sup to the right", () => {
-                    const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
-                    const cursor = {
-                        path: [1, 1 /* sup */],
-                        prev: 0,
-                        next: null,
-                    };
+            it("should exit a sup to the right", () => {
+                const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: 0,
+                    next: null,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 });
+            });
 
-                it("should exit a subsup to the right from within the sup", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [1, 1 /* sup */],
-                        prev: 0,
-                        next: null,
-                    };
+            it("should exit a subsup to the right from within the sup", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: 0,
+                    next: null,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [],
-                        prev: 1,
-                        next: 2,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 });
+            });
 
-                it("should move from the sub to the sup", () => {
-                    const math = row([
-                        glyph("e"),
-                        Util.subsup("a", "b"),
-                        glyph("g"),
-                    ]);
-                    const cursor = {
-                        path: [1, 0 /* sub */],
-                        prev: 0,
-                        next: null,
-                    };
+            it("should move from the sub to the sup", () => {
+                const math = row([
+                    glyph("e"),
+                    Util.subsup("a", "b"),
+                    glyph("g"),
+                ]);
+                const cursor = {
+                    path: [1, SUB],
+                    prev: 0,
+                    next: null,
+                };
 
-                    const state: State = {math, cursor};
-                    const newState = reducer(state, action);
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(math),
-                    );
-                    expect(newState.cursor).toEqual({
-                        path: [1, 1 /* sup */],
-                        prev: null,
-                        next: 0,
-                    });
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: 0,
+                });
+            });
+        });
+
+        describe("frac", () => {
+            test("entering the numerator from the left", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 0 /* numerator */],
+                    prev: null,
+                    next: 0,
+                });
+            });
+
+            test("moving from the numerator to the denominator", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [1, 0 /* numerator */],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, 1 /* denominator */],
+                    prev: null,
+                    next: 0,
+                });
+            });
+
+            test("exiting from the denominator to the right", () => {
+                const math = row([glyph("a"), Util.frac("x", "y"), glyph("b")]);
+                const cursor = {
+                    path: [1, 1 /* denominator */],
+                    prev: 0,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 });
             });
         });

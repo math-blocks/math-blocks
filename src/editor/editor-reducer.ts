@@ -68,10 +68,6 @@ const prevIndex = (
     return childIndex > 0 ? childIndex - 1 : null;
 };
 
-// const removeIndex = <T>(array: T[], index: number): T[] => {
-//     return [...array.slice(0, index), ...array.slice(index + 1)];
-// };
-
 const removeChildWithIndex = <T extends Identifiable>(
     children: T[],
     index: number,
@@ -540,6 +536,7 @@ const backspace = (
 
 type Action = {type: string};
 
+// TODO: check if cursor is valid before process action
 const reducer = (state: State = initialState, action: Action): State => {
     return produce(state, draft => {
         const {cursor, math} = draft;
