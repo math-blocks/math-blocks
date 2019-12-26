@@ -302,6 +302,52 @@ describe("reducer", () => {
                 });
             });
         });
+
+        describe("root", () => {
+            it("\u221A should insert a frac node", () => {
+                const math = Util.row("12");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "\u221A"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("1"), Util.sqrt(""), glyph("2")]),
+                    ),
+                );
+            });
+        });
+
+        describe("parens", () => {
+            // TODO: fix this test
+            it.skip("'(' should insert a parens node", () => {
+                const math = Util.row("12");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "("});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("e"), Util.parens(""), glyph("g")]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1],
+                    prev: null,
+                    next: null,
+                });
+            });
+        });
     });
 
     describe("deleting", () => {
@@ -986,6 +1032,14 @@ describe("reducer", () => {
                 });
             });
         });
+
+        describe("root", () => {
+            it.todo("write these tests");
+        });
+
+        describe("parens", () => {
+            it.todo("write these tests");
+        });
     });
 
     describe("moving right", () => {
@@ -1259,6 +1313,14 @@ describe("reducer", () => {
                     next: 2,
                 });
             });
+        });
+
+        describe("root", () => {
+            it.todo("write these tests");
+        });
+
+        describe("parens", () => {
+            it.todo("write these tests");
         });
     });
 });

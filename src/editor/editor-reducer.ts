@@ -537,6 +537,7 @@ const backspace = (
 type Action = {type: string};
 
 // TODO: check if cursor is valid before process action
+// TODO: insert both left/right parens when the user presses '('
 const reducer = (state: State = initialState, action: Action): State => {
     return produce(state, draft => {
         const {cursor, math} = draft;

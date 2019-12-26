@@ -194,6 +194,31 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
             };
             return result;
         }
+        case "root": {
+            const result: Root<T, void> = {
+                type: "root",
+                children: [
+                    {
+                        type: "row",
+                        children: root.children[0].children.map<
+                            NodeWithID<T, void>
+                        >(stripIDs),
+                        id: undefined,
+                    },
+                    root.children[1]
+                        ? {
+                              type: "row",
+                              children: root.children[1].children.map<
+                                  NodeWithID<T, void>
+                              >(stripIDs),
+                              id: undefined,
+                          }
+                        : null,
+                ],
+                id: undefined,
+            };
+            return result;
+        }
         default:
             throw new Error("foo");
 
