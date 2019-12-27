@@ -47,7 +47,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "typecheck": "tsc --noEmit",
-    "type-coverage": "yarn type-coverage --ignore-catch --strict --detail --at-least 100",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 100",
     "build": "webpack",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
