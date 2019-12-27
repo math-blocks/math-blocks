@@ -70,7 +70,7 @@ jobs:
       - name: test
         run: yarn test
 
-  codechecks:
+  type-coverage:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -82,7 +82,22 @@ jobs:
           node-version: 12.x
       - name: yarn install
         run: yarn install
-      - name: test
-        run: yarn codechecks
-        env:
-          CC_SECRET: ${{ secrets.CC_SECRET }}
+      - name: type coverage
+        run: yarn type-coverage
+
+  # codechecks:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CI: true
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Use Node.js 12.x
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 12.x
+  #     - name: yarn install
+  #       run: yarn install
+  #     - name: test
+  #       run: yarn codechecks
+  #       env:
+  #         CC_SECRET: ${{ secrets.CC_SECRET }}

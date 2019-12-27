@@ -154,7 +154,7 @@ class StepChecker implements IStepChecker {
         bs: Semantic.Expression[],
         reasons: Reason[],
     ): Semantic.Expression[] {
-        const result = [];
+        const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
                 b => this.checkStep(a, b, reasons).equivalent,
@@ -175,7 +175,7 @@ class StepChecker implements IStepChecker {
         bs: Semantic.Expression[],
         reasons: Reason[],
     ): Semantic.Expression[] {
-        const result = [];
+        const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
                 b => this.checkStep(a, b, reasons).equivalent,

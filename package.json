@@ -1,5 +1,5 @@
 {
-  "name": "math-toolbox",
+  "name": "math-blocks",
   "version": "0.0.1",
   "main": "index.js",
   "author": "Kevin Barabash",
@@ -47,6 +47,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "typecheck": "tsc --noEmit",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 100",
     "build": "webpack",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
@@ -61,8 +62,7 @@
     "immer": "^3.2.0",
     "opentype.js": "^1.1.0",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "string.prototype.matchall": "^3.0.1"
+    "react-dom": "^16.8.6"
   },
   "husky": {
     "hooks": {
@@ -73,5 +73,8 @@
     "transform": {
       "^.+\\.[t|j]sx?$": "babel-jest"
     }
+  },
+  "typeCoverage": {
+    "atLeast": 100
   }
 }
