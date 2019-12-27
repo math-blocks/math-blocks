@@ -38,7 +38,7 @@ const MathEditor: React.SFC<Props> = props => {
         if (props.focus && containerRef.current) {
             containerRef.current.focus();
         }
-    }, []);
+    }, ["hot"]);
 
     useEventListener("keydown", (e: KeyboardEvent) => {
         if (active && !props.readonly) {
