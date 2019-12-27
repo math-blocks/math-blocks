@@ -1,5 +1,5 @@
 {
-  "name": "math-toolbox",
+  "name": "math-blocks",
   "version": "0.0.1",
   "main": "index.js",
   "author": "Kevin Barabash",
@@ -61,8 +61,7 @@
     "immer": "^3.2.0",
     "opentype.js": "^1.1.0",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "string.prototype.matchall": "^3.0.1"
+    "react-dom": "^16.8.6"
   },
   "husky": {
     "hooks": {
