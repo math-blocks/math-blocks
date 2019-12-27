@@ -8,18 +8,6 @@ expect.addSnapshotSerializer(serializer);
 
 const {row, glyph, frac, subsup} = Editor;
 
-function isRow(
-    node: Editor.Node<Lexer.Token>,
-): node is Editor.Row<Lexer.Token> {
-    return node.type === "row";
-}
-
-function isAtom(
-    node: Editor.Node<Lexer.Token>,
-): node is Editor.Atom<Lexer.Token> {
-    return node.type === "atom";
-}
-
 describe("Lexer", () => {
     describe("lex", () => {
         it("should coalesce integers", () => {
