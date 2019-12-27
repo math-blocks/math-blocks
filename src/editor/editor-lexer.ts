@@ -20,7 +20,7 @@ type Num = {kind: "number"; value: string};
 type Plus = {kind: "plus"};
 type Minus = {kind: "minus"};
 type Times = {kind: "times"};
-type Eq = {kind: "eq"};
+type Equal = {kind: "eq"};
 type Ellipsis = {kind: "ellipsis"};
 type EOL = {kind: "eol"};
 
@@ -36,7 +36,7 @@ export const ellipsis = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "ellipsis"});
 export const eq = (): Editor.Atom<Token> => Editor.atom<Token>({kind: "eq"});
 
-export type Token = Ident | Num | Plus | Minus | Times | Eq | Ellipsis | EOL;
+export type Token = Ident | Num | Plus | Minus | Times | Equal | Ellipsis | EOL;
 
 const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
@@ -138,7 +138,7 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
             return {
                 id: node.id,
                 type: "parens",
-                children: node.children.map(lex),
+                children: lexChildren(node.children),
             };
         case "root": {
             const [radicand, index] = node.children;
@@ -148,10 +148,8 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
                 children: [lexRow(radicand), index ? lexRow(index) : null],
             };
         }
-        // We should never read this case since lexChildren will coalesce glyphs
-        // into tokens for us.
         case "atom":
-            throw new Error("FooBar");
+            throw new Error("lexChildren coalesces glyphs, use it instead");
         default:
             throw new UnreachableCaseError(node);
     }
