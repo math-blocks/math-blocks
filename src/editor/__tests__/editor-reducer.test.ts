@@ -373,8 +373,7 @@ describe("reducer", () => {
         });
 
         describe("parens", () => {
-            // TODO: fix this test
-            it.skip("'(' should insert a parens node", () => {
+            it("'(' should insert a parens node", () => {
                 const math = Util.row("12");
                 const cursor = {
                     path: [],
@@ -387,7 +386,7 @@ describe("reducer", () => {
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
                     Editor.stripIDs(
-                        row([glyph("e"), Util.parens(""), glyph("g")]),
+                        row([glyph("1"), Util.parens(""), glyph("2")]),
                     ),
                 );
                 expect(newState.cursor).toEqual({
@@ -402,7 +401,7 @@ describe("reducer", () => {
     describe("deleting", () => {
         const action = {type: "Backspace"};
 
-        describe("root", () => {
+        describe("row", () => {
             it("from the back should delete the last character and the cursor should remain at the end", () => {
                 const math = Util.row("1+");
                 const cursor = {
@@ -812,6 +811,51 @@ describe("reducer", () => {
                 expect(Editor.stripIDs(newState.math)).toEqual(
                     Editor.stripIDs(Util.row("1abcd2")),
                 );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+        });
+
+        describe("parens", () => {
+            test("from the back should delete the last character and the cursor should remain at the end", () => {
+                const math = row([glyph("2"), Util.parens("x+y")]);
+                const cursor = {
+                    path: [1],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("2"), Util.parens("xy")])),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+
+            test("from the front should move children into parent", () => {
+                const math = row([glyph("2"), Util.parens("x+y")]);
+                const cursor = {
+                    path: [1],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("2x+y")),
+                );
+
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
