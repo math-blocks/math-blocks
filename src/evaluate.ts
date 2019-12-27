@@ -2,7 +2,7 @@ import {Expression} from "./semantic/semantic";
 import {UnreachableCaseError} from "./util";
 
 type VarDict = {
-    [key: string]: number;
+    readonly [key: string]: number;
 };
 
 const add = (a: number, b: number): number => a + b;

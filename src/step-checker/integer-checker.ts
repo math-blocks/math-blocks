@@ -6,7 +6,7 @@ import {isNegative, isSubtraction} from "./arithmetic";
 import {IStepChecker, Result, Reason} from "./step-checker";
 
 class IntegerChecker {
-    checker: IStepChecker;
+    readonly checker: IStepChecker;
 
     constructor(checker: IStepChecker) {
         this.checker = checker;
@@ -16,7 +16,7 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (reverse) {
@@ -91,7 +91,7 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (reverse) {
             [prev, next] = [next, prev];
@@ -134,7 +134,7 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (reverse) {
@@ -145,7 +145,9 @@ class IntegerChecker {
             next.type === "add" &&
             prev.args.length === next.args.length
         ) {
-            const subs: Semantic.Neg[] = prev.args.filter(isSubtraction);
+            const subs: readonly Semantic.Neg[] = prev.args.filter(
+                isSubtraction,
+            );
             for (const sub of subs) {
                 const index = prev.args.indexOf(sub);
                 // Either the corresponding arg in the next add node must be
@@ -199,7 +201,7 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (reverse) {
@@ -251,7 +253,7 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (reverse) {
@@ -309,7 +311,7 @@ class IntegerChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         let result: Result;
         let result1: Result;

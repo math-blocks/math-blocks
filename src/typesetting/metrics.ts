@@ -1,16 +1,16 @@
 export type GlyphMetrics = {
-    advance: number;
-    bearingX: number;
-    bearingY: number;
-    width: number;
-    height: number;
+    readonly advance: number;
+    readonly bearingX: number;
+    readonly bearingY: number;
+    readonly width: number;
+    readonly height: number;
 };
 
 export type FontMetrics = {
-    unitsPerEm: number;
-    ascender: number;
-    descender: number;
-    glyphMetrics: Partial<{
-        [charCode: number]: GlyphMetrics;
+    readonly unitsPerEm: number;
+    readonly ascender: number;
+    readonly descender: number;
+    readonly glyphMetrics: Partial<{
+        readonly [charCode: number]: GlyphMetrics;
     }>;
 };

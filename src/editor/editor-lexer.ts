@@ -15,14 +15,14 @@ import {UnreachableCaseError} from "../util";
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-type Ident = {kind: "identifier"; name: string};
-type Num = {kind: "number"; value: string};
-type Plus = {kind: "plus"};
-type Minus = {kind: "minus"};
-type Times = {kind: "times"};
-type Equal = {kind: "eq"};
-type Ellipsis = {kind: "ellipsis"};
-type EOL = {kind: "eol"};
+type Ident = {readonly kind: "identifier"; readonly name: string};
+type Num = {readonly kind: "number"; readonly value: string};
+type Plus = {readonly kind: "plus"};
+type Minus = {readonly kind: "minus"};
+type Times = {readonly kind: "times"};
+type Equal = {readonly kind: "eq"};
+type Ellipsis = {readonly kind: "ellipsis"};
+type EOL = {readonly kind: "eol"};
 
 export const identifier = (name: string): Editor.Atom<Token> =>
     Editor.atom({kind: "identifier", name});
@@ -83,7 +83,7 @@ const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
 };
 
 const lexChildren = (
-    nodes: Editor.Node<Editor.Glyph>[],
+    nodes: readonly Editor.Node<Editor.Glyph>[],
 ): Editor.Node<Token>[] => {
     const tokens: Editor.Node<Token>[] = [];
 

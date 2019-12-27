@@ -30,13 +30,17 @@ export const isSubtraction = (
 export const isNegative = (node: Semantic.Expression): node is Semantic.Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "mul" ? node.args : [node];
+export const getFactors = (
+    node: Semantic.Expression,
+): readonly Semantic.Expression[] => (node.type === "mul" ? node.args : [node]);
 
-export const getTerms = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "add" ? node.args : [node];
+export const getTerms = (
+    node: Semantic.Expression,
+): readonly Semantic.Expression[] => (node.type === "add" ? node.args : [node]);
 
-export const mul = (factors: Semantic.Expression[]): Semantic.Expression => {
+export const mul = (
+    factors: readonly Semantic.Expression[],
+): Semantic.Expression => {
     switch (factors.length) {
         case 0:
             return ONE;
@@ -51,7 +55,9 @@ export const mul = (factors: Semantic.Expression[]): Semantic.Expression => {
     }
 };
 
-export const add = (terms: Array<Semantic.Expression>): Semantic.Expression => {
+export const add = (
+    terms: readonly Semantic.Expression[],
+): Semantic.Expression => {
     switch (terms.length) {
         case 0:
             return ZERO;

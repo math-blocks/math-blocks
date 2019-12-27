@@ -6,13 +6,17 @@ import {isSubtraction} from "./arithmetic";
 import {IStepChecker, Result, Reason} from "./step-checker";
 
 class EquationChecker {
-    checker: IStepChecker;
+    readonly checker: IStepChecker;
 
     constructor(checker: IStepChecker) {
         this.checker = checker;
     }
 
-    checkAddSub(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkAddSub(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        reasons: readonly Reason[],
+    ): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -69,7 +73,11 @@ class EquationChecker {
         };
     }
 
-    checkMul(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkMul(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        reasons: readonly Reason[],
+    ): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -112,7 +120,11 @@ class EquationChecker {
         };
     }
 
-    checkDiv(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkDiv(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        reasons: readonly Reason[],
+    ): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -151,7 +163,7 @@ class EquationChecker {
     checkStep(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (a.type !== "eq" || b.type !== "eq") {
             return {

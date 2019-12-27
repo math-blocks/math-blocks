@@ -4,49 +4,54 @@ import {UnreachableCaseError} from "../util";
 type Dist = number;
 
 type Dim = {
+    // eslint-disable-next-line functional/prefer-readonly-type
     width: Dist;
+    // eslint-disable-next-line functional/prefer-readonly-type
     depth: Dist;
+    // eslint-disable-next-line functional/prefer-readonly-type
     height: Dist;
 };
 
 type BoxKind = "hbox" | "vbox";
 
 export type Box = Dim & {
-    type: "Box";
+    readonly type: "Box";
+    // eslint-disable-next-line functional/prefer-readonly-type
     id?: number;
-    kind: BoxKind;
+    readonly kind: BoxKind;
+    // eslint-disable-next-line functional/prefer-readonly-type
     shift: Dist;
-    content: Node[];
-    multiplier: number;
+    readonly content: readonly Node[];
+    readonly multiplier: number;
 };
 
 export type Glue = {
-    type: "Glue";
-    id?: number;
-    size: Dist;
-    stretch: Dist;
-    shrink: Dist;
+    readonly type: "Glue";
+    readonly id?: number;
+    readonly size: Dist;
+    readonly stretch: Dist;
+    readonly shrink: Dist;
 };
 
 export type Glyph = {
-    type: "Glyph";
-    id?: number;
-    char: string;
-    size: number;
-    metrics: FontMetrics;
+    readonly type: "Glyph";
+    readonly id?: number;
+    readonly char: string;
+    readonly size: number;
+    readonly metrics: FontMetrics;
 };
 
 export type Kern = {
-    type: "Kern";
-    id?: number;
-    size: Dist;
+    readonly type: "Kern";
+    readonly id?: number;
+    readonly size: Dist;
 };
 
 export type HRule = {
-    type: "HRule";
-    id?: number;
-    thickness: number;
-    width: number;
+    readonly type: "HRule";
+    readonly id?: number;
+    readonly thickness: number;
+    readonly width: number;
 };
 
 export type Node = Box | Glyph | Glue | Kern | HRule;
@@ -54,7 +59,7 @@ export type Node = Box | Glyph | Glue | Kern | HRule;
 export const makeBox = (
     kind: BoxKind,
     dim: Dim,
-    content: Node[],
+    content: readonly Node[],
     multiplier: number,
 ): Box => ({
     type: "Box",
@@ -232,17 +237,19 @@ export const vsize = (node: Node): number => {
 
 const add = (a: number, b: number): number => a + b;
 const zero = 0;
-const sum = (values: number[]): number => values.reduce(add, zero);
-const max = (values: number[]): number => Math.max(...values);
+const sum = (values: readonly number[]): number => values.reduce(add, zero);
+const max = (values: readonly number[]): number => Math.max(...values);
 
-export const hlistWidth = (nodes: Node[]): number => sum(nodes.map(getWidth));
-const hlistHeight = (nodes: Node[]): number => max(nodes.map(getHeight));
-const hlistDepth = (nodes: Node[]): number => max(nodes.map(getDepth));
+export const hlistWidth = (nodes: readonly Node[]): number =>
+    sum(nodes.map(getWidth));
+const hlistHeight = (nodes: readonly Node[]): number =>
+    max(nodes.map(getHeight));
+const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const vlistWidth = (nodes: Node[]): number => max(nodes.map(vwidth));
-const vlistVsize = (nodes: Node[]): number => sum(nodes.map(vsize));
+const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
+const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (nl: Node[], multiplier = 1): Box => {
+export const hpackNat = (nl: readonly Node[], multiplier = 1): Box => {
     const dim = {
         width: hlistWidth(nl),
         height: hlistHeight(nl),
@@ -254,8 +261,8 @@ export const hpackNat = (nl: Node[], multiplier = 1): Box => {
 export const makeVBox = (
     width: Dist,
     node: Node,
-    upList: Node[],
-    dnList: Node[],
+    upList: readonly Node[],
+    dnList: readonly Node[],
     multiplier = 1,
 ): Box => {
     const dim = {

@@ -1,8 +1,8 @@
 import * as React from "react";
 
 type Props = {
-    name: "incorrect" | "correct";
-    size: number;
+    readonly name: "incorrect" | "correct";
+    readonly size: number;
 };
 
 const Icon: React.SFC<Props> = props => {

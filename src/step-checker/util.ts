@@ -22,16 +22,16 @@ export const primeDecomp = (n: number): number[] => {
     return factors;
 };
 
-export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
-    const result: [A, B][] = [];
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
-        result.push([a[i], b[i]]);
-    }
-    return result;
-};
+export const zip = <A, B>(
+    a: readonly A[],
+    b: readonly B[],
+): readonly (readonly [A, B])[] =>
+    a.length < b.length
+        ? a.map((aItem, index) => [aItem, b[index]])
+        : b.map((bItem, index) => [a[index], bItem]);
 
 export const decomposeFactors = (
-    factors: Semantic.Expression[],
+    factors: readonly Semantic.Expression[],
 ): Semantic.Expression[] => {
     return factors.reduce((result: Semantic.Expression[], factor) => {
         // TODO: add decomposition of powers

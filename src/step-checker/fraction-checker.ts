@@ -10,7 +10,7 @@ import {decomposeFactors} from "./util";
 // There is precedent for this with evaluateMul, we could have evaluateDiv
 
 class FractionChecker {
-    checker: IStepChecker;
+    readonly checker: IStepChecker;
 
     constructor(checker: IStepChecker) {
         this.checker = checker;
@@ -19,7 +19,7 @@ class FractionChecker {
     checkDivisionCanceling(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (a.type !== "div") {
             return {
@@ -152,10 +152,12 @@ class FractionChecker {
         );
 
         if (remainingNumFactors.length === 0) {
+            // @ts-ignore
             remainingNumFactors.push(Arithmetic.ONE);
         }
 
         if (remainingDenFactors.length === 0) {
+            // @ts-ignore
             remainingDenFactors.push(Arithmetic.ONE);
         }
 
@@ -201,7 +203,7 @@ class FractionChecker {
     divByFrac(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (prev.type !== "div") {
@@ -245,7 +247,7 @@ class FractionChecker {
     divByOne(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (
@@ -275,7 +277,7 @@ class FractionChecker {
     divBySame(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (prev.type === "div") {
@@ -306,7 +308,7 @@ class FractionChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         if (reverse) {
@@ -366,7 +368,7 @@ class FractionChecker {
     mulByFrac(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         const {checker} = this;
         // We need a multiplication node containing a fraction
@@ -391,7 +393,9 @@ class FractionChecker {
             }
         }
 
+        // eslint-disable-next-line functional/prefer-readonly-type
         const numFactors: Semantic.Expression[] = [];
+        // eslint-disable-next-line functional/prefer-readonly-type
         const denFactors: Semantic.Expression[] = [];
         for (const arg of prev.args) {
             if (arg.type === "div") {
@@ -424,7 +428,7 @@ class FractionChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         let result: Result;
 

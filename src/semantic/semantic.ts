@@ -3,52 +3,52 @@
  */
 
 export type Num = {
-    type: "number";
-    value: string;
+    readonly type: "number";
+    readonly value: string;
     // TODO: unit
     // without 'unit', the number is considered dimensionless
 };
 
 export type Infinity = {
-    type: "infinity";
+    readonly type: "infinity";
 };
 
 export type Pi = {
-    type: "pi";
+    readonly type: "pi";
 };
 
 export type Ident = {
-    type: "identifier";
-    name: string;
+    readonly type: "identifier";
+    readonly name: string;
     // TODO: unit
     // it's possible that variables could have units associated with them as well
     // it seems like a bit of an edge case though
 
-    subscript?: Expression;
+    readonly subscript?: Expression;
 };
 
 export type Ellipsis = {
-    type: "ellipsis";
+    readonly type: "ellipsis";
 };
 
 export type Add = {
-    type: "add";
-    args: TwoOrMore<Expression>;
+    readonly type: "add";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Mul = {
-    type: "mul";
-    implicit: boolean;
-    args: TwoOrMore<Expression>;
+    readonly type: "mul";
+    readonly implicit: boolean;
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Func = {
-    type: "func";
+    readonly type: "func";
     // We want to limit this to identifiers and expression of identifiers
     // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-    func: Expression;
+    readonly func: Expression;
     // There's a special case when each of the args is a variable then it could be a variable definition
-    args: Expression[];
+    readonly args: readonly Expression[];
 };
 
 // I'm not sure how useful having a special node for this is given we'll have
@@ -71,18 +71,18 @@ export type Func = {
 // from the separate parts
 
 export type Div = {
-    type: "div";
-    args: [Expression, Expression];
+    readonly type: "div";
+    readonly args: readonly [Expression, Expression];
 };
 
 export type Mod = {
-    type: "mod";
-    args: [Expression, Expression];
+    readonly type: "mod";
+    readonly args: readonly [Expression, Expression];
 };
 
 export type Root = {
-    type: "root";
-    args: [
+    readonly type: "root";
+    readonly args: readonly [
         Expression, // radicand
         Expression,
     ];
@@ -91,71 +91,71 @@ export type Root = {
 };
 
 export type Exp = {
-    type: "exp";
-    args: [Expression, Expression]; // base, exp
+    readonly type: "exp";
+    readonly args: readonly [Expression, Expression]; // base, exp
 };
 
 export type Log = {
-    type: "log";
-    args: [Expression, Expression]; // base, arg
+    readonly type: "log";
+    readonly args: readonly [Expression, Expression]; // base, arg
 };
 
 export type Neg = {
-    type: "neg";
-    subtraction: boolean;
-    args: [Expression];
+    readonly type: "neg";
+    readonly subtraction: boolean;
+    readonly args: readonly [Expression];
 };
 
 export type Abs = {
-    type: "abs";
-    args: [Expression];
+    readonly type: "abs";
+    readonly args: readonly [Expression];
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
 export type Limits = {
-    type: "limits";
-    args: [Expression, Expression]; // lower, upper
+    readonly type: "limits";
+    readonly args: readonly [Expression, Expression]; // lower, upper
 };
 
 export type Sum = {
-    type: "sum";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    readonly type: "sum";
+    readonly arg: Expression;
+    readonly bvar: Ident;
+    readonly limits: Limits;
 };
 
 export type Prod = {
-    type: "prod";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    readonly type: "prod";
+    readonly arg: Expression;
+    readonly bvar: Ident;
+    readonly limits: Limits;
 };
 
 export type Limit = {
-    type: "limit";
-    side: "left" | "right" | "both";
-    bvar: Ident;
+    readonly type: "limit";
+    readonly side: "left" | "right" | "both";
+    readonly bvar: Ident;
     // TODOO: add target
-    arg: Expression;
+    readonly arg: Expression;
 };
 
 // TODO: think about partial derivatives
 export type Diff = {
-    type: "diff";
-    arg: Expression;
-    degree: Expression;
+    readonly type: "diff";
+    readonly arg: Expression;
+    readonly degree: Expression;
 
     // If there's a bvar we use liebniz notation, if not
     // we use prime notation.
-    bvar?: Ident;
+    readonly bvar?: Ident;
 };
 
 // TODO: think about multiple integrals
 export type Int = {
-    type: "int";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    readonly type: "int";
+    readonly arg: Expression;
+    readonly bvar: Ident;
+    readonly limits: Limits;
 };
 
 // TODO
@@ -185,103 +185,103 @@ export type NumericExpression =  // numbers
     | Int;
 
 export type Eq = {
-    type: "eq";
-    args: TwoOrMore<Expression>;
+    readonly type: "eq";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Neq = {
-    type: "neq";
-    args: TwoOrMore<Expression>;
+    readonly type: "neq";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Lt = {
-    type: "lt";
-    args: TwoOrMore<Expression>;
+    readonly type: "lt";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Lte = {
-    type: "lte";
-    args: TwoOrMore<Expression>;
+    readonly type: "lte";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Gt = {
-    type: "gt";
-    args: TwoOrMore<Expression>;
+    readonly type: "gt";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Gte = {
-    type: "gte";
-    args: TwoOrMore<Expression>;
+    readonly type: "gte";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type And = {
-    type: "and";
-    args: TwoOrMore<Expression>;
+    readonly type: "and";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Or = {
-    type: "or";
-    args: TwoOrMore<Expression>;
+    readonly type: "or";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Xor = {
-    type: "xor";
-    args: TwoOrMore<Expression>;
+    readonly type: "xor";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Not = {
-    type: "not";
-    args: [Expression];
+    readonly type: "not";
+    readonly args: readonly [Expression];
 };
 
 export type Implies = {
-    type: "implies";
-    args: [Expression, Expression];
+    readonly type: "implies";
+    readonly args: readonly [Expression, Expression];
 };
 
 export type Iff = {
-    type: "iff";
-    args: [Expression, Expression];
+    readonly type: "iff";
+    readonly args: readonly [Expression, Expression];
 };
 
 export type True = {
-    type: "true";
+    readonly type: "true";
 };
 
 export type False = {
-    type: "false";
+    readonly type: "false";
 };
 
 export type Subset = {
-    type: "subset";
-    args: TwoOrMore<Expression>;
+    readonly type: "subset";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type ProperSubset = {
-    type: "prsubset";
-    args: TwoOrMore<Expression>;
+    readonly type: "prsubset";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type NotSubset = {
-    type: "notsubset";
-    args: TwoOrMore<Expression>;
+    readonly type: "notsubset";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type NotProperSubset = {
-    type: "notprsubset";
-    args: TwoOrMore<Expression>;
+    readonly type: "notprsubset";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type In = {
-    type: "in";
-    element: Ident;
-    set: Expression;
+    readonly type: "in";
+    readonly element: Ident;
+    readonly set: Expression;
 };
 
 export type NotIn = {
-    type: "notin";
-    element: Ident;
-    set: Expression;
+    readonly type: "notin";
+    readonly element: Ident;
+    readonly set: Expression;
 };
 
 export type LogicExpression =
@@ -325,55 +325,56 @@ export type LogicExpression =
 // };
 
 export type Set = {
-    type: "set";
-    elements: TwoOrMore<Expression>; // could also include shapes, strings, images, etc.
+    readonly type: "set";
+    readonly elements: TwoOrMore<Expression>; // could also include shapes, strings, images, etc.
 };
 
 export type EmptySet = {
-    type: "empty";
+    readonly type: "empty";
 };
 
 export type Union = {
-    type: "union";
-    args: TwoOrMore<Expression>;
+    readonly type: "union";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Intersection = {
-    type: "intersection";
-    args: TwoOrMore<Expression>;
+    readonly type: "intersection";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type SetDiff = {
-    type: "setdiff";
-    args: [Expression, Expression];
+    readonly type: "setdiff";
+    readonly args: readonly [Expression, Expression];
 };
 
 export type CartesianProduct = {
-    type: "cartesianproduct";
-    args: TwoOrMore<Expression>;
+    readonly type: "cartesianproduct";
+    readonly args: TwoOrMore<Expression>;
 };
 
 export type Naturals = {
-    type: "naturals";
+    readonly type: "naturals";
 };
 
 export type Integers = {
-    type: "integers";
+    readonly type: "integers";
 };
 
 export type Rationals = {
-    type: "rationals";
+    readonly type: "rationals";
 };
 
 export type Reals = {
-    type: "reals";
+    readonly type: "reals";
 };
 
 export type Complexes = {
-    type: "complexes";
+    readonly type: "complexes";
 };
 
 export type SetExpression =
+    // eslint-disable-next-line functional/prefer-readonly-type
     | Set
     | EmptySet // set operations
     | Union

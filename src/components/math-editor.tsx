@@ -15,12 +15,12 @@ const {useEffect, useState, useRef} = React;
 import reducer from "../editor/editor-reducer";
 
 type Props = {
-    value: Editor.Row<Editor.Glyph>;
-    readonly: boolean;
-    focus?: boolean;
-    onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
-    onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
-    style: React.CSSProperties;
+    readonly value: Editor.Row<Editor.Glyph>;
+    readonly readonly: boolean;
+    readonly focus?: boolean;
+    readonly onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
+    readonly onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
+    readonly style: React.CSSProperties;
 };
 
 const MathEditor: React.SFC<Props> = props => {
@@ -77,9 +77,9 @@ const MathEditor: React.SFC<Props> = props => {
     // we did in the reducer.
 
     type LayoutCursor = {
-        parent: number;
-        prev: number | null;
-        next: number | null;
+        readonly parent: number;
+        readonly prev: number | null;
+        readonly next: number | null;
     };
 
     const layoutCursor: LayoutCursor = {

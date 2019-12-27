@@ -3,7 +3,11 @@ import * as React from "react";
 import * as Layout from "../typesetting/layout";
 import {UnreachableCaseError} from "../util";
 
-type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
+type GlyphProps = {
+    readonly glyph: Layout.Glyph;
+    readonly x: number;
+    readonly y: number;
+};
 
 const Glyph: React.SFC<GlyphProps> = ({glyph, x, y}) => {
     return (
@@ -13,7 +17,11 @@ const Glyph: React.SFC<GlyphProps> = ({glyph, x, y}) => {
     );
 };
 
-type HRuleProps = {rule: Layout.HRule; x: number; y: number};
+type HRuleProps = {
+    readonly rule: Layout.HRule;
+    readonly x: number;
+    readonly y: number;
+};
 
 const HRule: React.SFC<HRuleProps> = ({rule, x, y}) => {
     return (
@@ -30,16 +38,16 @@ const HRule: React.SFC<HRuleProps> = ({rule, x, y}) => {
 };
 
 type LayoutCursor = {
-    parent: number;
-    prev: number | null;
-    next: number | null;
+    readonly parent: number;
+    readonly prev: number | null;
+    readonly next: number | null;
 };
 
 type BoxProps = {
     readonly box: Layout.Box;
     readonly cursor: LayoutCursor | null;
-    x?: number;
-    y?: number;
+    readonly x?: number;
+    readonly y?: number;
 };
 
 const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
@@ -47,7 +55,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const availableSpace = box.width - Layout.hlistWidth(box.content);
     const {multiplier} = box;
 
-    let cursorPos: {x: number; y: number} | null = null;
+    let cursorPos: {readonly x: number; readonly y: number} | null = null;
 
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;
@@ -187,8 +195,8 @@ const Box: React.SFC<BoxProps> = props => {
 };
 
 type Props = {
-    box: Layout.Box;
-    cursor: LayoutCursor | null;
+    readonly box: Layout.Box;
+    readonly cursor: LayoutCursor | null;
 };
 
 const CURSOR_WIDTH = 2;

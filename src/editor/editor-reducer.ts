@@ -1,12 +1,12 @@
-import {$ReadOnly} from "utility-types";
-
 import produce from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
 
 export type State = {
+    // eslint-disable-next-line functional/prefer-readonly-type
     math: Editor.Row<Editor.Glyph>;
+    // eslint-disable-next-line functional/prefer-readonly-type
     cursor: Editor.Cursor;
 };
 
@@ -33,7 +33,7 @@ const initialState: State = {
     },
 };
 
-type Identifiable = $ReadOnly<{id: number}>;
+type Identifiable = {readonly id: number};
 
 type HasChildren = Editor.Row<Editor.Glyph> | Editor.Parens<Editor.Glyph>;
 
@@ -61,23 +61,23 @@ const lastIndex = <T extends Identifiable>(
 };
 
 const nextIndex = (
-    children: Editor.Node<Editor.Glyph>[],
+    children: readonly Editor.Node<Editor.Glyph>[],
     childIndex: number,
 ): number | null => {
     return childIndex < children.length - 1 ? childIndex + 1 : null;
 };
 
 const prevIndex = (
-    children: Editor.Node<Editor.Glyph>[],
+    children: readonly Editor.Node<Editor.Glyph>[],
     childIndex: number,
 ): number | null => {
     return childIndex > 0 ? childIndex - 1 : null;
 };
 
 const removeChildWithIndex = <T extends Identifiable>(
-    children: T[],
+    children: readonly T[],
     index: number,
-): T[] => {
+): readonly T[] => {
     return index === -1
         ? children
         : [...children.slice(0, index), ...children.slice(index + 1)];
@@ -554,7 +554,7 @@ const backspace = (
     }
 };
 
-type Action = {type: string};
+type Action = {readonly type: string};
 
 // TODO: check if cursor is valid before process action
 // TODO: insert both left/right parens when the user presses '('

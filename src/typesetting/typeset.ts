@@ -4,10 +4,10 @@ import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "../util";
 
 export type LayoutCursor = {
-    path: Editor.Node<Editor.Glyph>[];
+    readonly path: readonly Editor.Node<Editor.Glyph>[];
     // these are node ids instead of indices
-    prev: number | null;
-    next: number | null;
+    readonly prev: number | null;
+    readonly next: number | null;
 };
 
 const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
@@ -22,7 +22,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     // Adds appropriate padding around operators where appropriate
     const typesetChildren = (
         _typeset: (node: Editor.Node<Editor.Glyph>) => Layout.Node,
-        children: Editor.Node<Editor.Glyph>[],
+        children: readonly Editor.Node<Editor.Glyph>[],
     ): Layout.Node[] =>
         children.map((child, index) => {
             if (child.type === "atom") {

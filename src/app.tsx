@@ -50,8 +50,8 @@ enum StepState {
 }
 
 type Step = {
-    state: StepState;
-    value: Editor.Row<Editor.Glyph>;
+    readonly state: StepState;
+    readonly value: Editor.Row<Editor.Glyph>;
 };
 
 enum ProblemState {

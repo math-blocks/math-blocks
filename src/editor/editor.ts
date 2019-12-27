@@ -1,40 +1,45 @@
 import {getId} from "../unique-id";
 
 export type Row<T, ID = number> = {
-    id: ID;
-    type: "row";
-    children: NodeWithID<T, ID>[];
+    readonly id: ID;
+    readonly type: "row";
+    // eslint-disable-next-line functional/prefer-readonly-type
+    children: readonly NodeWithID<T, ID>[];
 };
 
 export type SubSup<T, ID = number> = {
-    id: ID;
-    type: "subsup";
-    children: [Row<T, ID> | null, Row<T, ID> | null]; // sub, sup
+    readonly id: ID;
+    readonly type: "subsup";
+    // eslint-disable-next-line functional/prefer-readonly-type
+    children: readonly [Row<T, ID> | null, Row<T, ID> | null]; // sub, sup
 };
 
 export type Frac<T, ID = number> = {
-    id: ID;
-    type: "frac";
-    children: [Row<T, ID>, Row<T, ID>]; // numerator, denominator
+    readonly id: ID;
+    readonly type: "frac";
+    // eslint-disable-next-line functional/prefer-readonly-type
+    children: readonly [Row<T, ID>, Row<T, ID>]; // numerator, denominator
 };
 
 // TODO: allow different types of parens
 export type Parens<T, ID = number> = {
-    id: ID;
-    type: "parens";
-    children: NodeWithID<T, ID>[];
+    readonly id: ID;
+    readonly type: "parens";
+    // eslint-disable-next-line functional/prefer-readonly-type
+    children: readonly NodeWithID<T, ID>[];
 };
 
 export type Root<T, ID = number> = {
-    id: ID;
-    type: "root";
-    children: [Row<T, ID>, Row<T, ID> | null]; // radicand, index
+    readonly id: ID;
+    readonly type: "root";
+    // eslint-disable-next-line functional/prefer-readonly-type
+    children: readonly [Row<T, ID>, Row<T, ID> | null]; // radicand, index
 };
 
 export type Atom<T, ID = number> = {
-    id: ID;
-    type: "atom";
-    value: T;
+    readonly id: ID;
+    readonly type: "atom";
+    readonly value: T;
 };
 
 export type NodeWithID<T, ID> =
@@ -112,8 +117,8 @@ export function atom<T>(value: T): Atom<T, number> {
 }
 
 export type Glyph = {
-    kind: "glyph";
-    char: string;
+    readonly kind: "glyph";
+    readonly char: string;
 };
 
 export const glyph = (char: string): Atom<Glyph, number> =>
@@ -267,8 +272,8 @@ export function nodeAtPath<T>(
 }
 
 export type Cursor = {
-    path: number[];
+    readonly path: readonly number[];
     // these are indices of the node inside the parent
-    prev: number | null;
-    next: number | null;
+    readonly prev: number | null;
+    readonly next: number | null;
 };

@@ -5,9 +5,17 @@ module.exports = {
         "typescript/prettier",
         "typescript/prettier-react",
     ],
-    plugins: ["flowtype", "react"],
+    plugins: ["flowtype", "functional", "react"],
     rules: {
         "no-prototype-builtins": "off",
+        "functional/prefer-readonly-type": [
+            "error",
+            {
+                allowLocalMutation: true,
+                allowMutableReturnType: true,
+                ignoreInterface: true,
+            },
+        ],
         "react/jsx-uses-react": "error",
         "react/jsx-uses-vars": "error",
         "react/prop-types": "off",

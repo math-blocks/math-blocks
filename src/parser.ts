@@ -21,9 +21,9 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
     getInfixParselet: (token: T) => InfixParselet<T, N, O> | null,
     getOpPrecedence: (arg0: O) => number,
     EOL: T,
-): {parse: (arg0: Array<T>) => N} {
+): {parse: (arg0: readonly T[]) => N} {
     // rewrite this as a class.
-    const parse = (tokens: Array<T>): N => {
+    const parse = (tokens: readonly T[]): N => {
         let index = 0;
 
         // returns the next token but does not consume
@@ -107,10 +107,10 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
 }
 
 export type InfixParselet<T, N, O> = {
-    op: O;
-    parse: (arg0: IParser<T, N, O>, arg1: N) => N;
+    readonly op: O;
+    readonly parse: (arg0: IParser<T, N, O>, arg1: N) => N;
 };
 
 export type PrefixParselet<T, N, O> = {
-    parse: (arg0: IParser<T, N, O>) => N;
+    readonly parse: (arg0: IParser<T, N, O>) => N;
 };

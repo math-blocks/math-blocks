@@ -39,13 +39,13 @@ const parseNode = (node: Semantic.Expression): BigNumber => {
 };
 
 export type Reason = {
-    message: string;
-    nodes: Semantic.Expression[];
+    readonly message: string;
+    readonly nodes: readonly Semantic.Expression[];
 };
 
 export type Result = {
-    equivalent: boolean;
-    reasons: Reason[];
+    readonly equivalent: boolean;
+    readonly reasons: readonly Reason[];
 };
 
 // TODO: fix flowtype/define-flow-type, HasArgs is used below
@@ -87,31 +87,31 @@ export interface IStepChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         // We pass an array of reasons since cycles may include multiple steps
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result;
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
     intersection(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): Semantic.Expression[];
     difference(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): Semantic.Expression[];
     // TODO: change this to return a Result
     equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): boolean;
 }
 
 class StepChecker implements IStepChecker {
-    fractionChecker: FractionChecker;
-    equationChecker: EquationChecker;
-    integerChecker: IntegerChecker;
+    readonly fractionChecker: FractionChecker;
+    readonly equationChecker: EquationChecker;
+    readonly integerChecker: IntegerChecker;
 
     constructor() {
         this.fractionChecker = new FractionChecker(this);
@@ -123,7 +123,12 @@ class StepChecker implements IStepChecker {
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
      */
-    checkArgs<T extends HasArgs>(prev: T, next: T, reasons: Reason[]): Result {
+    checkArgs<T extends HasArgs>(
+        prev: T,
+        next: T,
+        reasons: readonly Reason[],
+    ): Result {
+        // eslint-disable-next-line functional/prefer-readonly-type
         const _reasons: Reason[] = [];
         if (prev.args.length !== next.args.length) {
             return {
@@ -150,43 +155,47 @@ class StepChecker implements IStepChecker {
      * Returns all of the elements that appear in both as and bs.
      */
     intersection(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): Semantic.Expression[] {
-        const result: Semantic.Expression[] = [];
-        for (const a of as) {
-            const index = bs.findIndex(
-                b => this.checkStep(a, b, reasons).equivalent,
-            );
-            if (index !== -1) {
-                result.push(a);
-                bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
-            }
-        }
-        return result;
+        return as.reduce(
+            (result: Semantic.Expression[], a: Semantic.Expression) => {
+                const index = bs.findIndex(
+                    b => this.checkStep(a, b, reasons).equivalent,
+                );
+                if (index !== -1) {
+                    bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+                    return [...result, a];
+                }
+                return result;
+            },
+            [],
+        );
     }
 
     /**
      * Returns all of the elements that appear in as but not in bs.
      */
     difference(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): Semantic.Expression[] {
-        const result: Semantic.Expression[] = [];
-        for (const a of as) {
-            const index = bs.findIndex(
-                b => this.checkStep(a, b, reasons).equivalent,
-            );
-            if (index !== -1) {
-                bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
-            } else {
-                result.push(a);
-            }
-        }
-        return result;
+        return as.reduce(
+            (result: Semantic.Expression[], a: Semantic.Expression) => {
+                const index = bs.findIndex(
+                    b => this.checkStep(a, b, reasons).equivalent,
+                );
+                if (index !== -1) {
+                    bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+                    return result;
+                } else {
+                    return [...result, a];
+                }
+            },
+            [],
+        );
     }
 
     /**
@@ -194,9 +203,9 @@ class StepChecker implements IStepChecker {
      * and vice versa.
      */
     equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        reasons: Reason[],
+        as: readonly Semantic.Expression[],
+        bs: readonly Semantic.Expression[],
+        reasons: readonly Reason[],
     ): boolean {
         return as.every(a =>
             bs.some(b => this.checkStep(a, b, reasons).equivalent),
@@ -206,7 +215,7 @@ class StepChecker implements IStepChecker {
     addZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (prev.type !== "add") {
             return {
@@ -229,7 +238,7 @@ class StepChecker implements IStepChecker {
     mulOne(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (prev.type !== "mul") {
             return {
@@ -252,11 +261,12 @@ class StepChecker implements IStepChecker {
     checkIdentity<T extends Semantic.Add | Semantic.Mul>(
         prev: T,
         next: Semantic.Expression,
-        op: (arg0: Semantic.Expression[]) => Semantic.Expression,
+        op: (arg0: readonly Semantic.Expression[]) => Semantic.Expression,
         identity: Semantic.Num, // conditional types would come in handy here
         reason: string,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
+        // eslint-disable-next-line functional/prefer-readonly-type
         const identityReasons: Reason[] = [];
         const nonIdentityArgs = prev.args.filter(arg => {
             const result = this.checkStep(arg, identity, reasons);
@@ -371,7 +381,7 @@ class StepChecker implements IStepChecker {
     mulByZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (prev.type !== "mul") {
             return {
@@ -407,7 +417,7 @@ class StepChecker implements IStepChecker {
     commuteAddition(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (
             prev.type === "add" &&
@@ -444,7 +454,7 @@ class StepChecker implements IStepChecker {
     evaluateMul(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (a.type !== "mul" && b.type !== "mul") {
             return {
@@ -494,7 +504,7 @@ class StepChecker implements IStepChecker {
     evaluateAdd(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (a.type !== "add" && b.type !== "add") {
             return {
@@ -558,7 +568,7 @@ class StepChecker implements IStepChecker {
     commuteMultiplication(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (
             prev.type === "mul" &&
@@ -595,7 +605,7 @@ class StepChecker implements IStepChecker {
     symmetricProperty(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         if (
             prev.type === "eq" &&
@@ -700,7 +710,7 @@ class StepChecker implements IStepChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        reasons: readonly Reason[],
     ): Result {
         assertValid(prev);
         assertValid(next);

@@ -1,17 +1,17 @@
 // TODO: share these with editor-lexer.js
-type Ident = {type: "identifier"; name: string};
-type Num = {type: "number"; value: string};
-type Plus = {type: "plus"};
-type Minus = {type: "minus"};
-type Times = {type: "times"};
-type Slash = {type: "slash"};
-type Eq = {type: "eq"};
-type Caret = {type: "caret"};
-type Underscore = {type: "underscore"};
-type LParen = {type: "lparen"};
-type RParen = {type: "rparen"};
-type Ellipsis = {type: "ellipsis"};
-type EOL = {type: "eol"};
+type Ident = {readonly type: "identifier"; readonly name: string};
+type Num = {readonly type: "number"; readonly value: string};
+type Plus = {readonly type: "plus"};
+type Minus = {readonly type: "minus"};
+type Times = {readonly type: "times"};
+type Slash = {readonly type: "slash"};
+type Eq = {readonly type: "eq"};
+type Caret = {readonly type: "caret"};
+type Underscore = {readonly type: "underscore"};
+type LParen = {readonly type: "lparen"};
+type RParen = {readonly type: "rparen"};
+type Ellipsis = {readonly type: "ellipsis"};
+type EOL = {readonly type: "eol"};
 
 export type Token =
     | Ident
@@ -45,7 +45,7 @@ export const rparen = (): Token => ({type: "rparen"});
 export const ellipsis = (): Token => ({type: "ellipsis"});
 
 const stringToToken: {
-    [key: string]: () => Token;
+    readonly [key: string]: () => Token;
 } = {
     "=": eq,
     "+": plus,
@@ -60,6 +60,7 @@ const stringToToken: {
 };
 
 export const lex = (str: string): Token[] => {
+    // eslint-disable-next-line functional/prefer-readonly-type
     const tokens: Token[] = [];
 
     const matches = str.matchAll(TOKEN_REGEX);
