@@ -155,6 +155,12 @@ describe("TextParser", () => {
         }).toThrowErrorMatchingInlineSnapshot(`"unmatched left paren"`);
     });
 
+    it("throws if we run into an unexpected EOL", () => {
+        expect(() => {
+            parse("x +");
+        }).toThrowErrorMatchingInlineSnapshot(`"Unexpected 'eol' token"`);
+    });
+
     it("parses parenthesis", () => {
         const ast = parse("a(x + y)");
 

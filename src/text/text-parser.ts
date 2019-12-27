@@ -17,6 +17,8 @@ type Operator =
     | "eq"
     | "nul";
 
+type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
+
 type Node = Semantic.Expression;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
@@ -178,25 +180,28 @@ const getInfixParselet = (
     }
 };
 
-const parseNaryInfix = (op: Operator) => (
+const parseNaryInfix = (op: NAryOperator) => (
     parser: TextParser,
     left: Node,
 ): Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
-    if (op === "add" || op === "sub") {
-        return add([left, right, ...rest]);
-    } else if (op === "mul.imp") {
-        return mul([left, right, ...rest], true);
-    } else if (op === "mul.exp") {
-        return mul([left, right, ...rest], false);
-    } else if (op === "eq") {
-        return eq([left, right, ...rest]);
-    } else {
-        throw new Error(`unexpected operation: ${op}`);
+    switch (op) {
+        case "add":
+        case "sub":
+            return add([left, right, ...rest]);
+        case "mul.imp":
+            return mul([left, right, ...rest], true);
+        case "mul.exp":
+            return mul([left, right, ...rest], false);
+        case "eq":
+            return eq([left, right, ...rest]);
     }
 };
 
-const parseNaryArgs = (parser: TextParser, op: Operator): OneOrMore<Node> => {
+const parseNaryArgs = (
+    parser: TextParser,
+    op: NAryOperator,
+): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
 
@@ -276,9 +281,6 @@ const getOpPrecedence = (op: Operator): number => {
             return 8;
         case "caret":
             return 10;
-        default:
-            op as never;
-            throw new Error("foo");
     }
 };
 
