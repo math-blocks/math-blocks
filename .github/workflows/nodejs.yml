@@ -15,8 +15,6 @@ jobs:
           node-version: 12.x
       - name: yarn install
         run: yarn install
-      - name: flow
-        run: yarn flow
       - name: test
         run: yarn coverage
       - name: codecov
