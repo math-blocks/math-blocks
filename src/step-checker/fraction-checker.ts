@@ -391,8 +391,8 @@ class FractionChecker {
             }
         }
 
-        const numFactors = [];
-        const denFactors = [];
+        const numFactors: Semantic.Expression[] = [];
+        const denFactors: Semantic.Expression[] = [];
         for (const arg of prev.args) {
             if (arg.type === "div") {
                 const [numerator, denominator] = arg.args;

@@ -7,7 +7,7 @@ export const primeDecomp = (n: number): number[] => {
         return [];
     }
 
-    const factors = [];
+    const factors: number[] = [];
     let p = 2;
     while (n >= p * p) {
         if (n % p === 0) {

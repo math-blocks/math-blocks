@@ -70,6 +70,21 @@ jobs:
       - name: test
         run: yarn test
 
+  type-coverage:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - name: type coverage
+        run: yarn type-coverage
+
   # codechecks:
   #   runs-on: ubuntu-latest
   #   env:
