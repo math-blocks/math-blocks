@@ -206,7 +206,7 @@ describe("reducer", () => {
         });
 
         describe("subsup", () => {
-            it("'^' should insert a new sup", () => {
+            it("'^' should insert a new sup at the end", () => {
                 const math = Util.row("a");
                 const cursor = {
                     path: [],
@@ -224,12 +224,48 @@ describe("reducer", () => {
                 });
             });
 
-            it("'_' should insert a new sub", () => {
+            it("'^' should insert a new sup in the middle end", () => {
+                const math = Util.row("ab");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "^"});
+
+                expect(newState.cursor).toEqual({
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("'_' should insert a new sub at the end", () => {
                 const math = Util.row("a");
                 const cursor = {
                     path: [],
                     prev: 0,
                     next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "_"});
+
+                expect(newState.cursor).toEqual({
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            it("'_' should insert a new sup in the middle end", () => {
+                const math = Util.row("ab");
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
                 };
 
                 const state: State = {math, cursor};
