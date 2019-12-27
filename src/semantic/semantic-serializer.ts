@@ -1,4 +1,4 @@
-import * as Semantic from "../semantic";
+import * as Semantic from "./semantic";
 
 type Node = Semantic.Expression;
 
@@ -10,7 +10,15 @@ const print = (
     if (ast.type === "number") {
         return `${ast.value}`;
     } else if (ast.type === "identifier") {
-        return `${ast.name}`;
+        if (ast.subscript) {
+            return `(ident ${ast.name} ${print(
+                ast.subscript,
+                serialize,
+                indent,
+            )})`;
+        } else {
+            return `${ast.name}`;
+        }
     } else {
         let type = ast.type as string;
         if (ast.type === "mul") {
@@ -18,6 +26,9 @@ const print = (
         }
         if (ast.type === "neg") {
             type = ast.subtraction ? "neg.sub" : "neg";
+        }
+        if (ast.type === "ellipsis") {
+            return "...";
         }
 
         // @ts-ignore

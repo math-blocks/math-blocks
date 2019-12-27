@@ -1,5 +1,5 @@
 import {parse} from "../text-parser";
-import serializer from "../semantic-serializer";
+import serializer from "../../semantic/semantic-serializer";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -153,6 +153,12 @@ describe("TextParser", () => {
         expect(() => {
             parse("(x + y");
         }).toThrowErrorMatchingInlineSnapshot(`"unmatched left paren"`);
+    });
+
+    it("throws if we run into an unexpected EOL", () => {
+        expect(() => {
+            parse("x +");
+        }).toThrowErrorMatchingInlineSnapshot(`"Unexpected 'eol' token"`);
     });
 
     it("parses parenthesis", () => {

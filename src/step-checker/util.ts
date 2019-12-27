@@ -1,5 +1,5 @@
 import * as Arithmetic from "./arithmetic";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {

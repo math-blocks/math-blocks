@@ -1,5 +1,5 @@
 import * as Parser from "../parser";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 import * as Lexer from "./editor-lexer";
 import * as Editor from "./editor";
 
@@ -15,6 +15,8 @@ type Operator =
     | "neg"
     | "eq"
     | "supsub";
+
+type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
 type Node = Semantic.Expression;
 
@@ -71,7 +73,7 @@ const isIdentifier = (node: Token): boolean =>
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Node, Operator> | null => {
+): Parser.PrefixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -94,7 +96,7 @@ const getPrefixParselet = (
                         parse: () => ellipsis(),
                     };
                 default:
-                    return null;
+                    throw new Error(`Unexpected '${atom.kind}' atom`);
             }
         }
         case "frac":
@@ -108,9 +110,9 @@ const getPrefixParselet = (
                 },
             };
         case "subsup":
-            return null;
+            throw new Error(`Unexpected 'subsup' token`);
         case "row":
-            return null;
+            throw new Error(`Unexpected 'row' token`);
         case "parens":
             return {
                 parse: () => editorParser.parse(token.children),
@@ -143,19 +145,21 @@ const getPrefixParselet = (
 //     };
 // };
 
-const parseNaryInfix = (op: Operator) => (
+const parseNaryInfix = (op: NAryOperator) => (
     parser: EditorParser,
     left: Node,
 ): Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
-    if (op === "add" || op === "sub") {
-        return add([left, right, ...rest]);
-    } else if (op === "mul.imp") {
-        return mul([left, right, ...rest], true);
-    } else if (op === "mul.exp") {
-        return mul([left, right, ...rest], false);
-    } else {
-        return eq([left, right, ...rest]);
+    switch (op) {
+        case "add":
+        case "sub":
+            return add([left, right, ...rest]);
+        case "mul.imp":
+            return mul([left, right, ...rest], true);
+        case "mul.exp":
+            return mul([left, right, ...rest], false);
+        case "eq":
+            return eq([left, right, ...rest]);
     }
 };
 
@@ -165,7 +169,10 @@ const parseNaryInfix = (op: Operator) => (
  * first argument is already parsed by parseNaryInfix so it makes sense
  * that the return value is one or more.
  */
-const parseNaryArgs = (parser: EditorParser, op: Operator): OneOrMore<Node> => {
+const parseNaryArgs = (
+    parser: EditorParser,
+    op: NAryOperator,
+): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -240,6 +247,8 @@ const getInfixParselet = (
                     return {op: "add", parse: parseNaryInfix("add")};
                 case "minus":
                     return {op: "add", parse: parseNaryInfix("sub")};
+                case "times":
+                    return {op: "mul.exp", parse: parseNaryInfix("mul.exp")};
                 case "eq":
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":
@@ -308,9 +317,6 @@ const getOpPrecedence = (op: Operator): number => {
             return 8;
         case "supsub":
             return 10;
-        default:
-            op as never;
-            throw new Error("foo");
     }
 };
 
