@@ -1,5 +1,5 @@
 import * as Arithmetic from "./arithmetic";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 import {IStepChecker, Result, Reason} from "./step-checker";
 
 import {decomposeFactors} from "./util";

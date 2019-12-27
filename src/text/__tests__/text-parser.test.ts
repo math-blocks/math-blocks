@@ -1,5 +1,5 @@
 import {parse} from "../text-parser";
-import serializer from "../semantic-serializer";
+import serializer from "../../semantic/semantic-serializer";
 
 expect.addSnapshotSerializer(serializer);
 

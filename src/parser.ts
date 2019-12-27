@@ -17,7 +17,7 @@ export interface IParser<T, N, O> {
 type Associativity = "right" | "left";
 
 export function parserFactory<T extends {readonly type: string}, N, O>(
-    getPrefixParselet: (token: T) => PrefixParselet<T, N, O> | null,
+    getPrefixParselet: (token: T) => PrefixParselet<T, N, O>,
     getInfixParselet: (token: T) => InfixParselet<T, N, O> | null,
     getOpPrecedence: (arg0: O) => number,
     EOL: T,
@@ -67,10 +67,6 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
             const token = consume();
             // TODO: combine getPrefixParselet and parselet.parse
             const parselet = getPrefixParselet(token);
-            if (!parselet) {
-                console.log(token);
-                throw new Error("Unexpected token");
-            }
             return parselet.parse({
                 parse: () => parseWithPrecedence(0),
                 parseWithOperator,

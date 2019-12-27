@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 
 import * as Arithmetic from "./arithmetic";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 
 import {zip} from "./util";
 

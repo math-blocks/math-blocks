@@ -1,4 +1,4 @@
-import * as Semantic from "./semantic";
+import * as Semantic from "./semantic/semantic";
 import {UnreachableCaseError} from "./util";
 
 // TODO: determine when to wrap subexpressions in parens

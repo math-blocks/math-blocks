@@ -1,4 +1,4 @@
-import {Expression} from "./semantic";
+import {Expression} from "./semantic/semantic";
 import {UnreachableCaseError} from "./util";
 
 type VarDict = {

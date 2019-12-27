@@ -32,6 +32,8 @@ export const plus = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "plus"});
 export const minus = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "minus"});
+export const times = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "times"});
 export const ellipsis = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "ellipsis"});
 export const eq = (): Editor.Atom<Token> => Editor.atom<Token>({kind: "eq"});

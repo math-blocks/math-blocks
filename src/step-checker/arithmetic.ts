@@ -1,4 +1,4 @@
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 
 export const ZERO: Semantic.Num = {
     type: "number",

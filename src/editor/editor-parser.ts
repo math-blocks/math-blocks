@@ -1,5 +1,5 @@
 import * as Parser from "../parser";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 import * as Lexer from "./editor-lexer";
 import * as Editor from "./editor";
 
@@ -71,7 +71,7 @@ const isIdentifier = (node: Token): boolean =>
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Node, Operator> | null => {
+): Parser.PrefixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -94,7 +94,7 @@ const getPrefixParselet = (
                         parse: () => ellipsis(),
                     };
                 default:
-                    return null;
+                    throw new Error(`Unexpected '${atom.kind}' atom`);
             }
         }
         case "frac":
@@ -108,9 +108,9 @@ const getPrefixParselet = (
                 },
             };
         case "subsup":
-            return null;
+            throw new Error(`Unexpected 'subsup' token`);
         case "row":
-            return null;
+            throw new Error(`Unexpected 'row' token`);
         case "parens":
             return {
                 parse: () => editorParser.parse(token.children),
@@ -240,6 +240,8 @@ const getInfixParselet = (
                     return {op: "add", parse: parseNaryInfix("add")};
                 case "minus":
                     return {op: "add", parse: parseNaryInfix("sub")};
+                case "times":
+                    return {op: "mul.exp", parse: parseNaryInfix("mul.exp")};
                 case "eq":
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":

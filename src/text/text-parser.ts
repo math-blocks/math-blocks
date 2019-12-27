@@ -1,5 +1,5 @@
 import * as Parser from "../parser";
-import * as Semantic from "../semantic";
+import * as Semantic from "../semantic/semantic";
 
 import {lex} from "./text-lexer";
 
@@ -74,7 +74,7 @@ const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Node, Operator> | null => {
+): Parser.PrefixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "identifier":
             return {
@@ -101,7 +101,7 @@ const getPrefixParselet = (
                 },
             };
         default:
-            return null;
+            throw new Error(`Unexpected '${token.type}' token`);
     }
 };
 
