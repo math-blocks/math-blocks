@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
     item: {
         textAlign: "center",
         verticalAlign: "middle",
-        backgroundColor: "#222",
+        backgroundColor: "#CCC",
         lineHeight: "60px",
         cursor: "pointer",
         userSelect: "none",
         ":hover": {
-            backgroundColor: "#444",
+            backgroundColor: "#AAA",
         },
     },
 });

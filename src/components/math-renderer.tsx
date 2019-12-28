@@ -18,7 +18,7 @@ type HRuleProps = {rule: Layout.HRule; x: number; y: number};
 const HRule: React.SFC<HRuleProps> = ({rule, x, y}) => {
     return (
         <line
-            stroke="white"
+            stroke="currentColor"
             strokeWidth={rule.thickness}
             strokeLinecap="round"
             x1={x}
@@ -37,7 +37,7 @@ type LayoutCursor = {
 
 type BoxProps = {
     readonly box: Layout.Box;
-    readonly cursor: LayoutCursor | null;
+    readonly cursor?: LayoutCursor;
     x?: number;
     y?: number;
 };
@@ -188,7 +188,7 @@ const Box: React.SFC<BoxProps> = props => {
 
 type Props = {
     box: Layout.Box;
-    cursor: LayoutCursor | null;
+    cursor?: LayoutCursor;
 };
 
 const CURSOR_WIDTH = 2;
