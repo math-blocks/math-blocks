@@ -20,7 +20,7 @@ type Props = {
     focus?: boolean;
     onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
     onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
-    style: React.CSSProperties;
+    style?: React.CSSProperties;
 };
 
 const MathEditor: React.SFC<Props> = props => {
@@ -105,7 +105,10 @@ const MathEditor: React.SFC<Props> = props => {
             className={css(styles.container)}
             style={style}
         >
-            <MathRenderer box={box} cursor={active ? layoutCursor : null} />
+            <MathRenderer
+                box={box}
+                cursor={active ? layoutCursor : undefined}
+            />
         </div>
     );
 };
@@ -121,7 +124,7 @@ const styles = StyleSheet.create({
         outline: "none",
         borderRadius: 4,
         ":focus": {
-            border: "solid 1px white",
+            border: "solid 1px blue",
         },
         lineHeight: 0,
     },
