@@ -6,4 +6,11 @@ export default {
     title: "App",
 };
 
-export const app: React.SFC<{}> = () => <App />;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const app: React.SFC<{}> & {parameters: any} = () => <App />;
+
+app.parameters = {
+    chromatic: {
+        ignore: true,
+    },
+};
