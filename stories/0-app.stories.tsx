@@ -7,10 +7,13 @@ export default {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const app: React.SFC<{}> & {parameters: any} = () => <App />;
+export const app: React.SFC<{}> & {story: any} = () => <App />;
 
-app.parameters = {
-    chromatic: {
-        disable: true,
+app.story = {
+    name: "Test App",
+    parameters: {
+        chromatic: {
+            disable: true,
+        },
     },
 };
