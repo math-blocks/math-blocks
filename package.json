@@ -54,7 +54,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "typecheck": "tsc --noEmit",
-    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 100",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 99",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
