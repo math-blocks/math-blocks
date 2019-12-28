@@ -6,4 +6,4 @@ export default {
     title: "App",
 };
 
-export const app = () => <App />;
+export const app: React.SFC<{}> = () => <App />;
