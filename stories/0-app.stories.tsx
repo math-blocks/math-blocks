@@ -11,6 +11,6 @@ export const app: React.SFC<{}> & {parameters: any} = () => <App />;
 
 app.parameters = {
     chromatic: {
-        ignore: true,
+        disable: true,
     },
 };
