@@ -85,6 +85,23 @@ jobs:
       - name: type coverage
         run: yarn type-coverage
 
+  chromatic:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: yarn install
+        run: yarn install
+      - uses: chromaui/action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          appCode: ${{ secrets.CHROMATIC_APP_CODE }}
+
   # codechecks:
   #   runs-on: ubuntu-latest
   #   env:

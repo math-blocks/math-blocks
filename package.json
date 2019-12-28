@@ -40,6 +40,7 @@
     "prettier": "^1.19.1",
     "pretty-quick": "^1.11.1",
     "react-hot-loader": "^4.12.18",
+    "storybook-chromatic": "^3.4.1",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
     "type-coverage": "^2.3.1",
@@ -53,7 +54,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "typecheck": "tsc --noEmit",
-    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 100",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 99",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
@@ -63,7 +64,8 @@
     "lint": "eslint 'src/**/*.{js,ts,tsx}'",
     "storybook": "start-storybook -p 6006",
     "clean": "rm -rf dist",
-    "build": "build-storybook -o dist"
+    "build": "build-storybook -o dist",
+    "build-storybook": "build-storybook -o dist"
   },
   "dependencies": {
     "ajv": "^6.10.2",
@@ -84,6 +86,6 @@
     }
   },
   "typeCoverage": {
-    "atLeast": 100
+    "atLeast": 99
   }
 }
