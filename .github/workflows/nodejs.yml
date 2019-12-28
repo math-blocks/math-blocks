@@ -101,6 +101,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           appCode: ${{ secrets.CHROMATIC_APP_CODE }}
+          autoAcceptChanges: 'master'
 
   # codechecks:
   #   runs-on: ubuntu-latest
