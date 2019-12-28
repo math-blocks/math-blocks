@@ -31,9 +31,14 @@ module.exports = {
     ],
     resolve: {
         extensions: [".js", ".json", ".ts", ".tsx"],
+        alias: {
+            "react-dom": "@hot-loader/react-dom",
+        },
     },
     devtool: "source-map",
     devServer: {
+        hot: true,
+        liveReload: false,
         contentBase: path.join(__dirname, "dist"),
         compress: true,
         port: 9000,

@@ -1,3 +1,4 @@
+import {hot} from "react-hot-loader/root";
 import * as React from "react";
 
 const {useState} = React;
@@ -254,4 +255,4 @@ const App: React.SFC<{}> = () => {
     );
 };
 
-export default App;
+export default hot(App);
