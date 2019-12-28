@@ -34,11 +34,11 @@ export const Large: React.SFC<{}> = () => {
     const math: Editor.Row<Editor.Glyph> = row([
         glyph("2"),
         glyph("x"),
-        glyph("+"),
+        glyph("-"),
         glyph("5"),
         glyph("="),
         glyph("1"),
-        glyph("0"),
+        glyph("5"),
     ]);
     const fontSize = 50;
     const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
