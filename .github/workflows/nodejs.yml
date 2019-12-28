@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: chromaui/action@v1
         with:
-          # token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           appCode: ${{ secrets.CHROMATIC_APP_CODE }}
 
   # codechecks:
