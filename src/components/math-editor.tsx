@@ -15,15 +15,23 @@ const {useEffect, useState, useRef} = React;
 import reducer from "../editor/editor-reducer";
 
 type Props = {
+    /**
+     * value
+     */
     value: Editor.Row<Editor.Glyph>;
+
     readonly: boolean;
     focus?: boolean;
     onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
     onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
+
+    /**
+     * Style
+     */
     style?: React.CSSProperties;
 };
 
-const MathEditor: React.SFC<Props> = props => {
+export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [state, setState] = useState<State>({

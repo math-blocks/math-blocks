@@ -193,7 +193,7 @@ type Props = {
 
 const CURSOR_WIDTH = 2;
 
-const MathRenderer: React.SFC<Props> = props => {
+export const MathRenderer: React.SFC<Props> = props => {
     const {box, cursor} = props;
     const height = Layout.getHeight(box);
     const depth = Layout.getDepth(box);

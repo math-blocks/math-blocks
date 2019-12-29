@@ -10,6 +10,7 @@ const {row, glyph} = Editor;
 
 export default {
     title: "MathRenderer",
+    component: MathRenderer,
 };
 
 export const Small: React.SFC<{}> = () => {
@@ -45,7 +46,3 @@ export const Large: React.SFC<{}> = () => {
 
     return <MathRenderer box={box} />;
 };
-
-// emoji.story = {
-//     name: "with emoji",
-// };

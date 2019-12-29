@@ -66,7 +66,7 @@ enum ProblemState {
 //   correct the issue before proceeding.
 // - Delayed feedback will conceal the correctness of each step
 //   until the user submits their answer.
-const App: React.SFC<{}> = () => {
+export const App: React.SFC<{}> = () => {
     const [problemState, setProblemState] = useState(ProblemState.InProgress);
     const [steps, setSteps] = useState<Step[]>([
         {
