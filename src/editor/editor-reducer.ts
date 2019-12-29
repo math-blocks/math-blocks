@@ -707,6 +707,59 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
+const root = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const radicand: Editor.Row<Editor.Glyph> = {
+        id: getId(),
+        type: "row",
+        children: [],
+    };
+    const newNode: Editor.Root<Editor.Glyph> = {
+        id: getId(),
+        type: "root",
+        children: [radicand, null /* index */],
+    };
+
+    currentNode.children = insertBeforeChildWithIndex(
+        currentNode.children,
+        next,
+        newNode,
+    );
+
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index],
+        next: null,
+        prev: null,
+    };
+};
+
+const parens = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const newNode: Editor.Parens<Editor.Glyph> = {
+        id: getId(),
+        type: "parens",
+        children: [],
+    };
+
+    currentNode.children = insertBeforeChildWithIndex(
+        currentNode.children,
+        next,
+        newNode,
+    );
+
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index],
+        next: null,
+        prev: null,
+    };
+};
+
 type Action = {type: string};
 
 // TODO: check if cursor is valid before process action
@@ -738,6 +791,26 @@ const reducer = (state: State = initialState, action: Action): State => {
                 backspace(currentNode, draft);
                 return;
             }
+            case "/": {
+                slash(currentNode, draft);
+                return;
+            }
+            case "^": {
+                caret(currentNode, draft);
+                return;
+            }
+            case "_": {
+                underscore(currentNode, draft);
+                return;
+            }
+            case "\u221A": {
+                root(currentNode, draft);
+                return;
+            }
+            case "(": {
+                parens(currentNode, draft);
+                return;
+            }
             case "-": {
                 newNode = {
                     id: getId(),
@@ -766,40 +839,6 @@ const reducer = (state: State = initialState, action: Action): State => {
                 draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
                 break;
             }
-            case "/": {
-                slash(currentNode, draft);
-                return;
-            }
-            case "^": {
-                caret(currentNode, draft);
-                return;
-            }
-            case "_": {
-                underscore(currentNode, draft);
-                return;
-            }
-            case "\u221A": {
-                const radicand: Editor.Row<Editor.Glyph> = {
-                    id: getId(),
-                    type: "row",
-                    children: [],
-                };
-                const index = null;
-                newNode = {
-                    id: getId(),
-                    type: "root",
-                    children: [radicand, index],
-                };
-                break;
-            }
-            case "(": {
-                newNode = {
-                    id: getId(),
-                    type: "parens",
-                    children: [],
-                };
-                break;
-            }
             default: {
                 if (
                     action.type.length === 1 &&
@@ -821,22 +860,6 @@ const reducer = (state: State = initialState, action: Action): State => {
             next,
             newNode,
         );
-
-        if (newNode.type === "parens") {
-            const index = currentNode.children.indexOf(newNode);
-            draft.cursor = {
-                path: [...cursor.path, index],
-                next: null,
-                prev: null,
-            };
-        } else if (newNode.type === "root") {
-            const index = currentNode.children.indexOf(newNode);
-            draft.cursor = {
-                path: [...cursor.path, index, RADICAND],
-                next: null,
-                prev: null,
-            };
-        }
     });
 };
 
