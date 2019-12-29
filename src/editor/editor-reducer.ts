@@ -1,5 +1,3 @@
-import {$ReadOnly} from "utility-types";
-
 import produce from "immer";
 
 import * as Editor from "./editor";
@@ -33,7 +31,7 @@ const initialState: State = {
     },
 };
 
-type Identifiable = $ReadOnly<{id: number}>;
+type Identifiable = {readonly id: number};
 
 type HasChildren = Editor.Row<Editor.Glyph> | Editor.Parens<Editor.Glyph>;
 
@@ -85,19 +83,23 @@ const removeChildWithIndex = <T extends Identifiable>(
 
 const insertBeforeChildWithIndex = <T extends Identifiable>(
     children: T[],
-    index: number,
+    index: number | null,
     newChild: T,
 ): T[] => {
+    if (index == null) {
+        return [...children, newChild];
+    }
     return index === -1
         ? children
         : [...children.slice(0, index), newChild, ...children.slice(index)];
 };
 
 const moveLeft = (
-    root: Editor.Node<Editor.Glyph>,
     currentNode: Editor.HasChildren<Editor.Glyph>,
-    cursor: Editor.Cursor,
+    draft: State,
 ): Editor.Cursor => {
+    const {cursor, math} = draft;
+
     const {children} = currentNode;
     if (cursor.prev != null) {
         const {prev} = cursor;
@@ -151,13 +153,13 @@ const moveLeft = (
         }
     } else if (cursor.path.length >= 1) {
         const parent = Editor.nodeAtPath(
-            root,
+            math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
 
         if (parent.type === "root" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -171,7 +173,7 @@ const moveLeft = (
             // TODO: handle moving into the index if one exists
         } else if (parent.type === "subsup" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -200,7 +202,7 @@ const moveLeft = (
             }
         } else if (parent.type === "frac" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -236,11 +238,8 @@ const moveLeft = (
     return cursor;
 };
 
-const moveRight = (
-    root: Editor.Node<Editor.Glyph>,
-    currentNode: Editor.HasChildren<Editor.Glyph>,
-    cursor: Editor.Cursor,
-): Editor.Cursor => {
+const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
+    const {cursor, math} = draft;
     const {children} = currentNode;
     if (cursor.next != null) {
         const {next} = cursor;
@@ -295,12 +294,12 @@ const moveRight = (
         }
     } else if (cursor.path.length >= 1) {
         const parent = Editor.nodeAtPath(
-            root,
+            math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
         if (parent.type === "root" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -314,7 +313,7 @@ const moveRight = (
             // TODO: handle moving out of the index if one exists
         } else if (parent.type === "subsup" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -343,7 +342,7 @@ const moveRight = (
             }
         } else if (parent.type === "frac" && cursor.path.length >= 2) {
             const grandparent = Editor.nodeAtPath(
-                root,
+                math,
                 cursor.path.slice(0, cursor.path.length - 2),
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
@@ -382,15 +381,8 @@ const moveRight = (
     return cursor;
 };
 
-const backspace = (
-    root: Editor.Node<Editor.Glyph>,
-    currentNode: Editor.Node<Editor.Glyph>,
-    draft: State,
-): void => {
-    if (!hasChildren(currentNode)) {
-        throw new Error("currentNode can't be a glyph, fraction, sup, or sub");
-    }
-    const {cursor} = draft;
+const backspace = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, math} = draft;
 
     if (cursor.prev != null) {
         const {children} = currentNode;
@@ -402,7 +394,7 @@ const backspace = (
             prevNode.type === "parens" ||
             prevNode.type === "root"
         ) {
-            draft.cursor = moveLeft(root, currentNode, cursor);
+            draft.cursor = moveLeft(currentNode, draft);
             return;
         }
         const newCursor = {
@@ -420,7 +412,7 @@ const backspace = (
 
     if (cursor.path.length > 0) {
         const parent = Editor.nodeAtPath(
-            root,
+            math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
         if (currentNode.type === "parens") {
@@ -450,11 +442,11 @@ const backspace = (
 
     if (cursor.path.length > 1) {
         const parent = Editor.nodeAtPath(
-            root,
+            math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
         const grandparent = Editor.nodeAtPath(
-            root,
+            math,
             cursor.path.slice(0, cursor.path.length - 2),
         );
 
@@ -580,6 +572,141 @@ const backspace = (
     }
 };
 
+const slash = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const newNode: Editor.Node<Editor.Glyph> = {
+        id: getId(),
+        type: "frac",
+        children: [
+            {
+                id: getId(),
+                type: "row",
+                children: [],
+            },
+            {
+                id: getId(),
+                type: "row",
+                children: [],
+            },
+        ],
+    };
+
+    currentNode.children = insertBeforeChildWithIndex(
+        currentNode.children,
+        next,
+        newNode,
+    );
+
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index, NUMERATOR],
+        next: null,
+        prev: null,
+    };
+};
+
+const caret = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const nextNode =
+        cursor.next != null ? currentNode.children[cursor.next] : null;
+
+    if (cursor.next != null && nextNode && nextNode.type === "subsup") {
+        const sub = nextNode.children[0];
+        const sup = nextNode.children[1] || {
+            id: getId(),
+            type: "row",
+            children: [],
+        };
+        nextNode.children = [sub, sup];
+        draft.cursor = {
+            path: [...cursor.path, cursor.next, 1],
+            prev: null,
+            next: sup.children.length > 0 ? 0 : null,
+        };
+        return;
+    }
+    const sup: Editor.Row<Editor.Glyph> = {
+        id: getId(),
+        type: "row",
+        children: [],
+    };
+    const newNode: Editor.SubSup<Editor.Glyph> = {
+        id: getId(),
+        type: "subsup",
+        children: [null, sup],
+    };
+
+    currentNode.children = insertBeforeChildWithIndex(
+        currentNode.children,
+        next,
+        newNode,
+    );
+
+    draft.cursor = {
+        path: [
+            ...cursor.path,
+            cursor.next == null ? currentNode.children.length - 1 : cursor.next,
+            1,
+        ],
+        next: null,
+        prev: null,
+    };
+};
+
+const underscore = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const nextNode =
+        cursor.next != null ? currentNode.children[cursor.next] : null;
+
+    if (cursor.next != null && nextNode && nextNode.type === "subsup") {
+        const sub = nextNode.children[0] || {
+            id: getId(),
+            type: "row",
+            children: [],
+        };
+        const sup = nextNode.children[1];
+        nextNode.children = [sub, sup];
+        draft.cursor = {
+            path: [...cursor.path, cursor.next, 0],
+            prev: null,
+            next: firstIndex(sub.children),
+        };
+        return;
+    }
+    const sub: Editor.Row<Editor.Glyph> = {
+        id: getId(),
+        type: "row",
+        children: [],
+    };
+    const newNode: Editor.SubSup<Editor.Glyph> = {
+        id: getId(),
+        type: "subsup",
+        children: [sub, null],
+    };
+
+    currentNode.children = insertBeforeChildWithIndex(
+        currentNode.children,
+        next,
+        newNode,
+    );
+
+    draft.cursor = {
+        path: [
+            ...cursor.path,
+            cursor.next == null ? currentNode.children.length - 1 : cursor.next,
+            0,
+        ],
+        next: null,
+        prev: null,
+    };
+};
+
 type Action = {type: string};
 
 // TODO: check if cursor is valid before process action
@@ -595,25 +722,20 @@ const reducer = (state: State = initialState, action: Action): State => {
             );
         }
 
-        const nextNode =
-            cursor.next != null && hasChildren(currentNode)
-                ? currentNode.children[cursor.next]
-                : null;
-
         let newNode: Editor.Node<Editor.Glyph>;
         const {next} = cursor;
 
         switch (action.type) {
             case "ArrowLeft": {
-                draft.cursor = moveLeft(draft.math, currentNode, cursor);
+                draft.cursor = moveLeft(currentNode, draft);
                 return;
             }
             case "ArrowRight": {
-                draft.cursor = moveRight(draft.math, currentNode, cursor);
+                draft.cursor = moveRight(currentNode, draft);
                 return;
             }
             case "Backspace": {
-                backspace(draft.math, currentNode, draft);
+                backspace(currentNode, draft);
                 return;
             }
             case "-": {
@@ -645,87 +767,16 @@ const reducer = (state: State = initialState, action: Action): State => {
                 break;
             }
             case "/": {
-                newNode = {
-                    id: getId(),
-                    type: "frac",
-                    children: [
-                        {
-                            id: getId(),
-                            type: "row",
-                            children: [],
-                        },
-                        {
-                            id: getId(),
-                            type: "row",
-                            children: [],
-                        },
-                    ],
-                };
-                break;
+                slash(currentNode, draft);
+                return;
             }
             case "^": {
-                if (
-                    cursor.next != null &&
-                    nextNode &&
-                    nextNode.type === "subsup"
-                ) {
-                    const sub = nextNode.children[0];
-                    const sup = nextNode.children[1] || {
-                        id: getId(),
-                        type: "row",
-                        children: [],
-                    };
-                    nextNode.children = [sub, sup];
-                    draft.cursor = {
-                        path: [...cursor.path, cursor.next, 1],
-                        prev: null,
-                        next: sup.children.length > 0 ? 0 : null,
-                    };
-                    return;
-                }
-                const sup: Editor.Row<Editor.Glyph> = {
-                    id: getId(),
-                    type: "row",
-                    children: [],
-                };
-                newNode = {
-                    id: getId(),
-                    type: "subsup",
-                    children: [null, sup],
-                };
-                break;
+                caret(currentNode, draft);
+                return;
             }
             case "_": {
-                if (
-                    cursor.next != null &&
-                    nextNode &&
-                    nextNode.type === "subsup"
-                ) {
-                    const sub = nextNode.children[0] || {
-                        id: getId(),
-                        type: "row",
-                        children: [],
-                    };
-                    const sup = nextNode.children[1];
-                    nextNode.children = [sub, sup];
-                    draft.cursor = {
-                        path: [...cursor.path, cursor.next, 0],
-                        prev: null,
-                        next: firstIndex(sub.children),
-                    };
-                    return;
-                }
-                const sub: Editor.Row<Editor.Glyph> = {
-                    id: getId(),
-                    type: "row",
-                    children: [],
-                };
-                newNode = {
-                    id: getId(),
-                    type: "subsup",
-                    children: [sub, null],
-                };
-                break;
+                underscore(currentNode, draft);
+                return;
             }
             case "\u221A": {
                 const radicand: Editor.Row<Editor.Glyph> = {
@@ -765,24 +816,13 @@ const reducer = (state: State = initialState, action: Action): State => {
             }
         }
 
-        if (next == null) {
-            currentNode.children.push(newNode);
-        } else {
-            currentNode.children = insertBeforeChildWithIndex(
-                currentNode.children,
-                next,
-                newNode,
-            );
-        }
+        currentNode.children = insertBeforeChildWithIndex(
+            currentNode.children,
+            next,
+            newNode,
+        );
 
-        if (newNode.type === "frac") {
-            const index = currentNode.children.indexOf(newNode);
-            draft.cursor = {
-                path: [...cursor.path, index, NUMERATOR],
-                next: null,
-                prev: null,
-            };
-        } else if (newNode.type === "parens") {
+        if (newNode.type === "parens") {
             const index = currentNode.children.indexOf(newNode);
             draft.cursor = {
                 path: [...cursor.path, index],
@@ -796,33 +836,6 @@ const reducer = (state: State = initialState, action: Action): State => {
                 next: null,
                 prev: null,
             };
-        } else if (newNode.type === "subsup") {
-            const [sub, sup] = newNode.children;
-            if (sup) {
-                draft.cursor = {
-                    path: [
-                        ...cursor.path,
-                        cursor.next == null
-                            ? currentNode.children.length - 1
-                            : cursor.next,
-                        1,
-                    ],
-                    next: null,
-                    prev: null,
-                };
-            } else if (sub) {
-                draft.cursor = {
-                    path: [
-                        ...cursor.path,
-                        cursor.next == null
-                            ? currentNode.children.length - 1
-                            : cursor.next,
-                        0,
-                    ],
-                    next: null,
-                    prev: null,
-                };
-            }
         }
     });
 };

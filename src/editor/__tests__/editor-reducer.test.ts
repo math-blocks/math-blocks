@@ -386,6 +386,29 @@ describe("reducer", () => {
                     next: null,
                 });
             });
+
+            test("inserting fractions at the end of a row", () => {
+                const math = Util.row("eg");
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("e"), glyph("g"), Util.frac("", "")]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [2, NUMERATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
         });
 
         describe("root", () => {
