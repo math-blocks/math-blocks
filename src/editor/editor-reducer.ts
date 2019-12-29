@@ -549,7 +549,42 @@ const backspace = (
             draft.cursor = newCursor;
             return;
         } else if (parent.type === "root") {
-            // TODO
+            if (!hasChildren(grandparent)) {
+                return;
+            }
+
+            const index = grandparent.children.findIndex(
+                child => child.id === parent.id,
+            );
+
+            let newChildren = grandparent.children;
+            if (index !== -1) {
+                if (parent.children[0] && !parent.children[1]) {
+                    newChildren = [
+                        ...grandparent.children.slice(0, index),
+                        ...parent.children[0].children,
+                        ...grandparent.children.slice(index + 1),
+                    ];
+                    if (cursor.path[cursor.path.length - 1] === 1) {
+                        parentIndex += parent.children[0].children.length;
+                    }
+                } else {
+                    throw new Error("invalid fraction");
+                }
+            }
+
+            // update cursor
+            const newCursor = {
+                path: cursor.path.slice(0, -2), // move up two levels
+                prev: prevIndex(newChildren, parentIndex),
+                next: parentIndex,
+            };
+
+            // update children
+            grandparent.children = newChildren;
+
+            draft.cursor = newCursor;
+            return;
         }
     }
 };
