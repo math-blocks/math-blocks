@@ -457,13 +457,14 @@ const backspace = (
             root,
             cursor.path.slice(0, cursor.path.length - 2),
         );
+
+        if (!hasChildren(grandparent)) {
+            return;
+        }
+
         let parentIndex = cursor.path[cursor.path.length - 2];
 
         if (parent.type === "subsup") {
-            if (!hasChildren(grandparent)) {
-                return;
-            }
-
             const index = grandparent.children.findIndex(
                 child => child.id === parent.id,
             );
@@ -511,10 +512,6 @@ const backspace = (
             draft.cursor = newCursor;
             return;
         } else if (parent.type === "frac") {
-            if (!hasChildren(grandparent)) {
-                return;
-            }
-
             const index = grandparent.children.findIndex(
                 child => child.id === parent.id,
             );
@@ -549,10 +546,6 @@ const backspace = (
             draft.cursor = newCursor;
             return;
         } else if (parent.type === "root") {
-            if (!hasChildren(grandparent)) {
-                return;
-            }
-
             const index = grandparent.children.findIndex(
                 child => child.id === parent.id,
             );
@@ -565,11 +558,9 @@ const backspace = (
                         ...parent.children[0].children,
                         ...grandparent.children.slice(index + 1),
                     ];
-                    if (cursor.path[cursor.path.length - 1] === 1) {
-                        parentIndex += parent.children[0].children.length;
-                    }
                 } else {
-                    throw new Error("invalid fraction");
+                    // TODO: handle indexes
+                    throw new Error("we can't handle roots with indexes yet");
                 }
             }
 
