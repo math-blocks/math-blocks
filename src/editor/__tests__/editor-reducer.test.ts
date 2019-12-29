@@ -856,6 +856,27 @@ describe("reducer", () => {
         });
 
         describe("parens", () => {
+            test("should move into the parens from the right", () => {
+                const math = row([glyph("2"), Util.parens("x+y")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1],
+                    prev: 2,
+                    next: null,
+                });
+            });
+
             test("from the back should delete the last character and the cursor should remain at the end", () => {
                 const math = row([glyph("2"), Util.parens("x+y")]);
                 const cursor = {
@@ -892,6 +913,50 @@ describe("reducer", () => {
                     Editor.stripIDs(Util.row("2x+y")),
                 );
 
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+        });
+
+        describe("root", () => {
+            test("deleting from behind a root moves cursor into the root", () => {
+                const math = row([glyph("2"), Util.sqrt("x+y")]);
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(math),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [1, RADICAND],
+                    prev: 2,
+                    next: null,
+                });
+            });
+
+            test("deleting from front of root move children into parent", () => {
+                const math = row([glyph("2"), Util.sqrt("x+y")]);
+                const cursor = {
+                    path: [1, RADICAND],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("2x+y")),
+                );
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
