@@ -1,4 +1,5 @@
 import React from "react";
+import {action} from "@storybook/addon-actions";
 
 import * as Editor from "../src/editor/editor";
 import MathEditor from "../src/components/math-editor";
@@ -7,6 +8,7 @@ const {row, glyph} = Editor;
 
 export default {
     title: "MathEditor",
+    component: MathEditor,
 };
 
 export const Editable: React.SFC<{}> = () => {
@@ -21,7 +23,15 @@ export const Editable: React.SFC<{}> = () => {
         glyph("0"),
     ]);
 
-    return <MathEditor readonly={false} value={math} focus={false} />;
+    return (
+        <MathEditor
+            readonly={false}
+            value={math}
+            focus={false}
+            onChange={action("onChange")}
+            onSubmit={action("onSubmit")}
+        />
+    );
 };
 
 export const Readonly: React.SFC<{}> = () => {
