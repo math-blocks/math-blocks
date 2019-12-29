@@ -7,7 +7,7 @@ type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
 
 const Glyph: React.SFC<GlyphProps> = ({glyph, x, y}) => {
     return (
-        <text x={x} y={y} fontFamily="comic sans ms" fontSize={glyph.size}>
+        <text x={x} y={y} fontFamily="sans-serif" fontSize={glyph.size}>
             {glyph.char}
         </text>
     );

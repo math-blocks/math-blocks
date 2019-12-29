@@ -6,5 +6,4 @@ addParameters({
     options: {
         enableShortcuts: false,
     },
-    chromatic: {delay: 300},
 });
