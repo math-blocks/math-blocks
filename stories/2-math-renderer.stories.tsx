@@ -45,7 +45,3 @@ export const Large: React.SFC<{}> = () => {
 
     return <MathRenderer box={box} />;
 };
-
-// emoji.story = {
-//     name: "with emoji",
-// };
