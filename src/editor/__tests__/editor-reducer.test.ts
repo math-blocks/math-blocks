@@ -363,7 +363,7 @@ describe("reducer", () => {
             });
         });
 
-        describe("frac", () => {
+        describe.only("frac", () => {
             it("'/' should insert a fraction", () => {
                 const math = Util.row("eg");
                 const cursor = {
@@ -376,12 +376,10 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "/"});
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("e"), Util.frac("", ""), glyph("g")]),
-                    ),
+                    Editor.stripIDs(row([Util.frac("e", ""), glyph("g")])),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1, NUMERATOR],
+                    path: [0, DENOMINATOR],
                     prev: null,
                     next: null,
                 });
@@ -399,12 +397,79 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "/"});
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([Util.frac("eg", "")])),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [0, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("inserting fractions with a '+' before it", () => {
+                const math = Util.row("1+2");
+                const cursor = {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
                     Editor.stripIDs(
-                        row([glyph("e"), glyph("g"), Util.frac("", "")]),
+                        row([glyph("1"), glyph("+"), Util.frac("2", "")]),
                     ),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [2, NUMERATOR],
+                    path: [2, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("inserting fractions with a '\u2212' before it", () => {
+                const math = Util.row("1\u22122");
+                const cursor = {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("1"), glyph("\u2212"), Util.frac("2", "")]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [2, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("inserting fractions with a '=' before it", () => {
+                const math = Util.row("1=2");
+                const cursor = {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([glyph("1"), glyph("="), Util.frac("2", "")]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [2, DENOMINATOR],
                     prev: null,
                     next: null,
                 });
