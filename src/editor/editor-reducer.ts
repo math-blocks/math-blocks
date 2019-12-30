@@ -576,6 +576,34 @@ const slash = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
+    const splitChars = [
+        "+",
+        "\u2212",
+        "\u00B7",
+        "=",
+        "<",
+        ">",
+        "\u2264",
+        "\u2265",
+    ];
+
+    const endIndex = next == null ? currentNode.children.length : next;
+    let startIndex = endIndex - 1;
+    while (startIndex > 0) {
+        const prevChild = currentNode.children[startIndex - 1];
+        if (
+            prevChild.type === "atom" &&
+            splitChars.includes(prevChild.value.char)
+        ) {
+            break;
+        }
+        startIndex--;
+    }
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const numeratorChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
     const newNode: Editor.Node<Editor.Glyph> = {
         id: getId(),
         type: "frac",
@@ -583,7 +611,7 @@ const slash = (currentNode: HasChildren, draft: State): void => {
             {
                 id: getId(),
                 type: "row",
-                children: [],
+                children: numeratorChildren,
             },
             {
                 id: getId(),
@@ -593,15 +621,11 @@ const slash = (currentNode: HasChildren, draft: State): void => {
         ],
     };
 
-    currentNode.children = insertBeforeChildWithIndex(
-        currentNode.children,
-        next,
-        newNode,
-    );
+    currentNode.children = [...headChildren, newNode, ...tailChildren];
 
     const index = currentNode.children.indexOf(newNode);
     draft.cursor = {
-        path: [...cursor.path, index, NUMERATOR],
+        path: [...cursor.path, index, DENOMINATOR],
         next: null,
         prev: null,
     };

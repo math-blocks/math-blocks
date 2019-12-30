@@ -161,7 +161,7 @@ describe("TextParser", () => {
         }).toThrowErrorMatchingInlineSnapshot(`"Unexpected 'eol' token"`);
     });
 
-    it("parses parenthesis", () => {
+    it("implicit multiplication w/ parenthesis", () => {
         const ast = parse("a(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
@@ -239,7 +239,7 @@ describe("TextParser", () => {
         `);
     });
 
-    it("parses equations", () => {
+    it("parses n-ary equations", () => {
         const ast = parse("x = y = z");
 
         expect(ast).toMatchInlineSnapshot(`(eq x y z)`);
