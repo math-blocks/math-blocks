@@ -363,7 +363,7 @@ describe("reducer", () => {
             });
         });
 
-        describe.only("frac", () => {
+        describe("frac", () => {
             it("'/' should insert a fraction", () => {
                 const math = Util.row("eg");
                 const cursor = {

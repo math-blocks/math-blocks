@@ -5,9 +5,11 @@ module.exports = {
         "typescript/prettier",
         "typescript/prettier-react",
     ],
-    plugins: ["flowtype", "react"],
+    plugins: ["flowtype", "jest", "react"],
     rules: {
         "no-prototype-builtins": "off",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
         "react/jsx-uses-react": "error",
         "react/jsx-uses-vars": "error",
         "react/prop-types": "off",
