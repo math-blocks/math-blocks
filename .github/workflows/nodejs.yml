@@ -28,7 +28,7 @@ jobs:
           path: node_modules
           key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.OS }}-node_modules
+            ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
       - name: test
@@ -57,6 +57,13 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
       - name: lint
@@ -81,6 +88,13 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
       - name: typecheck
