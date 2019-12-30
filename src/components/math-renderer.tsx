@@ -33,6 +33,7 @@ type LayoutCursor = {
     parent: number;
     prev: number | null;
     next: number | null;
+    selection: boolean;
 };
 
 type BoxProps = {
@@ -47,13 +48,30 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const availableSpace = box.width - Layout.hlistWidth(box.content);
     const {multiplier} = box;
 
-    let cursorPos: {x: number; y: number} | null = null;
+    let cursorPos: {startX: number; endX: number; y: number} | null = null;
+    let cursorIndex: number | null = null;
+
+    const showCursor = cursor && cursor.parent === box.id;
+    const selection = cursor && cursor.selection;
 
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;
+        let cursorIndexChanged = false;
 
-        if (cursor && cursor.next === node.id) {
-            cursorPos = {x: pen.x - 1, y: -64 * 0.85 * multiplier};
+        if (showCursor && (node.type === "Glyph" || node.type === "Box")) {
+            const newCursorIndex = cursorIndex == null ? 0 : cursorIndex + 1;
+            if (cursorIndex !== newCursorIndex) {
+                cursorIndexChanged = true;
+
+                if (cursor && cursor.prev === cursorIndex) {
+                    cursorPos = {
+                        startX: pen.x - 1,
+                        endX: pen.x - 1,
+                        y: -64 * 0.85 * multiplier,
+                    };
+                }
+                cursorIndex = newCursorIndex;
+            }
         }
 
         switch (node.type) {
@@ -88,26 +106,60 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 throw new UnreachableCaseError(node);
         }
 
-        if (cursor && cursor.prev === node.id) {
-            cursorPos = {x: pen.x - 1, y: -64 * 0.85 * multiplier};
+        if (cursorIndexChanged) {
+            if (cursor && cursor.prev === cursorIndex) {
+                cursorPos = {
+                    startX: pen.x - 1,
+                    endX: pen.x - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            }
+        }
+        if (cursorIndexChanged && selection && cursorPos && cursor) {
+            if (cursor.next && cursor.next - 1 === cursorIndex) {
+                cursorPos.endX = pen.x - 1;
+            }
         }
 
         return result;
     });
 
+    if (selection && cursorPos && cursor && cursor.next == null) {
+        // @ts-ignore: this is a TypeScript bug
+        cursorPos.endX = pen.x - 1;
+    }
+
     if (box.content.length === 0 && cursor && cursor.parent === box.id) {
-        cursorPos = {x: pen.x - 1 + box.width / 2, y: -64 * 0.85 * multiplier};
+        cursorPos = {
+            startX: pen.x - 1 + box.width / 2,
+            endX: pen.x - 1 + box.width / 2,
+            y: -64 * 0.85 * multiplier,
+        };
     }
 
     if (cursorPos) {
-        result.push(
-            <rect
-                key="cursor"
-                {...cursorPos}
-                width={2}
-                height={64 * multiplier}
-            />,
-        );
+        if (cursorPos.startX === cursorPos.endX) {
+            result.push(
+                <rect
+                    key="cursor"
+                    x={cursorPos.startX}
+                    y={cursorPos.y}
+                    width={2}
+                    height={64 * multiplier}
+                />,
+            );
+        } else {
+            result.unshift(
+                <rect
+                    key="cursor"
+                    x={cursorPos.startX}
+                    y={cursorPos.y}
+                    width={cursorPos.endX - cursorPos.startX + 2}
+                    height={64 * multiplier}
+                    fill="rgba(0,64,255,0.3)"
+                />,
+            );
+        }
     }
 
     return <g transform={`translate(${x},${y})`}>{result}</g>;

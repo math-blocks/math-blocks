@@ -31,6 +31,14 @@ type Props = {
     style?: React.CSSProperties;
 };
 
+// TODO: dedupe with editor-reducer.ts
+type HasChildren = Editor.Row<Editor.Glyph> | Editor.Parens<Editor.Glyph>;
+
+// TODO: dedupe with editor-reducer.ts
+const hasChildren = (node: Editor.Node<Editor.Glyph>): node is HasChildren => {
+    return node.type === "row" || node.type === "parens";
+};
+
 export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
@@ -52,6 +60,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         if (active && !props.readonly) {
             const action = {
                 type: e.key,
+                shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
                 props.onSubmit(state.math);
@@ -88,20 +97,32 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         parent: number;
         prev: number | null;
         next: number | null;
+        selection: boolean;
     };
 
+    let selection = false;
+
+    const parentNode = Editor.nodeAtPath(math, cursor.path);
+
+    // Determine if the prev/next cursor indexes will result in
+    // a selection that can encompase at least a single node.
+    if (cursor.prev != null && cursor.next != null) {
+        selection = cursor.next - cursor.prev > 1;
+    } else if (cursor.prev == null && cursor.next != null) {
+        selection = cursor.next > 0;
+    } else if (
+        cursor.prev != null &&
+        cursor.next == null &&
+        hasChildren(parentNode)
+    ) {
+        selection = cursor.prev < parentNode.children.length - 1;
+    }
+
     const layoutCursor: LayoutCursor = {
-        parent: Editor.nodeAtPath(math, cursor.path).id,
-        prev:
-            cursor.prev != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev])?.id ??
-                  null
-                : null,
-        next:
-            cursor.next != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.next])?.id ??
-                  null
-                : null,
+        parent: parentNode.id,
+        prev: cursor.prev,
+        next: cursor.next,
+        selection: selection,
     };
 
     return (

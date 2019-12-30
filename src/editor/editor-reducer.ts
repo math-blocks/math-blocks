@@ -238,6 +238,18 @@ const moveLeft = (
     return cursor;
 };
 
+const selectLeft = (
+    currentNode: Editor.HasChildren<Editor.Glyph>,
+    draft: State,
+): Editor.Cursor => {
+    const {children} = currentNode;
+    const {cursor} = draft;
+    return {
+        ...cursor,
+        prev: cursor.prev != null ? prevIndex(children, cursor.prev) : null,
+    };
+};
+
 const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
     const {cursor, math} = draft;
     const {children} = currentNode;
@@ -379,6 +391,18 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
         }
     }
     return cursor;
+};
+
+const selectRight = (
+    currentNode: Editor.HasChildren<Editor.Glyph>,
+    draft: State,
+): Editor.Cursor => {
+    const {children} = currentNode;
+    const {cursor} = draft;
+    return {
+        ...cursor,
+        next: cursor.next != null ? nextIndex(children, cursor.next) : null,
+    };
 };
 
 const backspace = (currentNode: HasChildren, draft: State): void => {
@@ -784,7 +808,7 @@ const parens = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-type Action = {type: string};
+type Action = {type: string; shift?: boolean};
 
 // TODO: check if cursor is valid before process action
 // TODO: insert both left/right parens when the user presses '('
@@ -804,11 +828,15 @@ const reducer = (state: State = initialState, action: Action): State => {
 
         switch (action.type) {
             case "ArrowLeft": {
-                draft.cursor = moveLeft(currentNode, draft);
+                draft.cursor = action.shift
+                    ? selectLeft(currentNode, draft)
+                    : moveLeft(currentNode, draft);
                 return;
             }
             case "ArrowRight": {
-                draft.cursor = moveRight(currentNode, draft);
+                draft.cursor = action.shift
+                    ? selectRight(currentNode, draft)
+                    : moveRight(currentNode, draft);
                 return;
             }
             case "Backspace": {
