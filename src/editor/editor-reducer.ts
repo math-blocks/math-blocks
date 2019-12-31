@@ -6,6 +6,7 @@ import {getId} from "../unique-id";
 export type State = {
     math: Editor.Row<Editor.Glyph>;
     cursor: Editor.Cursor;
+    selectionStart: Editor.Cursor | null;
 };
 
 const {row, glyph, frac} = Editor;
@@ -29,6 +30,7 @@ const initialState: State = {
         prev: null,
         next: 0,
     },
+    selectionStart: null,
 };
 
 type Identifiable = {readonly id: number};
@@ -97,6 +99,7 @@ const insertBeforeChildWithIndex = <T extends Identifiable>(
 const moveLeft = (
     currentNode: Editor.HasChildren<Editor.Glyph>,
     draft: State,
+    selecting?: boolean,
 ): Editor.Cursor => {
     const {cursor, math} = draft;
 
@@ -104,14 +107,14 @@ const moveLeft = (
     if (cursor.prev != null) {
         const {prev} = cursor;
         const prevNode = getChildWithIndex(currentNode.children, prev);
-        if (prevNode && prevNode.type === "root") {
+        if (prevNode && prevNode.type === "root" && !selecting) {
             const radicand = prevNode.children[0];
             return {
                 path: [...cursor.path, prev, RADICAND],
                 prev: lastIndex(radicand.children),
                 next: null,
             };
-        } else if (prevNode && prevNode.type === "frac") {
+        } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)
             const denominator = prevNode.children[1];
             return {
@@ -119,7 +122,7 @@ const moveLeft = (
                 prev: lastIndex(denominator.children),
                 next: null,
             };
-        } else if (prevNode && prevNode.type === "subsup") {
+        } else if (prevNode && prevNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = prevNode.children;
             if (sup) {
@@ -222,25 +225,17 @@ const moveLeft = (
     return cursor;
 };
 
-const selectLeft = (
-    currentNode: Editor.HasChildren<Editor.Glyph>,
+const moveRight = (
+    currentNode: HasChildren,
     draft: State,
+    selecting?: boolean,
 ): Editor.Cursor => {
-    const {children} = currentNode;
-    const {cursor} = draft;
-    return {
-        ...cursor,
-        prev: cursor.prev != null ? prevIndex(children, cursor.prev) : null,
-    };
-};
-
-const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
     const {cursor, math} = draft;
     const {children} = currentNode;
     if (cursor.next != null) {
         const {next} = cursor;
         const nextNode = getChildWithIndex(currentNode.children, next);
-        if (nextNode && nextNode.type === "root") {
+        if (nextNode && nextNode.type === "root" && !selecting) {
             const radicand = nextNode.children[0];
             // TODO: handle navigating into the index
             return {
@@ -248,7 +243,7 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
                 prev: null,
                 next: firstIndex(radicand.children),
             };
-        } else if (nextNode && nextNode.type === "frac") {
+        } else if (nextNode && nextNode.type === "frac" && !selecting) {
             // enter fraction (numerator)
             const numerator = nextNode.children[0];
             return {
@@ -256,7 +251,7 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
                 prev: null,
                 next: firstIndex(numerator.children),
             };
-        } else if (nextNode && nextNode.type === "subsup") {
+        } else if (nextNode && nextNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = nextNode.children;
             if (sub) {
@@ -359,18 +354,6 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
         }
     }
     return cursor;
-};
-
-const selectRight = (
-    currentNode: Editor.HasChildren<Editor.Glyph>,
-    draft: State,
-): Editor.Cursor => {
-    const {children} = currentNode;
-    const {cursor} = draft;
-    return {
-        ...cursor,
-        next: cursor.next != null ? nextIndex(children, cursor.next) : null,
-    };
 };
 
 const backspace = (currentNode: HasChildren, draft: State): void => {
@@ -920,16 +903,24 @@ const reducer = (state: State = initialState, action: Action): State => {
         const {next} = cursor;
 
         switch (action.type) {
+            case "Shift": {
+                draft.selectionStart = {...draft.cursor};
+                return;
+            }
             case "ArrowLeft": {
-                draft.cursor = action.shift
-                    ? selectLeft(currentNode, draft)
-                    : moveLeft(currentNode, draft);
+                if (!action.shift && draft.selectionStart) {
+                    draft.selectionStart = null;
+                } else {
+                    draft.cursor = moveLeft(currentNode, draft, action.shift);
+                }
                 return;
             }
             case "ArrowRight": {
-                draft.cursor = action.shift
-                    ? selectRight(currentNode, draft)
-                    : moveRight(currentNode, draft);
+                if (!action.shift && draft.selectionStart) {
+                    draft.selectionStart = null;
+                } else {
+                    draft.cursor = moveRight(currentNode, draft, action.shift);
+                }
                 return;
             }
             case "Backspace": {

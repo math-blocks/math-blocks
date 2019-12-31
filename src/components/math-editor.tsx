@@ -31,12 +31,44 @@ type Props = {
     style?: React.CSSProperties;
 };
 
-// TODO: dedupe with editor-reducer.ts
-type HasChildren = Editor.Row<Editor.Glyph> | Editor.Parens<Editor.Glyph>;
+type LayoutCursor = {
+    parent: number;
+    prev: number | null;
+    next: number | null;
+    selection: boolean;
+};
 
-// TODO: dedupe with editor-reducer.ts
-const hasChildren = (node: Editor.Node<Editor.Glyph>): node is HasChildren => {
-    return node.type === "row" || node.type === "parens";
+const layoutCursorFromState = (state: State): LayoutCursor => {
+    const {math, cursor, selectionStart} = state;
+    const parentNode = Editor.nodeAtPath(math, cursor.path);
+
+    if (!selectionStart) {
+        return {
+            parent: parentNode.id,
+            prev: cursor.prev,
+            next: cursor.next,
+            selection: false,
+        };
+    } else {
+        if (
+            selectionStart.next != null &&
+            selectionStart.next <= (cursor.prev || 0)
+        ) {
+            return {
+                parent: parentNode.id,
+                prev: selectionStart.prev,
+                next: cursor.next,
+                selection: true,
+            };
+        } else {
+            return {
+                parent: parentNode.id,
+                prev: cursor.prev,
+                next: selectionStart.next,
+                selection: true,
+            };
+        }
+    }
 };
 
 export const MathEditor: React.SFC<Props> = (props: Props) => {
@@ -49,6 +81,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             prev: null,
             next: 0,
         },
+        selectionStart: null,
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -81,49 +114,14 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         }
     });
 
-    const {math, cursor} = state;
+    const {math} = state;
     const {style} = props;
 
     const fontSize = 64;
     // $FlowFixMe: make typeset return a Box
     const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
 
-    // TODO: find id of nodes from the cursor and create a cursor that contains ids
-    // so that we can render the cursor properly.  The need for the change is that
-    // typesetting introduces additional nodes so we can't rely on the position like
-    // we did in the reducer.
-
-    type LayoutCursor = {
-        parent: number;
-        prev: number | null;
-        next: number | null;
-        selection: boolean;
-    };
-
-    let selection = false;
-
-    const parentNode = Editor.nodeAtPath(math, cursor.path);
-
-    // Determine if the prev/next cursor indexes will result in
-    // a selection that can encompase at least a single node.
-    if (cursor.prev != null && cursor.next != null) {
-        selection = cursor.next - cursor.prev > 1;
-    } else if (cursor.prev == null && cursor.next != null) {
-        selection = cursor.next > 0;
-    } else if (
-        cursor.prev != null &&
-        cursor.next == null &&
-        hasChildren(parentNode)
-    ) {
-        selection = cursor.prev < parentNode.children.length - 1;
-    }
-
-    const layoutCursor: LayoutCursor = {
-        parent: parentNode.id,
-        prev: cursor.prev,
-        next: cursor.next,
-        selection: selection,
-    };
+    const layoutCursor = layoutCursorFromState(state);
 
     return (
         <div

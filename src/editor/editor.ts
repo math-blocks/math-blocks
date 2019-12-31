@@ -18,13 +18,6 @@ export type Frac<T, ID = number> = {
     children: [Row<T, ID>, Row<T, ID>]; // numerator, denominator
 };
 
-// TODO: allow different types of parens
-// export type Parens<T, ID = number> = {
-//     id: ID;
-//     type: "parens";
-//     children: NodeWithID<T, ID>[];
-// };
-
 export type Root<T, ID = number> = {
     id: ID;
     type: "root";

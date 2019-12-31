@@ -3,13 +3,6 @@ import * as Layout from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "../util";
 
-export type LayoutCursor = {
-    path: Editor.Node<Editor.Glyph>[];
-    // these are node ids instead of indices
-    prev: number | null;
-    next: number | null;
-};
-
 const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     multiplier = 1,
 ) => (node: Editor.Node<Editor.Glyph>): Layout.Node => {
