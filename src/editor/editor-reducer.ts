@@ -6,7 +6,7 @@ import {getId} from "../unique-id";
 export type State = {
     math: Editor.Row<Editor.Glyph>;
     cursor: Editor.Cursor;
-    selectionStart: Editor.Cursor | null;
+    selectionStart?: Editor.Cursor;
 };
 
 const {row, glyph, frac} = Editor;
@@ -30,7 +30,7 @@ const initialState: State = {
         prev: null,
         next: 0,
     },
-    selectionStart: null,
+    selectionStart: undefined,
 };
 
 type Identifiable = {readonly id: number};
@@ -887,7 +887,6 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
 type Action = {type: string; shift?: boolean};
 
 // TODO: check if cursor is valid before process action
-// TODO: insert both left/right parens when the user presses '('
 const reducer = (state: State = initialState, action: Action): State => {
     return produce(state, draft => {
         const {cursor, math} = draft;
@@ -909,7 +908,7 @@ const reducer = (state: State = initialState, action: Action): State => {
             }
             case "ArrowLeft": {
                 if (!action.shift && draft.selectionStart) {
-                    draft.selectionStart = null;
+                    draft.selectionStart = undefined;
                 } else {
                     draft.cursor = moveLeft(currentNode, draft, action.shift);
                 }
@@ -917,7 +916,7 @@ const reducer = (state: State = initialState, action: Action): State => {
             }
             case "ArrowRight": {
                 if (!action.shift && draft.selectionStart) {
-                    draft.selectionStart = null;
+                    draft.selectionStart = undefined;
                 } else {
                     draft.cursor = moveRight(currentNode, draft, action.shift);
                 }

@@ -81,7 +81,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             prev: null,
             next: 0,
         },
-        selectionStart: null,
+        selectionStart: undefined,
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
