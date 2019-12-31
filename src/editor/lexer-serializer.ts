@@ -28,11 +28,6 @@ const print = (
                 indent,
             )})`;
         }
-        case "parens": {
-            return `(parens ${ast.children
-                .map(child => print(child, serialize, indent))
-                .join(" ")}`;
-        }
         case "row": {
             return `(row ${ast.children
                 .map(child => print(child, serialize, indent))

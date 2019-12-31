@@ -8,13 +8,6 @@ export const isEqual = (
         return false;
     } else if (a.type === "atom" && b.type === "atom") {
         return a.value.char === b.value.char;
-    } else if (a.type === "parens" && b.type === "parens") {
-        if (a.children.length !== b.children.length) {
-            return false;
-        }
-        return a.children.every((aChild, index) =>
-            isEqual(aChild, b.children[index]),
-        );
     } else if (a.type === "frac" && b.type === "frac") {
         const [aNum, aDen] = a.children;
         const [bNum, bDen] = b.children;
@@ -69,9 +62,6 @@ export const isEqual = (
 
 export const row = (str: string): Editor.Row<Editor.Glyph> =>
     Editor.row(str.split("").map(glyph => Editor.glyph(glyph)));
-
-export const parens = (str: string): Editor.Parens<Editor.Glyph> =>
-    Editor.parens(str.split("").map(glyph => Editor.glyph(glyph)));
 
 export const frac = (num: string, den: string): Editor.Frac<Editor.Glyph> =>
     Editor.frac(

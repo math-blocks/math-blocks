@@ -266,11 +266,11 @@ describe("NewMathParser", () => {
         const tokens = [
             Lexer.identifier("a"),
             Lexer.plus(),
-            Editor.parens([
-                Lexer.identifier("b"),
-                Lexer.plus(),
-                Lexer.identifier("c"),
-            ]),
+            Lexer.lparens(),
+            Lexer.identifier("b"),
+            Lexer.plus(),
+            Lexer.identifier("c"),
+            Lexer.rparens(),
         ];
 
         const ast = parser.parse(tokens);
@@ -285,11 +285,11 @@ describe("NewMathParser", () => {
     it("should handle implicit multiplication with parens", () => {
         const tokens = [
             Lexer.identifier("a"),
-            Editor.parens([
-                Lexer.identifier("b"),
-                Lexer.plus(),
-                Lexer.identifier("c"),
-            ]),
+            Lexer.lparens(),
+            Lexer.identifier("b"),
+            Lexer.plus(),
+            Lexer.identifier("c"),
+            Lexer.rparens(),
         ];
 
         const ast = parser.parse(tokens);
@@ -304,16 +304,16 @@ describe("NewMathParser", () => {
     it("should handle implicit multiplication with multiple parens", () => {
         const tokens = [
             Lexer.identifier("a"),
-            Editor.parens([
-                Lexer.identifier("b"),
-                Lexer.plus(),
-                Lexer.identifier("c"),
-            ]),
-            Editor.parens([
-                Lexer.identifier("d"),
-                Lexer.plus(),
-                Lexer.identifier("e"),
-            ]),
+            Lexer.lparens(),
+            Lexer.identifier("b"),
+            Lexer.plus(),
+            Lexer.identifier("c"),
+            Lexer.rparens(),
+            Lexer.lparens(),
+            Lexer.identifier("d"),
+            Lexer.plus(),
+            Lexer.identifier("e"),
+            Lexer.rparens(),
         ];
 
         const ast = parser.parse(tokens);
@@ -328,16 +328,16 @@ describe("NewMathParser", () => {
 
     it("should handle implicit multiplication with parens at the start", () => {
         const tokens = [
-            Editor.parens([
-                Lexer.identifier("b"),
-                Lexer.plus(),
-                Lexer.identifier("c"),
-            ]),
-            Editor.parens([
-                Lexer.identifier("d"),
-                Lexer.plus(),
-                Lexer.identifier("e"),
-            ]),
+            Lexer.lparens(),
+            Lexer.identifier("b"),
+            Lexer.plus(),
+            Lexer.identifier("c"),
+            Lexer.rparens(),
+            Lexer.lparens(),
+            Lexer.identifier("d"),
+            Lexer.plus(),
+            Lexer.identifier("e"),
+            Lexer.rparens(),
         ];
 
         const ast = parser.parse(tokens);

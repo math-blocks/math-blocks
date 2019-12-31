@@ -1297,10 +1297,10 @@ describe("reducer", () => {
 
         describe("parens", () => {
             test("should move into the parens from the right", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
                     path: [],
-                    prev: 1,
+                    prev: 5,
                     next: null,
                 };
 
@@ -1311,39 +1311,39 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 2,
-                    next: null,
+                    path: [],
+                    prev: 4,
+                    next: 5,
                 });
             });
 
             test("from the back should delete the last character and the cursor should remain at the end", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
-                    path: [1],
-                    prev: 1,
-                    next: 2,
+                    path: [],
+                    prev: 3,
+                    next: 4,
                 };
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("2"), Util.parens("xy")])),
+                    Editor.stripIDs(Util.row("2(xy)")),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 0,
-                    next: 1,
+                    path: [],
+                    prev: 2,
+                    next: 3,
                 });
             });
 
             test("from the front should move children into parent", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
-                    path: [1],
-                    prev: null,
-                    next: 0,
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 };
 
                 const state: State = {math, cursor};
@@ -1839,71 +1839,6 @@ describe("reducer", () => {
                 });
             });
         });
-
-        describe("parens", () => {
-            test("entering parens", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [],
-                    prev: 1,
-                    next: 2,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 1,
-                    next: null,
-                });
-            });
-
-            test("exiting parens with surround glyphs", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [1],
-                    prev: null,
-                    next: 0,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 0,
-                    next: 1,
-                });
-            });
-
-            test("exiting parens without surround glyphs", () => {
-                const math = row([Util.parens("xy")]);
-                const cursor = {
-                    path: [0],
-                    prev: null,
-                    next: 0,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: null,
-                    next: 0,
-                });
-            });
-        });
     });
 
     describe("moving right", () => {
@@ -2323,71 +2258,6 @@ describe("reducer", () => {
                 const cursor = {
                     path: [0, RADICAND],
                     prev: 1,
-                    next: null,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 0,
-                    next: null,
-                });
-            });
-        });
-
-        describe("parens", () => {
-            test("entering parens", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [],
-                    prev: 0,
-                    next: 1,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: null,
-                    next: 0,
-                });
-            });
-
-            test("exiting parens with surround glyphs", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [1],
-                    prev: 0,
-                    next: null,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 1,
-                    next: 2,
-                });
-            });
-
-            test("exiting parens without surround glyphs", () => {
-                const math = row([Util.parens("xy")]);
-                const cursor = {
-                    path: [0],
-                    prev: 0,
                     next: null,
                 };
 

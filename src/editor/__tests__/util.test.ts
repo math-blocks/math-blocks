@@ -1,6 +1,5 @@
 import * as Editor from "../editor";
 import * as Util from "../util";
-const {row, glyph, subsup} = Editor;
 
 describe("isEqual", () => {
     describe("equal", () => {
@@ -10,7 +9,7 @@ describe("isEqual", () => {
         });
 
         it("(1 + 2)", () => {
-            const result = Util.isEqual(Util.parens("1+2"), Util.parens("1+2"));
+            const result = Util.isEqual(Util.row("(1+2)"), Util.row("(1+2)"));
             expect(result).toBe(true);
         });
 
@@ -62,7 +61,7 @@ describe("isEqual", () => {
 
     describe("not equal", () => {
         it("(1 + 2) != 1 + 2", () => {
-            const result = Util.isEqual(Util.parens("1+2"), Util.row("1+2"));
+            const result = Util.isEqual(Util.row("(1+2)"), Util.row("1+2"));
             expect(result).toBe(false);
         });
 
@@ -77,15 +76,12 @@ describe("isEqual", () => {
         });
 
         it("(1 + 2) != (1 + 3)", () => {
-            const result = Util.isEqual(Util.parens("1+2"), Util.parens("1+3"));
+            const result = Util.isEqual(Util.row("(1+2)"), Util.row("(1+3)"));
             expect(result).toBe(false);
         });
 
         it("(1 + 2) != (1 + 2 + 3)", () => {
-            const result = Util.isEqual(
-                Util.parens("1+2"),
-                Util.parens("1+2+3"),
-            );
+            const result = Util.isEqual(Util.row("(1+2)"), Util.row("(1+2+3)"));
             expect(result).toBe(false);
         });
 

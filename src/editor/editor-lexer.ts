@@ -21,6 +21,8 @@ type Plus = {kind: "plus"};
 type Minus = {kind: "minus"};
 type Times = {kind: "times"};
 type Equal = {kind: "eq"};
+type LParens = {kind: "lparens"};
+type RParens = {kind: "rparens"};
 type Ellipsis = {kind: "ellipsis"};
 type EOL = {kind: "eol"};
 
@@ -34,13 +36,27 @@ export const minus = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "minus"});
 export const times = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "times"});
+export const lparens = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "lparens"});
+export const rparens = (): Editor.Atom<Token> =>
+    Editor.atom<Token>({kind: "rparens"});
 export const ellipsis = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "ellipsis"});
 export const eq = (): Editor.Atom<Token> => Editor.atom<Token>({kind: "eq"});
 
-export type Token = Ident | Num | Plus | Minus | Times | Equal | Ellipsis | EOL;
+export type Token =
+    | Ident
+    | Num
+    | Plus
+    | Minus
+    | Times
+    | Equal
+    | LParens
+    | RParens
+    | Ellipsis
+    | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
@@ -67,6 +83,12 @@ const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
                         break;
                     case "...":
                         tokens.push(ellipsis());
+                        break;
+                    case "(":
+                        tokens.push(lparens());
+                        break;
+                    case ")":
+                        tokens.push(rparens());
                         break;
                     default:
                         throw new Error(`Unexpected symbol token: ${sym}`);
@@ -135,12 +157,6 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
                 id: node.id,
                 type: "frac",
                 children: [lexRow(node.children[0]), lexRow(node.children[1])],
-            };
-        case "parens":
-            return {
-                id: node.id,
-                type: "parens",
-                children: lexChildren(node.children),
             };
         case "root": {
             const [radicand, index] = node.children;
