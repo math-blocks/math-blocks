@@ -785,7 +785,7 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
     draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
     draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 
-    for (let i = draft.cursor.prev; i >= 0; i--) {
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
         const child = currentNode.children[i];
         // handle a pending open paren to the left
         if (
@@ -832,6 +832,9 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
         }
     }
 
+    if (draft.cursor.next == null) {
+        draft.cursor.next = draft.cursor.prev + 1;
+    }
     // no closing paren to the right
     currentNode.children = [
         ...insertBeforeChildWithIndex(currentNode.children, next, openingParen),
@@ -863,12 +866,6 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
     draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 
-    // There are three scenarios we have to handle
-    // 1: there is no paren to the left
-    // 2: there is a paren to the left
-    // 3: there is a pending paren to the right
-
-    console.log(`draft.cursor.prev = ${draft.cursor.prev}`);
     for (
         let i = Math.max(0, draft.cursor.prev - 1);
         i < currentNode.children.length;
@@ -896,23 +893,27 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
         }
     }
 
-    // for (let i = draft.cursor.prev; i >= 0; i--) {
-    //     const child = currentNode.children[i];
-    //     // handle a opening paren to the left
-    //     if (child.type === "atom" && child.value.char === "(") {
-    //         const newChildren = insertBeforeChildWithIndex(
-    //             currentNode.children,
-    //             draft.cursor.prev,
-    //             closingParen,
-    //         );
-    //         currentNode.children = insertBeforeChildWithIndex(
-    //             newChildren,
-    //             i + 1,
-    //             openingParen,
-    //         );
-    //         return;
-    //     }
-    // }
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
+        const child = currentNode.children[i];
+        // handle a opening paren to the left
+        if (child.type === "atom" && child.value.char === "(") {
+            const newChildren = insertBeforeChildWithIndex(
+                currentNode.children,
+                draft.cursor.prev,
+                closingParen,
+            );
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                i + 1,
+                openingParen,
+            );
+
+            // move the cursor one to right again
+            draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+            draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+            return;
+        }
+    }
 
     // no closing paren to the right
     currentNode.children = [
