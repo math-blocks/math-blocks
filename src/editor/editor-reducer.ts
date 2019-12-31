@@ -760,28 +760,166 @@ const root = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-const parens = (currentNode: HasChildren, draft: State): void => {
+// TODO: handle inserting parens at the end of a row
+const leftParens = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
-    const newNode: Editor.Parens<Editor.Glyph> = {
+    const openingParen: Editor.Atom<Editor.Glyph> = {
         id: getId(),
-        type: "parens",
-        children: [],
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: "(",
+        },
     };
-
-    currentNode.children = insertBeforeChildWithIndex(
-        currentNode.children,
-        next,
-        newNode,
-    );
-
-    const index = currentNode.children.indexOf(newNode);
-    draft.cursor = {
-        path: [...cursor.path, index],
-        next: null,
-        prev: null,
+    const closingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: ")",
+            pending: true,
+        },
     };
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
+        const child = currentNode.children[i];
+        // handle a pending open paren to the left
+        if (
+            child.type === "atom" &&
+            child.value.char === "(" &&
+            child.value.pending
+        ) {
+            const newChildren = removeChildWithIndex(currentNode.children, i);
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                Math.max(0, draft.cursor.prev - 1),
+                openingParen,
+            );
+
+            const prev = Math.max(0, draft.cursor.prev - 1);
+            draft.cursor.prev = prev;
+            draft.cursor.next = prev + 1;
+            return;
+        }
+    }
+
+    for (
+        let i = Math.max(0, draft.cursor.prev - 1);
+        i < currentNode.children.length;
+        i++
+    ) {
+        const child = currentNode.children[i];
+        // handle a closing paren to the right
+        if (child.type === "atom" && child.value.char === ")") {
+            const newChildren = insertBeforeChildWithIndex(
+                currentNode.children,
+                draft.cursor.prev,
+                openingParen,
+            );
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                i + 1,
+                closingParen,
+            );
+            return;
+        }
+    }
+
+    if (draft.cursor.next == null) {
+        draft.cursor.next = draft.cursor.prev + 1;
+    }
+    // no closing paren to the right
+    currentNode.children = [
+        ...insertBeforeChildWithIndex(currentNode.children, next, openingParen),
+        closingParen,
+    ];
+};
+
+const rightParens = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const openingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: "(",
+            pending: true,
+        },
+    };
+    const closingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: ")",
+        },
+    };
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+
+    for (
+        let i = Math.max(0, draft.cursor.prev - 1);
+        i < currentNode.children.length;
+        i++
+    ) {
+        const child = currentNode.children[i];
+        // handle a pending closing paren to the right
+        if (
+            child.type === "atom" &&
+            child.value.char === ")" &&
+            child.value.pending
+        ) {
+            const newChildren = removeChildWithIndex(currentNode.children, i);
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                Math.min(newChildren.length, draft.cursor.prev),
+                closingParen,
+            );
+            if (draft.cursor.prev >= currentNode.children.length - 1) {
+                draft.cursor.prev = currentNode.children.length - 1;
+                draft.cursor.next = null;
+            }
+            return;
+        }
+    }
+
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
+        const child = currentNode.children[i];
+        // handle a opening paren to the left
+        if (child.type === "atom" && child.value.char === "(") {
+            const newChildren = insertBeforeChildWithIndex(
+                currentNode.children,
+                draft.cursor.prev,
+                closingParen,
+            );
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                i + 1,
+                openingParen,
+            );
+
+            // move the cursor one to right again
+            draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+            draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+            return;
+        }
+    }
+
+    // no closing paren to the right
+    currentNode.children = [
+        openingParen,
+        ...insertBeforeChildWithIndex(currentNode.children, next, closingParen),
+    ];
+
+    // Advance the cursor by one again.
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 };
 
 type Action = {type: string};
@@ -832,7 +970,11 @@ const reducer = (state: State = initialState, action: Action): State => {
                 return;
             }
             case "(": {
-                parens(currentNode, draft);
+                leftParens(currentNode, draft);
+                return;
+            }
+            case ")": {
+                rightParens(currentNode, draft);
                 return;
             }
             case "-": {

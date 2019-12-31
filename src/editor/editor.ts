@@ -114,6 +114,7 @@ export function atom<T>(value: T): Atom<T, number> {
 export type Glyph = {
     kind: "glyph";
     char: string;
+    pending?: boolean;
 };
 
 export const glyph = (char: string): Atom<Glyph, number> =>
