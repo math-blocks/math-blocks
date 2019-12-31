@@ -14,7 +14,8 @@ type Operator =
     | "mul.imp"
     | "neg"
     | "eq"
-    | "supsub";
+    | "supsub"
+    | "nul";
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
@@ -91,6 +92,20 @@ const getPrefixParselet = (
                         parse: parser =>
                             neg(parser.parseWithOperator("neg"), false),
                     };
+                case "lparens":
+                    return {
+                        parse: parser => {
+                            const result = parser.parse();
+                            const nextToken = parser.consume();
+                            if (
+                                nextToken.type === "atom" &&
+                                nextToken.value.kind === "rparens"
+                            ) {
+                                return result;
+                            }
+                            throw new Error("unmatched left paren");
+                        },
+                    };
                 case "ellipsis":
                     return {
                         parse: () => ellipsis(),
@@ -113,10 +128,6 @@ const getPrefixParselet = (
             throw new Error(`Unexpected 'subsup' token`);
         case "row":
             throw new Error(`Unexpected 'row' token`);
-        case "parens":
-            return {
-                parse: () => editorParser.parse(token.children),
-            };
         case "root":
             return {
                 parse: () => {
@@ -208,15 +219,6 @@ const parseNaryArgs = (
             return [expr];
             // TODO: deal with frac, subsup, etc.
         }
-    } else if (token.type === "parens") {
-        parser.consume();
-        const expr = editorParser.parse(token.children);
-        const nextToken = parser.peek();
-        if (nextToken.type === token.type) {
-            return [expr, ...parseNaryArgs(parser, "mul.imp")];
-        } else {
-            return [expr];
-        }
     } else if (token.type === "root") {
         parser.consume();
         const [arg, index] = token.children;
@@ -236,6 +238,17 @@ const parseNaryArgs = (
     }
 };
 
+const parseMulByParen = (
+    parser: EditorParser,
+): OneOrMore<Semantic.Expression> => {
+    const expr = parser.parseWithOperator("mul.imp");
+    const nextToken = parser.peek();
+    if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
+        return [expr, ...parseMulByParen(parser)];
+    }
+    return [expr];
+};
+
 const getInfixParselet = (
     token: Token,
 ): Parser.InfixParselet<Token, Node, Operator> | null => {
@@ -253,6 +266,21 @@ const getInfixParselet = (
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
+                case "lparens":
+                    return {
+                        op: "mul.imp",
+                        parse: (parser, left): Semantic.Mul => {
+                            const [right, ...rest] = parseMulByParen(parser);
+                            return mul([left, right, ...rest], true);
+                        },
+                    };
+                case "rparens":
+                    return {
+                        op: "nul",
+                        parse: (): Semantic.Expression => {
+                            throw new Error("mismatched parens");
+                        },
+                    };
                 default:
                     return null;
             }
@@ -287,10 +315,6 @@ const getInfixParselet = (
                 },
             };
         }
-        case "parens": {
-            // TODO: handle function application, e.g. f(x)
-            return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
-        }
         case "root": {
             return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         }
@@ -301,6 +325,8 @@ const getInfixParselet = (
 
 const getOpPrecedence = (op: Operator): number => {
     switch (op) {
+        case "nul":
+            return 0;
         case "eq":
             return 2;
         case "add":

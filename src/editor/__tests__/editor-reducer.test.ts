@@ -497,26 +497,378 @@ describe("reducer", () => {
         });
 
         describe("parens", () => {
-            it("'(' should insert a parens node", () => {
-                const math = Util.row("12");
-                const cursor = {
-                    path: [],
-                    prev: 0,
-                    next: 1,
-                };
+            describe("starting with '('", () => {
+                it("should insert a '(' at the start and a pending ')' at the end", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
 
-                const state: State = {math, cursor};
-                const newState = reducer(state, {type: "("});
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: "("});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("1"), Util.parens(""), glyph("2")]),
-                    ),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: null,
-                    next: null,
+                    const newMath = Util.row("(1+2)");
+                    // @ts-ignore
+                    newMath.children[4].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    });
+                });
+
+                it("should insert a '(' in the middle and a pending ')' at the end", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: "("});
+
+                    const newMath = Util.row("1(+2)");
+                    // @ts-ignore
+                    newMath.children[4].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    });
+                });
+
+                it("should insert a '(' at the end and a pending ')' after it", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: null,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: "("});
+
+                    const newMath = Util.row("1+2()");
+                    // @ts-ignore
+                    newMath.children[4].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    // TODO: it would be nice if this could be specified by including a '|'
+                    // in the Editor AST.
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 3,
+                        next: 4,
+                    });
+                });
+            });
+
+            describe("completing with ')'", () => {
+                it("in the middle", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor};
+                    let newState;
+                    newState = reducer(state, {type: "("});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: ")"});
+
+                    const newMath = Util.row("(1+)2");
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 3,
+                        next: 4,
+                    });
+                });
+
+                it("just before the ')'", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor};
+                    let newState;
+                    newState = reducer(state, {type: "("});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: ")"});
+
+                    const newMath = Util.row("(1+2)");
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    });
+                });
+
+                it("just after the ')'", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor};
+                    let newState;
+                    newState = reducer(state, {type: "("});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: "ArrowRight"});
+                    newState = reducer(newState, {type: ")"});
+
+                    const newMath = Util.row("(1+2)");
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    });
+                });
+            });
+
+            describe("starting with ')'", () => {
+                it("should insert a ')' at the end and a pending '(' at the start", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: null,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: ")"});
+
+                    const newMath = Util.row("(1+2)");
+                    // @ts-ignore
+                    newMath.children[0].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    });
+                });
+
+                it("should insert a ')' in the middle and a pending '(' at the start", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: ")"});
+
+                    const newMath = Util.row("(1+)2");
+                    // @ts-ignore
+                    newMath.children[0].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 3,
+                        next: 4,
+                    });
+                });
+
+                it("should insert a ')' at the start and a pending '(' before it", () => {
+                    const math = Util.row("1+2");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: ")"});
+
+                    const newMath = Util.row("()1+2");
+                    // @ts-ignore
+                    newMath.children[0].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    });
+                });
+
+                describe("completing with '('", () => {
+                    it("in the middle", () => {
+                        const math = Util.row("1+2");
+                        const cursor = {
+                            path: [],
+                            prev: 2,
+                            next: null,
+                        };
+
+                        const state: State = {math, cursor};
+                        let newState;
+                        newState = reducer(state, {type: ")"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "("});
+
+                        const newMath = Util.row("1(+2)");
+                        expect(Editor.stripIDs(newState.math)).toEqual(
+                            Editor.stripIDs(newMath),
+                        );
+                        expect(newState.cursor).toEqual({
+                            path: [],
+                            prev: 1,
+                            next: 2,
+                        });
+                    });
+
+                    it("just after the '('", () => {
+                        const math = Util.row("1+2");
+                        const cursor = {
+                            path: [],
+                            prev: 2,
+                            next: null,
+                        };
+
+                        const state: State = {math, cursor};
+                        let newState;
+                        newState = reducer(state, {type: ")"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "("});
+
+                        const newMath = Util.row("(1+2)");
+                        expect(Editor.stripIDs(newState.math)).toEqual(
+                            Editor.stripIDs(newMath),
+                        );
+                        expect(newState.cursor).toEqual({
+                            path: [],
+                            prev: 0,
+                            next: 1,
+                        });
+                    });
+
+                    it("just before the '('", () => {
+                        const math = Util.row("1+2");
+                        const cursor = {
+                            path: [],
+                            prev: 2,
+                            next: null,
+                        };
+
+                        const state: State = {math, cursor};
+                        let newState;
+                        newState = reducer(state, {type: ")"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "ArrowLeft"});
+                        newState = reducer(newState, {type: "("});
+
+                        const newMath = Util.row("(1+2)");
+                        expect(Editor.stripIDs(newState.math)).toEqual(
+                            Editor.stripIDs(newMath),
+                        );
+                        expect(newState.cursor).toEqual({
+                            path: [],
+                            prev: 0,
+                            next: 1,
+                        });
+                    });
+                });
+            });
+
+            describe("inserting inside of an existing set of parens", () => {
+                it("a(1+2)b -> a(1(+2)b -> a(1(+2))b", () => {
+                    const math = Util.row("a(1+2)b");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: "("});
+
+                    const newMath = Util.row("a(1(+2))b");
+                    // @ts-ignore
+                    newMath.children[6].value.pending = true;
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 3,
+                        next: 4,
+                    });
+                });
+
+                it("a(1+2)b -> a(1+)2)b -> a((1+)2)b", () => {
+                    const math = Util.row("a(1+2)b");
+                    const cursor = {
+                        path: [],
+                        prev: 3,
+                        next: 4,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: ")"});
+
+                    const newMath = Util.row("a((1+)2)b");
+                    // @ts-ignore
+                    newMath.children[2].value.pending = true;
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 5,
+                        next: 6,
+                    });
                 });
             });
         });
@@ -945,10 +1297,10 @@ describe("reducer", () => {
 
         describe("parens", () => {
             test("should move into the parens from the right", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
                     path: [],
-                    prev: 1,
+                    prev: 5,
                     next: null,
                 };
 
@@ -959,39 +1311,39 @@ describe("reducer", () => {
                     Editor.stripIDs(math),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 2,
-                    next: null,
+                    path: [],
+                    prev: 4,
+                    next: 5,
                 });
             });
 
             test("from the back should delete the last character and the cursor should remain at the end", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
-                    path: [1],
-                    prev: 1,
-                    next: 2,
+                    path: [],
+                    prev: 3,
+                    next: 4,
                 };
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
                 expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("2"), Util.parens("xy")])),
+                    Editor.stripIDs(Util.row("2(xy)")),
                 );
                 expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 0,
-                    next: 1,
+                    path: [],
+                    prev: 2,
+                    next: 3,
                 });
             });
 
             test("from the front should move children into parent", () => {
-                const math = row([glyph("2"), Util.parens("x+y")]);
+                const math = Util.row("2(x+y)");
                 const cursor = {
-                    path: [1],
-                    prev: null,
-                    next: 0,
+                    path: [],
+                    prev: 1,
+                    next: 2,
                 };
 
                 const state: State = {math, cursor};
@@ -1487,71 +1839,6 @@ describe("reducer", () => {
                 });
             });
         });
-
-        describe("parens", () => {
-            test("entering parens", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [],
-                    prev: 1,
-                    next: 2,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: 1,
-                    next: null,
-                });
-            });
-
-            test("exiting parens with surround glyphs", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [1],
-                    prev: null,
-                    next: 0,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 0,
-                    next: 1,
-                });
-            });
-
-            test("exiting parens without surround glyphs", () => {
-                const math = row([Util.parens("xy")]);
-                const cursor = {
-                    path: [0],
-                    prev: null,
-                    next: 0,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: null,
-                    next: 0,
-                });
-            });
-        });
     });
 
     describe("moving right", () => {
@@ -1971,71 +2258,6 @@ describe("reducer", () => {
                 const cursor = {
                     path: [0, RADICAND],
                     prev: 1,
-                    next: null,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 0,
-                    next: null,
-                });
-            });
-        });
-
-        describe("parens", () => {
-            test("entering parens", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [],
-                    prev: 0,
-                    next: 1,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [1],
-                    prev: null,
-                    next: 0,
-                });
-            });
-
-            test("exiting parens with surround glyphs", () => {
-                const math = row([glyph("a"), Util.parens("xy"), glyph("b")]);
-                const cursor = {
-                    path: [1],
-                    prev: 0,
-                    next: null,
-                };
-
-                const state: State = {math, cursor};
-                const newState = reducer(state, action);
-
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
-                expect(newState.cursor).toEqual({
-                    path: [],
-                    prev: 1,
-                    next: 2,
-                });
-            });
-
-            test("exiting parens without surround glyphs", () => {
-                const math = row([Util.parens("xy")]);
-                const cursor = {
-                    path: [0],
-                    prev: 0,
                     next: null,
                 };
 

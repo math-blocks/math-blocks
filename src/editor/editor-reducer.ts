@@ -33,10 +33,10 @@ const initialState: State = {
 
 type Identifiable = {readonly id: number};
 
-type HasChildren = Editor.Row<Editor.Glyph> | Editor.Parens<Editor.Glyph>;
+type HasChildren = Editor.Row<Editor.Glyph>;
 
 const hasChildren = (node: Editor.Node<Editor.Glyph>): node is HasChildren => {
-    return node.type === "row" || node.type === "parens";
+    return node.type === "row";
 };
 
 const getChildWithIndex = <T extends Identifiable>(
@@ -137,12 +137,6 @@ const moveLeft = (
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
-        } else if (prevNode && prevNode.type === "parens") {
-            return {
-                path: [...cursor.path, prev],
-                prev: lastIndex(prevNode.children),
-                next: null,
-            };
         } else {
             // move to the left
             return {
@@ -223,16 +217,6 @@ const moveLeft = (
                     next: parentIndex,
                 };
             }
-        } else if (currentNode.type === "parens") {
-            const parentIndex = cursor.path[cursor.path.length - 1];
-            if (hasChildren(parent)) {
-                // exit parens to the left
-                return {
-                    path: cursor.path.slice(0, -1),
-                    prev: prevIndex(parent.children, parentIndex),
-                    next: parentIndex,
-                };
-            }
         }
     }
     return cursor;
@@ -290,12 +274,6 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
-        } else if (nextNode && nextNode.type === "parens") {
-            return {
-                path: [...cursor.path, next],
-                prev: null,
-                next: firstIndex(nextNode.children),
-            };
         } else {
             // move to the right
             return {
@@ -378,16 +356,6 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
                     next: nextIndex(grandparent.children, parentIndex),
                 };
             }
-        } else if (currentNode.type === "parens") {
-            const parentIndex = cursor.path[cursor.path.length - 1];
-            if (hasChildren(parent)) {
-                // exit parens to the left
-                return {
-                    path: cursor.path.slice(0, -1),
-                    next: nextIndex(parent.children, parentIndex),
-                    prev: parentIndex,
-                };
-            }
         }
     }
     return cursor;
@@ -415,9 +383,26 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
         if (
             prevNode.type === "subsup" ||
             prevNode.type === "frac" ||
-            prevNode.type === "parens" ||
             prevNode.type === "root"
         ) {
+            draft.cursor = moveLeft(currentNode, draft);
+            return;
+        }
+        if (prevNode.type === "atom" && prevNode.value.char === ")") {
+            draft.cursor = moveLeft(currentNode, draft);
+            return;
+        }
+        if (prevNode.type === "atom" && prevNode.value.char === "(") {
+            currentNode.children = removeChildWithIndex(children, removeIndex);
+            for (let i = removeIndex; i < currentNode.children.length; i++) {
+                const child = currentNode.children[i];
+                if (child.type === "atom" && child.value.char === ")") {
+                    currentNode.children = removeChildWithIndex(
+                        currentNode.children,
+                        i,
+                    );
+                }
+            }
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
@@ -432,36 +417,6 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = removeChildWithIndex(children, removeIndex);
         draft.cursor = newCursor;
         return;
-    }
-
-    if (cursor.path.length > 0) {
-        const parent = Editor.nodeAtPath(
-            math,
-            cursor.path.slice(0, cursor.path.length - 1),
-        );
-        if (currentNode.type === "parens") {
-            if (!hasChildren(parent)) {
-                return;
-            }
-
-            const index = cursor.path[cursor.path.length - 1];
-
-            const newChildren = [
-                ...parent.children.slice(0, index),
-                ...currentNode.children,
-                ...parent.children.slice(index + 1),
-            ];
-
-            const newCursor = {
-                path: cursor.path.slice(0, -1),
-                prev: prevIndex(newChildren, index),
-                next: index,
-            };
-
-            parent.children = newChildren;
-            draft.cursor = newCursor;
-            return;
-        }
     }
 
     if (cursor.path.length > 1) {
@@ -784,28 +739,166 @@ const root = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-const parens = (currentNode: HasChildren, draft: State): void => {
+// TODO: handle inserting parens at the end of a row
+const leftParens = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
-    const newNode: Editor.Parens<Editor.Glyph> = {
+    const openingParen: Editor.Atom<Editor.Glyph> = {
         id: getId(),
-        type: "parens",
-        children: [],
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: "(",
+        },
     };
-
-    currentNode.children = insertBeforeChildWithIndex(
-        currentNode.children,
-        next,
-        newNode,
-    );
-
-    const index = currentNode.children.indexOf(newNode);
-    draft.cursor = {
-        path: [...cursor.path, index],
-        next: null,
-        prev: null,
+    const closingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: ")",
+            pending: true,
+        },
     };
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
+        const child = currentNode.children[i];
+        // handle a pending open paren to the left
+        if (
+            child.type === "atom" &&
+            child.value.char === "(" &&
+            child.value.pending
+        ) {
+            const newChildren = removeChildWithIndex(currentNode.children, i);
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                Math.max(0, draft.cursor.prev - 1),
+                openingParen,
+            );
+
+            const prev = Math.max(0, draft.cursor.prev - 1);
+            draft.cursor.prev = prev;
+            draft.cursor.next = prev + 1;
+            return;
+        }
+    }
+
+    for (
+        let i = Math.max(0, draft.cursor.prev - 1);
+        i < currentNode.children.length;
+        i++
+    ) {
+        const child = currentNode.children[i];
+        // handle a closing paren to the right
+        if (child.type === "atom" && child.value.char === ")") {
+            const newChildren = insertBeforeChildWithIndex(
+                currentNode.children,
+                draft.cursor.prev,
+                openingParen,
+            );
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                i + 1,
+                closingParen,
+            );
+            return;
+        }
+    }
+
+    if (draft.cursor.next == null) {
+        draft.cursor.next = draft.cursor.prev + 1;
+    }
+    // no closing paren to the right
+    currentNode.children = [
+        ...insertBeforeChildWithIndex(currentNode.children, next, openingParen),
+        closingParen,
+    ];
+};
+
+const rightParens = (currentNode: HasChildren, draft: State): void => {
+    const {cursor} = draft;
+    const {next} = cursor;
+
+    const openingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: "(",
+            pending: true,
+        },
+    };
+    const closingParen: Editor.Atom<Editor.Glyph> = {
+        id: getId(),
+        type: "atom",
+        value: {
+            kind: "glyph",
+            char: ")",
+        },
+    };
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+
+    for (
+        let i = Math.max(0, draft.cursor.prev - 1);
+        i < currentNode.children.length;
+        i++
+    ) {
+        const child = currentNode.children[i];
+        // handle a pending closing paren to the right
+        if (
+            child.type === "atom" &&
+            child.value.char === ")" &&
+            child.value.pending
+        ) {
+            const newChildren = removeChildWithIndex(currentNode.children, i);
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                Math.min(newChildren.length, draft.cursor.prev),
+                closingParen,
+            );
+            if (draft.cursor.prev >= currentNode.children.length - 1) {
+                draft.cursor.prev = currentNode.children.length - 1;
+                draft.cursor.next = null;
+            }
+            return;
+        }
+    }
+
+    for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
+        const child = currentNode.children[i];
+        // handle a opening paren to the left
+        if (child.type === "atom" && child.value.char === "(") {
+            const newChildren = insertBeforeChildWithIndex(
+                currentNode.children,
+                draft.cursor.prev,
+                closingParen,
+            );
+            currentNode.children = insertBeforeChildWithIndex(
+                newChildren,
+                i + 1,
+                openingParen,
+            );
+
+            // move the cursor one to right again
+            draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+            draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+            return;
+        }
+    }
+
+    // no closing paren to the right
+    currentNode.children = [
+        openingParen,
+        ...insertBeforeChildWithIndex(currentNode.children, next, closingParen),
+    ];
+
+    // Advance the cursor by one again.
+    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 };
 
 type Action = {type: string; shift?: boolean};
@@ -860,7 +953,11 @@ const reducer = (state: State = initialState, action: Action): State => {
                 return;
             }
             case "(": {
-                parens(currentNode, draft);
+                leftParens(currentNode, draft);
+                return;
+            }
+            case ")": {
+                rightParens(currentNode, draft);
                 return;
             }
             case "-": {

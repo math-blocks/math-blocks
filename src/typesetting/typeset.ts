@@ -179,18 +179,6 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             frac.id = node.id;
             return frac;
         }
-        case "parens": {
-            const parens = Layout.hpackNat(
-                [
-                    _makeGlyph("("),
-                    ...typesetChildren(_typeset, node.children),
-                    _makeGlyph(")"),
-                ],
-                multiplier,
-            );
-            parens.id = node.id;
-            return parens;
-        }
         case "root": {
             const radicand = Layout.hpackNat(
                 typesetChildren(_typeset, node.children[0].children), // radicand

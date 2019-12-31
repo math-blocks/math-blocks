@@ -19,11 +19,11 @@ export type Frac<T, ID = number> = {
 };
 
 // TODO: allow different types of parens
-export type Parens<T, ID = number> = {
-    id: ID;
-    type: "parens";
-    children: NodeWithID<T, ID>[];
-};
+// export type Parens<T, ID = number> = {
+//     id: ID;
+//     type: "parens";
+//     children: NodeWithID<T, ID>[];
+// };
 
 export type Root<T, ID = number> = {
     id: ID;
@@ -41,7 +41,6 @@ export type NodeWithID<T, ID> =
     | Row<T, ID>
     | SubSup<T, ID>
     | Frac<T, ID>
-    | Parens<T, ID>
     | Root<T, ID>
     | Atom<T, ID>;
 
@@ -49,11 +48,10 @@ export type Node<T> =
     | Row<T, number>
     | SubSup<T, number>
     | Frac<T, number>
-    | Parens<T, number>
     | Root<T, number>
     | Atom<T, number>;
 
-export type HasChildren<T> = Row<T> | Parens<T>;
+export type HasChildren<T> = Row<T>;
 
 export function row<T>(children: Node<T>[]): Row<T, number> {
     return {
@@ -82,14 +80,6 @@ export function frac<T>(
     };
 }
 
-export function parens<T>(children: Node<T>[]): Parens<T, number> {
-    return {
-        id: getId(),
-        type: "parens",
-        children,
-    };
-}
-
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root<T>(
@@ -114,6 +104,7 @@ export function atom<T>(value: T): Atom<T, number> {
 export type Glyph = {
     kind: "glyph";
     char: string;
+    pending?: boolean;
 };
 
 export const glyph = (char: string): Atom<Glyph, number> =>
@@ -173,14 +164,6 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
         case "row": {
             const result: Row<T, void> = {
                 type: "row",
-                children: root.children.map<NodeWithID<T, void>>(stripIDs),
-                id: undefined,
-            };
-            return result;
-        }
-        case "parens": {
-            const result: Parens<T, void> = {
-                type: "parens",
                 children: root.children.map<NodeWithID<T, void>>(stripIDs),
                 id: undefined,
             };

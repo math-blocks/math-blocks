@@ -80,11 +80,11 @@ describe("Lexer", () => {
         });
 
         it("should parse parens", () => {
-            const glyphTree = row([Util.parens("1 + 2")]);
+            const glyphTree = Util.row("(1 + 2)");
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
-                `(row (parens (num 1) plus (num 2))`,
+                `(row lparens (num 1) plus (num 2) rparens)`,
             );
         });
 
