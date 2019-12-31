@@ -800,12 +800,9 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
                 openingParen,
             );
 
-            // Move the cursor to the left one again.
-            draft.cursor.next =
-                cursor.next != null
-                    ? cursor.next - 1
-                    : currentNode.children.length - 1;
-            draft.cursor.prev = cursor.prev != null ? cursor.prev - 1 : null;
+            const prev = Math.max(0, draft.cursor.prev - 1);
+            draft.cursor.prev = prev;
+            draft.cursor.next = prev + 1;
             return;
         }
     }
@@ -871,7 +868,6 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
         i < currentNode.children.length;
         i++
     ) {
-        console.log(`i = ${i}`);
         const child = currentNode.children[i];
         // handle a pending closing paren to the right
         if (
@@ -885,7 +881,7 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
                 Math.min(newChildren.length, draft.cursor.prev),
                 closingParen,
             );
-            if (draft.cursor.prev > currentNode.children.length - 1) {
+            if (draft.cursor.prev >= currentNode.children.length - 1) {
                 draft.cursor.prev = currentNode.children.length - 1;
                 draft.cursor.next = null;
             }
