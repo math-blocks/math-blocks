@@ -56,7 +56,7 @@ export type Token =
     | Ellipsis
     | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
@@ -83,6 +83,12 @@ const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
                         break;
                     case "...":
                         tokens.push(ellipsis());
+                        break;
+                    case "(":
+                        tokens.push(lparens());
+                        break;
+                    case ")":
+                        tokens.push(rparens());
                         break;
                     default:
                         throw new Error(`Unexpected symbol token: ${sym}`);
