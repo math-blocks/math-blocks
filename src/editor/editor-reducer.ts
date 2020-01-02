@@ -902,14 +902,13 @@ const reducer = (state: State = initialState, action: Action): State => {
         const {next} = cursor;
 
         switch (action.type) {
-            case "Shift": {
-                draft.selectionStart = {...draft.cursor};
-                return;
-            }
             case "ArrowLeft": {
                 if (!action.shift && draft.selectionStart) {
                     draft.selectionStart = undefined;
                 } else {
+                    if (action.shift && !draft.selectionStart) {
+                        draft.selectionStart = {...draft.cursor};
+                    }
                     draft.cursor = moveLeft(currentNode, draft, action.shift);
                 }
                 return;
@@ -918,6 +917,9 @@ const reducer = (state: State = initialState, action: Action): State => {
                 if (!action.shift && draft.selectionStart) {
                     draft.selectionStart = undefined;
                 } else {
+                    if (action.shift && !draft.selectionStart) {
+                        draft.selectionStart = {...draft.cursor};
+                    }
                     draft.cursor = moveRight(currentNode, draft, action.shift);
                 }
                 return;
