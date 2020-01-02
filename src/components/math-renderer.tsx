@@ -49,28 +49,34 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const {multiplier} = box;
 
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
-    let cursorIndex: number | null = null;
 
     const showCursor = cursor && cursor.parent === box.id;
     const selection = cursor && cursor.selection;
 
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;
-        let cursorIndexChanged = false;
 
-        if (showCursor && (node.type === "Glyph" || node.type === "Box")) {
-            const newCursorIndex = cursorIndex == null ? 0 : cursorIndex + 1;
-            if (cursorIndex !== newCursorIndex) {
-                cursorIndexChanged = true;
+        if (showCursor && cursor) {
+            if (cursor.prev === node.id) {
+                cursorPos = {
+                    startX: pen.x - 1,
+                    endX: pen.x - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            }
 
-                if (cursor && cursor.prev === cursorIndex) {
-                    cursorPos = {
-                        startX: pen.x - 1,
-                        endX: pen.x - 1,
-                        y: -64 * 0.85 * multiplier,
-                    };
+            if (cursor.prev == null && index === 0) {
+                cursorPos = {
+                    startX: pen.x - 1,
+                    endX: pen.x - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            }
+
+            if (selection && cursorPos) {
+                if (cursor.next && cursor.next === node.id) {
+                    cursorPos.endX = pen.x - 1;
                 }
-                cursorIndex = newCursorIndex;
             }
         }
 
@@ -106,19 +112,12 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 throw new UnreachableCaseError(node);
         }
 
-        if (cursorIndexChanged) {
-            if (cursor && cursor.prev === cursorIndex) {
-                cursorPos = {
-                    startX: pen.x - 1,
-                    endX: pen.x - 1,
-                    y: -64 * 0.85 * multiplier,
-                };
-            }
-        }
-        if (cursorIndexChanged && selection && cursorPos && cursor) {
-            if (cursor.next && cursor.next - 1 === cursorIndex) {
-                cursorPos.endX = pen.x - 1;
-            }
+        if (showCursor && cursor && cursor.prev === node.id) {
+            cursorPos = {
+                startX: pen.x - 1,
+                endX: pen.x - 1,
+                y: -64 * 0.85 * multiplier,
+            };
         }
 
         return result;

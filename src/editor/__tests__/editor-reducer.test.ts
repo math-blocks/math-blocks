@@ -493,6 +493,11 @@ describe("reducer", () => {
                         row([glyph("1"), Util.sqrt(""), glyph("2")]),
                     ),
                 );
+                expect(newState.cursor).toEqual({
+                    path: [1, RADICAND],
+                    prev: null,
+                    next: null,
+                });
             });
         });
 

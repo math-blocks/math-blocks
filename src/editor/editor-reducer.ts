@@ -1,4 +1,4 @@
-import produce from "immer";
+import produce, {original} from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
@@ -716,7 +716,7 @@ const root = (currentNode: HasChildren, draft: State): void => {
 
     const index = currentNode.children.indexOf(newNode);
     draft.cursor = {
-        path: [...cursor.path, index],
+        path: [...cursor.path, index, RADICAND],
         next: null,
         prev: null,
     };
@@ -893,6 +893,7 @@ const reducer = (state: State = initialState, action: Action): State => {
         const currentNode = Editor.nodeAtPath(math, cursor.path);
 
         if (!hasChildren(currentNode)) {
+            console.log(original(currentNode));
             throw new Error(
                 "currentNode can't be a glyph, fraction, sup, or sub",
             );

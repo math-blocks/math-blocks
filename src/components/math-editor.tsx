@@ -31,6 +31,10 @@ type Props = {
     style?: React.CSSProperties;
 };
 
+// The next/prev properties represent node ids instead of indices.
+// This simplifies the rendering of the cursor/selection.  This is
+// because layouts have more nodes than what appears in the editor
+// AST.
 type LayoutCursor = {
     parent: number;
     prev: number | null;
@@ -42,14 +46,13 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
     const parentNode = Editor.nodeAtPath(math, cursor.path);
 
-    if (!selectionStart) {
-        return {
-            parent: parentNode.id,
-            prev: cursor.prev,
-            next: cursor.next,
-            selection: false,
-        };
-    } else {
+    let result = {
+        parent: parentNode.id,
+        prev: cursor.prev,
+        next: cursor.next,
+        selection: false,
+    };
+    if (selectionStart) {
         const next =
             selectionStart.path.length > cursor.path.length
                 ? selectionStart.path[cursor.path.length] + 1
@@ -59,14 +62,14 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
                 ? selectionStart.path[cursor.path.length] - 1
                 : selectionStart.prev;
         if (next != null && next - 1 <= (cursor.prev || 0)) {
-            return {
+            result = {
                 parent: parentNode.id,
                 prev: prev,
                 next: cursor.next,
                 selection: true,
             };
         } else {
-            return {
+            result = {
                 parent: parentNode.id,
                 prev: cursor.prev,
                 next: next,
@@ -74,6 +77,18 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
             };
         }
     }
+
+    if (result.next != null) {
+        result.next =
+            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? null;
+    }
+
+    if (result.prev != null) {
+        result.prev =
+            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? null;
+    }
+
+    return result;
 };
 
 export const MathEditor: React.SFC<Props> = (props: Props) => {
