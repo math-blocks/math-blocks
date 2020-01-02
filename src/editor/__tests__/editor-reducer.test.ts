@@ -2280,4 +2280,168 @@ describe("reducer", () => {
             });
         });
     });
+
+    describe("selecting", () => {
+        test("starting from the left", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+            };
+
+            const action = {type: "ArrowRight", shift: true};
+
+            const newState = reducer(reducer(state, action), action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 1,
+                next: 2,
+            });
+            expect(newState.selectionStart).toEqual({
+                path: [],
+                prev: null,
+                next: 0,
+            });
+        });
+
+        test("starting from the right", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                },
+            };
+
+            const action = {type: "ArrowLeft", shift: true};
+
+            const newState = reducer(reducer(state, action), action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 0,
+                next: 1,
+            });
+            expect(newState.selectionStart).toEqual({
+                path: [],
+                prev: 2,
+                next: null,
+            });
+        });
+
+        test("starting from the right, ending in the left", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                },
+            };
+
+            const action = {type: "ArrowLeft"};
+
+            const newState = reducer(state, action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: null,
+                next: 0,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("starting from the right, ending in the right", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                },
+            };
+
+            const action = {type: "ArrowRight"};
+
+            const newState = reducer(state, action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 2,
+                next: null,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("starting from the left, ending in the left", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+            };
+
+            const action = {type: "ArrowLeft"};
+
+            const newState = reducer(state, action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: null,
+                next: 0,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("starting from the left, ending in the right", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: 2,
+                    next: null,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+            };
+
+            const action = {type: "ArrowRight"};
+
+            const newState = reducer(state, action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 2,
+                next: null,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        // TODO: write tests for selections starting in fractions
+    });
 });

@@ -1,4 +1,4 @@
-import produce, {original} from "immer";
+import produce from "immer";
 
 import * as Editor from "./editor";
 import {getId} from "../unique-id";
