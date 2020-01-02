@@ -6,6 +6,7 @@ import {getId} from "../unique-id";
 export type State = {
     math: Editor.Row<Editor.Glyph>;
     cursor: Editor.Cursor;
+    selectionStart?: Editor.Cursor;
 };
 
 const {row, glyph, frac} = Editor;
@@ -29,6 +30,7 @@ const initialState: State = {
         prev: null,
         next: 0,
     },
+    selectionStart: undefined,
 };
 
 type Identifiable = {readonly id: number};
@@ -97,6 +99,7 @@ const insertBeforeChildWithIndex = <T extends Identifiable>(
 const moveLeft = (
     currentNode: Editor.HasChildren<Editor.Glyph>,
     draft: State,
+    selecting?: boolean,
 ): Editor.Cursor => {
     const {cursor, math} = draft;
 
@@ -104,14 +107,14 @@ const moveLeft = (
     if (cursor.prev != null) {
         const {prev} = cursor;
         const prevNode = getChildWithIndex(currentNode.children, prev);
-        if (prevNode && prevNode.type === "root") {
+        if (prevNode && prevNode.type === "root" && !selecting) {
             const radicand = prevNode.children[0];
             return {
                 path: [...cursor.path, prev, RADICAND],
                 prev: lastIndex(radicand.children),
                 next: null,
             };
-        } else if (prevNode && prevNode.type === "frac") {
+        } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)
             const denominator = prevNode.children[1];
             return {
@@ -119,7 +122,7 @@ const moveLeft = (
                 prev: lastIndex(denominator.children),
                 next: null,
             };
-        } else if (prevNode && prevNode.type === "subsup") {
+        } else if (prevNode && prevNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = prevNode.children;
             if (sup) {
@@ -222,13 +225,17 @@ const moveLeft = (
     return cursor;
 };
 
-const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
+const moveRight = (
+    currentNode: HasChildren,
+    draft: State,
+    selecting?: boolean,
+): Editor.Cursor => {
     const {cursor, math} = draft;
     const {children} = currentNode;
     if (cursor.next != null) {
         const {next} = cursor;
         const nextNode = getChildWithIndex(currentNode.children, next);
-        if (nextNode && nextNode.type === "root") {
+        if (nextNode && nextNode.type === "root" && !selecting) {
             const radicand = nextNode.children[0];
             // TODO: handle navigating into the index
             return {
@@ -236,7 +243,7 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
                 prev: null,
                 next: firstIndex(radicand.children),
             };
-        } else if (nextNode && nextNode.type === "frac") {
+        } else if (nextNode && nextNode.type === "frac" && !selecting) {
             // enter fraction (numerator)
             const numerator = nextNode.children[0];
             return {
@@ -244,7 +251,7 @@ const moveRight = (currentNode: HasChildren, draft: State): Editor.Cursor => {
                 prev: null,
                 next: firstIndex(numerator.children),
             };
-        } else if (nextNode && nextNode.type === "subsup") {
+        } else if (nextNode && nextNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = nextNode.children;
             if (sub) {
@@ -709,7 +716,7 @@ const root = (currentNode: HasChildren, draft: State): void => {
 
     const index = currentNode.children.indexOf(newNode);
     draft.cursor = {
-        path: [...cursor.path, index],
+        path: [...cursor.path, index, RADICAND],
         next: null,
         prev: null,
     };
@@ -877,10 +884,9 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 };
 
-type Action = {type: string};
+type Action = {type: string; shift?: boolean};
 
 // TODO: check if cursor is valid before process action
-// TODO: insert both left/right parens when the user presses '('
 const reducer = (state: State = initialState, action: Action): State => {
     return produce(state, draft => {
         const {cursor, math} = draft;
@@ -897,11 +903,57 @@ const reducer = (state: State = initialState, action: Action): State => {
 
         switch (action.type) {
             case "ArrowLeft": {
-                draft.cursor = moveLeft(currentNode, draft);
+                if (!action.shift && draft.selectionStart) {
+                    const {selectionStart} = draft;
+                    const next =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length]
+                            : selectionStart.next;
+                    const prev =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length] - 1
+                            : selectionStart.prev;
+                    if (prev == null || (cursor.prev && prev < cursor.prev)) {
+                        draft.cursor = {
+                            ...draft.cursor,
+                            prev,
+                            next,
+                        };
+                    }
+                    draft.selectionStart = undefined;
+                } else {
+                    if (action.shift && !draft.selectionStart) {
+                        draft.selectionStart = {...draft.cursor};
+                    }
+                    draft.cursor = moveLeft(currentNode, draft, action.shift);
+                }
                 return;
             }
             case "ArrowRight": {
-                draft.cursor = moveRight(currentNode, draft);
+                if (!action.shift && draft.selectionStart) {
+                    const {selectionStart} = draft;
+                    const next =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length] + 1
+                            : selectionStart.next;
+                    const prev =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length]
+                            : selectionStart.prev;
+                    if (next == null || (cursor.next && next > cursor.next)) {
+                        draft.cursor = {
+                            ...draft.cursor,
+                            prev,
+                            next,
+                        };
+                    }
+                    draft.selectionStart = undefined;
+                } else {
+                    if (action.shift && !draft.selectionStart) {
+                        draft.selectionStart = {...draft.cursor};
+                    }
+                    draft.cursor = moveRight(currentNode, draft, action.shift);
+                }
                 return;
             }
             case "Backspace": {

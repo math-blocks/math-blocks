@@ -8,6 +8,7 @@ import fontMetrics from "../../metrics/comic-sans.json";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 import {State} from "../editor/editor-reducer";
+import {layoutCursorFromState} from "./util";
 
 import * as Editor from "../editor/editor";
 const {useEffect, useState, useRef} = React;
@@ -41,6 +42,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             prev: null,
             next: 0,
         },
+        selectionStart: undefined,
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -52,6 +54,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         if (active && !props.readonly) {
             const action = {
                 type: e.key,
+                shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
                 props.onSubmit(state.math);
@@ -72,37 +75,14 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         }
     });
 
-    const {math, cursor} = state;
+    const {math} = state;
     const {style} = props;
 
     const fontSize = 64;
     // $FlowFixMe: make typeset return a Box
     const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
 
-    // TODO: find id of nodes from the cursor and create a cursor that contains ids
-    // so that we can render the cursor properly.  The need for the change is that
-    // typesetting introduces additional nodes so we can't rely on the position like
-    // we did in the reducer.
-
-    type LayoutCursor = {
-        parent: number;
-        prev: number | null;
-        next: number | null;
-    };
-
-    const layoutCursor: LayoutCursor = {
-        parent: Editor.nodeAtPath(math, cursor.path).id,
-        prev:
-            cursor.prev != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.prev])?.id ??
-                  null
-                : null,
-        next:
-            cursor.next != null
-                ? Editor.nodeAtPath(math, [...cursor.path, cursor.next])?.id ??
-                  null
-                : null,
-    };
+    const layoutCursor = layoutCursorFromState(state);
 
     return (
         <div

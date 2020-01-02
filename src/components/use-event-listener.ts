@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 
 export default function useEventListener(
-    eventName: "keypress" | "keydown",
+    eventName: "keypress" | "keydown" | "keyup",
     handler: (event: KeyboardEvent) => void,
     element: WindowProxy = window,
 ): void {
