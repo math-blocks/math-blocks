@@ -893,7 +893,6 @@ const reducer = (state: State = initialState, action: Action): State => {
         const currentNode = Editor.nodeAtPath(math, cursor.path);
 
         if (!hasChildren(currentNode)) {
-            console.log(original(currentNode));
             throw new Error(
                 "currentNode can't be a glyph, fraction, sup, or sub",
             );
@@ -905,6 +904,22 @@ const reducer = (state: State = initialState, action: Action): State => {
         switch (action.type) {
             case "ArrowLeft": {
                 if (!action.shift && draft.selectionStart) {
+                    const {selectionStart} = draft;
+                    const next =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length]
+                            : selectionStart.next;
+                    const prev =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length] - 1
+                            : selectionStart.prev;
+                    if (prev == null || (cursor.prev && prev < cursor.prev)) {
+                        draft.cursor = {
+                            ...draft.cursor,
+                            prev,
+                            next,
+                        };
+                    }
                     draft.selectionStart = undefined;
                 } else {
                     if (action.shift && !draft.selectionStart) {
@@ -916,6 +931,22 @@ const reducer = (state: State = initialState, action: Action): State => {
             }
             case "ArrowRight": {
                 if (!action.shift && draft.selectionStart) {
+                    const {selectionStart} = draft;
+                    const next =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length] + 1
+                            : selectionStart.next;
+                    const prev =
+                        selectionStart.path.length > cursor.path.length
+                            ? selectionStart.path[cursor.path.length]
+                            : selectionStart.prev;
+                    if (next == null || (cursor.next && next > cursor.next)) {
+                        draft.cursor = {
+                            ...draft.cursor,
+                            prev,
+                            next,
+                        };
+                    }
                     draft.selectionStart = undefined;
                 } else {
                     if (action.shift && !draft.selectionStart) {
