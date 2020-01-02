@@ -85,6 +85,58 @@ describe("layoutCursorFromState", () => {
                 selection: true,
             });
         });
+
+        test("cursor left to the start of the row", () => {
+            const math = Util.row("1+2+3");
+            const state: State = {
+                math,
+                cursor: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                },
+            };
+
+            const layoutCursor = layoutCursorFromState(state);
+
+            expect(layoutCursor).toEqual({
+                parent: state.math.id,
+                prev: null,
+                next: math.children[1].id,
+                selection: true,
+            });
+        });
+
+        test("cursor right to the start of the row", () => {
+            const math = Util.row("1+2+3");
+            const state: State = {
+                math,
+                cursor: {
+                    path: [],
+                    prev: 4,
+                    next: null,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: 3,
+                    next: 4,
+                },
+            };
+
+            const layoutCursor = layoutCursorFromState(state);
+
+            expect(layoutCursor).toEqual({
+                parent: state.math.id,
+                prev: math.children[3].id,
+                next: null,
+                selection: true,
+            });
+        });
     });
 
     describe("frac", () => {

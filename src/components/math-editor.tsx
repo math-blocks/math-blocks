@@ -61,7 +61,7 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
             selectionStart.path.length > cursor.path.length
                 ? selectionStart.path[cursor.path.length] - 1
                 : selectionStart.prev;
-        if (next != null && next - 1 <= (cursor.prev || 0)) {
+        if (next != null && cursor.prev != null && next <= cursor.prev + 1) {
             result = {
                 parent: parentNode.id,
                 prev: prev,
