@@ -38,7 +38,7 @@ type LayoutCursor = {
     selection: boolean;
 };
 
-const layoutCursorFromState = (state: State): LayoutCursor => {
+export const layoutCursorFromState = (state: State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
     const parentNode = Editor.nodeAtPath(math, cursor.path);
 
@@ -50,13 +50,18 @@ const layoutCursorFromState = (state: State): LayoutCursor => {
             selection: false,
         };
     } else {
-        if (
-            selectionStart.next != null &&
-            selectionStart.next <= (cursor.prev || 0)
-        ) {
+        const next =
+            selectionStart.path.length > cursor.path.length
+                ? selectionStart.path[cursor.path.length] + 1
+                : selectionStart.next;
+        const prev =
+            selectionStart.path.length > cursor.path.length
+                ? selectionStart.path[cursor.path.length] - 1
+                : selectionStart.prev;
+        if (next != null && next - 1 <= (cursor.prev || 0)) {
             return {
                 parent: parentNode.id,
-                prev: selectionStart.prev,
+                prev: prev,
                 next: cursor.next,
                 selection: true,
             };
@@ -64,7 +69,7 @@ const layoutCursorFromState = (state: State): LayoutCursor => {
             return {
                 parent: parentNode.id,
                 prev: cursor.prev,
-                next: selectionStart.next,
+                next: next,
                 selection: true,
             };
         }
