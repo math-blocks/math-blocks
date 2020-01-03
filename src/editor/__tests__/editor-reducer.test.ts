@@ -474,6 +474,62 @@ describe("reducer", () => {
                     next: null,
                 });
             });
+
+            test("at the start of a row inserts an empty fraction", () => {
+                const math = Util.row("1=2");
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([
+                            Util.frac("", ""),
+                            glyph("1"),
+                            glyph("="),
+                            glyph("2"),
+                        ]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [0, NUMERATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("after a split char", () => {
+                const math = Util.row("1=2");
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "/"});
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(
+                        row([
+                            glyph("1"),
+                            glyph("="),
+                            Util.frac("", ""),
+                            glyph("2"),
+                        ]),
+                    ),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [2, NUMERATOR],
+                    prev: null,
+                    next: null,
+                });
+            });
         });
 
         describe("root", () => {

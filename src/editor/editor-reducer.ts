@@ -613,12 +613,9 @@ const selectionSlash = (currentNode: HasChildren, draft: State): void => {
         selectionStart,
     );
 
-    const newNode: Editor.Node<Editor.Glyph> = frac(body, []);
-
-    currentNode.children = [...head, newNode, ...tail];
-    const index = currentNode.children.indexOf(newNode);
+    currentNode.children = [...head, frac(body, []), ...tail];
     draft.cursor = {
-        path: [...cursor.path, index, DENOMINATOR],
+        path: [...cursor.path, head.length, DENOMINATOR],
         next: null,
         prev: null,
     };
@@ -627,7 +624,17 @@ const selectionSlash = (currentNode: HasChildren, draft: State): void => {
 
 const slash = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
-    const {next} = cursor;
+    const {prev, next} = cursor;
+
+    if (prev === null) {
+        currentNode.children = [frac([], []), ...currentNode.children];
+        draft.cursor = {
+            path: [...cursor.path, 0, NUMERATOR],
+            next: null,
+            prev: null,
+        };
+        return;
+    }
 
     const splitChars = [
         "+",
@@ -641,7 +648,7 @@ const slash = (currentNode: HasChildren, draft: State): void => {
     ];
 
     const endIndex = next == null ? currentNode.children.length : next;
-    let startIndex = endIndex - 1;
+    let startIndex = endIndex;
     while (startIndex > 0) {
         const prevChild = currentNode.children[startIndex - 1];
         if (
@@ -653,32 +660,17 @@ const slash = (currentNode: HasChildren, draft: State): void => {
         startIndex--;
     }
 
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const numeratorChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
+    const head = currentNode.children.slice(0, startIndex);
+    const body = currentNode.children.slice(startIndex, endIndex);
+    const tail = currentNode.children.slice(endIndex);
 
-    const newNode: Editor.Node<Editor.Glyph> = {
-        id: getId(),
-        type: "frac",
-        children: [
-            {
-                id: getId(),
-                type: "row",
-                children: numeratorChildren,
-            },
-            {
-                id: getId(),
-                type: "row",
-                children: [],
-            },
-        ],
-    };
-
-    currentNode.children = [...headChildren, newNode, ...tailChildren];
-
-    const index = currentNode.children.indexOf(newNode);
+    currentNode.children = [...head, frac(body, []), ...tail];
     draft.cursor = {
-        path: [...cursor.path, index, DENOMINATOR],
+        path: [
+            ...cursor.path,
+            head.length,
+            body.length === 0 ? NUMERATOR : DENOMINATOR,
+        ],
         next: null,
         prev: null,
     };
