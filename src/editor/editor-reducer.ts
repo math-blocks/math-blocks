@@ -96,6 +96,31 @@ const insertBeforeChildWithIndex = <T extends Identifiable>(
         : [...children.slice(0, index), newChild, ...children.slice(index)];
 };
 
+const getSelectionBounds = (
+    cursor: Editor.Cursor,
+    selectionStart: Editor.Cursor,
+): {prev: number | null; next: number | null} => {
+    const next =
+        selectionStart.path.length > cursor.path.length
+            ? selectionStart.path[cursor.path.length] + 1
+            : selectionStart.next;
+    const prev =
+        selectionStart.path.length > cursor.path.length
+            ? selectionStart.path[cursor.path.length] - 1
+            : selectionStart.prev;
+    if (next != null && cursor.prev != null && next <= cursor.prev + 1) {
+        return {
+            prev: prev,
+            next: cursor.next,
+        };
+    } else {
+        return {
+            prev: cursor.prev,
+            next: next,
+        };
+    }
+};
+
 const moveLeft = (
     currentNode: Editor.HasChildren<Editor.Glyph>,
     draft: State,
@@ -356,6 +381,29 @@ const moveRight = (
     return cursor;
 };
 
+const selectionBackspace = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    currentNode.children = [...headChildren, ...tailChildren];
+    draft.cursor = {
+        path: cursor.path,
+        prev: headChildren.length == 0 ? null : headChildren.length - 1,
+        next: tailChildren.length == 0 ? null : headChildren.length,
+    };
+    draft.selectionStart = undefined;
+};
+
 const backspace = (currentNode: HasChildren, draft: State): void => {
     const {cursor, math} = draft;
 
@@ -534,6 +582,48 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
     }
 };
 
+const selectionSlash = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const numeratorChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    const newNode: Editor.Node<Editor.Glyph> = {
+        id: getId(),
+        type: "frac",
+        children: [
+            {
+                id: getId(),
+                type: "row",
+                children: numeratorChildren,
+            },
+            {
+                id: getId(),
+                type: "row",
+                children: [],
+            },
+        ],
+    };
+
+    currentNode.children = [...headChildren, newNode, ...tailChildren];
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index, DENOMINATOR],
+        next: null,
+        prev: null,
+    };
+    draft.selectionStart = undefined;
+};
+
 const slash = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
@@ -593,6 +683,44 @@ const slash = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
+const selectionCaret = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const supChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    const newNode: Editor.Node<Editor.Glyph> = {
+        id: getId(),
+        type: "subsup",
+        children: [
+            null,
+            {
+                id: getId(),
+                type: "row",
+                children: supChildren,
+            },
+        ],
+    };
+
+    currentNode.children = [...headChildren, newNode, ...tailChildren];
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index, SUP],
+        next: null,
+        prev: supChildren.length > 0 ? supChildren.length - 1 : null,
+    };
+    draft.selectionStart = undefined;
+};
+
 const caret = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
@@ -641,6 +769,44 @@ const caret = (currentNode: HasChildren, draft: State): void => {
         next: null,
         prev: null,
     };
+};
+
+const selectionUnderscore = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const subChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    const newNode: Editor.Node<Editor.Glyph> = {
+        id: getId(),
+        type: "subsup",
+        children: [
+            {
+                id: getId(),
+                type: "row",
+                children: subChildren,
+            },
+            null,
+        ],
+    };
+
+    currentNode.children = [...headChildren, newNode, ...tailChildren];
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index, SUB],
+        next: null,
+        prev: subChildren.length > 0 ? subChildren.length - 1 : null,
+    };
+    draft.selectionStart = undefined;
 };
 
 const underscore = (currentNode: HasChildren, draft: State): void => {
@@ -693,6 +859,44 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
+const selectionRoot = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const radicandChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    const newNode: Editor.Node<Editor.Glyph> = {
+        id: getId(),
+        type: "root",
+        children: [
+            {
+                id: getId(),
+                type: "row",
+                children: radicandChildren,
+            },
+            null, // Index
+        ],
+    };
+
+    currentNode.children = [...headChildren, newNode, ...tailChildren];
+    const index = currentNode.children.indexOf(newNode);
+    draft.cursor = {
+        path: [...cursor.path, index, RADICAND],
+        next: null,
+        prev: radicandChildren.length > 0 ? radicandChildren.length - 1 : null,
+    };
+    draft.selectionStart = undefined;
+};
+
 const root = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
@@ -720,6 +924,45 @@ const root = (currentNode: HasChildren, draft: State): void => {
         next: null,
         prev: null,
     };
+};
+
+const insertChar = (
+    currentNode: HasChildren,
+    draft: State,
+    char: string,
+): void => {
+    const newNode = glyph(char);
+    const {cursor, selectionStart} = draft;
+
+    if (selectionStart) {
+        const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+        const startIndex = prev != null ? prev + 1 : 0;
+        const endIndex = next == null ? currentNode.children.length : next;
+
+        const headChildren = currentNode.children.slice(0, startIndex);
+        const tailChildren = currentNode.children.slice(endIndex);
+
+        currentNode.children = [...headChildren, newNode, ...tailChildren];
+        const index = currentNode.children.indexOf(newNode);
+        draft.cursor = {
+            path: [...cursor.path],
+            next: index < currentNode.children.length - 1 ? index + 1 : null,
+            prev: index,
+        };
+        draft.selectionStart = undefined;
+    } else {
+        const {next} = cursor;
+
+        draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
+        draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+
+        currentNode.children = insertBeforeChildWithIndex(
+            currentNode.children,
+            next,
+            newNode,
+        );
+    }
 };
 
 // TODO: handle inserting parens at the end of a row
@@ -898,9 +1141,6 @@ const reducer = (state: State = initialState, action: Action): State => {
             );
         }
 
-        let newNode: Editor.Node<Editor.Glyph>;
-        const {next} = cursor;
-
         switch (action.type) {
             case "ArrowLeft": {
                 if (!action.shift && draft.selectionStart) {
@@ -957,23 +1197,43 @@ const reducer = (state: State = initialState, action: Action): State => {
                 return;
             }
             case "Backspace": {
-                backspace(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionBackspace(currentNode, draft);
+                } else {
+                    backspace(currentNode, draft);
+                }
                 return;
             }
             case "/": {
-                slash(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionSlash(currentNode, draft);
+                } else {
+                    slash(currentNode, draft);
+                }
                 return;
             }
             case "^": {
-                caret(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionCaret(currentNode, draft);
+                } else {
+                    caret(currentNode, draft);
+                }
                 return;
             }
             case "_": {
-                underscore(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionUnderscore(currentNode, draft);
+                } else {
+                    underscore(currentNode, draft);
+                }
                 return;
             }
             case "\u221A": {
-                root(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionRoot(currentNode, draft);
+                } else {
+                    root(currentNode, draft);
+                }
                 return;
             }
             case "(": {
@@ -984,55 +1244,23 @@ const reducer = (state: State = initialState, action: Action): State => {
                 rightParens(currentNode, draft);
                 return;
             }
-            case "-": {
-                newNode = {
-                    id: getId(),
-                    type: "atom",
-                    value: {
-                        kind: "glyph",
-                        char: "\u2212",
-                    },
-                };
-                draft.cursor.next =
-                    cursor.next != null ? cursor.next + 1 : null;
-                draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
-                break;
-            }
-            case "*": {
-                newNode = {
-                    id: getId(),
-                    type: "atom",
-                    value: {
-                        kind: "glyph",
-                        char: "\u00B7",
-                    },
-                };
-                draft.cursor.next =
-                    cursor.next != null ? cursor.next + 1 : null;
-                draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
-                break;
-            }
             default: {
                 if (
                     action.type.length === 1 &&
                     action.type.charCodeAt(0) >= 32
                 ) {
-                    newNode = glyph(action.type);
-                    draft.cursor.next =
-                        cursor.next != null ? cursor.next + 1 : null;
-                    draft.cursor.prev =
-                        cursor.prev != null ? cursor.prev + 1 : 0;
+                    let char = action.type;
+                    if (char === "*") {
+                        char = "\u00B7";
+                    } else if (char === "-") {
+                        char = "\u2212";
+                    }
+                    insertChar(currentNode, draft, char);
                     break;
                 }
                 return;
             }
         }
-
-        currentNode.children = insertBeforeChildWithIndex(
-            currentNode.children,
-            next,
-            newNode,
-        );
     });
 };
 
