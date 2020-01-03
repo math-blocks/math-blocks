@@ -9,7 +9,7 @@ export type State = {
     selectionStart?: Editor.Cursor;
 };
 
-const {row, glyph, frac} = Editor;
+const {row, glyph, frac, subsup} = Editor;
 
 const SUB = 0;
 const SUP = 1;
@@ -119,6 +119,31 @@ const getSelectionBounds = (
             next: next,
         };
     }
+};
+
+const selectionSplit = (
+    currentNode: HasChildren,
+    cursor: Editor.Cursor,
+    selectionStart: Editor.Cursor,
+): {
+    head: Editor.Node<Editor.Glyph>[];
+    body: Editor.Node<Editor.Glyph>[];
+    tail: Editor.Node<Editor.Glyph>[];
+} => {
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const head = currentNode.children.slice(0, startIndex);
+    const body = currentNode.children.slice(startIndex, endIndex);
+    const tail = currentNode.children.slice(endIndex);
+
+    return {
+        head,
+        body,
+        tail,
+    };
 };
 
 const moveLeft = (
@@ -387,19 +412,13 @@ const selectionBackspace = (currentNode: HasChildren, draft: State): void => {
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, tail} = selectionSplit(currentNode, cursor, selectionStart);
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
-
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    currentNode.children = [...headChildren, ...tailChildren];
+    currentNode.children = [...head, ...tail];
     draft.cursor = {
         path: cursor.path,
-        prev: headChildren.length == 0 ? null : headChildren.length - 1,
-        next: tailChildren.length == 0 ? null : headChildren.length,
+        prev: head.length == 0 ? null : head.length - 1,
+        next: tail.length == 0 ? null : head.length,
     };
     draft.selectionStart = undefined;
 };
@@ -588,33 +607,15 @@ const selectionSlash = (currentNode: HasChildren, draft: State): void => {
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
+    const newNode: Editor.Node<Editor.Glyph> = frac(body, []);
 
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const numeratorChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    const newNode: Editor.Node<Editor.Glyph> = {
-        id: getId(),
-        type: "frac",
-        children: [
-            {
-                id: getId(),
-                type: "row",
-                children: numeratorChildren,
-            },
-            {
-                id: getId(),
-                type: "row",
-                children: [],
-            },
-        ],
-    };
-
-    currentNode.children = [...headChildren, newNode, ...tailChildren];
+    currentNode.children = [...head, newNode, ...tail];
     const index = currentNode.children.indexOf(newNode);
     draft.cursor = {
         path: [...cursor.path, index, DENOMINATOR],
@@ -689,34 +690,17 @@ const selectionCaret = (currentNode: HasChildren, draft: State): void => {
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
-
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const supChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    const newNode: Editor.Node<Editor.Glyph> = {
-        id: getId(),
-        type: "subsup",
-        children: [
-            null,
-            {
-                id: getId(),
-                type: "row",
-                children: supChildren,
-            },
-        ],
-    };
-
-    currentNode.children = [...headChildren, newNode, ...tailChildren];
-    const index = currentNode.children.indexOf(newNode);
+    currentNode.children = [...head, subsup(undefined, body), ...tail];
     draft.cursor = {
-        path: [...cursor.path, index, SUP],
+        path: [...cursor.path, head.length, SUP],
         next: null,
-        prev: supChildren.length > 0 ? supChildren.length - 1 : null,
+        prev: body.length > 0 ? body.length - 1 : null,
     };
     draft.selectionStart = undefined;
 };
@@ -777,34 +761,17 @@ const selectionUnderscore = (currentNode: HasChildren, draft: State): void => {
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
-
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const subChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    const newNode: Editor.Node<Editor.Glyph> = {
-        id: getId(),
-        type: "subsup",
-        children: [
-            {
-                id: getId(),
-                type: "row",
-                children: subChildren,
-            },
-            null,
-        ],
-    };
-
-    currentNode.children = [...headChildren, newNode, ...tailChildren];
-    const index = currentNode.children.indexOf(newNode);
+    currentNode.children = [...head, subsup(body, undefined), ...tail];
     draft.cursor = {
-        path: [...cursor.path, index, SUB],
+        path: [...cursor.path, head.length, SUB],
         next: null,
-        prev: subChildren.length > 0 ? subChildren.length - 1 : null,
+        prev: body.length > 0 ? body.length - 1 : null,
     };
     draft.selectionStart = undefined;
 };
@@ -865,34 +832,17 @@ const selectionRoot = (currentNode: HasChildren, draft: State): void => {
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
-
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const radicandChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    const newNode: Editor.Node<Editor.Glyph> = {
-        id: getId(),
-        type: "root",
-        children: [
-            {
-                id: getId(),
-                type: "row",
-                children: radicandChildren,
-            },
-            null, // Index
-        ],
-    };
-
-    currentNode.children = [...headChildren, newNode, ...tailChildren];
-    const index = currentNode.children.indexOf(newNode);
+    currentNode.children = [...head, Editor.root(body, null), ...tail];
     draft.cursor = {
-        path: [...cursor.path, index, RADICAND],
+        path: [...cursor.path, head.length, RADICAND],
         next: null,
-        prev: radicandChildren.length > 0 ? radicandChildren.length - 1 : null,
+        prev: body.length > 0 ? body.length - 1 : null,
     };
     draft.selectionStart = undefined;
 };
@@ -935,16 +885,14 @@ const insertChar = (
     const {cursor, selectionStart} = draft;
 
     if (selectionStart) {
-        const {prev, next} = getSelectionBounds(cursor, selectionStart);
+        const {head, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
 
-        const startIndex = prev != null ? prev + 1 : 0;
-        const endIndex = next == null ? currentNode.children.length : next;
-
-        const headChildren = currentNode.children.slice(0, startIndex);
-        const tailChildren = currentNode.children.slice(endIndex);
-
-        currentNode.children = [...headChildren, newNode, ...tailChildren];
-        const index = currentNode.children.indexOf(newNode);
+        currentNode.children = [...head, newNode, ...tail];
+        const index = head.length;
         draft.cursor = {
             path: [...cursor.path],
             next: index < currentNode.children.length - 1 ? index + 1 : null,
@@ -980,27 +928,16 @@ const selectionParens = (
         return;
     }
 
-    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
-
-    const headChildren = currentNode.children.slice(0, startIndex);
-    const parensChildren = currentNode.children.slice(startIndex, endIndex);
-    const tailChildren = currentNode.children.slice(endIndex);
-
-    currentNode.children = [
-        ...headChildren,
-        glyph("("),
-        ...parensChildren,
-        glyph(")"),
-        ...tailChildren,
-    ];
+    currentNode.children = [...head, glyph("("), ...body, glyph(")"), ...tail];
 
     let newNext: number | null =
-        paren == Paren.Left
-            ? headChildren.length + 1
-            : headChildren.length + parensChildren.length + 2;
+        paren == Paren.Left ? head.length + 1 : head.length + body.length + 2;
 
     // We only need to do this check for newNext since the cursor
     // will appear after the parens.  If the parens are at the end
@@ -1010,9 +947,7 @@ const selectionParens = (
     }
 
     const newPrev =
-        paren == Paren.Left
-            ? headChildren.length
-            : headChildren.length + parensChildren.length + 1;
+        paren == Paren.Left ? head.length : head.length + body.length + 1;
 
     draft.cursor = {
         path: cursor.path,
