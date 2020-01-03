@@ -2444,4 +2444,398 @@ describe("reducer", () => {
 
         // TODO: write tests for selections starting in fractions
     });
+
+    describe("manipulating a selection", () => {
+        test("'/' creates a frac with the selection as numerator", () => {
+            const math = Util.row("1+2+3");
+            const selectionStart = {
+                path: [],
+                prev: 1,
+                next: 2,
+            };
+            const cursor = {
+                path: [],
+                next: null,
+                prev: 4,
+            };
+
+            const state: State = {
+                math,
+                cursor,
+                selectionStart,
+            };
+            const action = {type: "/"};
+
+            const newState = reducer(state, action);
+
+            expect(Editor.stripIDs(newState.math)).toEqual(
+                Editor.stripIDs(
+                    row([glyph("1"), glyph("+"), Util.frac("2+3", "")]),
+                ),
+            );
+            expect(newState.cursor).toEqual({
+                path: [2, DENOMINATOR],
+                prev: null,
+                next: null,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        describe("backspace", () => {
+            test("deleting the tail of a row", () => {
+                const math = Util.row("1+2+3");
+                const selectionStart = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 4,
+                    next: null,
+                };
+
+                const state: State = {
+                    math,
+                    cursor,
+                    selectionStart,
+                };
+                const action = {type: "Backspace"};
+
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1+")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: null,
+                });
+                expect(newState.selectionStart).toBe(undefined);
+            });
+
+            test("deleting the head of a row", () => {
+                const math = Util.row("1+2+3");
+                const selectionStart = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {
+                    math,
+                    cursor,
+                    selectionStart,
+                };
+                const action = {type: "Backspace"};
+
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("2+3")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
+                    next: 0,
+                });
+                expect(newState.selectionStart).toBe(undefined);
+            });
+
+            test("deleting in the middle", () => {
+                const math = Util.row("1+2+3");
+                const selectionStart = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 3,
+                    next: 4,
+                };
+
+                const state: State = {
+                    math,
+                    cursor,
+                    selectionStart,
+                };
+                const action = {type: "Backspace"};
+
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("13")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+                expect(newState.selectionStart).toBe(undefined);
+            });
+        });
+
+        test("inserting a new character in the middle", () => {
+            const math = Util.row("1+2+3");
+            const selectionStart = {
+                path: [],
+                prev: 0,
+                next: 1,
+            };
+            const cursor = {
+                path: [],
+                prev: 3,
+                next: 4,
+            };
+
+            const state: State = {
+                math,
+                cursor,
+                selectionStart,
+            };
+            const action = {type: "2"};
+
+            const newState = reducer(state, action);
+
+            expect(Editor.stripIDs(newState.math)).toEqual(
+                Editor.stripIDs(Util.row("123")),
+            );
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 1,
+                next: 2,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("making a selection a superscript", () => {
+            const math = Util.row("ex+y");
+            const selectionStart = {
+                path: [],
+                prev: 0,
+                next: 1,
+            };
+            const cursor = {
+                path: [],
+                prev: 3,
+                next: null,
+            };
+
+            const state: State = {
+                math,
+                cursor,
+                selectionStart,
+            };
+            const action = {type: "^"};
+
+            const newState = reducer(state, action);
+
+            expect(Editor.stripIDs(newState.math)).toEqual(
+                Editor.stripIDs(row([glyph("e"), Util.sup("x+y")])),
+            );
+            expect(newState.cursor).toEqual({
+                path: [1, SUP],
+                prev: 2,
+                next: null,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("making a selection a subscript", () => {
+            const math = Util.row("an+1");
+            const selectionStart = {
+                path: [],
+                prev: 0,
+                next: 1,
+            };
+            const cursor = {
+                path: [],
+                prev: 3,
+                next: null,
+            };
+
+            const state: State = {
+                math,
+                cursor,
+                selectionStart,
+            };
+            const action = {type: "_"};
+
+            const newState = reducer(state, action);
+
+            // TODO: write better matchers
+            expect(Editor.stripIDs(newState.math)).toEqual(
+                Editor.stripIDs(row([glyph("a"), Util.sub("n+1")])),
+            );
+            // e.g. toHaveCursorAtEndOf("sub");
+            expect(newState.cursor).toEqual({
+                path: [1, SUB],
+                prev: 2,
+                next: null,
+            });
+            // e.g. not.toHaveSelection()
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        test("making a selection a square root", () => {
+            const math = Util.row("2x+5");
+            const selectionStart = {
+                path: [],
+                prev: 0,
+                next: 1,
+            };
+            const cursor = {
+                path: [],
+                prev: 3,
+                next: null,
+            };
+
+            const state: State = {
+                math,
+                cursor,
+                selectionStart,
+            };
+            const action = {type: "\u221A"};
+
+            const newState = reducer(state, action);
+
+            // TODO: write better matchers
+            expect(Editor.stripIDs(newState.math)).toEqual(
+                Editor.stripIDs(row([glyph("2"), Util.sqrt("x+5")])),
+            );
+            // e.g. toHaveCursorAtEndOf("sub");
+            expect(newState.cursor).toEqual({
+                path: [1, RADICAND],
+                prev: 2,
+                next: null,
+            });
+            // e.g. not.toHaveSelection()
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
+        describe("parens", () => {
+            describe("inserting with '('", () => {
+                test("from the start", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: "("};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("(1+2)+3")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    });
+                });
+
+                test("at the end", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: "("};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("1+(2+3)")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    });
+                });
+            });
+
+            describe("inserting with ')'", () => {
+                test("from the start", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: ")"};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("(1+2)+3")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 4,
+                        next: 5,
+                    });
+                });
+
+                test("at the end", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: ")"};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("1+(2+3)")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 6,
+                        next: null,
+                    });
+                });
+            });
+        });
+    });
 });
