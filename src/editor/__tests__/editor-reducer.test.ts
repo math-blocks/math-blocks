@@ -2719,5 +2719,123 @@ describe("reducer", () => {
             // e.g. not.toHaveSelection()
             expect(newState.selectionStart).toBe(undefined);
         });
+
+        describe("parens", () => {
+            describe("inserting with '('", () => {
+                test("from the start", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: "("};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("(1+2)+3")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    });
+                });
+
+                test("at the end", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: "("};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("1+(2+3)")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    });
+                });
+            });
+
+            describe("inserting with ')'", () => {
+                test("from the start", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: ")"};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("(1+2)+3")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 4,
+                        next: 5,
+                    });
+                });
+
+                test("at the end", () => {
+                    const math = Util.row("1+2+3");
+                    const cursor = {
+                        path: [],
+                        prev: 4,
+                        next: null,
+                    };
+                    const selectionStart = {
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    };
+
+                    const state: State = {math, cursor, selectionStart};
+                    const action = {type: ")"};
+
+                    const newState = reducer(state, action);
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(Util.row("1+(2+3)")),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 6,
+                        next: null,
+                    });
+                });
+            });
+        });
     });
 });

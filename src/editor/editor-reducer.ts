@@ -965,6 +965,63 @@ const insertChar = (
     }
 };
 
+enum Paren {
+    Left,
+    Right,
+}
+
+const selectionParens = (
+    currentNode: HasChildren,
+    draft: State,
+    paren: Paren,
+): void => {
+    const {cursor, selectionStart} = draft;
+    if (!selectionStart) {
+        return;
+    }
+
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev != null ? prev + 1 : 0;
+    const endIndex = next == null ? currentNode.children.length : next;
+
+    const headChildren = currentNode.children.slice(0, startIndex);
+    const parensChildren = currentNode.children.slice(startIndex, endIndex);
+    const tailChildren = currentNode.children.slice(endIndex);
+
+    currentNode.children = [
+        ...headChildren,
+        glyph("("),
+        ...parensChildren,
+        glyph(")"),
+        ...tailChildren,
+    ];
+
+    let newNext: number | null =
+        paren == Paren.Left
+            ? headChildren.length + 1
+            : headChildren.length + parensChildren.length + 2;
+
+    // We only need to do this check for newNext since the cursor
+    // will appear after the parens.  If the parens are at the end
+    // of the row then newNext should be null.
+    if (newNext > currentNode.children.length - 1) {
+        newNext = null;
+    }
+
+    const newPrev =
+        paren == Paren.Left
+            ? headChildren.length
+            : headChildren.length + parensChildren.length + 1;
+
+    draft.cursor = {
+        path: cursor.path,
+        next: newNext,
+        prev: newPrev,
+    };
+    draft.selectionStart = undefined;
+};
+
 // TODO: handle inserting parens at the end of a row
 const leftParens = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
@@ -1237,11 +1294,19 @@ const reducer = (state: State = initialState, action: Action): State => {
                 return;
             }
             case "(": {
-                leftParens(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionParens(currentNode, draft, Paren.Left);
+                } else {
+                    leftParens(currentNode, draft);
+                }
                 return;
             }
             case ")": {
-                rightParens(currentNode, draft);
+                if (draft.selectionStart) {
+                    selectionParens(currentNode, draft, Paren.Right);
+                } else {
+                    rightParens(currentNode, draft);
+                }
                 return;
             }
             default: {
