@@ -177,6 +177,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 typesetChildren(_typeset, node.children[0].children), // radicand
                 multiplier,
             );
+            radicand.id = node.children[0].id;
             const Eheight = 50;
             radicand.width = Math.max(radicand.width, 30 * multiplier);
             radicand.height = Math.max(radicand.height, Eheight * multiplier);

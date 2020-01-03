@@ -53,6 +53,8 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const showCursor = cursor && cursor.parent === box.id;
     const selection = cursor && cursor.selection;
 
+    console.log(`HBox.id = ${box.id}`);
+
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;
 
@@ -161,7 +163,14 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         }
     }
 
-    return <g transform={`translate(${x},${y})`}>{result}</g>;
+    return (
+        <g
+            id={box.id != undefined ? String(box.id) : undefined}
+            transform={`translate(${x},${y})`}
+        >
+            {result}
+        </g>
+    );
 };
 
 const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
@@ -220,7 +229,14 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         return result;
     });
 
-    return <g transform={`translate(${x},${y})`}>{result}</g>;
+    return (
+        <g
+            id={box.id != undefined ? String(box.id) : undefined}
+            transform={`translate(${x},${y})`}
+        >
+            {result}
+        </g>
+    );
 };
 
 const Box: React.SFC<BoxProps> = props => {
