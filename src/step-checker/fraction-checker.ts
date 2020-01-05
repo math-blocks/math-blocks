@@ -413,7 +413,7 @@ class FractionChecker {
                 ? [
                       {
                           message: "multiplying fractions",
-                          nodes: [],
+                          nodes: [prev, newPrev],
                       },
                       ...result.reasons,
                   ]

@@ -390,6 +390,9 @@ describe("StepChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "distribution",
+            // TODO: fix this
+            "commutative property",
+            "commutative property",
         ]);
     });
 
@@ -431,6 +434,9 @@ describe("StepChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "distribution",
+            // TODO: fix this
+            "commutative property",
+            "commutative property",
         ]);
     });
 

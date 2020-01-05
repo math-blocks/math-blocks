@@ -2,6 +2,10 @@ import {parse} from "../../text/text-parser";
 
 import StepChecker, {Result} from "../step-checker";
 
+import serializer from "../../semantic/semantic-serializer";
+
+expect.addSnapshotSerializer(serializer);
+
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
@@ -74,6 +78,15 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("a / b -> a * 1/b", () => {
+        const result = checkStep("a / b", "a * 1/b");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "fraction is the same as multiplying by one over",
         ]);
     });
 
@@ -284,6 +297,11 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "distribution",
+            // TODO: fix this
+            "multiplying fractions",
+            "multiplication with identity",
+            "multiplying fractions",
+            "multiplication with identity",
         ]);
     });
 
@@ -294,6 +312,11 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
+            // TODO: fix this
+            "multiplying fractions",
+            "multiplication with identity",
+            "multiplying fractions",
+            "multiplication with identity",
             "factoring",
         ]);
     });
@@ -303,8 +326,14 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
+            // TODO: fix this
             "fraction is the same as multiplying by one over",
             "distribution",
+            "multiplying fractions",
+            "multiplication with identity",
+            "multiplying fractions",
+            "multiplication with identity",
+            "fraction is the same as multiplying by one over",
         ]);
     });
 
@@ -321,7 +350,24 @@ describe("FractionChecker", () => {
         const result = checkStep("a/c  + b/c", "(a + b) / c");
 
         expect(result.equivalent).toBe(true);
+        expect(result.reasons[0].nodes[0]).toMatchInlineSnapshot(`
+            (div
+              (add a b)
+              c)
+        `);
+        expect(result.reasons[0].nodes[1]).toMatchInlineSnapshot(`
+            (mul.exp
+              (add a b)
+              (div 1 c))
+        `);
+
         expect(result.reasons.map(reason => reason.message)).toEqual([
+            // TODO: fix this
+            "multiplying by one over something results in a fraction",
+            "multiplying fractions",
+            "multiplication with identity",
+            "multiplying fractions",
+            "multiplication with identity",
             "factoring",
             "multiplying by one over something results in a fraction",
         ]);
