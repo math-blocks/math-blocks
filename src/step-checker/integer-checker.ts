@@ -40,7 +40,7 @@ class IntegerChecker {
                 const b = terms[j];
                 // TODO: add a sub-step in the subtraction case
                 if (isNegative(b) || isSubtraction(b)) {
-                    const result = checker.checkStep(a, b.args[0], reasons);
+                    const result = checker.checkStep(a, b.arg, reasons);
                     if (result.equivalent) {
                         // TODO: capture the reasons and include them down below
                         indicesToRemove.add(i);
@@ -97,8 +97,8 @@ class IntegerChecker {
             [prev, next] = [next, prev];
         }
         const {checker} = this;
-        if (isNegative(prev) && isNegative(prev.args[0])) {
-            const newPrev = prev.args[0].args[0];
+        if (isNegative(prev) && isNegative(prev.arg)) {
+            const newPrev = prev.arg.arg;
             const result = reverse
                 ? checker.checkStep(next, newPrev, reasons)
                 : checker.checkStep(newPrev, next, reasons);
@@ -151,13 +151,13 @@ class IntegerChecker {
                 // Either the corresponding arg in the next add node must be
                 // negative or the sub node must contain a negative.
                 // a - b -> a + -b or a - -b -> a + b
-                if (!isNegative(next.args[index]) && !isNegative(sub.args[0])) {
+                if (!isNegative(next.args[index]) && !isNegative(sub.arg)) {
                     continue;
                 }
 
                 const newPrev = Arithmetic.add([
                     ...prev.args.slice(0, index),
-                    Arithmetic.neg(sub.args[0]),
+                    Arithmetic.neg(sub.arg),
                     ...prev.args.slice(index + 1),
                 ]);
 
@@ -207,11 +207,11 @@ class IntegerChecker {
         }
         if (
             prev.type === "neg" && // exclude -1 to avoid an infinite expansion
-            !(prev.args[0].type == "number" && prev.args[0].value == "1")
+            !(prev.arg.type == "number" && prev.arg.value == "1")
         ) {
             const newPrev = Arithmetic.mul([
                 Arithmetic.neg(Arithmetic.num(1)),
-                ...Arithmetic.getFactors(prev.args[0]),
+                ...Arithmetic.getFactors(prev.arg),
             ]);
 
             const result = reverse
@@ -265,8 +265,8 @@ class IntegerChecker {
                     prev.args[1].type === "neg"
                 ) {
                     const newPrev = Arithmetic.mul([
-                        prev.args[0].args[0],
-                        prev.args[1].args[0],
+                        prev.args[0].arg,
+                        prev.args[1].arg,
                     ]);
 
                     const result = reverse

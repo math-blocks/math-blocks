@@ -84,8 +84,7 @@ describe("NewMathParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (add
               1
-              (neg.sub
-                (neg 2)))
+              (neg.sub (neg 2)))
         `);
     });
 
@@ -167,7 +166,7 @@ describe("NewMathParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`(exp x 2)`);
+        expect(parseTree).toMatchInlineSnapshot(`(exp :base x :exp 2)`);
     });
 
     it("should handle nested exponents", () => {
@@ -183,8 +182,8 @@ describe("NewMathParser", () => {
 
         expect(parseTree).toMatchInlineSnapshot(`
             (exp
-              x
-              (exp y 2))
+              :base x
+              :exp (exp :base y :exp 2))
         `);
     });
 
@@ -213,7 +212,9 @@ describe("NewMathParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`(exp (ident a (add n 1)) 2)`);
+        expect(parseTree).toMatchInlineSnapshot(
+            `(exp :base (ident a (add n 1)) :exp 2)`,
+        );
     });
 
     it("should throw when a subscript is being used on a number", () => {
@@ -259,7 +260,12 @@ describe("NewMathParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`(add 1 ... n)`);
+        expect(ast).toMatchInlineSnapshot(`
+            (add
+              1
+              ...
+              n)
+        `);
     });
 
     it("should handle adding with parens", () => {
@@ -360,7 +366,7 @@ describe("NewMathParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root b 2))
+              (root :radicand b :index 2))
         `);
     });
 
@@ -376,8 +382,8 @@ describe("NewMathParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root b 2)
-              (root c 3))
+              (root :radicand b :index 2)
+              (root :radicand c :index 3))
         `);
     });
 
@@ -391,8 +397,8 @@ describe("NewMathParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root b 2)
-              (root c 3))
+              (root :radicand b :index 2)
+              (root :radicand c :index 3))
         `);
     });
 
@@ -406,7 +412,7 @@ describe("NewMathParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root 2 2)
+              (root :radicand 2 :index 2)
               a)
         `);
     });
@@ -422,7 +428,7 @@ describe("NewMathParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               5
-              (root 2 2))
+              (root :radicand 2 :index 2))
         `);
     });
 
@@ -436,8 +442,8 @@ describe("NewMathParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root 2 2)
-              (root 2 2))
+              (root :radicand 2 :index 2)
+              (root :radicand 2 :index 2))
         `);
     });
 });

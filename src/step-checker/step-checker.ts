@@ -30,7 +30,7 @@ const parseNode = (node: Semantic.Expression): BigNumber => {
     if (node.type === "number") {
         return new BigNumber(node.value);
     } else if (node.type === "neg") {
-        return parseNode(node.args[0]).times(new BigNumber(-1));
+        return parseNode(node.arg).times(new BigNumber(-1));
     } else if (node.type === "div") {
         return parseNode(node.args[0]).div(parseNode(node.args[1]));
     } else {
@@ -59,8 +59,7 @@ type HasArgs =
     | Semantic.Lte
     | Semantic.Gt
     | Semantic.Gte
-    | Semantic.Div
-    | Semantic.Neg;
+    | Semantic.Div;
 
 export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "add" ||
@@ -71,8 +70,33 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "lte" ||
     a.type === "gt" ||
     a.type === "gte" ||
-    a.type === "div" ||
-    a.type === "neg";
+    a.type === "div";
+
+const deepEquals = (a: any, b: any): boolean => {
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return (
+            a.length === b.length &&
+            a.every((val, index) => deepEquals(val, b[index]))
+        );
+    } else if (
+        typeof a === "object" &&
+        a != null &&
+        typeof b === "object" &&
+        b != null
+    ) {
+        const keys = Object.keys(a);
+        if (Object.keys(b).length !== keys.length) {
+            return false;
+        }
+        return keys.every(
+            key =>
+                Object.prototype.hasOwnProperty.call(b, key) &&
+                deepEquals(a[key], b[key]),
+        );
+    } else {
+        return a === b;
+    }
+};
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
@@ -630,64 +654,8 @@ class StepChecker implements IStepChecker {
     }
 
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result {
-        if (prev.type !== next.type) {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        if (prev.type === "neg" && next.type === "neg") {
-            if (prev.subtraction !== next.subtraction) {
-                return {
-                    equivalent: false,
-                    reasons: [],
-                };
-            }
-            return this.exactMatch(prev.args[0], next.args[0]);
-        } else if (hasArgs(prev) && hasArgs(next)) {
-            if (prev.args.length !== next.args.length) {
-                return {
-                    equivalent: false,
-                    reasons: [],
-                };
-            }
-            if (prev.type === "mul" && next.type === "mul") {
-                // TODO: decide if we actually want to be this precise
-                if (prev.implicit !== next.implicit) {
-                    return {
-                        equivalent: false,
-                        reasons: [],
-                    };
-                }
-            }
-            // $FlowFixMe: flow doesn't like passing tuples to functions expecting arrays
-            const allMatch = zip(prev.args, next.args).every(
-                ([aArg, bArg]) => this.exactMatch(aArg, bArg).equivalent,
-            );
-            if (allMatch) {
-                return {
-                    equivalent: true,
-                    reasons: [],
-                };
-            }
-        } else if (prev.type === "number" && next.type === "number") {
-            if (prev.value === next.value) {
-                return {
-                    equivalent: true,
-                    reasons: [],
-                };
-            }
-        } else if (prev.type === "identifier" && next.type === "identifier") {
-            if (prev.name === next.name) {
-                return {
-                    equivalent: true,
-                    reasons: [],
-                };
-            }
-        }
         return {
-            equivalent: false,
+            equivalent: deepEquals(prev, next),
             reasons: [],
         };
     }
@@ -798,6 +766,16 @@ class StepChecker implements IStepChecker {
         // than are an array and not a tuple.
         if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
             return this.checkArgs(prev, next, reasons);
+        } else if (prev.type === "neg" && next.type === "neg") {
+            const result = this.checkStep(prev.arg, next.arg, reasons);
+            return {
+                equivalent:
+                    prev.subtraction === next.subtraction && result.equivalent,
+                reasons:
+                    prev.subtraction === next.subtraction && result.equivalent
+                        ? result.reasons
+                        : [],
+            };
         }
 
         if (prev.type === "number" && next.type === "number") {

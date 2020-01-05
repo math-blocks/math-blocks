@@ -82,31 +82,31 @@ export type Mod = {
 
 export type Root = {
     type: "root";
-    args: [
-        Expression, // radicand
-        Expression, // index
-    ];
+    radicand: Expression;
+    index: Expression;
 };
 
 export type Exp = {
     type: "exp";
-    args: [Expression, Expression]; // base, exp
+    base: Expression;
+    exp: Expression;
 };
 
 export type Log = {
     type: "log";
-    args: [Expression, Expression]; // base, arg
+    base: Expression;
+    arg: Expression;
 };
 
 export type Neg = {
     type: "neg";
     subtraction: boolean;
-    args: [Expression];
+    arg: Expression;
 };
 
 export type Abs = {
     type: "abs";
-    args: [Expression];
+    arg: Expression;
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
@@ -272,12 +272,14 @@ export type NotProperSubset = {
 
 export type In = {
     type: "in";
-    args: [Expression, Expression]; // [element, set]
+    element: Expression;
+    set: Expression; // identifier or set
 };
 
 export type NotIn = {
     type: "notin";
-    args: [Expression, Expression]; // [element, set]
+    element: Expression;
+    set: Expression; // identifier or set
 };
 
 export type LogicExpression =

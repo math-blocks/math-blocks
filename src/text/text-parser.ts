@@ -49,17 +49,17 @@ const div = (numerator: Node, denominator: Node): Semantic.Div => ({
 });
 
 const neg = (arg: Node, subtraction = false): Semantic.Neg => {
-    subtraction; // ?
     return {
         type: "neg",
-        args: [arg],
+        arg,
         subtraction,
     };
 };
 
 const exp = (base: Node, exp: Node): Semantic.Exp => ({
     type: "exp",
-    args: [base, exp],
+    base,
+    exp,
 });
 
 const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({

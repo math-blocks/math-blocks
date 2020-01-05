@@ -40,22 +40,22 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
             return evaluate(dividend, varDict) % evaluate(divisor, varDict);
         }
         case "exp": {
-            const [base, exp] = expr.args;
+            const {base, exp} = expr;
             return Math.pow(evaluate(base, varDict), evaluate(exp, varDict));
         }
         case "neg":
-            return -evaluate(expr.args[0], varDict);
+            return -evaluate(expr.arg, varDict);
         case "abs":
-            return Math.abs(evaluate(expr.args[0], varDict));
+            return Math.abs(evaluate(expr.arg, varDict));
         case "root": {
-            const [radicand, index] = expr.args;
+            const {radicand, index} = expr;
             return Math.pow(
                 evaluate(radicand, varDict),
                 1 / evaluate(index, varDict),
             );
         }
         case "log": {
-            const [base, arg] = expr.args;
+            const {base, arg} = expr;
             return (
                 Math.log(evaluate(arg, varDict)) /
                 Math.log(evaluate(base, varDict))
