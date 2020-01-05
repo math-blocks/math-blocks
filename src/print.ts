@@ -47,12 +47,21 @@ const print = (expr: Semantic.Expression): string => {
         case "root": {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [radicand, index] = expr.args;
-            return `√(${print(radicand)})`; // TODO: index
+            if (index.type === "number" && index.value === "2") {
+                return `√(${print(radicand)})`;
+            } else {
+                // TODO: include the index
+                return `√(${print(radicand)})`;
+            }
         }
         case "log":
             return `log_${print(expr.args[0])}(${print(expr.args[1])})`;
         case "exp":
-            return `${print(expr.args[0])}^${print(expr.args[1])}`;
+            if (expr.args[0].type === "exp") {
+                return `(${print(expr.args[0])})^${print(expr.args[1])}`;
+            } else {
+                return `${print(expr.args[0])}^${print(expr.args[1])}`;
+            }
         case "abs":
             return `|${print(expr.args[0])}|`;
         case "func":
@@ -66,11 +75,13 @@ const print = (expr: Semantic.Expression): string => {
             return `Π_(${print(expr.bvar)}=${print(
                 expr.limits.args[0],
             )})^${print(expr.limits.args[1])} ${print(expr.arg)}`;
-        case "limit":
-            return `lim_(${print(expr.bvar)}→value) ${print(expr.arg)}`;
+        case "lim":
+            return `lim_(${print(expr.bvar)}→${print(expr.target)}) ${print(
+                expr.value,
+            )}`;
         case "diff": {
-            const {arg, bvar} = expr;
-            return bvar ? `d${print(arg)}/d${print(bvar)}` : `${print(arg)}'`; // TODO: handle expr.degree > 1
+            // TODO: handle degree > 1
+            return `${print(expr.args[0])}'`;
         }
         case "int":
             return `∫_(${print(expr.limits.args[0])})^(${print(
@@ -120,7 +131,7 @@ const print = (expr: Semantic.Expression): string => {
 
         // Sets
         case "set":
-            return `{${expr.elements.map(print).join(", ")}}`;
+            return `{${expr.args.map(print).join(", ")}}`;
         case "union":
             return expr.args.map(print).join(" ⋃ ");
         case "intersection":
@@ -131,9 +142,9 @@ const print = (expr: Semantic.Expression): string => {
             return expr.args.map(print).join(" × ");
 
         case "in":
-            return `${print(expr.element)} ∈ ${print(expr.set)}`;
+            return `${print(expr.args[0])} ∈ ${print(expr.args[1])}`;
         case "notin":
-            return `${print(expr.element)} ∉ ${print(expr.set)}`;
+            return `${print(expr.args[0])} ∉ ${print(expr.args[1])}`;
         case "subset":
             return expr.args.map(print).join(" ⊆ ");
         case "prsubset":

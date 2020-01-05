@@ -84,10 +84,8 @@ export type Root = {
     type: "root";
     args: [
         Expression, // radicand
-        Expression,
+        Expression, // index
     ];
-    // index: Expression,
-    // radicand: Expression,
 };
 
 export type Exp = {
@@ -132,22 +130,22 @@ export type Prod = {
 };
 
 export type Limit = {
-    type: "limit";
-    side: "left" | "right" | "both";
+    type: "lim";
+    // side: "left" | "right" | "both";
     bvar: Ident;
-    // TODOO: add target
-    arg: Expression;
+    target: Expression;
+    value: Expression;
 };
 
-// TODO: think about partial derivatives
 export type Diff = {
     type: "diff";
-    arg: Expression;
-    degree: Expression;
+    // TODO: figure out how to handle degrees
+    args: [Expression]; // arg
+};
 
-    // If there's a bvar we use liebniz notation, if not
-    // we use prime notation.
-    bvar?: Ident;
+export type PDiff = {
+    type: "pdiff";
+    args: [Expression, Expression]; // numerator, denominator
 };
 
 // TODO: think about multiple integrals
@@ -274,14 +272,12 @@ export type NotProperSubset = {
 
 export type In = {
     type: "in";
-    element: Ident;
-    set: Expression;
+    args: [Expression, Expression]; // [element, set]
 };
 
 export type NotIn = {
     type: "notin";
-    element: Ident;
-    set: Expression;
+    args: [Expression, Expression]; // [element, set]
 };
 
 export type LogicExpression =
@@ -324,9 +320,10 @@ export type LogicExpression =
 // type Predicate = {
 // };
 
+// TODO: handle things like { x^2 | x ∈ ℕ } and stuff like that
 export type Set = {
     type: "set";
-    elements: TwoOrMore<Expression>; // could also include shapes, strings, images, etc.
+    args: Expression[]; // could also include shapes, strings, images, etc.
 };
 
 export type EmptySet = {
