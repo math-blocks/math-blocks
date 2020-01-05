@@ -74,7 +74,7 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
             throw new Error("can't evaluate sum nodes");
         case "prod":
             throw new Error("can't evaluate prod nodes");
-        case "limit":
+        case "lim":
             throw new Error("can't evaluate limit nodes");
         case "diff":
             throw new Error("can't evaluate diff nodes");
