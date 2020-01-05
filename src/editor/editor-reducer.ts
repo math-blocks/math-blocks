@@ -41,6 +41,12 @@ const hasChildren = (node: Editor.Node<Editor.Glyph>): node is HasChildren => {
     return node.type === "row";
 };
 
+const isGlyph = (
+    node: Editor.Node<Editor.Glyph>,
+    char: string,
+): node is Editor.Atom<Editor.Glyph> =>
+    node.type === "atom" && node.value.char == char;
+
 const getChildWithIndex = <T extends Identifiable>(
     children: ReadonlyArray<T>,
     childIndex: number,
@@ -438,19 +444,55 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
-        if (prevNode.type === "atom" && prevNode.value.char === ")") {
+        if (isGlyph(prevNode, ")")) {
+            // TODO: remove the ")" and insert a new pending ')' at the
+            // end of the row or before the first mismatched ')'
+
+            blk0: if (draft.cursor.prev) {
+                const newChildren = removeChildWithIndex(children, removeIndex);
+                for (
+                    let i = Math.max(0, draft.cursor.prev);
+                    i < newChildren.length;
+                    i++
+                ) {
+                    // handle a closing paren to the right
+                    if (isGlyph(newChildren[i], ")")) {
+                        currentNode.children = insertBeforeChildWithIndex(
+                            newChildren,
+                            i,
+                            glyph(")", true),
+                        );
+                        // Skip inserting a ')' at the end of the current row
+                        // since we've already inserted a ')' earlier.
+                        break blk0;
+                    }
+                }
+                currentNode.children = [...newChildren, glyph(")", true)];
+            }
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
-        if (prevNode.type === "atom" && prevNode.value.char === "(") {
+        if (isGlyph(prevNode, "(")) {
+            // The counter keeps track of how many un-matched parens there are
+            // If the value is negative then there are that many more '(' than
+            // ')'.  If it's positive there are more ')'.  If the count is 0
+            // then the count is equal.
+            let count = 0;
             currentNode.children = removeChildWithIndex(children, removeIndex);
             for (let i = removeIndex; i < currentNode.children.length; i++) {
                 const child = currentNode.children[i];
-                if (child.type === "atom" && child.value.char === ")") {
+                if (isGlyph(child, ")") && count >= 0) {
                     currentNode.children = removeChildWithIndex(
                         currentNode.children,
                         i,
                     );
+                    // We only need to delete the first matching paren
+                    break;
+                }
+                if (isGlyph(child, "(")) {
+                    count--;
+                } else if (isGlyph(child, ")")) {
+                    count++;
                 }
             }
             draft.cursor = moveLeft(currentNode, draft);
@@ -892,7 +934,22 @@ const insertChar = (
         };
         draft.selectionStart = undefined;
     } else {
-        const {next} = cursor;
+        const {prev, next} = cursor;
+
+        // If there's a pending ')' before the insertion point, complete it
+        if (prev != null) {
+            const prevNode = currentNode.children[prev];
+            if (isGlyph(prevNode, ")")) {
+                prevNode.value.pending = undefined;
+            }
+        }
+        // If there's a pending '(' after the insertion point, complete it
+        if (next != null) {
+            const nextNode = currentNode.children[next];
+            if (isGlyph(nextNode, "(")) {
+                nextNode.value.pending = undefined;
+            }
+        }
 
         draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
         draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
@@ -949,39 +1006,25 @@ const selectionParens = (
     draft.selectionStart = undefined;
 };
 
-// TODO: handle inserting parens at the end of a row
 const leftParens = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
-    const openingParen: Editor.Atom<Editor.Glyph> = {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "glyph",
-            char: "(",
-        },
-    };
-    const closingParen: Editor.Atom<Editor.Glyph> = {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "glyph",
-            char: ")",
-            pending: true,
-        },
-    };
+    const openingParen = glyph("(");
+    const closingParen = glyph(")", true);
+
     draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
     draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 
     for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
         const child = currentNode.children[i];
         // handle a pending open paren to the left
-        if (
-            child.type === "atom" &&
-            child.value.char === "(" &&
-            child.value.pending
-        ) {
+        if (isGlyph(child, "(")) {
+            // if we run into a non-pending left paren then we need
+            // to break and insert a new paren pair
+            if (!child.value.pending) {
+                break;
+            }
             const newChildren = removeChildWithIndex(currentNode.children, i);
             currentNode.children = insertBeforeChildWithIndex(
                 newChildren,
@@ -996,14 +1039,20 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
         }
     }
 
+    // The counter keeps track of how many un-matched parens there are
+    // If the value is negative then there are that many more '(' than
+    // ')'.  If it's positive there are more ')'.  If the count is 0
+    // then the count is equal.
+    let count = 0;
+
     for (
-        let i = Math.max(0, draft.cursor.prev - 1);
+        let i = Math.max(0, draft.cursor.prev);
         i < currentNode.children.length;
         i++
     ) {
         const child = currentNode.children[i];
         // handle a closing paren to the right
-        if (child.type === "atom" && child.value.char === ")") {
+        if (isGlyph(child, ")") && count >= 0) {
             const newChildren = insertBeforeChildWithIndex(
                 currentNode.children,
                 draft.cursor.prev,
@@ -1016,11 +1065,17 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
             );
             return;
         }
+        if (isGlyph(child, "(")) {
+            count--;
+        } else if (isGlyph(child, ")")) {
+            count++;
+        }
     }
 
     if (draft.cursor.next == null) {
         draft.cursor.next = draft.cursor.prev + 1;
     }
+
     // no closing paren to the right
     currentNode.children = [
         ...insertBeforeChildWithIndex(currentNode.children, next, openingParen),
@@ -1032,23 +1087,9 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
-    const openingParen: Editor.Atom<Editor.Glyph> = {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "glyph",
-            char: "(",
-            pending: true,
-        },
-    };
-    const closingParen: Editor.Atom<Editor.Glyph> = {
-        id: getId(),
-        type: "atom",
-        value: {
-            kind: "glyph",
-            char: ")",
-        },
-    };
+    const openingParen = glyph("(", true);
+    const closingParen = glyph(")");
+
     draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
     draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
 
@@ -1059,11 +1100,12 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     ) {
         const child = currentNode.children[i];
         // handle a pending closing paren to the right
-        if (
-            child.type === "atom" &&
-            child.value.char === ")" &&
-            child.value.pending
-        ) {
+        if (isGlyph(child, ")")) {
+            // if we run into a non-pending left paren then we need
+            // to break and insert a new paren pair
+            if (!child.value.pending) {
+                break;
+            }
             const newChildren = removeChildWithIndex(currentNode.children, i);
             currentNode.children = insertBeforeChildWithIndex(
                 newChildren,
@@ -1078,10 +1120,16 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
         }
     }
 
+    // The counter keeps track of how many un-matched parens there are
+    // If the value is negative then there are that many more ')' than
+    // '('.  If it's positive there are more '('.  If the count is 0
+    // then the count is equal.
+    let count = 0;
+
     for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
         const child = currentNode.children[i];
         // handle a opening paren to the left
-        if (child.type === "atom" && child.value.char === "(") {
+        if (isGlyph(child, "(") && count >= 0) {
             const newChildren = insertBeforeChildWithIndex(
                 currentNode.children,
                 draft.cursor.prev,
@@ -1097,6 +1145,12 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
             draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
             draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
             return;
+        }
+
+        if (isGlyph(child, ")")) {
+            count--;
+        } else if (isGlyph(child, "(")) {
+            count++;
         }
     }
 
