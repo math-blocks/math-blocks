@@ -368,10 +368,18 @@ class StepChecker implements IStepChecker {
                     // before next.
                     const subReasons: Reason[] = [];
                     const equivalent = addNode.args.every((arg, index) => {
-                        const term = Arithmetic.mul([x, y.args[index]]);
+                        // Each term is in the correct order based on whether
+                        // we're distributing/factoring from left to right or
+                        // the reverse
+                        const term =
+                            x === left
+                                ? Arithmetic.mul([x, y.args[index]])
+                                : Arithmetic.mul([y.args[index], x]);
+
                         // We reset the "reasons" parameter here because we checking
                         // different nodes so we won't run into a cycle here.
                         const substep = this.checkStep(arg, term, []);
+
                         subReasons.push(...substep.reasons);
                         return substep.equivalent;
                     });
@@ -391,10 +399,8 @@ class StepChecker implements IStepChecker {
                                               nodes,
                                           },
                                           ...subReasons,
-                                          ...reasons,
                                       ]
                                     : [
-                                          ...reasons,
                                           ...subReasons,
                                           {
                                               message: reason,
