@@ -318,7 +318,6 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
-            // TODO: fix this
             "fraction is the same as multiplying by one over",
             "commutative property",
             "fraction is the same as multiplying by one over",
