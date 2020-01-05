@@ -34,6 +34,7 @@ export type Glyph = {
     char: string;
     size: number;
     metrics: FontMetrics;
+    pending?: boolean;
 };
 
 export type Kern = {

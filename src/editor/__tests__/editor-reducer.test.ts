@@ -932,6 +932,90 @@ describe("reducer", () => {
                     });
                 });
             });
+
+            describe("inserting outside an existing set of parens", () => {
+                test("before", () => {
+                    const math = Util.row("a(1+2)b");
+                    const cursor = {
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: "("});
+                    const newMath = Util.row("(a(1+2)b)");
+                    // @ts-ignore
+                    newMath.children[8].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    });
+                });
+
+                test("after", () => {
+                    const math = Util.row("a(1+2)b");
+                    const cursor = {
+                        path: [],
+                        prev: 6,
+                        next: null,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, {type: ")"});
+                    const newMath = Util.row("(a(1+2)b)");
+                    // @ts-ignore
+                    newMath.children[0].value.pending = true;
+
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 8,
+                        next: null,
+                    });
+                });
+            });
+
+            test("inserting a character after a pending paren", () => {
+                const math = Util.row("(1+2)");
+                const cursor = {
+                    path: [],
+                    prev: 4,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "+"});
+
+                const newMath = Util.row("(1+2)+");
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(newMath),
+                );
+            });
+
+            test("inserting a character before a pending paren", () => {
+                const math = Util.row("(1+2)");
+                const cursor = {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, {type: "+"});
+
+                const newMath = Util.row("+(1+2)");
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(newMath),
+                );
+            });
         });
     });
 
@@ -1357,7 +1441,7 @@ describe("reducer", () => {
         });
 
         describe("parens", () => {
-            test("should move into the parens from the right", () => {
+            test("should move into the parens from the right and set ')' to be pending", () => {
                 const math = Util.row("2(x+y)");
                 const cursor = {
                     path: [],
@@ -1368,8 +1452,35 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
+                const newMath = Util.row("2(x+y)");
+                // @ts-ignore
+                newMath.children[5].value.pending = true;
                 expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
+                    Editor.stripIDs(newMath),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 4,
+                    next: 5,
+                });
+            });
+
+            test("should delete the ')' and append a pending ')' to the end of the row", () => {
+                const math = Util.row("a(x+y)b");
+                const cursor = {
+                    path: [],
+                    prev: 5,
+                    next: 6,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                const newMath = Util.row("a(x+yb)");
+                // @ts-ignore
+                newMath.children[6].value.pending = true;
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(newMath),
                 );
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1418,6 +1529,80 @@ describe("reducer", () => {
                     path: [],
                     prev: 0,
                     next: 1,
+                });
+            });
+
+            describe("nested parens", () => {
+                test("should delete the ')' and append a pending ')' to the end of the row", () => {
+                    const math = Util.row("(a(x+y)b)");
+                    const cursor = {
+                        path: [],
+                        prev: 6,
+                        next: 7,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, action);
+
+                    const newMath = Util.row("(a(x+yb))");
+                    // @ts-ignore
+                    newMath.children[7].value.pending = true;
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 5,
+                        next: 6,
+                    });
+                });
+
+                test("in-progress parens", () => {
+                    // TODO: complete this test
+                });
+
+                test("deleting an inner opening paren", () => {
+                    const math = Util.row("(a(x+y)b)");
+                    const cursor = {
+                        path: [],
+                        prev: 2,
+                        next: 3,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, action);
+
+                    const newMath = Util.row("(ax+yb)");
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: 1,
+                        next: 2,
+                    });
+                });
+
+                test("deleting an outer opening paren", () => {
+                    const math = Util.row("(a(x+y)b)");
+                    const cursor = {
+                        path: [],
+                        prev: 0,
+                        next: 1,
+                    };
+
+                    const state: State = {math, cursor};
+                    const newState = reducer(state, action);
+
+                    const newMath = Util.row("a(x+y)b");
+                    expect(Editor.stripIDs(newState.math)).toEqual(
+                        Editor.stripIDs(newMath),
+                    );
+                    expect(newState.cursor).toEqual({
+                        path: [],
+                        prev: null,
+                        next: 0,
+                    });
                 });
             });
         });

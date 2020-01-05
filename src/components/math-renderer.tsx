@@ -7,7 +7,13 @@ type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
 
 const Glyph: React.SFC<GlyphProps> = ({glyph, x, y}) => {
     return (
-        <text x={x} y={y} fontFamily="comic sans ms" fontSize={glyph.size}>
+        <text
+            x={x}
+            y={y}
+            fontFamily="comic sans ms"
+            fontSize={glyph.size}
+            fill={glyph.pending ? "#CCC" : "black"}
+        >
             {glyph.char}
         </text>
     );
@@ -52,8 +58,6 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
 
     const showCursor = cursor && cursor.parent === box.id;
     const selection = cursor && cursor.selection;
-
-    console.log(`HBox.id = ${box.id}`);
 
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;

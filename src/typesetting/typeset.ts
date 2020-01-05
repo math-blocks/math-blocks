@@ -51,6 +51,9 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     return box;
                 } else {
                     glyph.id = child.id;
+                    if (glyph.type === "Glyph") {
+                        glyph.pending = child.value.pending;
+                    }
                     return glyph;
                 }
             }

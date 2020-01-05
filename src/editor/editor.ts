@@ -100,8 +100,8 @@ export type Glyph = {
     pending?: boolean;
 };
 
-export const glyph = (char: string): Atom<Glyph, number> =>
-    atom({kind: "glyph", char});
+export const glyph = (char: string, pending?: boolean): Atom<Glyph, number> =>
+    atom({kind: "glyph", char, pending});
 
 export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
     switch (root.type) {
