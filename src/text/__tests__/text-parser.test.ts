@@ -68,10 +68,7 @@ describe("TextParser", () => {
     it("parses multiple unary minuses", () => {
         const ast = parse("--a");
 
-        expect(ast).toMatchInlineSnapshot(`
-            (neg
-              (neg a))
-        `);
+        expect(ast).toMatchInlineSnapshot(`(neg (neg a))`);
     });
 
     it("parses unary and binary minus", () => {
@@ -80,8 +77,7 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (add
               a
-              (neg.sub
-                (neg b)))
+              (neg.sub (neg b)))
         `);
     });
 
@@ -216,7 +212,7 @@ describe("TextParser", () => {
     it("parses exponents", () => {
         const ast = parse("x^2");
 
-        expect(ast).toMatchInlineSnapshot(`(exp x 2)`);
+        expect(ast).toMatchInlineSnapshot(`(exp :base x :exp 2)`);
     });
 
     it("parses nested exponents", () => {
@@ -224,8 +220,8 @@ describe("TextParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (exp
-              2
-              (exp 3 4))
+              :base 2
+              :exp (exp :base 3 :exp 4))
         `);
     });
 

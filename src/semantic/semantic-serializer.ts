@@ -26,6 +26,25 @@ const print = (
         }
         if (ast.type === "neg") {
             type = ast.subtraction ? "neg.sub" : "neg";
+            return `(${type} ${print(ast.arg, serialize, indent)})`;
+        }
+        if (ast.type === "root") {
+            const radicand = print(ast.radicand, serialize, indent);
+            const index = print(ast.index, serialize, indent);
+            return `(${ast.type} :radicand ${radicand} :index ${index})`;
+        }
+        if (ast.type === "exp") {
+            const hasGrandchildren =
+                (ast.base.type !== "identifier" &&
+                    ast.base.type !== "number") ||
+                (ast.exp.type !== "identifier" && ast.exp.type !== "number");
+            const base = print(ast.base, serialize, indent);
+            const exp = print(ast.exp, serialize, indent);
+            return hasGrandchildren
+                ? `(${ast.type}\n${indent(`:base ${base}`)}\n${indent(
+                      `:exp ${exp}`,
+                  )})`
+                : `(${ast.type} :base ${base} :exp ${exp})`;
         }
         if (ast.type === "ellipsis") {
             return "...";
@@ -33,8 +52,8 @@ const print = (
 
         // @ts-ignore
         const args: Node[] = ast.args;
-        const hasGrandchildren = args.some((arg: Node) =>
-            Object.prototype.hasOwnProperty.call(arg, "args"),
+        const hasGrandchildren = args.some(
+            (arg: Node) => arg.type !== "identifier" && arg.type !== "number",
         );
 
         if (hasGrandchildren) {

@@ -48,7 +48,7 @@ const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
 
 const neg = (arg: Node, subtraction = false): Semantic.Neg => ({
     type: "neg",
-    args: [arg],
+    arg,
     subtraction,
 });
 
@@ -59,14 +59,16 @@ const div = (num: Node, den: Node): Semantic.Div => ({
 
 const exp = (base: Node, exp: Node): Semantic.Exp => ({
     type: "exp",
-    args: [base, exp],
+    base,
+    exp,
 });
 
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 const root = (radicand: Node, index?: Node): Semantic.Root => ({
     type: "root",
-    args: [radicand, index || number("2")],
+    radicand,
+    index: index || number("2"),
 });
 
 const isIdentifier = (node: Token): boolean =>
