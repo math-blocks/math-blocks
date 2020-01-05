@@ -87,7 +87,10 @@
   "jest": {
     "transform": {
       "^.+\\.[t|j]sx?$": "babel-jest"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tssx}"
+    ]
   },
   "typeCoverage": {
     "atLeast": 99
