@@ -1,4 +1,4 @@
-import * as Arithmetic from "./arithmetic";
+import * as Util from "../semantic/util";
 import * as Semantic from "../semantic/semantic";
 
 // TODO: handle negative numbers
@@ -38,7 +38,9 @@ export const decomposeFactors = (
         if (factor.type === "number") {
             return [
                 ...result,
-                ...primeDecomp(parseInt(factor.value)).map(Arithmetic.num),
+                ...primeDecomp(parseInt(factor.value)).map(value =>
+                    Util.number(String(value)),
+                ),
             ];
         } else {
             return [...result, factor];

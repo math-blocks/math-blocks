@@ -1,7 +1,5 @@
-import * as Arithmetic from "./arithmetic";
 import * as Semantic from "../semantic/semantic";
-
-import {isNegative, isSubtraction} from "./arithmetic";
+import * as Util from "../semantic/util";
 
 import {IStepChecker, Result, Reason} from "./step-checker";
 
@@ -30,7 +28,7 @@ class IntegerChecker {
         }
 
         const indicesToRemove = new Set();
-        const terms = Arithmetic.getTerms(prev);
+        const terms = Util.getTerms(prev);
         for (let i = 0; i < terms.length; i++) {
             for (let j = 0; j < terms.length; j++) {
                 if (i === j) {
@@ -39,7 +37,7 @@ class IntegerChecker {
                 const a = terms[i];
                 const b = terms[j];
                 // TODO: add a sub-step in the subtraction case
-                if (isNegative(b) || isSubtraction(b)) {
+                if (Util.isNegative(b) || Util.isSubtraction(b)) {
                     const result = checker.checkStep(a, b.arg, reasons);
                     if (result.equivalent) {
                         // TODO: capture the reasons and include them down below
@@ -50,7 +48,7 @@ class IntegerChecker {
             }
         }
         if (indicesToRemove.size > 0) {
-            const newPrev = Arithmetic.add(
+            const newPrev = Util.addTerms(
                 terms.filter(
                     (term: Semantic.Expression, index: number) =>
                         !indicesToRemove.has(index),
@@ -97,7 +95,7 @@ class IntegerChecker {
             [prev, next] = [next, prev];
         }
         const {checker} = this;
-        if (isNegative(prev) && isNegative(prev.arg)) {
+        if (Util.isNegative(prev) && Util.isNegative(prev.arg)) {
             const newPrev = prev.arg.arg;
             const result = reverse
                 ? checker.checkStep(next, newPrev, reasons)
@@ -145,19 +143,22 @@ class IntegerChecker {
             next.type === "add" &&
             prev.args.length === next.args.length
         ) {
-            const subs: Semantic.Neg[] = prev.args.filter(isSubtraction);
+            const subs: Semantic.Neg[] = prev.args.filter(Util.isSubtraction);
             for (const sub of subs) {
                 const index = prev.args.indexOf(sub);
                 // Either the corresponding arg in the next add node must be
                 // negative or the sub node must contain a negative.
                 // a - b -> a + -b or a - -b -> a + b
-                if (!isNegative(next.args[index]) && !isNegative(sub.arg)) {
+                if (
+                    !Util.isNegative(next.args[index]) &&
+                    !Util.isNegative(sub.arg)
+                ) {
                     continue;
                 }
 
-                const newPrev = Arithmetic.add([
+                const newPrev = Util.addTerms([
                     ...prev.args.slice(0, index),
-                    Arithmetic.neg(sub.arg),
+                    Util.neg(sub.arg),
                     ...prev.args.slice(index + 1),
                 ]);
 
@@ -209,9 +210,9 @@ class IntegerChecker {
             prev.type === "neg" && // exclude -1 to avoid an infinite expansion
             !(prev.arg.type == "number" && prev.arg.value == "1")
         ) {
-            const newPrev = Arithmetic.mul([
-                Arithmetic.neg(Arithmetic.num(1)),
-                ...Arithmetic.getFactors(prev.arg),
+            const newPrev = Util.mulFactors([
+                Util.neg(Util.number("1")),
+                ...Util.getFactors(prev.arg),
             ]);
 
             const result = reverse
@@ -264,7 +265,7 @@ class IntegerChecker {
                     prev.args[0].type === "neg" &&
                     prev.args[1].type === "neg"
                 ) {
-                    const newPrev = Arithmetic.mul([
+                    const newPrev = Util.mulFactors([
                         prev.args[0].arg,
                         prev.args[1].arg,
                     ]);

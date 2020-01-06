@@ -1,7 +1,5 @@
-import * as Arithmetic from "./arithmetic";
 import * as Semantic from "../semantic/semantic";
-
-import {isSubtraction} from "./arithmetic";
+import * as Util from "../semantic/util";
 
 import {IStepChecker, Result, Reason} from "./step-checker";
 
@@ -20,17 +18,17 @@ class EquationChecker {
 
         if (lhsB.type === "add" && rhsB.type === "add") {
             const lhsNewTerms = checker.difference(
-                Arithmetic.getTerms(lhsB),
-                Arithmetic.getTerms(lhsA),
+                Util.getTerms(lhsB),
+                Util.getTerms(lhsA),
                 reasons,
             );
             const rhsNewTerms = checker.difference(
-                Arithmetic.getTerms(rhsB),
-                Arithmetic.getTerms(rhsA),
+                Util.getTerms(rhsB),
+                Util.getTerms(rhsA),
                 reasons,
             );
-            const lhsNew = Arithmetic.add(lhsNewTerms);
-            const rhsNew = Arithmetic.add(rhsNewTerms);
+            const lhsNew = Util.addTerms(lhsNewTerms);
+            const rhsNew = Util.addTerms(rhsNewTerms);
             const result = checker.checkStep(lhsNew, rhsNew, reasons);
 
             // TODO: handle adding multiple things to lhs and rhs as the same time
@@ -38,8 +36,8 @@ class EquationChecker {
             // the same or do we want to allow equivalent expressions?
             if (result.equivalent && result.reasons.length === 0) {
                 if (
-                    isSubtraction(lhsNewTerms[0]) &&
-                    isSubtraction(rhsNewTerms[0])
+                    Util.isSubtraction(lhsNewTerms[0]) &&
+                    Util.isSubtraction(rhsNewTerms[0])
                 ) {
                     return {
                         equivalent: true,
@@ -77,18 +75,18 @@ class EquationChecker {
 
         if (lhsB.type === "mul" && rhsB.type === "mul") {
             const lhsNewFactors = checker.difference(
-                Arithmetic.getFactors(lhsB),
-                Arithmetic.getFactors(lhsA),
+                Util.getFactors(lhsB),
+                Util.getFactors(lhsA),
                 reasons,
             );
             const rhsNewFactors = checker.difference(
-                Arithmetic.getFactors(rhsB),
-                Arithmetic.getFactors(rhsA),
+                Util.getFactors(rhsB),
+                Util.getFactors(rhsA),
                 reasons,
             );
             const result = checker.checkStep(
-                Arithmetic.mul(lhsNewFactors),
-                Arithmetic.mul(rhsNewFactors),
+                Util.mulFactors(lhsNewFactors),
+                Util.mulFactors(rhsNewFactors),
                 reasons,
             );
 

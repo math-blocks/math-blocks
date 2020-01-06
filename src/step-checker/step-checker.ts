@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 
-import * as Arithmetic from "./arithmetic";
 import * as Semantic from "../semantic/semantic";
+import * as Util from "../semantic/util";
 
 import {zip} from "./util";
 
@@ -84,11 +84,12 @@ const deepEquals = (a: any, b: any): boolean => {
         typeof b === "object" &&
         b != null
     ) {
-        const keys = Object.keys(a);
-        if (Object.keys(b).length !== keys.length) {
+        const aKeys = Object.keys(a).filter(key => key !== "id");
+        const bKeys = Object.keys(b).filter(key => key !== "id");
+        if (aKeys.length !== bKeys.length) {
             return false;
         }
-        return keys.every(
+        return aKeys.every(
             key =>
                 Object.prototype.hasOwnProperty.call(b, key) &&
                 deepEquals(a[key], b[key]),
@@ -242,8 +243,8 @@ class StepChecker implements IStepChecker {
         return this.checkIdentity(
             prev,
             next,
-            Arithmetic.add,
-            Arithmetic.ZERO, // TODO: provide a way to have different levels of messages, e.g.
+            Util.addTerms,
+            Util.number("0"), // TODO: provide a way to have different levels of messages, e.g.
             // "adding zero doesn't change an expression"
             "addition with identity",
             reasons,
@@ -265,8 +266,8 @@ class StepChecker implements IStepChecker {
         return this.checkIdentity(
             prev,
             next,
-            Arithmetic.mul,
-            Arithmetic.ONE, // TODO: provide a way to have different levels of messages, e.g.
+            Util.mulFactors,
+            Util.number("1"), // TODO: provide a way to have different levels of messages, e.g.
             // "multiplying by one doesn't change an expression"
             "multiplication with identity",
             reasons,
@@ -373,8 +374,8 @@ class StepChecker implements IStepChecker {
                         // the reverse
                         const term =
                             x === left
-                                ? Arithmetic.mul([x, y.args[index]])
-                                : Arithmetic.mul([y.args[index], x]);
+                                ? Util.mulFactors([x, y.args[index]])
+                                : Util.mulFactors([y.args[index], x]);
 
                         // We reset the "reasons" parameter here because we checking
                         // different nodes so we won't run into a cycle here.
@@ -433,9 +434,9 @@ class StepChecker implements IStepChecker {
         // TODO: ensure that reasons from these calls to checkStep
         // are captured.
         const hasZero = prev.args.some(
-            arg => this.checkStep(arg, Arithmetic.ZERO, reasons).equivalent,
+            arg => this.checkStep(arg, Util.number("0"), reasons).equivalent,
         );
-        const result = this.checkStep(next, Arithmetic.ZERO, reasons);
+        const result = this.checkStep(next, Util.number("0"), reasons);
         if (hasZero && result.equivalent) {
             return {
                 equivalent: true,
@@ -503,8 +504,8 @@ class StepChecker implements IStepChecker {
             };
         }
 
-        const aFactors = Arithmetic.getFactors(a);
-        const bFactors = Arithmetic.getFactors(b);
+        const aFactors = Util.getFactors(a);
+        const bFactors = Util.getFactors(b);
 
         const aNumTerms = aFactors.filter(term => term.type === "number");
         const bNumTerms = bFactors.filter(term => term.type === "number");
@@ -553,8 +554,8 @@ class StepChecker implements IStepChecker {
             };
         }
 
-        const aTerms = Arithmetic.getTerms(a);
-        const bTerms = Arithmetic.getTerms(b);
+        const aTerms = Util.getTerms(a);
+        const bTerms = Util.getTerms(b);
 
         const aNumTerms = aTerms.filter(term => {
             try {
