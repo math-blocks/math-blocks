@@ -1,6 +1,11 @@
 import * as Util from "../../semantic/util";
 
-import {primeDecomp, findNodeById, replaceNodeWithId} from "../util";
+import {
+    primeDecomp,
+    findNodeById,
+    replaceNodeWithId,
+    deepEquals,
+} from "../util";
 
 import serializer from "../../semantic/semantic-serializer";
 expect.addSnapshotSerializer(serializer);
@@ -86,5 +91,33 @@ describe("replaceNode", () => {
         replaceNodeWithId(root, two.id, three);
 
         expect(root).toMatchInlineSnapshot(`(exp :base x :exp 3)`);
+    });
+});
+
+describe("deepEquals", () => {
+    test("ignores ids", () => {
+        expect(deepEquals(Util.number("1"), Util.number("1"))).toBe(true);
+    });
+
+    test("returns false if the trees are different", () => {
+        expect(deepEquals(Util.number("1"), Util.number("2"))).toBe(false);
+    });
+
+    test("returns false if implicit mul property doesn't match", () => {
+        expect(
+            deepEquals(
+                Util.mul([Util.number("1"), Util.number("2")], true),
+                Util.mul([Util.number("1"), Util.number("2")], false),
+            ),
+        ).toBe(false);
+    });
+
+    test("returns false if subtraction neg property doesn't match", () => {
+        expect(
+            deepEquals(
+                Util.neg(Util.number("1"), true),
+                Util.neg(Util.number("1"), false),
+            ),
+        ).toBe(false);
     });
 });
