@@ -1,6 +1,7 @@
 import {parse} from "../../text/text-parser";
 
-import StepChecker, {Result, hasArgs} from "../step-checker";
+import StepChecker, {hasArgs} from "../step-checker";
+import {Result} from "../types";
 
 const checker = new StepChecker();
 

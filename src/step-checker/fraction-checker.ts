@@ -1,7 +1,8 @@
 import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
 
-import {IStepChecker, Result, Reason} from "./step-checker";
+import {IStepChecker} from "./step-checker";
+import {Result, Reason} from "./types";
 import {decomposeFactors} from "./util";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now

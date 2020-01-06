@@ -1,6 +1,7 @@
 import {parse} from "../../text/text-parser";
 
-import StepChecker, {Result} from "../step-checker";
+import StepChecker from "../step-checker";
+import {Result} from "../types";
 
 import serializer from "../../semantic/semantic-serializer";
 
