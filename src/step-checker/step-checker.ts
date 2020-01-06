@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js";
+import produce from "immer";
 
 import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
@@ -71,6 +72,96 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "gt" ||
     a.type === "gte" ||
     a.type === "div";
+
+const isNode = (val: any): val is Semantic.Expression => {
+    return Object.prototype.hasOwnProperty.call(val, "type");
+};
+
+const findNodeById = (
+    root: Semantic.Expression,
+    id: number,
+): Semantic.Expression | void => {
+    for (const val of Object.values(root)) {
+        if (isNode(val)) {
+            if (val.id === id) {
+                return val;
+            } else {
+                const result = findNodeById(val, id);
+                if (result) {
+                    return result;
+                }
+            }
+        } else if (Array.isArray(val)) {
+            for (const child of val) {
+                if (isNode(child)) {
+                    if (child.id === id) {
+                        return child;
+                    } else {
+                        const result = findNodeById(child, id);
+                        if (result) {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+const replaceNodeWithId = (
+    root: Semantic.Expression,
+    id: number,
+    replacement: Semantic.Expression,
+): Semantic.Expression | void => {
+    for (const val of Object.values(root)) {
+        if (isNode(val)) {
+            if (val.id === id) {
+                return val;
+            } else {
+                const result = replaceNodeWithId(val, id, replacement);
+                if (result) {
+                    return result;
+                }
+            }
+        } else if (Array.isArray(val)) {
+            for (const [index, child] of val.entries()) {
+                if (isNode(child)) {
+                    if (child.id === id) {
+                        val[index] = replacement;
+                        return child;
+                    } else {
+                        const result = replaceNodeWithId(
+                            child,
+                            id,
+                            replacement,
+                        );
+                        if (result) {
+                            if (result == child) {
+                                val[index] = replacement;
+                            }
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+const applySubReasons = (
+    root: Semantic.Expression,
+    subreasons: Reason[],
+): Semantic.Expression => {
+    const nextState = produce(root, draft => {
+        for (const reason of subreasons) {
+            // Not all reaons come with nodes yet.
+            if (reason.nodes.length === 2) {
+                replaceNodeWithId(draft, reason.nodes[0].id, reason.nodes[1]);
+            }
+        }
+    });
+    return nextState;
+};
 
 const deepEquals = (a: any, b: any): boolean => {
     if (Array.isArray(a) && Array.isArray(b)) {
@@ -324,7 +415,6 @@ class StepChecker implements IStepChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
@@ -332,13 +422,12 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(next, prev, reasons, "distribution");
+        return this.distributionFactoring(next, prev, "distribution");
     }
 
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
@@ -346,13 +435,12 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(prev, next, reasons, "factoring");
+        return this.distributionFactoring(prev, next, "factoring");
     }
 
     distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
-        reasons: Reason[],
         reason: "distribution" | "factoring",
     ): Result {
         // TODO: handle distribution across n-ary multiplication later
@@ -386,10 +474,16 @@ class StepChecker implements IStepChecker {
                     });
 
                     if (equivalent) {
-                        const nodes =
+                        const nodes: Semantic.Expression[] =
                             reason === "distribution"
                                 ? [mulNode, addNode]
                                 : [addNode, mulNode];
+
+                        // TODO: include the original nodes[0] in the result somehow
+                        if (subReasons.length > 0) {
+                            nodes[0] = applySubReasons(nodes[0], subReasons);
+                        }
+
                         return {
                             equivalent: true,
                             reasons:
@@ -767,12 +861,12 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.checkDistribution(prev, next, reasons);
+        result = this.checkDistribution(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(prev, next, reasons);
+        result = this.checkFactoring(prev, next);
         if (result.equivalent) {
             return result;
         }

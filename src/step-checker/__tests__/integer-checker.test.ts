@@ -411,8 +411,12 @@ describe("IntegerChecker", () => {
 
         expect(result.reasons[2].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (neg a)
-              (neg b))
+              (mul.exp
+                (neg 1)
+                a)
+              (mul.exp
+                (neg 1)
+                b))
         `);
         expect(result.reasons[2].nodes[1]).toMatchInlineSnapshot(`
             (mul.exp
@@ -488,7 +492,7 @@ describe("IntegerChecker", () => {
         expect(result.reasons).toHaveLength(1);
     });
 
-    it("-a + -b -> -1(a + b)", () => {
+    it("-a + -b -> -1a + -1b -> -1(a + b)", () => {
         const result = checkStep("-a + -b", "-1(a + b)");
 
         expect(result.equivalent).toBe(true);
@@ -515,8 +519,12 @@ describe("IntegerChecker", () => {
 
         expect(result.reasons[2].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (neg a)
-              (neg b))
+              (mul.exp
+                (neg 1)
+                a)
+              (mul.exp
+                (neg 1)
+                b))
         `);
         expect(result.reasons[2].nodes[1]).toMatchInlineSnapshot(`
             (mul.imp
