@@ -389,6 +389,18 @@ class FractionChecker {
                     reasons: [],
                 };
             }
+            // Handle 1/b * a as well since this can come up during factoring
+            // and distribution of division.
+            if (
+                prev.args[0].type === "div" &&
+                prev.args[1].type !== "div" &&
+                checker.exactMatch(prev.args[0].args[0], Arithmetic.ONE)
+            ) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
         }
 
         const numFactors: Semantic.Expression[] = [];
@@ -413,7 +425,7 @@ class FractionChecker {
                 ? [
                       {
                           message: "multiplying fractions",
-                          nodes: [],
+                          nodes: [prev, newPrev],
                       },
                       ...result.reasons,
                   ]

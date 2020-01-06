@@ -323,6 +323,7 @@ class StepChecker implements IStepChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        reasons: Reason[],
     ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
@@ -330,12 +331,13 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(next, prev, "distribution");
+        return this.distributionFactoring(next, prev, reasons, "distribution");
     }
 
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        reasons: Reason[],
     ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
@@ -343,12 +345,13 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(prev, next, "factoring");
+        return this.distributionFactoring(prev, next, reasons, "factoring");
     }
 
     distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
+        reasons: Reason[],
         reason: "distribution" | "factoring",
     ): Result {
         // TODO: handle distribution across n-ary multiplication later
@@ -361,26 +364,49 @@ class StepChecker implements IStepChecker {
                 if (y.type === "add" && y.args.length === addNode.args.length) {
                     // TODO: use exactMatch instead here... or we'll have track all
                     // of the reasons that are generated
+                    // TODO: apply the subReasons to previous node to get the node
+                    // before next.
+                    const subReasons: Reason[] = [];
                     const equivalent = addNode.args.every((arg, index) => {
-                        const term = Arithmetic.mul([x, y.args[index]]);
+                        // Each term is in the correct order based on whether
+                        // we're distributing/factoring from left to right or
+                        // the reverse
+                        const term =
+                            x === left
+                                ? Arithmetic.mul([x, y.args[index]])
+                                : Arithmetic.mul([y.args[index], x]);
+
                         // We reset the "reasons" parameter here because we checking
                         // different nodes so we won't run into a cycle here.
-                        return this.checkStep(arg, term, []).equivalent;
+                        const substep = this.checkStep(arg, term, []);
+
+                        subReasons.push(...substep.reasons);
+                        return substep.equivalent;
                     });
 
                     if (equivalent) {
-                        // TODO: include sub-reasons from checkStep
+                        const nodes =
+                            reason === "distribution"
+                                ? [mulNode, addNode]
+                                : [addNode, mulNode];
                         return {
                             equivalent: true,
-                            reasons: [
-                                {
-                                    message: reason,
-                                    nodes:
-                                        reason === "distribution"
-                                            ? [mulNode, addNode]
-                                            : [addNode, mulNode],
-                                },
-                            ],
+                            reasons:
+                                reason === "distribution"
+                                    ? [
+                                          {
+                                              message: reason,
+                                              nodes,
+                                          },
+                                          ...subReasons,
+                                      ]
+                                    : [
+                                          ...subReasons,
+                                          {
+                                              message: reason,
+                                              nodes,
+                                          },
+                                      ],
                         };
                     }
                 }
@@ -740,12 +766,12 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.checkDistribution(prev, next);
+        result = this.checkDistribution(prev, next, reasons);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(prev, next);
+        result = this.checkFactoring(prev, next, reasons);
         if (result.equivalent) {
             return result;
         }

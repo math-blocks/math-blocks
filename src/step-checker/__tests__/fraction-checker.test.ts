@@ -2,6 +2,10 @@ import {parse} from "../../text/text-parser";
 
 import StepChecker, {Result} from "../step-checker";
 
+import serializer from "../../semantic/semantic-serializer";
+
+expect.addSnapshotSerializer(serializer);
+
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
@@ -9,6 +13,47 @@ const checkStep = (prev: string, next: string): Result => {
 };
 
 describe("FractionChecker", () => {
+    it("a * 1/b -> a / b", () => {
+        const result = checkStep("a * 1/b", "a / b");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("1/b * a -> a / b", () => {
+        const result = checkStep("1/b * a", "a / b");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+            "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("a / b -> a * 1/b", () => {
+        const result = checkStep("a / b", "a * 1/b");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "fraction is the same as multiplying by one over",
+        ]);
+    });
+
+    // TODO: simplify this case
+    it("1/a * 1/b -> 1*1 / a*b -> 1 / ab", () => {
+        const result = checkStep("1/a * 1/b", "1 / ab");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "multiplying fractions",
+            "fraction is the same as multiplying by one over",
+            "multiplication with identity",
+            "multiplication with identity",
+        ]);
+    });
+
     it("1 -> a/a", () => {
         const result = checkStep("1", "a/a");
 
@@ -52,28 +97,6 @@ describe("FractionChecker", () => {
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "multiplying fractions",
             "multiplication with identity",
-        ]);
-    });
-
-    // TODO: simplify this case
-    it("1/a * 1/b -> 1*1 / a*b -> 1 / ab", () => {
-        const result = checkStep("1/a * 1/b", "1 / ab");
-
-        expect(result.equivalent).toBe(true);
-        expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-            "fraction is the same as multiplying by one over",
-            "multiplication with identity",
-            "multiplication with identity",
-        ]);
-    });
-
-    it("a * 1/b -> a / b", () => {
-        const result = checkStep("a * 1/b", "a / b");
-
-        expect(result.equivalent).toBe(true);
-        expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying by one over something results in a fraction",
         ]);
     });
 
@@ -284,16 +307,21 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "distribution",
+            "fraction is the same as multiplying by one over",
+            "fraction is the same as multiplying by one over",
         ]);
     });
 
-    // TODO: make sure factoring is including substeps
     // e.g. 1/c * a + 1/c * b
     it("a/c + b/c -> 1/c * (a + b)", () => {
         const result = checkStep("a/c + b/c", "1/c * (a + b)");
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
+            "fraction is the same as multiplying by one over",
+            "commutative property",
+            "fraction is the same as multiplying by one over",
+            "commutative property",
             "factoring",
         ]);
     });
@@ -305,6 +333,8 @@ describe("FractionChecker", () => {
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
             "distribution",
+            "fraction is the same as multiplying by one over",
+            "fraction is the same as multiplying by one over",
         ]);
     });
 
@@ -321,27 +351,37 @@ describe("FractionChecker", () => {
         const result = checkStep("a/c  + b/c", "(a + b) / c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.reasons.map(reason => reason.message)).toEqual([
-            "factoring",
-            "multiplying by one over something results in a fraction",
-        ]);
-    });
+        expect(result.reasons[0].nodes[0]).toMatchInlineSnapshot(`(div a c)`);
+        expect(result.reasons[0].nodes[1]).toMatchInlineSnapshot(`
+            (mul.exp
+              a
+              (div 1 c))
+        `);
 
-    it("a * 1/b -> a/b", () => {
-        const result = checkStep("a * 1/b", "a/b");
+        expect(result.reasons[1].nodes[0]).toMatchInlineSnapshot(`(div b c)`);
+        expect(result.reasons[1].nodes[1]).toMatchInlineSnapshot(`
+            (mul.exp
+              b
+              (div 1 c))
+        `);
 
-        expect(result.equivalent).toBe(true);
-        expect(result.reasons.map(reason => reason.message)).toEqual([
-            "multiplying by one over something results in a fraction",
-        ]);
-    });
+        // TODO: apply [0] and [1] to the original to generate this node
+        expect(result.reasons[2].nodes[0]).toMatchInlineSnapshot(`
+            (add
+              (div a c)
+              (div b c))
+        `);
+        expect(result.reasons[2].nodes[1]).toMatchInlineSnapshot(`
+            (mul.exp
+              (add a b)
+              (div 1 c))
+        `);
 
-    it("a/b -> a * 1/b", () => {
-        const result = checkStep("a/b", "a * 1/b");
-
-        expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
+            "fraction is the same as multiplying by one over",
+            "factoring",
+            "multiplying by one over something results in a fraction",
         ]);
     });
 });

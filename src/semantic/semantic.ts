@@ -165,15 +165,21 @@ export type NumericExpression =  // numbers
     | Infinity
     | Pi
     | Ident
-    | Ellipsis // n-ary
+    | Ellipsis
+
+    // n-ary
     | Add
     | Mul
-    | Func // binary
+    | Func
+
+    // binary
     | Div
     | Mod
     | Root
     | Exp
-    | Log // unary
+    | Log
+
+    // unary
     | Neg
     | Abs
     | Sum
@@ -283,21 +289,29 @@ export type NotIn = {
 };
 
 export type LogicExpression =
-    | Ident // values
+    | Ident
+
+    // values
     | True
-    | False // operations
+    | False
+
+    // operations
     | And
     | Or
     | Not
     | Xor
     | Implies
-    | Iff // relations, result in a Expression which may be evaluated to True or False
+    | Iff
+
+    // relations, result in a Expression which may be evaluated to True or False
     | Eq
     | Neq
     | Lt
     | Lte
     | Gt
-    | Gte // set relations
+    | Gte
+
+    // set relations
     | In
     | NotIn
     | Subset
@@ -374,11 +388,15 @@ export type Complexes = {
 
 export type SetExpression =
     | Set
-    | EmptySet // set operations
+
+    // set operations
+    | EmptySet
     | Union
     | Intersection
     | SetDiff
-    | CartesianProduct // number sets
+
+    // number sets
+    | CartesianProduct
     | Naturals
     | Integers
     | Rationals
