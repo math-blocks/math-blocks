@@ -1,7 +1,7 @@
-import * as Arithmetic from "./arithmetic";
 import * as Semantic from "../semantic/semantic";
-import {IStepChecker, Result, Reason} from "./step-checker";
+import * as Util from "../semantic/util";
 
+import {IStepChecker, Result, Reason} from "./step-checker";
 import {decomposeFactors} from "./util";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
@@ -31,19 +31,19 @@ class FractionChecker {
         const [numeratorA, denominatorA] = a.args;
         // Include ONE as a factor to handle cases where the denominator disappears
         // or the numerator chnages to 1.
-        const numFactorsA = Arithmetic.getFactors(numeratorA);
-        const denFactorsA = Arithmetic.getFactors(denominatorA);
+        const numFactorsA = Util.getFactors(numeratorA);
+        const denFactorsA = Util.getFactors(denominatorA);
 
         // cases:
         // - ab/ac -> a/a * b/c
         // - ab/a -> a/1 -> a
         const [numeratorB, denominatorB] =
-            b.type === "div" ? b.args : [b, Arithmetic.ONE];
+            b.type === "div" ? b.args : [b, Util.number("1")];
 
         // Include ONE as a factor to handle cases where the denominator disappears
         // or the numerator chnages to 1.
-        const numFactorsB = Arithmetic.getFactors(numeratorB);
-        const denFactorsB = Arithmetic.getFactors(denominatorB);
+        const numFactorsB = Util.getFactors(numeratorB);
+        const denFactorsB = Util.getFactors(denominatorB);
 
         // Ensure that no extra factors were added to either the numerator
         // or denominator.  It's okay to ignore factors that ONE since multiplying
@@ -61,13 +61,13 @@ class FractionChecker {
 
         if (
             !checker.checkStep(
-                Arithmetic.mul(addedNumFactors),
-                Arithmetic.ONE,
+                Util.mulFactors(addedNumFactors),
+                Util.number("1"),
                 reasons,
             ).equivalent ||
             !checker.checkStep(
-                Arithmetic.mul(addedDenFactors),
-                Arithmetic.ONE,
+                Util.mulFactors(addedDenFactors),
+                Util.number("1"),
                 reasons,
             ).equivalent
         ) {
@@ -85,13 +85,13 @@ class FractionChecker {
                 factoredNumFactorsA.length !== numFactorsA.length ||
                 factoredDenFactorsA.length !== denFactorsA.length
             ) {
-                const newPrev = Arithmetic.div(
-                    Arithmetic.mul(factoredNumFactorsA),
-                    Arithmetic.mul(factoredDenFactorsA),
+                const newPrev = Util.div(
+                    Util.mulFactors(factoredNumFactorsA),
+                    Util.mulFactors(factoredDenFactorsA),
                 );
-                const newNext = Arithmetic.div(
-                    Arithmetic.mul(factoredNumFactorsB),
-                    Arithmetic.mul(factoredDenFactorsB),
+                const newNext = Util.div(
+                    Util.mulFactors(factoredNumFactorsB),
+                    Util.mulFactors(factoredDenFactorsB),
                 );
 
                 // TODO: allow `nodes` in Reason type to have more than two nodes
@@ -152,11 +152,11 @@ class FractionChecker {
         );
 
         if (remainingNumFactors.length === 0) {
-            remainingNumFactors.push(Arithmetic.ONE);
+            remainingNumFactors.push(Util.number("1"));
         }
 
         if (remainingDenFactors.length === 0) {
-            remainingDenFactors.push(Arithmetic.ONE);
+            remainingDenFactors.push(Util.number("1"));
         }
 
         // ab/ac -> a/a * b/c
@@ -165,14 +165,14 @@ class FractionChecker {
             removedNumFactors.length === removedDenFactors.length &&
             checker.equality(removedNumFactors, removedDenFactors, reasons)
         ) {
-            const productA = Arithmetic.mul([
-                Arithmetic.div(
-                    Arithmetic.mul(removedNumFactors),
-                    Arithmetic.mul(removedDenFactors),
+            const productA = Util.mulFactors([
+                Util.div(
+                    Util.mulFactors(removedNumFactors),
+                    Util.mulFactors(removedDenFactors),
                 ),
-                Arithmetic.div(
-                    Arithmetic.mul(remainingNumFactors),
-                    Arithmetic.mul(remainingDenFactors),
+                Util.div(
+                    Util.mulFactors(remainingNumFactors),
+                    Util.mulFactors(remainingDenFactors),
                 ),
             ]);
 
@@ -214,11 +214,11 @@ class FractionChecker {
         const [numerator, denominator] = prev.args;
 
         if (denominator.type === "div") {
-            const reciprocal = Arithmetic.div(
+            const reciprocal = Util.div(
                 denominator.args[1],
                 denominator.args[0],
             );
-            const newPrev = Arithmetic.mul([numerator, reciprocal]);
+            const newPrev = Util.mulFactors([numerator, reciprocal]);
             const result = checker.checkStep(newPrev, next, reasons);
 
             if (result.equivalent) {
@@ -250,7 +250,8 @@ class FractionChecker {
         const {checker} = this;
         if (
             prev.type === "div" &&
-            checker.checkStep(prev.args[1], Arithmetic.ONE, reasons).equivalent
+            checker.checkStep(prev.args[1], Util.number("1"), reasons)
+                .equivalent
         ) {
             const result = checker.checkStep(prev.args[0], next, reasons);
             if (result.equivalent) {
@@ -281,7 +282,7 @@ class FractionChecker {
         if (prev.type === "div") {
             const [numerator, denominator] = prev.args;
             const result1 = checker.checkStep(numerator, denominator, reasons);
-            const result2 = checker.checkStep(next, Arithmetic.ONE, reasons);
+            const result2 = checker.checkStep(next, Util.number("1"), reasons);
             if (result1.equivalent && result2.equivalent) {
                 return {
                     equivalent: true,
@@ -330,11 +331,11 @@ class FractionChecker {
         // TODO: check if the div is a child of a mul node
         if (
             prev.type === "div" &&
-            !checker.exactMatch(prev.args[0], Arithmetic.ONE).equivalent
+            !checker.exactMatch(prev.args[0], Util.number("1")).equivalent
         ) {
-            const newPrev = Arithmetic.mul([
+            const newPrev = Util.mulFactors([
                 prev.args[0],
-                Arithmetic.div(Arithmetic.ONE, prev.args[1]),
+                Util.div(Util.number("1"), prev.args[1]),
             ]);
 
             const reason = {
@@ -382,7 +383,7 @@ class FractionChecker {
             if (
                 prev.args[0].type !== "div" &&
                 prev.args[1].type === "div" &&
-                checker.exactMatch(prev.args[1].args[0], Arithmetic.ONE)
+                checker.exactMatch(prev.args[1].args[0], Util.number("1"))
             ) {
                 return {
                     equivalent: false,
@@ -394,7 +395,7 @@ class FractionChecker {
             if (
                 prev.args[0].type === "div" &&
                 prev.args[1].type !== "div" &&
-                checker.exactMatch(prev.args[0].args[0], Arithmetic.ONE)
+                checker.exactMatch(prev.args[0].args[0], Util.number("1"))
             ) {
                 return {
                     equivalent: false,
@@ -408,15 +409,15 @@ class FractionChecker {
         for (const arg of prev.args) {
             if (arg.type === "div") {
                 const [numerator, denominator] = arg.args;
-                numFactors.push(...Arithmetic.getFactors(numerator));
-                denFactors.push(...Arithmetic.getFactors(denominator));
+                numFactors.push(...Util.getFactors(numerator));
+                denFactors.push(...Util.getFactors(denominator));
             } else {
-                numFactors.push(...Arithmetic.getFactors(arg));
+                numFactors.push(...Util.getFactors(arg));
             }
         }
-        const newPrev = Arithmetic.div(
-            Arithmetic.mul(numFactors),
-            Arithmetic.mul(denFactors),
+        const newPrev = Util.div(
+            Util.mulFactors(numFactors),
+            Util.mulFactors(denFactors),
         );
         const result = checker.checkStep(newPrev, next, reasons);
         return {

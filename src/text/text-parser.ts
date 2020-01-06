@@ -1,9 +1,8 @@
 import * as Parser from "../parser";
 import * as Semantic from "../semantic/semantic";
+import * as Util from "../semantic/util";
 
-import {lex} from "./text-lexer";
-
-import {Token} from "./text-lexer";
+import {lex, Token} from "./text-lexer";
 
 // TODO: fill out this list
 type Operator =
@@ -25,48 +24,6 @@ type TextParser = Parser.IParser<Token, Node, Operator>;
 
 const EOL: Token = {type: "eol"};
 
-const identifier = (name: string): Semantic.Ident => ({
-    type: "identifier",
-    name,
-});
-
-const number = (value: string): Semantic.Num => ({type: "number", value});
-
-const add = (args: TwoOrMore<Node>): Semantic.Add => ({
-    type: "add",
-    args,
-});
-
-const mul = (args: TwoOrMore<Node>, implicit = false): Semantic.Mul => ({
-    type: "mul",
-    implicit,
-    args,
-});
-
-const div = (numerator: Node, denominator: Node): Semantic.Div => ({
-    type: "div",
-    args: [numerator, denominator],
-});
-
-const neg = (arg: Node, subtraction = false): Semantic.Neg => {
-    return {
-        type: "neg",
-        arg,
-        subtraction,
-    };
-};
-
-const exp = (base: Node, exp: Node): Semantic.Exp => ({
-    type: "exp",
-    base,
-    exp,
-});
-
-const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
-    type: "eq",
-    args,
-});
-
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 // const root = (radicand: Node, index?: Node): Semantic.Root => ({
@@ -80,16 +37,16 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Semantic.Ident => identifier(token.name),
+                parse: (): Semantic.Ident => Util.identifier(token.name),
             };
         case "number":
             return {
-                parse: (): Semantic.Num => number(token.value),
+                parse: (): Semantic.Num => Util.number(token.value),
             };
         case "minus":
             return {
                 parse: (parser): Semantic.Neg =>
-                    neg(parser.parseWithOperator("neg"), false),
+                    Util.neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
@@ -143,7 +100,7 @@ const getInfixParselet = (
                 op: "div",
                 parse: (parser, left): Semantic.Div => {
                     parser.consume();
-                    return div(left, parser.parseWithOperator("div"));
+                    return Util.div(left, parser.parseWithOperator("div"));
                 },
             };
         case "caret":
@@ -152,7 +109,7 @@ const getInfixParselet = (
                 parse: (parser, left): Semantic.Exp => {
                     parser.consume();
                     // exponents are right-associative
-                    return exp(
+                    return Util.exp(
                         left,
                         parser.parseWithOperator("caret", "right"),
                     );
@@ -165,7 +122,7 @@ const getInfixParselet = (
                 op: "mul.imp",
                 parse: (parser, left): Semantic.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
-                    return mul([left, right, ...rest], true);
+                    return Util.mul([left, right, ...rest], true);
                 },
             };
         case "rparen":
@@ -188,13 +145,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return add([left, right, ...rest]);
+            return Util.add([left, right, ...rest]);
         case "mul.imp":
-            return mul([left, right, ...rest], true);
+            return Util.mul([left, right, ...rest], true);
         case "mul.exp":
-            return mul([left, right, ...rest], false);
+            return Util.mul([left, right, ...rest], false);
         case "eq":
-            return eq([left, right, ...rest]);
+            return Util.eq([left, right, ...rest]);
     }
 };
 
@@ -213,7 +170,7 @@ const parseNaryArgs = (
     }
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
-        expr = neg(expr, true);
+        expr = Util.neg(expr, true);
     }
     const nextToken = parser.peek();
 

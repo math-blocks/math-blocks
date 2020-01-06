@@ -2,6 +2,7 @@ import * as Parser from "../parser";
 import * as Semantic from "../semantic/semantic";
 import * as Lexer from "./editor-lexer";
 import * as Editor from "./editor";
+import * as Util from "../semantic/util";
 
 export type Token = Editor.Node<Lexer.Token>;
 
@@ -23,54 +24,6 @@ type Node = Semantic.Expression;
 
 type EditorParser = Parser.IParser<Token, Node, Operator>;
 
-const identifier = (name: string): Semantic.Ident => ({
-    type: "identifier",
-    name,
-});
-const number = (value: string): Semantic.Num => ({type: "number", value});
-const ellipsis = (): Semantic.Ellipsis => ({type: "ellipsis"});
-
-const add = (args: TwoOrMore<Node>): Semantic.Add => ({
-    type: "add",
-    args,
-});
-
-const mul = (args: TwoOrMore<Node>, implicit = false): Semantic.Mul => ({
-    type: "mul",
-    implicit,
-    args,
-});
-
-const eq = (args: TwoOrMore<Node>): Semantic.Eq => ({
-    type: "eq",
-    args,
-});
-
-const neg = (arg: Node, subtraction = false): Semantic.Neg => ({
-    type: "neg",
-    arg,
-    subtraction,
-});
-
-const div = (num: Node, den: Node): Semantic.Div => ({
-    type: "div",
-    args: [num, den],
-});
-
-const exp = (base: Node, exp: Node): Semantic.Exp => ({
-    type: "exp",
-    base,
-    exp,
-});
-
-// NOTE: we don't use a default param here since we want individual
-// nodes to be created for the index of each root.
-const root = (radicand: Node, index?: Node): Semantic.Root => ({
-    type: "root",
-    radicand,
-    index: index || number("2"),
-});
-
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
 
@@ -83,16 +36,16 @@ const getPrefixParselet = (
             switch (atom.kind) {
                 case "identifier":
                     return {
-                        parse: () => identifier(atom.name),
+                        parse: () => Util.identifier(atom.name),
                     };
                 case "number":
                     return {
-                        parse: () => number(atom.value),
+                        parse: () => Util.number(atom.value),
                     };
                 case "minus":
                     return {
                         parse: parser =>
-                            neg(parser.parseWithOperator("neg"), false),
+                            Util.neg(parser.parseWithOperator("neg"), false),
                     };
                 case "lparens":
                     return {
@@ -110,7 +63,7 @@ const getPrefixParselet = (
                     };
                 case "ellipsis":
                     return {
-                        parse: () => ellipsis(),
+                        parse: () => Util.ellipsis(),
                     };
                 default:
                     throw new Error(`Unexpected '${atom.kind}' atom`);
@@ -120,7 +73,7 @@ const getPrefixParselet = (
             return {
                 parse: () => {
                     const [numerator, denominator] = token.children;
-                    return div(
+                    return Util.div(
                         editorParser.parse(numerator.children),
                         editorParser.parse(denominator.children),
                     );
@@ -134,7 +87,7 @@ const getPrefixParselet = (
             return {
                 parse: () => {
                     const [arg, index] = token.children;
-                    return root(
+                    return Util.root(
                         editorParser.parse(arg.children),
                         index ? editorParser.parse(index.children) : undefined,
                     );
@@ -166,13 +119,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return add([left, right, ...rest]);
+            return Util.add([left, right, ...rest]);
         case "mul.imp":
-            return mul([left, right, ...rest], true);
+            return Util.mul([left, right, ...rest], true);
         case "mul.exp":
-            return mul([left, right, ...rest], false);
+            return Util.mul([left, right, ...rest], false);
         case "eq":
-            return eq([left, right, ...rest]);
+            return Util.eq([left, right, ...rest]);
     }
 };
 
@@ -198,7 +151,7 @@ const parseNaryArgs = (
         }
         let expr: Node = parser.parseWithOperator(op);
         if (op === "sub") {
-            expr = neg(expr, true);
+            expr = Util.neg(expr, true);
         }
         const nextToken = parser.peek();
         if (nextToken.type !== "atom") {
@@ -224,7 +177,7 @@ const parseNaryArgs = (
     } else if (token.type === "root") {
         parser.consume();
         const [arg, index] = token.children;
-        const expr = root(
+        const expr = Util.root(
             editorParser.parse(arg.children),
             index ? editorParser.parse(index.children) : undefined,
         );
@@ -273,7 +226,7 @@ const getInfixParselet = (
                         op: "mul.imp",
                         parse: (parser, left): Semantic.Mul => {
                             const [right, ...rest] = parseMulByParen(parser);
-                            return mul([left, right, ...rest], true);
+                            return Util.mul([left, right, ...rest], true);
                         },
                     };
                 case "rparens":
@@ -310,7 +263,7 @@ const getInfixParselet = (
                         }
                     }
                     if (sup) {
-                        return exp(left, editorParser.parse(sup.children));
+                        return Util.exp(left, editorParser.parse(sup.children));
                     }
 
                     return left;
