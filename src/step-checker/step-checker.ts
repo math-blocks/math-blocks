@@ -3,7 +3,8 @@ import BigNumber from "bignumber.js";
 import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
 
-import {zip} from "./util";
+import {zip, deepEquals, applySubReasons} from "./util";
+import {Result, Reason} from "./types";
 
 import FractionChecker from "./fraction-checker";
 import EquationChecker from "./equation-checker";
@@ -38,16 +39,6 @@ const parseNode = (node: Semantic.Expression): BigNumber => {
     }
 };
 
-export type Reason = {
-    message: string;
-    nodes: Semantic.Expression[];
-};
-
-export type Result = {
-    equivalent: boolean;
-    reasons: Reason[];
-};
-
 // TODO: fix flowtype/define-flow-type, HasArgs is used below
 // eslint-disable-next-line no-unused-vars
 type HasArgs =
@@ -71,33 +62,6 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "gt" ||
     a.type === "gte" ||
     a.type === "div";
-
-const deepEquals = (a: any, b: any): boolean => {
-    if (Array.isArray(a) && Array.isArray(b)) {
-        return (
-            a.length === b.length &&
-            a.every((val, index) => deepEquals(val, b[index]))
-        );
-    } else if (
-        typeof a === "object" &&
-        a != null &&
-        typeof b === "object" &&
-        b != null
-    ) {
-        const aKeys = Object.keys(a).filter(key => key !== "id");
-        const bKeys = Object.keys(b).filter(key => key !== "id");
-        if (aKeys.length !== bKeys.length) {
-            return false;
-        }
-        return aKeys.every(
-            key =>
-                Object.prototype.hasOwnProperty.call(b, key) &&
-                deepEquals(a[key], b[key]),
-        );
-    } else {
-        return a === b;
-    }
-};
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
@@ -324,7 +288,6 @@ class StepChecker implements IStepChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
@@ -332,13 +295,12 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(next, prev, reasons, "distribution");
+        return this.distributionFactoring(next, prev, "distribution");
     }
 
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
     ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
@@ -346,13 +308,12 @@ class StepChecker implements IStepChecker {
                 reasons: [],
             };
         }
-        return this.distributionFactoring(prev, next, reasons, "factoring");
+        return this.distributionFactoring(prev, next, "factoring");
     }
 
     distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
-        reasons: Reason[],
         reason: "distribution" | "factoring",
     ): Result {
         // TODO: handle distribution across n-ary multiplication later
@@ -363,10 +324,6 @@ class StepChecker implements IStepChecker {
                 [right, left],
             ]) {
                 if (y.type === "add" && y.args.length === addNode.args.length) {
-                    // TODO: use exactMatch instead here... or we'll have track all
-                    // of the reasons that are generated
-                    // TODO: apply the subReasons to previous node to get the node
-                    // before next.
                     const subReasons: Reason[] = [];
                     const equivalent = addNode.args.every((arg, index) => {
                         // Each term is in the correct order based on whether
@@ -386,10 +343,16 @@ class StepChecker implements IStepChecker {
                     });
 
                     if (equivalent) {
-                        const nodes =
+                        const nodes: Semantic.Expression[] =
                             reason === "distribution"
                                 ? [mulNode, addNode]
                                 : [addNode, mulNode];
+
+                        // TODO: include the original nodes[0] in the result somehow
+                        if (subReasons.length > 0) {
+                            nodes[0] = applySubReasons(nodes[0], subReasons);
+                        }
+
                         return {
                             equivalent: true,
                             reasons:
@@ -767,12 +730,12 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.checkDistribution(prev, next, reasons);
+        result = this.checkDistribution(prev, next);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(prev, next, reasons);
+        result = this.checkFactoring(prev, next);
         if (result.equivalent) {
             return result;
         }

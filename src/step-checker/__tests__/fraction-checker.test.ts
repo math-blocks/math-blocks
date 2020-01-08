@@ -1,6 +1,7 @@
 import {parse} from "../../text/text-parser";
 
-import StepChecker, {Result} from "../step-checker";
+import StepChecker from "../step-checker";
+import {Result} from "../types";
 
 import serializer from "../../semantic/semantic-serializer";
 
@@ -365,11 +366,14 @@ describe("FractionChecker", () => {
               (div 1 c))
         `);
 
-        // TODO: apply [0] and [1] to the original to generate this node
         expect(result.reasons[2].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (div a c)
-              (div b c))
+              (mul.exp
+                a
+                (div 1 c))
+              (mul.exp
+                b
+                (div 1 c)))
         `);
         expect(result.reasons[2].nodes[1]).toMatchInlineSnapshot(`
             (mul.exp
