@@ -44,6 +44,17 @@ describe("StepChecker", () => {
         ]);
     });
 
+    it("(2 - 1) + (1 + 1) -> 2 + 1", () => {
+        const result = checkStep("(2 - 1) + (1 + 1)", "2 + 1");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+            "evaluation of addition",
+            "commutative property",
+        ]);
+    });
+
     // nested commutative property
     it("(1 + 2) + (a + b) -> (2 + 1) + (b + a)", () => {
         const result = checkStep("(1 + 2) + (a + b)", "(b + a) + (2 + 1)");
@@ -66,6 +77,12 @@ describe("StepChecker", () => {
         ]);
     });
 
+    it("1 + 2 + 3 + 4 -> 6 [incorrect]", () => {
+        const result = checkStep("1 + 2 + 3 + 4", "6");
+
+        expect(result.equivalent).toBe(false);
+    });
+
     // commutative property with additive identity
     it("2 + 0 -> 0 + 2", () => {
         const result = checkStep("2 + 0", "0 + 2");
@@ -81,6 +98,29 @@ describe("StepChecker", () => {
 
         expect(result.equivalent).toBe(true);
         expect(result.reasons.map(reason => reason.message)).toEqual([
+            "commutative property",
+        ]);
+    });
+
+    it("(1 + 1) * (1 + 2) -> 3 * 2", () => {
+        const result = checkStep("(1 + 1) * (1 + 2)", "3 * 2");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+            "evaluation of addition",
+            "commutative property",
+        ]);
+    });
+
+    // We can defer handling decomposition for the time being
+    it.skip("3 * 2 -> (1 + 1) * (1 + 2)", () => {
+        const result = checkStep("3 * 2", "(1 + 1) * (1 + 2)");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+            "evaluation of addition",
             "commutative property",
         ]);
     });
@@ -212,8 +252,8 @@ describe("StepChecker", () => {
         ]);
     });
 
-    // TODO: make the reason for this be factoring
-    it("6 -> 2 * 3", () => {
+    // We're deferring decomposition of numbers for the now
+    it.skip("6 -> 2 * 3", () => {
         const result = checkStep("6", "2 * 3");
 
         expect(result.equivalent).toBe(true);
@@ -249,6 +289,16 @@ describe("StepChecker", () => {
         ]);
     });
 
+    // It's okay to defer decomposition for the time being
+    it.skip("5 -> 2 + 3", () => {
+        const result = checkStep("5", "2 + 3");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+        ]);
+    });
+
     it("a + 2 + 3 -> a + 5", () => {
         const result = checkStep("a + 2 + 3", "a + 5");
 
@@ -267,6 +317,21 @@ describe("StepChecker", () => {
         ]);
     });
 
+    // Currently we're thinking about this in the following way:
+    // 1 + 2 + 4 -> 7, 3 -> 3
+    // A student though should be adding things that are adjacent
+    // If they aren't adjacent, there should be a commutative property step
+    it("1 + 2 + 3 + 4 -> 3 + 7", () => {
+        const result = checkStep("1 + 2 + 3 + 4", "3 + 7");
+
+        expect(result.equivalent).toBe(true);
+        expect(result.reasons.map(reason => reason.message)).toEqual([
+            "evaluation of addition",
+            "evaluation of addition",
+        ]);
+    });
+
+    // TODO: the reason should be "evaluation of subtraction"
     it("10 - 5 -> 5", () => {
         const before = "10 - 5";
         const after = "5";
