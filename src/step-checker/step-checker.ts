@@ -429,21 +429,43 @@ class StepChecker implements IStepChecker {
             prev.args.length === next.args.length
         ) {
             const pairs = zip(prev.args, next.args);
-            // TODO: get commutative reasons
-            const commutative = pairs.some(
-                ([first, second]) =>
-                    !this.checkStep(first, second, reasons).equivalent,
-            );
+
+            // Check if the args are the same disregarding order.
             const result = this.checkArgs(prev, next, reasons);
-            if (commutative && result.equivalent) {
+
+            // If they aren't we can stop this check right here.
+            if (!result.equivalent) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
+
+            // If at least some of the pairs don't line up then it's safe to
+            // say the args have been reordered.
+            const reordered = pairs.some(([first, second]) => {
+                // It's safe to ignore the reasons from this call to checkStep
+                // since we're already getting the reasons why the nodes are equivalent
+                // from the call to checkArgs
+                const result = this.checkStep(first, second, reasons);
+                return !result.equivalent;
+            });
+
+            if (reordered) {
                 return {
                     equivalent: true,
                     reasons: [
+                        // We'd like any of the reasons from the checkArgs call to appear
+                        // first since it'll be easier to see that commutative property is
+                        // be applied once all of the values are the same.
+                        //
+                        // What about when we're going in reverse and splitting numbers up?
+                        // That seems like a very unlikely situation.
+                        ...result.reasons,
                         {
                             message: "commutative property",
                             nodes: [],
                         },
-                        ...result.reasons,
                     ],
                 };
             }
@@ -455,114 +477,122 @@ class StepChecker implements IStepChecker {
         };
     }
 
+    // This handles evaluation of addition or multiplication.
+    evaluateNaryOp(
+        a: Semantic.Expression,
+        b: Semantic.Expression,
+        op: "add" | "mul",
+    ): Result {
+        const aTerms = op === "add" ? Util.getTerms(a) : Util.getFactors(a);
+        const bTerms = op === "add" ? Util.getTerms(b) : Util.getFactors(b);
+
+        if (a.type !== op && b.type !== op) {
+            return {
+                equivalent: false,
+                reasons: [],
+            };
+        }
+
+        const reasons: Reason[] = [];
+
+        let i = 0;
+        for (let j = 0; j < bTerms.length; j++) {
+            const aTerm = aTerms[i];
+            const bTerm = bTerms[j];
+
+            if (this.exactMatch(aTerm, bTerm).equivalent) {
+                i++;
+                continue;
+            }
+
+            try {
+                // Find the first non-exact match between two numbers
+                const aVal = parseNode(aTerm);
+                const bVal = parseNode(bTerm);
+
+                // Accumulate a sum of numeric terms from aTerms until
+                // it matches bTerm's value, we run into a non-numeric
+                // term, or we run out of terms
+                let accumulator = aVal;
+                i++;
+                while (i < aTerms.length) {
+                    const nextTerm = parseNode(aTerms[i++]);
+                    accumulator.toString();
+                    switch (op) {
+                        case "add":
+                            accumulator = accumulator.plus(nextTerm);
+                            break;
+                        case "mul":
+                            accumulator = accumulator.times(nextTerm);
+                            break;
+                    }
+                    if (accumulator.isEqualTo(bVal)) {
+                        reasons.push({
+                            message:
+                                op === "add"
+                                    ? "evaluation of addition"
+                                    : "evaluation of multiplication",
+                            // TODO: How do we describe before/after nodes that
+                            // may be some subset of an actual node in the ast?
+                            nodes: [],
+                        });
+                        break;
+                    }
+                }
+            } catch (e) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
+        }
+
+        if (i < aTerms.length) {
+            return {
+                equivalent: false,
+                reasons: [],
+            };
+        }
+
+        if (reasons.length > 0) {
+            return {
+                equivalent: true,
+                reasons,
+            };
+        }
+
+        return {
+            equivalent: false,
+            reasons: [],
+        };
+    }
+
+    // This handles
     evaluateMul(
         a: Semantic.Expression,
         b: Semantic.Expression,
         reasons: Reason[],
     ): Result {
-        if (a.type !== "mul" && b.type !== "mul") {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
-
-        const aFactors = Util.getFactors(a);
-        const bFactors = Util.getFactors(b);
-
-        const aNumTerms = aFactors.filter(term => term.type === "number");
-        const bNumTerms = bFactors.filter(term => term.type === "number");
-
-        const commonTerms = this.intersection(aNumTerms, bNumTerms, reasons);
-        const aUniqFactors = this.difference(aNumTerms, commonTerms, reasons);
-        const bUniqFactors = this.difference(bNumTerms, commonTerms, reasons);
-
-        if (aUniqFactors.length > 0 && bUniqFactors.length > 0) {
-            const aValue = aUniqFactors.reduce(
-                (prod, arg) => prod.times(parseNode(arg)),
-                new BigNumber(1),
-            );
-            const bValue = bUniqFactors.reduce(
-                (prod, arg) => prod.times(parseNode(arg)),
-                new BigNumber(1),
-            );
-            if (aValue.isEqualTo(bValue)) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        {
-                            message: "evaluation of multiplication",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
-        return {
-            equivalent: false,
-            reasons: [],
-        };
+        return this.evaluateNaryOp(a, b, "mul");
     }
 
+    // This is unidirectional since most of the time we're adding numbers instead
+    // of decomposing them.
     evaluateAdd(
         a: Semantic.Expression,
         b: Semantic.Expression,
         reasons: Reason[],
     ): Result {
-        if (a.type !== "add" && b.type !== "add") {
-            return {
-                equivalent: false,
-                reasons: [],
-            };
-        }
+        return this.evaluateNaryOp(a, b, "add");
+    }
 
-        const aTerms = Util.getTerms(a);
-        const bTerms = Util.getTerms(b);
-
-        const aNumTerms = aTerms.filter(term => {
-            try {
-                parseNode(term);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        });
-        const bNumTerms = bTerms.filter(term => {
-            try {
-                parseNode(term);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        });
-
-        const commonTerms = this.intersection(aNumTerms, bNumTerms, reasons);
-        const aUniqTerms = this.difference(aNumTerms, commonTerms, reasons);
-        const bUniqTerms = this.difference(bNumTerms, commonTerms, reasons);
-
-        if (aUniqTerms.length > 0 && bUniqTerms.length > 0) {
-            const aValue = aUniqTerms.reduce(
-                (sum, arg) => sum.plus(parseNode(arg)),
-                new BigNumber(0),
-            );
-            const bValue = bUniqTerms.reduce(
-                (sum, arg) => sum.plus(parseNode(arg)),
-                new BigNumber(0),
-            );
-            if (aValue.isEqualTo(bValue)) {
-                return {
-                    equivalent: true,
-                    reasons: [
-                        {
-                            message: "evaluation of addition",
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
-        }
-
+    // TODO: Implement this.
+    // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
+    collectLikeTerms(
+        a: Semantic.Expression,
+        b: Semantic.Expression,
+        reasons: Reason[],
+    ): Result {
         return {
             equivalent: false,
             reasons: [],
@@ -580,21 +610,35 @@ class StepChecker implements IStepChecker {
             prev.args.length === next.args.length
         ) {
             const pairs = zip(prev.args, next.args);
-            // TODO: get commutative reasons
-            const commutative = pairs.some(
+
+            // Check if the arguments are the same disregarding order.
+            const result = this.checkArgs(prev, next, reasons);
+
+            // If the args are the same then we can stop here.
+            if (!result.equivalent) {
+                return {
+                    equivalent: false,
+                    reasons: [],
+                };
+            }
+
+            const reordered = pairs.some(
                 ([first, second]) =>
+                    // It's safe to ignore the reasons from these checks
+                    // since we already have the reasons from the checkArgs
+                    // call.
                     !this.checkStep(first, second, reasons).equivalent,
             );
-            const result = this.checkArgs(prev, next, reasons);
-            if (commutative && result.equivalent) {
+
+            if (reordered && result.equivalent) {
                 return {
                     equivalent: true,
                     reasons: [
+                        ...result.reasons,
                         {
                             message: "commutative property",
                             nodes: [],
                         },
-                        ...result.reasons,
                     ],
                 };
             }
