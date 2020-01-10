@@ -2,7 +2,7 @@ import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
 
 import {IStepChecker} from "./step-checker";
-import {Result, Reason} from "./types";
+import {Result, Step} from "./types";
 
 class EquationChecker {
     checker: IStepChecker;
@@ -11,7 +11,7 @@ class EquationChecker {
         this.checker = checker;
     }
 
-    checkAddSub(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkAddSub(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -21,28 +21,28 @@ class EquationChecker {
             const lhsNewTerms = checker.difference(
                 Util.getTerms(lhsB),
                 Util.getTerms(lhsA),
-                reasons,
+                steps,
             );
             const rhsNewTerms = checker.difference(
                 Util.getTerms(rhsB),
                 Util.getTerms(rhsA),
-                reasons,
+                steps,
             );
             const lhsNew = Util.addTerms(lhsNewTerms);
             const rhsNew = Util.addTerms(rhsNewTerms);
-            const result = checker.checkStep(lhsNew, rhsNew, reasons);
+            const result = checker.checkStep(lhsNew, rhsNew, steps);
 
             // TODO: handle adding multiple things to lhs and rhs as the same time
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
-            if (result.equivalent && result.reasons.length === 0) {
+            if (result.equivalent && result.steps.length === 0) {
                 if (
                     Util.isSubtraction(lhsNewTerms[0]) &&
                     Util.isSubtraction(rhsNewTerms[0])
                 ) {
                     return {
                         equivalent: true,
-                        reasons: [
+                        steps: [
                             {
                                 message:
                                     "subtracting the same value from both sides",
@@ -53,7 +53,7 @@ class EquationChecker {
                 }
                 return {
                     equivalent: true,
-                    reasons: [
+                    steps: [
                         {
                             message: "adding the same value to both sides",
                             nodes: [],
@@ -64,11 +64,11 @@ class EquationChecker {
         }
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
-    checkMul(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkMul(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -78,25 +78,25 @@ class EquationChecker {
             const lhsNewFactors = checker.difference(
                 Util.getFactors(lhsB),
                 Util.getFactors(lhsA),
-                reasons,
+                steps,
             );
             const rhsNewFactors = checker.difference(
                 Util.getFactors(rhsB),
                 Util.getFactors(rhsA),
-                reasons,
+                steps,
             );
             const result = checker.checkStep(
                 Util.mulFactors(lhsNewFactors),
                 Util.mulFactors(rhsNewFactors),
-                reasons,
+                steps,
             );
 
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
-            if (result.equivalent && result.reasons.length === 0) {
+            if (result.equivalent && result.steps.length === 0) {
                 return {
                     equivalent: true,
-                    reasons: [
+                    steps: [
                         {
                             message: "multiplying both sides by the same value",
                             nodes: [],
@@ -107,11 +107,11 @@ class EquationChecker {
         }
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
-    checkDiv(a: Semantic.Eq, b: Semantic.Eq, reasons: Reason[]): Result {
+    checkDiv(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
         const {checker} = this;
 
         const [lhsA, rhsA] = a.args;
@@ -119,16 +119,16 @@ class EquationChecker {
 
         if (lhsB.type === "div" && rhsB.type === "div") {
             if (
-                checker.checkStep(lhsA, lhsB.args[0], reasons).equivalent &&
-                checker.checkStep(rhsA, rhsB.args[0], reasons).equivalent
+                checker.checkStep(lhsA, lhsB.args[0], steps).equivalent &&
+                checker.checkStep(rhsA, rhsB.args[0], steps).equivalent
             ) {
                 if (
-                    checker.checkStep(lhsB.args[1], rhsB.args[1], reasons)
+                    checker.checkStep(lhsB.args[1], rhsB.args[1], steps)
                         .equivalent
                 ) {
                     return {
                         equivalent: true,
-                        reasons: [
+                        steps: [
                             {
                                 message:
                                     "dividing both sides by the same value",
@@ -143,42 +143,42 @@ class EquationChecker {
         }
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     checkStep(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (a.type !== "eq" || b.type !== "eq") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
         let result: Result;
 
-        result = this.checkAddSub(a, b, reasons);
+        result = this.checkAddSub(a, b, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkMul(a, b, reasons);
+        result = this.checkMul(a, b, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDiv(a, b, reasons);
+        result = this.checkDiv(a, b, steps);
         if (result.equivalent) {
             return result;
         }
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 }

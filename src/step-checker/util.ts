@@ -3,7 +3,7 @@ import produce from "immer";
 import * as Util from "../semantic/util";
 import * as Semantic from "../semantic/semantic";
 
-import {Reason} from "./types";
+import {Step} from "./types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
@@ -112,7 +112,7 @@ export const replaceNodeWithId = (
 
 export const applySubReasons = (
     root: Semantic.Expression,
-    subreasons: Reason[],
+    subreasons: Step[],
 ): Semantic.Expression => {
     const nextState = produce(root, draft => {
         for (const reason of subreasons) {

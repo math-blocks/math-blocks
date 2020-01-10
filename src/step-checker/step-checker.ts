@@ -4,7 +4,7 @@ import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
 
 import {zip, deepEquals, applySubReasons} from "./util";
-import {Result, Reason} from "./types";
+import {Result, Step} from "./types";
 
 import FractionChecker from "./fraction-checker";
 import EquationChecker from "./equation-checker";
@@ -76,24 +76,24 @@ export interface IStepChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         // We pass an array of reasons since cycles may include multiple steps
-        reasons: Reason[],
+        steps: Step[],
     ): Result;
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
     intersection(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): Semantic.Expression[];
     difference(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): Semantic.Expression[];
     // TODO: change this to return a Result
     equality(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): boolean;
 }
 
@@ -112,26 +112,26 @@ class StepChecker implements IStepChecker {
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
      */
-    checkArgs<T extends HasArgs>(prev: T, next: T, reasons: Reason[]): Result {
-        const _reasons: Reason[] = [];
+    checkArgs<T extends HasArgs>(prev: T, next: T, steps: Step[]): Result {
+        const _reasons: Step[] = [];
         if (prev.args.length !== next.args.length) {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
         const equivalent = prev.args.every(prevArg =>
             next.args.some(nextArg => {
-                const result = this.checkStep(prevArg, nextArg, reasons);
+                const result = this.checkStep(prevArg, nextArg, steps);
                 if (result.equivalent) {
-                    _reasons.push(...result.reasons);
+                    _reasons.push(...result.steps);
                 }
                 return result.equivalent;
             }),
         );
         return {
             equivalent,
-            reasons: _reasons,
+            steps: _reasons,
         };
     }
 
@@ -141,12 +141,12 @@ class StepChecker implements IStepChecker {
     intersection(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                b => this.checkStep(a, b, reasons).equivalent,
+                b => this.checkStep(a, b, steps).equivalent,
             );
             if (index !== -1) {
                 result.push(a);
@@ -162,12 +162,12 @@ class StepChecker implements IStepChecker {
     difference(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                b => this.checkStep(a, b, reasons).equivalent,
+                b => this.checkStep(a, b, steps).equivalent,
             );
             if (index !== -1) {
                 bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -185,22 +185,22 @@ class StepChecker implements IStepChecker {
     equality(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        reasons: Reason[],
+        steps: Step[],
     ): boolean {
         return as.every(a =>
-            bs.some(b => this.checkStep(a, b, reasons).equivalent),
+            bs.some(b => this.checkStep(a, b, steps).equivalent),
         );
     }
 
     addZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (prev.type !== "add") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
@@ -211,19 +211,19 @@ class StepChecker implements IStepChecker {
             Util.number("0"), // TODO: provide a way to have different levels of messages, e.g.
             // "adding zero doesn't change an expression"
             "addition with identity",
-            reasons,
+            steps,
         );
     }
 
     mulOne(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
@@ -234,7 +234,7 @@ class StepChecker implements IStepChecker {
             Util.number("1"), // TODO: provide a way to have different levels of messages, e.g.
             // "multiplying by one doesn't change an expression"
             "multiplication with identity",
-            reasons,
+            steps,
         );
     }
 
@@ -244,13 +244,13 @@ class StepChecker implements IStepChecker {
         op: (arg0: Semantic.Expression[]) => Semantic.Expression,
         identity: Semantic.Num, // conditional types would come in handy here
         reason: string,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
-        const identityReasons: Reason[] = [];
+        const identityReasons: Step[] = [];
         const nonIdentityArgs = prev.args.filter(arg => {
-            const result = this.checkStep(arg, identity, reasons);
+            const result = this.checkStep(arg, identity, steps);
             if (result.equivalent) {
-                identityReasons.push(...result.reasons);
+                identityReasons.push(...result.steps);
             }
             return !result.equivalent;
         });
@@ -259,29 +259,29 @@ class StepChecker implements IStepChecker {
         if (nonIdentityArgs.length === prev.args.length) {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
         const newPrev = op(nonIdentityArgs);
-        const result = this.checkStep(newPrev, next, reasons);
+        const result = this.checkStep(newPrev, next, steps);
         if (result.equivalent) {
             return {
                 equivalent: true,
-                reasons: [
+                steps: [
                     ...identityReasons,
                     {
                         message: reason,
                         nodes: [],
                     },
-                    ...result.reasons,
+                    ...result.steps,
                 ],
             };
         }
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
@@ -292,7 +292,7 @@ class StepChecker implements IStepChecker {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
         return this.distributionFactoring(next, prev, "distribution");
@@ -305,7 +305,7 @@ class StepChecker implements IStepChecker {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
         return this.distributionFactoring(prev, next, "factoring");
@@ -324,7 +324,7 @@ class StepChecker implements IStepChecker {
                 [right, left],
             ]) {
                 if (y.type === "add" && y.args.length === addNode.args.length) {
-                    const subReasons: Reason[] = [];
+                    const subReasons: Step[] = [];
                     const equivalent = addNode.args.every((arg, index) => {
                         // Each term is in the correct order based on whether
                         // we're distributing/factoring from left to right or
@@ -338,7 +338,7 @@ class StepChecker implements IStepChecker {
                         // different nodes so we won't run into a cycle here.
                         const substep = this.checkStep(arg, term, []);
 
-                        subReasons.push(...substep.reasons);
+                        subReasons.push(...substep.steps);
                         return substep.equivalent;
                     });
 
@@ -355,7 +355,7 @@ class StepChecker implements IStepChecker {
 
                         return {
                             equivalent: true,
-                            reasons:
+                            steps:
                                 reason === "distribution"
                                     ? [
                                           {
@@ -378,33 +378,33 @@ class StepChecker implements IStepChecker {
         }
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     mulByZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
-        // TODO: ensure that reasons from these calls to checkStep
+        // TODO: ensure that steps from these calls to checkStep
         // are captured.
         const hasZero = prev.args.some(
-            arg => this.checkStep(arg, Util.number("0"), reasons).equivalent,
+            arg => this.checkStep(arg, Util.number("0"), steps).equivalent,
         );
-        const result = this.checkStep(next, Util.number("0"), reasons);
+        const result = this.checkStep(next, Util.number("0"), steps);
         if (hasZero && result.equivalent) {
             return {
                 equivalent: true,
-                reasons: [
-                    ...result.reasons,
+                steps: [
+                    ...result.steps,
                     {
                         message: "multiplication by zero",
                         nodes: [],
@@ -414,14 +414,14 @@ class StepChecker implements IStepChecker {
         }
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     commuteAddition(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (
             prev.type === "add" &&
@@ -431,13 +431,13 @@ class StepChecker implements IStepChecker {
             const pairs = zip(prev.args, next.args);
 
             // Check if the args are the same disregarding order.
-            const result = this.checkArgs(prev, next, reasons);
+            const result = this.checkArgs(prev, next, steps);
 
             // If they aren't we can stop this check right here.
             if (!result.equivalent) {
                 return {
                     equivalent: false,
-                    reasons: [],
+                    steps: [],
                 };
             }
 
@@ -447,21 +447,21 @@ class StepChecker implements IStepChecker {
                 // It's safe to ignore the reasons from this call to checkStep
                 // since we're already getting the reasons why the nodes are equivalent
                 // from the call to checkArgs
-                const result = this.checkStep(first, second, reasons);
+                const result = this.checkStep(first, second, steps);
                 return !result.equivalent;
             });
 
             if (reordered) {
                 return {
                     equivalent: true,
-                    reasons: [
+                    steps: [
                         // We'd like any of the reasons from the checkArgs call to appear
                         // first since it'll be easier to see that commutative property is
                         // be applied once all of the values are the same.
                         //
                         // What about when we're going in reverse and splitting numbers up?
                         // That seems like a very unlikely situation.
-                        ...result.reasons,
+                        ...result.steps,
                         {
                             message: "commutative property",
                             nodes: [],
@@ -473,7 +473,7 @@ class StepChecker implements IStepChecker {
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
@@ -489,11 +489,11 @@ class StepChecker implements IStepChecker {
         if (a.type !== op && b.type !== op) {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
-        const reasons: Reason[] = [];
+        const steps: Step[] = [];
 
         let i = 0;
         for (let j = 0; j < bTerms.length; j++) {
@@ -527,7 +527,7 @@ class StepChecker implements IStepChecker {
                             break;
                     }
                     if (accumulator.isEqualTo(bVal)) {
-                        reasons.push({
+                        steps.push({
                             message:
                                 op === "add"
                                     ? "evaluation of addition"
@@ -542,7 +542,7 @@ class StepChecker implements IStepChecker {
             } catch (e) {
                 return {
                     equivalent: false,
-                    reasons: [],
+                    steps: [],
                 };
             }
         }
@@ -550,20 +550,20 @@ class StepChecker implements IStepChecker {
         if (i < aTerms.length) {
             return {
                 equivalent: false,
-                reasons: [],
+                steps: [],
             };
         }
 
-        if (reasons.length > 0) {
+        if (steps.length > 0) {
             return {
                 equivalent: true,
-                reasons,
+                steps,
             };
         }
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
@@ -571,7 +571,7 @@ class StepChecker implements IStepChecker {
     evaluateMul(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         return this.evaluateNaryOp(a, b, "mul");
     }
@@ -581,7 +581,7 @@ class StepChecker implements IStepChecker {
     evaluateAdd(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         return this.evaluateNaryOp(a, b, "add");
     }
@@ -591,18 +591,18 @@ class StepChecker implements IStepChecker {
     collectLikeTerms(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     commuteMultiplication(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (
             prev.type === "mul" &&
@@ -612,29 +612,29 @@ class StepChecker implements IStepChecker {
             const pairs = zip(prev.args, next.args);
 
             // Check if the arguments are the same disregarding order.
-            const result = this.checkArgs(prev, next, reasons);
+            const result = this.checkArgs(prev, next, steps);
 
             // If the args are the same then we can stop here.
             if (!result.equivalent) {
                 return {
                     equivalent: false,
-                    reasons: [],
+                    steps: [],
                 };
             }
 
             const reordered = pairs.some(
                 ([first, second]) =>
-                    // It's safe to ignore the reasons from these checks
-                    // since we already have the reasons from the checkArgs
+                    // It's safe to ignore the steps from these checks
+                    // since we already have the steps from the checkArgs
                     // call.
-                    !this.checkStep(first, second, reasons).equivalent,
+                    !this.checkStep(first, second, steps).equivalent,
             );
 
             if (reordered && result.equivalent) {
                 return {
                     equivalent: true,
-                    reasons: [
-                        ...result.reasons,
+                    steps: [
+                        ...result.steps,
                         {
                             message: "commutative property",
                             nodes: [],
@@ -646,14 +646,14 @@ class StepChecker implements IStepChecker {
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     symmetricProperty(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         if (
             prev.type === "eq" &&
@@ -664,18 +664,18 @@ class StepChecker implements IStepChecker {
             // TODO: get commutative reasons
             const commutative = pairs.some(
                 ([first, second]) =>
-                    !this.checkStep(first, second, reasons).equivalent,
+                    !this.checkStep(first, second, steps).equivalent,
             );
-            const result = this.checkArgs(prev, next, reasons);
+            const result = this.checkArgs(prev, next, steps);
             if (commutative && result.equivalent) {
                 return {
                     equivalent: true,
-                    reasons: [
+                    steps: [
                         {
                             message: "symmetric property",
                             nodes: [],
                         },
-                        ...result.reasons,
+                        ...result.steps,
                     ],
                 };
             }
@@ -683,14 +683,14 @@ class StepChecker implements IStepChecker {
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result {
         return {
             equivalent: deepEquals(prev, next),
-            reasons: [],
+            steps: [],
         };
     }
 
@@ -702,7 +702,7 @@ class StepChecker implements IStepChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        reasons: Reason[],
+        steps: Step[],
     ): Result {
         assertValid(prev);
         assertValid(next);
@@ -714,62 +714,62 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.equationChecker.checkStep(prev, next, reasons);
+        result = this.equationChecker.checkStep(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.evaluateMul(prev, next, reasons);
+        result = this.evaluateMul(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.evaluateAdd(prev, next, reasons);
+        result = this.evaluateAdd(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.symmetricProperty(prev, next, reasons);
+        result = this.symmetricProperty(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteAddition(prev, next, reasons);
+        result = this.commuteAddition(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteMultiplication(prev, next, reasons);
+        result = this.commuteMultiplication(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(prev, next, reasons);
+        result = this.addZero(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(next, prev, reasons);
+        result = this.addZero(next, prev, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.integerChecker.checkStep(prev, next, reasons);
+        result = this.integerChecker.checkStep(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(prev, next, reasons);
+        result = this.mulOne(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(next, prev, reasons);
+        result = this.mulOne(next, prev, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.fractionChecker.checkStep(prev, next, reasons);
+        result = this.fractionChecker.checkStep(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
@@ -785,13 +785,13 @@ class StepChecker implements IStepChecker {
         }
 
         // a * 0 -> 0
-        result = this.mulByZero(prev, next, reasons);
+        result = this.mulByZero(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
         // 0 -> a * 0
-        result = this.mulByZero(next, prev, reasons);
+        result = this.mulByZero(next, prev, steps);
         if (result.equivalent) {
             return result;
         }
@@ -799,15 +799,15 @@ class StepChecker implements IStepChecker {
         // General check if the args are equivalent for things with args
         // than are an array and not a tuple.
         if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
-            return this.checkArgs(prev, next, reasons);
+            return this.checkArgs(prev, next, steps);
         } else if (prev.type === "neg" && next.type === "neg") {
-            const result = this.checkStep(prev.arg, next.arg, reasons);
+            const result = this.checkStep(prev.arg, next.arg, steps);
             return {
                 equivalent:
                     prev.subtraction === next.subtraction && result.equivalent,
-                reasons:
+                steps:
                     prev.subtraction === next.subtraction && result.equivalent
-                        ? result.reasons
+                        ? result.steps
                         : [],
             };
         }
@@ -815,18 +815,18 @@ class StepChecker implements IStepChecker {
         if (prev.type === "number" && next.type === "number") {
             return {
                 equivalent: prev.value === next.value,
-                reasons: [],
+                steps: [],
             };
         } else if (prev.type === "identifier" && next.type === "identifier") {
             return {
                 equivalent: prev.name === next.name,
-                reasons: [],
+                steps: [],
             };
         }
 
         return {
             equivalent: false,
-            reasons: [],
+            steps: [],
         };
     }
 }
