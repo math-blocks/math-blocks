@@ -1,5 +1,3 @@
-import BigNumber from "bignumber.js";
-
 import * as Semantic from "../semantic/semantic";
 import * as Util from "../semantic/util";
 
@@ -9,6 +7,7 @@ import {Result, Step} from "./types";
 import FractionChecker from "./fraction-checker";
 import EquationChecker from "./equation-checker";
 import IntegerChecker from "./integer-checker";
+import EvalDecompChecker from "./eval-decomp-checker";
 
 // TODO: have a separate function that checks recursively
 // TODO: provide a rational
@@ -24,18 +23,6 @@ const assertValid = (node: Semantic.Expression): void => {
                 );
             }
         }
-    }
-};
-
-const parseNode = (node: Semantic.Expression): BigNumber => {
-    if (node.type === "number") {
-        return new BigNumber(node.value);
-    } else if (node.type === "neg") {
-        return parseNode(node.arg).times(new BigNumber(-1));
-    } else if (node.type === "div") {
-        return parseNode(node.args[0]).div(parseNode(node.args[1]));
-    } else {
-        throw new Error(`cannot parse a number from ${node.type} node`);
     }
 };
 
@@ -101,11 +88,13 @@ class StepChecker implements IStepChecker {
     fractionChecker: FractionChecker;
     equationChecker: EquationChecker;
     integerChecker: IntegerChecker;
+    evalChecker: EvalDecompChecker;
 
     constructor() {
         this.fractionChecker = new FractionChecker(this);
         this.equationChecker = new EquationChecker(this);
         this.integerChecker = new IntegerChecker(this);
+        this.evalChecker = new EvalDecompChecker(this);
     }
 
     /**
@@ -477,115 +466,6 @@ class StepChecker implements IStepChecker {
         };
     }
 
-    // This handles evaluation of addition or multiplication.
-    evaluateNaryOp(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        op: "add" | "mul",
-    ): Result {
-        const aTerms = op === "add" ? Util.getTerms(a) : Util.getFactors(a);
-        const bTerms = op === "add" ? Util.getTerms(b) : Util.getFactors(b);
-
-        if (a.type !== op && b.type !== op) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
-        }
-
-        const steps: Step[] = [];
-
-        let i = 0;
-        for (let j = 0; j < bTerms.length; j++) {
-            const aTerm = aTerms[i];
-            const bTerm = bTerms[j];
-
-            if (this.exactMatch(aTerm, bTerm).equivalent) {
-                i++;
-                continue;
-            }
-
-            try {
-                // Find the first non-exact match between two numbers
-                const aVal = parseNode(aTerm);
-                const bVal = parseNode(bTerm);
-
-                // Accumulate a sum of numeric terms from aTerms until
-                // it matches bTerm's value, we run into a non-numeric
-                // term, or we run out of terms
-                let accumulator = aVal;
-                i++;
-                while (i < aTerms.length) {
-                    const nextTerm = parseNode(aTerms[i++]);
-                    accumulator.toString();
-                    switch (op) {
-                        case "add":
-                            accumulator = accumulator.plus(nextTerm);
-                            break;
-                        case "mul":
-                            accumulator = accumulator.times(nextTerm);
-                            break;
-                    }
-                    if (accumulator.isEqualTo(bVal)) {
-                        steps.push({
-                            message:
-                                op === "add"
-                                    ? "evaluation of addition"
-                                    : "evaluation of multiplication",
-                            // TODO: How do we describe before/after nodes that
-                            // may be some subset of an actual node in the ast?
-                            nodes: [],
-                        });
-                        break;
-                    }
-                }
-            } catch (e) {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
-            }
-        }
-
-        if (i < aTerms.length) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
-        }
-
-        if (steps.length > 0) {
-            return {
-                equivalent: true,
-                steps,
-            };
-        }
-
-        return {
-            equivalent: false,
-            steps: [],
-        };
-    }
-
-    // This handles
-    evaluateMul(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
-        return this.evaluateNaryOp(a, b, "mul");
-    }
-
-    // This is unidirectional since most of the time we're adding numbers instead
-    // of decomposing them.
-    evaluateAdd(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
-        return this.evaluateNaryOp(a, b, "add");
-    }
-
     // TODO: Implement this.
     // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
     collectLikeTerms(
@@ -714,21 +594,6 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.equationChecker.checkStep(prev, next, steps);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.evaluateMul(prev, next, steps);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.evaluateAdd(prev, next, steps);
-        if (result.equivalent) {
-            return result;
-        }
-
         result = this.symmetricProperty(prev, next, steps);
         if (result.equivalent) {
             return result;
@@ -754,22 +619,12 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.integerChecker.checkStep(prev, next, steps);
-        if (result.equivalent) {
-            return result;
-        }
-
         result = this.mulOne(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
 
         result = this.mulOne(next, prev, steps);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.fractionChecker.checkStep(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
@@ -792,6 +647,28 @@ class StepChecker implements IStepChecker {
 
         // 0 -> a * 0
         result = this.mulByZero(next, prev, steps);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.equationChecker.checkStep(prev, next, steps);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.evalChecker.checkStep(prev, next, steps);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.integerChecker.checkStep(prev, next, steps);
+        if (result.equivalent) {
+            return result;
+        }
+
+        // FractionChecker must appear after EvalChecker
+        // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
+        result = this.fractionChecker.checkStep(prev, next, steps);
         if (result.equivalent) {
             return result;
         }
