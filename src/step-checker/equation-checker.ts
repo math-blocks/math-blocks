@@ -147,7 +147,7 @@ class EquationChecker {
         };
     }
 
-    checkStep(
+    runChecks(
         a: Semantic.Expression,
         b: Semantic.Expression,
         steps: Step[],

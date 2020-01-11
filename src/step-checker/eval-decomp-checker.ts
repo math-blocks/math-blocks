@@ -168,7 +168,7 @@ class EvalDecompChecker {
         return this.evalDecompNaryOp(b, a, "mul", Direction.DECOMP);
     }
 
-    checkStep(
+    runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         steps: Step[],
