@@ -434,7 +434,7 @@ class FractionChecker {
         };
     }
 
-    checkStep(
+    runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         steps: Step[],

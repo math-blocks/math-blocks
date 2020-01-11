@@ -308,7 +308,7 @@ class IntegerChecker {
 
     // TODO: rename these methods to differentiate the StepChecker method from
     // this method
-    checkStep(
+    runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         steps: Step[],
