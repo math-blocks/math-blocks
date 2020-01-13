@@ -28,6 +28,16 @@ describe("AxiomChecker", () => {
                 "symmetric property",
             ]);
         });
+
+        it("a = 1 + 2 -> 3 = a", () => {
+            const result = checkStep("a = 1 + 2", "3 = a");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map(reason => reason.message)).toEqual([
+                "symmetric property",
+                "evaluation of addition",
+            ]);
+        });
     });
 
     describe("commuteAddition", () => {
