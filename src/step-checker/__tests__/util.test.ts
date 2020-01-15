@@ -30,6 +30,10 @@ describe("primeDecomp", () => {
     it("36 -> [2, 2, 3, 3]", () => {
         expect(primeDecomp(36)).toEqual([2, 2, 3, 3]);
     });
+
+    it("1 -> [1]", () => {
+        expect(primeDecomp(1)).toEqual([1]);
+    });
 });
 
 describe("findNodeById", () => {
