@@ -1,10 +1,10 @@
 import React from "react";
 
-import * as Editor from "../src/editor/editor";
+import * as Editor from "@math-blocks/editor";
+import {MathRenderer} from "@math-blocks/react";
+import {Layout, typeset} from "@math-blocks/typesetter";
+
 import fontMetrics from "../metrics/comic-sans.json";
-import MathRenderer from "../src/components/math-renderer";
-import {Box} from "../src/typesetting/layout";
-import typeset from "../src/typesetting/typeset";
 
 const {row, glyph} = Editor;
 
@@ -25,7 +25,7 @@ export const Small: React.SFC<{}> = () => {
         glyph("0"),
     ]);
     const fontSize = 20;
-    const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
+    const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Layout.Box;
 
     return <MathRenderer box={box} />;
 };
@@ -42,7 +42,7 @@ export const Large: React.SFC<{}> = () => {
         glyph("5"),
     ]);
     const fontSize = 50;
-    const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Box;
+    const box = typeset(fontMetrics)(fontSize)(1.0)(math) as Layout.Box;
 
     return <MathRenderer box={box} />;
 };
