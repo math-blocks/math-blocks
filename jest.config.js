@@ -5,5 +5,5 @@ module.exports = {
     moduleNameMapper: {
         "^@math-blocks/(.*)$": "<rootDir>/packages/$1/src/index.ts",
     },
-    collectCoverageFrom: ["src/**/*.{ts,tssx}"],
+    collectCoverageFrom: ["src/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
 };
