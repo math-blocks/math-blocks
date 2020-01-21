@@ -3,7 +3,6 @@ import * as Semantic from "@math-blocks/semantic";
 import {zip, applySubReasons} from "./util";
 import {IStepChecker} from "./step-checker";
 import {Result, Step} from "./types";
-import app from "../app";
 
 class AxiomChecker {
     checker: IStepChecker;
