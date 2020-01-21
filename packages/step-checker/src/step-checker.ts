@@ -67,9 +67,22 @@ export interface IStepChecker {
         bs: Semantic.Expression[],
         steps: Step[],
     ): boolean;
+    options: Options;
 }
 
+export type Options = {
+    skipEvalChecker?: boolean;
+    evalFractions?: boolean;
+};
+
+const defaultOptions: Options = {
+    skipEvalChecker: false,
+    evalFractions: true,
+};
+
 class StepChecker implements IStepChecker {
+    options: Options;
+
     axiomChecker: AxiomChecker;
     fractionChecker: FractionChecker;
     equationChecker: EquationChecker;
@@ -77,7 +90,12 @@ class StepChecker implements IStepChecker {
     evalChecker: EvalDecompChecker;
     polynomialChecker: PolynomialChecker;
 
-    constructor() {
+    constructor(options?: Options) {
+        this.options = {
+            ...defaultOptions,
+            ...options,
+        };
+
         this.axiomChecker = new AxiomChecker(this);
         this.fractionChecker = new FractionChecker(this);
         this.equationChecker = new EquationChecker(this);
@@ -204,9 +222,11 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.evalChecker.runChecks(prev, next, steps);
-        if (result.equivalent) {
-            return result;
+        if (!this.options.skipEvalChecker) {
+            result = this.evalChecker.runChecks(prev, next, steps);
+            if (result.equivalent) {
+                return result;
+            }
         }
 
         result = this.integerChecker.runChecks(prev, next, steps);

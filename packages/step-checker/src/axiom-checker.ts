@@ -3,6 +3,7 @@ import * as Semantic from "@math-blocks/semantic";
 import {zip, applySubReasons} from "./util";
 import {IStepChecker} from "./step-checker";
 import {Result, Step} from "./types";
+import app from "../app";
 
 class AxiomChecker {
     checker: IStepChecker;
@@ -82,8 +83,10 @@ class AxiomChecker {
             };
         }
 
-        const newPrev = op(nonIdentityArgs);
-        const result = this.checker.checkStep(newPrev, next, steps);
+        const newPrev = applySubReasons(prev, identityReasons);
+
+        const newNext = op(nonIdentityArgs);
+        const result = this.checker.checkStep(newNext, next, steps);
         if (result.equivalent) {
             return {
                 equivalent: true,
@@ -91,7 +94,7 @@ class AxiomChecker {
                     ...identityReasons,
                     {
                         message: reason,
-                        nodes: [],
+                        nodes: [newPrev, newNext],
                     },
                     ...result.steps,
                 ],
@@ -286,6 +289,10 @@ class AxiomChecker {
                         //
                         // What about when we're going in reverse and splitting numbers up?
                         // That seems like a very unlikely situation.
+                        //
+                        // The order doesn't really matter.  We could provide a way to indicate
+                        // the precedence between different operations and use that to decide
+                        // the ordering.
                         ...result.steps,
                         {
                             message: "commutative property",
@@ -333,6 +340,8 @@ class AxiomChecker {
                     !this.checker.checkStep(first, second, steps).equivalent,
             );
 
+            const newPrev = applySubReasons(prev, result.steps);
+
             if (reordered && result.equivalent) {
                 return {
                     equivalent: true,
@@ -340,7 +349,7 @@ class AxiomChecker {
                         ...result.steps,
                         {
                             message: "commutative property",
-                            nodes: [],
+                            nodes: [newPrev, next],
                         },
                     ],
                 };
@@ -364,13 +373,18 @@ class AxiomChecker {
             prev.args.length === next.args.length
         ) {
             const pairs = zip(prev.args, next.args);
-            // TODO: get commutative reasons
+
+            const result = this.checker.checkArgs(prev, next, steps);
+            if (!result.equivalent) {
+                return result;
+            }
+
             const commutative = pairs.some(
                 ([first, second]) =>
                     !this.checker.checkStep(first, second, steps).equivalent,
             );
-            const result = this.checker.checkArgs(prev, next, steps);
-            if (commutative && result.equivalent) {
+
+            if (commutative) {
                 return {
                     equivalent: true,
                     steps: [

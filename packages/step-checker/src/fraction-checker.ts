@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {IStepChecker} from "./step-checker";
 import {Result, Step} from "./types";
-import {decomposeFactors} from "./util";
+import {decomposeFactors, applySubReasons} from "./util";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
@@ -39,6 +39,9 @@ class FractionChecker {
         // - ab/a -> a/1 -> a
         const [numeratorB, denominatorB] =
             b.type === "div" ? b.args : [b, Semantic.number("1")];
+
+        numeratorA; // ?
+        numeratorB; // ?
 
         // Include ONE as a factor to handle cases where the denominator disappears
         // or the numerator chnages to 1.
@@ -102,10 +105,19 @@ class FractionChecker {
                     newNext,
                     steps,
                 );
+                a; // ?
+                b; // ?
+                newPrev.args[0]; // ?
+                newPrev.args[1]; // ?
+                newNext.args[0]; // ?
+                newNext.args[1]; // ?
 
                 // Because we're also creating a new step coming from the opposite
                 // direction, we need to check that that step will also work.
                 const result2 = checker.checkStep(newNext, b, steps);
+
+                result2.equivalent; //?
+                result1.equivalent; //?
 
                 if (result1.equivalent && result2.equivalent) {
                     return {
@@ -113,7 +125,7 @@ class FractionChecker {
                         steps: [
                             {
                                 message: "prime factorization",
-                                nodes: [],
+                                nodes: [a, newPrev],
                             },
                             ...result1.steps,
                             ...result2.steps,
@@ -184,7 +196,7 @@ class FractionChecker {
                         {
                             message:
                                 "extract common factors from numerator and denominator",
-                            nodes: [],
+                            nodes: [a, productA],
                         },
                         ...result.steps,
                     ],
@@ -228,7 +240,7 @@ class FractionChecker {
                         {
                             message:
                                 "dividing by a fraction is the same as multiplying by the reciprocal",
-                            nodes: [],
+                            nodes: [prev, newPrev],
                         },
                         ...result.steps,
                     ],
@@ -254,6 +266,7 @@ class FractionChecker {
                 .equivalent
         ) {
             const result = checker.checkStep(prev.args[0], next, steps);
+            const newPrev = applySubReasons(prev, result.steps);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -261,7 +274,7 @@ class FractionChecker {
                         ...result.steps,
                         {
                             message: "division by one",
-                            nodes: [],
+                            nodes: [newPrev, next],
                         },
                     ],
                 };
@@ -281,6 +294,7 @@ class FractionChecker {
         const {checker} = this;
         if (prev.type === "div") {
             const [numerator, denominator] = prev.args;
+            const one = Semantic.number("1");
             const result1 = checker.checkStep(numerator, denominator, steps);
             const result2 = checker.checkStep(
                 next,
@@ -294,7 +308,7 @@ class FractionChecker {
                         ...result1.steps,
                         {
                             message: "division by the same value",
-                            nodes: [],
+                            nodes: [prev, one],
                         },
                         ...result2.steps,
                     ],
@@ -342,11 +356,12 @@ class FractionChecker {
                 Semantic.div(Semantic.number("1"), prev.args[1]),
             ]);
 
+            // TODO: write more tests to check that all of this is correct
             const step = {
                 message: reverse
                     ? "multiplying by one over something results in a fraction"
                     : "fraction is the same as multiplying by one over",
-                nodes: [prev, newPrev],
+                nodes: reverse ? [newPrev, prev] : [prev, newPrev],
             };
 
             const result = reverse

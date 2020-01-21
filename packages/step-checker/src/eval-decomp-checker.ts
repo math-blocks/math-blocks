@@ -2,20 +2,23 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {IStepChecker} from "./step-checker";
+import {IStepChecker, Options} from "./step-checker";
 import {Result, Step} from "./types";
 
 // Disable automatic reducing
 // @ts-ignore
 Fraction.REDUCE = false;
 
-const parseNode = (node: Semantic.Expression): Fraction => {
+const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
     } else if (node.type === "neg") {
-        return parseNode(node.arg).mul(new Fraction("-1"));
-    } else if (node.type === "div") {
-        return parseNode(node.args[0]).div(parseNode(node.args[1]));
+        return parseNode(node.arg, options).mul(new Fraction("-1"));
+    } else if (node.type === "div" && options.evalFractions) {
+        // TODO: add a recursive option as well
+        return parseNode(node.args[0], options).div(
+            parseNode(node.args[1], options),
+        );
     } else {
         throw new Error(`cannot parse a number from ${node.type} node`);
     }
@@ -66,8 +69,8 @@ class EvalDecompChecker {
 
             try {
                 // Find the first non-exact match between two numbers
-                const aVal = parseNode(aTerm);
-                const bVal = parseNode(bTerm);
+                const aVal = parseNode(aTerm, this.checker.options);
+                const bVal = parseNode(bTerm, this.checker.options);
 
                 // Accumulate a sum of numeric terms from aTerms until
                 // it matches bTerm's value, we run into a non-numeric
@@ -75,7 +78,10 @@ class EvalDecompChecker {
                 let accumulator = aVal;
                 i++;
                 while (i < aTerms.length) {
-                    const nextTerm = parseNode(aTerms[i++]);
+                    const nextTerm = parseNode(
+                        aTerms[i++],
+                        this.checker.options,
+                    );
                     accumulator.toString();
                     switch (op) {
                         case "add":
