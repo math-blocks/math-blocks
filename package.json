@@ -65,10 +65,10 @@
     "prettier": "pretty-quick --stage",
     "test": "jest",
     "coverage": "jest --coverage",
-    "lint": "eslint 'src/**/*.{js,ts,tsx}'",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' 'packages/**/*.{ts,tsx}'",
     "start-storybook": "start-storybook -p 6006",
     "clean": "rm -rf dist",
-    "build": "build-storybook -o dist",
+    "build": "yarn webpack-build",
     "build-storybook": "build-storybook -o dist"
   },
   "dependencies": {

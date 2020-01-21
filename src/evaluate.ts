@@ -1,5 +1,5 @@
-import {Expression} from "./semantic/semantic";
-import {UnreachableCaseError} from "./util";
+import {Expression} from "@math-blocks/semantic";
+import {UnreachableCaseError} from "@math-blocks/base";
 
 type VarDict = {
     [key: string]: number;

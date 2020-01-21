@@ -7,6 +7,7 @@ module.exports = [
             include: [
                 path.resolve(__dirname, "../src"),
                 path.resolve(__dirname, "../stories"),
+                path.resolve(__dirname, "../packages"),
             ],
             tsDocgenLoaderOptions: {
                 docgenCollectionName: "STORYBOOK_REACT_CLASSES",
@@ -14,4 +15,5 @@ module.exports = [
         },
     },
     "@storybook/addon-docs/preset",
+    path.resolve(__dirname, "./aliases-preset.js"),
 ];

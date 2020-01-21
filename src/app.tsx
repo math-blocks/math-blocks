@@ -3,15 +3,9 @@ import * as React from "react";
 
 const {useState} = React;
 
-import MathKeypad from "./components/math-keypad";
-import MathEditor from "./components/math-editor";
-import * as Editor from "./editor/editor";
-import * as Lexer from "./editor/editor-lexer";
-import {lex} from "./editor/editor-lexer";
-import Parser from "./editor/editor-parser";
-import StepChecker from "./step-checker/step-checker";
-import Icon from "./components/icon";
-import {isEqual} from "./editor/util";
+import {Icon, MathKeypad, MathEditor} from "@math-blocks/react";
+import * as Editor from "@math-blocks/editor";
+import StepChecker from "@math-blocks/step-checker";
 
 const checker = new StepChecker();
 
@@ -83,18 +77,18 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph>,
         next: Editor.Row<Editor.Glyph>,
     ): void => {
-        const prevTokens: Editor.Node<Lexer.Token> = lex(prev);
-        const nextTokens: Editor.Node<Lexer.Token> = lex(next);
+        const prevTokens = Editor.Lexer.lex(prev);
+        const nextTokens = Editor.Lexer.lex(next);
 
         if (prevTokens.type === "row" && nextTokens.type === "row") {
             const result = checker.checkStep(
-                Parser.parse(prevTokens.children),
-                Parser.parse(nextTokens.children),
+                Editor.Parser.parse(prevTokens.children),
+                Editor.Parser.parse(nextTokens.children),
                 [],
             );
 
             if (result.equivalent) {
-                if (isEqual(next, answer)) {
+                if (Editor.isEqual(next, answer)) {
                     setSteps([
                         ...steps.slice(0, -1),
                         {
@@ -188,7 +182,7 @@ export const App: React.SFC<{}> = () => {
                                     );
                                 }}
                                 onChange={(value: Editor.Row<Editor.Glyph>) => {
-                                    const state = isEqual(
+                                    const state = Editor.isEqual(
                                         steps[index].value,
                                         value,
                                     )
