@@ -4,7 +4,7 @@ var HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
     mode: "development",
     entry: {
-        index: "./src/index.tsx",
+        index: "./packages/demo/src/index.tsx",
     },
     output: {
         publicPath: "/",
@@ -33,7 +33,7 @@ module.exports = {
         extensions: [".js", ".json", ".ts", ".tsx"],
         alias: {
             "react-dom": "@hot-loader/react-dom",
-            "@math-blocks/base": path.join(__dirname, "./packages/base/src"),
+            "@math-blocks/core": path.join(__dirname, "./packages/core/src"),
             "@math-blocks/editor": path.join(
                 __dirname,
                 "./packages/editor/src",

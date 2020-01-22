@@ -1,3 +1,5 @@
+import * as Parser from "./parser";
+
 export const getId = (() => {
     let id = 0;
     return () => id++;
@@ -8,3 +10,5 @@ export class UnreachableCaseError extends Error {
         super(`Unreachable case: ${val}`);
     }
 }
+
+export {Parser};

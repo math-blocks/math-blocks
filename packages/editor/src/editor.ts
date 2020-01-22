@@ -1,4 +1,4 @@
-import {getId} from "@math-blocks/base";
+import {getId} from "@math-blocks/core";
 
 export type Row<T, ID = number> = {
     id: ID;

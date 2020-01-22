@@ -1,4 +1,4 @@
-import * as Parser from "../../../src/parser";
+import {Parser} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";
