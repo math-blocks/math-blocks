@@ -3,7 +3,7 @@
  * with semantic nodes.
  */
 import * as Semantic from "./semantic";
-import {getId} from "@math-blocks/base";
+import {getId} from "@math-blocks/core";
 
 export const identifier = (name: string): Semantic.Ident => ({
     type: "identifier",

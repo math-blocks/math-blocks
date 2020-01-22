@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor";
 import * as Layout from "./layout";
 import {FontMetrics} from "./metrics";
-import {UnreachableCaseError} from "@math-blocks/base";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     multiplier = 1,

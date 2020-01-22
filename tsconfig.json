@@ -71,7 +71,6 @@
     "coverage"
   ],
   "include": [
-    "src",
     "stories",
     "packages"
   ],

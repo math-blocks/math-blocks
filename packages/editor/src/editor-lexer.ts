@@ -7,7 +7,7 @@
  * - symbols
  */
 import * as Editor from "./editor";
-import {UnreachableCaseError} from "@math-blocks/base";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 // operations / relations: + - = < <= > >= != sqrt
 // symbols: a - z, pi, theta, etc.

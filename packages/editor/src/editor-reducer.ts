@@ -1,7 +1,7 @@
 import produce from "immer";
 
 import * as Editor from "./editor";
-import {getId} from "@math-blocks/base";
+import {getId} from "@math-blocks/core";
 
 export type State = {
     math: Editor.Row<Editor.Glyph>;

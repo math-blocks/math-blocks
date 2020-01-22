@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {Layout} from "@math-blocks/typesetter";
-import {UnreachableCaseError} from "@math-blocks/base";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 type GlyphProps = {glyph: Layout.Glyph; x: number; y: number};
 

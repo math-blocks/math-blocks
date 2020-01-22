@@ -1,5 +1,5 @@
 import {FontMetrics} from "./metrics";
-import {UnreachableCaseError} from "@math-blocks/base";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 type Dist = number;
 
