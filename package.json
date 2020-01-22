@@ -65,7 +65,7 @@
     "prettier": "pretty-quick --stage",
     "test": "jest",
     "coverage": "jest --coverage",
-    "lint": "eslint 'src/**/*.{js,ts,tsx}' 'packages/**/*.{ts,tsx}'",
+    "lint": "eslint 'packages/**/*.{ts,tsx}'",
     "start-storybook": "start-storybook -p 6006",
     "clean": "rm -rf dist",
     "build": "yarn webpack-build",
