@@ -35,7 +35,7 @@ const quadraticEquation = comicSansTypeset(
             [
                 glyph("\u2212"),
                 glyph("b"),
-                glyph("+"),
+                glyph("\u00B1"),
                 root(
                     [
                         glyph("b"),

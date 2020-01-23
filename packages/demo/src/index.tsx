@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {Switch, Route, BrowserRouter as Router} from "react-router-dom";
 
-import App from "./app";
+import StepCheckerPage from "./step-checker-page";
 import EditorPage from "./editor-page";
 import RendererPage from "./renderer-page";
 
@@ -15,8 +15,8 @@ if (document.body) {
 ReactDOM.render(
     <Router>
         <Switch>
-            <Route path="/app">
-                <App />
+            <Route path="/step-checker">
+                <StepCheckerPage />
             </Route>
             <Route path="/editor">
                 <EditorPage />
@@ -25,13 +25,16 @@ ReactDOM.render(
                 <RendererPage />
             </Route>
             <Route path="/">
-                <h1>MathBlocks demos</h1>
+                <h1>MathBlocks Demos</h1>
                 <ul>
                     <li>
                         <a href="/editor">Editor</a>
                     </li>
                     <li>
                         <a href="/renderer">Renderer</a>
+                    </li>
+                    <li>
+                        <a href="/step-checker">Step Checker</a>
                     </li>
                 </ul>
             </Route>
