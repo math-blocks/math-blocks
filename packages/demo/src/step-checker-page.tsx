@@ -9,32 +9,14 @@ import StepChecker from "@math-blocks/step-checker";
 
 const checker = new StepChecker();
 
-const {row, glyph, frac} = Editor;
+const {row, glyph} = Editor;
 
-const question: Editor.Row<Editor.Glyph> = row([
-    glyph("2"),
-    glyph("x"),
-    glyph("+"),
-    glyph("5"),
-    glyph("="),
-    glyph("1"),
-    glyph("0"),
-]);
-
-const step1: Editor.Row<Editor.Glyph> = row([
-    glyph("2"),
-    glyph("x"),
-    glyph("+"),
-    glyph("5"),
-    glyph("="),
-    glyph("1"),
-    glyph("0"),
-]);
-
+const question: Editor.Row<Editor.Glyph> = Editor.Util.row("2x+5=10");
+const step1: Editor.Row<Editor.Glyph> = Editor.Util.row("2x+5=10");
 const answer: Editor.Row<Editor.Glyph> = row([
     glyph("x"),
     glyph("="),
-    frac([glyph("5")], [glyph("2")]),
+    Editor.Util.frac("5", "2"),
 ]);
 
 enum StepState {
