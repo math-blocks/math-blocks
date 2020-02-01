@@ -1,4 +1,4 @@
-import * as Editor from "./editor";
+import * as Editor from "./editor-ast";
 
 export const isEqual = (
     a: Editor.Node<Editor.Glyph>,

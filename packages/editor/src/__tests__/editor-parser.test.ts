@@ -1,6 +1,6 @@
 import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
-import * as Editor from "../editor";
+import * as Editor from "../editor-ast";
 
 import {Token} from "../editor-parser";
 

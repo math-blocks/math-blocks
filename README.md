@@ -8,3 +8,11 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/e7aa7c26-3f02-411d-91c8-96dea22b7e26/deploy-status)](https://app.netlify.com/sites/math-blocks/deploys)
 
 A set of tools, components, and libraries for building interactive math applications.
+
+## Packages
+
+- [@math-blocks/editor](packages/editor/README.md)
+- [@math-blocks/react](packages/react/README.md)
+- [@math-blocks/semantic](packages/semantic/README.md)
+- [@math-blocks/step-checker](packages/step-checker/README.md)
+- [@math-blocks/typesetter](packages/typesetter/README.md)

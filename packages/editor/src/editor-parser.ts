@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 import {Parser} from "@math-blocks/core";
 
 import * as Lexer from "./editor-lexer";
-import * as Editor from "./editor";
+import * as Editor from "./editor-ast";
 
 export type Token = Editor.Node<Lexer.Token>;
 
