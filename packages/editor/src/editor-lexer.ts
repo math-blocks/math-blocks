@@ -6,7 +6,7 @@
  * - identifiers
  * - symbols
  */
-import * as Editor from "./editor";
+import * as Editor from "./editor-ast";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 // operations / relations: + - = < <= > >= != sqrt

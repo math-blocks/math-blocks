@@ -1,6 +1,6 @@
 import produce from "immer";
 
-import * as Editor from "./editor";
+import * as Editor from "./editor-ast";
 import {getId} from "@math-blocks/core";
 
 export type State = {

@@ -1,5 +1,5 @@
 import * as Lexer from "../editor-lexer";
-import * as Editor from "../editor";
+import * as Editor from "../editor-ast";
 import * as Util from "../util";
 
 import serializer from "../lexer-serializer";

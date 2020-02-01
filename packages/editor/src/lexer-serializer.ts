@@ -1,4 +1,4 @@
-import * as Editor from "./editor";
+import * as Editor from "./editor-ast";
 import {Token} from "./editor-lexer";
 
 type Node = Editor.Node<Token>;

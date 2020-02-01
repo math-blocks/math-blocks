@@ -1,5 +1,5 @@
 import reducer from "../editor-reducer";
-import * as Editor from "../editor";
+import * as Editor from "../editor-ast";
 import * as Util from "../util";
 const {row, glyph, subsup} = Editor;
 
