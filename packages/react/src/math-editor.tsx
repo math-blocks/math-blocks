@@ -23,7 +23,7 @@ type Props = {
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Row<Editor.Glyph>) => boolean;
+    onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
     onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
 
     /**
