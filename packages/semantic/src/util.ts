@@ -132,3 +132,24 @@ export const addTerms = (
             };
     }
 };
+
+// TODO: create a function to check if an answer is simplified or not
+export const isNumber = (node: Semantic.Expression): boolean => {
+    if (node.type === "number") {
+        return true;
+    } else if (node.type === "neg") {
+        return isNumber(node.arg);
+    } else if (node.type === "div") {
+        return node.args.every(isNumber);
+    } else if (node.type === "mul") {
+        return node.args.every(isNumber);
+    } else if (node.type === "add") {
+        return node.args.every(isNumber);
+    } else if (node.type === "root") {
+        return isNumber(node.radicand) && isNumber(node.index);
+    } else if (node.type === "exp") {
+        return isNumber(node.base) && isNumber(node.exp);
+    } else {
+        return false;
+    }
+};

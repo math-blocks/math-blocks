@@ -30,19 +30,6 @@ enum ProblemState {
     Complete,
 }
 
-// TODO: create a function to check if an answer is simplified or not
-const isNumber = (node: Semantic.Expression): boolean => {
-    if (node.type === "number") {
-        return true;
-    } else if (node.type === "neg") {
-        return isNumber(node.arg);
-    } else if (node.type === "div") {
-        return node.args.every(isNumber);
-    } else {
-        return false;
-    }
-};
-
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
 //   incorrect when the user submits it and will force the user to
@@ -81,7 +68,7 @@ export const App: React.SFC<{}> = () => {
                 if (
                     semanticNext.type === "eq" &&
                     semanticNext.args[0].type === "identifier" &&
-                    isNumber(semanticNext.args[1])
+                    Semantic.isNumber(semanticNext.args[1])
                 ) {
                     setSteps([
                         ...steps.slice(0, -1),
