@@ -240,4 +240,10 @@ describe("TextParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`(eq x y z)`);
     });
+
+    it("parses (5)2 as (mul 5 2)", () => {
+        const ast = parse("(5)2");
+
+        expect(ast).toMatchInlineSnapshot(`(mul.imp 5 2)`);
+    });
 });

@@ -116,6 +116,8 @@ const getInfixParselet = (
             };
         case "identifier":
             return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
+        case "number":
+            return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         case "lparen":
             return {
                 op: "mul.imp",
@@ -161,7 +163,7 @@ const parseNaryArgs = (
     // TODO: handle implicit multiplication
     const token = parser.peek();
 
-    if (token.type === "identifier") {
+    if (token.type === "identifier" || token.type === "number") {
         // implicit multiplication
     } else {
         // an explicit operation, e.g. plus, times, etc.

@@ -99,6 +99,7 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
             if (lastToken.type === "rparen") {
                 throw new Error("unmatched right paren");
             }
+            lastToken; // ?
             throw new Error("unexpected token");
         }
         return result;
