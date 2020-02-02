@@ -146,7 +146,7 @@ const parseNaryArgs = (
     const token = parser.peek();
     if (token.type === "atom") {
         const atom = token.value;
-        if (atom.kind === "identifier") {
+        if (atom.kind === "identifier" || atom.kind === "number") {
             // implicit multiplication
         } else {
             // an explicit operation, e.g. plus, times, etc.
@@ -190,6 +190,14 @@ const parseNaryArgs = (
         } else {
             return [expr];
         }
+    } else if (token.type === "frac") {
+        parser.consume();
+        const [num, den] = token.children;
+        const expr = Semantic.div(
+            editorParser.parse(num.children),
+            editorParser.parse(den.children),
+        );
+        return [expr];
     } else {
         throw new Error(`we don't handle ${token.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.
@@ -223,6 +231,8 @@ const getInfixParselet = (
                 case "eq":
                     return {op: "eq", parse: parseNaryInfix("eq")};
                 case "identifier":
+                    return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
+                case "number":
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
                 case "lparens":
                     return {
@@ -278,6 +288,20 @@ const getInfixParselet = (
         }
         case "root": {
             return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
+        }
+        case "frac": {
+            return {
+                op: "mul.imp",
+                parse: (parser, left): Semantic.Expression => {
+                    const parselet = parseNaryInfix("mul.imp");
+                    if (left.type === "div") {
+                        throw new Error(
+                            "An operator is required between fractions",
+                        );
+                    }
+                    return parselet(parser, left);
+                },
+            };
         }
         default:
             return null;

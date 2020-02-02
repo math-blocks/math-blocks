@@ -355,6 +355,64 @@ describe("NewMathParser", () => {
         `);
     });
 
+    it("should handle implicit multiplication by a number at the end", () => {
+        const tokens = [
+            Lexer.lparens(),
+            Lexer.identifier("b"),
+            Lexer.rparens(),
+            Lexer.number("2"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`(mul.imp b 2)`);
+    });
+
+    it("should handle implicit multiplication by a frac at the end", () => {
+        const tokens = [
+            Lexer.lparens(),
+            Lexer.identifier("a"),
+            Lexer.plus(),
+            Lexer.identifier("b"),
+            Lexer.rparens(),
+            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (add a b)
+              (div 1 2))
+        `);
+    });
+
+    it("should handle implicit multiplication by a frac at the start", () => {
+        const tokens = [
+            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+            Lexer.identifier("b"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (div 1 2)
+              b)
+        `);
+    });
+
+    it("should error on two fractions in a row without an operator", () => {
+        const tokens = [
+            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+        ];
+
+        expect(() => parser.parse(tokens)).toThrowError(
+            "An operator is required between fractions",
+        );
+    });
+
     it("should handle implicit multiplication with roots", () => {
         const tokens = [
             Lexer.identifier("a"),
@@ -432,6 +490,21 @@ describe("NewMathParser", () => {
         `);
     });
 
+    it("should handle √2 5", () => {
+        const tokens = [
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            Lexer.number("5"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (root :radicand 2 :index 2)
+              5)
+        `);
+    });
+
     it("should handle √2√3", () => {
         const tokens = [
             Editor.root([Lexer.number("2")], [Lexer.number("2")]),
@@ -444,6 +517,21 @@ describe("NewMathParser", () => {
             (mul.imp
               (root :radicand 2 :index 2)
               (root :radicand 2 :index 2))
+        `);
+    });
+
+    it("should handle √2 a", () => {
+        const tokens = [
+            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            Lexer.identifier("a"),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (root :radicand 2 :index 2)
+              a)
         `);
     });
 });
