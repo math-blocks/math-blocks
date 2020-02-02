@@ -1361,6 +1361,90 @@ describe("reducer", () => {
                     next: 2,
                 });
             });
+
+            test("deleting a sup at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.sup("")]);
+                const cursor = {
+                    path: [0, SUP],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
+                    next: null,
+                });
+            });
+
+            test("deleting a sup at the end of an expression", () => {
+                const math = row([glyph("1"), Util.sup("")]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("deleting a sub at the end of an expression", () => {
+                const math = row([glyph("1"), Util.sub("")]);
+                const cursor = {
+                    path: [1, SUB],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("deleting a subsp at the end of an expression", () => {
+                const math = row([glyph("1"), Util.subsup("2", "")]);
+                const cursor = {
+                    path: [1, SUP],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(row([glyph("1"), Util.sub("2")])),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: null,
+                });
+            });
         });
 
         describe("frac", () => {
@@ -1436,6 +1520,48 @@ describe("reducer", () => {
                     path: [],
                     prev: 0,
                     next: 1,
+                });
+            });
+
+            test("deleting a frac at the end of an expression", () => {
+                const math = row([glyph("1"), Util.frac("ab", "")]);
+                const cursor = {
+                    path: [1, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1ab")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 2,
+                    next: null,
+                });
+            });
+
+            test("deleting a frac at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.frac("", "")]);
+                const cursor = {
+                    path: [0, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
+                    next: null,
                 });
             });
         });
@@ -1647,6 +1773,48 @@ describe("reducer", () => {
                     path: [],
                     prev: 0,
                     next: 1,
+                });
+            });
+
+            test("deleting a root at the end of an expression", () => {
+                const math = row([glyph("1"), Util.sqrt("")]);
+                const cursor = {
+                    path: [1, RADICAND],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("1")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: null,
+                });
+            });
+
+            test("deleting a root at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.sqrt("")]);
+                const cursor = {
+                    path: [0, RADICAND],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
+                    next: null,
                 });
             });
         });
