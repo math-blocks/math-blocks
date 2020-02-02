@@ -3,6 +3,11 @@ import * as Semantic from "@math-blocks/semantic";
 import {IStepChecker} from "./step-checker";
 import {Result, Step} from "./types";
 
+// TODO: create sub-steps that includes the opposite operation when reversed is true
+// TODO: include which nodes were added/removed in each reason
+// TODO: handle square rooting both sides
+// TODO: handle applying the same exponent to both sides
+
 class EquationChecker {
     checker: IStepChecker;
 
@@ -10,8 +15,17 @@ class EquationChecker {
         this.checker = checker;
     }
 
-    checkAddSub(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
+    checkAddSub(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        steps: Step[],
+        reversed: boolean,
+    ): Result {
         const {checker} = this;
+
+        if (reversed) {
+            [a, b] = [b, a];
+        }
 
         const [lhsA, rhsA] = a.args;
         const [lhsB, rhsB] = b.args;
@@ -39,22 +53,27 @@ class EquationChecker {
                     Semantic.isSubtraction(lhsNewTerms[0]) &&
                     Semantic.isSubtraction(rhsNewTerms[0])
                 ) {
+                    const message = reversed
+                        ? "removing the same term from both sides"
+                        : "subtracting the same value from both sides";
                     return {
                         equivalent: true,
                         steps: [
                             {
-                                message:
-                                    "subtracting the same value from both sides",
+                                message,
                                 nodes: [],
                             },
                         ],
                     };
                 }
+                const message = reversed
+                    ? "removing the same term from both sides"
+                    : "adding the same value to both sides";
                 return {
                     equivalent: true,
                     steps: [
                         {
-                            message: "adding the same value to both sides",
+                            message,
                             nodes: [],
                         },
                     ],
@@ -67,8 +86,17 @@ class EquationChecker {
         };
     }
 
-    checkMul(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
+    checkMul(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        steps: Step[],
+        reversed: boolean,
+    ): Result {
         const {checker} = this;
+
+        if (reversed) {
+            [a, b] = [b, a];
+        }
 
         const [lhsA, rhsA] = a.args;
         const [lhsB, rhsB] = b.args;
@@ -93,11 +121,14 @@ class EquationChecker {
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
             if (result.equivalent && result.steps.length === 0) {
+                const message = reversed
+                    ? "remove common factor on both sides"
+                    : "multiply both sides by the same value";
                 return {
                     equivalent: true,
                     steps: [
                         {
-                            message: "multiplying both sides by the same value",
+                            message,
                             nodes: [],
                         },
                     ],
@@ -110,8 +141,17 @@ class EquationChecker {
         };
     }
 
-    checkDiv(a: Semantic.Eq, b: Semantic.Eq, steps: Step[]): Result {
+    checkDiv(
+        a: Semantic.Eq,
+        b: Semantic.Eq,
+        steps: Step[],
+        reversed: boolean,
+    ): Result {
         const {checker} = this;
+
+        if (reversed) {
+            [a, b] = [b, a];
+        }
 
         const [lhsA, rhsA] = a.args;
         const [lhsB, rhsB] = b.args;
@@ -125,12 +165,14 @@ class EquationChecker {
                     checker.checkStep(lhsB.args[1], rhsB.args[1], steps)
                         .equivalent
                 ) {
+                    const message = reversed
+                        ? "remove division by the same amount"
+                        : "divide both sides by the same value";
                     return {
                         equivalent: true,
                         steps: [
                             {
-                                message:
-                                    "dividing both sides by the same value",
+                                message,
                                 nodes: [],
                             },
                         ],
@@ -160,17 +202,32 @@ class EquationChecker {
 
         let result: Result;
 
-        result = this.checkAddSub(a, b, steps);
+        result = this.checkAddSub(a, b, steps, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkMul(a, b, steps);
+        result = this.checkAddSub(a, b, steps, true);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDiv(a, b, steps);
+        result = this.checkMul(a, b, steps, false);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.checkMul(a, b, steps, true);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.checkDiv(a, b, steps, false);
+        if (result.equivalent) {
+            return result;
+        }
+
+        result = this.checkDiv(a, b, steps, true);
         if (result.equivalent) {
             return result;
         }

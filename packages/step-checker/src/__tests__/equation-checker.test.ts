@@ -20,6 +20,15 @@ describe("EquationChecker", () => {
             ]);
         });
 
+        it("x + 5 = y + 5 -> x = y", () => {
+            const result = checkStep("x + 5 = y + 5", "x = y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map(reason => reason.message)).toEqual([
+                "removing the same term from both sides",
+            ]);
+        });
+
         it("x = y -> 5 + x = y + 5", () => {
             const result = checkStep("x = y", "5 + x = y + 5");
 
@@ -59,6 +68,15 @@ describe("EquationChecker", () => {
             ]);
         });
 
+        it("x - 5 = y - 5 -> x = y", () => {
+            const result = checkStep("x - 5 = y - 5", "x = y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map(reason => reason.message)).toEqual([
+                "removing the same term from both sides",
+            ]);
+        });
+
         it("x + 10 = y + 15 -> x + 10 - 5 -> y + 15 - 5", () => {
             const result = checkStep(
                 "x + 10 = y + 15",
@@ -85,7 +103,7 @@ describe("EquationChecker", () => {
 
             expect(result.equivalent).toBe(true);
             expect(result.steps.map(reason => reason.message)).toEqual([
-                "multiplying both sides by the same value",
+                "multiply both sides by the same value",
             ]);
         });
 
@@ -97,7 +115,16 @@ describe("EquationChecker", () => {
 
             expect(result.equivalent).toBe(true);
             expect(result.steps.map(reason => reason.message)).toEqual([
-                "multiplying both sides by the same value",
+                "multiply both sides by the same value",
+            ]);
+        });
+
+        test("2(x + 2.5) = (5)2 -> x + 2.5 = 5", () => {
+            const result = checkStep("2(x + 2.5) = (5)2", "x + 2.5 = 5");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map(reason => reason.message)).toEqual([
+                "remove common factor on both sides",
             ]);
         });
     });
@@ -108,7 +135,16 @@ describe("EquationChecker", () => {
 
             expect(result.equivalent).toBe(true);
             expect(result.steps.map(reason => reason.message)).toEqual([
-                "dividing both sides by the same value",
+                "divide both sides by the same value",
+            ]);
+        });
+
+        it("x / 5 = y / 5 -> x = y", () => {
+            const result = checkStep("x / 5 = y / 5", "x = y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map(reason => reason.message)).toEqual([
+                "remove division by the same amount",
             ]);
         });
 

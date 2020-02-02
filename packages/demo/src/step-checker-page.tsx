@@ -6,18 +6,12 @@ const {useState} = React;
 import {Icon, MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 import StepChecker from "@math-blocks/step-checker";
+import * as Semantic from "@math-blocks/semantic";
 
 const checker = new StepChecker();
 
-const {row, glyph} = Editor;
-
 const question: Editor.Row<Editor.Glyph> = Editor.Util.row("2x+5=10");
 const step1: Editor.Row<Editor.Glyph> = Editor.Util.row("2x+5=10");
-const answer: Editor.Row<Editor.Glyph> = row([
-    glyph("x"),
-    glyph("="),
-    Editor.Util.frac("5", "2"),
-]);
 
 enum StepState {
     Correct,
@@ -70,7 +64,12 @@ export const App: React.SFC<{}> = () => {
             );
 
             if (result.equivalent) {
-                if (Editor.isEqual(next, answer)) {
+                const semanticNext = Editor.Parser.parse(nextTokens.children);
+                if (
+                    semanticNext.type === "eq" &&
+                    semanticNext.args[0].type === "identifier" &&
+                    Semantic.isNumber(semanticNext.args[1])
+                ) {
                     setSteps([
                         ...steps.slice(0, -1),
                         {
@@ -200,11 +199,6 @@ export const App: React.SFC<{}> = () => {
                         </div>
                     );
                 })}
-                {/* <MathEditor
-                    readonly={true}
-                    value={answer}
-                    style={{marginTop: 8}}
-                /> */}
             </div>
             {isComplete && (
                 <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
