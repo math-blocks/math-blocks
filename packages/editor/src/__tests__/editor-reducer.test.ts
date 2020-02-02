@@ -1362,6 +1362,27 @@ describe("reducer", () => {
                 });
             });
 
+            test("deleting a sup at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.sup("")]);
+                const cursor = {
+                    path: [0, SUP],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
+                    next: null,
+                });
+            });
+
             test("deleting a sup at the end of an expression", () => {
                 const math = row([glyph("1"), Util.sup("")]);
                 const cursor = {
@@ -1519,6 +1540,27 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
+                    next: null,
+                });
+            });
+
+            test("deleting a frac at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.frac("", "")]);
+                const cursor = {
+                    path: [0, DENOMINATOR],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
                     next: null,
                 });
             });
@@ -1751,6 +1793,27 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
+                    next: null,
+                });
+            });
+
+            test("deleting a root at the end of an expression resulting in an empty expression", () => {
+                const math = row([Util.sqrt("")]);
+                const cursor = {
+                    path: [0, RADICAND],
+                    prev: null,
+                    next: null,
+                };
+
+                const state: State = {math, cursor};
+                const newState = reducer(state, action);
+
+                expect(Editor.stripIDs(newState.math)).toEqual(
+                    Editor.stripIDs(Util.row("")),
+                );
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: null,
                     next: null,
                 });
             });
