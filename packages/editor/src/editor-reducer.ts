@@ -198,10 +198,15 @@ const moveLeft = (
             }
         } else {
             // move to the left
+            const newPrev = prevIndex(children, prev);
+            const newNext =
+                newPrev == null
+                    ? firstIndex(children)
+                    : nextIndex(children, newPrev);
             return {
                 path: cursor.path,
-                prev: prevIndex(children, prev),
-                next: cursor.prev,
+                prev: newPrev,
+                next: newNext,
             };
         }
     } else if (cursor.path.length >= 1) {
@@ -498,15 +503,18 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
+        const newChildren = removeChildWithIndex(children, removeIndex);
+        const newPrev = prevIndex(newChildren, cursor.prev);
+        const newNext =
+            newPrev == null
+                ? firstIndex(newChildren)
+                : nextIndex(newChildren, newPrev);
         const newCursor = {
             ...cursor,
-            prev: prevIndex(currentNode.children, cursor.prev),
-            next:
-                cursor.next != null
-                    ? prevIndex(currentNode.children, cursor.next)
-                    : null,
+            prev: newPrev,
+            next: newNext,
         };
-        currentNode.children = removeChildWithIndex(children, removeIndex);
+        currentNode.children = newChildren;
         draft.cursor = newCursor;
         return;
     }
@@ -563,10 +571,15 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             }
 
             // update cursor
+            const newPrev = prevIndex(newChildren, parentIndex);
+            const newNext =
+                newPrev == null
+                    ? firstIndex(newChildren)
+                    : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev: prevIndex(newChildren, parentIndex),
-                next: parentIndex,
+                prev: newPrev,
+                next: newNext,
             };
 
             // update children
@@ -597,10 +610,15 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             }
 
             // update cursor
+            const newPrev = prevIndex(newChildren, parentIndex);
+            const newNext =
+                newPrev == null
+                    ? firstIndex(newChildren)
+                    : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev: prevIndex(newChildren, parentIndex),
-                next: parentIndex,
+                prev: newPrev,
+                next: newNext,
             };
 
             // update children
@@ -628,10 +646,15 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             }
 
             // update cursor
+            const newPrev = prevIndex(newChildren, parentIndex);
+            const newNext =
+                newPrev == null
+                    ? firstIndex(newChildren)
+                    : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
-                prev: prevIndex(newChildren, parentIndex),
-                next: parentIndex,
+                prev: newPrev,
+                next: newNext,
             };
 
             // update children
