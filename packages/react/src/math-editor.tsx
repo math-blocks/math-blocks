@@ -19,7 +19,10 @@ type Props = {
     value: Editor.Row<Editor.Glyph>;
 
     readonly: boolean;
+
+    // TODO: figure out a better way of handling focus
     focus?: boolean;
+
     onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
     onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
 
@@ -47,6 +50,11 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         }
     }, ["hot"]);
 
+    // update state to match props
+    if (!props.focus && active) {
+        setActive(false);
+    }
+
     useEventListener("keydown", (e: KeyboardEvent) => {
         if (active && !props.readonly) {
             const action = {
@@ -54,8 +62,11 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                 shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
-                props.onSubmit(state.math);
-                setActive(false);
+                const success = props.onSubmit(state.math);
+                console.log(`success = ${success}`);
+                if (success) {
+                    setActive(false);
+                }
             } else {
                 const value = Editor.reducer(state, action);
                 setState(value);
@@ -91,6 +102,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             onBlur={() => setActive(false)}
             className={css(styles.container)}
             style={style}
+            role="textbox"
         >
             <MathRenderer
                 box={box}

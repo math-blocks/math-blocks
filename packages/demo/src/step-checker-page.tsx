@@ -52,7 +52,7 @@ export const App: React.SFC<{}> = () => {
     const handleCheckStep = (
         prev: Editor.Row<Editor.Glyph>,
         next: Editor.Row<Editor.Glyph>,
-    ): void => {
+    ): boolean => {
         const prevTokens = Editor.Lexer.lex(prev);
         const nextTokens = Editor.Lexer.lex(next);
 
@@ -91,6 +91,7 @@ export const App: React.SFC<{}> = () => {
                         },
                     ]);
                 }
+                return true;
             } else {
                 setSteps([
                     ...steps.slice(0, -1),
@@ -101,6 +102,7 @@ export const App: React.SFC<{}> = () => {
                 ]);
             }
         }
+        return false;
     };
 
     const isComplete = problemState === ProblemState.Complete;
@@ -130,6 +132,10 @@ export const App: React.SFC<{}> = () => {
                                     steps[index + 1].value,
                                 )
                             }
+                            onMouseDown={e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
                             disabled={isLast || isPending || isComplete}
                         >
                             Check
@@ -157,7 +163,7 @@ export const App: React.SFC<{}> = () => {
                                 value={step.value}
                                 focus={index === steps.length - 2}
                                 onSubmit={() => {
-                                    handleCheckStep(
+                                    return handleCheckStep(
                                         steps[index].value,
                                         steps[index + 1].value,
                                     );
