@@ -167,7 +167,6 @@ describe("EquationChecker", () => {
             const result = checkStep("2(x + 2.5) = (5)2", "x + 2.5 = 5");
 
             expect(result.equivalent).toBe(true);
-            console.log(result.steps.map(reason => reason.message));
 
             // The reason why there are so many substeps, is that cancelling
             // values in the numerator and denominator result it lots of sub steps.
@@ -193,21 +192,20 @@ describe("EquationChecker", () => {
             ]);
         });
 
-        // TODO: fix this test case
-        it.skip("5(x/5) = x", () => {
-            const result = checkStep("5(x/5)", "x");
-
-            expect(result.equivalent).toBe(true);
-        });
-
-        // TODO: fix this test case
-        it.skip("x / 5 = y / 5 -> x = y", () => {
+        it("x / 5 = y / 5 -> x = y", () => {
             const result = checkStep("x / 5 = y / 5", "x = y");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
-                "remove division by the same amount",
-            ]);
+            expect(result.steps).toHaveLength(11);
+
+            expect(result.steps[0].message).toEqual(
+                "multiply both sides by the same value",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("x / 5 = y / 5");
+            // TODO: decide when we want implicit vs. explicit multiplication in the substeps
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "5 * (x / 5) = 5 * (y / 5)",
+            );
         });
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {

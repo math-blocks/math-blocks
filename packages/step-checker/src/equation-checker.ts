@@ -49,7 +49,11 @@ class EquationChecker {
             const rhsNew = Semantic.addTerms(rhsNewTerms);
             const result = checker.checkStep(lhsNew, rhsNew, steps);
 
+            const lhsNewTerm = lhsNewTerms[0];
+            const rhsNewTerm = rhsNewTerms[0];
+
             if (reversed) {
+                // This check prevents an infinite loop
                 if (
                     steps.some(
                         step =>
@@ -57,7 +61,6 @@ class EquationChecker {
                             "removing the same term from both sides",
                     )
                 ) {
-                    // prevent infinite loop
                     return {
                         equivalent: false,
                         steps: [],
@@ -67,21 +70,19 @@ class EquationChecker {
                 const prev = b;
                 const next = a;
                 const newPrev = Semantic.eq([
+                    // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
                     Semantic.add([
                         ...Semantic.getTerms(lhsB),
-                        ...lhsNewTerms.map(term =>
-                            term.type === "neg"
-                                ? term.arg
-                                : Semantic.neg(term, true),
-                        ),
+                        lhsNewTerm.type === "neg"
+                            ? lhsNewTerm.arg
+                            : Semantic.neg(lhsNewTerm, true),
                     ]),
+                    // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
                     Semantic.add([
                         ...Semantic.getTerms(rhsB),
-                        ...rhsNewTerms.map(term =>
-                            term.type === "neg"
-                                ? term.arg
-                                : Semantic.neg(term, true),
-                        ),
+                        rhsNewTerm.type === "neg"
+                            ? rhsNewTerm.arg
+                            : Semantic.neg(rhsNewTerm, true),
                     ]),
                 ]);
 

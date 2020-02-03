@@ -403,6 +403,7 @@ class FractionChecker {
                 prev.args[0].type !== "div" &&
                 prev.args[1].type === "div" &&
                 checker.exactMatch(prev.args[1].args[0], Semantic.number("1"))
+                    .equivalent
             ) {
                 return {
                     equivalent: false,
