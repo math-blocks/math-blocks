@@ -2,12 +2,28 @@ import {parse} from "@math-blocks/text-parser";
 
 import StepChecker from "../step-checker";
 import {Result} from "../types";
+import {deepEquals} from "../util";
 
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
     return checker.checkStep(parse(prev), parse(next), []);
 };
+
+expect.extend({
+    toParseLike(received, expected) {
+        if (deepEquals(received, parse(expected))) {
+            return {
+                message: () => `expected steps not to match`,
+                pass: true,
+            };
+        }
+        return {
+            message: () => `expected steps not to match`,
+            pass: false,
+        };
+    },
+});
 
 describe("EquationChecker", () => {
     describe("adding the same value to both sides", () => {
@@ -24,9 +40,23 @@ describe("EquationChecker", () => {
             const result = checkStep("x + 5 = y + 5", "x = y");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
-                "removing the same term from both sides",
-            ]);
+            expect(result.steps).toHaveLength(3);
+
+            expect(result.steps[0].message).toEqual(
+                "subtract the same value from both sides",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("x + 5 = y + 5");
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "x + 5 - 5 = y + 5 - 5",
+            );
+
+            expect(result.steps[1].message).toEqual("adding inverse");
+            expect(result.steps[1].nodes[0]).toParseLike("x + 5 - 5");
+            expect(result.steps[1].nodes[1]).toParseLike("x");
+
+            expect(result.steps[2].message).toEqual("adding inverse");
+            expect(result.steps[2].nodes[0]).toParseLike("y + 5 - 5");
+            expect(result.steps[2].nodes[1]).toParseLike("y");
         });
 
         it("x = y -> 5 + x = y + 5", () => {
@@ -72,9 +102,23 @@ describe("EquationChecker", () => {
             const result = checkStep("x - 5 = y - 5", "x = y");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
-                "removing the same term from both sides",
-            ]);
+            expect(result.steps).toHaveLength(3);
+
+            expect(result.steps[0].message).toEqual(
+                "subtract the same value from both sides",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("x - 5 = y - 5");
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "x - 5 + 5 = y - 5 + 5",
+            );
+
+            expect(result.steps[1].message).toEqual("adding inverse");
+            expect(result.steps[1].nodes[0]).toParseLike("x - 5 + 5");
+            expect(result.steps[1].nodes[1]).toParseLike("x");
+
+            expect(result.steps[2].message).toEqual("adding inverse");
+            expect(result.steps[2].nodes[0]).toParseLike("y - 5 + 5");
+            expect(result.steps[2].nodes[1]).toParseLike("y");
         });
 
         it("x + 10 = y + 15 -> x + 10 - 5 -> y + 15 - 5", () => {
@@ -123,9 +167,18 @@ describe("EquationChecker", () => {
             const result = checkStep("2(x + 2.5) = (5)2", "x + 2.5 = 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
-                "remove common factor on both sides",
-            ]);
+
+            // The reason why there are so many substeps, is that cancelling
+            // values in the numerator and denominator result it lots of sub steps.
+            expect(result.steps).toHaveLength(9);
+
+            expect(result.steps[0].message).toEqual(
+                "divide both sides by the same value",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("2(x + 2.5) = (5)2");
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "2(x + 2.5) / 2 = (5)(2) / 2",
+            );
         });
     });
 
@@ -143,9 +196,16 @@ describe("EquationChecker", () => {
             const result = checkStep("x / 5 = y / 5", "x = y");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
-                "remove division by the same amount",
-            ]);
+            expect(result.steps).toHaveLength(11);
+
+            expect(result.steps[0].message).toEqual(
+                "multiply both sides by the same value",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("x / 5 = y / 5");
+            // TODO: decide when we want implicit vs. explicit multiplication in the substeps
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "5 * (x / 5) = 5 * (y / 5)",
+            );
         });
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {

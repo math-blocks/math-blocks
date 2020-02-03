@@ -86,6 +86,12 @@ describe("FractionChecker", () => {
         ]);
     });
 
+    it("b(a/b) -> a", () => {
+        const result = checkStep("b(a/b)", "a");
+
+        expect(result.equivalent).toBe(true);
+    });
+
     it("a/b * c/d -> ac / bd", () => {
         const result = checkStep("a/b * c/d", "ac / bd");
 
@@ -270,12 +276,13 @@ describe("FractionChecker", () => {
             expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`a`);
         });
 
-        it("a / (1/b) -> a * b/1 -> ab", () => {
+        it("a / (1/b) -> a * b/1 -> ab / 1 -> ab", () => {
             const result = checkStep("a / (1/b)", "ab");
 
             expect(result.equivalent).toBe(true);
             expect(result.steps.map(reason => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplying fractions",
                 "division by one",
             ]);
         });

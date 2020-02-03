@@ -63,7 +63,6 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             };
             if (e.key === "Enter" && props.onSubmit) {
                 const success = props.onSubmit(state.math);
-                console.log(`success = ${success}`);
                 if (success) {
                     setActive(false);
                 }
