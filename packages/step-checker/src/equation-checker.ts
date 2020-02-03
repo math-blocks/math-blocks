@@ -236,14 +236,11 @@ class EquationChecker {
             // TODO: do we want to enforce that the thing being added is exactly
             // the same or do we want to allow equivalent expressions?
             if (result.equivalent && result.steps.length === 0) {
-                const message = reversed
-                    ? "remove common factor on both sides"
-                    : "multiply both sides by the same value";
                 return {
                     equivalent: true,
                     steps: [
                         {
-                            message,
+                            message: "multiply both sides by the same value",
                             nodes: [],
                         },
                     ],
@@ -335,14 +332,11 @@ class EquationChecker {
                 }
 
                 if (result.equivalent) {
-                    const message = reversed
-                        ? "remove division by the same amount"
-                        : "divide both sides by the same value";
                     return {
                         equivalent: true,
                         steps: [
                             {
-                                message,
+                                message: "divide both sides by the same value",
                                 nodes: [],
                             },
                         ],
