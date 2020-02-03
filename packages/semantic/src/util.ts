@@ -92,11 +92,13 @@ export const isSubtraction = (
 export const isNegative = (node: Semantic.Expression): node is Semantic.Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "mul" ? node.args : [node];
+export const getFactors = (
+    node: Semantic.Expression,
+): OneOrMore<Semantic.Expression> => (node.type === "mul" ? node.args : [node]);
 
-export const getTerms = (node: Semantic.Expression): Semantic.Expression[] =>
-    node.type === "add" ? node.args : [node];
+export const getTerms = (
+    node: Semantic.Expression,
+): OneOrMore<Semantic.Expression> => (node.type === "add" ? node.args : [node]);
 
 export const mulFactors = (
     factors: Semantic.Expression[],
