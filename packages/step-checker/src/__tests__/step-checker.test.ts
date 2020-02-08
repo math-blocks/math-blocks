@@ -1,4 +1,5 @@
 import {parse} from "@math-blocks/text-parser";
+import * as Semantic from "@math-blocks/semantic";
 
 import StepChecker, {hasArgs} from "../step-checker";
 import {Result} from "../types";
@@ -48,6 +49,40 @@ describe("StepChecker", () => {
                 expect(result.equivalent).toBe(false);
                 expect(checker.checkStep).not.toHaveBeenCalled();
             }
+        });
+    });
+
+    describe("difference", () => {
+        it("should return an empty array if both have the same values", () => {
+            const left = [Semantic.number("1"), Semantic.number("2")];
+            const right = [Semantic.number("1"), Semantic.number("2")];
+            const result = checker.difference(left, right, []);
+
+            expect(result).toEqual([]);
+        });
+
+        it("should return the difference for unique values", () => {
+            const left = [Semantic.number("1"), Semantic.number("2")];
+            const right = [Semantic.number("2")];
+            const result = checker.difference(left, right, []);
+
+            expect(result).toEqual([left[0]]);
+        });
+
+        it("should return the original left array if there are no matches", () => {
+            const left = [Semantic.number("1"), Semantic.number("2")];
+            const right = [Semantic.number("3")];
+            const result = checker.difference(left, right, []);
+
+            expect(result).toEqual(left);
+        });
+
+        it("should return the handle duplicates", () => {
+            const left = [Semantic.number("1"), Semantic.number("1")];
+            const right = [Semantic.number("1")];
+            const result = checker.difference(left, right, []);
+
+            expect(result).toEqual([left[1]]);
         });
     });
 });

@@ -29,6 +29,8 @@ class IntegerChecker {
 
         const indicesToRemove = new Set();
         const terms = Semantic.getTerms(prev);
+
+        // TODO: extract this code into a helper so that we can test it better
         for (let i = 0; i < terms.length; i++) {
             for (let j = 0; j < terms.length; j++) {
                 if (i === j) {
@@ -39,7 +41,12 @@ class IntegerChecker {
                 // TODO: add a sub-step in the subtraction case
                 if (Semantic.isNegative(b) || Semantic.isSubtraction(b)) {
                     const result = checker.checkStep(a, b.arg, steps);
-                    if (result.equivalent) {
+                    if (
+                        result.equivalent &&
+                        // Avoid removing a term that matches a term that's
+                        // already been removed.
+                        (!indicesToRemove.has(j) || !indicesToRemove.has(j))
+                    ) {
                         // TODO: capture the reasons and include them down below
                         indicesToRemove.add(i);
                         indicesToRemove.add(j);
@@ -57,6 +64,7 @@ class IntegerChecker {
             const result = reverse
                 ? checker.checkStep(next, newPrev, steps)
                 : checker.checkStep(newPrev, next, steps);
+
             if (result.equivalent) {
                 return {
                     equivalent: true,
