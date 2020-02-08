@@ -28,8 +28,13 @@ type EOL = {kind: "eol"};
 
 export const identifier = (name: string): Editor.Atom<Token> =>
     Editor.atom({kind: "identifier", name});
-export const number = (value: string): Editor.Atom<Token> =>
-    Editor.atom({kind: "number", value});
+export const number = (value: string): Editor.Atom<Token> => {
+    if (isNaN(parseFloat(value))) {
+        throw new Error(`${value} is not a number`);
+    }
+    return Editor.atom({kind: "number", value});
+};
+
 export const plus = (): Editor.Atom<Token> =>
     Editor.atom<Token>({kind: "plus"});
 export const minus = (): Editor.Atom<Token> =>

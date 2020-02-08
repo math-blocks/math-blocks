@@ -430,9 +430,9 @@ describe("NewMathParser", () => {
 
     it("should handle implicit multiplication with multiple roots", () => {
         const tokens = [
-            Lexer.number("a"),
-            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
-            Editor.root([Lexer.number("c")], [Lexer.number("3")]),
+            Lexer.identifier("a"),
+            Editor.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
+            Editor.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -447,8 +447,8 @@ describe("NewMathParser", () => {
 
     it("should handle implicit multiplication starting with a root", () => {
         const tokens = [
-            Editor.root([Lexer.number("b")], [Lexer.number("2")]),
-            Editor.root([Lexer.number("c")], [Lexer.number("3")]),
+            Editor.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
+            Editor.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
         ];
 
         const ast = parser.parse(tokens);
