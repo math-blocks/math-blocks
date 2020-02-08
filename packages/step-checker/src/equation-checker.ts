@@ -85,6 +85,7 @@ class EquationChecker {
                             : Semantic.neg(rhsNewTerm, true),
                     ]),
                 ]);
+                newPrev; // ?
 
                 const newSteps = [
                     ...steps,

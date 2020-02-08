@@ -59,6 +59,36 @@ describe("EquationChecker", () => {
             expect(result.steps[2].nodes[1]).toParseLike("y");
         });
 
+        it("x + 5 = y + 5 + 5 -> x = y + 5", () => {
+            const result = checkStep("x + 5 = y + 5 + 5", "x = y + 5");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps).toHaveLength(3);
+
+            expect(result.steps[0].message).toEqual(
+                "subtract the same value from both sides",
+            );
+            expect(result.steps[0].nodes[0]).toParseLike("x + 5 = y + 5 + 5");
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "x + 5 - 5 = y + 5 + 5 - 5",
+            );
+
+            expect(result.steps[1].message).toEqual("adding inverse");
+            expect(result.steps[1].nodes[0]).toParseLike("x + 5 - 5");
+            expect(result.steps[1].nodes[1]).toParseLike("x");
+
+            expect(result.steps[2].message).toEqual("adding inverse");
+            expect(result.steps[2].nodes[0]).toParseLike("y + 5 + 5 - 5");
+            expect(result.steps[2].nodes[1]).toParseLike("y + 5");
+        });
+
+        it("x + 5 - 5 = y + 5 + 5 - 5 -> x = y + 5", () => {
+            const result = checkStep("x + 5 - 5 = y + 5 + 5 - 5", "x = y + 5");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps).toHaveLength(3);
+        });
+
         it("x = y -> 5 + x = y + 5", () => {
             const result = checkStep("x = y", "5 + x = y + 5");
 
