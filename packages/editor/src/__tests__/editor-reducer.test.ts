@@ -2851,6 +2851,33 @@ describe("reducer", () => {
             expect(newState.selectionStart).toBe(undefined);
         });
 
+        test("starting in the middle and going left to start, ending right", () => {
+            const state = {
+                math: Util.row("1+2"),
+                cursor: {
+                    path: [],
+                    prev: null,
+                    next: 0,
+                },
+                selectionStart: {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                },
+            };
+
+            const action = {type: "ArrowRight"};
+
+            const newState = reducer(state, action);
+
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 1,
+                next: 2,
+            });
+            expect(newState.selectionStart).toBe(undefined);
+        });
+
         // TODO: write tests for selections starting in fractions
     });
 

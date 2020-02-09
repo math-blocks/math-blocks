@@ -56,14 +56,27 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
 
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
 
-    const showCursor = cursor && cursor.parent === box.id;
+    type Rect = {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+    const selectionBoxes: Rect[] = [];
+
+    let insideSelection = false;
+
+    const cursorInBox = cursor && cursor.parent === box.id;
     const selection = cursor && cursor.selection;
 
     const result = box.content.map((node, index) => {
         let result: React.ReactElement | null = null;
 
-        if (showCursor && cursor) {
-            if (cursor.prev === node.id) {
+        if (cursor && cursorInBox) {
+            if (
+                cursor.prev === node.id ||
+                (cursor.prev == null && index === 0)
+            ) {
                 cursorPos = {
                     startX: pen.x - 1,
                     endX: pen.x - 1,
@@ -71,17 +84,34 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 };
             }
 
-            if (cursor.prev == null && index === 0) {
-                cursorPos = {
-                    startX: pen.x - 1,
-                    endX: pen.x - 1,
-                    y: -64 * 0.85 * multiplier,
-                };
-            }
+            if (selection) {
+                if (cursor.next === node.id) {
+                    insideSelection = false;
+                }
 
-            if (selection && cursorPos) {
-                if (cursor.next && cursor.next === node.id) {
-                    cursorPos.endX = pen.x - 1;
+                // The cursor is at the start of the row.
+                if (cursor.prev == null && index === 0) {
+                    insideSelection = true;
+                }
+
+                if (insideSelection) {
+                    selectionBoxes.push({
+                        x: pen.x,
+                        y: -Math.max(
+                            Layout.getHeight(node),
+                            64 * 0.85 * multiplier,
+                        ),
+                        // Ensure that there's a minium height to selection
+                        height: Math.max(
+                            Layout.getHeight(node) + Layout.getDepth(node),
+                            64 * multiplier,
+                        ),
+                        width: Layout.getWidth(node),
+                    });
+                }
+
+                if (cursor.prev === node.id) {
+                    insideSelection = true;
                 }
             }
         }
@@ -118,7 +148,8 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 throw new UnreachableCaseError(node);
         }
 
-        if (showCursor && cursor && cursor.prev === node.id) {
+        // cursor is at the end of the box
+        if (cursor && cursorInBox && cursor.prev === node.id) {
             cursorPos = {
                 startX: pen.x - 1,
                 endX: pen.x - 1,
@@ -129,11 +160,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         return result;
     });
 
-    if (selection && cursorPos && cursor && cursor.next == null) {
-        // @ts-ignore: this is a TypeScript bug
-        cursorPos.endX = pen.x - 1;
-    }
-
+    // The cursor is in an empty box.
     if (box.content.length === 0 && cursor && cursor.parent === box.id) {
         cursorPos = {
             startX: pen.x - 1 + box.width / 2,
@@ -142,29 +169,30 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         };
     }
 
-    if (cursorPos) {
-        if (cursorPos.startX === cursorPos.endX) {
-            result.push(
-                <rect
-                    key="cursor"
-                    x={cursorPos.startX}
-                    y={cursorPos.y}
-                    width={2}
-                    height={64 * multiplier}
-                />,
-            );
-        } else {
-            result.unshift(
-                <rect
-                    key="cursor"
-                    x={cursorPos.startX}
-                    y={cursorPos.y}
-                    width={cursorPos.endX - cursorPos.startX + 2}
-                    height={64 * multiplier}
-                    fill="rgba(0,64,255,0.3)"
-                />,
-            );
-        }
+    // Draw the cursor.
+    if (cursorPos && selectionBoxes.length == 0) {
+        result.push(
+            <rect
+                key="cursor"
+                x={cursorPos.startX}
+                y={cursorPos.y}
+                width={2}
+                height={64 * multiplier}
+            />,
+        );
+    }
+
+    // Draw the selection.
+    for (const box of selectionBoxes) {
+        result.unshift(
+            <rect
+                x={box.x}
+                y={box.y}
+                width={box.width}
+                height={box.height}
+                fill="rgba(0,64,255,0.3)"
+            />,
+        );
     }
 
     return (

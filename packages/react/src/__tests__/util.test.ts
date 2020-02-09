@@ -29,7 +29,7 @@ describe("layoutCursorFromState", () => {
                 parent: state.math.id,
                 prev: math.children[1].id,
                 next: math.children[2].id,
-                selection: true,
+                selection: false,
             });
         });
 

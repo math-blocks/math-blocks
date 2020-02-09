@@ -1241,7 +1241,10 @@ const reducer = (state: State = initialState, action: Action): State => {
                         selectionStart.path.length > cursor.path.length
                             ? selectionStart.path[cursor.path.length]
                             : selectionStart.prev;
-                    if (next == null || (cursor.next && next > cursor.next)) {
+                    if (
+                        next == null ||
+                        (cursor.next != null && next > cursor.next)
+                    ) {
                         draft.cursor = {
                             ...draft.cursor,
                             prev,
