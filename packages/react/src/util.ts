@@ -21,30 +21,65 @@ export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
         next: cursor.next,
         selection: false,
     };
+
     if (selectionStart) {
-        const next =
+        if (parentNode.type !== "row") {
+            throw new Error("selection container isn't a row");
+        }
+
+        // Set prev/next to the node at the same level as the cursor
+        // that contains the selectionStart or use the selectionStart
+        // if it's at the same level as the cursor.
+        let next =
             selectionStart.path.length > cursor.path.length
                 ? selectionStart.path[cursor.path.length] + 1
                 : selectionStart.next;
-        const prev =
+        let prev =
             selectionStart.path.length > cursor.path.length
                 ? selectionStart.path[cursor.path.length] - 1
                 : selectionStart.prev;
-        if (next != null && cursor.prev != null && next <= cursor.prev + 1) {
-            result = {
-                parent: parentNode.id,
-                prev: prev,
-                next: cursor.next,
-                selection: true,
-            };
-        } else {
-            result = {
-                parent: parentNode.id,
-                prev: cursor.prev,
-                next: next,
-                selection: true,
-            };
+
+        // Use the cursor's next if it comes after next.
+        if (next != null && cursor.next != null && cursor.next > next) {
+            next = cursor.next;
+        } else if (cursor.next == null) {
+            next = cursor.next;
         }
+
+        // Use the cursor's prev if it comes before prev.
+        if (prev != null && cursor.prev != null && cursor.prev < prev) {
+            prev = cursor.prev;
+        } else if (cursor.prev == null) {
+            prev = cursor.prev;
+        }
+
+        // Set selection to true if there's a node between the prev and
+        // next.
+        let selection = false;
+        if (next != null && prev != null && next - prev > 1) {
+            selection = true;
+        } else if (next != null && prev == null && next > 0) {
+            selection = true;
+        } else if (
+            next == null &&
+            prev != null &&
+            prev < parentNode.children.length - 1
+        ) {
+            selection = true;
+        } else if (
+            next == null &&
+            prev == null &&
+            parentNode.children.length > 0
+        ) {
+            selection = true;
+        }
+
+        result = {
+            parent: parentNode.id,
+            prev,
+            next,
+            selection,
+        };
     }
 
     if (result.next != null) {
