@@ -6,8 +6,8 @@
  * - identifiers
  * - symbols
  */
-import * as Editor from "./editor-ast";
-import {Atom} from "./editor-ast";
+import * as Editor from "@math-blocks/editor";
+import {Atom} from "@math-blocks/editor";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 type Location = {

@@ -1,6 +1,6 @@
-import {Parser} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
+import * as Parser from "./parser";
 import {lex, Token} from "./text-lexer";
 
 // TODO: fill out this list

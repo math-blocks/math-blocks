@@ -47,9 +47,9 @@ module.exports = {
                 __dirname,
                 "./packages/step-checker/src",
             ),
-            "@math-blocks/text-parser": path.join(
+            "@math-blocks/parser": path.join(
                 __dirname,
-                "./packages/text-parser/src",
+                "./packages/parser/src",
             ),
             "@math-blocks/typesetter": path.join(
                 __dirname,

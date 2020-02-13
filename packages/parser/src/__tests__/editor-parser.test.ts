@@ -1,7 +1,7 @@
+import * as Editor from "@math-blocks/editor";
+
 import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
-import * as Editor from "../editor-ast";
-
 import * as LexUtil from "../lexer-ast";
 
 type Loc = {};
