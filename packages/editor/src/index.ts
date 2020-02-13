@@ -1,9 +1,6 @@
 import reducer, {State} from "./editor-reducer";
-import * as Lexer from "./editor-lexer";
-import Parser from "./editor-parser";
 import print from "./editor-printer";
 import * as Util from "./util";
-
 export * from "./editor-ast";
 export {isEqual} from "./util"; // TODO: dedupe methods in editor and util
-export {State, reducer, Parser, Lexer, print, Util};
+export {State, reducer, print, Util};

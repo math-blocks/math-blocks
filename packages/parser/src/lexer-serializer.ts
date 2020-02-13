@@ -1,4 +1,5 @@
-import * as Editor from "./editor-ast";
+import * as Editor from "@math-blocks/editor";
+
 import {Token} from "./editor-lexer";
 
 type Node = Editor.Node<Token>;

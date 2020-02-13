@@ -1,4 +1,5 @@
-import {Node, SubSup, Frac, Row, Atom, Root} from "./editor-ast";
+import {Node, SubSup, Frac, Row, Atom, Root} from "@math-blocks/editor";
+
 import {Token} from "./editor-lexer";
 
 type Location = {

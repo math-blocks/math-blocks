@@ -4,6 +4,7 @@ import * as React from "react";
 const {useState} = React;
 
 import {Icon, MathKeypad, MathEditor} from "@math-blocks/react";
+import {editorLex, editorParser} from "@math-blocks/parser";
 import * as Editor from "@math-blocks/editor";
 import StepChecker from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
@@ -57,18 +58,18 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph, ID>,
         next: Editor.Row<Editor.Glyph, ID>,
     ): boolean => {
-        const prevTokens = Editor.Lexer.lex(prev);
-        const nextTokens = Editor.Lexer.lex(next);
+        const prevTokens = editorLex(prev);
+        const nextTokens = editorLex(next);
 
         if (prevTokens.type === "row" && nextTokens.type === "row") {
             const result = checker.checkStep(
-                Editor.Parser.parse(prevTokens.children),
-                Editor.Parser.parse(nextTokens.children),
+                editorParser.parse(prevTokens.children),
+                editorParser.parse(nextTokens.children),
                 [],
             );
 
             if (result.equivalent) {
-                const semanticNext = Editor.Parser.parse(nextTokens.children);
+                const semanticNext = editorParser.parse(nextTokens.children);
                 if (
                     semanticNext.type === "eq" &&
                     semanticNext.args[0].type === "identifier" &&

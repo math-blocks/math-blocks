@@ -1,7 +1,6 @@
-import * as Lexer from "../editor-lexer";
-import * as Editor from "../editor-ast";
-import * as Util from "../util";
+import * as Editor from "@math-blocks/editor";
 
+import * as Lexer from "../editor-lexer";
 import serializer from "../lexer-serializer";
 
 expect.addSnapshotSerializer(serializer);
@@ -71,7 +70,7 @@ describe("Lexer", () => {
         });
 
         it("should parse `a_n^2`", () => {
-            const glyphTree = row([glyph("a"), Util.subsup("n", "2")]);
+            const glyphTree = row([glyph("a"), Editor.Util.subsup("n", "2")]);
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
@@ -80,7 +79,7 @@ describe("Lexer", () => {
         });
 
         it("should parse parens", () => {
-            const glyphTree = Util.row("(1 + 2)");
+            const glyphTree = Editor.Util.row("(1 + 2)");
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
@@ -89,7 +88,7 @@ describe("Lexer", () => {
         });
 
         it("should parse a square root", () => {
-            const glyphTree = row([Util.sqrt("123")]);
+            const glyphTree = row([Editor.Util.sqrt("123")]);
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
@@ -98,7 +97,7 @@ describe("Lexer", () => {
         });
 
         it("should parse a nth root", () => {
-            const glyphTree = row([Util.root("123", "n")]);
+            const glyphTree = row([Editor.Util.root("123", "n")]);
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
@@ -130,7 +129,7 @@ describe("Lexer", () => {
         });
 
         it("should parse an ellipsis", () => {
-            const glyphTree = Util.row("1+...+n");
+            const glyphTree = Editor.Util.row("1+...+n");
             const tokenTree = Lexer.lex(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(
