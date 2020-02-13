@@ -2,7 +2,11 @@ import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
 import * as Editor from "../editor-ast";
 
-import {Token} from "../editor-parser";
+import * as LexUtil from "../lexer-ast";
+
+type Loc = {};
+
+type LexNode = Editor.Node<Lexer.Token, Loc>;
 
 import {serializer} from "@math-blocks/semantic";
 
@@ -131,7 +135,7 @@ describe("NewMathParser", () => {
     });
 
     it("should parse implicit multiplication", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.identifier("a"),
             Lexer.identifier("b"),
             Lexer.identifier("c"),
@@ -143,10 +147,10 @@ describe("NewMathParser", () => {
     });
 
     it("should handle fractions", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.number("1"),
             Lexer.plus(),
-            Editor.frac([Lexer.number("1")], [Lexer.identifier("x")]),
+            LexUtil.frac([Lexer.number("1")], [Lexer.identifier("x")]),
         ];
 
         const parseTree = parser.parse(tokens);
@@ -159,9 +163,9 @@ describe("NewMathParser", () => {
     });
 
     it("should handle exponents", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.identifier("x"),
-            Editor.subsup(undefined, [Lexer.number("2")]),
+            LexUtil.subsup(undefined, [Lexer.number("2")]),
         ];
 
         const parseTree = parser.parse(tokens);
@@ -170,11 +174,11 @@ describe("NewMathParser", () => {
     });
 
     it("should handle nested exponents", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.identifier("x"),
-            Editor.subsup(undefined, [
+            LexUtil.subsup(undefined, [
                 Lexer.identifier("y"),
-                Editor.subsup(undefined, [Lexer.number("2")]),
+                LexUtil.subsup(undefined, [Lexer.number("2")]),
             ]),
         ];
 
@@ -188,9 +192,9 @@ describe("NewMathParser", () => {
     });
 
     it("should handle subscripts on identifiers", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.identifier("a"),
-            Editor.subsup(
+            LexUtil.subsup(
                 [Lexer.identifier("n"), Lexer.plus(), Lexer.number("1")],
                 undefined,
             ),
@@ -202,9 +206,9 @@ describe("NewMathParser", () => {
     });
 
     it("should handle subscripts and superscripts identifiers", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.identifier("a"),
-            Editor.subsup(
+            LexUtil.subsup(
                 [Lexer.identifier("n"), Lexer.plus(), Lexer.number("1")],
                 [Lexer.number("2")],
             ),
@@ -218,9 +222,9 @@ describe("NewMathParser", () => {
     });
 
     it("should throw when a subscript is being used on a number", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.number("2"),
-            Editor.subsup([Lexer.number("0")], undefined),
+            LexUtil.subsup([Lexer.number("0")], undefined),
         ];
 
         expect(() => parser.parse(tokens)).toThrowErrorMatchingInlineSnapshot(
@@ -229,7 +233,7 @@ describe("NewMathParser", () => {
     });
 
     it("should throw when an atom is expected", () => {
-        const tokens: Array<Token> = [Lexer.number("2"), Lexer.minus()];
+        const tokens: Array<LexNode> = [Lexer.number("2"), Lexer.minus()];
 
         expect(() => parser.parse(tokens)).toThrowErrorMatchingInlineSnapshot(
             `"Unexpected 'eol' atom"`,
@@ -237,7 +241,7 @@ describe("NewMathParser", () => {
     });
 
     it("should throw on a trailing '+'", () => {
-        const tokens: Array<Token> = [
+        const tokens: Array<LexNode> = [
             Lexer.number("2"),
             Lexer.plus(),
             Lexer.number("2"),
@@ -375,7 +379,7 @@ describe("NewMathParser", () => {
             Lexer.plus(),
             Lexer.identifier("b"),
             Lexer.rparens(),
-            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+            LexUtil.frac([Lexer.number("1")], [Lexer.number("2")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -389,7 +393,7 @@ describe("NewMathParser", () => {
 
     it("should handle implicit multiplication by a frac at the start", () => {
         const tokens = [
-            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+            LexUtil.frac([Lexer.number("1")], [Lexer.number("2")]),
             Lexer.identifier("b"),
         ];
 
@@ -404,8 +408,8 @@ describe("NewMathParser", () => {
 
     it("should error on two fractions in a row without an operator", () => {
         const tokens = [
-            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
-            Editor.frac([Lexer.number("1")], [Lexer.number("2")]),
+            LexUtil.frac([Lexer.number("1")], [Lexer.number("2")]),
+            LexUtil.frac([Lexer.number("1")], [Lexer.number("2")]),
         ];
 
         expect(() => parser.parse(tokens)).toThrowError(
@@ -416,7 +420,7 @@ describe("NewMathParser", () => {
     it("should handle implicit multiplication with roots", () => {
         const tokens = [
             Lexer.identifier("a"),
-            Editor.root([Lexer.identifier("b")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.identifier("b")], [Lexer.number("2")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -431,8 +435,8 @@ describe("NewMathParser", () => {
     it("should handle implicit multiplication with multiple roots", () => {
         const tokens = [
             Lexer.identifier("a"),
-            Editor.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
-            Editor.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
+            LexUtil.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
+            LexUtil.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -447,8 +451,8 @@ describe("NewMathParser", () => {
 
     it("should handle implicit multiplication starting with a root", () => {
         const tokens = [
-            Editor.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
-            Editor.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
+            LexUtil.root([Lexer.identifier("b")], [Lexer.identifier("2")]),
+            LexUtil.root([Lexer.identifier("c")], [Lexer.identifier("3")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -462,7 +466,7 @@ describe("NewMathParser", () => {
 
     it("should handle (√2)a", () => {
         const tokens = [
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
             Lexer.identifier("a"),
         ];
 
@@ -478,7 +482,7 @@ describe("NewMathParser", () => {
     it("should handle 5√2", () => {
         const tokens = [
             Lexer.number("5"),
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -492,7 +496,7 @@ describe("NewMathParser", () => {
 
     it("should handle √2 5", () => {
         const tokens = [
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
             Lexer.number("5"),
         ];
 
@@ -507,8 +511,8 @@ describe("NewMathParser", () => {
 
     it("should handle √2√3", () => {
         const tokens = [
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
         ];
 
         const ast = parser.parse(tokens);
@@ -522,7 +526,7 @@ describe("NewMathParser", () => {
 
     it("should handle √2 a", () => {
         const tokens = [
-            Editor.root([Lexer.number("2")], [Lexer.number("2")]),
+            LexUtil.root([Lexer.number("2")], [Lexer.number("2")]),
             Lexer.identifier("a"),
         ];
 

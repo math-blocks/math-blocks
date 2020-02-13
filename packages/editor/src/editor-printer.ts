@@ -9,7 +9,11 @@ import * as Editor from "./editor-ast";
 // the original nodes, even if they don't appear in the semantic tree as
 // is the case with most operators
 
-const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph> => {
+type ID = {
+    id: number;
+};
+
+const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -25,7 +29,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph> => {
             };
         }
         case "add": {
-            const children: Editor.Node<Editor.Glyph>[] = [];
+            const children: Editor.Node<Editor.Glyph, ID>[] = [];
 
             for (const arg of expr.args) {
                 if (arg.type === "neg" && arg.subtraction) {
@@ -61,7 +65,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph> => {
             };
         }
         case "mul": {
-            const children: Editor.Node<Editor.Glyph>[] = [];
+            const children: Editor.Node<Editor.Glyph, ID>[] = [];
 
             for (const arg of expr.args) {
                 const node = print(arg);

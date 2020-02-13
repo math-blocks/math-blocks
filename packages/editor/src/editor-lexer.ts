@@ -7,7 +7,14 @@
  * - symbols
  */
 import * as Editor from "./editor-ast";
+import {Atom} from "./editor-ast";
 import {UnreachableCaseError} from "@math-blocks/core";
+
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
 
 // operations / relations: + - = < <= > >= != sqrt
 // symbols: a - z, pi, theta, etc.
@@ -26,28 +33,28 @@ type RParens = {kind: "rparens"};
 type Ellipsis = {kind: "ellipsis"};
 type EOL = {kind: "eol"};
 
-export const identifier = (name: string): Editor.Atom<Token> =>
-    Editor.atom({kind: "identifier", name});
-export const number = (value: string): Editor.Atom<Token> => {
+const atom = (token: Token): Atom<Token, {}> => ({
+    type: "atom",
+    value: token,
+});
+
+export const identifier = (name: string): Atom<Token, {}> =>
+    atom({kind: "identifier", name});
+
+export const number = (value: string): Atom<Token, {}> => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
-    return Editor.atom({kind: "number", value});
+    return atom({kind: "number", value});
 };
 
-export const plus = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "plus"});
-export const minus = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "minus"});
-export const times = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "times"});
-export const lparens = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "lparens"});
-export const rparens = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "rparens"});
-export const ellipsis = (): Editor.Atom<Token> =>
-    Editor.atom<Token>({kind: "ellipsis"});
-export const eq = (): Editor.Atom<Token> => Editor.atom<Token>({kind: "eq"});
+export const plus = (): Atom<Token, {}> => atom({kind: "plus"});
+export const minus = (): Atom<Token, {}> => atom({kind: "minus"});
+export const times = (): Atom<Token, {}> => atom({kind: "times"});
+export const lparens = (): Atom<Token, {}> => atom({kind: "lparens"});
+export const rparens = (): Atom<Token, {}> => atom({kind: "rparens"});
+export const ellipsis = (): Atom<Token, {}> => atom({kind: "ellipsis"});
+export const eq = (): Atom<Token, {}> => atom({kind: "eq"});
 
 export type Token =
     | Ident
@@ -65,8 +72,8 @@ const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|
 
 // TODO: include ids of source glyphs in parsed tokens
 
-const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
-    const tokens: Editor.Atom<Token>[] = [];
+const processGlyphs = (glyphs: Editor.Glyph[]): Atom<Token, {}>[] => {
+    const tokens: Atom<Token, {}>[] = [];
     if (glyphs.length > 0) {
         const str = glyphs.map(glyph => glyph.char).join("");
         const matches = str.matchAll(TOKEN_REGEX);
@@ -110,9 +117,9 @@ const processGlyphs = (glyphs: Editor.Glyph[]): Editor.Atom<Token>[] => {
 };
 
 const lexChildren = (
-    nodes: Editor.Node<Editor.Glyph>[],
-): Editor.Node<Token>[] => {
-    const tokens: Editor.Node<Token>[] = [];
+    nodes: Editor.Node<Editor.Glyph, {id: number}>[],
+): Editor.Node<Token, {}>[] => {
+    const tokens: Editor.Node<Token, {}>[] = [];
 
     let glyphs: Editor.Glyph[] = [];
 
@@ -132,26 +139,27 @@ const lexChildren = (
     return tokens;
 };
 
-const lexRow = (row: Editor.Row<Editor.Glyph>): Editor.Row<Token> => {
+const lexRow = (
+    row: Editor.Row<Editor.Glyph, {id: number}>,
+): Editor.Row<Token, {}> => {
     return {
-        id: row.id,
         type: "row",
         children: lexChildren(row.children),
     };
 };
 
-export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
+export const lex = (
+    node: Editor.Node<Editor.Glyph, {id: number}>,
+): Editor.Node<Token, {}> => {
     switch (node.type) {
         case "row":
             return {
-                id: node.id,
                 type: "row",
                 children: lexChildren(node.children),
             };
         case "subsup": {
             const [sub, sup] = node.children;
             return {
-                id: node.id,
                 type: "subsup",
                 // TODO: use null-coalescing
                 children: [sub ? lexRow(sub) : null, sup ? lexRow(sup) : null],
@@ -159,14 +167,12 @@ export const lex = (node: Editor.Node<Editor.Glyph>): Editor.Node<Token> => {
         }
         case "frac":
             return {
-                id: node.id,
                 type: "frac",
                 children: [lexRow(node.children[0]), lexRow(node.children[1])],
             };
         case "root": {
             const [radicand, index] = node.children;
             return {
-                id: node.id,
                 type: "root",
                 children: [lexRow(radicand), index ? lexRow(index) : null],
             };

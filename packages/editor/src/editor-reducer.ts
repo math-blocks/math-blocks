@@ -3,8 +3,12 @@ import produce from "immer";
 import * as Editor from "./editor-ast";
 import {getId} from "@math-blocks/core";
 
+type ID = {
+    id: number;
+};
+
 export type State = {
-    math: Editor.Row<Editor.Glyph>;
+    math: Editor.Row<Editor.Glyph, ID>;
     cursor: Editor.Cursor;
     selectionStart?: Editor.Cursor;
 };
@@ -35,16 +39,18 @@ const initialState: State = {
 
 type Identifiable = {readonly id: number};
 
-type HasChildren = Editor.Row<Editor.Glyph>;
+type HasChildren = Editor.Row<Editor.Glyph, ID>;
 
-const hasChildren = (node: Editor.Node<Editor.Glyph>): node is HasChildren => {
+const hasChildren = (
+    node: Editor.Node<Editor.Glyph, ID>,
+): node is HasChildren => {
     return node.type === "row";
 };
 
 const isGlyph = (
-    node: Editor.Node<Editor.Glyph>,
+    node: Editor.Node<Editor.Glyph, ID>,
     char: string,
-): node is Editor.Atom<Editor.Glyph> =>
+): node is Editor.Atom<Editor.Glyph, ID> =>
     node.type === "atom" && node.value.char == char;
 
 const getChildWithIndex = <T extends Identifiable>(
@@ -67,14 +73,14 @@ const lastIndex = <T extends Identifiable>(
 };
 
 const nextIndex = (
-    children: Editor.Node<Editor.Glyph>[],
+    children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number | null => {
     return childIndex < children.length - 1 ? childIndex + 1 : null;
 };
 
 const prevIndex = (
-    children: Editor.Node<Editor.Glyph>[],
+    children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number | null => {
     return childIndex > 0 ? childIndex - 1 : null;
@@ -132,9 +138,9 @@ const selectionSplit = (
     cursor: Editor.Cursor,
     selectionStart: Editor.Cursor,
 ): {
-    head: Editor.Node<Editor.Glyph>[];
-    body: Editor.Node<Editor.Glyph>[];
-    tail: Editor.Node<Editor.Glyph>[];
+    head: Editor.Node<Editor.Glyph, ID>[];
+    body: Editor.Node<Editor.Glyph, ID>[];
+    tail: Editor.Node<Editor.Glyph, ID>[];
 } => {
     const {prev, next} = getSelectionBounds(cursor, selectionStart);
 
@@ -153,7 +159,7 @@ const selectionSplit = (
 };
 
 const moveLeft = (
-    currentNode: Editor.HasChildren<Editor.Glyph>,
+    currentNode: Editor.HasChildren<Editor.Glyph, ID>,
     draft: State,
     selecting?: boolean,
 ): Editor.Cursor => {
@@ -784,12 +790,12 @@ const caret = (currentNode: HasChildren, draft: State): void => {
         };
         return;
     }
-    const sup: Editor.Row<Editor.Glyph> = {
+    const sup: Editor.Row<Editor.Glyph, ID> = {
         id: getId(),
         type: "row",
         children: [],
     };
-    const newNode: Editor.SubSup<Editor.Glyph> = {
+    const newNode: Editor.SubSup<Editor.Glyph, ID> = {
         id: getId(),
         type: "subsup",
         children: [null, sup],
@@ -855,12 +861,12 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
         };
         return;
     }
-    const sub: Editor.Row<Editor.Glyph> = {
+    const sub: Editor.Row<Editor.Glyph, ID> = {
         id: getId(),
         type: "row",
         children: [],
     };
-    const newNode: Editor.SubSup<Editor.Glyph> = {
+    const newNode: Editor.SubSup<Editor.Glyph, ID> = {
         id: getId(),
         type: "subsup",
         children: [sub, null],
@@ -908,12 +914,12 @@ const root = (currentNode: HasChildren, draft: State): void => {
     const {cursor} = draft;
     const {next} = cursor;
 
-    const radicand: Editor.Row<Editor.Glyph> = {
+    const radicand: Editor.Row<Editor.Glyph, ID> = {
         id: getId(),
         type: "row",
         children: [],
     };
-    const newNode: Editor.Root<Editor.Glyph> = {
+    const newNode: Editor.Root<Editor.Glyph, ID> = {
         id: getId(),
         type: "root",
         children: [radicand, null /* index */],

@@ -4,7 +4,7 @@ import {Parser} from "@math-blocks/core";
 import * as Lexer from "./editor-lexer";
 import * as Editor from "./editor-ast";
 
-export type Token = Editor.Node<Lexer.Token>;
+type Token = Editor.Node<Lexer.Token>;
 
 // TODO: fill out this list
 type Operator =
