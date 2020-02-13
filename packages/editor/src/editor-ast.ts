@@ -1,52 +1,49 @@
 import {getId} from "@math-blocks/core";
 
-export type Row<T, ID = number> = {
-    id: ID;
+// param types:
+// AT: Atom Type
+// EP: Extra Properties
+export type Row<AT, EP> = EP & {
     type: "row";
-    children: NodeWithID<T, ID>[];
+    children: Node<AT, EP>[];
 };
 
-export type SubSup<T, ID = number> = {
-    id: ID;
+// TODO: collapse SubSup, Frac, and Root since they're very similar
+export type SubSup<AT, EP> = EP & {
     type: "subsup";
-    children: [Row<T, ID> | null, Row<T, ID> | null]; // sub, sup
+    children: [Row<AT, EP> | null, Row<AT, EP> | null]; // sub, sup
 };
 
-export type Frac<T, ID = number> = {
-    id: ID;
+export type Frac<AT, EP> = EP & {
     type: "frac";
-    children: [Row<T, ID>, Row<T, ID>]; // numerator, denominator
+    children: [Row<AT, EP>, Row<AT, EP>]; // numerator, denominator
 };
 
-export type Root<T, ID = number> = {
-    id: ID;
+export type Root<AT, EP> = EP & {
     type: "root";
-    children: [Row<T, ID>, Row<T, ID> | null]; // radicand, index
+    children: [Row<AT, EP>, Row<AT, EP> | null]; // radicand, index
 };
 
-export type Atom<T, ID = number> = {
-    id: ID;
+export type Atom<AT, EP> = EP & {
     type: "atom";
-    value: T;
+    value: AT;
 };
 
-export type NodeWithID<T, ID> =
-    | Row<T, ID>
-    | SubSup<T, ID>
-    | Frac<T, ID>
-    | Root<T, ID>
-    | Atom<T, ID>;
+export type Node<AT, EP = {}> =
+    | Row<AT, EP>
+    | SubSup<AT, EP>
+    | Frac<AT, EP>
+    | Root<AT, EP>
+    | Atom<AT, EP>;
 
-export type Node<T> =
-    | Row<T, number>
-    | SubSup<T, number>
-    | Frac<T, number>
-    | Root<T, number>
-    | Atom<T, number>;
+// The editor nodes need IDs so we can position the cursor relative to
+// layout nodes which get their ID from the editor nodes.
 
-export type HasChildren<T> = Row<T>;
+export type HasChildren<T, U> = Row<T, U>;
 
-export function row<T>(children: Node<T>[]): Row<T, number> {
+export function row<T>(
+    children: Node<T, {id: number}>[],
+): Row<T, {id: number}> {
     return {
         id: getId(),
         type: "row",
@@ -54,7 +51,10 @@ export function row<T>(children: Node<T>[]): Row<T, number> {
     };
 }
 
-export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T, number> {
+export function subsup<T>(
+    sub?: Node<T, {id: number}>[],
+    sup?: Node<T, {id: number}>[],
+): SubSup<T, {id: number}> {
     return {
         id: getId(),
         type: "subsup",
@@ -63,9 +63,9 @@ export function subsup<T>(sub?: Node<T>[], sup?: Node<T>[]): SubSup<T, number> {
 }
 
 export function frac<T>(
-    numerator: Node<T>[],
-    denominator: Node<T>[],
-): Frac<T, number> {
+    numerator: Node<T, {id: number}>[],
+    denominator: Node<T, {id: number}>[],
+): Frac<T, {id: number}> {
     return {
         id: getId(),
         type: "frac",
@@ -76,9 +76,9 @@ export function frac<T>(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root<T>(
-    arg: Node<T>[],
-    index: Node<T>[] | null,
-): Root<T, number> {
+    arg: Node<T, {id: number}>[],
+    index: Node<T, {id: number}>[] | null,
+): Root<T, {id: number}> {
     return {
         id: getId(),
         type: "root",
@@ -86,7 +86,7 @@ export function root<T>(
     };
 }
 
-export function atom<T>(value: T): Atom<T, number> {
+export function atom<T>(value: T): Atom<T, {id: number}> {
     return {
         id: getId(),
         type: "atom",
@@ -100,10 +100,12 @@ export type Glyph = {
     pending?: boolean;
 };
 
-export const glyph = (char: string, pending?: boolean): Atom<Glyph, number> =>
-    atom({kind: "glyph", char, pending});
+export const glyph = (
+    char: string,
+    pending?: boolean,
+): Atom<Glyph, {id: number}> => atom({kind: "glyph", char, pending});
 
-export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
+export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
     switch (root.type) {
         case "frac": {
             return {
@@ -111,20 +113,17 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
                 children: [
                     {
                         type: "row",
-                        children: root.children[0].children.map<
-                            NodeWithID<T, void>
-                        >(stripIDs),
-                        id: undefined,
+                        children: root.children[0].children.map<Node<T>>(
+                            stripIDs,
+                        ),
                     },
                     {
                         type: "row",
-                        children: root.children[1].children.map<
-                            NodeWithID<T, void>
-                        >(stripIDs),
-                        id: undefined,
+                        children: root.children[1].children.map<Node<T>>(
+                            stripIDs,
+                        ),
                     },
                 ],
-                id: undefined,
             };
         }
         case "subsup": {
@@ -135,65 +134,46 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
                     sub
                         ? {
                               type: "row",
-                              children: sub.children.map<NodeWithID<T, void>>(
-                                  stripIDs,
-                              ),
-                              id: undefined,
+                              children: sub.children.map(stripIDs),
                           }
                         : null,
                     sup
                         ? {
                               type: "row",
-                              children: sup.children.map<NodeWithID<T, void>>(
-                                  stripIDs,
-                              ),
-                              id: undefined,
+                              children: sup.children.map(stripIDs),
                           }
                         : sup,
                 ],
-                id: undefined,
             };
         }
         case "row": {
-            const result: Row<T, void> = {
-                type: "row",
-                children: root.children.map<NodeWithID<T, void>>(stripIDs),
-                id: undefined,
+            return {
+                type: "row" as const,
+                children: root.children.map(stripIDs),
             };
-            return result;
         }
         case "atom": {
-            const result: Atom<T, void> = {
-                type: "atom",
+            return {
+                type: "atom" as const,
                 value: root.value,
-                id: undefined,
             };
-            return result;
         }
         case "root": {
-            const result: Root<T, void> = {
-                type: "root",
+            return {
+                type: "root" as const,
                 children: [
                     {
                         type: "row",
-                        children: root.children[0].children.map<
-                            NodeWithID<T, void>
-                        >(stripIDs),
-                        id: undefined,
+                        children: root.children[0].children.map(stripIDs),
                     },
                     root.children[1]
                         ? {
                               type: "row",
-                              children: root.children[1].children.map<
-                                  NodeWithID<T, void>
-                              >(stripIDs),
-                              id: undefined,
+                              children: root.children[1].children.map(stripIDs),
                           }
                         : null,
                 ],
-                id: undefined,
             };
-            return result;
         }
         default:
             throw new Error("foo");
@@ -202,10 +182,10 @@ export function stripIDs<T>(root: Node<T>): NodeWithID<T, void> {
     }
 }
 
-export function nodeAtPath<T>(
-    root: Node<T>,
+export function nodeAtPath<T, U>(
+    root: Node<T, U>,
     path: ReadonlyArray<number>,
-): Node<T> {
+): Node<T, U> {
     if (path.length === 0) {
         return root;
     } else {

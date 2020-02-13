@@ -3,9 +3,13 @@ import * as Layout from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "@math-blocks/core";
 
+type ID = {
+    id: number;
+};
+
 const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
     multiplier = 1,
-) => (node: Editor.Node<Editor.Glyph>): Layout.Node => {
+) => (node: Editor.Node<Editor.Glyph, ID>): Layout.Node => {
     const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
     const fontSize = multiplier * baseFontSize;
     const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
@@ -14,8 +18,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
 
     // Adds appropriate padding around operators where appropriate
     const typesetChildren = (
-        _typeset: (node: Editor.Node<Editor.Glyph>) => Layout.Node,
-        children: Editor.Node<Editor.Glyph>[],
+        _typeset: (node: Editor.Node<Editor.Glyph, ID>) => Layout.Node,
+        children: Editor.Node<Editor.Glyph, ID>[],
     ): Layout.Node[] =>
         children.map((child, index) => {
             if (child.type === "atom") {

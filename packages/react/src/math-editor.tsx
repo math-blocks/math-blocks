@@ -12,19 +12,23 @@ import {layoutCursorFromState} from "./util";
 
 const {useEffect, useState, useRef} = React;
 
+type ID = {
+    id: number;
+};
+
 type Props = {
     /**
      * value
      */
-    value: Editor.Row<Editor.Glyph>;
+    value: Editor.Row<Editor.Glyph, ID>;
 
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Row<Editor.Glyph>) => unknown;
-    onChange?: (value: Editor.Row<Editor.Glyph>) => unknown;
+    onSubmit?: (value: Editor.Row<Editor.Glyph, ID>) => unknown;
+    onChange?: (value: Editor.Row<Editor.Glyph, ID>) => unknown;
 
     /**
      * Style
