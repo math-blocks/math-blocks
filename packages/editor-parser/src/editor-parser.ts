@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Editor from "@math-blocks/editor";
+import * as Parser from "@math-blocks/parser";
 
-import * as Parser from "./parser";
 import * as Lexer from "./editor-lexer";
 
 type Token = Editor.Node<Lexer.Token>;
@@ -20,16 +20,14 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = Semantic.Expression;
-
-type EditorParser = Parser.IParser<Token, Node, Operator>;
+type EditorParser = Parser.IParser<Token, Semantic.Expression, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Node, Operator> => {
+): Parser.PrefixParselet<Token, Semantic.Expression, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -116,8 +114,8 @@ const getPrefixParselet = (
 
 const parseNaryInfix = (op: NAryOperator) => (
     parser: EditorParser,
-    left: Node,
-): Node => {
+    left: Semantic.Expression,
+): Semantic.Expression => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     switch (op) {
         case "add":
@@ -141,7 +139,7 @@ const parseNaryInfix = (op: NAryOperator) => (
 const parseNaryArgs = (
     parser: EditorParser,
     op: NAryOperator,
-): OneOrMore<Node> => {
+): OneOrMore<Semantic.Expression> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -152,7 +150,7 @@ const parseNaryArgs = (
             // an explicit operation, e.g. plus, times, etc.
             parser.consume();
         }
-        let expr: Node = parser.parseWithOperator(op);
+        let expr = parser.parseWithOperator(op);
         if (op === "sub") {
             expr = Semantic.neg(expr, true);
         }
@@ -217,7 +215,7 @@ const parseMulByParen = (
 
 const getInfixParselet = (
     token: Token,
-): Parser.InfixParselet<Token, Node, Operator> | null => {
+): Parser.InfixParselet<Token, Semantic.Expression, Operator> | null => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -261,7 +259,7 @@ const getInfixParselet = (
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
-                parse: (parser: EditorParser, left: Node) => {
+                parse: (parser: EditorParser, left: Semantic.Expression) => {
                     parser.consume(); // consume the subsup
                     const [sub, sup] = token.children;
                     if (left.type === "identifier") {
@@ -333,11 +331,21 @@ const getOpPrecedence = (op: Operator): number => {
 
 const EOL: Token = Editor.atom({kind: "eol"});
 
-const editorParser = Parser.parserFactory<Token, Node, Operator>(
+const editorParser = Parser.parserFactory<Token, Semantic.Expression, Operator>(
     getPrefixParselet,
     getInfixParselet,
     getOpPrecedence,
     EOL,
 );
+
+type EditorNode = Editor.Node<Editor.Glyph, {id: number}>;
+
+export const parse = (input: EditorNode): Semantic.Expression => {
+    const token = Lexer.lex(input);
+    if (token.type !== "row") {
+        throw new Error("Expected lex to return a row.");
+    }
+    return editorParser.parse(token.children);
+};
 
 export default editorParser;
