@@ -1,5 +1,5 @@
-import {parse} from "@math-blocks/parser";
 import * as Semantic from "@math-blocks/semantic";
+import {parse} from "@math-blocks/text-parser";
 
 import StepChecker, {hasArgs} from "../step-checker";
 import {Result} from "../types";

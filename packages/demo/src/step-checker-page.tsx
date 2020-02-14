@@ -4,7 +4,7 @@ import * as React from "react";
 const {useState} = React;
 
 import {Icon, MathKeypad, MathEditor} from "@math-blocks/react";
-import {editorLex, editorParser} from "@math-blocks/parser";
+import {parse} from "@math-blocks/editor-parser";
 import * as Editor from "@math-blocks/editor";
 import StepChecker from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
@@ -58,55 +58,47 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph, ID>,
         next: Editor.Row<Editor.Glyph, ID>,
     ): boolean => {
-        const prevTokens = editorLex(prev);
-        const nextTokens = editorLex(next);
+        const result = checker.checkStep(parse(prev), parse(next), []);
 
-        if (prevTokens.type === "row" && nextTokens.type === "row") {
-            const result = checker.checkStep(
-                editorParser.parse(prevTokens.children),
-                editorParser.parse(nextTokens.children),
-                [],
-            );
-
-            if (result.equivalent) {
-                const semanticNext = editorParser.parse(nextTokens.children);
-                if (
-                    semanticNext.type === "eq" &&
-                    semanticNext.args[0].type === "identifier" &&
-                    Semantic.isNumber(semanticNext.args[1])
-                ) {
-                    setSteps([
-                        ...steps.slice(0, -1),
-                        {
-                            ...steps[steps.length - 1],
-                            state: StepState.Correct,
-                        },
-                    ]);
-                    setProblemState(ProblemState.Complete);
-                } else {
-                    setSteps([
-                        ...steps.slice(0, -1),
-                        {
-                            ...steps[steps.length - 1],
-                            state: StepState.Correct,
-                        },
-                        {
-                            ...steps[steps.length - 1],
-                            state: StepState.Duplicate,
-                        },
-                    ]);
-                }
-                return true;
+        if (result.equivalent) {
+            const semanticNext = parse(next);
+            if (
+                semanticNext.type === "eq" &&
+                semanticNext.args[0].type === "identifier" &&
+                Semantic.isNumber(semanticNext.args[1])
+            ) {
+                setSteps([
+                    ...steps.slice(0, -1),
+                    {
+                        ...steps[steps.length - 1],
+                        state: StepState.Correct,
+                    },
+                ]);
+                setProblemState(ProblemState.Complete);
             } else {
                 setSteps([
                     ...steps.slice(0, -1),
                     {
                         ...steps[steps.length - 1],
-                        state: StepState.Incorrect,
+                        state: StepState.Correct,
+                    },
+                    {
+                        ...steps[steps.length - 1],
+                        state: StepState.Duplicate,
                     },
                 ]);
             }
+            return true;
+        } else {
+            setSteps([
+                ...steps.slice(0, -1),
+                {
+                    ...steps[steps.length - 1],
+                    state: StepState.Incorrect,
+                },
+            ]);
         }
+
         return false;
     };
 

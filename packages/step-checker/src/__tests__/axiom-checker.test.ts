@@ -1,4 +1,4 @@
-import {parse} from "@math-blocks/parser";
+import {parse} from "@math-blocks/text-parser";
 
 import StepChecker from "../step-checker";
 import {Result} from "../types";

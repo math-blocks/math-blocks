@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor";
 
 import * as Lexer from "../editor-lexer";
-import serializer from "../lexer-serializer";
+import {serializer} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
