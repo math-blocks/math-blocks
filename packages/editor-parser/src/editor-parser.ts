@@ -3,8 +3,9 @@ import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser";
 
 import * as Lexer from "./editor-lexer";
+import {Location} from "./editor-lexer";
 
-type Token = Editor.Node<Lexer.Token>;
+type Token = Editor.Node<Lexer.Token, {loc: Location}>;
 
 // TODO: fill out this list
 type Operator =
@@ -329,7 +330,7 @@ const getOpPrecedence = (op: Operator): number => {
     }
 };
 
-const EOL: Token = Editor.atom({kind: "eol"});
+const EOL: Token = Lexer.atom({kind: "eol"}, Lexer.location([], -1, -1));
 
 const editorParser = Parser.parserFactory<Token, Semantic.Expression, Operator>(
     getPrefixParselet,
@@ -338,14 +339,11 @@ const editorParser = Parser.parserFactory<Token, Semantic.Expression, Operator>(
     EOL,
 );
 
-type EditorNode = Editor.Node<Editor.Glyph, {id: number}>;
-
-export const parse = (input: EditorNode): Semantic.Expression => {
-    const token = Lexer.lex(input);
-    if (token.type !== "row") {
-        throw new Error("Expected lex to return a row.");
-    }
-    return editorParser.parse(token.children);
+export const parse = (
+    input: Editor.Row<Editor.Glyph, {id: number}>,
+): Semantic.Expression => {
+    const tokenRow = Lexer.lexRow(input);
+    return editorParser.parse(tokenRow.children);
 };
 
 export default editorParser;
