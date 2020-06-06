@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "../../out/react",
+    "rootDir": "."
+  },
+  "references": [
+    {"path": "../core"},
+    {"path": "../editor"},
+    {"path": "../metrics"},
+    {"path": "../typesetter"}
+  ]
+}

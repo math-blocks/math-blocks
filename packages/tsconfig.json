@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    {"path": "./core"},
+    {"path": "./demo"},
+    {"path": "./editor"},
+    {"path": "./editor-parser"},
+    {"path": "./metrics"},
+    {"path": "./parser"},
+    {"path": "./react"},
+    {"path": "./semantic"},
+    {"path": "./text-parser"},
+    {"path": "./typesetter"},
+  ]
+}

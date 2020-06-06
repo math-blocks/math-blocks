@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "../../out/step-checker",
+    "rootDir": "."
+  },
+  "references": [
+    {"path": "../semantic"},
+    {"path": "../text-parser"},
+  ]
+}

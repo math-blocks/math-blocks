@@ -57,7 +57,7 @@
   },
   "scripts": {
     "codechecks": "codechecks",
-    "typecheck": "tsc --noEmit",
+    "ts-build": "tsc -b -v packages/tsconfig.json",
     "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 99",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
