@@ -423,25 +423,25 @@ const moveRight = (
     return cursor;
 };
 
-const selectionBackspace = (currentNode: HasChildren, draft: State): void => {
-    const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
+const backspace = (currentNode: HasChildren, draft: State): void => {
+    const {cursor, math, selectionStart} = draft;
+
+    if (selectionStart) {
+        const {head, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
+
+        currentNode.children = [...head, ...tail];
+        draft.cursor = {
+            path: cursor.path,
+            prev: head.length == 0 ? null : head.length - 1,
+            next: tail.length == 0 ? null : head.length,
+        };
+        draft.selectionStart = undefined;
         return;
     }
-
-    const {head, tail} = selectionSplit(currentNode, cursor, selectionStart);
-
-    currentNode.children = [...head, ...tail];
-    draft.cursor = {
-        path: cursor.path,
-        prev: head.length == 0 ? null : head.length - 1,
-        next: tail.length == 0 ? null : head.length,
-    };
-    draft.selectionStart = undefined;
-};
-
-const backspace = (currentNode: HasChildren, draft: State): void => {
-    const {cursor, math} = draft;
 
     if (cursor.prev != null) {
         const {children} = currentNode;
@@ -672,29 +672,27 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
     }
 };
 
-const selectionSlash = (currentNode: HasChildren, draft: State): void => {
+const slash = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
+
+    if (selectionStart) {
+        const {head, body, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
+
+        currentNode.children = [...head, frac(body, []), ...tail];
+        draft.cursor = {
+            path: [...cursor.path, head.length, DENOMINATOR],
+            next: null,
+            prev: null,
+        };
+        draft.selectionStart = undefined;
+
         return;
     }
 
-    const {head, body, tail} = selectionSplit(
-        currentNode,
-        cursor,
-        selectionStart,
-    );
-
-    currentNode.children = [...head, frac(body, []), ...tail];
-    draft.cursor = {
-        path: [...cursor.path, head.length, DENOMINATOR],
-        next: null,
-        prev: null,
-    };
-    draft.selectionStart = undefined;
-};
-
-const slash = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
     const {prev, next} = cursor;
 
     if (prev === null) {
@@ -747,29 +745,27 @@ const slash = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-const selectionCaret = (currentNode: HasChildren, draft: State): void => {
+const caret = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
+
+    if (selectionStart) {
+        const {head, body, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
+
+        currentNode.children = [...head, subsup(undefined, body), ...tail];
+        draft.cursor = {
+            path: [...cursor.path, head.length, SUP],
+            next: null,
+            prev: body.length > 0 ? body.length - 1 : null,
+        };
+        draft.selectionStart = undefined;
+
         return;
     }
 
-    const {head, body, tail} = selectionSplit(
-        currentNode,
-        cursor,
-        selectionStart,
-    );
-
-    currentNode.children = [...head, subsup(undefined, body), ...tail];
-    draft.cursor = {
-        path: [...cursor.path, head.length, SUP],
-        next: null,
-        prev: body.length > 0 ? body.length - 1 : null,
-    };
-    draft.selectionStart = undefined;
-};
-
-const caret = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
     const {next} = cursor;
 
     const nextNode =
@@ -818,29 +814,27 @@ const caret = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-const selectionUnderscore = (currentNode: HasChildren, draft: State): void => {
+const underscore = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
+
+    if (selectionStart) {
+        const {head, body, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
+
+        currentNode.children = [...head, subsup(body, undefined), ...tail];
+        draft.cursor = {
+            path: [...cursor.path, head.length, SUB],
+            next: null,
+            prev: body.length > 0 ? body.length - 1 : null,
+        };
+        draft.selectionStart = undefined;
+
         return;
     }
 
-    const {head, body, tail} = selectionSplit(
-        currentNode,
-        cursor,
-        selectionStart,
-    );
-
-    currentNode.children = [...head, subsup(body, undefined), ...tail];
-    draft.cursor = {
-        path: [...cursor.path, head.length, SUB],
-        next: null,
-        prev: body.length > 0 ? body.length - 1 : null,
-    };
-    draft.selectionStart = undefined;
-};
-
-const underscore = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
     const {next} = cursor;
 
     const nextNode =
@@ -889,29 +883,27 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
     };
 };
 
-const selectionRoot = (currentNode: HasChildren, draft: State): void => {
+const root = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
+
+    if (selectionStart) {
+        const {head, body, tail} = selectionSplit(
+            currentNode,
+            cursor,
+            selectionStart,
+        );
+
+        currentNode.children = [...head, Editor.root(body, null), ...tail];
+        draft.cursor = {
+            path: [...cursor.path, head.length, RADICAND],
+            next: null,
+            prev: body.length > 0 ? body.length - 1 : null,
+        };
+        draft.selectionStart = undefined;
+
         return;
     }
 
-    const {head, body, tail} = selectionSplit(
-        currentNode,
-        cursor,
-        selectionStart,
-    );
-
-    currentNode.children = [...head, Editor.root(body, null), ...tail];
-    draft.cursor = {
-        path: [...cursor.path, head.length, RADICAND],
-        next: null,
-        prev: body.length > 0 ? body.length - 1 : null,
-    };
-    draft.selectionStart = undefined;
-};
-
-const root = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
     const {next} = cursor;
 
     const radicand: Editor.Row<Editor.Glyph, ID> = {
@@ -998,13 +990,11 @@ enum Paren {
 
 const selectionParens = (
     currentNode: HasChildren,
+    selectionStart: Editor.Cursor,
     draft: State,
     paren: Paren,
 ): void => {
-    const {cursor, selectionStart} = draft;
-    if (!selectionStart) {
-        return;
-    }
+    const {cursor} = draft;
 
     const {head, body, tail} = selectionSplit(
         currentNode,
@@ -1036,7 +1026,13 @@ const selectionParens = (
 };
 
 const leftParens = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
+    const {cursor, selectionStart} = draft;
+
+    if (selectionStart) {
+        selectionParens(currentNode, selectionStart, draft, Paren.Left);
+        return;
+    }
+
     const {next} = cursor;
 
     const openingParen = glyph("(");
@@ -1113,7 +1109,13 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
 };
 
 const rightParens = (currentNode: HasChildren, draft: State): void => {
-    const {cursor} = draft;
+    const {cursor, selectionStart} = draft;
+
+    if (selectionStart) {
+        selectionParens(currentNode, selectionStart, draft, Paren.Right);
+        return;
+    }
+
     const {next} = cursor;
 
     const openingParen = glyph("(", true);
@@ -1267,59 +1269,31 @@ const reducer = (state: State = initialState, action: Action): State => {
                 return;
             }
             case "Backspace": {
-                if (draft.selectionStart) {
-                    selectionBackspace(currentNode, draft);
-                } else {
-                    backspace(currentNode, draft);
-                }
+                backspace(currentNode, draft);
                 return;
             }
             case "/": {
-                if (draft.selectionStart) {
-                    selectionSlash(currentNode, draft);
-                } else {
-                    slash(currentNode, draft);
-                }
+                slash(currentNode, draft);
                 return;
             }
             case "^": {
-                if (draft.selectionStart) {
-                    selectionCaret(currentNode, draft);
-                } else {
-                    caret(currentNode, draft);
-                }
+                caret(currentNode, draft);
                 return;
             }
             case "_": {
-                if (draft.selectionStart) {
-                    selectionUnderscore(currentNode, draft);
-                } else {
-                    underscore(currentNode, draft);
-                }
+                underscore(currentNode, draft);
                 return;
             }
             case "\u221A": {
-                if (draft.selectionStart) {
-                    selectionRoot(currentNode, draft);
-                } else {
-                    root(currentNode, draft);
-                }
+                root(currentNode, draft);
                 return;
             }
             case "(": {
-                if (draft.selectionStart) {
-                    selectionParens(currentNode, draft, Paren.Left);
-                } else {
-                    leftParens(currentNode, draft);
-                }
+                leftParens(currentNode, draft);
                 return;
             }
             case ")": {
-                if (draft.selectionStart) {
-                    selectionParens(currentNode, draft, Paren.Right);
-                } else {
-                    rightParens(currentNode, draft);
-                }
+                rightParens(currentNode, draft);
                 return;
             }
             default: {
