@@ -11,6 +11,26 @@ const NUMERATOR = 0;
 const DENOMINATOR = 1;
 const RADICAND = 0;
 
+expect.extend({
+    toEqualMath(received, actual) {
+        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
+        return {
+            pass: true,
+            message: () => "hello, world!",
+        };
+    },
+});
+
+declare global {
+    /* eslint-disable */
+    namespace jest {
+        interface Matchers<R, T> {
+            toEqualMath(actual: Editor.Node<Editor.Glyph, Util.ID>): R;
+        }
+    }
+    /* eslint-enable */
+}
+
 describe("reducer", () => {
     describe("inserting", () => {
         describe("a regular character", () => {
@@ -25,10 +45,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "1"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1+2")),
-                );
-
+                expect(newState.math).toEqualMath(Util.row("1+2"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -47,10 +64,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "+"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1+2")),
-                );
-
+                expect(newState.math).toEqualMath(Util.row("1+2"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -69,10 +83,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "2"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1+2")),
-                );
-
+                expect(newState.math).toEqualMath(Util.row("1+2"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
@@ -92,9 +103,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "-"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("a\u2212b")),
-                );
+                expect(newState.math).toEqualMath(Util.row("a\u2212b"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -112,9 +121,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "-"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("a\u2212")),
-                );
+                expect(newState.math).toEqualMath(Util.row("a\u2212"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -132,9 +139,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "-"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("\u2212a")),
-                );
+                expect(newState.math).toEqualMath(Util.row("\u2212a"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -154,9 +159,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "*"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("a\u00B7b")),
-                );
+                expect(newState.math).toEqualMath(Util.row("a\u00B7b"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -174,9 +177,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "*"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("a\u00B7")),
-                );
+                expect(newState.math).toEqualMath(Util.row("a\u00B7"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -194,9 +195,7 @@ describe("reducer", () => {
 
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "*"});
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("\u00B7a")),
-                );
+                expect(newState.math).toEqualMath(Util.row("\u00B7a"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -289,9 +288,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "^"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -310,9 +307,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "_"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -331,8 +326,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "^"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("a"), Util.subsup("x", "")])),
+                expect(newState.math).toEqualMath(
+                    row([glyph("a"), Util.subsup("x", "")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
@@ -352,8 +347,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "_"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("a"), Util.subsup("", "x")])),
+                expect(newState.math).toEqualMath(
+                    row([glyph("a"), Util.subsup("", "x")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
@@ -375,8 +370,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([Util.frac("e", ""), glyph("g")])),
+                expect(newState.math).toEqualMath(
+                    row([Util.frac("e", ""), glyph("g")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [0, DENOMINATOR],
@@ -396,9 +391,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([Util.frac("eg", "")])),
-                );
+                expect(newState.math).toEqualMath(row([Util.frac("eg", "")]));
                 expect(newState.cursor).toEqual({
                     path: [0, DENOMINATOR],
                     prev: null,
@@ -417,10 +410,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("1"), glyph("+"), Util.frac("2", "")]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("1"), glyph("+"), Util.frac("2", "")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
@@ -440,10 +431,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("1"), glyph("\u2212"), Util.frac("2", "")]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("1"), glyph("\u2212"), Util.frac("2", "")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
@@ -463,10 +452,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("1"), glyph("="), Util.frac("2", "")]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("1"), glyph("="), Util.frac("2", "")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
@@ -486,15 +473,13 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([
-                            Util.frac("", ""),
-                            glyph("1"),
-                            glyph("="),
-                            glyph("2"),
-                        ]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([
+                        Util.frac("", ""),
+                        glyph("1"),
+                        glyph("="),
+                        glyph("2"),
+                    ]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [0, NUMERATOR],
@@ -514,15 +499,13 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([
-                            glyph("1"),
-                            glyph("="),
-                            Util.frac("", ""),
-                            glyph("2"),
-                        ]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([
+                        glyph("1"),
+                        glyph("="),
+                        Util.frac("", ""),
+                        glyph("2"),
+                    ]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, NUMERATOR],
@@ -544,10 +527,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "\u221A"});
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([glyph("1"), Util.sqrt(""), glyph("2")]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("1"), Util.sqrt(""), glyph("2")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
@@ -571,12 +552,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: "("});
 
                     const newMath = Util.row("(1+2)");
-                    // @ts-ignore
-                    newMath.children[4].value.pending = true;
+                    if (newMath.children[4].type === "atom") {
+                        newMath.children[4].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 0,
@@ -596,12 +576,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: "("});
 
                     const newMath = Util.row("1(+2)");
-                    // @ts-ignore
-                    newMath.children[4].value.pending = true;
+                    if (newMath.children[4].type === "atom") {
+                        newMath.children[4].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 1,
@@ -621,12 +600,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: "("});
 
                     const newMath = Util.row("1+2()");
-                    // @ts-ignore
-                    newMath.children[4].value.pending = true;
+                    if (newMath.children[4].type === "atom") {
+                        newMath.children[4].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     // TODO: it would be nice if this could be specified by including a '|'
                     // in the Editor AST.
                     expect(newState.cursor).toEqual({
@@ -654,9 +632,7 @@ describe("reducer", () => {
                     newState = reducer(newState, {type: ")"});
 
                     const newMath = Util.row("(1+)2");
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 3,
@@ -681,9 +657,7 @@ describe("reducer", () => {
                     newState = reducer(newState, {type: ")"});
 
                     const newMath = Util.row("(1+2)");
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
@@ -709,9 +683,7 @@ describe("reducer", () => {
                     newState = reducer(newState, {type: ")"});
 
                     const newMath = Util.row("(1+2)");
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
@@ -733,12 +705,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: ")"});
 
                     const newMath = Util.row("(1+2)");
-                    // @ts-ignore
-                    newMath.children[0].value.pending = true;
+                    if (newMath.children[0].type === "atom") {
+                        newMath.children[0].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
@@ -758,12 +729,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: ")"});
 
                     const newMath = Util.row("(1+)2");
-                    // @ts-ignore
-                    newMath.children[0].value.pending = true;
+                    if (newMath.children[0].type === "atom") {
+                        newMath.children[0].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 3,
@@ -783,12 +753,11 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: ")"});
 
                     const newMath = Util.row("()1+2");
-                    // @ts-ignore
-                    newMath.children[0].value.pending = true;
+                    if (newMath.children[0].type === "atom") {
+                        newMath.children[0].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 1,
@@ -814,9 +783,7 @@ describe("reducer", () => {
                         newState = reducer(newState, {type: "("});
 
                         const newMath = Util.row("1(+2)");
-                        expect(Editor.stripIDs(newState.math)).toEqual(
-                            Editor.stripIDs(newMath),
-                        );
+                        expect(newState.math).toEqualMath(newMath);
                         expect(newState.cursor).toEqual({
                             path: [],
                             prev: 1,
@@ -842,9 +809,7 @@ describe("reducer", () => {
                         newState = reducer(newState, {type: "("});
 
                         const newMath = Util.row("(1+2)");
-                        expect(Editor.stripIDs(newState.math)).toEqual(
-                            Editor.stripIDs(newMath),
-                        );
+                        expect(newState.math).toEqualMath(newMath);
                         expect(newState.cursor).toEqual({
                             path: [],
                             prev: 0,
@@ -871,9 +836,7 @@ describe("reducer", () => {
                         newState = reducer(newState, {type: "("});
 
                         const newMath = Util.row("(1+2)");
-                        expect(Editor.stripIDs(newState.math)).toEqual(
-                            Editor.stripIDs(newMath),
-                        );
+                        expect(newState.math).toEqualMath(newMath);
                         expect(newState.cursor).toEqual({
                             path: [],
                             prev: 0,
@@ -896,11 +859,10 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: "("});
 
                     const newMath = Util.row("a(1(+2))b");
-                    // @ts-ignore
-                    newMath.children[6].value.pending = true;
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    if (newMath.children[6].type === "atom") {
+                        newMath.children[6].value.pending = true;
+                    }
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 3,
@@ -920,11 +882,10 @@ describe("reducer", () => {
                     const newState = reducer(state, {type: ")"});
 
                     const newMath = Util.row("a((1+)2)b");
-                    // @ts-ignore
-                    newMath.children[2].value.pending = true;
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    if (newMath.children[2].type === "atom") {
+                        newMath.children[2].value.pending = true;
+                    }
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 5,
@@ -945,12 +906,11 @@ describe("reducer", () => {
                     const state: State = {math, cursor};
                     const newState = reducer(state, {type: "("});
                     const newMath = Util.row("(a(1+2)b)");
-                    // @ts-ignore
-                    newMath.children[8].value.pending = true;
+                    if (newMath.children[8].type === "atom") {
+                        newMath.children[8].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 0,
@@ -969,12 +929,11 @@ describe("reducer", () => {
                     const state: State = {math, cursor};
                     const newState = reducer(state, {type: ")"});
                     const newMath = Util.row("(a(1+2)b)");
-                    // @ts-ignore
-                    newMath.children[0].value.pending = true;
+                    if (newMath.children[0].type === "atom") {
+                        newMath.children[0].value.pending = true;
+                    }
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 8,
@@ -995,9 +954,7 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "+"});
 
                 const newMath = Util.row("(1+2)+");
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(newMath),
-                );
+                expect(newState.math).toEqualMath(newMath);
             });
 
             test("inserting a character before a pending paren", () => {
@@ -1012,9 +969,7 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "+"});
 
                 const newMath = Util.row("+(1+2)");
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(newMath),
-                );
+                expect(newState.math).toEqualMath(newMath);
             });
         });
     });
@@ -1034,9 +989,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1055,9 +1008,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1+")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1+"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1080,8 +1031,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("e"), subsup(undefined, [])])),
+                expect(newState.math).toEqualMath(
+                    row([glyph("e"), subsup(undefined, [])]),
                 );
 
                 expect(newState.cursor).toEqual({
@@ -1103,8 +1054,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("e"), subsup([], undefined)])),
+                expect(newState.math).toEqualMath(
+                    row([glyph("e"), subsup([], undefined)]),
                 );
 
                 expect(newState.cursor).toEqual({
@@ -1129,9 +1080,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("eg")),
-                );
+                expect(newState.math).toEqualMath(Util.row("eg"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1155,9 +1104,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("eg")),
-                );
+                expect(newState.math).toEqualMath(Util.row("eg"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1181,9 +1128,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
@@ -1207,9 +1152,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
@@ -1233,9 +1176,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
@@ -1259,9 +1200,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("ex+yg")),
-                );
+                expect(newState.math).toEqualMath(Util.row("ex+yg"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1285,9 +1224,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("ex+yg")),
-                );
+                expect(newState.math).toEqualMath(Util.row("ex+yg"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1311,15 +1248,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([
-                            glyph("e"),
-                            glyph("a"),
-                            Util.sup("b"),
-                            glyph("g"),
-                        ]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("e"), glyph("a"), Util.sup("b"), glyph("g")]),
                 );
 
                 expect(newState.cursor).toEqual({
@@ -1344,15 +1274,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(
-                        row([
-                            glyph("e"),
-                            Util.sub("a"),
-                            glyph("b"),
-                            glyph("g"),
-                        ]),
-                    ),
+                expect(newState.math).toEqualMath(
+                    row([glyph("e"), Util.sub("a"), glyph("b"), glyph("g")]),
                 );
 
                 expect(newState.cursor).toEqual({
@@ -1373,9 +1296,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("")),
-                );
+                expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -1394,9 +1315,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1415,9 +1334,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1436,8 +1353,8 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(row([glyph("1"), Util.sub("2")])),
+                expect(newState.math).toEqualMath(
+                    row([glyph("1"), Util.sub("2")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1463,9 +1380,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: 1,
@@ -1488,9 +1403,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1abcd2")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1abcd2"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
@@ -1513,9 +1426,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1abcd2")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1abcd2"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1534,9 +1445,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1ab")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1ab"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
@@ -1555,9 +1464,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("")),
-                );
+                expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -1579,11 +1486,10 @@ describe("reducer", () => {
                 const newState = reducer(state, action);
 
                 const newMath = Util.row("2(x+y)");
-                // @ts-ignore
-                newMath.children[5].value.pending = true;
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(newMath),
-                );
+                if (newMath.children[5].type === "atom") {
+                    newMath.children[5].value.pending = true;
+                }
+                expect(newState.math).toEqualMath(newMath);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 4,
@@ -1603,11 +1509,10 @@ describe("reducer", () => {
                 const newState = reducer(state, action);
 
                 const newMath = Util.row("a(x+yb)");
-                // @ts-ignore
-                newMath.children[6].value.pending = true;
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(newMath),
-                );
+                if (newMath.children[6].type === "atom") {
+                    newMath.children[6].value.pending = true;
+                }
+                expect(newState.math).toEqualMath(newMath);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 4,
@@ -1626,9 +1531,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("2(xy)")),
-                );
+                expect(newState.math).toEqualMath(Util.row("2(xy)"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
@@ -1647,9 +1550,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("2x+y")),
-                );
+                expect(newState.math).toEqualMath(Util.row("2x+y"));
 
                 expect(newState.cursor).toEqual({
                     path: [],
@@ -1671,11 +1572,10 @@ describe("reducer", () => {
                     const newState = reducer(state, action);
 
                     const newMath = Util.row("(a(x+yb))");
-                    // @ts-ignore
-                    newMath.children[7].value.pending = true;
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    if (newMath.children[7].type === "atom") {
+                        newMath.children[7].value.pending = true;
+                    }
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 5,
@@ -1699,9 +1599,7 @@ describe("reducer", () => {
                     const newState = reducer(state, action);
 
                     const newMath = Util.row("(ax+yb)");
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 1,
@@ -1721,9 +1619,7 @@ describe("reducer", () => {
                     const newState = reducer(state, action);
 
                     const newMath = Util.row("a(x+y)b");
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(newMath),
-                    );
+                    expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: null,
@@ -1745,9 +1641,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: 2,
@@ -1766,9 +1660,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("2x+y")),
-                );
+                expect(newState.math).toEqualMath(Util.row("2x+y"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1787,9 +1679,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -1808,9 +1698,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("")),
-                );
+                expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -1835,9 +1723,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -1856,9 +1742,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -1879,9 +1763,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: 2,
@@ -1900,9 +1782,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -1921,9 +1801,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 2,
@@ -1942,9 +1820,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -1967,9 +1843,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 1,
@@ -1988,9 +1862,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2009,9 +1881,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2034,9 +1904,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2059,9 +1927,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: 1,
@@ -2086,9 +1952,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: 1,
@@ -2107,9 +1971,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: null,
@@ -2132,9 +1994,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
                     prev: 1,
@@ -2153,9 +2013,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
                     prev: null,
@@ -2178,9 +2036,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2201,9 +2057,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: 1,
@@ -2222,9 +2076,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2243,9 +2095,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -2270,9 +2120,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2291,9 +2139,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
@@ -2314,9 +2160,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -2335,9 +2179,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -2356,9 +2198,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -2377,9 +2217,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -2402,9 +2240,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -2423,9 +2259,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2444,9 +2278,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2469,9 +2301,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2494,9 +2324,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -2521,9 +2349,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
                     prev: null,
@@ -2542,9 +2368,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
                     prev: null,
@@ -2567,9 +2391,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: null,
@@ -2588,9 +2410,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: null,
@@ -2613,9 +2433,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2636,9 +2454,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: null,
@@ -2657,9 +2473,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2678,9 +2492,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(math),
-                );
+                expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -2904,10 +2716,8 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(
-                    row([glyph("1"), glyph("+"), Util.frac("2+3", "")]),
-                ),
+            expect(newState.math).toEqualMath(
+                row([glyph("1"), glyph("+"), Util.frac("2+3", "")]),
             );
             expect(newState.cursor).toEqual({
                 path: [2, DENOMINATOR],
@@ -2940,9 +2750,7 @@ describe("reducer", () => {
 
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("1+")),
-                );
+                expect(newState.math).toEqualMath(Util.row("1+"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -2973,9 +2781,7 @@ describe("reducer", () => {
 
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("2+3")),
-                );
+                expect(newState.math).toEqualMath(Util.row("2+3"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: null,
@@ -3006,9 +2812,7 @@ describe("reducer", () => {
 
                 const newState = reducer(state, action);
 
-                expect(Editor.stripIDs(newState.math)).toEqual(
-                    Editor.stripIDs(Util.row("13")),
-                );
+                expect(newState.math).toEqualMath(Util.row("13"));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
@@ -3040,9 +2844,7 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(Util.row("123")),
-            );
+            expect(newState.math).toEqualMath(Util.row("123"));
             expect(newState.cursor).toEqual({
                 path: [],
                 prev: 1,
@@ -3073,8 +2875,8 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(row([glyph("e"), Util.sup("x+y")])),
+            expect(newState.math).toEqualMath(
+                row([glyph("e"), Util.sup("x+y")]),
             );
             expect(newState.cursor).toEqual({
                 path: [1, SUP],
@@ -3106,9 +2908,8 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            // TODO: write better matchers
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(row([glyph("a"), Util.sub("n+1")])),
+            expect(newState.math).toEqualMath(
+                row([glyph("a"), Util.sub("n+1")]),
             );
             // e.g. toHaveCursorAtEndOf("sub");
             expect(newState.cursor).toEqual({
@@ -3142,9 +2943,8 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            // TODO: write better matchers
-            expect(Editor.stripIDs(newState.math)).toEqual(
-                Editor.stripIDs(row([glyph("2"), Util.sqrt("x+5")])),
+            expect(newState.math).toEqualMath(
+                row([glyph("2"), Util.sqrt("x+5")]),
             );
             // e.g. toHaveCursorAtEndOf("sub");
             expect(newState.cursor).toEqual({
@@ -3176,9 +2976,7 @@ describe("reducer", () => {
 
                     const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(Util.row("(1+2)+3")),
-                    );
+                    expect(newState.math).toEqualMath(Util.row("(1+2)+3"));
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 0,
@@ -3204,9 +3002,7 @@ describe("reducer", () => {
 
                     const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(Util.row("1+(2+3)")),
-                    );
+                    expect(newState.math).toEqualMath(Util.row("1+(2+3)"));
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 2,
@@ -3234,9 +3030,7 @@ describe("reducer", () => {
 
                     const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(Util.row("(1+2)+3")),
-                    );
+                    expect(newState.math).toEqualMath(Util.row("(1+2)+3"));
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
@@ -3262,9 +3056,7 @@ describe("reducer", () => {
 
                     const newState = reducer(state, action);
 
-                    expect(Editor.stripIDs(newState.math)).toEqual(
-                        Editor.stripIDs(Util.row("1+(2+3)")),
-                    );
+                    expect(newState.math).toEqualMath(Util.row("1+(2+3)"));
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 6,

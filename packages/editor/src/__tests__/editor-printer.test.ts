@@ -1,9 +1,29 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {stripIDs} from "../editor-ast";
+import * as Editor from "../editor-ast";
 import * as Util from "../util";
 
 import print from "../editor-printer";
+
+expect.extend({
+    toEqualMath(received, actual) {
+        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
+        return {
+            pass: true,
+            message: () => "hello, world!",
+        };
+    },
+});
+
+declare global {
+    /* eslint-disable */
+    namespace jest {
+        interface Matchers<R, T> {
+            toEqualMath(actual: Editor.Node<Editor.Glyph, Util.ID>): R;
+        }
+    }
+    /* eslint-enable */
+}
 
 describe("print", () => {
     test("123", () => {
@@ -11,7 +31,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("123")));
+        expect(node).toEqualMath(Util.row("123"));
     });
 
     test("1", () => {
@@ -19,7 +39,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("1")));
+        expect(node).toEqualMath(Util.row("1"));
     });
 
     test("1+2+3", () => {
@@ -31,7 +51,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("1+2+3")));
+        expect(node).toEqualMath(Util.row("1+2+3"));
     });
 
     test("a*b*c", () => {
@@ -46,7 +66,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("a*b*c")));
+        expect(node).toEqualMath(Util.row("a*b*c"));
     });
 
     test("abc", () => {
@@ -61,7 +81,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("abc")));
+        expect(node).toEqualMath(Util.row("abc"));
     });
 
     test("abc+123", () => {
@@ -79,7 +99,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("abc+123")));
+        expect(node).toEqualMath(Util.row("abc+123"));
     });
 
     test("a(x+y)", () => {
@@ -96,7 +116,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("a(x+y)")));
+        expect(node).toEqualMath(Util.row("a(x+y)"));
     });
 
     test("(1)(2)(3)", () => {
@@ -107,7 +127,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("(1)(2)(3)")));
+        expect(node).toEqualMath(Util.row("(1)(2)(3)"));
     });
 
     test("-1.2", () => {
@@ -115,7 +135,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("-1.2")));
+        expect(node).toEqualMath(Util.row("-1.2"));
     });
 
     test("x-y", () => {
@@ -129,7 +149,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("x-y")));
+        expect(node).toEqualMath(Util.row("x-y"));
     });
 
     test("a+(b+c)", () => {
@@ -140,7 +160,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("a+(b+c)")));
+        expect(node).toEqualMath(Util.row("a+(b+c)"));
     });
 
     test("a-(b+c)", () => {
@@ -157,7 +177,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.row("a-(b+c)")));
+        expect(node).toEqualMath(Util.row("a-(b+c)"));
     });
 
     test("a/b", () => {
@@ -168,7 +188,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.frac("a", "b")));
+        expect(node).toEqualMath(Util.frac("a", "b"));
     });
 
     test("(a+b)/(x+y)", () => {
@@ -179,6 +199,6 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(stripIDs(node)).toEqual(stripIDs(Util.frac("a+b", "x+y")));
+        expect(node).toEqualMath(Util.frac("a+b", "x+y"));
     });
 });

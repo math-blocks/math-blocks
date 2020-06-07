@@ -1,12 +1,13 @@
 module.exports = function(wallaby) {
     return {
         files: [
-            "src/**/*.ts",
-            "package.json", // <--
-            "!src/**/__tests__/*.ts",
+            "packages/**/*.ts",
+            "packages/**/*.tsx",
+            "package.json",
+            "!packages/**/__tests__/*.ts",
         ],
 
-        tests: ["src/**/__tests__/*.ts"],
+        tests: ["packages/**/__tests__/*.ts"],
 
         env: {
             type: "node",
@@ -19,9 +20,19 @@ module.exports = function(wallaby) {
         },
 
         setup: function(wallaby) {
-            var jestConfig = require("./package.json").jest;
-            /* for example:
-             * jestConfig.globals = { "__DEV__": true }; */
+            const path = require("path");
+            const jestConfig = require(path.join(
+                wallaby.localProjectDir,
+                "./jest.config.js",
+            ));
+
+            const pattern = "^@math-blocks/(.*)$";
+            jestConfig.moduleNameMapper[pattern] = jestConfig.moduleNameMapper[
+                pattern
+            ]
+                .replace("<rootDir>", wallaby.projectCacheDir)
+                .replace(".ts", ".js");
+
             wallaby.testFramework.configure(jestConfig);
         },
     };

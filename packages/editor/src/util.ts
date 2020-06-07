@@ -60,7 +60,7 @@ export const isEqual = (
     }
 };
 
-type ID = {
+export type ID = {
     id: number;
 };
 
