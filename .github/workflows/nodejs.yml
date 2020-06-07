@@ -69,7 +69,7 @@ jobs:
       - name: lint
         run: yarn lint
 
-  typecheck:
+  ts-build:
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -97,8 +97,8 @@ jobs:
             ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
-      - name: typecheck
-        run: yarn typecheck
+      - name: ts-build
+        run: yarn ts-build
 
   test:
     runs-on: ubuntu-latest

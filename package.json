@@ -57,8 +57,8 @@
   },
   "scripts": {
     "codechecks": "codechecks",
-    "typecheck": "tsc --noEmit",
-    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 99",
+    "ts-build": "tsc -b -v packages/tsconfig.json",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 95",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
@@ -85,8 +85,5 @@
     "hooks": {
       "pre-commit": "pretty-quick"
     }
-  },
-  "typeCoverage": {
-    "atLeast": 99
   }
 }

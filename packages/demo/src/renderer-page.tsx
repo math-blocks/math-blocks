@@ -3,7 +3,7 @@ import * as React from "react";
 import {MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 import {typeset, Layout} from "@math-blocks/typesetter";
-import fontMetrics from "../../../metrics/comic-sans.json";
+import fontMetrics from "@math-blocks/metrics";
 
 const fontSize = 60;
 const comicSansTypeset = typeset(fontMetrics)(fontSize)(1.0);
