@@ -8,7 +8,16 @@ import {Location} from "./editor-lexer";
 type Token = Editor.Node<Lexer.Token, {loc: Location}>;
 
 // TODO: fill out this list
-type Operator = "add" | "sub" | "mul.exp" | "div" | "mul.imp" | "neg" | "eq" | "supsub" | "nul";
+type Operator =
+    | "add"
+    | "sub"
+    | "mul.exp"
+    | "div"
+    | "mul.imp"
+    | "neg"
+    | "eq"
+    | "supsub"
+    | "nul";
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
@@ -34,14 +43,21 @@ const getPrefixParselet = (
                     };
                 case "minus":
                     return {
-                        parse: (parser) => Semantic.neg(parser.parseWithOperator("neg"), false),
+                        parse: (parser) =>
+                            Semantic.neg(
+                                parser.parseWithOperator("neg"),
+                                false,
+                            ),
                     };
                 case "lparens":
                     return {
                         parse: (parser) => {
                             const result = parser.parse();
                             const nextToken = parser.consume();
-                            if (nextToken.type === "atom" && nextToken.value.kind === "rparens") {
+                            if (
+                                nextToken.type === "atom" &&
+                                nextToken.value.kind === "rparens"
+                            ) {
                                 return result;
                             }
                             throw new Error("unmatched left paren");
@@ -121,7 +137,10 @@ const parseNaryInfix = (op: NAryOperator) => (
  * first argument is already parsed by parseNaryInfix so it makes sense
  * that the return value is one or more.
  */
-const parseNaryArgs = (parser: EditorParser, op: NAryOperator): OneOrMore<Semantic.Expression> => {
+const parseNaryArgs = (
+    parser: EditorParser,
+    op: NAryOperator,
+): OneOrMore<Semantic.Expression> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -184,7 +203,9 @@ const parseNaryArgs = (parser: EditorParser, op: NAryOperator): OneOrMore<Semant
     }
 };
 
-const parseMulByParen = (parser: EditorParser): OneOrMore<Semantic.Expression> => {
+const parseMulByParen = (
+    parser: EditorParser,
+): OneOrMore<Semantic.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     const nextToken = parser.peek();
     if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
@@ -248,11 +269,16 @@ const getInfixParselet = (
                         }
                     } else {
                         if (sub) {
-                            throw new Error("subscripts are only allowed on identifiers");
+                            throw new Error(
+                                "subscripts are only allowed on identifiers",
+                            );
                         }
                     }
                     if (sup) {
-                        return Semantic.exp(left, editorParser.parse(sup.children));
+                        return Semantic.exp(
+                            left,
+                            editorParser.parse(sup.children),
+                        );
                     }
 
                     return left;
@@ -268,7 +294,9 @@ const getInfixParselet = (
                 parse: (parser, left): Semantic.Expression => {
                     const parselet = parseNaryInfix("mul.imp");
                     if (left.type === "div") {
-                        throw new Error("An operator is required between fractions");
+                        throw new Error(
+                            "An operator is required between fractions",
+                        );
                     }
                     return parselet(parser, left);
                 },
@@ -311,7 +339,9 @@ const editorParser = Parser.parserFactory<Token, Semantic.Expression, Operator>(
     EOL,
 );
 
-export const parse = (input: Editor.Row<Editor.Glyph, {id: number}>): Semantic.Expression => {
+export const parse = (
+    input: Editor.Row<Editor.Glyph, {id: number}>,
+): Semantic.Expression => {
     const tokenRow = Lexer.lexRow(input);
     return editorParser.parse(tokenRow.children);
 };

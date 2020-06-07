@@ -14,7 +14,10 @@ describe("isEqual", () => {
         });
 
         it("a/b", () => {
-            const result = Util.isEqual(Util.frac("a", "b"), Util.frac("a", "b"));
+            const result = Util.isEqual(
+                Util.frac("a", "b"),
+                Util.frac("a", "b"),
+            );
             expect(result).toBe(true);
         });
 
@@ -24,7 +27,10 @@ describe("isEqual", () => {
         });
 
         it("^3√1+2", () => {
-            const result = Util.isEqual(Util.root("1+2", "3"), Util.root("1+2", "3"));
+            const result = Util.isEqual(
+                Util.root("1+2", "3"),
+                Util.root("1+2", "3"),
+            );
             expect(result).toBe(true);
         });
 
@@ -80,7 +86,10 @@ describe("isEqual", () => {
         });
 
         it("a/b == a/c", () => {
-            const result = Util.isEqual(Util.frac("a", "b"), Util.frac("a", "c"));
+            const result = Util.isEqual(
+                Util.frac("a", "b"),
+                Util.frac("a", "c"),
+            );
             expect(result).toBe(false);
         });
 
@@ -90,12 +99,18 @@ describe("isEqual", () => {
         });
 
         it("^a√1+2 != ^b√1+2", () => {
-            const result = Util.isEqual(Util.root("1+2", "a"), Util.root("1+2", "b"));
+            const result = Util.isEqual(
+                Util.root("1+2", "a"),
+                Util.root("1+2", "b"),
+            );
             expect(result).toBe(false);
         });
 
         it("√1+2 != ^2√1+2", () => {
-            const result = Util.isEqual(Util.sqrt("1+2"), Util.root("1+2", "2"));
+            const result = Util.isEqual(
+                Util.sqrt("1+2"),
+                Util.root("1+2", "2"),
+            );
             expect(result).toBe(false);
         });
 

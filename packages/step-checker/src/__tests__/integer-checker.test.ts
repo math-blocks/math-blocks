@@ -44,7 +44,9 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + b + -a + c", "b + c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map((reason) => reason.message)).toEqual(["adding inverse"]);
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "adding inverse",
+        ]);
     });
 
     it("a - b -> a + -b", () => {
@@ -90,7 +92,9 @@ describe("IntegerChecker", () => {
               (neg b)
               (neg.sub c))
         `);
-        expect(result.steps[0].message).toEqual("subtracting is the same as adding the inverse");
+        expect(result.steps[0].message).toEqual(
+            "subtracting is the same as adding the inverse",
+        );
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
             (add
@@ -104,7 +108,9 @@ describe("IntegerChecker", () => {
               (neg b)
               (neg c))
         `);
-        expect(result.steps[1].message).toEqual("subtracting is the same as adding the inverse");
+        expect(result.steps[1].message).toEqual(
+            "subtracting is the same as adding the inverse",
+        );
     });
 
     it("a - b - c -> a - b + -c", () => {
@@ -131,7 +137,9 @@ describe("IntegerChecker", () => {
               a
               (neg (neg b)))
         `);
-        expect(result.steps[0].message).toEqual("subtracting is the same as adding the inverse");
+        expect(result.steps[0].message).toEqual(
+            "subtracting is the same as adding the inverse",
+        );
 
         // TODO: figure out how to for hreplace the --b in a + --b with b to
         // get the full expression for each step.  Having the individual
@@ -141,7 +149,9 @@ describe("IntegerChecker", () => {
         // of substeps.
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg (neg b))`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`b`);
-        expect(result.steps[1].message).toEqual("negative of a negative is positive");
+        expect(result.steps[1].message).toEqual(
+            "negative of a negative is positive",
+        );
 
         expect(result.steps).toHaveLength(2);
     });
@@ -173,14 +183,18 @@ describe("IntegerChecker", () => {
         const result = checkStep("a - a", "0");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map((reason) => reason.message)).toEqual(["adding inverse"]);
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "adding inverse",
+        ]);
     });
 
     it("--a -> a", () => {
         const result = checkStep("--a", "a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps[0].message).toEqual("negative of a negative is positive");
+        expect(result.steps[0].message).toEqual(
+            "negative of a negative is positive",
+        );
     });
 
     it("a -> --a", () => {
@@ -189,7 +203,9 @@ describe("IntegerChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`a`);
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(neg (neg a))`);
-        expect(result.steps[0].message).toEqual("negative of a negative is positive");
+        expect(result.steps[0].message).toEqual(
+            "negative of a negative is positive",
+        );
 
         expect(result.steps).toHaveLength(1);
     });
@@ -211,7 +227,9 @@ describe("IntegerChecker", () => {
             "negative of a negative is positive",
         ]);
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg (neg a))`);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(neg (neg (neg (neg a))))`);
+        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(
+            `(neg (neg (neg (neg a))))`,
+        );
 
         expect(result.steps).toHaveLength(1);
     });
@@ -220,13 +238,19 @@ describe("IntegerChecker", () => {
         const result = checkStep("----a", "a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg (neg (neg (neg a))))`);
+        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(
+            `(neg (neg (neg (neg a))))`,
+        );
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(neg (neg a))`);
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg (neg a))`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`a`);
 
-        expect(result.steps[0].message).toEqual("negative of a negative is positive");
-        expect(result.steps[1].message).toEqual("negative of a negative is positive");
+        expect(result.steps[0].message).toEqual(
+            "negative of a negative is positive",
+        );
+        expect(result.steps[1].message).toEqual(
+            "negative of a negative is positive",
+        );
 
         expect(result.steps).toHaveLength(2);
     });
@@ -238,11 +262,17 @@ describe("IntegerChecker", () => {
 
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`a`);
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(neg (neg a))`);
-        expect(result.steps[0].message).toEqual("negative of a negative is positive");
+        expect(result.steps[0].message).toEqual(
+            "negative of a negative is positive",
+        );
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg (neg a))`);
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(neg (neg (neg (neg a))))`);
-        expect(result.steps[1].message).toEqual("negative of a negative is positive");
+        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(
+            `(neg (neg (neg (neg a))))`,
+        );
+        expect(result.steps[1].message).toEqual(
+            "negative of a negative is positive",
+        );
 
         expect(result.steps).toHaveLength(2);
     });
@@ -288,7 +318,9 @@ describe("IntegerChecker", () => {
 
         expect(result.equivalent).toBe(true);
 
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg (add a b))`);
+        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(
+            `(neg (add a b))`,
+        );
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
             (mul.exp
               (neg 1)
@@ -382,7 +414,9 @@ describe("IntegerChecker", () => {
               (neg 1)
               (add a b))
         `);
-        expect(result.steps[3].nodes[1]).toMatchInlineSnapshot(`(neg (add a b))`);
+        expect(result.steps[3].nodes[1]).toMatchInlineSnapshot(
+            `(neg (add a b))`,
+        );
         expect(result.steps[3].message).toEqual(
             "negation is the same as multipling by negative one",
         );

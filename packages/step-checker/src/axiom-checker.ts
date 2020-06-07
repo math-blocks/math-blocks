@@ -11,7 +11,11 @@ class AxiomChecker {
         this.checker = checker;
     }
 
-    addZero(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
+    addZero(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
         if (prev.type !== "add") {
             return {
                 equivalent: false,
@@ -30,7 +34,11 @@ class AxiomChecker {
         );
     }
 
-    mulOne(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
+    mulOne(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
@@ -98,7 +106,10 @@ class AxiomChecker {
         };
     }
 
-    checkDistribution(prev: Semantic.Expression, next: Semantic.Expression): Result {
+    checkDistribution(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+    ): Result {
         if (prev.type !== "mul" || next.type !== "add") {
             return {
                 equivalent: false,
@@ -108,7 +119,10 @@ class AxiomChecker {
         return this.distributionFactoring(next, prev, "distribution");
     }
 
-    checkFactoring(prev: Semantic.Expression, next: Semantic.Expression): Result {
+    checkFactoring(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+    ): Result {
         if (prev.type !== "add" || next.type !== "mul") {
             return {
                 equivalent: false,
@@ -151,7 +165,9 @@ class AxiomChecker {
 
                     if (equivalent) {
                         const nodes: Semantic.Expression[] =
-                            reason === "distribution" ? [mulNode, addNode] : [addNode, mulNode];
+                            reason === "distribution"
+                                ? [mulNode, addNode]
+                                : [addNode, mulNode];
 
                         // TODO: include the original nodes[0] in the result somehow
                         if (subReasons.length > 0) {
@@ -187,7 +203,11 @@ class AxiomChecker {
         };
     }
 
-    mulByZero(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
+    mulByZero(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
         if (prev.type !== "mul") {
             return {
                 equivalent: false,
@@ -198,9 +218,15 @@ class AxiomChecker {
         // TODO: ensure that steps from these calls to checkStep
         // are captured.
         const hasZero = prev.args.some(
-            (arg) => this.checker.checkStep(arg, Semantic.number("0"), steps).equivalent,
+            (arg) =>
+                this.checker.checkStep(arg, Semantic.number("0"), steps)
+                    .equivalent,
         );
-        const result = this.checker.checkStep(next, Semantic.number("0"), steps);
+        const result = this.checker.checkStep(
+            next,
+            Semantic.number("0"),
+            steps,
+        );
         if (hasZero && result.equivalent) {
             return {
                 equivalent: true,
@@ -219,8 +245,16 @@ class AxiomChecker {
         };
     }
 
-    commuteAddition(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
-        if (prev.type === "add" && next.type === "add" && prev.args.length === next.args.length) {
+    commuteAddition(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
+        if (
+            prev.type === "add" &&
+            next.type === "add" &&
+            prev.args.length === next.args.length
+        ) {
             const pairs = zip(prev.args, next.args);
 
             // Check if the args are the same disregarding order.
@@ -279,7 +313,11 @@ class AxiomChecker {
         next: Semantic.Expression,
         steps: Step[],
     ): Result {
-        if (prev.type === "mul" && next.type === "mul" && prev.args.length === next.args.length) {
+        if (
+            prev.type === "mul" &&
+            next.type === "mul" &&
+            prev.args.length === next.args.length
+        ) {
             const pairs = zip(prev.args, next.args);
 
             // Check if the arguments are the same disregarding order.
@@ -323,8 +361,16 @@ class AxiomChecker {
         };
     }
 
-    symmetricProperty(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
-        if (prev.type === "eq" && next.type === "eq" && prev.args.length === next.args.length) {
+    symmetricProperty(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
+        if (
+            prev.type === "eq" &&
+            next.type === "eq" &&
+            prev.args.length === next.args.length
+        ) {
             const pairs = zip(prev.args, next.args);
 
             const result = this.checker.checkArgs(prev, next, steps);
@@ -333,7 +379,8 @@ class AxiomChecker {
             }
 
             const commutative = pairs.some(
-                ([first, second]) => !this.checker.checkStep(first, second, steps).equivalent,
+                ([first, second]) =>
+                    !this.checker.checkStep(first, second, steps).equivalent,
             );
 
             if (commutative) {
@@ -356,7 +403,11 @@ class AxiomChecker {
         };
     }
 
-    runChecks(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
+    runChecks(
+        prev: Semantic.Expression,
+        next: Semantic.Expression,
+        steps: Step[],
+    ): Result {
         let result: Result;
 
         result = this.symmetricProperty(prev, next, steps);

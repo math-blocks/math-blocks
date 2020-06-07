@@ -124,7 +124,10 @@ export const App: React.SFC<{}> = () => {
                                 borderRadius: 4,
                             }}
                             onClick={() =>
-                                handleCheckStep(steps[index].value, steps[index + 1].value)
+                                handleCheckStep(
+                                    steps[index].value,
+                                    steps[index + 1].value,
+                                )
                             }
                             onMouseDown={(e) => {
                                 e.preventDefault();
@@ -151,7 +154,9 @@ export const App: React.SFC<{}> = () => {
                             }}
                         >
                             <MathEditor
-                                readonly={index !== steps.length - 2 || isComplete}
+                                readonly={
+                                    index !== steps.length - 2 || isComplete
+                                }
                                 value={step.value}
                                 focus={index === steps.length - 2}
                                 onSubmit={() => {
@@ -160,8 +165,13 @@ export const App: React.SFC<{}> = () => {
                                         steps[index + 1].value,
                                     );
                                 }}
-                                onChange={(value: Editor.Row<Editor.Glyph, ID>) => {
-                                    const state = Editor.isEqual(steps[index].value, value)
+                                onChange={(
+                                    value: Editor.Row<Editor.Glyph, ID>,
+                                ) => {
+                                    const state = Editor.isEqual(
+                                        steps[index].value,
+                                        value,
+                                    )
                                         ? StepState.Duplicate
                                         : StepState.Pending;
                                     setSteps([
@@ -195,14 +205,19 @@ export const App: React.SFC<{}> = () => {
                     );
                 })}
             </div>
-            {isComplete && <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>}
+            {isComplete && (
+                <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
+            )}
             <div style={{position: "fixed", bottom: 0, left: 0}}>
                 <MathKeypad />
             </div>
             <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
                 <div>
                     Icons made by{" "}
-                    <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">
+                    <a
+                        href="https://www.flaticon.com/authors/pixel-perfect"
+                        title="Pixel perfect"
+                    >
                         Pixel perfect
                     </a>{" "}
                     from{" "}

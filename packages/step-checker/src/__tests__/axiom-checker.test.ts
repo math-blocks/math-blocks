@@ -15,14 +15,18 @@ describe("AxiomChecker", () => {
             const result = checkStep("a = 3", "3 = a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["symmetric property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "symmetric property",
+            ]);
         });
 
         it("a = b = c -> b = c = a", () => {
             const result = checkStep("a = b = c", "b = c = a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["symmetric property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "symmetric property",
+            ]);
         });
 
         it("a = 1 + 2 -> 3 = a", () => {
@@ -41,7 +45,9 @@ describe("AxiomChecker", () => {
             const result = checkStep("1 + 2", "2 + 1");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("(2 - 1) + (1 + 1) -> 2 + 1", () => {
@@ -78,7 +84,9 @@ describe("AxiomChecker", () => {
             const result = checkStep("2 + 0", "0 + 2");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("x + (a + 2) -> x + (2 + a)", () => {
@@ -88,21 +96,27 @@ describe("AxiomChecker", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("x + a + 2 -> x + 2 + a", () => {
             const result = checkStep("x + a + 2", "x + 2 + a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("x + a + 2 -> a + x + 2", () => {
             const result = checkStep("x + a + 2", "a + x + 2");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("x + a + 2 -> x + 2 + b [incorrect step]", () => {
@@ -118,14 +132,18 @@ describe("AxiomChecker", () => {
             const result = checkStep("1 * 2", "2 * 1");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("2 * 3 -> 3 * 2", () => {
             const result = checkStep("2 * 3", "3 * 2");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["commutative property"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "commutative property",
+            ]);
         });
 
         it("(1 + 1) * (1 + 2) -> 3 * 2", () => {
@@ -270,14 +288,18 @@ describe("AxiomChecker", () => {
             const result = checkStep("a * (b + c)", "a * b + a * c");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["distribution"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
 
         it("(b + c) * a -> b * a + c * a", () => {
             const result = checkStep("(b + c) * a", "b * a + c * a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["distribution"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
 
         it("a * (b + c) -> a * b + c [incorrect]", () => {
@@ -289,24 +311,39 @@ describe("AxiomChecker", () => {
 
         // TODO: make this test pass
         it.skip("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
-            const result = checkStep("2 * a * (b + c)", "2 * a * b + 2 * a * c");
+            const result = checkStep(
+                "2 * a * (b + c)",
+                "2 * a * b + 2 * a * c",
+            );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["distribution"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
 
         it("(a + b) * (x + y) -> (a + b) * x + (a + b) * y", () => {
-            const result = checkStep("(a + b) * (x + y)", "(a + b) * x + (a + b) * y");
+            const result = checkStep(
+                "(a + b) * (x + y)",
+                "(a + b) * x + (a + b) * y",
+            );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["distribution"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
 
         it("(a + b) * (x + y) -> a * (x + y) + b * (x + y)", () => {
-            const result = checkStep("(a + b) * (x + y)", "a * (x + y) + b * (x + y)");
+            const result = checkStep(
+                "(a + b) * (x + y)",
+                "a * (x + y) + b * (x + y)",
+            );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["distribution"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
     });
 
@@ -315,7 +352,9 @@ describe("AxiomChecker", () => {
             const result = checkStep("a * b + a * c", "a * (b + c)");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["factoring"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "factoring",
+            ]);
         });
     });
 

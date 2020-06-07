@@ -5,14 +5,21 @@ import * as Editor from "@math-blocks/editor";
 
 const EditorPage: React.SFC<{}> = () => (
     <div>
-        <MathEditor readonly={false} value={Editor.Util.row("2x+5=10")} focus={true} />
+        <MathEditor
+            readonly={false}
+            value={Editor.Util.row("2x+5=10")}
+            focus={true}
+        />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
             <MathKeypad />
         </div>
         <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
             <div>
                 Icons made by{" "}
-                <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">
+                <a
+                    href="https://www.flaticon.com/authors/pixel-perfect"
+                    title="Pixel perfect"
+                >
                     Pixel perfect
                 </a>{" "}
                 from{" "}

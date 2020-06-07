@@ -1,6 +1,9 @@
 import * as Editor from "./editor-ast";
 
-export const isEqual = (a: Editor.Node<Editor.Glyph>, b: Editor.Node<Editor.Glyph>): boolean => {
+export const isEqual = (
+    a: Editor.Node<Editor.Glyph>,
+    b: Editor.Node<Editor.Glyph>,
+): boolean => {
     if (a.type !== b.type) {
         return false;
     } else if (a.type === "atom" && b.type === "atom") {
@@ -13,7 +16,9 @@ export const isEqual = (a: Editor.Node<Editor.Glyph>, b: Editor.Node<Editor.Glyp
         const [aRad, aIndex] = a.children;
         const [bRad, bIndex] = b.children;
         if (isEqual(aRad, bRad)) {
-            return aIndex != null && bIndex != null ? isEqual(aIndex, bIndex) : aIndex === bIndex;
+            return aIndex != null && bIndex != null
+                ? isEqual(aIndex, bIndex)
+                : aIndex === bIndex;
         } else {
             return false;
         }
@@ -47,7 +52,9 @@ export const isEqual = (a: Editor.Node<Editor.Glyph>, b: Editor.Node<Editor.Glyp
         if (a.children.length !== b.children.length) {
             return false;
         }
-        return a.children.every((aChild, index) => isEqual(aChild, b.children[index]));
+        return a.children.every((aChild, index) =>
+            isEqual(aChild, b.children[index]),
+        );
     } else {
         return false;
     }
@@ -72,7 +79,10 @@ export const sqrt = (radicand: string): Editor.Root<Editor.Glyph, ID> =>
         null,
     );
 
-export const root = (radicand: string, index: string): Editor.Root<Editor.Glyph, ID> =>
+export const root = (
+    radicand: string,
+    index: string,
+): Editor.Root<Editor.Glyph, ID> =>
     Editor.root(
         radicand.split("").map((glyph) => Editor.glyph(glyph)),
         index.split("").map((glyph) => Editor.glyph(glyph)),
@@ -90,7 +100,10 @@ export const sub = (sub: string): Editor.SubSup<Editor.Glyph, ID> =>
         undefined,
     );
 
-export const subsup = (sub: string, sup: string): Editor.SubSup<Editor.Glyph, ID> =>
+export const subsup = (
+    sub: string,
+    sup: string,
+): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
         sub.split("").map((glyph) => Editor.glyph(glyph)),
         sup.split("").map((glyph) => Editor.glyph(glyph)),

@@ -250,7 +250,9 @@ describe("NewMathParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`(exp :base (ident a (add n 1)) :exp 2)`);
+        expect(parseTree).toMatchInlineSnapshot(
+            `(exp :base (ident a (add n 1)) :exp 2)`,
+        );
     });
 
     it("should throw when a subscript is being used on a number", () => {

@@ -11,7 +11,11 @@ const print = (
         return `${ast.value}`;
     } else if (ast.type === "identifier") {
         if (ast.subscript) {
-            return `(ident ${ast.name} ${print(ast.subscript, serialize, indent)})`;
+            return `(ident ${ast.name} ${print(
+                ast.subscript,
+                serialize,
+                indent,
+            )})`;
         } else {
             return `${ast.name}`;
         }
@@ -31,12 +35,15 @@ const print = (
         }
         if (ast.type === "exp") {
             const hasGrandchildren =
-                (ast.base.type !== "identifier" && ast.base.type !== "number") ||
+                (ast.base.type !== "identifier" &&
+                    ast.base.type !== "number") ||
                 (ast.exp.type !== "identifier" && ast.exp.type !== "number");
             const base = print(ast.base, serialize, indent);
             const exp = print(ast.exp, serialize, indent);
             return hasGrandchildren
-                ? `(${ast.type}\n${indent(`:base ${base}`)}\n${indent(`:exp ${exp}`)})`
+                ? `(${ast.type}\n${indent(`:base ${base}`)}\n${indent(
+                      `:exp ${exp}`,
+                  )})`
                 : `(${ast.type} :base ${base} :exp ${exp})`;
         }
         if (ast.type === "ellipsis") {
@@ -54,7 +61,9 @@ const print = (
                 .map((arg: Node) => indent(print(arg, serialize, indent)))
                 .join("\n")})`;
         } else {
-            return `(${type} ${args.map((arg: Node) => print(arg, serialize, indent)).join(" ")})`;
+            return `(${type} ${args
+                .map((arg: Node) => print(arg, serialize, indent))
+                .join(" ")})`;
         }
     }
 };

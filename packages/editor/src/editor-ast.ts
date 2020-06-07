@@ -41,7 +41,9 @@ export type Node<AT, EP = {}> =
 
 export type HasChildren<T, U> = Row<T, U>;
 
-export function row<T>(children: Node<T, {id: number}>[]): Row<T, {id: number}> {
+export function row<T>(
+    children: Node<T, {id: number}>[],
+): Row<T, {id: number}> {
     return {
         id: getId(),
         type: "row",
@@ -98,8 +100,10 @@ export type Glyph = {
     pending?: boolean;
 };
 
-export const glyph = (char: string, pending?: boolean): Atom<Glyph, {id: number}> =>
-    atom({kind: "glyph", char, pending});
+export const glyph = (
+    char: string,
+    pending?: boolean,
+): Atom<Glyph, {id: number}> => atom({kind: "glyph", char, pending});
 
 export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
     switch (root.type) {
@@ -109,11 +113,15 @@ export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
                 children: [
                     {
                         type: "row",
-                        children: root.children[0].children.map<Node<T>>(stripIDs),
+                        children: root.children[0].children.map<Node<T>>(
+                            stripIDs,
+                        ),
                     },
                     {
                         type: "row",
-                        children: root.children[1].children.map<Node<T>>(stripIDs),
+                        children: root.children[1].children.map<Node<T>>(
+                            stripIDs,
+                        ),
                     },
                 ],
             };
@@ -174,7 +182,10 @@ export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
     }
 }
 
-export function nodeAtPath<T, U>(root: Node<T, U>, path: ReadonlyArray<number>): Node<T, U> {
+export function nodeAtPath<T, U>(
+    root: Node<T, U>,
+    path: ReadonlyArray<number>,
+): Node<T, U> {
     if (path.length === 0) {
         return root;
     } else {

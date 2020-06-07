@@ -180,14 +180,18 @@ describe("EvalChecker", () => {
             const result = checkStep("6", "2 * 3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["decompose product"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose product",
+            ]);
         });
 
         it("6a -> 2 * 3 * a", () => {
             const result = checkStep("6a", "2 * 3 * a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["decompose product"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose product",
+            ]);
         });
 
         it("4 * 6 -> 2 * 2 * 2 * 3", () => {
@@ -206,21 +210,27 @@ describe("EvalChecker", () => {
             const result = checkStep("5", "2 + 3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["decompose sum"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose sum",
+            ]);
         });
 
         it("5 + a -> 2 + 3 + a", () => {
             const result = checkStep("5 + a", "2 + 3 + a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["decompose sum"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose sum",
+            ]);
         });
 
         it("5 + 10 -> 2 + 3 + 4 + 6", () => {
             const result = checkStep("5 + 10", "2 + 3 + 4 + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map((reason) => reason.message)).toEqual(["decompose sum"]);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose sum",
+            ]);
         });
 
         // We require the student to commute 10 + 5 to 5 + 10 before decomposition

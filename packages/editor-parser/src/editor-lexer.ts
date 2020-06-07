@@ -15,7 +15,11 @@ export type Location = {
     end: number;
 };
 
-export const location = (path: number[], start: number, end: number): Location => ({
+export const location = (
+    path: number[],
+    start: number,
+    end: number,
+): Location => ({
     path,
     start,
     end,
@@ -38,16 +42,24 @@ type RParens = {kind: "rparens"};
 type Ellipsis = {kind: "ellipsis"};
 type EOL = {kind: "eol"};
 
-export const atom = (token: Token, loc: Location): Editor.Atom<Token, {loc: Location}> => ({
+export const atom = (
+    token: Token,
+    loc: Location,
+): Editor.Atom<Token, {loc: Location}> => ({
     type: "atom",
     value: token,
     loc,
 });
 
-export const identifier = (name: string, loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "identifier", name}, loc);
+export const identifier = (
+    name: string,
+    loc: Location,
+): Editor.Atom<Token, {loc: Location}> => atom({kind: "identifier", name}, loc);
 
-export const number = (value: string, loc: Location): Editor.Atom<Token, {loc: Location}> => {
+export const number = (
+    value: string,
+    loc: Location,
+): Editor.Atom<Token, {loc: Location}> => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
@@ -72,9 +84,20 @@ export const rparens = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
 export const ellipsis = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
     atom({kind: "ellipsis"}, loc);
 
-export const eq = (loc: Location): Editor.Atom<Token, {loc: Location}> => atom({kind: "eq"}, loc);
+export const eq = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
+    atom({kind: "eq"}, loc);
 
-export type Token = Ident | Num | Plus | Minus | Times | Equal | LParens | RParens | Ellipsis | EOL;
+export type Token =
+    | Ident
+    | Num
+    | Plus
+    | Minus
+    | Times
+    | Equal
+    | LParens
+    | RParens
+    | Ellipsis
+    | EOL;
 
 const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
@@ -98,10 +121,18 @@ const processGlyphs = (
                 continue;
             }
             if (value) {
-                const loc = location(path, offset + index, offset + index + value.length);
+                const loc = location(
+                    path,
+                    offset + index,
+                    offset + index + value.length,
+                );
                 tokens.push(number(value, loc));
             } else if (sym) {
-                const loc = location(path, offset + index, offset + index + sym.length);
+                const loc = location(
+                    path,
+                    offset + index,
+                    offset + index + sym.length,
+                );
                 switch (sym) {
                     case "=":
                         tokens.push(eq(loc));
@@ -125,7 +156,11 @@ const processGlyphs = (
                         throw new Error(`Unexpected symbol token: ${sym}`);
                 }
             } else if (name) {
-                const loc = location(path, offset + index, offset + index + name.length);
+                const loc = location(
+                    path,
+                    offset + index,
+                    offset + index + name.length,
+                );
                 tokens.push(identifier(name, loc));
             }
             // TODO: check if there are leftover characters between token matches

@@ -28,7 +28,10 @@ export const add = (args: TwoOrMore<Semantic.Expression>): Semantic.Add => ({
     args,
 });
 
-export const mul = (args: TwoOrMore<Semantic.Expression>, implicit = false): Semantic.Mul => ({
+export const mul = (
+    args: TwoOrMore<Semantic.Expression>,
+    implicit = false,
+): Semantic.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -41,20 +44,29 @@ export const eq = (args: TwoOrMore<Semantic.Expression>): Semantic.Eq => ({
     args,
 });
 
-export const neg = (arg: Semantic.Expression, subtraction = false): Semantic.Neg => ({
+export const neg = (
+    arg: Semantic.Expression,
+    subtraction = false,
+): Semantic.Neg => ({
     type: "neg",
     id: getId(),
     arg,
     subtraction,
 });
 
-export const div = (num: Semantic.Expression, den: Semantic.Expression): Semantic.Div => ({
+export const div = (
+    num: Semantic.Expression,
+    den: Semantic.Expression,
+): Semantic.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
 });
 
-export const exp = (base: Semantic.Expression, exp: Semantic.Expression): Semantic.Exp => ({
+export const exp = (
+    base: Semantic.Expression,
+    exp: Semantic.Expression,
+): Semantic.Exp => ({
     type: "exp",
     id: getId(),
     base,
@@ -73,19 +85,24 @@ export const root = (
     index: index || number("2"),
 });
 
-export const isSubtraction = (node: Semantic.Expression): node is Semantic.Neg =>
-    node.type === "neg" && node.subtraction;
+export const isSubtraction = (
+    node: Semantic.Expression,
+): node is Semantic.Neg => node.type === "neg" && node.subtraction;
 
 export const isNegative = (node: Semantic.Expression): node is Semantic.Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (node: Semantic.Expression): OneOrMore<Semantic.Expression> =>
-    node.type === "mul" ? node.args : [node];
+export const getFactors = (
+    node: Semantic.Expression,
+): OneOrMore<Semantic.Expression> => (node.type === "mul" ? node.args : [node]);
 
-export const getTerms = (node: Semantic.Expression): OneOrMore<Semantic.Expression> =>
-    node.type === "add" ? node.args : [node];
+export const getTerms = (
+    node: Semantic.Expression,
+): OneOrMore<Semantic.Expression> => (node.type === "add" ? node.args : [node]);
 
-export const mulFactors = (factors: Semantic.Expression[]): Semantic.Expression => {
+export const mulFactors = (
+    factors: Semantic.Expression[],
+): Semantic.Expression => {
     switch (factors.length) {
         case 0:
             return number("1");
@@ -101,7 +118,9 @@ export const mulFactors = (factors: Semantic.Expression[]): Semantic.Expression 
     }
 };
 
-export const addTerms = (terms: Array<Semantic.Expression>): Semantic.Expression => {
+export const addTerms = (
+    terms: Array<Semantic.Expression>,
+): Semantic.Expression => {
     switch (terms.length) {
         case 0:
             return number("0");
