@@ -66,7 +66,7 @@ class AxiomChecker {
         steps: Step[],
     ): Result {
         const identityReasons: Step[] = [];
-        const nonIdentityArgs = prev.args.filter(arg => {
+        const nonIdentityArgs = prev.args.filter((arg) => {
             const result = this.checker.checkStep(arg, identity, steps);
             if (result.equivalent) {
                 identityReasons.push(...result.steps);
@@ -218,7 +218,7 @@ class AxiomChecker {
         // TODO: ensure that steps from these calls to checkStep
         // are captured.
         const hasZero = prev.args.some(
-            arg =>
+            (arg) =>
                 this.checker.checkStep(arg, Semantic.number("0"), steps)
                     .equivalent,
         );

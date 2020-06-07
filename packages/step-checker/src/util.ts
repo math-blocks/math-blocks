@@ -41,7 +41,7 @@ export const decomposeFactors = (
         if (factor.type === "number") {
             return [
                 ...result,
-                ...primeDecomp(parseInt(factor.value)).map(value =>
+                ...primeDecomp(parseInt(factor.value)).map((value) =>
                     Semantic.number(String(value)),
                 ),
             ];
@@ -113,7 +113,7 @@ export const applySubReasons = (
     root: Semantic.Expression,
     subreasons: Step[],
 ): Semantic.Expression => {
-    const nextState = produce(root, draft => {
+    const nextState = produce(root, (draft) => {
         for (const reason of subreasons) {
             // Not all reaons come with nodes yet.
             if (reason.nodes.length === 2) {
@@ -135,13 +135,13 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
             a.every((val, index) => deepEquals(val, b[index]))
         );
     } else if (isObject(a) && isObject(b)) {
-        const aKeys = Object.keys(a).filter(key => key !== "id");
-        const bKeys = Object.keys(b).filter(key => key !== "id");
+        const aKeys = Object.keys(a).filter((key) => key !== "id");
+        const bKeys = Object.keys(b).filter((key) => key !== "id");
         if (aKeys.length !== bKeys.length) {
             return false;
         }
         return aKeys.every(
-            key =>
+            (key) =>
                 Object.prototype.hasOwnProperty.call(b, key) &&
                 deepEquals(a[key], b[key]),
         );

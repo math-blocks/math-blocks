@@ -44,7 +44,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + b + -a + c", "b + c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "adding inverse",
         ]);
     });
@@ -53,7 +53,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a - b", "a + -b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -62,7 +62,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + -b", "a - b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -71,7 +71,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + b - c", "a + b + -c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -117,7 +117,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a - b - c", "a - b + -c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -160,7 +160,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a + b", "a - -b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "negative of a negative is positive",
             "subtracting is the same as adding the inverse",
         ]);
@@ -183,7 +183,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("a - a", "0");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "adding inverse",
         ]);
     });
@@ -214,7 +214,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("----a", "--a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "negative of a negative is positive",
         ]);
     });
@@ -223,7 +223,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("--a", "----a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "negative of a negative is positive",
         ]);
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg (neg a))`);
@@ -281,7 +281,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("-a", "-1 * a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "negation is the same as multipling by negative one",
         ]);
     });
@@ -290,7 +290,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("-1 * a", "-a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "negation is the same as multipling by negative one",
         ]);
     });
@@ -299,7 +299,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("(-a)(-b)", "ab");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "multiplying two negatives is a positive",
         ]);
     });
@@ -308,7 +308,7 @@ describe("IntegerChecker", () => {
         const result = checkStep("ab", "(-a)(-b)");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "multiplying two negatives is a positive",
         ]);
     });

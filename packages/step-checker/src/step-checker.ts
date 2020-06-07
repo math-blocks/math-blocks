@@ -116,8 +116,8 @@ class StepChecker implements IStepChecker {
                 steps: [],
             };
         }
-        const equivalent = prev.args.every(prevArg =>
-            next.args.some(nextArg => {
+        const equivalent = prev.args.every((prevArg) =>
+            next.args.some((nextArg) => {
                 const result = this.checkStep(prevArg, nextArg, steps);
                 if (result.equivalent) {
                     _reasons.push(...result.steps);
@@ -142,7 +142,7 @@ class StepChecker implements IStepChecker {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                b => this.checkStep(a, b, steps).equivalent,
+                (b) => this.checkStep(a, b, steps).equivalent,
             );
             if (index !== -1) {
                 result.push(a);
@@ -163,7 +163,7 @@ class StepChecker implements IStepChecker {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                b => this.checkStep(a, b, steps).equivalent,
+                (b) => this.checkStep(a, b, steps).equivalent,
             );
             if (index !== -1) {
                 bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -183,8 +183,8 @@ class StepChecker implements IStepChecker {
         bs: Semantic.Expression[],
         steps: Step[],
     ): boolean {
-        return as.every(a =>
-            bs.some(b => this.checkStep(a, b, steps).equivalent),
+        return as.every((a) =>
+            bs.some((b) => this.checkStep(a, b, steps).equivalent),
         );
     }
 

@@ -129,7 +129,7 @@ export const App: React.SFC<{}> = () => {
                                     steps[index + 1].value,
                                 )
                             }
-                            onMouseDown={e => {
+                            onMouseDown={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                             }}

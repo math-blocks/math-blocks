@@ -543,7 +543,7 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
 
         if (parent.type === "subsup") {
             const index = grandparent.children.findIndex(
-                child => child.id === parent.id,
+                (child) => child.id === parent.id,
             );
 
             let newChildren = grandparent.children;
@@ -595,7 +595,7 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             return;
         } else if (parent.type === "frac") {
             const index = grandparent.children.findIndex(
-                child => child.id === parent.id,
+                (child) => child.id === parent.id,
             );
 
             let newChildren = grandparent.children;
@@ -634,7 +634,7 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             return;
         } else if (parent.type === "root") {
             const index = grandparent.children.findIndex(
-                child => child.id === parent.id,
+                (child) => child.id === parent.id,
             );
 
             let newChildren = grandparent.children;
@@ -1200,7 +1200,7 @@ type Action = {type: string; shift?: boolean};
 
 // TODO: check if cursor is valid before process action
 const reducer = (state: State = initialState, action: Action): State => {
-    return produce(state, draft => {
+    return produce(state, (draft) => {
         const {cursor, math} = draft;
         const currentNode = Editor.nodeAtPath(math, cursor.path);
 

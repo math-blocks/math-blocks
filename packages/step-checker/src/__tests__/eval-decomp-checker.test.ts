@@ -15,7 +15,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2 + 3", "5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -24,7 +24,7 @@ describe("EvalChecker", () => {
             const result = checkStep("a + 2 + 3", "a + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -33,7 +33,7 @@ describe("EvalChecker", () => {
             const result = checkStep("1 + 2 + 3", "1 + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -46,7 +46,7 @@ describe("EvalChecker", () => {
             const result = checkStep("1 + 2 + 3 + 4", "3 + 7");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
                 "evaluation of addition",
             ]);
@@ -60,7 +60,7 @@ describe("EvalChecker", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -73,7 +73,7 @@ describe("EvalChecker", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -85,7 +85,7 @@ describe("EvalChecker", () => {
             const result = checkStep(before, after);
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -94,7 +94,7 @@ describe("EvalChecker", () => {
             const result = checkStep("10 - 5 + 2", "7");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -103,7 +103,7 @@ describe("EvalChecker", () => {
             const result = checkStep("10 - 5 + 2", "5 + 2");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of addition",
             ]);
         });
@@ -114,7 +114,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2 * 3", "6");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -123,7 +123,7 @@ describe("EvalChecker", () => {
             const result = checkStep("a * 2 * 3", "a * 6");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -132,7 +132,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2 * 3 * 4", "6 * 4");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -141,7 +141,7 @@ describe("EvalChecker", () => {
             const result = checkStep("1/2 * 1/3", "1/6");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -150,7 +150,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2 * 1/3", "2/3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -159,7 +159,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2/3 * 3/4", "6/12");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -169,7 +169,7 @@ describe("EvalChecker", () => {
             const result = checkStep("2/3 * 3/4", "1/2");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
             ]);
         });
@@ -180,7 +180,7 @@ describe("EvalChecker", () => {
             const result = checkStep("6", "2 * 3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose product",
             ]);
         });
@@ -189,7 +189,7 @@ describe("EvalChecker", () => {
             const result = checkStep("6a", "2 * 3 * a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose product",
             ]);
         });
@@ -198,7 +198,7 @@ describe("EvalChecker", () => {
             const result = checkStep("4 * 6", "2 * 2 * 2 * 3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose product",
                 "decompose product",
             ]);
@@ -210,7 +210,7 @@ describe("EvalChecker", () => {
             const result = checkStep("5", "2 + 3");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose sum",
             ]);
         });
@@ -219,7 +219,7 @@ describe("EvalChecker", () => {
             const result = checkStep("5 + a", "2 + 3 + a");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose sum",
             ]);
         });
@@ -228,7 +228,7 @@ describe("EvalChecker", () => {
             const result = checkStep("5 + 10", "2 + 3 + 4 + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose sum",
             ]);
         });

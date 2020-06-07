@@ -65,17 +65,17 @@ export type ID = {
 };
 
 export const row = (str: string): Editor.Row<Editor.Glyph, ID> =>
-    Editor.row(str.split("").map(glyph => Editor.glyph(glyph)));
+    Editor.row(str.split("").map((glyph) => Editor.glyph(glyph)));
 
 export const frac = (num: string, den: string): Editor.Frac<Editor.Glyph, ID> =>
     Editor.frac(
-        num.split("").map(glyph => Editor.glyph(glyph)),
-        den.split("").map(glyph => Editor.glyph(glyph)),
+        num.split("").map((glyph) => Editor.glyph(glyph)),
+        den.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sqrt = (radicand: string): Editor.Root<Editor.Glyph, ID> =>
     Editor.root(
-        radicand.split("").map(glyph => Editor.glyph(glyph)),
+        radicand.split("").map((glyph) => Editor.glyph(glyph)),
         null,
     );
 
@@ -84,19 +84,19 @@ export const root = (
     index: string,
 ): Editor.Root<Editor.Glyph, ID> =>
     Editor.root(
-        radicand.split("").map(glyph => Editor.glyph(glyph)),
-        index.split("").map(glyph => Editor.glyph(glyph)),
+        radicand.split("").map((glyph) => Editor.glyph(glyph)),
+        index.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sup = (sup: string): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
         undefined,
-        sup.split("").map(glyph => Editor.glyph(glyph)),
+        sup.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sub = (sub: string): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
-        sub.split("").map(glyph => Editor.glyph(glyph)),
+        sub.split("").map((glyph) => Editor.glyph(glyph)),
         undefined,
     );
 
@@ -105,6 +105,6 @@ export const subsup = (
     sup: string,
 ): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
-        sub.split("").map(glyph => Editor.glyph(glyph)),
-        sup.split("").map(glyph => Editor.glyph(glyph)),
+        sub.split("").map((glyph) => Editor.glyph(glyph)),
+        sup.split("").map((glyph) => Editor.glyph(glyph)),
     );

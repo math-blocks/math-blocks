@@ -271,7 +271,7 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     );
 };
 
-const Box: React.SFC<BoxProps> = props => {
+const Box: React.SFC<BoxProps> = (props) => {
     switch (props.box.kind) {
         case "hbox": {
             return <HBox {...props} />;
@@ -292,13 +292,14 @@ type Props = {
 
 const CURSOR_WIDTH = 2;
 
-export const MathRenderer: React.SFC<Props> = props => {
+export const MathRenderer: React.SFC<Props> = (props) => {
     const {box, cursor} = props;
     const height = Layout.getHeight(box);
     const depth = Layout.getDepth(box);
     const width = Layout.getWidth(box) + CURSOR_WIDTH;
-    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height +
-        depth}`;
+    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${
+        height + depth
+    }`;
 
     return (
         <svg

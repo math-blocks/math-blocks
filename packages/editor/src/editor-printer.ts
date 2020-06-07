@@ -25,7 +25,9 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             return {
                 id: expr.id,
                 type: "row",
-                children: expr.value.split("").map(char => Editor.glyph(char)),
+                children: expr.value
+                    .split("")
+                    .map((char) => Editor.glyph(char)),
             };
         }
         case "add": {

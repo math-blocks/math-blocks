@@ -56,7 +56,7 @@ class EquationChecker {
                 // This check prevents an infinite loop
                 if (
                     steps.some(
-                        step =>
+                        (step) =>
                             step.message ===
                             "removing the same term from both sides",
                     )
@@ -187,7 +187,7 @@ class EquationChecker {
             if (reversed) {
                 if (
                     steps.some(
-                        step =>
+                        (step) =>
                             step.message ===
                             "remove common factor on both sides",
                     )
@@ -284,7 +284,7 @@ class EquationChecker {
                 if (reversed) {
                     if (
                         steps.some(
-                            step =>
+                            (step) =>
                                 step.message ===
                                 "remove division by the same amount",
                         )

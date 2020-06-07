@@ -43,7 +43,7 @@ const getPrefixParselet = (
                     };
                 case "minus":
                     return {
-                        parse: parser =>
+                        parse: (parser) =>
                             Semantic.neg(
                                 parser.parseWithOperator("neg"),
                                 false,
@@ -51,7 +51,7 @@ const getPrefixParselet = (
                     };
                 case "lparens":
                     return {
-                        parse: parser => {
+                        parse: (parser) => {
                             const result = parser.parse();
                             const nextToken = parser.consume();
                             if (

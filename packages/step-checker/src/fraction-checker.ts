@@ -390,7 +390,10 @@ class FractionChecker {
     ): Result {
         const {checker} = this;
         // We need a multiplication node containing a fraction
-        if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
+        if (
+            prev.type !== "mul" ||
+            prev.args.every((arg) => arg.type !== "div")
+        ) {
             return {
                 equivalent: false,
                 steps: [],

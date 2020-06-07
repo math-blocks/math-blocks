@@ -99,7 +99,7 @@ const print = (
         }
         case "row": {
             return `(row ${ast.children
-                .map(child => "\n" + indent(print(child, serialize, indent)))
+                .map((child) => "\n" + indent(print(child, serialize, indent)))
                 .join(" ")})`;
         }
         case "subsup": {

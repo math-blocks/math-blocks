@@ -110,7 +110,7 @@ const processGlyphs = (
 ): Editor.Atom<Token, {loc: Location}>[] => {
     const tokens: Editor.Atom<Token, {loc: Location}>[] = [];
     if (glyphs.length > 0) {
-        const str = glyphs.map(glyph => glyph.char).join("");
+        const str = glyphs.map((glyph) => glyph.char).join("");
         const matches = str.matchAll(TOKEN_REGEX);
 
         for (const match of matches) {

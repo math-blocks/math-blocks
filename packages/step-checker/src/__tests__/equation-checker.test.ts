@@ -31,7 +31,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "x + 5 = y + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -93,7 +93,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "5 + x = y + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -105,7 +105,7 @@ describe("EquationChecker", () => {
             );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
@@ -123,7 +123,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "x - 5 = y - 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
         });
@@ -158,7 +158,7 @@ describe("EquationChecker", () => {
             );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
         });
@@ -176,7 +176,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "x * 5 = y * 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiply both sides by the same value",
             ]);
         });
@@ -188,7 +188,7 @@ describe("EquationChecker", () => {
             );
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiply both sides by the same value",
             ]);
         });
@@ -217,7 +217,7 @@ describe("EquationChecker", () => {
             const result = checkStep("x = y", "x / 5 = y / 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "divide both sides by the same value",
             ]);
         });
