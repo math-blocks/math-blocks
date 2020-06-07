@@ -1,5 +1,10 @@
 module.exports = {
-    extends: ["typescript", "typescript/react", "typescript/prettier", "typescript/prettier-react"],
+    extends: [
+        "typescript",
+        "typescript/react",
+        "typescript/prettier",
+        "typescript/prettier-react",
+    ],
     plugins: ["flowtype", "jest", "react", "prettier"],
     rules: {
         "prettier/prettier": "error",
@@ -11,8 +16,14 @@ module.exports = {
         "react/prop-types": "off",
         "@typescript-eslint/ban-ts-ignore": "warn",
         "@typescript-eslint/no-use-before-define": "off",
-        "@typescript-eslint/explicit-function-return-type": ["warn", {allowExpressions: true}],
-        "@typescript-eslint/interface-name-prefix": ["error", {prefixWithI: "always"}],
+        "@typescript-eslint/explicit-function-return-type": [
+            "warn",
+            {allowExpressions: true},
+        ],
+        "@typescript-eslint/interface-name-prefix": [
+            "error",
+            {prefixWithI: "always"},
+        ],
     },
     env: {
         jest: true,
