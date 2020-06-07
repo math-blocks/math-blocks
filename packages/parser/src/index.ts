@@ -35,9 +35,7 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
             return index < tokens.length ? tokens[index++] : EOL;
         };
 
-        const getPrecedence = (
-            associativity: Associativity = "left",
-        ): number => {
+        const getPrecedence = (associativity: Associativity = "left"): number => {
             const token = peek();
             const parselet = getInfixParselet(token);
             if (parselet) {
@@ -86,10 +84,7 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
             return left;
         };
 
-        const parseWithOperator = (
-            op: O,
-            associativity: Associativity = "left",
-        ): N => {
+        const parseWithOperator = (op: O, associativity: Associativity = "left"): N => {
             return parseWithPrecedence(getOpPrecedence(op), associativity);
         };
 

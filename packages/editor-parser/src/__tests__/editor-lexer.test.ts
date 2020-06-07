@@ -42,11 +42,7 @@ describe("Lexer", () => {
         });
 
         it("should parse `1 + 1/x`", () => {
-            const glyphTree = row([
-                glyph("1"),
-                glyph("+"),
-                frac([glyph("1")], [glyph("x")]),
-            ]);
+            const glyphTree = row([glyph("1"), glyph("+"), frac([glyph("1")], [glyph("x")])]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -60,10 +56,7 @@ describe("Lexer", () => {
         });
 
         it("should parse `e^x`", () => {
-            const glyphTree = row([
-                glyph("e"),
-                subsup(undefined, [glyph("x")]),
-            ]);
+            const glyphTree = row([glyph("e"), subsup(undefined, [glyph("x")])]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -75,10 +68,7 @@ describe("Lexer", () => {
         });
 
         it("should parse `a_n`", () => {
-            const glyphTree = row([
-                glyph("a"),
-                subsup([glyph("n")], undefined),
-            ]);
+            const glyphTree = row([glyph("a"), subsup([glyph("n")], undefined)]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`

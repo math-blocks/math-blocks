@@ -1,11 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {
-    primeDecomp,
-    findNodeById,
-    replaceNodeWithId,
-    deepEquals,
-} from "../util";
+import {primeDecomp, findNodeById, replaceNodeWithId, deepEquals} from "../util";
 
 expect.addSnapshotSerializer(Semantic.serializer);
 
@@ -99,28 +94,18 @@ describe("replaceNode", () => {
 
 describe("deepEquals", () => {
     test("ignores ids", () => {
-        expect(deepEquals(Semantic.number("1"), Semantic.number("1"))).toBe(
-            true,
-        );
+        expect(deepEquals(Semantic.number("1"), Semantic.number("1"))).toBe(true);
     });
 
     test("returns false if the trees are different", () => {
-        expect(deepEquals(Semantic.number("1"), Semantic.number("2"))).toBe(
-            false,
-        );
+        expect(deepEquals(Semantic.number("1"), Semantic.number("2"))).toBe(false);
     });
 
     test("returns false if implicit mul property doesn't match", () => {
         expect(
             deepEquals(
-                Semantic.mul(
-                    [Semantic.number("1"), Semantic.number("2")],
-                    true,
-                ),
-                Semantic.mul(
-                    [Semantic.number("1"), Semantic.number("2")],
-                    false,
-                ),
+                Semantic.mul([Semantic.number("1"), Semantic.number("2")], true),
+                Semantic.mul([Semantic.number("1"), Semantic.number("2")], false),
             ),
         ).toBe(false);
     });

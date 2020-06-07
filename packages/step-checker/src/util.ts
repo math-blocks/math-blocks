@@ -33,15 +33,13 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
     return result;
 };
 
-export const decomposeFactors = (
-    factors: Semantic.Expression[],
-): Semantic.Expression[] => {
+export const decomposeFactors = (factors: Semantic.Expression[]): Semantic.Expression[] => {
     return factors.reduce((result: Semantic.Expression[], factor) => {
         // TODO: add decomposition of powers
         if (factor.type === "number") {
             return [
                 ...result,
-                ...primeDecomp(parseInt(factor.value)).map(value =>
+                ...primeDecomp(parseInt(factor.value)).map((value) =>
                     Semantic.number(String(value)),
                 ),
             ];
@@ -55,10 +53,7 @@ const isNode = (val: unknown): val is Semantic.Expression => {
     return Object.prototype.hasOwnProperty.call(val, "type");
 };
 
-export const findNodeById = (
-    root: Semantic.Expression,
-    id: number,
-): Semantic.Expression | void => {
+export const findNodeById = (root: Semantic.Expression, id: number): Semantic.Expression | void => {
     if (root.id === id) {
         return root;
     }
@@ -113,7 +108,7 @@ export const applySubReasons = (
     root: Semantic.Expression,
     subreasons: Step[],
 ): Semantic.Expression => {
-    const nextState = produce(root, draft => {
+    const nextState = produce(root, (draft) => {
         for (const reason of subreasons) {
             // Not all reaons come with nodes yet.
             if (reason.nodes.length === 2) {
@@ -130,20 +125,15 @@ const isObject = (val: unknown): val is Record<string, unknown> => {
 
 export const deepEquals = (a: unknown, b: unknown): boolean => {
     if (Array.isArray(a) && Array.isArray(b)) {
-        return (
-            a.length === b.length &&
-            a.every((val, index) => deepEquals(val, b[index]))
-        );
+        return a.length === b.length && a.every((val, index) => deepEquals(val, b[index]));
     } else if (isObject(a) && isObject(b)) {
-        const aKeys = Object.keys(a).filter(key => key !== "id");
-        const bKeys = Object.keys(b).filter(key => key !== "id");
+        const aKeys = Object.keys(a).filter((key) => key !== "id");
+        const bKeys = Object.keys(b).filter((key) => key !== "id");
         if (aKeys.length !== bKeys.length) {
             return false;
         }
         return aKeys.every(
-            key =>
-                Object.prototype.hasOwnProperty.call(b, key) &&
-                deepEquals(a[key], b[key]),
+            (key) => Object.prototype.hasOwnProperty.call(b, key) && deepEquals(a[key], b[key]),
         );
     } else {
         return a === b;

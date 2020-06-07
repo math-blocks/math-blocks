@@ -27,10 +27,10 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
         }
         case "add": {
             const {args} = expr;
-            return sum(args.map(arg => evaluate(arg, varDict)));
+            return sum(args.map((arg) => evaluate(arg, varDict)));
         }
         case "mul":
-            return prod(expr.args.map(arg => evaluate(arg, varDict)));
+            return prod(expr.args.map((arg) => evaluate(arg, varDict)));
         case "div": {
             const [dividend, divisor] = expr.args;
             return div(evaluate(dividend, varDict), evaluate(divisor, varDict));
@@ -49,17 +49,11 @@ const evaluate = (expr: Expression, varDict: VarDict): number => {
             return Math.abs(evaluate(expr.arg, varDict));
         case "root": {
             const {radicand, index} = expr;
-            return Math.pow(
-                evaluate(radicand, varDict),
-                1 / evaluate(index, varDict),
-            );
+            return Math.pow(evaluate(radicand, varDict), 1 / evaluate(index, varDict));
         }
         case "log": {
             const {base, arg} = expr;
-            return (
-                Math.log(evaluate(arg, varDict)) /
-                Math.log(evaluate(base, varDict))
-            );
+            return Math.log(evaluate(arg, varDict)) / Math.log(evaluate(base, varDict));
         }
 
         case "infinity":

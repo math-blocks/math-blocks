@@ -12,22 +12,14 @@ class PolynomialChecker {
 
     // TODO: Implement this.
     // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
-    collectLikeTerms(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    collectLikeTerms(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         return {
             equivalent: false,
             steps: [],
         };
     }
 
-    runChecks(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    runChecks(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         const result = this.collectLikeTerms(prev, next, steps);
         if (result.equivalent) {
             return result;

@@ -91,9 +91,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
 
     const fontSize = 64;
     // $FlowFixMe: make typeset return a Box
-    const box = Typesetter.typeset(fontMetrics)(fontSize)(1.0)(
-        math,
-    ) as Typesetter.Layout.Box;
+    const box = Typesetter.typeset(fontMetrics)(fontSize)(1.0)(math) as Typesetter.Layout.Box;
 
     const layoutCursor = layoutCursorFromState(state);
 
@@ -107,10 +105,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             style={style}
             role="textbox"
         >
-            <MathRenderer
-                box={box}
-                cursor={active ? layoutCursor : undefined}
-            />
+            <MathRenderer box={box} cursor={active ? layoutCursor : undefined} />
         </div>
     );
 };

@@ -16,9 +16,7 @@ const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
         return parseNode(node.arg, options).mul(new Fraction("-1"));
     } else if (node.type === "div" && options.evalFractions) {
         // TODO: add a recursive option as well
-        return parseNode(node.args[0], options).div(
-            parseNode(node.args[1], options),
-        );
+        return parseNode(node.args[0], options).div(parseNode(node.args[1], options));
     } else {
         throw new Error(`cannot parse a number from ${node.type} node`);
     }
@@ -43,10 +41,8 @@ class EvalDecompChecker {
         op: "add" | "mul",
         direction: Direction,
     ): Result {
-        const aTerms =
-            op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
-        const bTerms =
-            op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
+        const aTerms = op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
+        const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
         if (a.type !== op && b.type !== op) {
             return {
@@ -78,10 +74,7 @@ class EvalDecompChecker {
                 let accumulator = aVal;
                 i++;
                 while (i < aTerms.length) {
-                    const nextTerm = parseNode(
-                        aTerms[i++],
-                        this.checker.options,
-                    );
+                    const nextTerm = parseNode(aTerms[i++], this.checker.options);
                     accumulator.toString();
                     switch (op) {
                         case "add":
@@ -141,45 +134,25 @@ class EvalDecompChecker {
     }
 
     // This handles
-    evalMul(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    evalMul(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         return this.evalDecompNaryOp(a, b, "mul", Direction.EVAL);
     }
 
     // This is unidirectional since most of the time we're adding numbers instead
     // of decomposing them.
-    evalAdd(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    evalAdd(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         return this.evalDecompNaryOp(a, b, "add", Direction.EVAL);
     }
 
-    decompSum(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    decompSum(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         return this.evalDecompNaryOp(b, a, "add", Direction.DECOMP);
     }
 
-    decompProduct(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    decompProduct(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         return this.evalDecompNaryOp(b, a, "mul", Direction.DECOMP);
     }
 
-    runChecks(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    runChecks(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         let result: Result;
 
         result = this.evalMul(prev, next, steps);

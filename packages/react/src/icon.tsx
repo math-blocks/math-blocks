@@ -5,7 +5,7 @@ type Props = {
     size: number;
 };
 
-const Icon: React.SFC<Props> = props => {
+const Icon: React.SFC<Props> = (props) => {
     const {size, name} = props;
 
     if (name === "incorrect") {

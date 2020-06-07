@@ -60,17 +60,9 @@ export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
             selection = true;
         } else if (next != null && prev == null && next > 0) {
             selection = true;
-        } else if (
-            next == null &&
-            prev != null &&
-            prev < parentNode.children.length - 1
-        ) {
+        } else if (next == null && prev != null && prev < parentNode.children.length - 1) {
             selection = true;
-        } else if (
-            next == null &&
-            prev == null &&
-            parentNode.children.length > 0
-        ) {
+        } else if (next == null && prev == null && parentNode.children.length > 0) {
             selection = true;
         }
 
@@ -83,13 +75,11 @@ export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
     }
 
     if (result.next != null) {
-        result.next =
-            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? null;
+        result.next = Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? null;
     }
 
     if (result.prev != null) {
-        result.prev =
-            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? null;
+        result.prev = Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? null;
     }
 
     return result;

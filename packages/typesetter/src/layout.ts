@@ -52,12 +52,7 @@ export type HRule = {
 
 export type Node = Box | Glyph | Glue | Kern | HRule;
 
-export const makeBox = (
-    kind: BoxKind,
-    dim: Dim,
-    content: Node[],
-    multiplier: number,
-): Box => ({
+export const makeBox = (kind: BoxKind, dim: Dim, content: Node[], multiplier: number): Box => ({
     type: "Box",
     kind,
     ...dim,
@@ -140,10 +135,7 @@ export const getCharDepth = (glyph: Glyph): number => {
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (
-        ((metrics.height - metrics.bearingY) * glyph.size) /
-        fontMetrics.unitsPerEm
-    );
+    return ((metrics.height - metrics.bearingY) * glyph.size) / fontMetrics.unitsPerEm;
 };
 
 export const getWidth = (node: Node): number => {
@@ -271,19 +263,12 @@ export const makeVBox = (
 const makeList = (size: Dist, box: Box): Node[] => [makeKern(size), box];
 
 // TODO: compute width from numBox and denBox
-export const makeFract = (
-    multiplier: number,
-    thickness: Dist,
-    numBox: Box,
-    denBox: Box,
-): Box => {
+export const makeFract = (multiplier: number, thickness: Dist, numBox: Box, denBox: Box): Box => {
     const width = Math.max(
         Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
         30 * multiplier,
     );
-    const stroke = hpackNat([
-        makeHRule(thickness * multiplier, width - thickness),
-    ]);
+    const stroke = hpackNat([makeHRule(thickness * multiplier, width - thickness)]);
     stroke.shift = thickness / 2;
 
     // TODO: try to figure out the baseline and use that to space this our right
@@ -305,19 +290,12 @@ export const makeFract = (
     return fracBox;
 };
 
-export const makeSubSup = (
-    multiplier: number,
-    subBox?: Box,
-    supBox?: Box,
-): Box => {
+export const makeSubSup = (multiplier: number, subBox?: Box, supBox?: Box): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
     }
 
-    const width = Math.max(
-        supBox ? getWidth(supBox) : 0,
-        subBox ? getWidth(subBox) : 0,
-    );
+    const width = Math.max(supBox ? getWidth(supBox) : 0, subBox ? getWidth(subBox) : 0);
     const upList = supBox ? makeList(10, supBox) : [];
     // TODO: make the shift depend on the height of the subscript
     const dnList = subBox ? makeList(10, subBox) : [];

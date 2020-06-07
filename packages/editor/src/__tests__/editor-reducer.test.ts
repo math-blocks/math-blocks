@@ -326,9 +326,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "^"});
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("a"), Util.subsup("x", "")]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("a"), Util.subsup("x", "")]));
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: null,
@@ -347,9 +345,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "_"});
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("a"), Util.subsup("", "x")]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("a"), Util.subsup("", "x")]));
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: null,
@@ -370,9 +366,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "/"});
 
-                expect(newState.math).toEqualMath(
-                    row([Util.frac("e", ""), glyph("g")]),
-                );
+                expect(newState.math).toEqualMath(row([Util.frac("e", ""), glyph("g")]));
                 expect(newState.cursor).toEqual({
                     path: [0, DENOMINATOR],
                     prev: null,
@@ -474,12 +468,7 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "/"});
 
                 expect(newState.math).toEqualMath(
-                    row([
-                        Util.frac("", ""),
-                        glyph("1"),
-                        glyph("="),
-                        glyph("2"),
-                    ]),
+                    row([Util.frac("", ""), glyph("1"), glyph("="), glyph("2")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [0, NUMERATOR],
@@ -500,12 +489,7 @@ describe("reducer", () => {
                 const newState = reducer(state, {type: "/"});
 
                 expect(newState.math).toEqualMath(
-                    row([
-                        glyph("1"),
-                        glyph("="),
-                        Util.frac("", ""),
-                        glyph("2"),
-                    ]),
+                    row([glyph("1"), glyph("="), Util.frac("", ""), glyph("2")]),
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, NUMERATOR],
@@ -527,9 +511,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, {type: "\u221A"});
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("1"), Util.sqrt(""), glyph("2")]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("1"), Util.sqrt(""), glyph("2")]));
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: null,
@@ -1031,9 +1013,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("e"), subsup(undefined, [])]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("e"), subsup(undefined, [])]));
 
                 expect(newState.cursor).toEqual({
                     path: [1, 1],
@@ -1054,9 +1034,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("e"), subsup([], undefined)]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("e"), subsup([], undefined)]));
 
                 expect(newState.cursor).toEqual({
                     path: [1, 0],
@@ -1066,11 +1044,7 @@ describe("reducer", () => {
             });
 
             it("should delete the sup after if there are no children", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    subsup([], undefined),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), subsup([], undefined), glyph("g")]);
                 const cursor = {
                     path: [1, 0],
                     prev: null,
@@ -1090,11 +1064,7 @@ describe("reducer", () => {
             });
 
             it("should delete the sub after if there are no children", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    subsup(undefined, []),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), subsup(undefined, []), glyph("g")]);
                 const cursor = {
                     path: [1, 1],
                     prev: null,
@@ -1114,11 +1084,7 @@ describe("reducer", () => {
             });
 
             it("should move into the sub from the right", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.sub("x+y"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.sub("x+y"), glyph("g")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1138,11 +1104,7 @@ describe("reducer", () => {
             });
 
             it("should move into the sup from the right", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.sup("x+y"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.sup("x+y"), glyph("g")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1162,11 +1124,7 @@ describe("reducer", () => {
             });
 
             it("should move into the subsup from the right", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.subsup("x+y", "a+b"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.subsup("x+y", "a+b"), glyph("g")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1186,11 +1144,7 @@ describe("reducer", () => {
             });
 
             it("should move the sub into the parent when deleting from the front", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.sub("x+y"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.sub("x+y"), glyph("g")]);
                 const cursor = {
                     path: [1, SUB],
                     prev: null,
@@ -1210,11 +1164,7 @@ describe("reducer", () => {
             });
 
             it("should move the sup into the parent when deleting from the front", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.sup("x+y"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.sup("x+y"), glyph("g")]);
                 const cursor = {
                     path: [1, SUP],
                     prev: null,
@@ -1234,11 +1184,7 @@ describe("reducer", () => {
             });
 
             it("should move the sub into the parent when deleting from the front of the sub", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.subsup("a", "b"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
                 const cursor = {
                     path: [1, SUB],
                     prev: null,
@@ -1260,11 +1206,7 @@ describe("reducer", () => {
             });
 
             it("should move the sup into the parent when deleting from the front of the sup", () => {
-                const math = row<Editor.Glyph>([
-                    glyph("e"),
-                    Util.subsup("a", "b"),
-                    glyph("g"),
-                ]);
+                const math = row<Editor.Glyph>([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
                 const cursor = {
                     path: [1, SUP],
                     prev: null,
@@ -1353,9 +1295,7 @@ describe("reducer", () => {
                 const state: State = {math, cursor};
                 const newState = reducer(state, action);
 
-                expect(newState.math).toEqualMath(
-                    row([glyph("1"), Util.sub("2")]),
-                );
+                expect(newState.math).toEqualMath(row([glyph("1"), Util.sub("2")]));
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
@@ -1366,11 +1306,7 @@ describe("reducer", () => {
 
         describe("frac", () => {
             test("from right enters denominator", () => {
-                const math = row([
-                    glyph("1"),
-                    Util.frac("ab", "cd"),
-                    glyph("2"),
-                ]);
+                const math = row([glyph("1"), Util.frac("ab", "cd"), glyph("2")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1389,11 +1325,7 @@ describe("reducer", () => {
             });
 
             test("deleting from the start of the denominator", () => {
-                const math = row([
-                    glyph("1"),
-                    Util.frac("ab", "cd"),
-                    glyph("2"),
-                ]);
+                const math = row([glyph("1"), Util.frac("ab", "cd"), glyph("2")]);
                 const cursor = {
                     path: [1, DENOMINATOR],
                     prev: null,
@@ -1412,11 +1344,7 @@ describe("reducer", () => {
             });
 
             test("deleting from the start of the numerator", () => {
-                const math = row([
-                    glyph("1"),
-                    Util.frac("ab", "cd"),
-                    glyph("2"),
-                ]);
+                const math = row([glyph("1"), Util.frac("ab", "cd"), glyph("2")]);
                 const cursor = {
                     path: [1, NUMERATOR],
                     prev: null,
@@ -1829,11 +1757,7 @@ describe("reducer", () => {
             });
 
             it("should enter a subsup from the right", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("ab", "cd"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("ab", "cd"), glyph("g")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1890,11 +1814,7 @@ describe("reducer", () => {
             });
 
             it("should exit a subsup to the left from within the sub", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("ab", "cd"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("ab", "cd"), glyph("g")]);
                 const cursor = {
                     path: [1, SUB],
                     prev: null,
@@ -1913,11 +1833,7 @@ describe("reducer", () => {
             });
 
             it("should move from the sup to the sub", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("ab", "cd"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("ab", "cd"), glyph("g")]);
                 const cursor = {
                     path: [1, SUP],
                     prev: null,
@@ -1938,11 +1854,7 @@ describe("reducer", () => {
 
         describe("frac", () => {
             test("entering the denominator from the right", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [],
                     prev: 1,
@@ -1980,11 +1892,7 @@ describe("reducer", () => {
             });
 
             test("moving from the denonminator to the numerator", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [1, DENOMINATOR],
                     prev: null,
@@ -2022,11 +1930,7 @@ describe("reducer", () => {
             });
 
             test("exiting from the numerator to the left", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [1, NUMERATOR],
                     prev: null,
@@ -2226,11 +2130,7 @@ describe("reducer", () => {
             });
 
             it("should enter a subsup from the left", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("a", "b"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
                 const cursor = {
                     path: [],
                     prev: 0,
@@ -2287,11 +2187,7 @@ describe("reducer", () => {
             });
 
             it("should exit a subsup to the right from within the sup", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("a", "b"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
                 const cursor = {
                     path: [1, SUP],
                     prev: 0,
@@ -2310,11 +2206,7 @@ describe("reducer", () => {
             });
 
             it("should move from the sub to the sup", () => {
-                const math = row([
-                    glyph("e"),
-                    Util.subsup("a", "b"),
-                    glyph("g"),
-                ]);
+                const math = row([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
                 const cursor = {
                     path: [1, SUB],
                     prev: 0,
@@ -2335,11 +2227,7 @@ describe("reducer", () => {
 
         describe("frac", () => {
             test("entering the numerator from the left", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [],
                     prev: 0,
@@ -2377,11 +2265,7 @@ describe("reducer", () => {
             });
 
             test("moving from the numerator to the denominator", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [1, NUMERATOR],
                     prev: 0,
@@ -2419,11 +2303,7 @@ describe("reducer", () => {
             });
 
             test("exiting from the denominator to the right", () => {
-                const math = row([
-                    glyph("a"),
-                    Util.frac("xy", "uv"),
-                    glyph("b"),
-                ]);
+                const math = row([glyph("a"), Util.frac("xy", "uv"), glyph("b")]);
                 const cursor = {
                     path: [1, DENOMINATOR],
                     prev: 0,
@@ -2716,9 +2596,7 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(newState.math).toEqualMath(
-                row([glyph("1"), glyph("+"), Util.frac("2+3", "")]),
-            );
+            expect(newState.math).toEqualMath(row([glyph("1"), glyph("+"), Util.frac("2+3", "")]));
             expect(newState.cursor).toEqual({
                 path: [2, DENOMINATOR],
                 prev: null,
@@ -2875,9 +2753,7 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(newState.math).toEqualMath(
-                row([glyph("e"), Util.sup("x+y")]),
-            );
+            expect(newState.math).toEqualMath(row([glyph("e"), Util.sup("x+y")]));
             expect(newState.cursor).toEqual({
                 path: [1, SUP],
                 prev: 2,
@@ -2908,9 +2784,7 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(newState.math).toEqualMath(
-                row([glyph("a"), Util.sub("n+1")]),
-            );
+            expect(newState.math).toEqualMath(row([glyph("a"), Util.sub("n+1")]));
             // e.g. toHaveCursorAtEndOf("sub");
             expect(newState.cursor).toEqual({
                 path: [1, SUB],
@@ -2943,9 +2817,7 @@ describe("reducer", () => {
 
             const newState = reducer(state, action);
 
-            expect(newState.math).toEqualMath(
-                row([glyph("2"), Util.sqrt("x+5")]),
-            );
+            expect(newState.math).toEqualMath(row([glyph("2"), Util.sqrt("x+5")]));
             // e.g. toHaveCursorAtEndOf("sub");
             expect(newState.cursor).toEqual({
                 path: [1, RADICAND],

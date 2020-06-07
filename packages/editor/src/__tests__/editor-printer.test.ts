@@ -56,11 +56,7 @@ describe("print", () => {
 
     test("a*b*c", () => {
         const ast = Semantic.mul(
-            [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.identifier("c"),
-            ],
+            [Semantic.identifier("a"), Semantic.identifier("b"), Semantic.identifier("c")],
             false,
         );
 
@@ -71,11 +67,7 @@ describe("print", () => {
 
     test("abc", () => {
         const ast = Semantic.mul(
-            [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.identifier("c"),
-            ],
+            [Semantic.identifier("a"), Semantic.identifier("b"), Semantic.identifier("c")],
             true,
         );
 
@@ -87,11 +79,7 @@ describe("print", () => {
     test("abc+123", () => {
         const ast = Semantic.add([
             Semantic.mul(
-                [
-                    Semantic.identifier("a"),
-                    Semantic.identifier("b"),
-                    Semantic.identifier("c"),
-                ],
+                [Semantic.identifier("a"), Semantic.identifier("b"), Semantic.identifier("c")],
                 true,
             ),
             Semantic.number("123"),
@@ -106,10 +94,7 @@ describe("print", () => {
         const ast = Semantic.mul(
             [
                 Semantic.identifier("a"),
-                Semantic.add([
-                    Semantic.identifier("x"),
-                    Semantic.identifier("y"),
-                ]),
+                Semantic.add([Semantic.identifier("x"), Semantic.identifier("y")]),
             ],
             true,
         );
@@ -167,10 +152,7 @@ describe("print", () => {
         const ast = Semantic.add([
             Semantic.identifier("a"),
             Semantic.neg(
-                Semantic.add([
-                    Semantic.identifier("b"),
-                    Semantic.identifier("c"),
-                ]),
+                Semantic.add([Semantic.identifier("b"), Semantic.identifier("c")]),
                 true, // subtraction
             ),
         ]);
@@ -181,10 +163,7 @@ describe("print", () => {
     });
 
     test("a/b", () => {
-        const ast = Semantic.div(
-            Semantic.identifier("a"),
-            Semantic.identifier("b"),
-        );
+        const ast = Semantic.div(Semantic.identifier("a"), Semantic.identifier("b"));
 
         const node = print(ast);
 

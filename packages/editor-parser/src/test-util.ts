@@ -4,9 +4,7 @@ import {Node, SubSup, Frac, Row, Atom, Root} from "@math-blocks/editor";
 import {Token} from "./editor-lexer";
 import {Location} from "./editor-lexer";
 
-export function row(
-    children: Node<Token, {loc: Location}>[],
-): Row<Token, {loc: Location}> {
+export function row(children: Node<Token, {loc: Location}>[]): Row<Token, {loc: Location}> {
     return {
         type: "row",
         children,
@@ -52,10 +50,7 @@ export function root(
     };
 }
 
-export function atom(
-    value: Token,
-    loc: Location,
-): Atom<Token, {loc: Location}> {
+export function atom(value: Token, loc: Location): Atom<Token, {loc: Location}> {
     return {
         type: "atom",
         value,
@@ -74,47 +69,43 @@ const print = (
             const atom = ast.value;
             switch (atom.kind) {
                 case "number":
-                    return `(num@[${loc.path.map(String).join(",")}]:${
-                        loc.start
-                    }:${loc.end} ${atom.value})`;
+                    return `(num@[${loc.path.map(String).join(",")}]:${loc.start}:${loc.end} ${
+                        atom.value
+                    })`;
                 case "identifier":
-                    return `(ident@[${loc.path.map(String).join(",")}]:${
-                        loc.start
-                    }:${loc.end} ${atom.name})`;
+                    return `(ident@[${loc.path.map(String).join(",")}]:${loc.start}:${loc.end} ${
+                        atom.name
+                    })`;
                 default:
-                    return `${atom.kind}@[${loc.path.map(String).join(",")}]:${
-                        loc.start
-                    }:${loc.end}`;
+                    return `${atom.kind}@[${loc.path.map(String).join(",")}]:${loc.start}:${
+                        loc.end
+                    }`;
             }
         }
         case "frac": {
             const [numerator, denominator] = ast.children;
-            return `(frac@[${loc.path.map(String).join(",")}]:${loc.start}:${
-                loc.end
-            } ${atom.name} ${print(numerator, serialize, indent)} ${print(
-                denominator,
-                serialize,
-                indent,
-            )})`;
+            return `(frac@[${loc.path.map(String).join(",")}]:${loc.start}:${loc.end} ${
+                atom.name
+            } ${print(numerator, serialize, indent)} ${print(denominator, serialize, indent)})`;
         }
         case "row": {
             return `(row ${ast.children
-                .map(child => "\n" + indent(print(child, serialize, indent)))
+                .map((child) => "\n" + indent(print(child, serialize, indent)))
                 .join(" ")})`;
         }
         case "subsup": {
             const [sub, sup] = ast.children;
-            return `(subsup@[${loc.path.map(String).join(",")}]:${loc.start}:${
-                loc.end
-            } ${atom.name} ${sub ? print(sub, serialize, indent) : "_"} ${
+            return `(subsup@[${loc.path.map(String).join(",")}]:${loc.start}:${loc.end} ${
+                atom.name
+            } ${sub ? print(sub, serialize, indent) : "_"} ${
                 sup ? print(sup, serialize, indent) : "_"
             })`;
         }
         case "root": {
             const [radicand, index] = ast.children;
-            return `(root@[${loc.path.map(String).join(",")}]:${loc.start}:${
-                loc.end
-            } ${atom.name} ${print(radicand, serialize, indent)} ${
+            return `(root@[${loc.path.map(String).join(",")}]:${loc.start}:${loc.end} ${
+                atom.name
+            } ${print(radicand, serialize, indent)} ${
                 index ? print(index, serialize, indent) : "_"
             })`;
         }

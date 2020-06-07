@@ -24,8 +24,7 @@ export default function useEventListener(
             if (!isSupported) return;
 
             // Create event listener that calls handler function stored in ref
-            const eventListener = (event: KeyboardEvent): void =>
-                savedHandler.current(event);
+            const eventListener = (event: KeyboardEvent): void => savedHandler.current(event);
 
             // Add event listener
             element.addEventListener(eventName, eventListener);

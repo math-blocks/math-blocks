@@ -40,11 +40,11 @@ const MathKeypad: React.SFC<{}> = () => {
 
     return (
         <div className={css(styles.container)}>
-            {buttons.map(button => (
+            {buttons.map((button) => (
                 <div
                     className={css(styles.item)}
                     key={button.name}
-                    onMouseDown={e => e.preventDefault()}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleClick(button)}
                 >
                     {button.char}

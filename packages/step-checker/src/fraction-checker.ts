@@ -16,11 +16,7 @@ class FractionChecker {
         this.checker = checker;
     }
 
-    checkDivisionCanceling(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    checkDivisionCanceling(a: Semantic.Expression, b: Semantic.Expression, steps: Step[]): Result {
         if (a.type !== "div") {
             return {
                 equivalent: false,
@@ -37,8 +33,7 @@ class FractionChecker {
         // cases:
         // - ab/ac -> a/a * b/c
         // - ab/a -> a/1 -> a
-        const [numeratorB, denominatorB] =
-            b.type === "div" ? b.args : [b, Semantic.number("1")];
+        const [numeratorB, denominatorB] = b.type === "div" ? b.args : [b, Semantic.number("1")];
 
         numeratorA; // ?
         numeratorB; // ?
@@ -51,28 +46,14 @@ class FractionChecker {
         // Ensure that no extra factors were added to either the numerator
         // or denominator.  It's okay to ignore factors that ONE since multiplying
         // by 1 doesn't affect the value of the numerator or denominator.
-        const addedNumFactors = checker.difference(
-            numFactorsB,
-            numFactorsA,
-            steps,
-        );
-        const addedDenFactors = checker.difference(
-            denFactorsB,
-            denFactorsA,
-            steps,
-        );
+        const addedNumFactors = checker.difference(numFactorsB, numFactorsA, steps);
+        const addedDenFactors = checker.difference(denFactorsB, denFactorsA, steps);
 
         if (
-            !checker.checkStep(
-                Semantic.mulFactors(addedNumFactors),
-                Semantic.number("1"),
-                steps,
-            ).equivalent ||
-            !checker.checkStep(
-                Semantic.mulFactors(addedDenFactors),
-                Semantic.number("1"),
-                steps,
-            ).equivalent
+            !checker.checkStep(Semantic.mulFactors(addedNumFactors), Semantic.number("1"), steps)
+                .equivalent ||
+            !checker.checkStep(Semantic.mulFactors(addedDenFactors), Semantic.number("1"), steps)
+                .equivalent
         ) {
             // If the factors are different then it's possible that the user
             // decomposed one or more of the factors.  We decompose all factors
@@ -100,11 +81,7 @@ class FractionChecker {
                 // TODO: allow `nodes` in Reason type to have more than two nodes
                 // to handle cases where we modify both prev and next to work the
                 // problem from both sides essentially.
-                const result1 = this.checkDivisionCanceling(
-                    newPrev,
-                    newNext,
-                    steps,
-                );
+                const result1 = this.checkDivisionCanceling(newPrev, newNext, steps);
                 a; // ?
                 b; // ?
                 newPrev.args[0]; // ?
@@ -142,26 +119,10 @@ class FractionChecker {
         }
 
         // TODO: figure out how to handle duplicate factors
-        const removedNumFactors = checker.difference(
-            numFactorsA,
-            numFactorsB,
-            steps,
-        );
-        const remainingNumFactors = checker.intersection(
-            numFactorsA,
-            numFactorsB,
-            steps,
-        );
-        const removedDenFactors = checker.difference(
-            denFactorsA,
-            denFactorsB,
-            steps,
-        );
-        const remainingDenFactors = checker.intersection(
-            denFactorsA,
-            denFactorsB,
-            steps,
-        );
+        const removedNumFactors = checker.difference(numFactorsA, numFactorsB, steps);
+        const remainingNumFactors = checker.intersection(numFactorsA, numFactorsB, steps);
+        const removedDenFactors = checker.difference(denFactorsA, denFactorsB, steps);
+        const remainingDenFactors = checker.intersection(denFactorsA, denFactorsB, steps);
 
         if (remainingNumFactors.length === 0) {
             remainingNumFactors.push(Semantic.number("1"));
@@ -194,8 +155,7 @@ class FractionChecker {
                     equivalent: true,
                     steps: [
                         {
-                            message:
-                                "extract common factors from numerator and denominator",
+                            message: "extract common factors from numerator and denominator",
                             nodes: [a, productA],
                         },
                         ...result.steps,
@@ -210,11 +170,7 @@ class FractionChecker {
         };
     }
 
-    divByFrac(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    divByFrac(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         const {checker} = this;
         if (prev.type !== "div") {
             return {
@@ -226,10 +182,7 @@ class FractionChecker {
         const [numerator, denominator] = prev.args;
 
         if (denominator.type === "div") {
-            const reciprocal = Semantic.div(
-                denominator.args[1],
-                denominator.args[0],
-            );
+            const reciprocal = Semantic.div(denominator.args[1], denominator.args[0]);
             const newPrev = Semantic.mulFactors([numerator, reciprocal]);
             const result = checker.checkStep(newPrev, next, steps);
 
@@ -254,16 +207,11 @@ class FractionChecker {
         };
     }
 
-    divByOne(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    divByOne(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         const {checker} = this;
         if (
             prev.type === "div" &&
-            checker.checkStep(prev.args[1], Semantic.number("1"), steps)
-                .equivalent
+            checker.checkStep(prev.args[1], Semantic.number("1"), steps).equivalent
         ) {
             const result = checker.checkStep(prev.args[0], next, steps);
             const newPrev = applySubReasons(prev, result.steps);
@@ -286,21 +234,13 @@ class FractionChecker {
         };
     }
 
-    divBySame(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    divBySame(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         const {checker} = this;
         if (prev.type === "div") {
             const [numerator, denominator] = prev.args;
             const one = Semantic.number("1");
             const result1 = checker.checkStep(numerator, denominator, steps);
-            const result2 = checker.checkStep(
-                next,
-                Semantic.number("1"),
-                steps,
-            );
+            const result2 = checker.checkStep(next, Semantic.number("1"), steps);
             if (result1.equivalent && result2.equivalent) {
                 return {
                     equivalent: true,
@@ -334,10 +274,8 @@ class FractionChecker {
         // We found a cycle so let's abort
         if (steps.length > 0) {
             if (
-                steps[0].message ===
-                    "multiplying by one over something results in a fraction" ||
-                steps[0].message ===
-                    "fraction is the same as multiplying by one over"
+                steps[0].message === "multiplying by one over something results in a fraction" ||
+                steps[0].message === "fraction is the same as multiplying by one over"
             ) {
                 return {
                     equivalent: false,
@@ -368,9 +306,7 @@ class FractionChecker {
                 ? checker.checkStep(next, newPrev, [step, ...steps])
                 : checker.checkStep(newPrev, next, [step, ...steps]);
 
-            const newReasons = reverse
-                ? [...result.steps, step]
-                : [step, ...result.steps];
+            const newReasons = reverse ? [...result.steps, step] : [step, ...result.steps];
 
             return {
                 equivalent: result.equivalent,
@@ -383,14 +319,10 @@ class FractionChecker {
         };
     }
 
-    mulByFrac(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    mulByFrac(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         const {checker} = this;
         // We need a multiplication node containing a fraction
-        if (prev.type !== "mul" || prev.args.every(arg => arg.type !== "div")) {
+        if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
             return {
                 equivalent: false,
                 steps: [],
@@ -402,8 +334,7 @@ class FractionChecker {
             if (
                 prev.args[0].type !== "div" &&
                 prev.args[1].type === "div" &&
-                checker.exactMatch(prev.args[1].args[0], Semantic.number("1"))
-                    .equivalent
+                checker.exactMatch(prev.args[1].args[0], Semantic.number("1")).equivalent
             ) {
                 return {
                     equivalent: false,
@@ -454,11 +385,7 @@ class FractionChecker {
         };
     }
 
-    runChecks(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    runChecks(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         let result: Result;
 
         result = this.divByFrac(prev, next, steps);

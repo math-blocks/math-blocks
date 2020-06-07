@@ -62,11 +62,7 @@ export interface IStepChecker {
         steps: Step[],
     ): Semantic.Expression[];
     // TODO: change this to return a Result
-    equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        steps: Step[],
-    ): boolean;
+    equality(as: Semantic.Expression[], bs: Semantic.Expression[], steps: Step[]): boolean;
     options: Options;
 }
 
@@ -116,8 +112,8 @@ class StepChecker implements IStepChecker {
                 steps: [],
             };
         }
-        const equivalent = prev.args.every(prevArg =>
-            next.args.some(nextArg => {
+        const equivalent = prev.args.every((prevArg) =>
+            next.args.some((nextArg) => {
                 const result = this.checkStep(prevArg, nextArg, steps);
                 if (result.equivalent) {
                     _reasons.push(...result.steps);
@@ -141,9 +137,7 @@ class StepChecker implements IStepChecker {
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
-            const index = bs.findIndex(
-                b => this.checkStep(a, b, steps).equivalent,
-            );
+            const index = bs.findIndex((b) => this.checkStep(a, b, steps).equivalent);
             if (index !== -1) {
                 result.push(a);
                 bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -162,9 +156,7 @@ class StepChecker implements IStepChecker {
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
-            const index = bs.findIndex(
-                b => this.checkStep(a, b, steps).equivalent,
-            );
+            const index = bs.findIndex((b) => this.checkStep(a, b, steps).equivalent);
             if (index !== -1) {
                 bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
             } else {
@@ -178,14 +170,8 @@ class StepChecker implements IStepChecker {
      * Returns true if all every element in as is equivalent to an element in bs
      * and vice versa.
      */
-    equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        steps: Step[],
-    ): boolean {
-        return as.every(a =>
-            bs.some(b => this.checkStep(a, b, steps).equivalent),
-        );
+    equality(as: Semantic.Expression[], bs: Semantic.Expression[], steps: Step[]): boolean {
+        return as.every((a) => bs.some((b) => this.checkStep(a, b, steps).equivalent));
     }
 
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result {
@@ -200,11 +186,7 @@ class StepChecker implements IStepChecker {
     // TODO: add an identity check for all operations
     // TODO: check removal of parens, i.e. associative property
     // TODO: memoize checkStep to avoid re-doing the same work
-    checkStep(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    checkStep(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         let result: Result;
 
         result = this.exactMatch(prev, next);
@@ -248,12 +230,9 @@ class StepChecker implements IStepChecker {
         } else if (prev.type === "neg" && next.type === "neg") {
             const result = this.checkStep(prev.arg, next.arg, steps);
             return {
-                equivalent:
-                    prev.subtraction === next.subtraction && result.equivalent,
+                equivalent: prev.subtraction === next.subtraction && result.equivalent,
                 steps:
-                    prev.subtraction === next.subtraction && result.equivalent
-                        ? result.steps
-                        : [],
+                    prev.subtraction === next.subtraction && result.equivalent ? result.steps : [],
             };
         }
 

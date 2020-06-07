@@ -1,9 +1,6 @@
 import * as Editor from "./editor-ast";
 
-export const isEqual = (
-    a: Editor.Node<Editor.Glyph>,
-    b: Editor.Node<Editor.Glyph>,
-): boolean => {
+export const isEqual = (a: Editor.Node<Editor.Glyph>, b: Editor.Node<Editor.Glyph>): boolean => {
     if (a.type !== b.type) {
         return false;
     } else if (a.type === "atom" && b.type === "atom") {
@@ -16,9 +13,7 @@ export const isEqual = (
         const [aRad, aIndex] = a.children;
         const [bRad, bIndex] = b.children;
         if (isEqual(aRad, bRad)) {
-            return aIndex != null && bIndex != null
-                ? isEqual(aIndex, bIndex)
-                : aIndex === bIndex;
+            return aIndex != null && bIndex != null ? isEqual(aIndex, bIndex) : aIndex === bIndex;
         } else {
             return false;
         }
@@ -52,9 +47,7 @@ export const isEqual = (
         if (a.children.length !== b.children.length) {
             return false;
         }
-        return a.children.every((aChild, index) =>
-            isEqual(aChild, b.children[index]),
-        );
+        return a.children.every((aChild, index) => isEqual(aChild, b.children[index]));
     } else {
         return false;
     }
@@ -65,46 +58,40 @@ export type ID = {
 };
 
 export const row = (str: string): Editor.Row<Editor.Glyph, ID> =>
-    Editor.row(str.split("").map(glyph => Editor.glyph(glyph)));
+    Editor.row(str.split("").map((glyph) => Editor.glyph(glyph)));
 
 export const frac = (num: string, den: string): Editor.Frac<Editor.Glyph, ID> =>
     Editor.frac(
-        num.split("").map(glyph => Editor.glyph(glyph)),
-        den.split("").map(glyph => Editor.glyph(glyph)),
+        num.split("").map((glyph) => Editor.glyph(glyph)),
+        den.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sqrt = (radicand: string): Editor.Root<Editor.Glyph, ID> =>
     Editor.root(
-        radicand.split("").map(glyph => Editor.glyph(glyph)),
+        radicand.split("").map((glyph) => Editor.glyph(glyph)),
         null,
     );
 
-export const root = (
-    radicand: string,
-    index: string,
-): Editor.Root<Editor.Glyph, ID> =>
+export const root = (radicand: string, index: string): Editor.Root<Editor.Glyph, ID> =>
     Editor.root(
-        radicand.split("").map(glyph => Editor.glyph(glyph)),
-        index.split("").map(glyph => Editor.glyph(glyph)),
+        radicand.split("").map((glyph) => Editor.glyph(glyph)),
+        index.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sup = (sup: string): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
         undefined,
-        sup.split("").map(glyph => Editor.glyph(glyph)),
+        sup.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
 export const sub = (sub: string): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
-        sub.split("").map(glyph => Editor.glyph(glyph)),
+        sub.split("").map((glyph) => Editor.glyph(glyph)),
         undefined,
     );
 
-export const subsup = (
-    sub: string,
-    sup: string,
-): Editor.SubSup<Editor.Glyph, ID> =>
+export const subsup = (sub: string, sup: string): Editor.SubSup<Editor.Glyph, ID> =>
     Editor.subsup(
-        sub.split("").map(glyph => Editor.glyph(glyph)),
-        sup.split("").map(glyph => Editor.glyph(glyph)),
+        sub.split("").map((glyph) => Editor.glyph(glyph)),
+        sup.split("").map((glyph) => Editor.glyph(glyph)),
     );

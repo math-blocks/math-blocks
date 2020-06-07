@@ -57,8 +57,7 @@ class IntegerChecker {
         if (indicesToRemove.size > 0) {
             const newPrev = Semantic.addTerms(
                 terms.filter(
-                    (term: Semantic.Expression, index: number) =>
-                        !indicesToRemove.has(index),
+                    (term: Semantic.Expression, index: number) => !indicesToRemove.has(index),
                 ),
             );
             const result = reverse
@@ -146,23 +145,14 @@ class IntegerChecker {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        if (
-            prev.type === "add" &&
-            next.type === "add" &&
-            prev.args.length === next.args.length
-        ) {
-            const subs: Semantic.Neg[] = prev.args.filter(
-                Semantic.isSubtraction,
-            );
+        if (prev.type === "add" && next.type === "add" && prev.args.length === next.args.length) {
+            const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
             for (const sub of subs) {
                 const index = prev.args.indexOf(sub);
                 // Either the corresponding arg in the next add node must be
                 // negative or the sub node must contain a negative.
                 // a - b -> a + -b or a - -b -> a + b
-                if (
-                    !Semantic.isNegative(next.args[index]) &&
-                    !Semantic.isNegative(sub.arg)
-                ) {
+                if (!Semantic.isNegative(next.args[index]) && !Semantic.isNegative(sub.arg)) {
                     continue;
                 }
 
@@ -182,15 +172,13 @@ class IntegerChecker {
                             ? [
                                   ...result.steps,
                                   {
-                                      message:
-                                          "subtracting is the same as adding the inverse",
+                                      message: "subtracting is the same as adding the inverse",
                                       nodes: [newPrev, prev],
                                   },
                               ]
                             : [
                                   {
-                                      message:
-                                          "subtracting is the same as adding the inverse",
+                                      message: "subtracting is the same as adding the inverse",
                                       nodes: [prev, newPrev],
                                   },
                                   ...result.steps,
@@ -235,15 +223,13 @@ class IntegerChecker {
                         ? [
                               ...result.steps,
                               {
-                                  message:
-                                      "negation is the same as multipling by negative one",
+                                  message: "negation is the same as multipling by negative one",
                                   nodes: [newPrev, prev],
                               },
                           ]
                         : [
                               {
-                                  message:
-                                      "negation is the same as multipling by negative one",
+                                  message: "negation is the same as multipling by negative one",
                                   nodes: [prev, newPrev],
                               },
                               ...result.steps,
@@ -271,14 +257,8 @@ class IntegerChecker {
         if (prev.type === "mul" && next.type === "mul") {
             // TODO: handle more factors
             if (prev.args.length === 2 && next.args.length === 2) {
-                if (
-                    prev.args[0].type === "neg" &&
-                    prev.args[1].type === "neg"
-                ) {
-                    const newPrev = Semantic.mulFactors([
-                        prev.args[0].arg,
-                        prev.args[1].arg,
-                    ]);
+                if (prev.args[0].type === "neg" && prev.args[1].type === "neg") {
+                    const newPrev = Semantic.mulFactors([prev.args[0].arg, prev.args[1].arg]);
 
                     const result = reverse
                         ? checker.checkStep(next, newPrev, steps)
@@ -290,15 +270,13 @@ class IntegerChecker {
                                 ? [
                                       ...result.steps,
                                       {
-                                          message:
-                                              "multiplying two negatives is a positive",
+                                          message: "multiplying two negatives is a positive",
                                           nodes: [],
                                       },
                                   ]
                                 : [
                                       {
-                                          message:
-                                              "multiplying two negatives is a positive",
+                                          message: "multiplying two negatives is a positive",
                                           nodes: [],
                                       },
                                       ...result.steps,
@@ -317,11 +295,7 @@ class IntegerChecker {
 
     // TODO: rename these methods to differentiate the StepChecker method from
     // this method
-    runChecks(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        steps: Step[],
-    ): Result {
+    runChecks(prev: Semantic.Expression, next: Semantic.Expression, steps: Step[]): Result {
         let result: Result;
         let result1: Result;
         let result2: Result;

@@ -4,16 +4,7 @@ import * as Parser from "@math-blocks/parser";
 import {lex, Token} from "./text-lexer";
 
 // TODO: fill out this list
-type Operator =
-    | "add"
-    | "sub"
-    | "mul.exp"
-    | "div"
-    | "mul.imp"
-    | "neg"
-    | "caret"
-    | "eq"
-    | "nul";
+type Operator = "add" | "sub" | "mul.exp" | "div" | "mul.imp" | "neg" | "caret" | "eq" | "nul";
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
@@ -30,9 +21,7 @@ const EOL: Token = {type: "eol"};
 //     args: [radicand, index || number("2")],
 // });
 
-const getPrefixParselet = (
-    token: Token,
-): Parser.PrefixParselet<Token, Node, Operator> => {
+const getPrefixParselet = (token: Token): Parser.PrefixParselet<Token, Node, Operator> => {
     switch (token.type) {
         case "identifier":
             return {
@@ -72,9 +61,7 @@ const getPrefixParselet = (
 //   };
 // };
 
-const parseMulByParen = (
-    parser: TextParser,
-): OneOrMore<Semantic.Expression> => {
+const parseMulByParen = (parser: TextParser): OneOrMore<Semantic.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -82,9 +69,7 @@ const parseMulByParen = (
     return [expr];
 };
 
-const getInfixParselet = (
-    token: Token,
-): Parser.InfixParselet<Token, Node, Operator> | null => {
+const getInfixParselet = (token: Token): Parser.InfixParselet<Token, Node, Operator> | null => {
     switch (token.type) {
         case "eq":
             return {op: "eq", parse: parseNaryInfix("eq")};
@@ -108,10 +93,7 @@ const getInfixParselet = (
                 parse: (parser, left): Semantic.Exp => {
                     parser.consume();
                     // exponents are right-associative
-                    return Semantic.exp(
-                        left,
-                        parser.parseWithOperator("caret", "right"),
-                    );
+                    return Semantic.exp(left, parser.parseWithOperator("caret", "right"));
                 },
             };
         case "identifier":
@@ -138,10 +120,7 @@ const getInfixParselet = (
     }
 };
 
-const parseNaryInfix = (op: NAryOperator) => (
-    parser: TextParser,
-    left: Node,
-): Node => {
+const parseNaryInfix = (op: NAryOperator) => (parser: TextParser, left: Node): Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     switch (op) {
         case "add":
@@ -156,10 +135,7 @@ const parseNaryInfix = (op: NAryOperator) => (
     }
 };
 
-const parseNaryArgs = (
-    parser: TextParser,
-    op: NAryOperator,
-): OneOrMore<Node> => {
+const parseNaryArgs = (parser: TextParser, op: NAryOperator): OneOrMore<Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
 

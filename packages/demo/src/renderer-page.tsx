@@ -8,9 +8,7 @@ import fontMetrics from "@math-blocks/metrics";
 const fontSize = 60;
 const comicSansTypeset = typeset(fontMetrics)(fontSize)(1.0);
 
-const linearEquation = comicSansTypeset(
-    Editor.Util.row("2x+5=10"),
-) as Layout.Box;
+const linearEquation = comicSansTypeset(Editor.Util.row("2x+5=10")) as Layout.Box;
 
 const {glyph, row, frac, root} = Editor;
 

@@ -73,10 +73,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         let result: React.ReactElement | null = null;
 
         if (cursor && cursorInBox) {
-            if (
-                cursor.prev === node.id ||
-                (cursor.prev == null && index === 0)
-            ) {
+            if (cursor.prev === node.id || (cursor.prev == null && index === 0)) {
                 cursorPos = {
                     startX: pen.x - 1,
                     endX: pen.x - 1,
@@ -97,10 +94,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 if (insideSelection) {
                     selectionBoxes.push({
                         x: pen.x,
-                        y: -Math.max(
-                            Layout.getHeight(node),
-                            64 * 0.85 * multiplier,
-                        ),
+                        y: -Math.max(Layout.getHeight(node), 64 * 0.85 * multiplier),
                         // Ensure that there's a minium height to selection
                         height: Math.max(
                             Layout.getHeight(node) + Layout.getDepth(node),
@@ -119,13 +113,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
         switch (node.type) {
             case "Box":
                 result = (
-                    <Box
-                        key={index}
-                        box={node}
-                        cursor={cursor}
-                        x={pen.x}
-                        y={pen.y + node.shift}
-                    />
+                    <Box key={index} box={node} cursor={cursor} x={pen.x} y={pen.y + node.shift} />
                 );
                 pen.x += Layout.getWidth(node);
                 break;
@@ -196,10 +184,7 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     }
 
     return (
-        <g
-            id={box.id != undefined ? String(box.id) : undefined}
-            transform={`translate(${x},${y})`}
-        >
+        <g id={box.id != undefined ? String(box.id) : undefined} transform={`translate(${x},${y})`}>
             {result}
         </g>
     );
@@ -222,13 +207,7 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                     debugger;
                 }
                 result = (
-                    <Box
-                        key={index}
-                        box={node}
-                        cursor={cursor}
-                        x={pen.x + node.shift}
-                        y={pen.y}
-                    />
+                    <Box key={index} box={node} cursor={cursor} x={pen.x + node.shift} y={pen.y} />
                 );
                 pen.y += Layout.getDepth({...node, shift: 0});
                 break;
@@ -262,16 +241,13 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     });
 
     return (
-        <g
-            id={box.id != undefined ? String(box.id) : undefined}
-            transform={`translate(${x},${y})`}
-        >
+        <g id={box.id != undefined ? String(box.id) : undefined} transform={`translate(${x},${y})`}>
             {result}
         </g>
     );
 };
 
-const Box: React.SFC<BoxProps> = props => {
+const Box: React.SFC<BoxProps> = (props) => {
     switch (props.box.kind) {
         case "hbox": {
             return <HBox {...props} />;
@@ -292,21 +268,15 @@ type Props = {
 
 const CURSOR_WIDTH = 2;
 
-export const MathRenderer: React.SFC<Props> = props => {
+export const MathRenderer: React.SFC<Props> = (props) => {
     const {box, cursor} = props;
     const height = Layout.getHeight(box);
     const depth = Layout.getDepth(box);
     const width = Layout.getWidth(box) + CURSOR_WIDTH;
-    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height +
-        depth}`;
+    const viewBox = `-${CURSOR_WIDTH / 2} -${height} ${width} ${height + depth}`;
 
     return (
-        <svg
-            style={{margin: 8}}
-            width={width}
-            height={height + depth}
-            viewBox={viewBox}
-        >
+        <svg style={{margin: 8}} width={width} height={height + depth} viewBox={viewBox}>
             <g fill="currentColor">
                 <Box box={box} cursor={cursor} />
             </g>

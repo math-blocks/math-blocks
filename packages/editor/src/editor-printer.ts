@@ -25,7 +25,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             return {
                 id: expr.id,
                 type: "row",
-                children: expr.value.split("").map(char => Editor.glyph(char)),
+                children: expr.value.split("").map((char) => Editor.glyph(char)),
             };
         }
         case "add": {
@@ -126,12 +126,8 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                 id: expr.id,
                 type: "frac",
                 children: [
-                    numerator.type === "row"
-                        ? numerator
-                        : Editor.row([numerator]),
-                    denominator.type === "row"
-                        ? denominator
-                        : Editor.row([denominator]),
+                    numerator.type === "row" ? numerator : Editor.row([numerator]),
+                    denominator.type === "row" ? denominator : Editor.row([denominator]),
                 ],
             };
         }

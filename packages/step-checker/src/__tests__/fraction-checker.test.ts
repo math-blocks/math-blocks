@@ -33,7 +33,7 @@ describe("FractionChecker", () => {
         const result = checkStep("a * 1/b", "a / b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "multiplying by one over something results in a fraction",
         ]);
     });
@@ -59,7 +59,7 @@ describe("FractionChecker", () => {
         const result = checkStep("a / b", "a * 1/b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
         ]);
     });
@@ -69,7 +69,7 @@ describe("FractionChecker", () => {
         const result = checkStep("1/a * 1/b", "1 / ab");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "multiplying fractions",
             "fraction is the same as multiplying by one over",
             "multiplication with identity",
@@ -81,7 +81,7 @@ describe("FractionChecker", () => {
         const result = checkStep("1", "a/a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "division by the same value",
         ]);
     });
@@ -96,27 +96,21 @@ describe("FractionChecker", () => {
         const result = checkStep("a/b * c/d", "ac / bd");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-        ]);
+        expect(result.steps.map((reason) => reason.message)).toEqual(["multiplying fractions"]);
     });
 
     it("ac / bd -> a/b * c/d", () => {
         const result = checkStep("ac / bd", "a/b * c/d");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-        ]);
+        expect(result.steps.map((reason) => reason.message)).toEqual(["multiplying fractions"]);
     });
 
     it("ab/cd * e/f -> abe / cdf", () => {
         const result = checkStep("ab/cd * e/f", "abe / cdf");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
-            "multiplying fractions",
-        ]);
+        expect(result.steps.map((reason) => reason.message)).toEqual(["multiplying fractions"]);
     });
 
     it("a/b * 1/d -> a*1 / bd -> a / bd", () => {
@@ -139,7 +133,7 @@ describe("FractionChecker", () => {
         const result = checker.checkStep(parse("30 / 6"), parse("5"), []);
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "prime factorization",
             "extract common factors from numerator and denominator",
             "division by the same value",
@@ -205,7 +199,7 @@ describe("FractionChecker", () => {
         );
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -217,7 +211,7 @@ describe("FractionChecker", () => {
             const result = checkStep("a / (b/c)", "a * c/b");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
             ]);
         });
@@ -234,9 +228,7 @@ describe("FractionChecker", () => {
             expect(result.steps[0].nodes[0]).toParseLike("1 / (a/b)");
             expect(result.steps[0].nodes[1]).toParseLike("1 * b/a");
 
-            expect(result.steps[1].message).toEqual(
-                "multiplication with identity",
-            );
+            expect(result.steps[1].message).toEqual("multiplication with identity");
             expect(result.steps[1].nodes[0]).toParseLike("1 * b/a");
             expect(result.steps[1].nodes[1]).toParseLike("b / a");
         });
@@ -261,9 +253,7 @@ describe("FractionChecker", () => {
                   (div a 1))
             `);
 
-            expect(result.steps[1].message).toEqual(
-                "multiplication with identity",
-            );
+            expect(result.steps[1].message).toEqual("multiplication with identity");
             expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
                 (mul.exp
                   1
@@ -280,7 +270,7 @@ describe("FractionChecker", () => {
             const result = checkStep("a / (1/b)", "ab");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplying fractions",
                 "division by one",
@@ -291,7 +281,7 @@ describe("FractionChecker", () => {
             const result = checkStep("a/b * b/a", "1");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps.map(reason => reason.message)).toEqual([
+            expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiplying fractions",
                 "commutative property",
                 "division by the same value",
@@ -303,7 +293,7 @@ describe("FractionChecker", () => {
         const result = checkStep("24ab / 6a", "4b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "prime factorization",
             "extract common factors from numerator and denominator",
             "division by the same value",
@@ -318,7 +308,7 @@ describe("FractionChecker", () => {
         const result = checkStep("2a/a", "2");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -337,7 +327,7 @@ describe("FractionChecker", () => {
         const result = checkStep("2abc/ab", "2c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -350,7 +340,7 @@ describe("FractionChecker", () => {
         const result = checkStep("2abc/ab", "2bc/b");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -361,7 +351,7 @@ describe("FractionChecker", () => {
         const result = checkStep("2abc/abd", "2c/d");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -372,7 +362,7 @@ describe("FractionChecker", () => {
         const result = checkStep("ab/abde", "1/de");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "extract common factors from numerator and denominator",
             "division by the same value",
             "multiplication with identity",
@@ -383,7 +373,7 @@ describe("FractionChecker", () => {
         const result = checkStep("a * b/b", "a");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -394,7 +384,7 @@ describe("FractionChecker", () => {
 
         expect(result.equivalent).toBe(true);
         // TODO: order the substeps based on the order of the steps
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "division by the same value",
             "multiplication with identity",
         ]);
@@ -404,18 +394,14 @@ describe("FractionChecker", () => {
         const result = checkStep("a", "a / 1");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
-            "division by one",
-        ]);
+        expect(result.steps.map((reason) => reason.message)).toEqual(["division by one"]);
     });
 
     it("ab -> ab / 1", () => {
         const result = checkStep("ab", "ab / 1");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
-            "division by one",
-        ]);
+        expect(result.steps.map((reason) => reason.message)).toEqual(["division by one"]);
     });
 
     // TODO: make sure distribution is including substeps
@@ -424,7 +410,7 @@ describe("FractionChecker", () => {
         const result = checkStep("(a + b) * 1/c", "a/c  + b/c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "distribution",
             "fraction is the same as multiplying by one over",
             "fraction is the same as multiplying by one over",
@@ -436,7 +422,7 @@ describe("FractionChecker", () => {
         const result = checkStep("a/c + b/c", "1/c * (a + b)");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
             "commutative property",
             "fraction is the same as multiplying by one over",
@@ -449,7 +435,7 @@ describe("FractionChecker", () => {
         const result = checkStep("(a + b) / c", "a/c  + b/c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
             "distribution",
             "fraction is the same as multiplying by one over",
@@ -461,7 +447,7 @@ describe("FractionChecker", () => {
         const result = checkStep("(a + b) / c", "(a + b) * 1/c");
 
         expect(result.equivalent).toBe(true);
-        expect(result.steps.map(reason => reason.message)).toEqual([
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
         ]);
     });
@@ -472,15 +458,11 @@ describe("FractionChecker", () => {
         expect(result.equivalent).toBe(true);
         expect(result.steps).toHaveLength(4);
 
-        expect(result.steps[0].message).toEqual(
-            "fraction is the same as multiplying by one over",
-        );
+        expect(result.steps[0].message).toEqual("fraction is the same as multiplying by one over");
         expect(result.steps[0].nodes[0]).toParseLike("a / c");
         expect(result.steps[0].nodes[1]).toParseLike("a * 1/c");
 
-        expect(result.steps[1].message).toEqual(
-            "fraction is the same as multiplying by one over",
-        );
+        expect(result.steps[1].message).toEqual("fraction is the same as multiplying by one over");
         expect(result.steps[1].nodes[0]).toParseLike("b / c");
         expect(result.steps[1].nodes[1]).toParseLike("b * 1/c");
 
