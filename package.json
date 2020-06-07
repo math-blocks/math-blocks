@@ -87,6 +87,6 @@
     }
   },
   "typeCoverage": {
-    "atLeast": 99
+    "atLeast": 95
   }
 }
