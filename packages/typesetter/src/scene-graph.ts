@@ -33,6 +33,7 @@ export type Rect = {
     y: number;
     width: number;
     height: number;
+    fill?: string;
 };
 
 type Point = {
@@ -83,6 +84,10 @@ const renderHBox = ({
     const {multiplier} = box;
 
     const cursorInBox = cursor && cursor.parent === box.id;
+    const selection = cursor && cursor.selection;
+    const selectionBoxes: Rect[] = [];
+
+    let insideSelection = false;
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
 
     box.content.forEach((node, index) => {
@@ -97,6 +102,45 @@ const renderHBox = ({
                     endX: pen.x - 1,
                     y: -64 * 0.85 * multiplier,
                 };
+            }
+
+            if (selection) {
+                if (cursor.next === node.id) {
+                    insideSelection = false;
+                }
+
+                // The cursor is at the start of the row.
+                if (cursor.prev == null && index === 0) {
+                    insideSelection = true;
+                }
+
+                if (insideSelection) {
+                    // pen.y = 0 places the pen on the baseline so in order
+                    // for the selection box to appear at the right place we
+                    // need go up using the standard y-down is positive.
+                    // How can we include diagrams in code?
+                    const yMin = -Math.max(
+                        Layout.getHeight(node),
+                        64 * 0.85 * multiplier,
+                    );
+
+                    const height = Math.max(
+                        Layout.getHeight(node) + Layout.getDepth(node),
+                        64 * multiplier,
+                    );
+
+                    selectionBoxes.push({
+                        type: "rect",
+                        x: pen.x,
+                        y: yMin,
+                        width: Layout.getWidth(node),
+                        height: height,
+                    });
+                }
+
+                if (cursor.prev === node.id) {
+                    insideSelection = true;
+                }
             }
         }
 
@@ -136,13 +180,20 @@ const renderHBox = ({
         }
     });
 
-    if (cursorPos) {
+    if (cursorPos && selectionBoxes.length === 0) {
         children.push({
             type: "rect",
             x: cursorPos.startX,
             y: cursorPos.y,
             width: 2,
             height: 64 * multiplier,
+        });
+    }
+
+    for (const selectionBox of selectionBoxes) {
+        children.unshift({
+            ...selectionBox,
+            fill: "rgba(0,64,255,0.3)",
         });
     }
 

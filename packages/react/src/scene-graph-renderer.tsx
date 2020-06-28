@@ -50,7 +50,7 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, children}) => {
                     case "line":
                         return <Line key={index} {...child} />;
                     case "rect":
-                        return <Rect kye={index} {...child} />;
+                        return <Rect key={index} {...child} />;
                 }
             })}
         </g>
