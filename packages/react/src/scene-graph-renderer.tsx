@@ -2,6 +2,13 @@ import * as React from "react";
 
 import {SceneGraph, Layout} from "@math-blocks/typesetter";
 
+type LayoutCursor = {
+    parent: number;
+    prev: number | null;
+    next: number | null;
+    selection: boolean;
+};
+
 const Line: React.SFC<SceneGraph.Line> = (props) => {
     return (
         <line
@@ -11,6 +18,10 @@ const Line: React.SFC<SceneGraph.Line> = (props) => {
             strokeLinecap="round"
         />
     );
+};
+
+const Rect: React.SFC<SceneGraph.Rect> = (props) => {
+    return <rect {...props} />;
 };
 
 const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
@@ -38,14 +49,19 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, children}) => {
                         return <Glyph key={index} {...child} />;
                     case "line":
                         return <Line key={index} {...child} />;
+                    case "rect":
+                        return <Rect kye={index} {...child} />;
                 }
             })}
         </g>
     );
 };
 
-const SceneGraphRenderer: React.SFC<{box: Layout.Box}> = (props) => {
-    const group = SceneGraph.render(props.box);
+const SceneGraphRenderer: React.SFC<{
+    box: Layout.Box;
+    cursor?: LayoutCursor;
+}> = (props) => {
+    const group = SceneGraph.render(props);
     const {width, height} = group;
     const viewBox = `0 0 ${width} ${height}`;
 

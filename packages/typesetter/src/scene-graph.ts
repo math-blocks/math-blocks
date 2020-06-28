@@ -27,12 +27,20 @@ export type Line = {
     y2: number;
 };
 
+export type Rect = {
+    type: "rect";
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
 type Point = {
     x: number;
     y: number;
 };
 
-export type Node = Group | Glyph | Line;
+export type Node = Group | Glyph | Line | Rect;
 
 const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
     const advance = Layout.getWidth(hrule);
@@ -54,16 +62,55 @@ const renderGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
     };
 };
 
-const renderHBox = (box: Layout.Box, loc: Point): Group => {
+type LayoutCursor = {
+    parent: number;
+    prev: number | null;
+    next: number | null;
+    selection: boolean;
+};
+
+const renderHBox = ({
+    box,
+    cursor,
+    loc,
+}: {
+    box: Layout.Box;
+    cursor?: LayoutCursor;
+    loc: Point;
+}): Group => {
     const children: Node[] = [];
     const pen = {x: 0, y: 0};
+    const {multiplier} = box;
 
-    box.content.forEach((node) => {
+    const cursorInBox = cursor && cursor.parent === box.id;
+    let cursorPos: {startX: number; endX: number; y: number} | null = null;
+
+    box.content.forEach((node, index) => {
+        // cursor is at the start of the box
+        if (cursor && cursorInBox) {
+            if (
+                cursor.prev === node.id ||
+                (cursor.prev == null && index === 0)
+            ) {
+                cursorPos = {
+                    startX: pen.x - 1,
+                    endX: pen.x - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            }
+        }
+
         const advance = Layout.getWidth(node);
 
         switch (node.type) {
             case "Box":
-                children.push(render(node, {x: pen.x, y: pen.y + node.shift}));
+                children.push(
+                    render({
+                        box: node,
+                        cursor,
+                        loc: {x: pen.x, y: pen.y + node.shift},
+                    }),
+                );
                 break;
             case "HRule":
                 children.push(renderHRule(node, pen));
@@ -78,7 +125,26 @@ const renderHBox = (box: Layout.Box, loc: Point): Group => {
         }
 
         pen.x += advance;
+
+        // cursor is at the end of the box
+        if (cursor && cursorInBox && cursor.prev === node.id) {
+            cursorPos = {
+                startX: pen.x - 1,
+                endX: pen.x - 1,
+                y: -64 * 0.85 * multiplier,
+            };
+        }
     });
+
+    if (cursorPos) {
+        children.push({
+            type: "rect",
+            x: cursorPos.startX,
+            y: cursorPos.y,
+            width: 2,
+            height: 64 * multiplier,
+        });
+    }
 
     return {
         type: "group",
@@ -90,7 +156,15 @@ const renderHBox = (box: Layout.Box, loc: Point): Group => {
     };
 };
 
-const renderVBox = (box: Layout.Box, loc: Point): Group => {
+const renderVBox = ({
+    box,
+    cursor,
+    loc,
+}: {
+    box: Layout.Box;
+    cursor?: LayoutCursor;
+    loc: Point;
+}): Group => {
     const children: Node[] = [];
     const pen = {x: 0, y: 0};
 
@@ -117,7 +191,13 @@ const renderVBox = (box: Layout.Box, loc: Point): Group => {
                     // eslint-disable-next-line no-debugger
                     debugger;
                 }
-                children.push(render(node, {x: pen.x + node.shift, y: pen.y}));
+                children.push(
+                    render({
+                        box: node,
+                        cursor,
+                        loc: {x: pen.x + node.shift, y: pen.y},
+                    }),
+                );
                 pen.y += Layout.getDepth({...node, shift: 0});
                 break;
             case "HRule":
@@ -148,7 +228,15 @@ const renderVBox = (box: Layout.Box, loc: Point): Group => {
     };
 };
 
-export const render = (box: Layout.Box, loc?: Point): Group => {
+export const render = ({
+    box,
+    cursor,
+    loc,
+}: {
+    box: Layout.Box;
+    cursor?: LayoutCursor;
+    loc?: Point;
+}): Group => {
     // If we weren't passed a location then this is the top-level call, in which
     // case we set the location based on box being passed in.  Setting loc.y to
     // the height of the box shifts the box into view.
@@ -158,8 +246,8 @@ export const render = (box: Layout.Box, loc?: Point): Group => {
 
     switch (box.kind) {
         case "hbox":
-            return renderHBox(box, loc);
+            return renderHBox({box, cursor, loc});
         case "vbox":
-            return renderVBox(box, loc);
+            return renderVBox({box, cursor, loc});
     }
 };
