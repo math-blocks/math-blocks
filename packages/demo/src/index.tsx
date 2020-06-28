@@ -5,6 +5,7 @@ import {Switch, Route, BrowserRouter as Router} from "react-router-dom";
 import StepCheckerPage from "./step-checker-page";
 import EditorPage from "./editor-page";
 import RendererPage from "./renderer-page";
+import SceneGraphPage from "./scene-graph-page";
 
 const container = document.createElement("div");
 
@@ -24,6 +25,9 @@ ReactDOM.render(
             <Route path="/renderer">
                 <RendererPage />
             </Route>
+            <Route path="/scene-graph">
+                <SceneGraphPage />
+            </Route>
             <Route path="/">
                 <h1>MathBlocks Demos</h1>
                 <ul>
@@ -32,6 +36,9 @@ ReactDOM.render(
                     </li>
                     <li>
                         <a href="/renderer">Renderer</a>
+                    </li>
+                    <li>
+                        <a href="/scene-graph">Scene Graph</a>
                     </li>
                     <li>
                         <a href="/step-checker">Step Checker</a>
