@@ -180,6 +180,16 @@ const renderHBox = ({
         }
     });
 
+    // The cursor is in an empty box.
+    if (box.content.length === 0 && cursor && cursor.parent === box.id) {
+        cursorPos = {
+            startX: pen.x - 1 + box.width / 2,
+            endX: pen.x - 1 + box.width / 2,
+            y: -64 * 0.85 * multiplier,
+        };
+    }
+
+    // Draw the cursor.
     if (cursorPos && selectionBoxes.length === 0) {
         children.push({
             type: "rect",
@@ -190,6 +200,7 @@ const renderHBox = ({
         });
     }
 
+    // Draw the selection.
     for (const selectionBox of selectionBoxes) {
         children.unshift({
             ...selectionBox,

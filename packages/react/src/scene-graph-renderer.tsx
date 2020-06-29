@@ -57,13 +57,16 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, children}) => {
     );
 };
 
+const CURSOR_WIDTH = 2;
+
 const SceneGraphRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
 }> = (props) => {
     const group = SceneGraph.render(props);
     const {width, height} = group;
-    const viewBox = `0 0 ${width} ${height}`;
+    const padding = CURSOR_WIDTH / 2;
+    const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
 
     return (
         <svg
