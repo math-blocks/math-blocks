@@ -32,6 +32,69 @@ declare global {
 }
 
 describe("reducer", () => {
+    describe("cancelling", () => {
+        it("should handle being called without a selection", () => {
+            const math = Util.row("1+2");
+            const cursor = {
+                path: [],
+                prev: null,
+                next: 0,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, {type: "CANCEL"});
+
+            expect(newState.math).toEqualMath(Util.row("1+2"));
+        });
+
+        it("should clear the selection", () => {
+            const math = Util.row("1+2");
+            const selectionStart = {
+                path: [],
+                prev: null,
+                next: 0,
+            };
+            const cursor = {
+                path: [],
+                prev: 2,
+                next: null,
+            };
+
+            const state: State = {math, cursor, selectionStart};
+            const newState = reducer(state, {type: "CANCEL"});
+
+            expect(newState.selectionStart).toBeUndefined();
+        });
+
+        it("should add a cancel region", () => {
+            const math = Util.row("1+2");
+            const selectionStart = {
+                path: [],
+                prev: null,
+                next: 0,
+            };
+            const cursor = {
+                path: [],
+                prev: 0,
+                next: 1,
+            };
+
+            const state: State = {math, cursor, selectionStart};
+            const newState = reducer(state, {type: "CANCEL"});
+
+            // TODO: try to avoid the need for unique IDs by relying on paths instead
+            // We can convert paths to strings for easier comparison.
+            expect(newState.cancelRegions).toEqual([
+                {
+                    parent: expect.any(Number),
+                    prev: null,
+                    next: expect.any(Number),
+                    selection: true,
+                },
+            ]);
+        });
+    });
+
     describe("inserting", () => {
         describe("a regular character", () => {
             it("a the start", () => {

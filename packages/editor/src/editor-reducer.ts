@@ -12,7 +12,7 @@ export type State = {
     math: Editor.Row<Editor.Glyph, ID>;
     cursor: Editor.Cursor;
     selectionStart?: Editor.Cursor;
-    cancelRegions: LayoutCursor[];
+    cancelRegions?: LayoutCursor[];
 };
 
 const {row, glyph, frac, subsup} = Editor;
@@ -37,7 +37,7 @@ const initialState: State = {
         next: 0,
     },
     selectionStart: undefined,
-    cancelRegions: [],
+    cancelRegions: undefined,
 };
 
 type Identifiable = {readonly id: number};
@@ -164,6 +164,9 @@ const selectionSplit = (
 const cancel = (draft: State): void => {
     const {cursor} = draft;
     if (cursor && draft.selectionStart) {
+        if (!draft.cancelRegions) {
+            draft.cancelRegions = [];
+        }
         draft.cancelRegions.push(layoutCursorFromState(draft));
 
         // Copied from the "ArrowRight" case below

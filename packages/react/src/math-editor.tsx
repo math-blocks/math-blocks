@@ -6,7 +6,6 @@ import * as Editor from "@math-blocks/editor";
 import * as Typesetter from "@math-blocks/typesetter";
 
 import fontMetrics from "@math-blocks/metrics";
-import MathRenderer from "./math-renderer";
 import SceneGraphRenderer from "./scene-graph-renderer";
 import useEventListener from "./use-event-listener";
 import {layoutCursorFromState} from "./util";
