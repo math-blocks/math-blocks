@@ -48,6 +48,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             next: 0,
         },
         selectionStart: undefined,
+        cancelRegions: [],
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -87,7 +88,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         }
     });
 
-    const {math} = state;
+    const {math, cancelRegions} = state;
     const {style} = props;
 
     const fontSize = 64;
@@ -111,6 +112,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             <SceneGraphRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
+                cancelRegions={cancelRegions}
             />
         </div>
     );

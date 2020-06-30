@@ -62,6 +62,7 @@ const CURSOR_WIDTH = 2;
 const SceneGraphRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
+    cancelRegions?: LayoutCursor[];
 }> = (props) => {
     const group = SceneGraph.render(props);
     const {width, height} = group;

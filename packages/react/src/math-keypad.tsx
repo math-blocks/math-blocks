@@ -27,13 +27,12 @@ const buttons: Button[] = [
 
 const MathKeypad: React.SFC<{}> = () => {
     const handleClick = (button: Button): void => {
-        console.log(`'${button.char}' was pressed`);
-        const event = new KeyboardEvent("keydown", {
-            bubbles: true,
-            cancelable: true,
-            key: button.char,
-        });
         if (document.activeElement) {
+            const event = new KeyboardEvent("keydown", {
+                bubbles: true,
+                cancelable: true,
+                key: button.char,
+            });
             document.activeElement.dispatchEvent(event);
         }
     };

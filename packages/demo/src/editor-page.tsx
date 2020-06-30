@@ -3,6 +3,8 @@ import * as React from "react";
 import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 
+import CancelButton from "./cancel-button";
+
 const EditorPage: React.SFC<{}> = () => (
     <div>
         <MathEditor
@@ -11,6 +13,7 @@ const EditorPage: React.SFC<{}> = () => (
             focus={true}
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
+            <CancelButton />
             <MathKeypad />
         </div>
         <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>

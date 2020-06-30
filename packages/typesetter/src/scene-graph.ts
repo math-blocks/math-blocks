@@ -36,6 +36,36 @@ export type Rect = {
     fill?: string;
 };
 
+const unionRect = (rects: Rect[]): Rect => {
+    let xMin = Infinity;
+    let yMin = Infinity;
+    let xMax = -Infinity;
+    let yMax = -Infinity;
+
+    rects.forEach((rect) => {
+        if (rect.x < xMin) {
+            xMin = rect.x;
+        }
+        if (rect.y < yMin) {
+            yMin = rect.y;
+        }
+        if (rect.x + rect.width > xMax) {
+            xMax = rect.x + rect.width;
+        }
+        if (rect.y + rect.height > yMax) {
+            yMax = rect.y + rect.height;
+        }
+    });
+
+    return {
+        type: "rect",
+        x: xMin,
+        y: yMin,
+        width: xMax - xMin,
+        height: yMax - yMin,
+    };
+};
+
 type Point = {
     x: number;
     y: number;
@@ -73,10 +103,12 @@ type LayoutCursor = {
 const renderHBox = ({
     box,
     cursor,
+    cancelRegions,
     loc,
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
+    cancelRegions?: LayoutCursor[];
     loc: Point;
 }): Group => {
     const children: Node[] = [];
@@ -90,7 +122,48 @@ const renderHBox = ({
     let insideSelection = false;
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
 
+    const currentCancelRegions = (cancelRegions || []).filter(
+        (region) => region.parent === box.id,
+    );
+    // set up arrays to track state of each cancel region being processed
+    const insideCancel: boolean[] = [];
+    const cancelBoxes: Rect[][] = currentCancelRegions.map(() => []);
+
     box.content.forEach((node, index) => {
+        currentCancelRegions.forEach((region, regionIndex) => {
+            if (region.next === node.id) {
+                insideCancel[regionIndex] = false;
+            }
+
+            if (region.prev == null && index === 0) {
+                insideCancel[regionIndex] = true;
+            }
+
+            if (insideCancel[regionIndex]) {
+                const yMin = -Math.max(
+                    Layout.getHeight(node),
+                    64 * 0.85 * multiplier,
+                );
+
+                const height = Math.max(
+                    Layout.getHeight(node) + Layout.getDepth(node),
+                    64 * multiplier,
+                );
+
+                cancelBoxes[regionIndex].push({
+                    type: "rect",
+                    x: pen.x,
+                    y: yMin,
+                    width: Layout.getWidth(node),
+                    height: height,
+                });
+            }
+
+            if (region.prev === node.id) {
+                insideCancel[regionIndex] = true;
+            }
+        });
+
         // cursor is at the start of the box
         if (cursor && cursorInBox) {
             if (
@@ -152,6 +225,7 @@ const renderHBox = ({
                     render({
                         box: node,
                         cursor,
+                        cancelRegions,
                         loc: {x: pen.x, y: pen.y + node.shift},
                     }),
                 );
@@ -208,6 +282,17 @@ const renderHBox = ({
         });
     }
 
+    for (const boxes of cancelBoxes) {
+        const box = unionRect(boxes);
+        children.push({
+            type: "line",
+            x1: box.x + box.width,
+            y1: box.y,
+            x2: box.x,
+            y2: box.y + box.height,
+        });
+    }
+
     return {
         type: "group",
         x: loc.x,
@@ -221,10 +306,12 @@ const renderHBox = ({
 const renderVBox = ({
     box,
     cursor,
+    cancelRegions,
     loc,
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
+    cancelRegions?: LayoutCursor[];
     loc: Point;
 }): Group => {
     const children: Node[] = [];
@@ -257,6 +344,7 @@ const renderVBox = ({
                     render({
                         box: node,
                         cursor,
+                        cancelRegions,
                         loc: {x: pen.x + node.shift, y: pen.y},
                     }),
                 );
@@ -293,10 +381,12 @@ const renderVBox = ({
 export const render = ({
     box,
     cursor,
+    cancelRegions,
     loc,
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
+    cancelRegions?: LayoutCursor[];
     loc?: Point;
 }): Group => {
     // If we weren't passed a location then this is the top-level call, in which
@@ -308,8 +398,8 @@ export const render = ({
 
     switch (box.kind) {
         case "hbox":
-            return renderHBox({box, cursor, loc});
+            return renderHBox({box, cursor, cancelRegions, loc});
         case "vbox":
-            return renderVBox({box, cursor, loc});
+            return renderVBox({box, cursor, cancelRegions, loc});
     }
 };
