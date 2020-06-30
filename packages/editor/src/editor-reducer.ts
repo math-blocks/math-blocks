@@ -1,7 +1,8 @@
-import produce from "immer";
+import {produce} from "immer";
 
 import * as Editor from "./editor-ast";
 import {getId} from "@math-blocks/core";
+import {LayoutCursor, layoutCursorFromState} from "./util";
 
 type ID = {
     id: number;
@@ -11,6 +12,7 @@ export type State = {
     math: Editor.Row<Editor.Glyph, ID>;
     cursor: Editor.Cursor;
     selectionStart?: Editor.Cursor;
+    cancelRegions?: LayoutCursor[];
 };
 
 const {row, glyph, frac, subsup} = Editor;
@@ -35,6 +37,7 @@ const initialState: State = {
         next: 0,
     },
     selectionStart: undefined,
+    cancelRegions: undefined,
 };
 
 type Identifiable = {readonly id: number};
@@ -156,6 +159,35 @@ const selectionSplit = (
         body,
         tail,
     };
+};
+
+const cancel = (draft: State): void => {
+    const {cursor} = draft;
+    if (cursor && draft.selectionStart) {
+        if (!draft.cancelRegions) {
+            draft.cancelRegions = [];
+        }
+        draft.cancelRegions.push(layoutCursorFromState(draft));
+
+        // Copied from the "ArrowRight" case below
+        const {selectionStart} = draft;
+        const next =
+            selectionStart.path.length > cursor.path.length
+                ? selectionStart.path[cursor.path.length] + 1
+                : selectionStart.next;
+        const prev =
+            selectionStart.path.length > cursor.path.length
+                ? selectionStart.path[cursor.path.length]
+                : selectionStart.prev;
+        if (next == null || (cursor.next != null && next > cursor.next)) {
+            draft.cursor = {
+                ...draft.cursor,
+                prev,
+                next,
+            };
+        }
+        draft.selectionStart = undefined;
+    }
 };
 
 const moveLeft = (
@@ -1200,7 +1232,7 @@ type Action = {type: string; shift?: boolean};
 
 // TODO: check if cursor is valid before process action
 const reducer = (state: State = initialState, action: Action): State => {
-    return produce(state, (draft) => {
+    const newState = produce(state, (draft) => {
         const {cursor, math} = draft;
         const currentNode = Editor.nodeAtPath(math, cursor.path);
 
@@ -1211,6 +1243,11 @@ const reducer = (state: State = initialState, action: Action): State => {
         }
 
         switch (action.type) {
+            case "CANCEL": {
+                // updates the cursor position as well
+                cancel(draft);
+                return;
+            }
             case "ArrowLeft": {
                 if (!action.shift && draft.selectionStart) {
                     const {selectionStart} = draft;
@@ -1314,6 +1351,8 @@ const reducer = (state: State = initialState, action: Action): State => {
             }
         }
     });
+
+    return newState;
 };
 
 export default reducer;

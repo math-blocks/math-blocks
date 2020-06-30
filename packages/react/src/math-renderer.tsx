@@ -19,22 +19,6 @@ const Glyph: React.SFC<GlyphProps> = ({glyph, x, y}) => {
     );
 };
 
-type HRuleProps = {rule: Layout.HRule; x: number; y: number};
-
-const HRule: React.SFC<HRuleProps> = ({rule, x, y}) => {
-    return (
-        <line
-            stroke="currentColor"
-            strokeWidth={rule.thickness}
-            strokeLinecap="round"
-            x1={x}
-            y1={y}
-            x2={x + Layout.getWidth(rule)}
-            y2={y}
-        />
-    );
-};
-
 type LayoutCursor = {
     parent: number;
     prev: number | null;
@@ -49,19 +33,30 @@ type BoxProps = {
     y?: number;
 };
 
+type Rect = {
+    xMin: number;
+    yMin: number;
+    xMax: number;
+    yMax: number;
+};
+
+const unionRect = (rects: Rect[]): Rect => {
+    return rects.reduce((union, rect) => {
+        return {
+            xMin: Math.min(union.xMin, rect.xMin),
+            yMin: Math.min(union.yMin, rect.yMin),
+            xMax: Math.max(union.xMax, rect.xMax),
+            yMax: Math.max(union.yMax, rect.yMax),
+        };
+    });
+};
+
 const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const pen = {x: 0, y: 0};
-    const availableSpace = box.width - Layout.hlistWidth(box.content);
     const {multiplier} = box;
 
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
 
-    type Rect = {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
     const selectionBoxes: Rect[] = [];
 
     let insideSelection = false;
@@ -95,18 +90,25 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 }
 
                 if (insideSelection) {
+                    // pen.y = 0 places the pen on the baseline so in order
+                    // for the selection box to appear at the right place we
+                    // need go up using the standard y-down is positive.
+                    // How can we include diagrams in code?
+                    const yMin = -Math.max(
+                        Layout.getHeight(node),
+                        64 * 0.85 * multiplier,
+                    );
+
+                    const height = Math.max(
+                        Layout.getHeight(node) + Layout.getDepth(node),
+                        64 * multiplier,
+                    );
+
                     selectionBoxes.push({
-                        x: pen.x,
-                        y: -Math.max(
-                            Layout.getHeight(node),
-                            64 * 0.85 * multiplier,
-                        ),
-                        // Ensure that there's a minium height to selection
-                        height: Math.max(
-                            Layout.getHeight(node) + Layout.getDepth(node),
-                            64 * multiplier,
-                        ),
-                        width: Layout.getWidth(node),
+                        xMin: pen.x,
+                        xMax: pen.x + Layout.getWidth(node),
+                        yMin: yMin,
+                        yMax: yMin + height,
                     });
                 }
 
@@ -130,12 +132,18 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
                 pen.x += Layout.getWidth(node);
                 break;
             case "HRule":
-                result = <HRule key={index} rule={node} {...pen} />;
+                result = (
+                    <line
+                        stroke="currentColor"
+                        strokeWidth={node.thickness}
+                        strokeLinecap="round"
+                        x1={pen.x}
+                        y1={pen.y}
+                        x2={pen.x + Layout.getWidth(node)}
+                        y2={pen.y}
+                    />
+                );
                 pen.x += Layout.getWidth(node);
-                break;
-            case "Glue":
-                // TODO: add a pen to keep track of the horizontal position of things
-                pen.x += availableSpace / 2;
                 break;
             case "Glyph":
                 result = <Glyph key={index} glyph={node} {...pen} />;
@@ -183,13 +191,27 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     }
 
     // Draw the selection.
+    if (selectionBoxes.length > 0) {
+        const box = unionRect(selectionBoxes);
+        result.push(
+            <line
+                x1={box.xMax - 5}
+                y1={box.yMin + 5}
+                x2={box.xMin + 5}
+                y2={box.yMax - 5}
+                strokeWidth={5}
+                strokeLinecap="round"
+                stroke="green"
+            />,
+        );
+    }
     for (const box of selectionBoxes) {
         result.unshift(
             <rect
-                x={box.x}
-                y={box.y}
-                width={box.width}
-                height={box.height}
+                x={box.xMin}
+                y={box.yMin}
+                width={box.xMax - box.xMin}
+                height={box.yMax - box.yMin}
                 fill="rgba(0,64,255,0.3)"
             />,
         );
@@ -207,7 +229,6 @@ const HBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
 
 const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
     const pen = {x: 0, y: 0};
-    const availableSpace = box.width - Layout.hlistWidth(box.content);
 
     pen.y -= box.height;
 
@@ -235,7 +256,17 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
             }
             case "HRule": {
                 pen.y += Layout.getHeight(node);
-                result = <HRule key={index} rule={node} {...pen} />;
+                result = (
+                    <line
+                        stroke="currentColor"
+                        strokeWidth={node.thickness}
+                        strokeLinecap="round"
+                        x1={pen.x}
+                        y1={pen.y}
+                        x2={pen.x + Layout.getWidth(node)}
+                        y2={pen.y}
+                    />
+                );
                 pen.y += Layout.getDepth(node);
                 break;
             }
@@ -247,11 +278,6 @@ const VBox: React.SFC<BoxProps> = ({box, cursor, x = 0, y = 0}) => {
             }
             case "Kern": {
                 pen.y += node.size;
-                break;
-            }
-            case "Glue": {
-                // TODO: add a pen to keep track of the horizontal position of things
-                pen.y += availableSpace / 2;
                 break;
             }
             default:

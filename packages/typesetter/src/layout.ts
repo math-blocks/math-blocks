@@ -20,14 +20,6 @@ export type Box = Dim & {
     multiplier: number;
 };
 
-export type Glue = {
-    type: "Glue";
-    id?: number;
-    size: Dist;
-    stretch: Dist;
-    shrink: Dist;
-};
-
 export type Glyph = {
     type: "Glyph";
     id?: number;
@@ -50,7 +42,7 @@ export type HRule = {
     width: number;
 };
 
-export type Node = Box | Glyph | Glue | Kern | HRule;
+export type Node = Box | Glyph | Kern | HRule;
 
 export const makeBox = (
     kind: BoxKind,
@@ -150,8 +142,6 @@ export const getWidth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.width;
-        case "Glue":
-            return node.size;
         case "Glyph":
             return getCharAdvance(node);
         case "Kern":
@@ -167,8 +157,6 @@ export const getHeight = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.height - node.shift;
-        case "Glue":
-            return 0;
         case "Glyph":
             return getCharHeight(node);
         case "Kern":
@@ -184,8 +172,6 @@ export const getDepth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.depth + node.shift;
-        case "Glue":
-            return 0;
         case "Glyph":
             return getCharDepth(node);
         case "Kern":
@@ -201,8 +187,6 @@ const vwidth = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.width + node.shift;
-        case "Glue":
-            return 0;
         case "Glyph":
             return getCharAdvance(node);
         case "Kern":
@@ -218,8 +202,6 @@ export const vsize = (node: Node): number => {
     switch (node.type) {
         case "Box":
             return node.height + node.depth;
-        case "Glue":
-            return node.size;
         case "Glyph":
             return getCharHeight(node) + getCharDepth(node);
         case "Kern":
