@@ -59,7 +59,7 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, children}) => {
 
 const CURSOR_WIDTH = 2;
 
-const SceneGraphRenderer: React.SFC<{
+const MathRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
     cancelRegions?: LayoutCursor[];
@@ -81,4 +81,4 @@ const SceneGraphRenderer: React.SFC<{
     );
 };
 
-export default SceneGraphRenderer;
+export default MathRenderer;
