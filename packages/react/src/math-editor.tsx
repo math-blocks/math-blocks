@@ -6,7 +6,7 @@ import * as Editor from "@math-blocks/editor";
 import * as Typesetter from "@math-blocks/typesetter";
 
 import fontMetrics from "@math-blocks/metrics";
-import SceneGraphRenderer from "./scene-graph-renderer";
+import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 import {layoutCursorFromState} from "./util";
 
@@ -108,7 +108,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             style={style}
             role="textbox"
         >
-            <SceneGraphRenderer
+            <MathRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
                 cancelRegions={cancelRegions}

@@ -1,6 +1,6 @@
 import Icon from "./icon";
 import MathEditor from "./math-editor";
 import MathKeypad from "./math-keypad";
-import SceneGraphRenderer from "./scene-graph-renderer";
+import MathRenderer from "./math-renderer";
 
-export {Icon, MathEditor, MathKeypad, SceneGraphRenderer};
+export {Icon, MathEditor, MathKeypad, MathRenderer};

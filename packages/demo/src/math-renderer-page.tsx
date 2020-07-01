@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {SceneGraphRenderer} from "@math-blocks/react";
+import {MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 import {typeset, Layout} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
@@ -55,9 +55,9 @@ const quadraticEquation = comicSansTypeset(
 
 const RendererPage: React.SFC<{}> = () => (
     <div style={{display: "flex", flexDirection: "column"}}>
-        <SceneGraphRenderer box={linearEquation} />
-        <SceneGraphRenderer box={pythagoras} />
-        <SceneGraphRenderer box={quadraticEquation} />
+        <MathRenderer box={linearEquation} />
+        <MathRenderer box={pythagoras} />
+        <MathRenderer box={quadraticEquation} />
     </div>
 );
 
