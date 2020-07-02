@@ -6,3 +6,4 @@ export {reducer, print, Util};
 export * from "./editor-ast";
 export * from "./editor-reducer";
 export {isEqual} from "./util"; // TODO: dedupe methods in editor and util
+export {State} from "./state";

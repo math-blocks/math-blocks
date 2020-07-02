@@ -3,7 +3,7 @@ import * as Editor from "../editor-ast";
 import * as Util from "../util";
 const {row, glyph, subsup} = Editor;
 
-import {State} from "../editor-reducer";
+import {State} from "../state";
 
 const SUB = 0;
 const SUP = 1;
