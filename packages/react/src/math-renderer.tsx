@@ -38,21 +38,24 @@ const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
     );
 };
 
-const Group: React.SFC<SceneGraph.Group> = ({x, y, children}) => {
+const Group: React.SFC<SceneGraph.Group> = ({x, y, layers}) => {
     return (
         <g transform={`translate(${x},${y})`}>
-            {children.map((child, index) => {
-                switch (child.type) {
-                    case "group":
-                        return <Group key={index} {...child} />;
-                    case "glyph":
-                        return <Glyph key={index} {...child} />;
-                    case "line":
-                        return <Line key={index} {...child} />;
-                    case "rect":
-                        return <Rect key={index} {...child} />;
-                }
-            })}
+            {layers.flatMap((layer, i) =>
+                layer.map((child, j) => {
+                    const key = `${i}-${j}`;
+                    switch (child.type) {
+                        case "group":
+                            return <Group key={key} {...child} />;
+                        case "glyph":
+                            return <Glyph key={key} {...child} />;
+                        case "line":
+                            return <Line key={key} {...child} />;
+                        case "rect":
+                            return <Rect key={key} {...child} />;
+                    }
+                }),
+            )}
         </g>
     );
 };
