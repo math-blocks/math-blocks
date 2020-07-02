@@ -95,8 +95,8 @@ const renderGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
 
 type LayoutCursor = {
     parent: number;
-    prev: number | null;
-    next: number | null;
+    prev: number;
+    next: number;
     selection: boolean;
 };
 
@@ -135,7 +135,7 @@ const renderHBox = ({
                 insideCancel[regionIndex] = false;
             }
 
-            if (region.prev == null && index === 0) {
+            if (region.prev === -Infinity && index === 0) {
                 insideCancel[regionIndex] = true;
             }
 
@@ -168,7 +168,7 @@ const renderHBox = ({
         if (cursor && cursorInBox) {
             if (
                 cursor.prev === node.id ||
-                (cursor.prev == null && index === 0)
+                (cursor.prev === -Infinity && index === 0)
             ) {
                 cursorPos = {
                     startX: pen.x - 1,
@@ -183,7 +183,7 @@ const renderHBox = ({
                 }
 
                 // The cursor is at the start of the row.
-                if (cursor.prev == null && index === 0) {
+                if (cursor.prev === -Infinity && index === 0) {
                     insideSelection = true;
                 }
 

@@ -37,7 +37,7 @@ describe("reducer", () => {
             const math = Util.row("1+2");
             const cursor = {
                 path: [],
-                prev: null,
+                prev: Infinity,
                 next: 0,
             };
 
@@ -51,13 +51,13 @@ describe("reducer", () => {
             const math = Util.row("1+2");
             const selectionStart = {
                 path: [],
-                prev: null,
+                prev: -Infinity,
                 next: 0,
             };
             const cursor = {
                 path: [],
                 prev: 2,
-                next: null,
+                next: Infinity,
             };
 
             const state: State = {math, cursor, selectionStart};
@@ -70,7 +70,7 @@ describe("reducer", () => {
             const math = Util.row("1+2");
             const selectionStart = {
                 path: [],
-                prev: null,
+                prev: -Infinity,
                 next: 0,
             };
             const cursor = {
@@ -87,7 +87,7 @@ describe("reducer", () => {
             expect(newState.cancelRegions).toEqual([
                 {
                     parent: expect.any(Number),
-                    prev: null,
+                    prev: -Infinity,
                     next: expect.any(Number),
                     selection: true,
                 },
@@ -101,7 +101,7 @@ describe("reducer", () => {
                 const math = Util.row("+2");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -140,7 +140,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -150,7 +150,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
         });
@@ -179,7 +179,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -188,7 +188,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -196,7 +196,7 @@ describe("reducer", () => {
                 const math = Util.row("a");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -235,7 +235,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -244,7 +244,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -252,7 +252,7 @@ describe("reducer", () => {
                 const math = Util.row("a");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -273,7 +273,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -281,8 +281,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -299,8 +299,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -309,7 +309,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -317,8 +317,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -335,8 +335,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -354,7 +354,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -373,7 +373,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -394,8 +394,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -415,8 +415,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
         });
@@ -438,8 +438,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [0, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -448,7 +448,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -457,8 +457,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(row([Util.frac("eg", "")]));
                 expect(newState.cursor).toEqual({
                     path: [0, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -467,7 +467,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -478,8 +478,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -488,7 +488,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -499,8 +499,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -509,7 +509,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -520,8 +520,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -529,7 +529,7 @@ describe("reducer", () => {
                 const math = Util.row("1=2");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -546,8 +546,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [0, NUMERATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -572,8 +572,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [2, NUMERATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
         });
@@ -595,8 +595,8 @@ describe("reducer", () => {
                 );
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
         });
@@ -607,7 +607,7 @@ describe("reducer", () => {
                     const math = Util.row("1+2");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -656,7 +656,7 @@ describe("reducer", () => {
                     const cursor = {
                         path: [],
                         prev: 2,
-                        next: null,
+                        next: Infinity,
                     };
 
                     const state: State = {math, cursor};
@@ -683,7 +683,7 @@ describe("reducer", () => {
                     const math = Util.row("1+2");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -707,7 +707,7 @@ describe("reducer", () => {
                     const math = Util.row("1+2");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -724,7 +724,7 @@ describe("reducer", () => {
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
-                        next: null,
+                        next: Infinity,
                     });
                 });
 
@@ -732,7 +732,7 @@ describe("reducer", () => {
                     const math = Util.row("1+2");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -750,7 +750,7 @@ describe("reducer", () => {
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
-                        next: null,
+                        next: Infinity,
                     });
                 });
             });
@@ -761,7 +761,7 @@ describe("reducer", () => {
                     const cursor = {
                         path: [],
                         prev: 2,
-                        next: null,
+                        next: Infinity,
                     };
 
                     const state: State = {math, cursor};
@@ -776,7 +776,7 @@ describe("reducer", () => {
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 4,
-                        next: null,
+                        next: Infinity,
                     });
                 });
 
@@ -808,7 +808,7 @@ describe("reducer", () => {
                     const math = Util.row("1+2");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -834,7 +834,7 @@ describe("reducer", () => {
                         const cursor = {
                             path: [],
                             prev: 2,
-                            next: null,
+                            next: Infinity,
                         };
 
                         const state: State = {math, cursor};
@@ -859,7 +859,7 @@ describe("reducer", () => {
                         const cursor = {
                             path: [],
                             prev: 2,
-                            next: null,
+                            next: Infinity,
                         };
 
                         const state: State = {math, cursor};
@@ -885,7 +885,7 @@ describe("reducer", () => {
                         const cursor = {
                             path: [],
                             prev: 2,
-                            next: null,
+                            next: Infinity,
                         };
 
                         const state: State = {math, cursor};
@@ -962,7 +962,7 @@ describe("reducer", () => {
                     const math = Util.row("a(1+2)b");
                     const cursor = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -986,7 +986,7 @@ describe("reducer", () => {
                     const cursor = {
                         path: [],
                         prev: 6,
-                        next: null,
+                        next: Infinity,
                     };
 
                     const state: State = {math, cursor};
@@ -1000,7 +1000,7 @@ describe("reducer", () => {
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 8,
-                        next: null,
+                        next: Infinity,
                     });
                 });
             });
@@ -1010,7 +1010,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 4,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1024,7 +1024,7 @@ describe("reducer", () => {
                 const math = Util.row("(1+2)");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1046,7 +1046,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1056,7 +1056,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1064,7 +1064,7 @@ describe("reducer", () => {
                 const math = Util.row("1+");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1075,7 +1075,7 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -1088,7 +1088,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, 1],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1100,8 +1100,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, 1],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -1111,7 +1111,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, 0],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1123,8 +1123,8 @@ describe("reducer", () => {
 
                 expect(newState.cursor).toEqual({
                     path: [1, 0],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -1136,8 +1136,8 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, 0],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1160,8 +1160,8 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, 1],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1196,7 +1196,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1220,7 +1220,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1244,7 +1244,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1256,7 +1256,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1280,7 +1280,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1304,7 +1304,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1330,7 +1330,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1352,8 +1352,8 @@ describe("reducer", () => {
                 const math = row([Util.sup("")]);
                 const cursor = {
                     path: [0, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1362,8 +1362,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -1371,8 +1371,8 @@ describe("reducer", () => {
                 const math = row([glyph("1"), Util.sup("")]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1382,7 +1382,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1390,8 +1390,8 @@ describe("reducer", () => {
                 const math = row([glyph("1"), Util.sub("")]);
                 const cursor = {
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1401,7 +1401,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1409,8 +1409,8 @@ describe("reducer", () => {
                 const math = row([glyph("1"), Util.subsup("2", "")]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1422,7 +1422,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
         });
@@ -1447,7 +1447,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1459,7 +1459,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, DENOMINATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1482,7 +1482,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, NUMERATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 1,
                 };
 
@@ -1501,8 +1501,8 @@ describe("reducer", () => {
                 const math = row([glyph("1"), Util.frac("ab", "")]);
                 const cursor = {
                     path: [1, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1512,7 +1512,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1520,8 +1520,8 @@ describe("reducer", () => {
                 const math = row([Util.frac("", "")]);
                 const cursor = {
                     path: [0, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1530,8 +1530,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
         });
@@ -1542,7 +1542,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 5,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1685,7 +1685,7 @@ describe("reducer", () => {
                     expect(newState.math).toEqualMath(newMath);
                     expect(newState.cursor).toEqual({
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     });
                 });
@@ -1698,7 +1698,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1708,7 +1708,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1716,7 +1716,7 @@ describe("reducer", () => {
                 const math = row([glyph("2"), Util.sqrt("x+y")]);
                 const cursor = {
                     path: [1, RADICAND],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1735,8 +1735,8 @@ describe("reducer", () => {
                 const math = row([glyph("1"), Util.sqrt("")]);
                 const cursor = {
                     path: [1, RADICAND],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1746,7 +1746,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1754,8 +1754,8 @@ describe("reducer", () => {
                 const math = row([Util.sqrt("")]);
                 const cursor = {
                     path: [0, RADICAND],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1764,8 +1764,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(Util.row(""));
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
         });
@@ -1780,7 +1780,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -1798,7 +1798,7 @@ describe("reducer", () => {
                 const math = Util.row("1+2");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1808,7 +1808,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -1830,7 +1830,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1848,8 +1848,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -1868,7 +1868,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1886,8 +1886,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -1910,7 +1910,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -1918,7 +1918,7 @@ describe("reducer", () => {
                 const math = row([glyph("e"), Util.sub("1+2"), glyph("g")]);
                 const cursor = {
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1937,7 +1937,7 @@ describe("reducer", () => {
                 const math = row([glyph("e"), Util.sup("1+2"), glyph("g")]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1960,7 +1960,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1983,7 +1983,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -1994,7 +1994,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
         });
@@ -2019,7 +2019,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -2037,8 +2037,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2050,7 +2050,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, DENOMINATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2061,7 +2061,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -2069,7 +2069,7 @@ describe("reducer", () => {
                 const math = row([glyph("a"), Util.frac("", "uv"), glyph("b")]);
                 const cursor = {
                     path: [1, DENOMINATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2079,8 +2079,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2092,7 +2092,7 @@ describe("reducer", () => {
                 ]);
                 const cursor = {
                     path: [1, NUMERATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2124,7 +2124,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
             });
 
@@ -2132,7 +2132,7 @@ describe("reducer", () => {
                 const math = row([glyph("a"), Util.sqrt("xy"), glyph("b")]);
                 const cursor = {
                     path: [1, RADICAND],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2151,7 +2151,7 @@ describe("reducer", () => {
                 const math = row([Util.sqrt("xy")]);
                 const cursor = {
                     path: [0, RADICAND],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2161,7 +2161,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2176,7 +2176,7 @@ describe("reducer", () => {
                 const math = Util.row("1+2");
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2196,7 +2196,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2206,7 +2206,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 });
             });
         });
@@ -2226,7 +2226,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2245,8 +2245,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2264,7 +2264,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2283,8 +2283,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2306,7 +2306,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUB],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2316,7 +2316,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, SUB],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2335,7 +2335,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, SUP],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2358,7 +2358,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, SUP],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2381,7 +2381,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, SUB],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2390,7 +2390,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, SUP],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2415,7 +2415,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2434,8 +2434,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, NUMERATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2448,7 +2448,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, NUMERATOR],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2457,7 +2457,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2467,7 +2467,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, NUMERATOR],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2476,8 +2476,8 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, DENOMINATOR],
-                    prev: null,
-                    next: null,
+                    prev: -Infinity,
+                    next: Infinity,
                 });
             });
 
@@ -2490,7 +2490,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, DENOMINATOR],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2520,7 +2520,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(math);
                 expect(newState.cursor).toEqual({
                     path: [1, RADICAND],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
             });
@@ -2530,7 +2530,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [1, RADICAND],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2549,7 +2549,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [0, RADICAND],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {math, cursor};
@@ -2559,7 +2559,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 0,
-                    next: null,
+                    next: Infinity,
                 });
             });
         });
@@ -2571,7 +2571,7 @@ describe("reducer", () => {
                 math: Util.row("1+2"),
                 cursor: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
             };
@@ -2587,7 +2587,7 @@ describe("reducer", () => {
             });
             expect(newState.selectionStart).toEqual({
                 path: [],
-                prev: null,
+                prev: -Infinity,
                 next: 0,
             });
         });
@@ -2598,7 +2598,7 @@ describe("reducer", () => {
                 cursor: {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 },
             };
 
@@ -2614,7 +2614,7 @@ describe("reducer", () => {
             expect(newState.selectionStart).toEqual({
                 path: [],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
         });
 
@@ -2623,13 +2623,13 @@ describe("reducer", () => {
                 math: Util.row("1+2"),
                 cursor: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
                 selectionStart: {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 },
             };
 
@@ -2639,7 +2639,7 @@ describe("reducer", () => {
 
             expect(newState.cursor).toEqual({
                 path: [],
-                prev: null,
+                prev: -Infinity,
                 next: 0,
             });
             expect(newState.selectionStart).toBe(undefined);
@@ -2650,13 +2650,13 @@ describe("reducer", () => {
                 math: Util.row("1+2"),
                 cursor: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
                 selectionStart: {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 },
             };
 
@@ -2667,7 +2667,7 @@ describe("reducer", () => {
             expect(newState.cursor).toEqual({
                 path: [],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
             expect(newState.selectionStart).toBe(undefined);
         });
@@ -2678,11 +2678,11 @@ describe("reducer", () => {
                 cursor: {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 },
                 selectionStart: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
             };
@@ -2693,7 +2693,7 @@ describe("reducer", () => {
 
             expect(newState.cursor).toEqual({
                 path: [],
-                prev: null,
+                prev: -Infinity,
                 next: 0,
             });
             expect(newState.selectionStart).toBe(undefined);
@@ -2705,11 +2705,11 @@ describe("reducer", () => {
                 cursor: {
                     path: [],
                     prev: 2,
-                    next: null,
+                    next: Infinity,
                 },
                 selectionStart: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
             };
@@ -2721,7 +2721,7 @@ describe("reducer", () => {
             expect(newState.cursor).toEqual({
                 path: [],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
             expect(newState.selectionStart).toBe(undefined);
         });
@@ -2731,7 +2731,7 @@ describe("reducer", () => {
                 math: Util.row("1+2"),
                 cursor: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
                 selectionStart: {
@@ -2766,8 +2766,8 @@ describe("reducer", () => {
             };
             const cursor = {
                 path: [],
-                next: null,
                 prev: 4,
+                next: Infinity,
             };
 
             const state: State = {
@@ -2784,8 +2784,8 @@ describe("reducer", () => {
             );
             expect(newState.cursor).toEqual({
                 path: [2, DENOMINATOR],
-                prev: null,
-                next: null,
+                prev: -Infinity,
+                next: Infinity,
             });
             expect(newState.selectionStart).toBe(undefined);
         });
@@ -2801,7 +2801,7 @@ describe("reducer", () => {
                 const cursor = {
                     path: [],
                     prev: 4,
-                    next: null,
+                    next: Infinity,
                 };
 
                 const state: State = {
@@ -2817,7 +2817,7 @@ describe("reducer", () => {
                 expect(newState.cursor).toEqual({
                     path: [],
                     prev: 1,
-                    next: null,
+                    next: Infinity,
                 });
                 expect(newState.selectionStart).toBe(undefined);
             });
@@ -2831,7 +2831,7 @@ describe("reducer", () => {
                 };
                 const cursor = {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 };
 
@@ -2847,7 +2847,7 @@ describe("reducer", () => {
                 expect(newState.math).toEqualMath(Util.row("2+3"));
                 expect(newState.cursor).toEqual({
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 });
                 expect(newState.selectionStart).toBe(undefined);
@@ -2926,7 +2926,7 @@ describe("reducer", () => {
             const cursor = {
                 path: [],
                 prev: 3,
-                next: null,
+                next: Infinity,
             };
 
             const state: State = {
@@ -2944,7 +2944,7 @@ describe("reducer", () => {
             expect(newState.cursor).toEqual({
                 path: [1, SUP],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
             expect(newState.selectionStart).toBe(undefined);
         });
@@ -2959,7 +2959,7 @@ describe("reducer", () => {
             const cursor = {
                 path: [],
                 prev: 3,
-                next: null,
+                next: Infinity,
             };
 
             const state: State = {
@@ -2978,7 +2978,7 @@ describe("reducer", () => {
             expect(newState.cursor).toEqual({
                 path: [1, SUB],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
             // e.g. not.toHaveSelection()
             expect(newState.selectionStart).toBe(undefined);
@@ -2994,7 +2994,7 @@ describe("reducer", () => {
             const cursor = {
                 path: [],
                 prev: 3,
-                next: null,
+                next: Infinity,
             };
 
             const state: State = {
@@ -3013,7 +3013,7 @@ describe("reducer", () => {
             expect(newState.cursor).toEqual({
                 path: [1, RADICAND],
                 prev: 2,
-                next: null,
+                next: Infinity,
             });
             // e.g. not.toHaveSelection()
             expect(newState.selectionStart).toBe(undefined);
@@ -3030,7 +3030,7 @@ describe("reducer", () => {
                     };
                     const selectionStart = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -3052,7 +3052,7 @@ describe("reducer", () => {
                     const cursor = {
                         path: [],
                         prev: 4,
-                        next: null,
+                        next: Infinity,
                     };
                     const selectionStart = {
                         path: [],
@@ -3084,7 +3084,7 @@ describe("reducer", () => {
                     };
                     const selectionStart = {
                         path: [],
-                        prev: null,
+                        prev: -Infinity,
                         next: 0,
                     };
 
@@ -3106,7 +3106,7 @@ describe("reducer", () => {
                     const cursor = {
                         path: [],
                         prev: 4,
-                        next: null,
+                        next: Infinity,
                     };
                     const selectionStart = {
                         path: [],
@@ -3123,7 +3123,7 @@ describe("reducer", () => {
                     expect(newState.cursor).toEqual({
                         path: [],
                         prev: 6,
-                        next: null,
+                        next: Infinity,
                     });
                 });
             });

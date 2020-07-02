@@ -33,7 +33,7 @@ const initialState: State = {
     ]),
     cursor: {
         path: [],
-        prev: null,
+        prev: -Infinity,
         next: 0,
     },
     selectionStart: undefined,
@@ -63,30 +63,18 @@ const getChildWithIndex = <T extends Identifiable>(
     return children[childIndex] || null;
 };
 
-const firstIndex = <T extends Identifiable>(
-    items: ReadonlyArray<T>,
-): number | null => {
-    return items.length > 0 ? 0 : null;
-};
-
-const lastIndex = <T extends Identifiable>(
-    items: ReadonlyArray<T>,
-): number | null => {
-    return items.length > 0 ? items.length - 1 : null;
-};
-
 const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
-): number | null => {
-    return childIndex < children.length - 1 ? childIndex + 1 : null;
+): number => {
+    return childIndex < children.length - 1 ? childIndex + 1 : Infinity;
 };
 
 const prevIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
-): number | null => {
-    return childIndex > 0 ? childIndex - 1 : null;
+): number => {
+    return childIndex > 0 ? childIndex - 1 : -Infinity;
 };
 
 const removeChildWithIndex = <T extends Identifiable>(
@@ -100,10 +88,10 @@ const removeChildWithIndex = <T extends Identifiable>(
 
 const insertBeforeChildWithIndex = <T extends Identifiable>(
     children: T[],
-    index: number | null,
+    index: number,
     newChild: T,
 ): T[] => {
-    if (index == null) {
+    if (index === Infinity) {
         return [...children, newChild];
     }
     return index === -1
@@ -114,7 +102,7 @@ const insertBeforeChildWithIndex = <T extends Identifiable>(
 const getSelectionBounds = (
     cursor: Editor.Cursor,
     selectionStart: Editor.Cursor,
-): {prev: number | null; next: number | null} => {
+): {prev: number; next: number} => {
     const next =
         selectionStart.path.length > cursor.path.length
             ? selectionStart.path[cursor.path.length] + 1
@@ -123,7 +111,11 @@ const getSelectionBounds = (
         selectionStart.path.length > cursor.path.length
             ? selectionStart.path[cursor.path.length] - 1
             : selectionStart.prev;
-    if (next != null && cursor.prev != null && next <= cursor.prev + 1) {
+    if (
+        next !== Infinity &&
+        cursor.prev !== -Infinity &&
+        next <= cursor.prev + 1
+    ) {
         return {
             prev: prev,
             next: cursor.next,
@@ -147,8 +139,8 @@ const selectionSplit = (
 } => {
     const {prev, next} = getSelectionBounds(cursor, selectionStart);
 
-    const startIndex = prev != null ? prev + 1 : 0;
-    const endIndex = next == null ? currentNode.children.length : next;
+    const startIndex = prev !== -Infinity ? prev + 1 : 0;
+    const endIndex = next === Infinity ? currentNode.children.length : next;
 
     const head = currentNode.children.slice(0, startIndex);
     const body = currentNode.children.slice(startIndex, endIndex);
@@ -179,7 +171,14 @@ const cancel = (draft: State): void => {
             selectionStart.path.length > cursor.path.length
                 ? selectionStart.path[cursor.path.length]
                 : selectionStart.prev;
-        if (next == null || (cursor.next != null && next > cursor.next)) {
+
+        prev; // ?
+        next; // ?
+
+        if (
+            next === Infinity ||
+            (cursor.next !== Infinity && next > cursor.next)
+        ) {
             draft.cursor = {
                 ...draft.cursor,
                 prev,
@@ -198,23 +197,29 @@ const moveLeft = (
     const {cursor, math} = draft;
 
     const {children} = currentNode;
-    if (cursor.prev != null) {
+    if (cursor.prev !== -Infinity) {
         const {prev} = cursor;
         const prevNode = getChildWithIndex(currentNode.children, prev);
         if (prevNode && prevNode.type === "root" && !selecting) {
             const radicand = prevNode.children[0];
             return {
                 path: [...cursor.path, prev, RADICAND],
-                prev: lastIndex(radicand.children),
-                next: null,
+                prev:
+                    radicand.children.length > 0
+                        ? radicand.children.length - 1
+                        : -Infinity,
+                next: Infinity,
             };
         } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)
             const denominator = prevNode.children[1];
             return {
                 path: [...cursor.path, prev, 1],
-                prev: lastIndex(denominator.children),
-                next: null,
+                prev:
+                    denominator.children.length > 0
+                        ? denominator.children.length - 1
+                        : -Infinity,
+                next: Infinity,
             };
         } else if (prevNode && prevNode.type === "subsup" && !selecting) {
             // enter sup/sub
@@ -222,14 +227,20 @@ const moveLeft = (
             if (sup) {
                 return {
                     path: [...cursor.path, prev, SUP],
-                    prev: lastIndex(sup.children),
-                    next: null,
+                    prev:
+                        sup.children.length > 0
+                            ? sup.children.length - 1
+                            : -Infinity,
+                    next: Infinity,
                 };
             } else if (sub) {
                 return {
                     path: [...cursor.path, prev, SUB],
-                    prev: lastIndex(sub.children),
-                    next: null,
+                    prev:
+                        sub.children.length > 0
+                            ? sub.children.length - 1
+                            : -Infinity,
+                    next: Infinity,
                 };
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
@@ -238,8 +249,10 @@ const moveLeft = (
             // move to the left
             const newPrev = prevIndex(children, prev);
             const newNext =
-                newPrev == null
-                    ? firstIndex(children)
+                newPrev === -Infinity
+                    ? children.length > 0
+                        ? 0
+                        : Infinity
                     : nextIndex(children, newPrev);
             return {
                 path: cursor.path,
@@ -279,8 +292,11 @@ const moveLeft = (
                 if (sub) {
                     return {
                         path: [...cursor.path.slice(0, -1), SUB],
-                        prev: lastIndex(sub.children),
-                        next: null,
+                        prev:
+                            sub.children.length > 0
+                                ? sub.children.length - 1
+                                : -Infinity,
+                        next: Infinity,
                     };
                 } else {
                     return {
@@ -308,8 +324,11 @@ const moveLeft = (
                 // move from denominator to numerator
                 return {
                     path: [...cursor.path.slice(0, -1), NUMERATOR],
-                    prev: lastIndex(numerator.children),
-                    next: null,
+                    prev:
+                        numerator.children.length > 0
+                            ? numerator.children.length - 1
+                            : -Infinity,
+                    next: Infinity,
                 };
             } else if (currentNode === numerator && hasChildren(grandparent)) {
                 // exit fraction to the left
@@ -331,7 +350,7 @@ const moveRight = (
 ): Editor.Cursor => {
     const {cursor, math} = draft;
     const {children} = currentNode;
-    if (cursor.next != null) {
+    if (cursor.next !== Infinity) {
         const {next} = cursor;
         const nextNode = getChildWithIndex(currentNode.children, next);
         if (nextNode && nextNode.type === "root" && !selecting) {
@@ -339,16 +358,16 @@ const moveRight = (
             // TODO: handle navigating into the index
             return {
                 path: [...cursor.path, next, RADICAND],
-                prev: null,
-                next: firstIndex(radicand.children),
+                prev: -Infinity,
+                next: radicand.children.length > 0 ? 0 : Infinity,
             };
         } else if (nextNode && nextNode.type === "frac" && !selecting) {
             // enter fraction (numerator)
             const numerator = nextNode.children[0];
             return {
                 path: [...cursor.path, next, NUMERATOR],
-                prev: null,
-                next: firstIndex(numerator.children),
+                prev: -Infinity,
+                next: numerator.children.length > 0 ? 0 : Infinity,
             };
         } else if (nextNode && nextNode.type === "subsup" && !selecting) {
             // enter sup/sub
@@ -356,14 +375,14 @@ const moveRight = (
             if (sub) {
                 return {
                     path: [...cursor.path, next, SUB],
-                    prev: null,
-                    next: firstIndex(sub.children),
+                    prev: -Infinity,
+                    next: sub.children.length > 0 ? 0 : Infinity,
                 };
             } else if (sup) {
                 return {
                     path: [...cursor.path, next, SUP],
-                    prev: null,
-                    next: firstIndex(sup.children),
+                    prev: -Infinity,
+                    next: sup.children.length > 0 ? 0 : Infinity,
                 };
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
@@ -407,8 +426,8 @@ const moveRight = (
                 if (sup) {
                     return {
                         path: [...cursor.path.slice(0, -1), SUP],
-                        prev: null,
-                        next: firstIndex(sup.children),
+                        prev: -Infinity,
+                        next: sup.children.length > 0 ? 0 : Infinity,
                     };
                 } else {
                     return {
@@ -436,8 +455,8 @@ const moveRight = (
                 // move from numerator to denominator
                 return {
                     path: [...cursor.path.slice(0, -1), DENOMINATOR],
-                    prev: null,
-                    next: firstIndex(denominator.children),
+                    prev: -Infinity,
+                    next: denominator.children.length > 0 ? 0 : Infinity,
                 };
             } else if (
                 currentNode === denominator &&
@@ -468,14 +487,14 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = [...head, ...tail];
         draft.cursor = {
             path: cursor.path,
-            prev: head.length == 0 ? null : head.length - 1,
-            next: tail.length == 0 ? null : head.length,
+            prev: head.length === 0 ? -Infinity : head.length - 1,
+            next: tail.length === 0 ? Infinity : head.length,
         };
         draft.selectionStart = undefined;
         return;
     }
 
-    if (cursor.prev != null) {
+    if (cursor.prev !== -Infinity) {
         const {children} = currentNode;
         const removeIndex = cursor.prev;
         const prevNode = children[removeIndex];
@@ -544,8 +563,10 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
         const newChildren = removeChildWithIndex(children, removeIndex);
         const newPrev = prevIndex(newChildren, cursor.prev);
         const newNext =
-            newPrev == null
-                ? firstIndex(newChildren)
+            newPrev === -Infinity
+                ? newChildren.length > 0
+                    ? 0
+                    : Infinity
                 : nextIndex(newChildren, newPrev);
         const newCursor = {
             ...cursor,
@@ -611,8 +632,10 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
             const newNext =
-                newPrev == null
-                    ? firstIndex(newChildren)
+                newPrev === -Infinity
+                    ? newChildren.length > 0
+                        ? 0
+                        : Infinity
                     : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
@@ -650,8 +673,10 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
             const newNext =
-                newPrev == null
-                    ? firstIndex(newChildren)
+                newPrev === -Infinity
+                    ? newChildren.length > 0
+                        ? 0
+                        : Infinity
                     : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
@@ -686,8 +711,10 @@ const backspace = (currentNode: HasChildren, draft: State): void => {
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
             const newNext =
-                newPrev == null
-                    ? firstIndex(newChildren)
+                newPrev === -Infinity
+                    ? newChildren.length > 0
+                        ? 0
+                        : Infinity
                     : nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
@@ -717,8 +744,8 @@ const slash = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = [...head, frac(body, []), ...tail];
         draft.cursor = {
             path: [...cursor.path, head.length, DENOMINATOR],
-            next: null,
-            prev: null,
+            prev: -Infinity,
+            next: Infinity,
         };
         draft.selectionStart = undefined;
 
@@ -727,12 +754,12 @@ const slash = (currentNode: HasChildren, draft: State): void => {
 
     const {prev, next} = cursor;
 
-    if (prev === null) {
+    if (prev === -Infinity) {
         currentNode.children = [frac([], []), ...currentNode.children];
         draft.cursor = {
             path: [...cursor.path, 0, NUMERATOR],
-            next: null,
-            prev: null,
+            prev: -Infinity,
+            next: Infinity,
         };
         return;
     }
@@ -748,7 +775,7 @@ const slash = (currentNode: HasChildren, draft: State): void => {
         "\u2265",
     ];
 
-    const endIndex = next == null ? currentNode.children.length : next;
+    const endIndex = next === Infinity ? currentNode.children.length : next;
     let startIndex = endIndex;
     while (startIndex > 0) {
         const prevChild = currentNode.children[startIndex - 1];
@@ -772,8 +799,8 @@ const slash = (currentNode: HasChildren, draft: State): void => {
             head.length,
             body.length === 0 ? NUMERATOR : DENOMINATOR,
         ],
-        next: null,
-        prev: null,
+        prev: -Infinity,
+        next: Infinity,
     };
 };
 
@@ -790,8 +817,8 @@ const caret = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = [...head, subsup(undefined, body), ...tail];
         draft.cursor = {
             path: [...cursor.path, head.length, SUP],
-            next: null,
-            prev: body.length > 0 ? body.length - 1 : null,
+            prev: body.length > 0 ? body.length - 1 : -Infinity,
+            next: Infinity,
         };
         draft.selectionStart = undefined;
 
@@ -801,9 +828,9 @@ const caret = (currentNode: HasChildren, draft: State): void => {
     const {next} = cursor;
 
     const nextNode =
-        cursor.next != null ? currentNode.children[cursor.next] : null;
+        cursor.next !== Infinity ? currentNode.children[cursor.next] : null;
 
-    if (cursor.next != null && nextNode && nextNode.type === "subsup") {
+    if (cursor.next !== Infinity && nextNode && nextNode.type === "subsup") {
         const sub = nextNode.children[0];
         const sup = nextNode.children[1] || {
             id: getId(),
@@ -813,8 +840,8 @@ const caret = (currentNode: HasChildren, draft: State): void => {
         nextNode.children = [sub, sup];
         draft.cursor = {
             path: [...cursor.path, cursor.next, 1],
-            prev: null,
-            next: sup.children.length > 0 ? 0 : null,
+            prev: -Infinity,
+            next: sup.children.length > 0 ? 0 : Infinity,
         };
         return;
     }
@@ -838,11 +865,13 @@ const caret = (currentNode: HasChildren, draft: State): void => {
     draft.cursor = {
         path: [
             ...cursor.path,
-            cursor.next == null ? currentNode.children.length - 1 : cursor.next,
+            cursor.next === Infinity
+                ? currentNode.children.length - 1
+                : cursor.next,
             1,
         ],
-        next: null,
-        prev: null,
+        prev: -Infinity,
+        next: Infinity,
     };
 };
 
@@ -859,8 +888,8 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = [...head, subsup(body, undefined), ...tail];
         draft.cursor = {
             path: [...cursor.path, head.length, SUB],
-            next: null,
-            prev: body.length > 0 ? body.length - 1 : null,
+            prev: body.length > 0 ? body.length - 1 : -Infinity,
+            next: Infinity,
         };
         draft.selectionStart = undefined;
 
@@ -870,9 +899,9 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
     const {next} = cursor;
 
     const nextNode =
-        cursor.next != null ? currentNode.children[cursor.next] : null;
+        cursor.next !== Infinity ? currentNode.children[cursor.next] : null;
 
-    if (cursor.next != null && nextNode && nextNode.type === "subsup") {
+    if (cursor.next !== Infinity && nextNode && nextNode.type === "subsup") {
         const sub = nextNode.children[0] || {
             id: getId(),
             type: "row",
@@ -882,8 +911,8 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
         nextNode.children = [sub, sup];
         draft.cursor = {
             path: [...cursor.path, cursor.next, 0],
-            prev: null,
-            next: firstIndex(sub.children),
+            prev: -Infinity,
+            next: sub.children.length > 0 ? 0 : Infinity,
         };
         return;
     }
@@ -907,11 +936,13 @@ const underscore = (currentNode: HasChildren, draft: State): void => {
     draft.cursor = {
         path: [
             ...cursor.path,
-            cursor.next == null ? currentNode.children.length - 1 : cursor.next,
+            cursor.next === Infinity
+                ? currentNode.children.length - 1
+                : cursor.next,
             0,
         ],
-        next: null,
-        prev: null,
+        prev: -Infinity,
+        next: Infinity,
     };
 };
 
@@ -928,8 +959,8 @@ const root = (currentNode: HasChildren, draft: State): void => {
         currentNode.children = [...head, Editor.root(body, null), ...tail];
         draft.cursor = {
             path: [...cursor.path, head.length, RADICAND],
-            next: null,
-            prev: body.length > 0 ? body.length - 1 : null,
+            prev: body.length > 0 ? body.length - 1 : -Infinity,
+            next: Infinity,
         };
         draft.selectionStart = undefined;
 
@@ -958,8 +989,8 @@ const root = (currentNode: HasChildren, draft: State): void => {
     const index = currentNode.children.indexOf(newNode);
     draft.cursor = {
         path: [...cursor.path, index, RADICAND],
-        next: null,
-        prev: null,
+        prev: -Infinity,
+        next: Infinity,
     };
 };
 
@@ -982,30 +1013,32 @@ const insertChar = (
         const index = head.length;
         draft.cursor = {
             path: [...cursor.path],
-            next: index < currentNode.children.length - 1 ? index + 1 : null,
             prev: index,
+            next:
+                index < currentNode.children.length - 1 ? index + 1 : Infinity,
         };
         draft.selectionStart = undefined;
     } else {
         const {prev, next} = cursor;
 
         // If there's a pending ')' before the insertion point, complete it
-        if (prev != null) {
+        if (prev !== -Infinity) {
             const prevNode = currentNode.children[prev];
             if (isGlyph(prevNode, ")")) {
                 prevNode.value.pending = undefined;
             }
         }
         // If there's a pending '(' after the insertion point, complete it
-        if (next != null) {
+        if (next !== Infinity) {
             const nextNode = currentNode.children[next];
             if (isGlyph(nextNode, "(")) {
                 nextNode.value.pending = undefined;
             }
         }
 
-        draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
-        draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+        draft.cursor.next =
+            cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+        draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
 
         currentNode.children = insertBeforeChildWithIndex(
             currentNode.children,
@@ -1036,14 +1069,14 @@ const selectionParens = (
 
     currentNode.children = [...head, glyph("("), ...body, glyph(")"), ...tail];
 
-    let newNext: number | null =
+    let newNext: number =
         paren == Paren.Left ? head.length + 1 : head.length + body.length + 2;
 
     // We only need to do this check for newNext since the cursor
     // will appear after the parens.  If the parens are at the end
     // of the row then newNext should be null.
     if (newNext > currentNode.children.length - 1) {
-        newNext = null;
+        newNext = Infinity;
     }
 
     const newPrev =
@@ -1070,8 +1103,8 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
     const openingParen = glyph("(");
     const closingParen = glyph(")", true);
 
-    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
-    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+    draft.cursor.next = cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+    draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
 
     for (let i = Math.max(0, draft.cursor.prev - 1); i >= 0; i--) {
         const child = currentNode.children[i];
@@ -1129,7 +1162,7 @@ const leftParens = (currentNode: HasChildren, draft: State): void => {
         }
     }
 
-    if (draft.cursor.next == null) {
+    if (draft.cursor.next === Infinity) {
         draft.cursor.next = draft.cursor.prev + 1;
     }
 
@@ -1153,8 +1186,8 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     const openingParen = glyph("(", true);
     const closingParen = glyph(")");
 
-    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
-    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+    draft.cursor.next = cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+    draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
 
     for (
         let i = Math.max(0, draft.cursor.prev - 1);
@@ -1177,7 +1210,7 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
             );
             if (draft.cursor.prev >= currentNode.children.length - 1) {
                 draft.cursor.prev = currentNode.children.length - 1;
-                draft.cursor.next = null;
+                draft.cursor.next = Infinity;
             }
             return;
         }
@@ -1205,8 +1238,9 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
             );
 
             // move the cursor one to right again
-            draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
-            draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+            draft.cursor.next =
+                cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+            draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
             return;
         }
 
@@ -1224,8 +1258,8 @@ const rightParens = (currentNode: HasChildren, draft: State): void => {
     ];
 
     // Advance the cursor by one again.
-    draft.cursor.next = cursor.next != null ? cursor.next + 1 : null;
-    draft.cursor.prev = cursor.prev != null ? cursor.prev + 1 : 0;
+    draft.cursor.next = cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+    draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
 };
 
 type Action = {type: string; shift?: boolean};
@@ -1259,7 +1293,10 @@ const reducer = (state: State = initialState, action: Action): State => {
                         selectionStart.path.length > cursor.path.length
                             ? selectionStart.path[cursor.path.length] - 1
                             : selectionStart.prev;
-                    if (prev == null || (cursor.prev && prev < cursor.prev)) {
+                    if (
+                        prev === -Infinity ||
+                        (cursor.prev && prev < cursor.prev)
+                    ) {
                         draft.cursor = {
                             ...draft.cursor,
                             prev,
@@ -1287,8 +1324,8 @@ const reducer = (state: State = initialState, action: Action): State => {
                             ? selectionStart.path[cursor.path.length]
                             : selectionStart.prev;
                     if (
-                        next == null ||
-                        (cursor.next != null && next > cursor.next)
+                        next === Infinity ||
+                        (cursor.next !== Infinity && next > cursor.next)
                     ) {
                         draft.cursor = {
                             ...draft.cursor,

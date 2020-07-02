@@ -91,7 +91,7 @@ describe("layoutCursorFromState", () => {
                 math,
                 cursor: {
                     path: [],
-                    prev: null,
+                    prev: -Infinity,
                     next: 0,
                 },
                 selectionStart: {
@@ -105,7 +105,7 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: null,
+                prev: -Infinity,
                 next: math.children[1].id,
                 selection: true,
             });
@@ -118,7 +118,7 @@ describe("layoutCursorFromState", () => {
                 cursor: {
                     path: [],
                     prev: 4,
-                    next: null,
+                    next: Infinity,
                 },
                 selectionStart: {
                     path: [],
@@ -132,7 +132,7 @@ describe("layoutCursorFromState", () => {
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
                 prev: math.children[3].id,
-                next: null,
+                next: Infinity,
                 selection: true,
             });
         });
@@ -188,7 +188,7 @@ describe("layoutCursorFromState", () => {
                 },
                 selectionStart: {
                     path: [2, 0 /* NUMERATOR */],
-                    prev: null,
+                    prev: -Infinity,
                     next: 1,
                 },
             };
@@ -220,7 +220,7 @@ describe("layoutCursorFromState", () => {
                 },
                 selectionStart: {
                     path: [2, 0 /* NUMERATOR */],
-                    prev: null,
+                    prev: -Infinity,
                     next: 1,
                 },
             };

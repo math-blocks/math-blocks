@@ -225,6 +225,6 @@ export function nodeAtPath<T, U>(
 export type Cursor = {
     path: number[];
     // these are indices of the node inside the parent
-    prev: number | null;
-    next: number | null;
+    prev: number;
+    next: number;
 };
