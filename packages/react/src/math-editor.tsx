@@ -111,6 +111,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             <MathRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
+                editorCursor={state.cursor}
                 cancelRegions={cancelRegions}
             />
         </div>

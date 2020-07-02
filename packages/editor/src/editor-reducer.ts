@@ -172,9 +172,6 @@ const cancel = (draft: State): void => {
                 ? selectionStart.path[cursor.path.length]
                 : selectionStart.prev;
 
-        prev; // ?
-        next; // ?
-
         if (
             next === Infinity ||
             (cursor.next !== Infinity && next > cursor.next)

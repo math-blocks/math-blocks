@@ -16,6 +16,7 @@ export type Glyph = {
     type: "glyph";
     x: number;
     y: number;
+    width: number;
     glyph: Layout.Glyph;
 };
 
@@ -89,8 +90,27 @@ const renderGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
         type: "glyph",
         x: loc.x,
         y: loc.y,
+        width: Layout.getWidth(glyph),
         glyph: glyph,
     };
+};
+
+const left = (node: Node): number => {
+    switch (node.type) {
+        case "line":
+            return Math.min(node.x1, node.x2);
+        default:
+            return node.x;
+    }
+};
+
+const right = (node: Node): number => {
+    switch (node.type) {
+        case "line":
+            return Math.max(node.x1, node.x2);
+        default:
+            return node.x + node.width;
+    }
 };
 
 type LayoutCursor = {
@@ -115,33 +135,32 @@ const renderHBox = ({
     const {multiplier} = box;
 
     const cursorInBox = cursor && cursor.parent === box.id;
-    const selection = cursor && cursor.selection;
     const selectionBoxes: Rect[] = [];
 
-    let insideSelection = false;
     let cursorPos: {startX: number; endX: number; y: number} | null = null;
 
     const currentCancelRegions = (cancelRegions || []).filter(
         (region) => region.parent === box.id,
     );
+
     // set up arrays to track state of each cancel region being processed
-    const insideCancel: boolean[] = [];
     const cancelBoxes: Rect[][] = currentCancelRegions.map(() => []);
 
     const editorLayer: Node[] = [];
     const nonEditorLayer: Node[] = [];
 
-    box.content.forEach((node, index) => {
+    box.content.forEach((node) => {
+        // We use the `id` property as an indicator that this layout
+        // node was directly derived from an editor node.
+        const layer =
+            typeof node.id === "number" ? editorLayer : nonEditorLayer;
+
         currentCancelRegions.forEach((region, regionIndex) => {
-            if (region.next === node.id) {
-                insideCancel[regionIndex] = false;
-            }
-
-            if (region.prev === -Infinity && index === 0) {
-                insideCancel[regionIndex] = true;
-            }
-
-            if (insideCancel[regionIndex]) {
+            if (
+                layer === editorLayer &&
+                region.prev < editorLayer.length &&
+                region.next > editorLayer.length
+            ) {
                 const yMin = -Math.max(
                     Layout.getHeight(node),
                     64 * 0.85 * multiplier,
@@ -152,6 +171,8 @@ const renderHBox = ({
                     64 * multiplier,
                 );
 
+                // TODO: union cancel boxes as we go instead of doing it later
+                // this will allow us to avoid having an array of an array.
                 cancelBoxes[regionIndex].push({
                     type: "rect",
                     x: pen.x,
@@ -160,71 +181,40 @@ const renderHBox = ({
                     height: height,
                 });
             }
-
-            if (region.prev === node.id) {
-                insideCancel[regionIndex] = true;
-            }
         });
 
         // cursor is at the start of the box
-        if (cursor && cursorInBox) {
+        if (cursor && cursorInBox && cursor.selection) {
             if (
-                cursor.prev === node.id ||
-                (cursor.prev === -Infinity && index === 0)
+                layer === editorLayer &&
+                cursor.prev < editorLayer.length &&
+                cursor.next > editorLayer.length
             ) {
-                cursorPos = {
-                    startX: pen.x - 1,
-                    endX: pen.x - 1,
-                    y: -64 * 0.85 * multiplier,
-                };
-            }
+                // pen.y = 0 places the pen on the baseline so in order
+                // for the selection box to appear at the right place we
+                // need go up using the standard y-down is positive.
+                // How can we include diagrams in code?
+                const yMin = -Math.max(
+                    Layout.getHeight(node),
+                    64 * 0.85 * multiplier,
+                );
 
-            if (selection) {
-                if (cursor.next === node.id) {
-                    insideSelection = false;
-                }
+                const height = Math.max(
+                    Layout.getHeight(node) + Layout.getDepth(node),
+                    64 * multiplier,
+                );
 
-                // The cursor is at the start of the row.
-                if (cursor.prev === -Infinity && index === 0) {
-                    insideSelection = true;
-                }
-
-                if (insideSelection) {
-                    // pen.y = 0 places the pen on the baseline so in order
-                    // for the selection box to appear at the right place we
-                    // need go up using the standard y-down is positive.
-                    // How can we include diagrams in code?
-                    const yMin = -Math.max(
-                        Layout.getHeight(node),
-                        64 * 0.85 * multiplier,
-                    );
-
-                    const height = Math.max(
-                        Layout.getHeight(node) + Layout.getDepth(node),
-                        64 * multiplier,
-                    );
-
-                    selectionBoxes.push({
-                        type: "rect",
-                        x: pen.x,
-                        y: yMin,
-                        width: Layout.getWidth(node),
-                        height: height,
-                    });
-                }
-
-                if (cursor.prev === node.id) {
-                    insideSelection = true;
-                }
+                selectionBoxes.push({
+                    type: "rect",
+                    x: pen.x,
+                    y: yMin,
+                    width: Layout.getWidth(node),
+                    height: height,
+                });
             }
         }
 
         const advance = Layout.getWidth(node);
-
-        // We use the `id` property as an indicator that this layout
-        // node was directly derived from an editor node.
-        const layer =
-            typeof node.id === "number" ? editorLayer : nonEditorLayer;
 
         switch (node.type) {
             case "Box":
@@ -250,38 +240,47 @@ const renderHBox = ({
         }
 
         pen.x += advance;
-
-        // cursor is at the end of the box
-        if (cursor && cursorInBox && cursor.prev === node.id) {
-            cursorPos = {
-                startX: pen.x - 1,
-                endX: pen.x - 1,
-                y: -64 * 0.85 * multiplier,
-            };
-        }
     });
-
-    // The cursor is in an empty box.
-    if (box.content.length === 0 && cursor && cursor.parent === box.id) {
-        cursorPos = {
-            startX: pen.x - 1 + box.width / 2,
-            endX: pen.x - 1 + box.width / 2,
-            y: -64 * 0.85 * multiplier,
-        };
-    }
 
     const belowLayer: Node[] = [];
     const aboveLayer: Node[] = [];
 
-    // Draw the cursor.
-    if (cursorPos && selectionBoxes.length === 0) {
-        belowLayer.push({
-            type: "rect",
-            x: cursorPos.startX,
-            y: cursorPos.y,
-            width: 2,
-            height: 64 * multiplier,
+    if (cursor && cursorInBox && !cursor.selection) {
+        editorLayer.forEach((node, index) => {
+            if (index === cursor.next) {
+                cursorPos = {
+                    startX: left(node) - 1,
+                    endX: left(node) - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            } else if (index === cursor.prev) {
+                cursorPos = {
+                    startX: right(node) - 1,
+                    endX: right(node) - 1,
+                    y: -64 * 0.85 * multiplier,
+                };
+            }
         });
+
+        // The cursor is in an empty box.
+        if (box.content.length === 0 && cursor && cursor.parent === box.id) {
+            cursorPos = {
+                startX: pen.x - 1 + box.width / 2,
+                endX: pen.x - 1 + box.width / 2,
+                y: -64 * 0.85 * multiplier,
+            };
+        }
+
+        // Draw the cursor.
+        if (cursorPos) {
+            belowLayer.push({
+                type: "rect",
+                x: cursorPos.startX,
+                y: cursorPos.y,
+                width: 2,
+                height: 64 * multiplier,
+            });
+        }
     }
 
     // Draw the selection.

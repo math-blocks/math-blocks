@@ -27,8 +27,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[1].id,
-                next: math.children[2].id,
+                prev: 1,
+                next: 2,
                 selection: false,
             });
         });
@@ -53,8 +53,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[1].id,
-                next: math.children[4].id,
+                prev: 1,
+                next: 4,
                 selection: true,
             });
         });
@@ -79,8 +79,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[0].id,
-                next: math.children[2].id,
+                prev: 0,
+                next: 2,
                 selection: true,
             });
         });
@@ -106,7 +106,7 @@ describe("layoutCursorFromState", () => {
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
                 prev: -Infinity,
-                next: math.children[1].id,
+                next: 1,
                 selection: true,
             });
         });
@@ -131,7 +131,7 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[3].id,
+                prev: 3,
                 next: Infinity,
                 selection: true,
             });
@@ -165,8 +165,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[0].id,
-                next: math.children[4].id,
+                prev: 0,
+                next: 4,
                 selection: true,
             });
         });
@@ -197,8 +197,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[1].id,
-                next: math.children[3].id,
+                prev: 1,
+                next: 3,
                 selection: true,
             });
         });
@@ -229,8 +229,8 @@ describe("layoutCursorFromState", () => {
 
             expect(layoutCursor).toEqual({
                 parent: state.math.id,
-                prev: math.children[0].id,
-                next: math.children[3].id,
+                prev: 0,
+                next: 3,
                 selection: true,
             });
         });
