@@ -117,6 +117,7 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
+// TODO: dedupe with react/utils.ts
 export const layoutCursorFromState = (state: State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
     const parentNode = Editor.nodeAtPath(math, cursor.path);
@@ -194,18 +195,6 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
             next,
             selection,
         };
-    }
-
-    if (result.next !== Infinity) {
-        result.next =
-            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ??
-            Infinity;
-    }
-
-    if (result.prev !== -Infinity) {
-        result.prev =
-            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ??
-            -Infinity;
     }
 
     return result;

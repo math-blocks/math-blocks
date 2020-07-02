@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import {SceneGraph, Layout} from "@math-blocks/typesetter";
+import * as Editor from "@math-blocks/editor";
 
 type LayoutCursor = {
     parent: number;
@@ -65,6 +66,7 @@ const CURSOR_WIDTH = 2;
 const MathRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
+    editorCursor?: Editor.Cursor;
     cancelRegions?: LayoutCursor[];
 }> = (props) => {
     const group = SceneGraph.render(props);

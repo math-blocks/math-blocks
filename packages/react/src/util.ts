@@ -1,16 +1,17 @@
 import * as Editor from "@math-blocks/editor";
 
-// The next/prev properties represent node ids instead of indices.
-// This simplifies the rendering of the cursor/selection.  This is
-// because layouts have more nodes than what appears in the editor
-// AST.
 type LayoutCursor = {
     parent: number;
+    // index of previous editor node within parent, if there is no previous
+    // node then this will be -Infinity
     prev: number;
+    // index of next editor node within parent, if there is no next node
+    // then this will be Infinity
     next: number;
     selection: boolean;
 };
 
+// TODO: dedupe with editor/utils.ts
 export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
     const parentNode = Editor.nodeAtPath(math, cursor.path);
@@ -88,16 +89,6 @@ export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
             next,
             selection,
         };
-    }
-
-    if (result.next !== Infinity) {
-        result.next =
-            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? null;
-    }
-
-    if (result.prev !== -Infinity) {
-        result.prev =
-            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? null;
     }
 
     return result;
