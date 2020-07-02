@@ -146,35 +146,43 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
                 : selectionStart.prev;
 
         // Use the cursor's next if it comes after next.
-        if (next != null && cursor.next != null && cursor.next > next) {
+        if (
+            next !== Infinity &&
+            cursor.next !== Infinity &&
+            cursor.next > next
+        ) {
             next = cursor.next;
-        } else if (cursor.next == null) {
+        } else if (cursor.next === Infinity) {
             next = cursor.next;
         }
 
         // Use the cursor's prev if it comes before prev.
-        if (prev != null && cursor.prev != null && cursor.prev < prev) {
+        if (
+            prev !== -Infinity &&
+            cursor.prev !== -Infinity &&
+            cursor.prev < prev
+        ) {
             prev = cursor.prev;
-        } else if (cursor.prev == null) {
+        } else if (cursor.prev === -Infinity) {
             prev = cursor.prev;
         }
 
         // Set selection to true if there's a node between the prev and
         // next.
         let selection = false;
-        if (next != null && prev != null && next - prev > 1) {
+        if (next !== Infinity && prev !== -Infinity && next - prev > 1) {
             selection = true;
-        } else if (next != null && prev == null && next > 0) {
+        } else if (next !== Infinity && prev === -Infinity && next > 0) {
             selection = true;
         } else if (
-            next == null &&
-            prev != null &&
+            next === Infinity &&
+            prev !== -Infinity &&
             prev < parentNode.children.length - 1
         ) {
             selection = true;
         } else if (
-            next == null &&
-            prev == null &&
+            next === Infinity &&
+            prev === -Infinity &&
             parentNode.children.length > 0
         ) {
             selection = true;
@@ -188,14 +196,14 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
         };
     }
 
-    if (result.next != null) {
+    if (result.next !== Infinity) {
         result.next =
-            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? null;
+            Editor.nodeAtPath(math, [...cursor.path, result.next])?.id ?? Infinity;
     }
 
-    if (result.prev != null) {
+    if (result.prev !== -Infinity) {
         result.prev =
-            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? null;
+            Editor.nodeAtPath(math, [...cursor.path, result.prev])?.id ?? -Infinity;
     }
 
     return result;

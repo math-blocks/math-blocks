@@ -4,8 +4,8 @@ import {SceneGraph, Layout} from "@math-blocks/typesetter";
 
 type LayoutCursor = {
     parent: number;
-    prev: number | null;
-    next: number | null;
+    prev: number;
+    next: number;
     selection: boolean;
 };
 
