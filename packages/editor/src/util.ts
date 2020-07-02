@@ -199,3 +199,164 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
 
     return result;
 };
+
+export type Identifiable = {readonly id: number};
+
+export type HasChildren = Editor.Row<Editor.Glyph, ID>;
+
+export const hasChildren = (
+    node: Editor.Node<Editor.Glyph, ID>,
+): node is HasChildren => {
+    return node.type === "row";
+};
+
+export const isGlyph = (
+    node: Editor.Node<Editor.Glyph, ID>,
+    char: string,
+): node is Editor.Atom<Editor.Glyph, ID> =>
+    node.type === "atom" && node.value.char == char;
+
+export const getChildWithIndex = <T extends Identifiable>(
+    children: ReadonlyArray<T>,
+    childIndex: number,
+): T | null => {
+    return children[childIndex] || null;
+};
+
+export const nextIndex = (
+    children: Editor.Node<Editor.Glyph, ID>[],
+    childIndex: number,
+): number => {
+    return childIndex < children.length - 1 ? childIndex + 1 : Infinity;
+};
+
+export const prevIndex = (
+    children: Editor.Node<Editor.Glyph, ID>[],
+    childIndex: number,
+): number => {
+    return childIndex > 0 ? childIndex - 1 : -Infinity;
+};
+
+export const removeChildWithIndex = <T extends Identifiable>(
+    children: T[],
+    index: number,
+): T[] => {
+    return index === -1
+        ? children
+        : [...children.slice(0, index), ...children.slice(index + 1)];
+};
+
+export const insertBeforeChildWithIndex = <T extends Identifiable>(
+    children: T[],
+    index: number,
+    newChild: T,
+): T[] => {
+    if (index === Infinity) {
+        return [...children, newChild];
+    }
+    return index === -1
+        ? children
+        : [...children.slice(0, index), newChild, ...children.slice(index)];
+};
+
+export const getSelectionBounds = (
+    cursor: Editor.Cursor,
+    selectionStart: Editor.Cursor,
+): {prev: number; next: number} => {
+    const next =
+        selectionStart.path.length > cursor.path.length
+            ? selectionStart.path[cursor.path.length] + 1
+            : selectionStart.next;
+    const prev =
+        selectionStart.path.length > cursor.path.length
+            ? selectionStart.path[cursor.path.length] - 1
+            : selectionStart.prev;
+    if (
+        next !== Infinity &&
+        cursor.prev !== -Infinity &&
+        next <= cursor.prev + 1
+    ) {
+        return {
+            prev: prev,
+            next: cursor.next,
+        };
+    } else {
+        return {
+            prev: cursor.prev,
+            next: next,
+        };
+    }
+};
+
+export const selectionSplit = (
+    currentNode: HasChildren,
+    cursor: Editor.Cursor,
+    selectionStart: Editor.Cursor,
+): {
+    head: Editor.Node<Editor.Glyph, ID>[];
+    body: Editor.Node<Editor.Glyph, ID>[];
+    tail: Editor.Node<Editor.Glyph, ID>[];
+} => {
+    const {prev, next} = getSelectionBounds(cursor, selectionStart);
+
+    const startIndex = prev !== -Infinity ? prev + 1 : 0;
+    const endIndex = next === Infinity ? currentNode.children.length : next;
+
+    const head = currentNode.children.slice(0, startIndex);
+    const body = currentNode.children.slice(startIndex, endIndex);
+    const tail = currentNode.children.slice(endIndex);
+
+    return {
+        head,
+        body,
+        tail,
+    };
+};
+
+export enum Paren {
+    Left,
+    Right,
+}
+
+export const selectionParens = (
+    currentNode: HasChildren,
+    selectionStart: Editor.Cursor,
+    draft: State,
+    paren: Paren,
+): void => {
+    const {cursor} = draft;
+
+    const {head, body, tail} = selectionSplit(
+        currentNode,
+        cursor,
+        selectionStart,
+    );
+
+    currentNode.children = [
+        ...head,
+        Editor.glyph("("),
+        ...body,
+        Editor.glyph(")"),
+        ...tail,
+    ];
+
+    let newNext: number =
+        paren == Paren.Left ? head.length + 1 : head.length + body.length + 2;
+
+    // We only need to do this check for newNext since the cursor
+    // will appear after the parens.  If the parens are at the end
+    // of the row then newNext should be null.
+    if (newNext > currentNode.children.length - 1) {
+        newNext = Infinity;
+    }
+
+    const newPrev =
+        paren == Paren.Left ? head.length : head.length + body.length + 1;
+
+    draft.cursor = {
+        path: cursor.path,
+        next: newNext,
+        prev: newPrev,
+    };
+    draft.selectionStart = undefined;
+};
