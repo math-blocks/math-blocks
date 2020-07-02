@@ -167,6 +167,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                 denominator.height = Math.max(denominator.height, EHeight);
             }
 
+            // How do we deal with the 0 and 1 indices disappearing here?
             numerator.id = node.children[0].id;
             denominator.id = node.children[1].id;
 

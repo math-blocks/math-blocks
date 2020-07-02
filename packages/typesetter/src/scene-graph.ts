@@ -9,7 +9,7 @@ export type Group = {
     y: number;
     width: number;
     height: number;
-    children: Node[];
+    layers: Node[][];
 };
 
 export type Glyph = {
@@ -111,7 +111,6 @@ const renderHBox = ({
     cancelRegions?: LayoutCursor[];
     loc: Point;
 }): Group => {
-    const children: Node[] = [];
     const pen = {x: 0, y: 0};
     const {multiplier} = box;
 
@@ -128,6 +127,9 @@ const renderHBox = ({
     // set up arrays to track state of each cancel region being processed
     const insideCancel: boolean[] = [];
     const cancelBoxes: Rect[][] = currentCancelRegions.map(() => []);
+
+    const editorLayer: Node[] = [];
+    const nonEditorLayer: Node[] = [];
 
     box.content.forEach((node, index) => {
         currentCancelRegions.forEach((region, regionIndex) => {
@@ -219,9 +221,14 @@ const renderHBox = ({
 
         const advance = Layout.getWidth(node);
 
+        // We use the `id` property as an indicator that this layout
+        // node was directly derived from an editor node.
+        const layer =
+            typeof node.id === "number" ? editorLayer : nonEditorLayer;
+
         switch (node.type) {
             case "Box":
-                children.push(
+                layer.push(
                     render({
                         box: node,
                         cursor,
@@ -231,10 +238,10 @@ const renderHBox = ({
                 );
                 break;
             case "HRule":
-                children.push(renderHRule(node, pen));
+                layer.push(renderHRule(node, pen));
                 break;
             case "Glyph":
-                children.push(renderGlyph(node, pen));
+                layer.push(renderGlyph(node, pen));
                 break;
             case "Kern":
                 break;
@@ -263,9 +270,12 @@ const renderHBox = ({
         };
     }
 
+    const belowLayer: Node[] = [];
+    const aboveLayer: Node[] = [];
+
     // Draw the cursor.
     if (cursorPos && selectionBoxes.length === 0) {
-        children.push({
+        belowLayer.push({
             type: "rect",
             x: cursorPos.startX,
             y: cursorPos.y,
@@ -276,7 +286,7 @@ const renderHBox = ({
 
     // Draw the selection.
     for (const selectionBox of selectionBoxes) {
-        children.unshift({
+        belowLayer.unshift({
             ...selectionBox,
             fill: "rgba(0,64,255,0.3)",
         });
@@ -284,7 +294,7 @@ const renderHBox = ({
 
     for (const boxes of cancelBoxes) {
         const box = unionRect(boxes);
-        children.push({
+        aboveLayer.push({
             type: "line",
             x1: box.x + box.width,
             y1: box.y,
@@ -299,7 +309,7 @@ const renderHBox = ({
         y: loc.y,
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
-        children: children,
+        layers: [belowLayer, editorLayer, nonEditorLayer, aboveLayer],
     };
 };
 
@@ -314,14 +324,21 @@ const renderVBox = ({
     cancelRegions?: LayoutCursor[];
     loc: Point;
 }): Group => {
-    const children: Node[] = [];
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
 
+    const editorLayer: Node[] = [];
+    const nonEditorLayer: Node[] = [];
+
     box.content.forEach((node) => {
         const height = Layout.getHeight(node);
         const depth = Layout.getDepth(node);
+
+        // We use the `id` property as an indicator that this layout
+        // node was directly derived from an editor node.
+        const layer =
+            typeof node.id === "number" ? editorLayer : nonEditorLayer;
 
         switch (node.type) {
             case "Box":
@@ -340,7 +357,7 @@ const renderVBox = ({
                     // eslint-disable-next-line no-debugger
                     debugger;
                 }
-                children.push(
+                layer.push(
                     render({
                         box: node,
                         cursor,
@@ -352,12 +369,12 @@ const renderVBox = ({
                 break;
             case "HRule":
                 pen.y += height;
-                children.push(renderHRule(node, pen));
+                layer.push(renderHRule(node, pen));
                 pen.y += depth;
                 break;
             case "Glyph":
                 pen.y += height;
-                children.push(renderGlyph(node, pen));
+                layer.push(renderGlyph(node, pen));
                 pen.y += depth;
                 break;
             case "Kern":
@@ -374,7 +391,7 @@ const renderVBox = ({
         y: loc.y,
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
-        children: children,
+        layers: [editorLayer, nonEditorLayer],
     };
 };
 
