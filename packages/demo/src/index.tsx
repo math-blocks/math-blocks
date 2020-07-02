@@ -21,7 +21,7 @@ ReactDOM.render(
             <Route path="/editor">
                 <EditorPage />
             </Route>
-            <Route path="/scene-graph">
+            <Route path="/math-renderer">
                 <MathRendererPage />
             </Route>
             <Route path="/">
@@ -31,7 +31,7 @@ ReactDOM.render(
                         <a href="/editor">Editor</a>
                     </li>
                     <li>
-                        <a href="/scene-graph">Scene Graph</a>
+                        <a href="/math-renderer">Math Renderer</a>
                     </li>
                     <li>
                         <a href="/step-checker">Step Checker</a>
