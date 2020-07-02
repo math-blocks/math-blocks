@@ -63,16 +63,6 @@ const getChildWithIndex = <T extends Identifiable>(
     return children[childIndex] || null;
 };
 
-const firstIndex = <T extends Identifiable>(
-    items: ReadonlyArray<T>,
-): number => {
-    return items.length > 0 ? 0 : -Infinity;
-};
-
-const lastIndex = <T extends Identifiable>(items: ReadonlyArray<T>): number => {
-    return items.length > 0 ? items.length - 1 : Infinity;
-};
-
 const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,

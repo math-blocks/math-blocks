@@ -43,7 +43,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         math: props.value,
         cursor: {
             path: [],
-            prev: null,
+            prev: -Infinity,
             next: 0,
         },
         selectionStart: undefined,
