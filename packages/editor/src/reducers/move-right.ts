@@ -3,6 +3,7 @@ import * as Editor from "@math-blocks/editor";
 import {State} from "../state";
 import {
     nextIndex,
+    prevIndex,
     hasChildren,
     nodeAtPath,
     isPrefixArray,
@@ -103,10 +104,12 @@ export const moveRight = (
         }
 
         // If all else fails, move to the right
+        const newNext = nextIndex(children, cursor.next);
+
         return {
             path: cursor.path,
             prev: cursor.next,
-            next: nextIndex(children, cursor.next),
+            next: newNext,
         };
     } else if (cursor.path.length >= 2) {
         const parent = nodeAtPath(

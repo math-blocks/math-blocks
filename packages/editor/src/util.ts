@@ -310,6 +310,12 @@ export const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number => {
+    if (childIndex === -Infinity) {
+        if (children.length === 0) {
+            return Infinity;
+        }
+        return 0;
+    }
     return childIndex < children.length - 1 ? childIndex + 1 : Infinity;
 };
 
@@ -317,6 +323,12 @@ export const prevIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number => {
+    if (childIndex === Infinity) {
+        if (children.length === 0) {
+            return -Infinity;
+        }
+        return children.length - 1;
+    }
     return childIndex > 0 ? childIndex - 1 : -Infinity;
 };
 

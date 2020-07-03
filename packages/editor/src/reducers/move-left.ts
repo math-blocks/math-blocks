@@ -104,16 +104,11 @@ export const moveLeft = (
 
         // If all else fails, move to the left
         const newPrev = prevIndex(children, cursor.prev);
-        const newNext =
-            newPrev === -Infinity
-                ? children.length > 0
-                    ? 0
-                    : Infinity
-                : nextIndex(children, newPrev);
+
         return {
             path: cursor.path,
             prev: newPrev,
-            next: newNext,
+            next: cursor.prev,
         };
     } else if (cursor.path.length >= 2) {
         const parent = nodeAtPath(
