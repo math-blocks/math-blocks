@@ -6,15 +6,21 @@ import {typeset, Layout} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 const fontSize = 60;
-const comicSansTypeset = typeset(fontMetrics)(fontSize)(1.0);
+const context = {
+    fontMetrics: fontMetrics,
+    baseFontSize: fontSize,
+    multiplier: 1.0,
+    cramped: false,
+};
 
-const linearEquation = comicSansTypeset(
+const linearEquation = typeset(
     Editor.Util.row("2x+5=10"),
+    context,
 ) as Layout.Box;
 
 const {glyph, row, frac, root} = Editor;
 
-const pythagoras = comicSansTypeset(
+const pythagoras = typeset(
     row([
         glyph("a"),
         Editor.Util.sup("2"),
@@ -25,9 +31,10 @@ const pythagoras = comicSansTypeset(
         glyph("c"),
         Editor.Util.sup("2"),
     ]),
+    context,
 ) as Layout.Box;
 
-const quadraticEquation = comicSansTypeset(
+const quadraticEquation = typeset(
     row([
         glyph("x"),
         glyph("="),
@@ -51,6 +58,7 @@ const quadraticEquation = comicSansTypeset(
             [glyph("2"), glyph("a")],
         ),
     ]),
+    context,
 ) as Layout.Box;
 
 const RendererPage: React.SFC<{}> = () => (

@@ -92,9 +92,12 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
 
     const fontSize = 64;
     // $FlowFixMe: make typeset return a Box
-    const box = Typesetter.typeset(fontMetrics)(fontSize)(1.0)(
-        math,
-    ) as Typesetter.Layout.Box;
+    const box = Typesetter.typeset(math, {
+        fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+    }) as Typesetter.Layout.Box;
 
     const layoutCursor = layoutCursorFromState(state);
 
