@@ -1,7 +1,7 @@
 import {produce} from "immer";
 
 import * as Editor from "./editor-ast";
-import {hasChildren} from "./util";
+import {hasChildren, nodeAtPath} from "./util";
 import * as Reducers from "./reducers";
 import {State} from "./state";
 
@@ -30,7 +30,7 @@ type Action = {type: string; shift?: boolean};
 const reducer = (state: State = initialState, action: Action): State => {
     const newState = produce(state, (draft) => {
         const {cursor, math} = draft;
-        const currentNode = Editor.nodeAtPath(math, cursor.path);
+        const currentNode = nodeAtPath(math, cursor.path);
 
         if (!hasChildren(currentNode)) {
             throw new Error(

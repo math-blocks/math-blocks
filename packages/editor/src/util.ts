@@ -117,10 +117,87 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
+export function nodeAtPath<T, U>(
+    root: Editor.Node<T, U>,
+    path: ReadonlyArray<number>,
+): Editor.Node<T, U> {
+    if (path.length === 0) {
+        return root;
+    } else {
+        switch (root.type) {
+            case "atom":
+                throw new Error("invalid path");
+            case "subsup": {
+                const [head, ...tail] = path;
+                if (head > 1) {
+                    throw new Error("invalid path");
+                }
+                const headChild = root.children[head];
+                if (!headChild) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(headChild, tail);
+            }
+            case "root": {
+                const [head, ...tail] = path;
+                if (head > 1) {
+                    throw new Error("invalid path");
+                }
+                const headChild = root.children[head];
+                if (!headChild) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(headChild, tail);
+            }
+            default: {
+                const [head, ...tail] = path;
+                return nodeAtPath(root.children[head], tail);
+            }
+        }
+    }
+}
+
+export function pathForNode<T, U>(
+    root: Editor.Node<T, U>,
+    node: Editor.Node<T, U>,
+    path: ReadonlyArray<number> = [],
+): ReadonlyArray<number> | null {
+    if (node === root) {
+        return path;
+    } else {
+        switch (root.type) {
+            case "atom":
+                return null;
+            default: {
+                for (let i = 0; i < root.children.length; i++) {
+                    const child = root.children[i];
+                    if (child) {
+                        const result = pathForNode(child, node, [...path, i]);
+                        if (result) {
+                            return result;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+    }
+}
+
+export const isPrefixArray = <T>(
+    prefix: readonly T[],
+    array: readonly T[],
+): boolean => {
+    if (prefix.length > array.length) {
+        return false;
+    }
+    return prefix.every((value, index) => value === array[index]);
+};
+
 // TODO: dedupe with react/utils.ts
 export const layoutCursorFromState = (state: State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
-    const parentNode = Editor.nodeAtPath(math, cursor.path);
+    const parentNode = nodeAtPath(math, cursor.path);
 
     let result = {
         parent: parentNode.id,
@@ -210,23 +287,35 @@ export const hasChildren = (
     return node.type === "row";
 };
 
+export type HasGrandchildren<T, U> =
+    | Editor.Frac<T, U>
+    | Editor.Root<T, U>
+    | Editor.SubSup<T, U>;
+
+export const hasGrandchildren = (
+    node: Editor.Node<Editor.Glyph, ID>,
+): node is HasGrandchildren<Editor.Glyph, ID> => {
+    return (
+        node.type === "frac" || node.type === "root" || node.type === "subsup"
+    );
+};
+
 export const isGlyph = (
     node: Editor.Node<Editor.Glyph, ID>,
     char: string,
 ): node is Editor.Atom<Editor.Glyph, ID> =>
     node.type === "atom" && node.value.char == char;
 
-export const getChildWithIndex = <T extends Identifiable>(
-    children: ReadonlyArray<T>,
-    childIndex: number,
-): T | null => {
-    return children[childIndex] || null;
-};
-
 export const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number => {
+    if (childIndex === -Infinity) {
+        if (children.length === 0) {
+            return Infinity;
+        }
+        return 0;
+    }
     return childIndex < children.length - 1 ? childIndex + 1 : Infinity;
 };
 
@@ -234,6 +323,12 @@ export const prevIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
 ): number => {
+    if (childIndex === Infinity) {
+        if (children.length === 0) {
+            return -Infinity;
+        }
+        return children.length - 1;
+    }
     return childIndex > 0 ? childIndex - 1 : -Infinity;
 };
 

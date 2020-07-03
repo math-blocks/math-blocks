@@ -1,11 +1,57 @@
 import * as Editor from "@math-blocks/editor";
 
 import {State} from "../state";
-import {prevIndex, nextIndex, hasChildren, getChildWithIndex} from "../util";
-import {SUB, SUP, NUMERATOR, RADICAND} from "../constants";
+import {
+    prevIndex,
+    nextIndex,
+    hasChildren,
+    nodeAtPath,
+    pathForNode,
+    isPrefixArray,
+    hasGrandchildren,
+} from "../util";
+import {SUB, SUP, NUMERATOR, RADICAND, DENOMINATOR} from "../constants";
 
 type ID = {
     id: number;
+};
+
+const enterFromRight = (
+    cursor: Editor.Cursor,
+    row: Editor.Row<Editor.Glyph, ID>,
+    index: number,
+): Editor.Cursor => {
+    return {
+        path: [...cursor.path, cursor.prev, index],
+        prev: row.children.length > 0 ? row.children.length - 1 : -Infinity,
+        next: Infinity,
+    };
+};
+
+const exitToLeft = (
+    cursor: Editor.Cursor,
+    grandparentRow: Editor.Row<Editor.Glyph, ID>,
+): Editor.Cursor => {
+    const index = cursor.path[cursor.path.length - 2];
+
+    return {
+        path: cursor.path.slice(0, -2),
+        prev: prevIndex(grandparentRow.children, index),
+        next: index,
+    };
+};
+
+// move to the previous parent's sibling
+const moveToPrevPibling = (
+    cursor: Editor.Cursor,
+    row: Editor.Row<Editor.Glyph, ID>,
+    index: number,
+): Editor.Cursor => {
+    return {
+        path: [...cursor.path.slice(0, -1), index],
+        prev: row.children.length > 0 ? row.children.length - 1 : -Infinity,
+        next: Infinity,
+    };
 };
 
 export const moveLeft = (
@@ -13,149 +59,102 @@ export const moveLeft = (
     draft: State,
     selecting?: boolean,
 ): Editor.Cursor => {
-    const {cursor, math} = draft;
-
+    const {cursor, selectionStart, math} = draft;
     const {children} = currentNode;
+
     if (cursor.prev !== -Infinity) {
-        const {prev} = cursor;
-        const prevNode = getChildWithIndex(currentNode.children, prev);
+        // It's safe to use cursor.prev directly as a key here
+        // since we've already checked to make sure it isn't Infinity.
+        const prevNode = currentNode.children[cursor.prev];
+
+        if (prevNode && hasGrandchildren(prevNode)) {
+            // check if draft.selectionStart is within prevNode
+            const path = pathForNode(math, prevNode);
+            if (
+                path &&
+                selectionStart &&
+                isPrefixArray(path, selectionStart.path)
+            ) {
+                const index = selectionStart.path[path.length];
+                const node = prevNode.children[index];
+                if (node) {
+                    return enterFromRight(cursor, node, index);
+                }
+            }
+        }
+
         if (prevNode && prevNode.type === "root" && !selecting) {
             const radicand = prevNode.children[0];
-            return {
-                path: [...cursor.path, prev, RADICAND],
-                prev:
-                    radicand.children.length > 0
-                        ? radicand.children.length - 1
-                        : -Infinity,
-                next: Infinity,
-            };
+            return enterFromRight(cursor, radicand, RADICAND);
         } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)
             const denominator = prevNode.children[1];
-            return {
-                path: [...cursor.path, prev, 1],
-                prev:
-                    denominator.children.length > 0
-                        ? denominator.children.length - 1
-                        : -Infinity,
-                next: Infinity,
-            };
+            return enterFromRight(cursor, denominator, DENOMINATOR);
         } else if (prevNode && prevNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = prevNode.children;
             if (sup) {
-                return {
-                    path: [...cursor.path, prev, SUP],
-                    prev:
-                        sup.children.length > 0
-                            ? sup.children.length - 1
-                            : -Infinity,
-                    next: Infinity,
-                };
+                return enterFromRight(cursor, sup, SUP);
             } else if (sub) {
-                return {
-                    path: [...cursor.path, prev, SUB],
-                    prev:
-                        sub.children.length > 0
-                            ? sub.children.length - 1
-                            : -Infinity,
-                    next: Infinity,
-                };
+                return enterFromRight(cursor, sub, SUB);
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
-        } else {
-            // move to the left
-            const newPrev = prevIndex(children, prev);
-            const newNext =
-                newPrev === -Infinity
-                    ? children.length > 0
-                        ? 0
-                        : Infinity
-                    : nextIndex(children, newPrev);
-            return {
-                path: cursor.path,
-                prev: newPrev,
-                next: newNext,
-            };
         }
-    } else if (cursor.path.length >= 1) {
-        const parent = Editor.nodeAtPath(
+
+        // If all else fails, move to the left
+        const newPrev = prevIndex(children, cursor.prev);
+
+        return {
+            path: cursor.path,
+            prev: newPrev,
+            next: cursor.prev,
+        };
+    } else if (cursor.path.length >= 2) {
+        const parent = nodeAtPath(
             math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
+        const grandparent = nodeAtPath(
+            math,
+            cursor.path.slice(0, cursor.path.length - 2),
+        );
 
-        if (parent.type === "root" && cursor.path.length >= 2) {
-            const grandparent = Editor.nodeAtPath(
-                math,
-                cursor.path.slice(0, cursor.path.length - 2),
-            );
-            const parentIndex = cursor.path[cursor.path.length - 2];
-            if (hasChildren(grandparent)) {
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
-            }
+        // This check should never fail since the cursor's path has at
+        // least two entries in it, but TypeScript doesn't understand
+        // this so we need to manually check to refine `grandparent`
+        // to a row.
+        if (!hasChildren(grandparent)) {
+            return cursor;
+        }
+
+        if (parent.type === "root") {
+            return exitToLeft(cursor, grandparent);
             // TODO: handle moving into the index if one exists
-        } else if (parent.type === "subsup" && cursor.path.length >= 2) {
-            const grandparent = Editor.nodeAtPath(
-                math,
-                cursor.path.slice(0, cursor.path.length - 2),
-            );
-            const parentIndex = cursor.path[cursor.path.length - 2];
+        } else if (parent.type === "subsup") {
             const [sub, sup] = parent.children;
 
-            if (currentNode === sup && hasChildren(grandparent)) {
+            if (selecting) {
+                return exitToLeft(cursor, grandparent);
+            } else if (currentNode === sup) {
                 if (sub) {
-                    return {
-                        path: [...cursor.path.slice(0, -1), SUB],
-                        prev:
-                            sub.children.length > 0
-                                ? sub.children.length - 1
-                                : -Infinity,
-                        next: Infinity,
-                    };
+                    return moveToPrevPibling(cursor, sub, SUB);
                 } else {
-                    return {
-                        path: cursor.path.slice(0, -2),
-                        prev: grandparent.children.indexOf(parent) - 1,
-                        next: grandparent.children.indexOf(parent),
-                    };
+                    return exitToLeft(cursor, grandparent);
                 }
-            } else if (currentNode === sub && hasChildren(grandparent)) {
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+            } else if (currentNode === sub) {
+                return exitToLeft(cursor, grandparent);
             }
-        } else if (parent.type === "frac" && cursor.path.length >= 2) {
-            const grandparent = Editor.nodeAtPath(
-                math,
-                cursor.path.slice(0, cursor.path.length - 2),
-            );
-            const parentIndex = cursor.path[cursor.path.length - 2];
+        } else if (parent.type === "frac") {
             const [numerator, denominator] = parent.children;
 
-            if (currentNode === denominator) {
+            if (selecting) {
+                return exitToLeft(cursor, grandparent);
+            } else if (currentNode === denominator) {
                 // move from denominator to numerator
-                return {
-                    path: [...cursor.path.slice(0, -1), NUMERATOR],
-                    prev:
-                        numerator.children.length > 0
-                            ? numerator.children.length - 1
-                            : -Infinity,
-                    next: Infinity,
-                };
-            } else if (currentNode === numerator && hasChildren(grandparent)) {
-                // exit fraction to the left
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveToPrevPibling(cursor, numerator, NUMERATOR);
+            } else if (currentNode === numerator) {
+                return exitToLeft(cursor, grandparent);
             }
         }
     }

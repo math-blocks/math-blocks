@@ -10,6 +10,7 @@ import {
     removeChildWithIndex,
     selectionSplit,
     hasChildren,
+    nodeAtPath,
 } from "../util";
 import {moveLeft} from "./move-left";
 
@@ -104,12 +105,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
         }
         const newChildren = removeChildWithIndex(children, removeIndex);
         const newPrev = prevIndex(newChildren, cursor.prev);
-        const newNext =
-            newPrev === -Infinity
-                ? newChildren.length > 0
-                    ? 0
-                    : Infinity
-                : nextIndex(newChildren, newPrev);
+        const newNext = nextIndex(newChildren, newPrev);
         const newCursor = {
             ...cursor,
             prev: newPrev,
@@ -121,11 +117,11 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
     }
 
     if (cursor.path.length > 1) {
-        const parent = Editor.nodeAtPath(
+        const parent = nodeAtPath(
             math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
-        const grandparent = Editor.nodeAtPath(
+        const grandparent = nodeAtPath(
             math,
             cursor.path.slice(0, cursor.path.length - 2),
         );
@@ -173,12 +169,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
 
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
-            const newNext =
-                newPrev === -Infinity
-                    ? newChildren.length > 0
-                        ? 0
-                        : Infinity
-                    : nextIndex(newChildren, newPrev);
+            const newNext = nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
                 prev: newPrev,
@@ -214,12 +205,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
 
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
-            const newNext =
-                newPrev === -Infinity
-                    ? newChildren.length > 0
-                        ? 0
-                        : Infinity
-                    : nextIndex(newChildren, newPrev);
+            const newNext = nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
                 prev: newPrev,
@@ -252,12 +238,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
 
             // update cursor
             const newPrev = prevIndex(newChildren, parentIndex);
-            const newNext =
-                newPrev === -Infinity
-                    ? newChildren.length > 0
-                        ? 0
-                        : Infinity
-                    : nextIndex(newChildren, newPrev);
+            const newNext = nextIndex(newChildren, newPrev);
             const newCursor = {
                 path: cursor.path.slice(0, -2), // move up two levels
                 prev: newPrev,

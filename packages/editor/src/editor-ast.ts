@@ -182,46 +182,6 @@ export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
     }
 }
 
-export function nodeAtPath<T, U>(
-    root: Node<T, U>,
-    path: ReadonlyArray<number>,
-): Node<T, U> {
-    if (path.length === 0) {
-        return root;
-    } else {
-        switch (root.type) {
-            case "atom":
-                throw new Error("invalid path");
-            case "subsup": {
-                const [head, ...tail] = path;
-                if (head > 1) {
-                    throw new Error("invalid path");
-                }
-                const headChild = root.children[head];
-                if (!headChild) {
-                    throw new Error("invalid path");
-                }
-                return nodeAtPath(headChild, tail);
-            }
-            case "root": {
-                const [head, ...tail] = path;
-                if (head > 1) {
-                    throw new Error("invalid path");
-                }
-                const headChild = root.children[head];
-                if (!headChild) {
-                    throw new Error("invalid path");
-                }
-                return nodeAtPath(headChild, tail);
-            }
-            default: {
-                const [head, ...tail] = path;
-                return nodeAtPath(root.children[head], tail);
-            }
-        }
-    }
-}
-
 export type Cursor = {
     path: number[];
     // these are indices of the node inside the parent
