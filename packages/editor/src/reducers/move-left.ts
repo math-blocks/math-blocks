@@ -11,10 +11,34 @@ import {
     isPrefixArray,
     hasGrandchildren,
 } from "../util";
-import {SUB, SUP, NUMERATOR, RADICAND} from "../constants";
+import {SUB, SUP, NUMERATOR, RADICAND, DENOMINATOR} from "../constants";
 
 type ID = {
     id: number;
+};
+
+const moveInto = (
+    cursor: Editor.Cursor,
+    row: Editor.Row<Editor.Glyph, ID>,
+    index: number,
+): Editor.Cursor => {
+    return {
+        path: [...cursor.path, cursor.prev, index],
+        prev: row.children.length > 0 ? row.children.length - 1 : -Infinity,
+        next: Infinity,
+    };
+};
+
+const moveOut = (
+    cursor: Editor.Cursor,
+    grandparentRow: Editor.Row<Editor.Glyph, ID>,
+    index: number,
+): Editor.Cursor => {
+    return {
+        path: cursor.path.slice(0, -2),
+        prev: prevIndex(grandparentRow.children, index),
+        next: index,
+    };
 };
 
 export const moveLeft = (
@@ -40,60 +64,25 @@ export const moveLeft = (
                 const index = selectionStart.path[path.length];
                 const node = prevNode.children[index];
                 if (node) {
-                    return {
-                        path: [...cursor.path, prev, index],
-                        prev:
-                            node.children.length > 0
-                                ? node.children.length - 1
-                                : -Infinity,
-                        next: Infinity,
-                    };
+                    return moveInto(cursor, node, index);
                 }
             }
         }
 
         if (prevNode && prevNode.type === "root" && !selecting) {
             const radicand = prevNode.children[0];
-            return {
-                path: [...cursor.path, prev, RADICAND],
-                prev:
-                    radicand.children.length > 0
-                        ? radicand.children.length - 1
-                        : -Infinity,
-                next: Infinity,
-            };
+            return moveInto(cursor, radicand, RADICAND);
         } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)
             const denominator = prevNode.children[1];
-            return {
-                path: [...cursor.path, prev, 1],
-                prev:
-                    denominator.children.length > 0
-                        ? denominator.children.length - 1
-                        : -Infinity,
-                next: Infinity,
-            };
+            return moveInto(cursor, denominator, DENOMINATOR);
         } else if (prevNode && prevNode.type === "subsup" && !selecting) {
             // enter sup/sub
             const [sub, sup] = prevNode.children;
             if (sup) {
-                return {
-                    path: [...cursor.path, prev, SUP],
-                    prev:
-                        sup.children.length > 0
-                            ? sup.children.length - 1
-                            : -Infinity,
-                    next: Infinity,
-                };
+                return moveInto(cursor, sup, SUP);
             } else if (sub) {
-                return {
-                    path: [...cursor.path, prev, SUB],
-                    prev:
-                        sub.children.length > 0
-                            ? sub.children.length - 1
-                            : -Infinity,
-                    next: Infinity,
-                };
+                return moveInto(cursor, sub, SUB);
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
@@ -125,11 +114,7 @@ export const moveLeft = (
             );
             const parentIndex = cursor.path[cursor.path.length - 2];
             if (hasChildren(grandparent)) {
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveOut(cursor, grandparent, parentIndex);
             }
             // TODO: handle moving into the index if one exists
         } else if (parent.type === "subsup" && cursor.path.length >= 2) {
@@ -142,11 +127,7 @@ export const moveLeft = (
 
             if (selecting && hasChildren(grandparent)) {
                 // exit subsup to the left
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveOut(cursor, grandparent, parentIndex);
             } else if (currentNode === sup && hasChildren(grandparent)) {
                 if (sub) {
                     return {
@@ -158,18 +139,10 @@ export const moveLeft = (
                         next: Infinity,
                     };
                 } else {
-                    return {
-                        path: cursor.path.slice(0, -2),
-                        prev: grandparent.children.indexOf(parent) - 1,
-                        next: grandparent.children.indexOf(parent),
-                    };
+                    return moveOut(cursor, grandparent, parentIndex);
                 }
             } else if (currentNode === sub && hasChildren(grandparent)) {
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveOut(cursor, grandparent, parentIndex);
             }
         } else if (parent.type === "frac" && cursor.path.length >= 2) {
             const grandparent = nodeAtPath(
@@ -181,11 +154,7 @@ export const moveLeft = (
 
             if (selecting && hasChildren(grandparent)) {
                 // exit fraction to the left
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveOut(cursor, grandparent, parentIndex);
             } else if (currentNode === denominator) {
                 // move from denominator to numerator
                 return {
@@ -198,11 +167,7 @@ export const moveLeft = (
                 };
             } else if (currentNode === numerator && hasChildren(grandparent)) {
                 // exit fraction to the left
-                return {
-                    path: cursor.path.slice(0, -2),
-                    prev: prevIndex(grandparent.children, parentIndex),
-                    next: parentIndex,
-                };
+                return moveOut(cursor, grandparent, parentIndex);
             }
         }
     }

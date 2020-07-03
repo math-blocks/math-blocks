@@ -2,7 +2,7 @@ import reducer from "../editor-reducer";
 import * as Editor from "../editor-ast";
 import * as Util from "../util";
 import {State} from "../state";
-import {SUB, SUP, DENOMINATOR, RADICAND} from "../constants";
+import {SUB, SUP, DENOMINATOR, RADICAND, NUMERATOR} from "../constants";
 
 const {row, glyph} = Editor;
 
@@ -215,7 +215,229 @@ describe("reducer", () => {
             expect(newState.selectionStart).toBe(undefined);
         });
 
-        // TODO: write tests for selections starting in fractions
+        describe("fractions", () => {
+            test("moving out of denominator to left", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, DENOMINATOR],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const action = {type: "ArrowLeft", shift: true};
+                const newState = reducer(reducer(state, action), action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(cursor);
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+
+            test("moving out of denominator to right", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, DENOMINATOR],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const action = {type: "ArrowRight", shift: true};
+                const newState = reducer(reducer(state, action), action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(cursor);
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            test("moving out of numerator to left", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, NUMERATOR],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const action = {type: "ArrowLeft", shift: true};
+                const newState = reducer(reducer(state, action), action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(cursor);
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                });
+            });
+
+            test("moving out of numerator to right", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const cursor = {
+                    path: [1, NUMERATOR],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor};
+                const action = {type: "ArrowRight", shift: true};
+                const newState = reducer(reducer(state, action), action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(cursor);
+                expect(newState.cursor).toEqual({
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                });
+            });
+
+            test("moving into denominator from left", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const selectionStart = {
+                    path: [1, DENOMINATOR],
+                    prev: 0,
+                    next: 1,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor, selectionStart};
+                const action = {type: "ArrowRight", shift: true};
+                const newState = reducer(state, action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(selectionStart);
+                expect(newState.cursor).toEqual({
+                    path: [1, DENOMINATOR],
+                    prev: -Infinity,
+                    next: 0,
+                });
+            });
+
+            test("moving into denominator from right", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const selectionStart = {
+                    path: [1, DENOMINATOR],
+                    prev: 0,
+                    next: 1,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor, selectionStart};
+                const action = {type: "ArrowLeft", shift: true};
+                const newState = reducer(state, action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(selectionStart);
+                expect(newState.cursor).toEqual({
+                    path: [1, DENOMINATOR],
+                    prev: 1,
+                    next: Infinity,
+                });
+            });
+
+            test("moving into numerator from left", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const selectionStart = {
+                    path: [1, NUMERATOR],
+                    prev: 0,
+                    next: 1,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                };
+
+                const state: State = {math, cursor, selectionStart};
+                const action = {type: "ArrowRight", shift: true};
+                const newState = reducer(state, action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(selectionStart);
+                expect(newState.cursor).toEqual({
+                    path: [1, NUMERATOR],
+                    prev: -Infinity,
+                    next: 0,
+                });
+            });
+
+            test("moving into numerator from right", () => {
+                const math = row([
+                    glyph("a"),
+                    Util.frac("xy", "uv"),
+                    glyph("b"),
+                ]);
+                const selectionStart = {
+                    path: [1, NUMERATOR],
+                    prev: 0,
+                    next: 1,
+                };
+                const cursor = {
+                    path: [],
+                    prev: 1,
+                    next: 2,
+                };
+
+                const state: State = {math, cursor, selectionStart};
+                const action = {type: "ArrowLeft", shift: true};
+                const newState = reducer(state, action);
+
+                expect(newState.math).toEqualMath(math);
+                expect(newState.selectionStart).toEqual(selectionStart);
+                expect(newState.cursor).toEqual({
+                    path: [1, NUMERATOR],
+                    prev: 1,
+                    next: Infinity,
+                });
+            });
+        });
+
+        // describe.todo("subsup");
     });
 
     describe("manipulating a selection", () => {
