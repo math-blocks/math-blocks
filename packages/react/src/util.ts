@@ -14,7 +14,7 @@ type LayoutCursor = {
 // TODO: dedupe with editor/utils.ts
 export const layoutCursorFromState = (state: Editor.State): LayoutCursor => {
     const {math, cursor, selectionStart} = state;
-    const parentNode = Editor.nodeAtPath(math, cursor.path);
+    const parentNode = Editor.Util.nodeAtPath(math, cursor.path);
 
     let result = {
         parent: parentNode.id,

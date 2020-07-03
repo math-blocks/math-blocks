@@ -10,6 +10,7 @@ import {
     removeChildWithIndex,
     selectionSplit,
     hasChildren,
+    nodeAtPath,
 } from "../util";
 import {moveLeft} from "./move-left";
 
@@ -121,11 +122,11 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
     }
 
     if (cursor.path.length > 1) {
-        const parent = Editor.nodeAtPath(
+        const parent = nodeAtPath(
             math,
             cursor.path.slice(0, cursor.path.length - 1),
         );
-        const grandparent = Editor.nodeAtPath(
+        const grandparent = nodeAtPath(
             math,
             cursor.path.slice(0, cursor.path.length - 2),
         );
