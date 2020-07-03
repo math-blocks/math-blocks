@@ -306,13 +306,6 @@ export const isGlyph = (
 ): node is Editor.Atom<Editor.Glyph, ID> =>
     node.type === "atom" && node.value.char == char;
 
-export const getChildWithIndex = <T extends Identifiable>(
-    children: ReadonlyArray<T>,
-    childIndex: number,
-): T | null => {
-    return children[childIndex] || null;
-};
-
 export const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
