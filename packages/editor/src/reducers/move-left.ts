@@ -3,7 +3,6 @@ import * as Editor from "@math-blocks/editor";
 import {State} from "../state";
 import {
     prevIndex,
-    nextIndex,
     hasChildren,
     nodeAtPath,
     pathForNode,
