@@ -7,10 +7,18 @@ type ID = {
     id: number;
 };
 
-const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
-    multiplier = 1,
-) => (node: Editor.Node<Editor.Glyph, ID>): Layout.Node => {
-    const _typeset = typeset(fontMetrics)(baseFontSize)(multiplier);
+type Context = {
+    fontMetrics: FontMetrics;
+    baseFontSize: number;
+    multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
+    cramped: boolean;
+};
+
+const typeset = (
+    node: Editor.Node<Editor.Glyph, ID>,
+    context: Context,
+): Layout.Node => {
+    const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const fontSize = multiplier * baseFontSize;
     const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
@@ -18,8 +26,8 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
 
     // Adds appropriate padding around operators where appropriate
     const typesetChildren = (
-        _typeset: (node: Editor.Node<Editor.Glyph, ID>) => Layout.Node,
         children: Editor.Node<Editor.Glyph, ID>[],
+        context: Context,
     ): Layout.Node[] =>
         children.map((child, index) => {
             if (child.type === "atom") {
@@ -33,7 +41,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                               prevChild.value.char,
                           )
                         : true);
-                const glyph = _typeset(child);
+                const glyph = typeset(child, context);
 
                 if (unary) {
                     glyph.id = child.id;
@@ -43,14 +51,16 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                         value.char,
                     )
                 ) {
-                    const box = Layout.hpackNat(
-                        [
-                            Layout.makeKern(fontSize / 4),
-                            glyph,
-                            Layout.makeKern(fontSize / 4),
-                        ],
-                        multiplier,
-                    );
+                    const box = context.cramped
+                        ? glyph
+                        : Layout.hpackNat(
+                              [
+                                  Layout.makeKern(fontSize / 4),
+                                  glyph,
+                                  Layout.makeKern(fontSize / 4),
+                              ],
+                              multiplier,
+                          );
                     box.id = child.id;
                     return box;
                 } else {
@@ -61,13 +71,13 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
                     return glyph;
                 }
             }
-            return _typeset(child);
+            return typeset(child, context);
         });
 
     switch (node.type) {
         case "row": {
             const row = Layout.hpackNat(
-                typesetChildren(_typeset, node.children),
+                typesetChildren(node.children, context),
                 multiplier,
             );
             row.height = Math.max(row.height, 0.85 * baseFontSize * multiplier);
@@ -77,13 +87,16 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         }
         case "subsup": {
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
-            const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
             let subBox: Layout.Box | undefined;
             const [sub, sup] = node.children;
             // TODO: document this better so I know what's going on here.
             if (sub) {
                 subBox = Layout.hpackNat(
-                    typesetChildren(_typeset, sub.children),
+                    typesetChildren(sub.children, {
+                        ...context,
+                        multiplier: newMultiplier,
+                        cramped: true,
+                    }),
                     newMultiplier,
                 );
                 subBox.id = sub.id;
@@ -109,7 +122,11 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             // TODO: document this better so I know what's going on here.
             if (sup) {
                 supBox = Layout.hpackNat(
-                    typesetChildren(_typeset, sup.children),
+                    typesetChildren(sup.children, {
+                        ...context,
+                        multiplier: newMultiplier,
+                        cramped: true,
+                    }),
                     newMultiplier,
                 );
                 supBox.id = sup.id;
@@ -136,14 +153,19 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
             return parentBox;
         }
         case "frac": {
-            const newMultiplier = multiplier; // === 1.0 ? 0.7 : 0.5;
-            const _typeset = typeset(fontMetrics)(baseFontSize)(newMultiplier);
+            const newMultiplier = cramped ? 0.5 : 1.0;
             const numerator = Layout.hpackNat(
-                typesetChildren(_typeset, node.children[0].children),
+                typesetChildren(node.children[0].children, {
+                    ...context,
+                    multiplier: newMultiplier,
+                }),
                 newMultiplier,
             );
             const denominator = Layout.hpackNat(
-                typesetChildren(_typeset, node.children[1].children),
+                typesetChildren(node.children[1].children, {
+                    ...context,
+                    multiplier: newMultiplier,
+                }),
                 newMultiplier,
             );
 
@@ -182,7 +204,7 @@ const typeset = (fontMetrics: FontMetrics) => (baseFontSize: number) => (
         }
         case "root": {
             const radicand = Layout.hpackNat(
-                typesetChildren(_typeset, node.children[0].children), // radicand
+                typesetChildren(node.children[0].children, context), // radicand
                 multiplier,
             );
             radicand.id = node.children[0].id;

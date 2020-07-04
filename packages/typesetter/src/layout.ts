@@ -300,9 +300,9 @@ export const makeSubSup = (
         supBox ? getWidth(supBox) : 0,
         subBox ? getWidth(subBox) : 0,
     );
-    const upList = supBox ? makeList(10, supBox) : [];
+    const upList = supBox ? makeList(10 * multiplier, supBox) : [];
     // TODO: make the shift depend on the height of the subscript
-    const dnList = subBox ? makeList(10, subBox) : [];
+    const dnList = subBox ? makeList(0 * multiplier, subBox) : [];
     // we can't have a non-zero kern b/c it has no height/depth
     const gap = makeKern(0);
 
