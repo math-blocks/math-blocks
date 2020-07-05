@@ -14,6 +14,59 @@ type Context = {
     cramped: boolean;
 };
 
+// Adds appropriate padding around operators where appropriate
+const typesetChildren = (
+    children: Editor.Node<Editor.Glyph, ID>[],
+    context: Context,
+): Layout.Node[] => {
+    const {multiplier, baseFontSize} = context;
+    const fontSize = multiplier * baseFontSize;
+
+    return children.map((child, index) => {
+        if (child.type === "atom") {
+            const {value} = child;
+            const prevChild = index > 0 ? children[index - 1] : undefined;
+            const unary =
+                /[+\u2212]/.test(value.char) &&
+                (prevChild
+                    ? prevChild.type === "atom" &&
+                      /[+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
+                          prevChild.value.char,
+                      )
+                    : true);
+            const glyph = typeset(child, context);
+
+            if (unary) {
+                glyph.id = child.id;
+                return glyph;
+            } else if (
+                /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
+            ) {
+                const box = context.cramped
+                    ? glyph
+                    : Layout.hpackNat(
+                          [
+                              Layout.makeKern(fontSize / 4),
+                              glyph,
+                              Layout.makeKern(fontSize / 4),
+                          ],
+                          multiplier,
+                      );
+                box.id = child.id;
+                return box;
+            } else {
+                glyph.id = child.id;
+                if (glyph.type === "Glyph") {
+                    glyph.pending = child.value.pending;
+                }
+                return glyph;
+            }
+        } else {
+            return typeset(child, context);
+        }
+    });
+};
+
 const typeset = (
     node: Editor.Node<Editor.Glyph, ID>,
     context: Context,
@@ -23,56 +76,6 @@ const typeset = (
     const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
-
-    // Adds appropriate padding around operators where appropriate
-    const typesetChildren = (
-        children: Editor.Node<Editor.Glyph, ID>[],
-        context: Context,
-    ): Layout.Node[] =>
-        children.map((child, index) => {
-            if (child.type === "atom") {
-                const {value} = child;
-                const prevChild = index > 0 ? children[index - 1] : null;
-                const unary =
-                    /[+\u2212]/.test(value.char) &&
-                    (prevChild
-                        ? prevChild.type === "atom" &&
-                          /[+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
-                              prevChild.value.char,
-                          )
-                        : true);
-                const glyph = typeset(child, context);
-
-                if (unary) {
-                    glyph.id = child.id;
-                    return glyph;
-                } else if (
-                    /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
-                        value.char,
-                    )
-                ) {
-                    const box = context.cramped
-                        ? glyph
-                        : Layout.hpackNat(
-                              [
-                                  Layout.makeKern(fontSize / 4),
-                                  glyph,
-                                  Layout.makeKern(fontSize / 4),
-                              ],
-                              multiplier,
-                          );
-                    box.id = child.id;
-                    return box;
-                } else {
-                    glyph.id = child.id;
-                    if (glyph.type === "Glyph") {
-                        glyph.pending = child.value.pending;
-                    }
-                    return glyph;
-                }
-            }
-            return typeset(child, context);
-        });
 
     switch (node.type) {
         case "row": {
@@ -151,6 +154,93 @@ const typeset = (
             const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
             parentBox.id = node.id;
             return parentBox;
+        }
+        case "limits": {
+            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const [lower, upper] = node.children;
+
+            const lowerBox = Layout.hpackNat(
+                typesetChildren(lower.children, {
+                    ...context,
+                    multiplier: newMultiplier,
+                    cramped: true,
+                }),
+                newMultiplier,
+            );
+            lowerBox.id = lower.id;
+            const inner = typeset(node.inner, context);
+
+            let upperBox: Layout.Box | undefined;
+            if (upper) {
+                upperBox = Layout.hpackNat(
+                    typesetChildren(upper.children, {
+                        ...context,
+                        multiplier: newMultiplier,
+                        cramped: true,
+                    }),
+                    newMultiplier,
+                );
+                upperBox.id = upper.id;
+            }
+
+            // TODO: try to reuse getCharDepth
+            if (jmetrics) {
+                const jDepth =
+                    (baseFontSize *
+                        newMultiplier *
+                        (jmetrics.height - jmetrics.bearingY)) /
+                    fontMetrics.unitsPerEm;
+                lowerBox.depth = Math.max(lowerBox.depth, jDepth);
+                if (upperBox) {
+                    upperBox.depth = Math.max(upperBox.depth, jDepth);
+                }
+            }
+
+            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+            if (Emetrics) {
+                const EHeight =
+                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                    fontMetrics.unitsPerEm;
+                lowerBox.height = Math.max(lowerBox.height, EHeight);
+                if (upperBox) {
+                    upperBox.height = Math.max(upperBox.height, EHeight);
+                }
+            }
+
+            const innerWidth = Layout.getWidth(inner);
+            const width = Math.max(
+                innerWidth,
+                lowerBox.width || 0,
+                upperBox?.width || 0,
+            );
+
+            const newInner =
+                innerWidth < width
+                    ? Layout.hpackNat(
+                          [
+                              Layout.makeKern((width - innerWidth) / 2),
+                              inner,
+                              Layout.makeKern((width - innerWidth) / 2),
+                          ],
+                          multiplier,
+                      )
+                    : inner;
+            if (lowerBox.width < width) {
+                lowerBox.shift = (width - lowerBox.width) / 2;
+            }
+            if (upperBox && upperBox.width < width) {
+                upperBox.shift = (width - upperBox.width) / 2;
+            }
+
+            const limits = Layout.makeVBox(
+                width,
+                newInner,
+                upperBox ? [Layout.makeKern(6), upperBox] : [],
+                [Layout.makeKern(4), lowerBox],
+                multiplier,
+            );
+            limits.id = node.id;
+            return limits;
         }
         case "frac": {
             const newMultiplier = cramped ? 0.5 : 1.0;

@@ -3,7 +3,6 @@ import * as Editor from "@math-blocks/editor";
 import {State} from "../state";
 import {
     nextIndex,
-    prevIndex,
     hasChildren,
     nodeAtPath,
     isPrefixArray,
@@ -101,6 +100,17 @@ export const moveRight = (
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
+        } else if (nextNode && nextNode.type === "limits" && !selecting) {
+            // enter lower/upper limits
+            const [lower, upper] = nextNode.children;
+            // lower should always exist
+            if (lower) {
+                return enterFromLeft(cursor, lower, SUB);
+            } else if (upper) {
+                return enterFromLeft(cursor, upper, SUP);
+            } else {
+                throw new Error("subsup node must have at least a sub or sup");
+            }
         }
 
         // If all else fails, move to the right
@@ -144,6 +154,20 @@ export const moveRight = (
                     return exitToRight(cursor, grandparent);
                 }
             } else if (currentNode === sup) {
+                return exitToRight(cursor, grandparent);
+            }
+        } else if (parent.type === "limits") {
+            const [lower, upper] = parent.children;
+
+            if (selecting) {
+                return exitToRight(cursor, grandparent);
+            } else if (currentNode === lower) {
+                if (upper) {
+                    return moveToNextPibling(cursor, upper, SUP);
+                } else {
+                    return exitToRight(cursor, grandparent);
+                }
+            } else if (currentNode === upper) {
                 return exitToRight(cursor, grandparent);
             }
         } else if (parent.type === "frac") {

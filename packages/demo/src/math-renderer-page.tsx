@@ -18,7 +18,7 @@ const linearEquation = typeset(
     context,
 ) as Layout.Box;
 
-const {glyph, row, frac, root} = Editor;
+const {glyph, row, frac, root, limits} = Editor;
 
 const pythagoras = typeset(
     row([
@@ -61,11 +61,38 @@ const quadraticEquation = typeset(
     context,
 ) as Layout.Box;
 
+const lim = typeset(
+    row([
+        limits(row([glyph("l"), glyph("i"), glyph("m")]), [
+            glyph("x"),
+            glyph("—"),
+            glyph(">"),
+            glyph("0"),
+        ]),
+        glyph("x"),
+    ]),
+    context,
+) as Layout.Box;
+
+const sum = typeset(
+    row([
+        limits(
+            glyph("\u03a3"),
+            [glyph("i"), glyph("="), glyph("0")],
+            [glyph("\u221e")],
+        ),
+        frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
+    ]),
+    context,
+) as Layout.Box;
+
 const RendererPage: React.SFC<{}> = () => (
     <div style={{display: "flex", flexDirection: "column"}}>
         <MathRenderer box={linearEquation} />
         <MathRenderer box={pythagoras} />
         <MathRenderer box={quadraticEquation} />
+        <MathRenderer box={lim} />
+        <MathRenderer box={sum} />
     </div>
 );
 
