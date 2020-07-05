@@ -248,9 +248,15 @@ export const lex = (
             const loc = location(path, offset, offset + 1);
 
             let inner: Editor.Node<Token, {loc: Location}>;
-            if (node.inner.type === "atom" && node.inner.value.char === "\u03a3") {
+            if (
+                node.inner.type === "atom" &&
+                node.inner.value.char === "\u03a3"
+            ) {
                 inner = atom({kind: "sum"}, loc);
-            } else if (node.inner.type === "atom" && node.inner.value.char === "\u03a0") {
+            } else if (
+                node.inner.type === "atom" &&
+                node.inner.value.char === "\u03a0"
+            ) {
                 inner = atom({kind: "prod"}, loc);
             } else if (node.inner.type === "row") {
                 // TODO: check that the row corresponds to "lim"
