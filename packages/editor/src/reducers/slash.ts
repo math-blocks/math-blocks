@@ -50,15 +50,39 @@ export const slash = (currentNode: HasChildren, draft: State): void => {
 
     const endIndex = next === Infinity ? currentNode.children.length : next;
     let startIndex = endIndex;
+    let parenCount = 0;
+
     while (startIndex > 0) {
         const prevChild = currentNode.children[startIndex - 1];
+        if (prevChild.type === "atom" && prevChild.value.char === ")") {
+            parenCount++;
+        }
+
+        if (prevChild.type === "atom" && prevChild.value.char === "(") {
+            parenCount--;
+        }
+
+        if (parenCount < 0) {
+            throw new Error("mismatched parentheses");
+        }
+
         if (
             prevChild.type === "atom" &&
+            parenCount === 0 &&
             splitChars.includes(prevChild.value.char)
         ) {
             break;
         }
+
+        if (prevChild.type === "limits") {
+            break;
+        }
+
         startIndex--;
+    }
+
+    if (parenCount !== 0) {
+        throw new Error("mismatched parentheses");
     }
 
     const head = currentNode.children.slice(0, startIndex);
