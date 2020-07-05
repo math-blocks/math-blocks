@@ -308,7 +308,10 @@ export const hasGrandchildren = (
     node: Editor.Node<Editor.Glyph, ID>,
 ): node is HasGrandchildren<Editor.Glyph, ID> => {
     return (
-        node.type === "frac" || node.type === "root" || node.type === "subsup" || node.type === "limits"
+        node.type === "frac" ||
+        node.type === "root" ||
+        node.type === "subsup" ||
+        node.type === "limits"
     );
 };
 

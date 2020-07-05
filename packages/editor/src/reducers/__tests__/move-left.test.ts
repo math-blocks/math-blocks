@@ -236,10 +236,7 @@ describe("moveLeft", () => {
         it("should enter the lower limit from the right", () => {
             const math = row([
                 glyph("e"),
-                limits(
-                    glyph("f"), 
-                    [glyph("1"), glyph("+"), glyph("2")],
-                ),
+                limits(glyph("f"), [glyph("1"), glyph("+"), glyph("2")]),
                 glyph("g"),
             ]);
             const cursor = {
@@ -260,14 +257,7 @@ describe("moveLeft", () => {
         });
 
         it("should enter an empty lower limit from the right", () => {
-            const math = row([
-                glyph("e"),
-                limits(
-                    glyph("f"), 
-                    [],
-                ),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), limits(glyph("f"), []), glyph("g")]);
             const cursor = {
                 path: [],
                 prev: 1,
@@ -289,7 +279,7 @@ describe("moveLeft", () => {
             const math = row([
                 glyph("e"),
                 limits(
-                    glyph("f"), 
+                    glyph("f"),
                     [glyph("1"), glyph("+"), glyph("2")],
                     [glyph("a"), glyph("-"), glyph("b")],
                 ),
@@ -315,11 +305,7 @@ describe("moveLeft", () => {
         it("should enter an empty upper limit from the right", () => {
             const math = row([
                 glyph("e"),
-                limits(
-                    glyph("f"), 
-                    [glyph("1"), glyph("+"), glyph("2")],
-                    [],
-                ),
+                limits(glyph("f"), [glyph("1"), glyph("+"), glyph("2")], []),
                 glyph("g"),
             ]);
             const cursor = {
@@ -343,7 +329,7 @@ describe("moveLeft", () => {
             const math = row([
                 glyph("e"),
                 limits(
-                    glyph("f"), 
+                    glyph("f"),
                     [glyph("1"), glyph("+"), glyph("2")],
                     [glyph("a"), glyph("-"), glyph("b")],
                 ),
@@ -369,11 +355,7 @@ describe("moveLeft", () => {
         it("should move from the upper limit to an empty lower limit", () => {
             const math = row([
                 glyph("e"),
-                limits(
-                    glyph("f"), 
-                    [],
-                    [glyph("a"), glyph("-"), glyph("b")],
-                ),
+                limits(glyph("f"), [], [glyph("a"), glyph("-"), glyph("b")]),
                 glyph("g"),
             ]);
             const cursor = {
@@ -397,7 +379,7 @@ describe("moveLeft", () => {
             const math = row([
                 glyph("e"),
                 limits(
-                    glyph("f"), 
+                    glyph("f"),
                     [glyph("1"), glyph("+"), glyph("2")],
                     [glyph("a"), glyph("-"), glyph("b")],
                 ),
