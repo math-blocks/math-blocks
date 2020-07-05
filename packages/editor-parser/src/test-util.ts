@@ -111,8 +111,9 @@ const print = (
             })`;
         }
         case "limits": {
+            const inner = print(ast.inner, serialize, indent);
             const [lower, upper] = ast.children;
-            return `(limits@[${loc.path.map(String).join(",")}]:${loc.start}:${
+            return `(limits{${inner}}@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
             } ${atom.name} ${print(lower, serialize, indent)} ${
                 upper ? print(upper, serialize, indent) : "_"

@@ -5,7 +5,7 @@ import {serializer} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
-const {row, glyph, frac, subsup} = Editor;
+const {row, glyph, frac, subsup, limits} = Editor;
 
 describe("Lexer", () => {
     describe("lex", () => {
@@ -184,6 +184,63 @@ describe("Lexer", () => {
                   ellipsis@[]:2:5 
                   plus@[]:5:6 
                   (ident@[]:6:7 n))
+            `);
+        });
+
+        it("should parse summation with limits", () => {
+            const glyphTree = row([
+                limits(
+                    glyph("\u03a3"),
+                    [glyph("i"), glyph("="), glyph("0")],
+                    [glyph("\u221e")],
+                ),
+            ]);
+            const tokenTree = Lexer.lexRow(glyphTree);
+
+            expect(tokenTree).toMatchInlineSnapshot(`
+                (row 
+                  (limits{sum@[]:0:1}@[]:0:1 atom (row 
+                    (ident@[0,0]:0:1 i) 
+                    eq@[0,0]:1:2 
+                    (num@[0,0]:2:3 0)) (row )))
+            `);
+        });
+
+        it("should parse products with limits", () => {
+            const glyphTree = row([
+                limits(
+                    glyph("\u03a0"),
+                    [glyph("i"), glyph("="), glyph("0")],
+                    [glyph("\u221e")],
+                ),
+            ]);
+            const tokenTree = Lexer.lexRow(glyphTree);
+
+            expect(tokenTree).toMatchInlineSnapshot(`
+                (row 
+                  (limits{prod@[]:0:1}@[]:0:1 atom (row 
+                    (ident@[0,0]:0:1 i) 
+                    eq@[0,0]:1:2 
+                    (num@[0,0]:2:3 0)) (row )))
+            `);
+        });
+
+        it("should parse lim", () => {
+            const glyphTree = row([
+                limits(Editor.Util.row("lim"), [
+                    glyph("i"),
+                    glyph("-"),
+                    glyph(">"),
+                    glyph("0"),
+                ]),
+            ]);
+            const tokenTree = Lexer.lexRow(glyphTree);
+
+            expect(tokenTree).toMatchInlineSnapshot(`
+                (row 
+                  (limits{lim@[]:0:1}@[]:0:1 atom (row 
+                    (ident@[0,0]:0:1 i) 
+                    (num@[0,0]:3:4 0)) _))
             `);
         });
     });

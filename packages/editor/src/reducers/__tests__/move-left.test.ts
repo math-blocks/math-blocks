@@ -4,7 +4,7 @@ import * as Util from "../../util";
 import {State} from "../../state";
 import {SUB, SUP, NUMERATOR, DENOMINATOR, RADICAND} from "../../constants";
 
-const {row, glyph} = Editor;
+const {row, glyph, limits} = Editor;
 
 expect.extend({
     toEqualMath(received, actual) {
@@ -228,6 +228,195 @@ describe("moveLeft", () => {
                 path: [1, SUB],
                 prev: 1,
                 next: Infinity,
+            });
+        });
+    });
+
+    describe("limits", () => {
+        it("should enter the lower limit from the right", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [glyph("1"), glyph("+"), glyph("2")],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [],
+                prev: 1,
+                next: 2,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUB],
+                prev: 2,
+                next: Infinity,
+            });
+        });
+
+        it("should enter an empty lower limit from the right", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [],
+                prev: 1,
+                next: 2,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUB],
+                prev: -Infinity,
+                next: Infinity,
+            });
+        });
+
+        it("should enter the upper limit from the right", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [glyph("1"), glyph("+"), glyph("2")],
+                    [glyph("a"), glyph("-"), glyph("b")],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [],
+                prev: 1,
+                next: 2,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUP],
+                prev: 2,
+                next: Infinity,
+            });
+        });
+
+        it("should enter an empty upper limit from the right", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [glyph("1"), glyph("+"), glyph("2")],
+                    [],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [],
+                prev: 1,
+                next: 2,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUP],
+                prev: -Infinity,
+                next: Infinity,
+            });
+        });
+
+        it("should move from the upper limit to the lower limit", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [glyph("1"), glyph("+"), glyph("2")],
+                    [glyph("a"), glyph("-"), glyph("b")],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [1, SUP],
+                prev: -Infinity,
+                next: 0,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUB],
+                prev: 2,
+                next: Infinity,
+            });
+        });
+
+        it("should move from the upper limit to an empty lower limit", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [],
+                    [glyph("a"), glyph("-"), glyph("b")],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [1, SUP],
+                prev: -Infinity,
+                next: 0,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [1, SUB],
+                prev: -Infinity,
+                next: Infinity,
+            });
+        });
+
+        it("should exit the lower limit", () => {
+            const math = row([
+                glyph("e"),
+                limits(
+                    glyph("f"), 
+                    [glyph("1"), glyph("+"), glyph("2")],
+                    [glyph("a"), glyph("-"), glyph("b")],
+                ),
+                glyph("g"),
+            ]);
+            const cursor = {
+                path: [1, SUB],
+                prev: -Infinity,
+                next: 0,
+            };
+
+            const state: State = {math, cursor};
+            const newState = reducer(state, action);
+
+            expect(newState.math).toEqualMath(math);
+            expect(newState.cursor).toEqual({
+                path: [],
+                prev: 0,
+                next: 1,
             });
         });
     });

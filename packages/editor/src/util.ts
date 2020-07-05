@@ -301,13 +301,14 @@ export const hasChildren = (
 export type HasGrandchildren<T, U> =
     | Editor.Frac<T, U>
     | Editor.Root<T, U>
-    | Editor.SubSup<T, U>;
+    | Editor.SubSup<T, U>
+    | Editor.Limits<T, U>;
 
 export const hasGrandchildren = (
     node: Editor.Node<Editor.Glyph, ID>,
 ): node is HasGrandchildren<Editor.Glyph, ID> => {
     return (
-        node.type === "frac" || node.type === "root" || node.type === "subsup"
+        node.type === "frac" || node.type === "root" || node.type === "subsup" || node.type === "limits"
     );
 };
 
