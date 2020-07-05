@@ -2,12 +2,9 @@ module.exports = {
     extends: [
         "typescript",
         "typescript/react",
-        "typescript/prettier",
-        "typescript/prettier-react",
     ],
-    plugins: ["flowtype", "jest", "react", "prettier"],
+    plugins: ["flowtype", "jest", "react"],
     rules: {
-        "prettier/prettier": "error",
         "no-prototype-builtins": "off",
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",

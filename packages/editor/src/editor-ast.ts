@@ -3,35 +3,42 @@ import {getId} from "@math-blocks/core";
 // param types:
 // AT: Atom Type
 // EP: Extra Properties
-export type Row<AT, EP> = EP & {
+export type Row<AT, EP> = {
     type: "row";
     children: Node<AT, EP>[];
-};
+} & EP;
 
 // TODO: collapse SubSup, Frac, and Root since they're very similar
-export type SubSup<AT, EP> = EP & {
+export type SubSup<AT, EP> = {
     type: "subsup";
     children: [Row<AT, EP> | null, Row<AT, EP> | null]; // sub, sup
-};
+} & EP;
 
-export type Frac<AT, EP> = EP & {
+export type Limits<AT, EP> = {
+    type: "limits";
+    inner: Node<AT, EP>;
+    children: [Row<AT, EP>, Row<AT, EP> | null];
+} & EP;
+
+export type Frac<AT, EP> = {
     type: "frac";
     children: [Row<AT, EP>, Row<AT, EP>]; // numerator, denominator
-};
+} & EP;
 
-export type Root<AT, EP> = EP & {
+export type Root<AT, EP> = {
     type: "root";
     children: [Row<AT, EP>, Row<AT, EP> | null]; // radicand, index
-};
+} & EP;
 
-export type Atom<AT, EP> = EP & {
+export type Atom<AT, EP> = {
     type: "atom";
     value: AT;
-};
+} & EP;
 
 export type Node<AT, EP = {}> =
     | Row<AT, EP>
     | SubSup<AT, EP>
+    | Limits<AT, EP>
     | Frac<AT, EP>
     | Root<AT, EP>
     | Atom<AT, EP>;
@@ -59,6 +66,19 @@ export function subsup<T>(
         id: getId(),
         type: "subsup",
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
+    };
+}
+
+export function limits<T>(
+    inner: Node<T, {id: number}>,
+    lower: Node<T, {id: number}>[],
+    upper?: Node<T, {id: number}>[],
+): Limits<T, {id: number}> {
+    return {
+        id: getId(),
+        type: "limits",
+        inner,
+        children: [row(lower), upper ? row(upper) : null],
     };
 }
 
@@ -143,6 +163,25 @@ export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
                               children: sup.children.map(stripIDs),
                           }
                         : sup,
+                ],
+            };
+        }
+        case "limits": {
+            const [lower, upper] = root.children;
+            return {
+                type: "limits",
+                inner: root.inner,
+                children: [
+                    {
+                        type: "row",
+                        children: lower.children.map(stripIDs),
+                    },
+                    upper
+                        ? {
+                              type: "row",
+                              children: upper.children.map(stripIDs),
+                          }
+                        : upper,
                 ],
             };
         }

@@ -138,6 +138,17 @@ export function nodeAtPath<T, U>(
                 }
                 return nodeAtPath(headChild, tail);
             }
+            case "limits": {
+                const [head, ...tail] = path;
+                if (head > 1) {
+                    throw new Error("invalid path");
+                }
+                const headChild = root.children[head];
+                if (!headChild) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(headChild, tail);
+            }
             case "root": {
                 const [head, ...tail] = path;
                 if (head > 1) {

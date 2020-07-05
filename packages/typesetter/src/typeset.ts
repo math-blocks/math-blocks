@@ -22,16 +22,7 @@ const typesetChildren = (
     const {multiplier, baseFontSize} = context;
     const fontSize = multiplier * baseFontSize;
 
-    let prevResult: Layout.Node | undefined = undefined;
-    const output: Layout.Node[] = [];
-
-    // TODO: switch to a while loop so that we can process multiple
-    // children at a time
-    let index = 0;
-    while (index < children.length) {
-        const child = children[index];
-        const nextChild = children[index + 1];
-
+    return children.map((child, index) => {
         if (child.type === "atom") {
             const {value} = child;
             const prevChild = index > 0 ? children[index - 1] : undefined;
@@ -43,11 +34,11 @@ const typesetChildren = (
                           prevChild.value.char,
                       )
                     : true);
-            const glyph = typeset(child, context, prevResult);
+            const glyph = typeset(child, context);
 
             if (unary) {
                 glyph.id = child.id;
-                prevResult = glyph;
+                return glyph;
             } else if (
                 /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
             ) {
@@ -62,99 +53,23 @@ const typesetChildren = (
                           multiplier,
                       );
                 box.id = child.id;
-                prevResult = box;
-            } else if (
-                ["\u03a3", "\u03a0"].includes(value.char) &&
-                nextChild &&
-                nextChild.type === "subsup"
-            ) {
-                const [sub, sup] = nextChild.children;
-                const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
-
-                let subBox: Layout.Box | undefined;
-                let supBox: Layout.Box | undefined;
-
-                // TODO: document this better so I know what's going on here.
-                if (sub) {
-                    subBox = Layout.hpackNat(
-                        typesetChildren(sub.children, {
-                            ...context,
-                            multiplier: newMultiplier,
-                            cramped: true,
-                        }),
-                        newMultiplier,
-                    );
-                    subBox.id = sub.id;
-                }
-                // TODO: document this better so I know what's going on here.
-                if (sup) {
-                    supBox = Layout.hpackNat(
-                        typesetChildren(sup.children, {
-                            ...context,
-                            multiplier: newMultiplier,
-                            cramped: true,
-                        }),
-                        newMultiplier,
-                    );
-                    supBox.id = sup.id;
-                }
-
-                const glyphWidth = Layout.getWidth(glyph);
-                const width = Math.max(
-                    glyphWidth,
-                    supBox?.width || 0,
-                    subBox?.width || 0,
-                );
-                const newGlyph =
-                    glyphWidth < width
-                        ? Layout.hpackNat(
-                              [
-                                  Layout.makeKern((width - glyphWidth) / 2),
-                                  glyph,
-                                  Layout.makeKern((width - glyphWidth) / 2),
-                              ],
-                              multiplier,
-                          )
-                        : glyph;
-                if (supBox && supBox.width < width) {
-                    supBox.shift = (width - supBox.width) / 2;
-                }
-                if (subBox && subBox.width < width) {
-                    subBox.shift = (width - subBox.width) / 2;
-                }
-                const summation = Layout.makeVBox(
-                    width,
-                    newGlyph,
-                    supBox ? [Layout.makeKern(6), supBox] : [],
-                    subBox ? [Layout.makeKern(4), subBox] : [],
-                    multiplier,
-                );
-                summation.id = child.id;
-                prevResult = summation;
-
-                index++;
+                return box;
             } else {
                 glyph.id = child.id;
                 if (glyph.type === "Glyph") {
                     glyph.pending = child.value.pending;
                 }
-                prevResult = glyph;
+                return glyph;
             }
         } else {
-            prevResult = typeset(child, context, prevResult);
+            return typeset(child, context);
         }
-
-        output.push(prevResult);
-        index++;
-    }
-
-    return output;
+    });
 };
 
 const typeset = (
     node: Editor.Node<Editor.Glyph, ID>,
     context: Context,
-    previous?: Layout.Node,
 ): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const fontSize = multiplier * baseFontSize;
@@ -239,6 +154,68 @@ const typeset = (
             const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
             parentBox.id = node.id;
             return parentBox;
+        }
+        case "limits": {
+            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const [lower, upper] = node.children;
+
+            const lowerBox = Layout.hpackNat(
+                typesetChildren(lower.children, {
+                    ...context,
+                    multiplier: newMultiplier,
+                    cramped: true,
+                }),
+                newMultiplier,
+            );
+            lowerBox.id = lower.id;
+            const inner = typeset(node.inner, context);
+
+            let upperBox: Layout.Box | undefined;
+            if (upper) {
+                upperBox = Layout.hpackNat(
+                    typesetChildren(upper.children, {
+                        ...context,
+                        multiplier: newMultiplier,
+                        cramped: true,
+                    }),
+                    newMultiplier,
+                );
+            }
+
+            const innerWidth = Layout.getWidth(inner);
+            const width = Math.max(
+                innerWidth,
+                lowerBox.width || 0,
+                upperBox?.width || 0,
+            );
+
+            const newInner =
+                innerWidth < width
+                    ? Layout.hpackNat(
+                          [
+                              Layout.makeKern((width - innerWidth) / 2),
+                              inner,
+                              Layout.makeKern((width - innerWidth) / 2),
+                          ],
+                          multiplier,
+                      )
+                    : inner;
+            if (lowerBox.width < width) {
+                lowerBox.shift = (width - lowerBox.width) / 2;
+            }
+            if (upperBox && upperBox.width < width) {
+                upperBox.shift = (width - upperBox.width) / 2;
+            }
+
+            const limits = Layout.makeVBox(
+                width,
+                newInner,
+                upperBox ? [Layout.makeKern(6), upperBox] : [],
+                [Layout.makeKern(4), lowerBox],
+                multiplier,
+            );
+            limits.id = node.id;
+            return limits;
         }
         case "frac": {
             const newMultiplier = cramped ? 0.5 : 1.0;
