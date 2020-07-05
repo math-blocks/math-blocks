@@ -180,6 +180,31 @@ const typeset = (
                     }),
                     newMultiplier,
                 );
+                upperBox.id = upper.id;
+            }
+
+            // TODO: try to reuse getCharDepth
+            if (jmetrics) {
+                const jDepth =
+                    (baseFontSize *
+                        newMultiplier *
+                        (jmetrics.height - jmetrics.bearingY)) /
+                    fontMetrics.unitsPerEm;
+                lowerBox.depth = Math.max(lowerBox.depth, jDepth);
+                if (upperBox) {
+                    upperBox.depth = Math.max(upperBox.depth, jDepth);
+                }
+            }
+
+            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+            if (Emetrics) {
+                const EHeight =
+                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                    fontMetrics.unitsPerEm;
+                lowerBox.height = Math.max(lowerBox.height, EHeight);
+                if (upperBox) {
+                    upperBox.height = Math.max(upperBox.height, EHeight);
+                }
             }
 
             const innerWidth = Layout.getWidth(inner);

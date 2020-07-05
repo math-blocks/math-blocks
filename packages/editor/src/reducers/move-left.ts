@@ -99,6 +99,16 @@ export const moveLeft = (
             } else {
                 throw new Error("subsup node must have at least a sub or sup");
             }
+        } else if (prevNode && prevNode.type === "limits" && !selecting) {
+            // enter lower/upper limits
+            const [lower, upper] = prevNode.children;
+            if (upper) {
+                return enterFromRight(cursor, upper, SUP);
+            } else if (lower) {
+                return enterFromRight(cursor, lower, SUB);
+            } else {
+                throw new Error("subsup node must have at least a sub or sup");
+            }
         }
 
         // If all else fails, move to the left
@@ -142,6 +152,16 @@ export const moveLeft = (
                     return exitToLeft(cursor, grandparent);
                 }
             } else if (currentNode === sub) {
+                return exitToLeft(cursor, grandparent);
+            }
+        } else if (parent.type === "limits") {
+            const [lower, upper] = parent.children;
+
+            if (selecting) {
+                return exitToLeft(cursor, grandparent);
+            } else if (currentNode === upper) {
+                return moveToPrevPibling(cursor, lower, SUB);
+            } else if (currentNode === lower) {
                 return exitToLeft(cursor, grandparent);
             }
         } else if (parent.type === "frac") {

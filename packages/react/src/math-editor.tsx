@@ -100,6 +100,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     }) as Typesetter.Layout.Box;
 
     const layoutCursor = layoutCursorFromState(state);
+    console.log(layoutCursor);
 
     return (
         <div

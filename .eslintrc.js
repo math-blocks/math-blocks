@@ -1,8 +1,5 @@
 module.exports = {
-    extends: [
-        "typescript",
-        "typescript/react",
-    ],
+    extends: ["typescript", "typescript/react"],
     plugins: ["flowtype", "jest", "react"],
     rules: {
         "no-prototype-builtins": "off",

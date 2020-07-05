@@ -13,7 +13,12 @@ export const insertChar = (
     draft: State,
     char: string,
 ): void => {
-    const newNode = Editor.glyph(char);
+    let newNode;
+    if (char === "\u03a3" || char === "\u03a0") {
+        newNode = Editor.limits(Editor.glyph(char), [], []);
+    } else {
+        newNode = Editor.glyph(char);
+    }
     const {cursor, selectionStart} = draft;
 
     if (selectionStart) {
