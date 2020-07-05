@@ -40,6 +40,9 @@ type Equal = {kind: "eq"};
 type LParens = {kind: "lparens"};
 type RParens = {kind: "rparens"};
 type Ellipsis = {kind: "ellipsis"};
+type Sum = {kind: "sum"};
+type Prod = {kind: "prod"};
+type Lim = {kind: "lim"};
 type EOL = {kind: "eol"};
 
 export const atom = (
@@ -97,6 +100,9 @@ export type Token =
     | LParens
     | RParens
     | Ellipsis
+    | Sum
+    | Prod
+    | Lim
     | EOL;
 
 const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
@@ -235,6 +241,33 @@ export const lex = (
                     sup ? lexRow(sup, [...path, offset, 1]) : null,
                 ],
                 loc: location(path, offset, offset + 1),
+            };
+        }
+        case "limits": {
+            const [lower, upper] = node.children;
+            const loc = location(path, offset, offset + 1);
+
+            let inner: Editor.Node<Token, {loc: Location}>;
+            if (node.inner.type === "atom" && node.inner.value.char === "\u03a3") {
+                inner = atom({kind: "sum"}, loc);
+            } else if (node.inner.type === "atom" && node.inner.value.char === "\u03a0") {
+                inner = atom({kind: "prod"}, loc);
+            } else if (node.inner.type === "row") {
+                // TODO: check that the row corresponds to "lim"
+                inner = atom({kind: "lim"}, loc);
+            } else {
+                throw new Error("Invalid inner for limits");
+            }
+
+            return {
+                type: "limits",
+                // TODO: use null-coalescing
+                children: [
+                    lexRow(lower, [...path, offset, 0]),
+                    upper ? lexRow(upper, [...path, offset, 1]) : null,
+                ],
+                inner,
+                loc,
             };
         }
         case "frac": {

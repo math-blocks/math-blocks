@@ -110,6 +110,14 @@ const print = (
                 sup ? print(sup, serialize, indent) : "_"
             })`;
         }
+        case "limits": {
+            const [lower, upper] = ast.children;
+            return `(limits@[${loc.path.map(String).join(",")}]:${loc.start}:${
+                loc.end
+            } ${atom.name} ${print(lower, serialize, indent)} ${
+                upper ? print(upper, serialize, indent) : "_"
+            })`;
+        }
         case "root": {
             const [radicand, index] = ast.children;
             return `(root@[${loc.path.map(String).join(",")}]:${loc.start}:${
