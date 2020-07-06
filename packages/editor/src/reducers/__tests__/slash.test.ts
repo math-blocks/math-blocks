@@ -4,7 +4,7 @@ import * as Util from "../../util";
 import {State} from "../../state";
 import {NUMERATOR, DENOMINATOR} from "../../constants";
 
-const {row, glyph} = Editor;
+const {row, glyph, limits, frac} = Editor;
 
 expect.extend({
     toEqualMath(received, actual) {
@@ -157,6 +157,80 @@ describe("slash", () => {
         );
         expect(newState.cursor).toEqual({
             path: [2, NUMERATOR],
+            prev: -Infinity,
+            next: Infinity,
+        });
+    });
+
+    test("after single parens", () => {
+        const math = Util.row("(a+b)");
+        const cursor = {
+            path: [],
+            prev: 4,
+            next: Infinity,
+        };
+
+        const state: State = {math, cursor};
+        const newState = reducer(state, {type: "/"});
+
+        expect(newState.math).toEqualMath(row([Util.frac("(a+b)", "")]));
+        expect(newState.cursor).toEqual({
+            path: [0, DENOMINATOR],
+            prev: -Infinity,
+            next: Infinity,
+        });
+    });
+
+    test("after multiple parens", () => {
+        const math = Util.row("(a+b)(x+y)");
+        const cursor = {
+            path: [],
+            prev: 4,
+            next: Infinity,
+        };
+
+        const state: State = {math, cursor};
+        const newState = reducer(state, {type: "/"});
+
+        expect(newState.math).toEqualMath(row([Util.frac("(a+b)(x+y)", "")]));
+        expect(newState.cursor).toEqual({
+            path: [0, DENOMINATOR],
+            prev: -Infinity,
+            next: Infinity,
+        });
+    });
+
+    test("after limits", () => {
+        const math = row([
+            limits(
+                glyph("\u03a3"),
+                [glyph("i"), glyph("="), glyph("0")],
+                [glyph("\u221e")],
+            ),
+            glyph("i"),
+            Util.sup("2"),
+        ]);
+        const cursor = {
+            path: [],
+            prev: 0,
+            next: Infinity,
+        };
+
+        const state: State = {math, cursor};
+        const newState = reducer(state, {type: "/"});
+
+        expect(newState.math).toEqualMath(
+            row([
+                limits(
+                    glyph("\u03a3"),
+                    [glyph("i"), glyph("="), glyph("0")],
+                    [glyph("\u221e")],
+                ),
+                frac([glyph("i"), Util.sup("2")], []),
+            ]),
+        );
+        expect(newState.cursor).toEqual({
+            path: [1, DENOMINATOR],
             prev: -Infinity,
             next: Infinity,
         });

@@ -170,7 +170,7 @@ export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
             const [lower, upper] = root.children;
             return {
                 type: "limits",
-                inner: root.inner,
+                inner: stripIDs(root.inner),
                 children: [
                     {
                         type: "row",
