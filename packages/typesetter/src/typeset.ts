@@ -209,7 +209,8 @@ const typesetWithWork = (
         lhsTerms.flatMap((term, index): Layout.Node[] => {
             if (index === leftColumn) {
                 const topWidth = term.operator
-                    ? Layout.getWidth(term.operator) + Layout.hlistWidth(term.value)
+                    ? Layout.getWidth(term.operator) +
+                      Layout.hlistWidth(term.value)
                     : Layout.hlistWidth(term.value);
                 const bottomWidth = Layout.hlistWidth(lhsBottomChildren);
                 if (bottomWidth > topWidth) {
