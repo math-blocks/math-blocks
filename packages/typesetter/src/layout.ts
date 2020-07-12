@@ -16,7 +16,7 @@ export type Box = Dim & {
     id?: number;
     kind: BoxKind;
     shift: Dist;
-    content: Node[];
+    content: readonly Node[];
     multiplier: number;
 };
 
