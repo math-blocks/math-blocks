@@ -57,6 +57,7 @@ const typesetChildren = (
     });
 };
 
+// TODO: dedupe with math-editor.ts
 type Below = {
     lhs: Editor.Row<Editor.Glyph, ID>;
     rhs: Editor.Row<Editor.Glyph, ID>;
@@ -91,6 +92,7 @@ const splitIntoTerms = (
             node.type === "atom" && /[+\u2212]/.test(node.value.char)
                 ? withOperatorPadding(_makeGlyph(node.value.char), context)
                 : typeset(node, context);
+        layoutNode.id = node.id;
 
         if (
             parenCount === 0 &&
@@ -154,6 +156,7 @@ const phantom: {
     return Layout.makeKern(Layout.getWidth(arg));
 };
 
+// This function assumes that node.children contains an equal node
 const typesetWithWork = (
     node: Editor.Row<Editor.Glyph, ID>,
     below: Below, // this is where we're showing work
@@ -174,7 +177,9 @@ const typesetWithWork = (
 
     const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
 
+    const equalNode = node.children[equalIndex];
     const equalLayoutNode = withOperatorPadding(_makeGlyph("="), context);
+    equalLayoutNode.id = equalNode.id;
 
     // TODO: split Layout.Box into Layout.HBox and Layout.VBox so that we don't
     // have too keep checking the kind.
@@ -283,6 +288,7 @@ const typesetWithWork = (
         ],
         multiplier,
     );
+    topRow.id = node.id;
 
     const equationWithWork = Layout.makeVBox(
         Layout.getWidth(topRow),
