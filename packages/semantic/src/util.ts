@@ -14,7 +14,7 @@ export const identifier = (name: string): Semantic.Ident => ({
 export const number = (value: string): Semantic.Num => ({
     type: "number",
     id: getId(),
-    value,
+    value: value.replace(/-/g, "\u2212"),
 });
 
 export const ellipsis = (): Semantic.Ellipsis => ({

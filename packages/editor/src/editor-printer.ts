@@ -35,7 +35,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
 
             for (const arg of expr.args) {
                 if (arg.type === "neg" && arg.subtraction) {
-                    children.push(Editor.glyph("-"));
+                    children.push(Editor.glyph("\u2212"));
                 } else {
                     children.push(Editor.glyph("+"));
                 }

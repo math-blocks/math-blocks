@@ -39,6 +39,7 @@
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.5",
     "jest": "^24.9.0",
+    "lint-staged": "^10.2.11",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "react-docgen-typescript-loader": "^3.6.0",
@@ -81,7 +82,13 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick"
+      "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --config .eslintrc.js",
+      "pretty-quick"
+    ]
   }
 }

@@ -16,11 +16,22 @@ type ID = {
     id: number;
 };
 
+// TODO: dedupe with typeset.ts
+type Below = {
+    lhs: Editor.Row<Editor.Glyph, ID>;
+    rhs: Editor.Row<Editor.Glyph, ID>;
+};
+
 type Props = {
     /**
      * value
      */
     value: Editor.Row<Editor.Glyph, ID>;
+
+    /**
+     * showing work below
+     */
+    below?: Below;
 
     readonly: boolean;
 
@@ -88,16 +99,20 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     });
 
     const {math, cancelRegions} = state;
-    const {style} = props;
+    const {style, below} = props;
 
     const fontSize = 64;
     // $FlowFixMe: make typeset return a Box
-    const box = Typesetter.typeset(math, {
-        fontMetrics,
-        baseFontSize: fontSize,
-        multiplier: 1.0,
-        cramped: false,
-    }) as Typesetter.Layout.Box;
+    const box = Typesetter.typeset(
+        math,
+        {
+            fontMetrics,
+            baseFontSize: fontSize,
+            multiplier: 1.0,
+            cramped: false,
+        },
+        below,
+    ) as Typesetter.Layout.Box;
 
     const layoutCursor = layoutCursorFromState(state);
     console.log(layoutCursor);

@@ -13,10 +13,30 @@ const context = {
     cramped: false,
 };
 
-const linearEquation = typeset(
-    Editor.Util.row("2x+5=10"),
-    context,
-) as Layout.Box;
+const linearEquation = typeset(Editor.Util.row("2x+5=10"), context, {
+    lhs: Editor.Util.row("-123"),
+    rhs: Editor.Util.row("-123"),
+}) as Layout.Box;
+
+const linearEquation2 = typeset(Editor.Util.row("2x+10=20"), context, {
+    lhs: Editor.Util.row("-5"),
+    rhs: Editor.Util.row("-5"),
+}) as Layout.Box;
+
+const linearEquation3 = typeset(Editor.Util.row("(2x-1)+5=10"), context, {
+    lhs: Editor.Util.row("-5"),
+    rhs: Editor.Util.row("-5"),
+}) as Layout.Box;
+
+const linearEquation4 = typeset(Editor.Util.row("(2x+1)+5-y=10"), context, {
+    lhs: Editor.Util.row("+123"),
+    rhs: Editor.Util.row("+5"),
+}) as Layout.Box;
+
+const linearEquation5 = typeset(Editor.Util.row("(2x+1)+5-y=10"), context, {
+    lhs: Editor.Util.row("+-123"),
+    rhs: Editor.Util.row("+-5"),
+}) as Layout.Box;
 
 const {glyph, row, frac, root, limits} = Editor;
 
@@ -89,6 +109,10 @@ const sum = typeset(
 const RendererPage: React.SFC<{}> = () => (
     <div style={{display: "flex", flexDirection: "column"}}>
         <MathRenderer box={linearEquation} />
+        <MathRenderer box={linearEquation2} />
+        <MathRenderer box={linearEquation3} />
+        <MathRenderer box={linearEquation4} />
+        <MathRenderer box={linearEquation5} />
         <MathRenderer box={pythagoras} />
         <MathRenderer box={quadraticEquation} />
         <MathRenderer box={lim} />

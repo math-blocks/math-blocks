@@ -66,7 +66,14 @@ export type ID = {
 };
 
 export const row = (str: string): Editor.Row<Editor.Glyph, ID> =>
-    Editor.row(str.split("").map((glyph) => Editor.glyph(glyph)));
+    Editor.row(
+        str.split("").map((glyph) => {
+            if (glyph === "-") {
+                return Editor.glyph("\u2212");
+            }
+            return Editor.glyph(glyph);
+        }),
+    );
 
 export const frac = (num: string, den: string): Editor.Frac<Editor.Glyph, ID> =>
     Editor.frac(
