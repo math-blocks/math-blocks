@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 
@@ -26,6 +28,10 @@ describe("renderer", () => {
             <MathRenderer box={linearEquation} />,
         );
 
-        console.log(output);
+        fs.writeFileSync(
+            path.join(__dirname, "__fixtures__", "equation.svg"),
+            '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output,
+            "utf-8",
+        );
     });
 });
