@@ -22,12 +22,13 @@ const context = {
 declare global {
     /* eslint-disable */
     namespace jest {
-        interface Matchers<R> {
-            toMatchSVGSnapshot(): void;
+        interface Matchers<R, T> {
+            toMatchSVGSnapshot(): R;
         }
     }
 }
 
+// Based on code from https://github.com/jest-community/jest-snapshots-svg/blob/master/src/index.ts
 expect.extend({
     toMatchSVGSnapshot(element: React.ReactElement) {
         // getState isn't in the d.ts for Jest, this is ok though.
