@@ -56,6 +56,7 @@ expect.extend({
         // We will need to do something smarter in the future, these snapshots need to be 1 file per test
         // whereas jest-snapshots can be multi-test per file.
 
+        // TODO: format the output
         const output = ReactDOMServer.renderToStaticMarkup(element);
         const svgText =
             '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output;
@@ -63,21 +64,29 @@ expect.extend({
         // TODO: Determine if Jest is in `-u`?
         // can be done via the private API
         // state.snapshotState._updateSnapshot === "all"
+        const mode = state.snapshotState._updateSnapshot;
 
         // Are we in write mode?
         if (!fs.existsSync(expectedSnapshot)) {
             fs.writeFileSync(expectedSnapshot, svgText);
             return {
-                message: () => "Created a new Snapshot for you",
+                message: () => "Created a new Snapshot",
                 pass: true,
             };
         } else {
             const contents = fs.readFileSync(expectedSnapshot, "utf8");
             if (contents !== svgText) {
-                fs.writeFileSync(expectedSnapshot, svgText);
+                if (mode === "all") {
+                    fs.writeFileSync(expectedSnapshot, svgText);
+                    return {
+                        message: () => `Updated snapshot`,
+                        pass: true,
+                    };
+                }
+
+                // TODO: include the diff in the message
                 return {
-                    message: () =>
-                        `SVG Snapshot failed: we have updated it for you`,
+                    message: () => `SVG Snapshot failed`,
                     pass: false,
                 };
             } else {
@@ -157,8 +166,10 @@ describe("renderer", () => {
                     glyph("a"),
                     Editor.Util.sup("n"),
                     glyph("="),
+                    glyph("a"),
                     subsup([glyph("n"), glyph("\u2212"), glyph("1")]),
                     glyph("+"),
+                    glyph("a"),
                     subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
                 ]),
                 context,
