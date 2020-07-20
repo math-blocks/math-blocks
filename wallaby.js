@@ -5,9 +5,10 @@ module.exports = function(wallaby) {
             "packages/**/*.tsx",
             "package.json",
             "!packages/**/__tests__/*.ts",
+            "!packages/**/__tests__/*.tsx",
         ],
 
-        tests: ["packages/**/__tests__/*.ts"],
+        tests: ["packages/**/__tests__/*.ts", "packages/**/__tests__/*.tsx"],
 
         env: {
             type: "node",
@@ -17,6 +18,7 @@ module.exports = function(wallaby) {
 
         compilers: {
             "**/*.ts": wallaby.compilers.babel(),
+            "**/*.tsx": wallaby.compilers.babel(),
         },
 
         setup: function(wallaby) {

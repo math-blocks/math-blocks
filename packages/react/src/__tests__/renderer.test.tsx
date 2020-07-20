@@ -9,7 +9,7 @@ import fontMetrics from "@math-blocks/metrics";
 
 import {MathRenderer} from "@math-blocks/react";
 
-const {glyph, row, frac, root, limits} = Editor;
+const {glyph, row, frac, root, limits, subsup} = Editor;
 
 const fontSize = 60;
 const context = {
@@ -69,7 +69,7 @@ expect.extend({
             fs.writeFileSync(expectedSnapshot, svgText);
             return {
                 message: () => "Created a new Snapshot for you",
-                pass: false,
+                pass: true,
             };
         } else {
             const contents = fs.readFileSync(expectedSnapshot, "utf8");
@@ -97,52 +97,128 @@ describe("renderer", () => {
         expect(<MathRenderer box={linearEquation} />).toMatchSVGSnapshot();
     });
 
-    test("pythagoras", () => {
-        const pythagoras = typeset(
-            row([
-                glyph("a"),
-                Editor.Util.sup("2"),
-                glyph("+"),
-                glyph("b"),
-                Editor.Util.sup("2"),
-                glyph("="),
-                glyph("c"),
-                Editor.Util.sup("2"),
-            ]),
-            context,
-        ) as Layout.Box;
+    describe("fractions", () => {
+        test("quadratic", () => {
+            const quadraticEquation = typeset(
+                row([
+                    glyph("x"),
+                    glyph("="),
+                    frac(
+                        [
+                            glyph("\u2212"),
+                            glyph("b"),
+                            glyph("\u00B1"),
+                            root(
+                                [
+                                    glyph("b"),
+                                    Editor.Util.sup("2"),
+                                    glyph("\u2212"),
+                                    glyph("4"),
+                                    glyph("a"),
+                                    glyph("c"),
+                                ],
+                                [],
+                            ),
+                        ],
+                        [glyph("2"), glyph("a")],
+                    ),
+                ]),
+                context,
+            ) as Layout.Box;
 
-        expect(<MathRenderer box={pythagoras} />).toMatchSVGSnapshot();
+            expect(
+                <MathRenderer box={quadraticEquation} />,
+            ).toMatchSVGSnapshot();
+        });
     });
 
-    test("quadratic", () => {
-        const quadraticEquation = typeset(
-            row([
-                glyph("x"),
-                glyph("="),
-                frac(
-                    [
-                        glyph("\u2212"),
-                        glyph("b"),
-                        glyph("\u00B1"),
-                        root(
-                            [
-                                glyph("b"),
-                                Editor.Util.sup("2"),
-                                glyph("\u2212"),
-                                glyph("4"),
-                                glyph("a"),
-                                glyph("c"),
-                            ],
-                            [],
-                        ),
-                    ],
-                    [glyph("2"), glyph("a")],
-                ),
-            ]),
-            context,
-        ) as Layout.Box;
+    describe("subsup", () => {
+        test("pythagoras", () => {
+            const pythagoras = typeset(
+                row([
+                    glyph("a"),
+                    Editor.Util.sup("2"),
+                    glyph("+"),
+                    glyph("b"),
+                    Editor.Util.sup("2"),
+                    glyph("="),
+                    glyph("c"),
+                    Editor.Util.sup("2"),
+                ]),
+                context,
+            ) as Layout.Box;
 
-        expect(<MathRenderer box={quadraticEquation} />).toMatchSVGSnapshot();
+            expect(<MathRenderer box={pythagoras} />).toMatchSVGSnapshot();
+        });
+
+        test("subscripts", () => {
+            const recurrenceRelation = typeset(
+                row([
+                    glyph("a"),
+                    Editor.Util.sup("n"),
+                    glyph("="),
+                    subsup([glyph("n"), glyph("\u2212"), glyph("1")]),
+                    glyph("+"),
+                    subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
+                ]),
+                context,
+            ) as Layout.Box;
+
+            expect(
+                <MathRenderer box={recurrenceRelation} />,
+            ).toMatchSVGSnapshot();
+        });
+    });
+
+    describe("limits", () => {
+        test("lim", () => {
+            const lim = typeset(
+                row([
+                    limits(row([glyph("l"), glyph("i"), glyph("m")]), [
+                        glyph("x"),
+                        glyph("—"),
+                        glyph(">"),
+                        glyph("0"),
+                    ]),
+                    glyph("x"),
+                ]),
+                context,
+            ) as Layout.Box;
+
+            expect(<MathRenderer box={lim} />).toMatchSVGSnapshot();
+        });
+
+        test("sum", () => {
+            const sum = typeset(
+                row([
+                    limits(
+                        glyph("\u03a3"),
+                        [glyph("i"), glyph("="), glyph("0")],
+                        [glyph("\u221e")],
+                    ),
+                    frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
+                ]),
+                context,
+            ) as Layout.Box;
+
+            expect(<MathRenderer box={sum} />).toMatchSVGSnapshot();
+        });
+    });
+
+    describe("showing work", () => {
+        test("subtracting from both sides", () => {
+            const equationWithWork = typeset(
+                Editor.Util.row("(2x-1)+5=10"),
+                context,
+                {
+                    lhs: Editor.Util.row("-5"),
+                    rhs: Editor.Util.row("-5"),
+                },
+            ) as Layout.Box;
+
+            expect(
+                <MathRenderer box={equationWithWork} />,
+            ).toMatchSVGSnapshot();
+        });
     });
 });
