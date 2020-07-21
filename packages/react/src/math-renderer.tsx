@@ -76,10 +76,10 @@ const MathRenderer: React.SFC<{
 
     return (
         <svg
+            xmlns="http://www.w3.org/2000/svg"
             viewBox={viewBox}
             width={width}
-            height={height}
-            style={{margin: 8}}
+            height={height + CURSOR_WIDTH}
         >
             <Group {...group} />
         </svg>

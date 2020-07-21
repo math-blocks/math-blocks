@@ -1,13 +1,14 @@
-module.exports = function(wallaby) {
+module.exports = function (wallaby) {
     return {
         files: [
             "packages/**/*.ts",
             "packages/**/*.tsx",
             "package.json",
             "!packages/**/__tests__/*.ts",
+            "!packages/**/__tests__/*.tsx",
         ],
 
-        tests: ["packages/**/__tests__/*.ts"],
+        tests: ["packages/**/__tests__/*.ts", "packages/**/__tests__/*.tsx"],
 
         env: {
             type: "node",
@@ -17,9 +18,10 @@ module.exports = function(wallaby) {
 
         compilers: {
             "**/*.ts": wallaby.compilers.babel(),
+            "**/*.tsx": wallaby.compilers.babel(),
         },
 
-        setup: function(wallaby) {
+        setup: function (wallaby) {
             const path = require("path");
             const jestConfig = require(path.join(
                 wallaby.localProjectDir,
