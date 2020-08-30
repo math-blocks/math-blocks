@@ -1,3 +1,5 @@
+import {Point, distance, clamp, len} from "./handwriting-utils";
+
 const template = document.createElement("template");
 template.innerHTML = `
     <style>
@@ -8,17 +10,8 @@ template.innerHTML = `
     </style>
     <canvas width="2048" height="1536"></canvas>`;
 
-type Point = {x: number; y: number};
-
-const distance = (a: Point, b: Point): number => {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    return Math.sqrt(dx * dx + dy * dy);
-};
-
-const len = (p: Point): number => Math.sqrt(p.x * p.x + p.y * p.y);
-const clamp = (value: number, min: number, max: number): number =>
-    Math.max(Math.min(value, max), min);
+// TODO: refactor to use observables and then write a test for the behavior
+// of the observable.
 
 class HandwritingElement extends HTMLElement {
     constructor() {
@@ -128,6 +121,9 @@ class HandwritingElement extends HTMLElement {
                         return;
                     }
                     down = false;
+
+                    // TODO: Do the same thing we do in pointermove and then
+                    // draw this last segment.
 
                     if (prevCooked) {
                         const newPoint = {x: e.offsetX, y: e.offsetY};
