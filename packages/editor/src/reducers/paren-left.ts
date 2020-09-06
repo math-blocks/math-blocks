@@ -1,6 +1,6 @@
 import * as Editor from "@math-blocks/editor";
 
-import {State} from "../state";
+import {State} from "../above-reducer";
 import {
     HasChildren,
     Paren,

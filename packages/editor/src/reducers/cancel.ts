@@ -1,4 +1,4 @@
-import {State} from "../state";
+import {State} from "../above-reducer";
 import {layoutCursorFromState} from "../util";
 
 export const cancel = (draft: State): void => {

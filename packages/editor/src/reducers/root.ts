@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor";
 import {getId} from "@math-blocks/core";
 
-import {State} from "../state";
+import {State} from "../above-reducer";
 import {HasChildren, selectionSplit, insertBeforeChildWithIndex} from "../util";
 import {RADICAND} from "../constants";
 

@@ -1,165 +1,90 @@
-import {produce} from "immer";
-
 import * as Editor from "./editor-ast";
-import {hasChildren, nodeAtPath} from "./util";
-import * as Reducers from "./reducers";
-import {State} from "./state";
+
+import aboveReducer, {State as AboveState} from "./above-reducer";
 
 const {row, glyph, frac} = Editor;
 
+type BelowState = {};
+
+export type State = {
+    above: AboveState;
+    below: BelowState;
+    mode: "above" | "below";
+};
+
 const initialState: State = {
-    math: row([
-        glyph("1"),
-        glyph("+"),
-        frac([glyph("1")], [glyph("2"), glyph("y")]),
-        glyph("\u2212"),
-        glyph("x"),
-    ]),
-    cursor: {
-        path: [],
-        prev: -Infinity,
-        next: 0,
+    above: {
+        math: row([
+            glyph("1"),
+            glyph("+"),
+            frac([glyph("1")], [glyph("2"), glyph("y")]),
+            glyph("\u2212"),
+            glyph("x"),
+        ]),
+        cursor: {
+            path: [],
+            prev: -Infinity,
+            next: 0,
+        },
+        selectionStart: undefined,
+        cancelRegions: undefined,
     },
-    selectionStart: undefined,
-    cancelRegions: undefined,
+    below: {},
+    mode: "above",
 };
 
 type Action = {type: string; shift?: boolean};
 
-// TODO: check if cursor is valid before process action
+// TODO: export reducers separately so they can be tested independently of one another
+const belowReducer = (state: BelowState = {}, action: Action): BelowState => {
+    switch (action.type) {
+        case "ArrowLeft": {
+            console.log("below: ArrowLeft");
+            return state;
+        }
+        case "ArrowRight": {
+            console.log("below: ArrowRight");
+            return state;
+        }
+        default:
+            return state;
+    }
+};
+
 const reducer = (state: State = initialState, action: Action): State => {
-    const newState = produce(state, (draft) => {
-        const {cursor, math} = draft;
-        const currentNode = nodeAtPath(math, cursor.path);
+    // TODO: if state.above or state.below are not defined used grab the initial
+    // state from their respective reducer.
 
-        if (!hasChildren(currentNode)) {
-            throw new Error(
-                "currentNode can't be a glyph, fraction, sup, or sub",
-            );
+    // handle mode swwitching
+    switch (action.type) {
+        case "above": {
+            return {
+                ...state,
+                mode: "above",
+            };
         }
-
-        switch (action.type) {
-            case "CANCEL": {
-                // updates the cursor position as well
-                Reducers.cancel(draft);
-                return;
-            }
-            case "ArrowLeft": {
-                if (!action.shift && draft.selectionStart) {
-                    const {selectionStart} = draft;
-                    const next =
-                        selectionStart.path.length > cursor.path.length
-                            ? selectionStart.path[cursor.path.length]
-                            : selectionStart.next;
-                    const prev =
-                        selectionStart.path.length > cursor.path.length
-                            ? selectionStart.path[cursor.path.length] - 1
-                            : selectionStart.prev;
-                    if (
-                        prev === -Infinity ||
-                        (cursor.prev && prev < cursor.prev)
-                    ) {
-                        draft.cursor = {
-                            ...draft.cursor,
-                            prev,
-                            next,
-                        };
-                    }
-                    draft.selectionStart = undefined;
-                } else {
-                    if (action.shift && !draft.selectionStart) {
-                        draft.selectionStart = {...draft.cursor};
-                    }
-                    draft.cursor = Reducers.moveLeft(
-                        currentNode,
-                        draft,
-                        action.shift,
-                    );
-                }
-                return;
-            }
-            case "ArrowRight": {
-                if (!action.shift && draft.selectionStart) {
-                    const {selectionStart} = draft;
-                    const next =
-                        selectionStart.path.length > cursor.path.length
-                            ? selectionStart.path[cursor.path.length] + 1
-                            : selectionStart.next;
-                    const prev =
-                        selectionStart.path.length > cursor.path.length
-                            ? selectionStart.path[cursor.path.length]
-                            : selectionStart.prev;
-                    if (
-                        next === Infinity ||
-                        (cursor.next !== Infinity && next > cursor.next)
-                    ) {
-                        draft.cursor = {
-                            ...draft.cursor,
-                            prev,
-                            next,
-                        };
-                    }
-                    draft.selectionStart = undefined;
-                } else {
-                    if (action.shift && !draft.selectionStart) {
-                        draft.selectionStart = {...draft.cursor};
-                    }
-                    draft.cursor = Reducers.moveRight(
-                        currentNode,
-                        draft,
-                        action.shift,
-                    );
-                }
-                return;
-            }
-            case "Backspace": {
-                Reducers.backspace(currentNode, draft);
-                return;
-            }
-            case "/": {
-                Reducers.slash(currentNode, draft);
-                return;
-            }
-            case "^": {
-                Reducers.caret(currentNode, draft);
-                return;
-            }
-            case "_": {
-                Reducers.underscore(currentNode, draft);
-                return;
-            }
-            case "\u221A": {
-                Reducers.root(currentNode, draft);
-                return;
-            }
-            case "(": {
-                Reducers.parenLeft(currentNode, draft);
-                return;
-            }
-            case ")": {
-                Reducers.parenRight(currentNode, draft);
-                return;
-            }
-            default: {
-                if (
-                    action.type.length === 1 &&
-                    action.type.charCodeAt(0) >= 32
-                ) {
-                    let char = action.type;
-                    if (char === "*") {
-                        char = "\u00B7";
-                    } else if (char === "-") {
-                        char = "\u2212";
-                    }
-                    Reducers.insertChar(currentNode, draft, char);
-                    break;
-                }
-                return;
-            }
+        case "below": {
+            return {
+                ...state,
+                mode: "below",
+            };
         }
-    });
+    }
 
-    return newState;
+    switch (state.mode) {
+        case "above": {
+            return {
+                ...state,
+                above: aboveReducer(state.above, action),
+            };
+        }
+        case "below": {
+            return {
+                ...state,
+                below: belowReducer(state.below, action),
+            };
+        }
+    }
 };
 
 export default reducer;

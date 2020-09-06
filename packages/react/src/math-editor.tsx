@@ -8,7 +8,6 @@ import * as Typesetter from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
-import {layoutCursorFromState} from "./util";
 
 const {useEffect, useState, useRef} = React;
 
@@ -51,14 +50,18 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [state, setState] = useState<Editor.State>({
-        math: props.value,
-        cursor: {
-            path: [],
-            prev: -Infinity,
-            next: 0,
+        above: {
+            math: props.value,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: 0,
+            },
+            selectionStart: undefined,
+            cancelRegions: [],
         },
-        selectionStart: undefined,
-        cancelRegions: [],
+        below: {},
+        mode: "above",
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -78,7 +81,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                 shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
-                const success = props.onSubmit(state.math);
+                const success = props.onSubmit(state.above.math);
                 if (success) {
                     setActive(false);
                 }
@@ -92,13 +95,13 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                     e.keyCode !== 39 &&
                     e.keyCode !== 40
                 ) {
-                    props.onChange(value.math);
+                    props.onChange(value.above.math);
                 }
             }
         }
     });
 
-    const {math, cancelRegions} = state;
+    const {math, cancelRegions} = state.above;
     const {style, below} = props;
 
     const fontSize = 64;
@@ -114,7 +117,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         below,
     ) as Typesetter.Layout.Box;
 
-    const layoutCursor = layoutCursorFromState(state);
+    const layoutCursor = Editor.layoutCursorFromState(state.above);
     console.log(layoutCursor);
 
     return (
@@ -130,7 +133,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             <MathRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
-                editorCursor={state.cursor}
+                editorCursor={state.above.cursor}
                 cancelRegions={cancelRegions}
             />
         </div>
