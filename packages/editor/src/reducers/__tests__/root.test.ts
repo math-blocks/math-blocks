@@ -1,7 +1,6 @@
-import reducer from "../../editor-reducer";
+import reducer, {State} from "../../above-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
-import {State} from "../../state";
 import {RADICAND} from "../../constants";
 
 const {row, glyph} = Editor;
