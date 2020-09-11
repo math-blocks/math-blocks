@@ -4,7 +4,9 @@ import aboveReducer, {State as AboveState} from "./above-reducer";
 
 const {row, glyph, frac} = Editor;
 
-type BelowState = {};
+type BelowState = {
+    columns: Editor.Row<Editor.Glyph, {id: number}>[];
+};
 
 export type State = {
     above: AboveState;
@@ -29,14 +31,19 @@ const initialState: State = {
         selectionStart: undefined,
         cancelRegions: undefined,
     },
-    below: {},
+    below: {
+        columns: [],
+    },
     mode: "above",
 };
 
 type Action = {type: string; shift?: boolean};
 
 // TODO: export reducers separately so they can be tested independently of one another
-const belowReducer = (state: BelowState = {}, action: Action): BelowState => {
+const belowReducer = (
+    state: BelowState = {columns: []},
+    action: Action,
+): BelowState => {
     switch (action.type) {
         case "ArrowLeft": {
             console.log("below: ArrowLeft");

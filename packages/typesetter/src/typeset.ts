@@ -7,6 +7,9 @@ type ID = {
     id: number;
 };
 
+type Row = Editor.Row<Editor.Glyph, ID>;
+type Node = Editor.Node<Editor.Glyph, ID>;
+
 type Context = {
     fontMetrics: FontMetrics;
     baseFontSize: number;
@@ -18,6 +21,8 @@ type Context = {
 const typesetChildren = (
     children: Editor.Node<Editor.Glyph, ID>[],
     context: Context,
+    column = false, // isSingleChildColumn?
+    below = false,
 ): Layout.Node[] => {
     return children.map((child, index) => {
         if (child.type === "atom") {
@@ -27,13 +32,13 @@ const typesetChildren = (
                 /[+\u2212]/.test(value.char) &&
                 (prevChild
                     ? prevChild.type === "atom" &&
-                      /[+\u2212<>\u2260=\u2264\u2265\u00B1]/.test(
+                      /[+\u2212<>\u2260=\u2264\u2265\u00B1(]/.test(
                           prevChild.value.char,
                       )
                     : true);
             const glyph = typeset(child, context);
 
-            if (unary) {
+            if (unary && !column) {
                 glyph.id = child.id;
                 return glyph;
             } else if (
@@ -41,7 +46,7 @@ const typesetChildren = (
             ) {
                 const box = context.cramped
                     ? glyph
-                    : withOperatorPadding(glyph, context);
+                    : withOperatorPadding(glyph, context, below);
                 box.id = child.id;
                 return box;
             } else {
@@ -68,51 +73,36 @@ type Term = {
     value: Layout.Node[];
 };
 
-const splitIntoTerms = (
-    nodes: Editor.Node<Editor.Glyph, ID>[],
-    context: Context,
-): Term[] => {
-    const {fontMetrics, baseFontSize, multiplier} = context;
-    const fontSize = multiplier * baseFontSize;
-    const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
+export const splitRow = (row: Row): Row[] => {
+    const result = [];
 
-    const result: Term[] = [];
-    let parenCount = 0;
-    for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        if (node.type === "atom") {
-            if (node.value.char === "(") {
-                parenCount++;
-            } else if (node.value.char === ")") {
-                parenCount--;
-            }
-        }
+    let column: Node[] = [];
+    let parens = 0;
 
-        const layoutNode =
-            node.type === "atom" && /[+\u2212]/.test(node.value.char)
-                ? withOperatorPadding(_makeGlyph(node.value.char), context)
-                : typeset(node, context);
-        layoutNode.id = node.id;
-
-        if (
-            parenCount === 0 &&
-            node.type === "atom" &&
-            /[+\u2212]/.test(node.value.char)
+    for (const child of row.children) {
+        if (child.type === "atom" && child.value.char === "(") {
+            parens++;
+            column.push(child);
+        } else if (child.type === "atom" && child.value.char === ")") {
+            parens--;
+            column.push(child);
+        } else if (
+            child.type === "atom" &&
+            parens === 0 &&
+            ["+", "=", "\u2212"].includes(child.value.char)
         ) {
-            result.push({
-                operator: layoutNode,
-                value: [],
-            });
-        } else {
-            if (i === 0) {
-                result.push({
-                    value: [],
-                });
+            if (column.length > 0) {
+                result.push(Editor.row(column));
             }
-
-            const currentTerm = result[result.length - 1];
-            currentTerm.value.push(layoutNode);
+            result.push(Editor.row([child]));
+            column = [];
+        } else {
+            column.push(child);
         }
+    }
+
+    if (column.length > 0) {
+        result.push(Editor.row(column));
     }
 
     return result;
@@ -121,178 +111,88 @@ const splitIntoTerms = (
 const withOperatorPadding = (
     node: Layout.Node,
     context: Context,
+    below = false,
 ): Layout.Node => {
     const {baseFontSize, multiplier} = context;
     const fontSize = multiplier * baseFontSize;
 
+    // We need to tweak this loic so that we only add padding on the right side
+    // for binary operators below.  This is so that we don't get extra space
+    // when adding/subtracting something just to the right of an "=" in the above
     return Layout.hpackNat(
-        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
+        below
+            ? [node, Layout.makeKern(fontSize / 4)]
+            : [
+                  Layout.makeKern(fontSize / 4),
+                  node,
+                  Layout.makeKern(fontSize / 4),
+              ],
         multiplier,
     );
 };
 
-const flattenTerms = (terms: Term[]): Layout.Node[] => {
-    const result: Layout.Node[] = [];
-    for (const term of terms) {
-        if (term.operator) {
-            result.push(term.operator);
-        }
-        result.push(...term.value);
-    }
-    return result;
-};
-
-/**
- * Creates a kern that's the same with as the node or nodes.
- * @param arg {Layout.Node | Layout.Nodes[]}
- */
-const phantom: {
-    (node: Layout.Node): Layout.Kern;
-    (nodes: Layout.Node[]): Layout.Kern;
-} = (arg: Layout.Node | Layout.Node[]): Layout.Kern => {
-    if (Array.isArray(arg)) {
-        return Layout.makeKern(Layout.hlistWidth(arg));
-    }
-    return Layout.makeKern(Layout.getWidth(arg));
-};
-
-// This function assumes that node.children contains an equal node
-const typesetWithWork = (
-    node: Editor.Row<Editor.Glyph, ID>,
-    below: Below, // this is where we're showing work
+export const typesetWithWork = (
+    above: Row[],
+    below: Row[],
     context: Context,
-): Layout.Node => {
-    const {baseFontSize, multiplier, fontMetrics} = context;
-    const fontSize = multiplier * baseFontSize;
+): Layout.Box => {
+    const {multiplier} = context;
 
-    const equalIndex = node.children.findIndex(
-        (child) => child.type === "atom" && child.value.char === "=",
-    );
-
-    const lhsTop = node.children.slice(0, equalIndex);
-    const rhsTop = node.children.slice(equalIndex + 1);
-
-    const lhsTerms = splitIntoTerms(lhsTop, context);
-    const rhsTerms = splitIntoTerms(rhsTop, context);
-
-    const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
-
-    const equalNode = node.children[equalIndex];
-    const equalLayoutNode = withOperatorPadding(_makeGlyph("="), context);
-    equalLayoutNode.id = equalNode.id;
-
-    // TODO: split Layout.Box into Layout.HBox and Layout.VBox so that we don't
-    // have too keep checking the kind.
-    const lhsBottomChildren = typesetChildren(below.lhs.children, context);
-    const rhsBottomChildren = typesetChildren(below.rhs.children, context);
-
-    // TODO: change 'content' to 'children'
-    if (
-        lhsBottomChildren[0].type === "Glyph" &&
-        /[+\u2212]/.test(lhsBottomChildren[0].char)
-    ) {
-        lhsBottomChildren[0] = withOperatorPadding(
-            lhsBottomChildren[0],
-            context,
-        );
-    }
-    if (
-        rhsBottomChildren[0].type === "Glyph" &&
-        /[+\u2212]/.test(rhsBottomChildren[0].char)
-    ) {
-        rhsBottomChildren[0] = Layout.hpackNat(
-            [rhsBottomChildren[0], Layout.makeKern(fontSize / 4)],
-            multiplier,
-        );
+    if (above.length !== below.length) {
+        throw new Error("column count in rows doesn't match");
     }
 
-    // TODO: specify these as part of Below
-    const leftColumn = 1;
-    const rightColumn = 0;
-
-    const lhsBottom = Layout.hpackNat(
-        lhsTerms.flatMap((term, index): Layout.Node[] => {
-            if (index === leftColumn) {
-                const topWidth = term.operator
-                    ? Layout.getWidth(term.operator) +
-                      Layout.hlistWidth(term.value)
-                    : Layout.hlistWidth(term.value);
-                const bottomWidth = Layout.hlistWidth(lhsBottomChildren);
-                if (bottomWidth > topWidth) {
-                    term.value.unshift(Layout.makeKern(bottomWidth - topWidth));
-                } else if (bottomWidth < topWidth) {
-                    lhsBottomChildren.splice(
-                        1,
-                        0,
-                        Layout.makeKern(topWidth - bottomWidth),
-                    );
-                }
-                return lhsBottomChildren;
-            } else {
-                const result: Layout.Node[] = [];
-                if (term.operator) {
-                    result.push(phantom(term.operator));
-                }
-                result.push(phantom(term.value));
-                return result;
-            }
-        }),
-        multiplier,
+    const aboveColumns = above.map(
+        (column) =>
+            typeset(
+                column,
+                context,
+                column.children.length === 1,
+                false,
+            ) as Layout.Box,
+    );
+    const belowColumns = below.map(
+        (column) =>
+            typeset(
+                column,
+                context,
+                column.children.length === 1,
+                true,
+            ) as Layout.Box,
     );
 
-    const rhsBottom = Layout.hpackNat(
-        rhsTerms.flatMap((term, index): Layout.Node[] => {
-            if (index === rightColumn) {
-                const topWidth = term.operator
-                    ? Layout.getWidth(term.operator) +
-                      Layout.hlistWidth(term.value)
-                    : Layout.hlistWidth(term.value);
-                const bottomWidth =
-                    index === 0
-                        ? // Also check that the bottom children starts with an operator
-                          Layout.hlistWidth(rhsBottomChildren.slice(1))
-                        : Layout.hlistWidth(rhsBottomChildren);
-                if (bottomWidth > topWidth) {
-                    term.value.unshift(Layout.makeKern(bottomWidth - topWidth));
-                } else if (bottomWidth < topWidth) {
-                    rhsBottomChildren.splice(
-                        1,
-                        0,
-                        Layout.makeKern(topWidth - bottomWidth),
-                    );
-                }
-                return rhsBottomChildren;
-            } else {
-                const result: Layout.Node[] = [];
-                if (term.operator) {
-                    result.push(phantom(term.operator));
-                }
-                result.push(phantom(term.value));
-                return result;
-            }
-        }),
-        multiplier,
+    for (let i = 0; i < above.length; i++) {
+        const aCol = aboveColumns[i];
+        const bCol = belowColumns[i];
+
+        const aWidth = Layout.getWidth(aCol);
+        const bWidth = Layout.getWidth(bCol);
+
+        if (aWidth < bWidth) {
+            // right align
+            aCol.content = [Layout.makeKern(bWidth - aWidth), ...aCol.content];
+            // resize column
+            aCol.width += bWidth - aWidth;
+        }
+        if (bWidth < aWidth) {
+            // right align
+            bCol.content = [Layout.makeKern(aWidth - bWidth), ...bCol.content];
+            // resize column
+            bCol.width += aWidth - bWidth;
+        }
+    }
+
+    const aboveRow = Layout.hpackNat(aboveColumns, context.multiplier);
+    const belowRow = Layout.hpackNat(belowColumns, context.multiplier);
+
+    const width = Math.max(
+        Layout.getWidth(aboveRow),
+        Layout.getWidth(belowRow),
     );
 
-    const belowRow = Layout.hpackNat(
-        [lhsBottom, phantom(equalLayoutNode), rhsBottom],
-        multiplier,
-    );
-
-    const topRow = Layout.hpackNat(
-        [
-            ...flattenTerms(lhsTerms),
-            equalLayoutNode,
-            phantom(rhsBottomChildren[0]),
-            ...flattenTerms(rhsTerms),
-        ],
-        multiplier,
-    );
-    topRow.id = node.id;
-
-    const equationWithWork = Layout.makeVBox(
-        Layout.getWidth(topRow),
-        topRow,
+    const verticalLayout = Layout.makeVBox(
+        width,
+        aboveRow,
         [],
         [
             Layout.makeKern(8), // row gap
@@ -301,18 +201,14 @@ const typesetWithWork = (
         multiplier,
     );
 
-    equationWithWork.width = Math.max(
-        Layout.getWidth(topRow),
-        Layout.getWidth(belowRow),
-    );
-
-    return equationWithWork;
+    return verticalLayout;
 };
 
 const typeset = (
     node: Editor.Node<Editor.Glyph, ID>,
     context: Context,
-    below?: Below,
+    column = false, // isSingleChildColumn?
+    below = false,
 ): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const fontSize = multiplier * baseFontSize;
@@ -323,20 +219,12 @@ const typeset = (
     switch (node.type) {
         case "row": {
             const row = Layout.hpackNat(
-                typesetChildren(node.children, context),
+                typesetChildren(node.children, context, column, below),
                 multiplier,
             );
             row.height = Math.max(row.height, 0.85 * baseFontSize * multiplier);
             row.depth = Math.max(row.depth, 0.15 * baseFontSize * multiplier);
             row.id = node.id;
-
-            const isEquation = node.children.some(
-                (child) => child.type === "atom" && child.value.char === "=",
-            );
-
-            if (below && isEquation) {
-                return typesetWithWork(node, below, context);
-            }
 
             return row;
         }

@@ -10,10 +10,6 @@ const EditorPage: React.SFC<{}> = () => (
         <MathEditor
             readonly={false}
             value={Editor.Util.row("2x+5=10")}
-            below={{
-                lhs: Editor.Util.row("-5"),
-                rhs: Editor.Util.row("-5"),
-            }}
             focus={true}
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
