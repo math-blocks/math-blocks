@@ -37,6 +37,12 @@ export type Rect = {
     fill?: string;
 };
 
+export type Kern = {
+    type: "kern";
+    x: number;
+    width: number;
+};
+
 const unionRect = (rects: Rect[]): Rect => {
     let xMin = Infinity;
     let yMin = Infinity;
@@ -72,7 +78,7 @@ type Point = {
     y: number;
 };
 
-export type Node = Group | Glyph | Line | Rect;
+export type Node = Group | Glyph | Line | Rect | Kern;
 
 const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
     const advance = Layout.getWidth(hrule);
@@ -82,6 +88,14 @@ const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
         y1: loc.y,
         x2: loc.x + advance,
         y2: loc.y,
+    };
+};
+
+const renderKern = (kern: Layout.Kern, loc: Point): Node => {
+    return {
+        type: "kern",
+        x: loc.x,
+        width: kern.size,
     };
 };
 
@@ -234,6 +248,7 @@ const renderHBox = ({
                 layer.push(renderGlyph(node, pen));
                 break;
             case "Kern":
+                layer.push(renderKern(node, pen));
                 break;
             default:
                 throw new UnreachableCaseError(node);

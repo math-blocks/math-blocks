@@ -62,47 +62,86 @@ const typesetChildren = (
     });
 };
 
-// TODO: dedupe with math-editor.ts
-type Below = {
-    lhs: Editor.Row<Editor.Glyph, ID>;
-    rhs: Editor.Row<Editor.Glyph, ID>;
+type Column = {
+    nodes: Node[];
+    start: number;
+    end: number; // always +1 the character being included
 };
 
-type Term = {
-    operator?: Layout.Node;
-    value: Layout.Node[];
-};
-
-export const splitRow = (row: Row): Row[] => {
-    const result = [];
+export const splitRow = (row: Row): Column[] => {
+    const result: Column[] = [];
 
     let column: Node[] = [];
     let parens = 0;
+    let start = 0;
+    let prevCharIsSep = false;
 
-    for (const child of row.children) {
-        if (child.type === "atom" && child.value.char === "(") {
+    for (let i = 0; i < row.children.length; i++) {
+        const child = row.children[i];
+
+        const charIsSep =
+            child.type === "atom" && child.value.char === "\u0008";
+        console.log(`charIsSep = ${charIsSep}`);
+
+        if (charIsSep) {
+            if (prevCharIsSep) {
+                result.push({
+                    nodes: [],
+                    start: start,
+                    end: i + 1,
+                });
+            } else if (column.length > 0) {
+                result.push({
+                    nodes: column,
+                    start: start,
+                    end: i + 1,
+                });
+                column = [];
+                start = i + 1;
+            }
+            // If the previous column wasn't a separator then we ignore the
+            // character altogether.  To have one column we need two separators
+            // in a row.  If there are n separators in a row then there that
+            // represents n-1 columns.
+        } else if (child.type === "atom" && child.value.char === "(") {
             parens++;
             column.push(child);
         } else if (child.type === "atom" && child.value.char === ")") {
             parens--;
             column.push(child);
         } else if (
+            // Handle a +, -, or = in a single column
             child.type === "atom" &&
             parens === 0 &&
             ["+", "=", "\u2212"].includes(child.value.char)
         ) {
             if (column.length > 0) {
-                result.push(Editor.row(column));
+                result.push({
+                    nodes: column,
+                    start: start,
+                    end: i + 1,
+                });
             }
-            result.push(Editor.row([child]));
+            result.push({
+                nodes: [child],
+                start: i,
+                end: i + 1,
+            });
             column = [];
+            start = i + 1;
         } else {
             column.push(child);
         }
+
+        prevCharIsSep = charIsSep;
     }
 
     if (column.length > 0) {
-        result.push(Editor.row(column));
+        result.push({
+            nodes: column,
+            start: start,
+            end: row.children.length,
+        });
     }
 
     return result;
@@ -132,58 +171,75 @@ const withOperatorPadding = (
 };
 
 export const typesetWithWork = (
-    above: Row[],
-    below: Row[],
+    aboveNode: Editor.Row<Editor.Glyph, ID>,
+    belowNode: Editor.Row<Editor.Glyph, ID>,
     context: Context,
 ): Layout.Box => {
     const {multiplier} = context;
+
+    const above = splitRow(aboveNode);
+    const below = splitRow(belowNode);
 
     if (above.length !== below.length) {
         throw new Error("column count in rows doesn't match");
     }
 
-    const aboveColumns = above.map(
-        (column) =>
-            typeset(
-                column,
-                context,
-                column.children.length === 1,
-                false,
-            ) as Layout.Box,
+    const aboveColumns = above.map((column) =>
+        typesetChildren(
+            column.nodes,
+            context,
+            column.nodes.length === 1,
+            false,
+        ),
     );
-    const belowColumns = below.map(
-        (column) =>
-            typeset(
-                column,
-                context,
-                column.children.length === 1,
-                true,
-            ) as Layout.Box,
+    const belowColumns = below.map((column) =>
+        typesetChildren(column.nodes, context, column.nodes.length === 1, true),
     );
+
+    const aboveOutput = [];
+    const belowOutput = [];
 
     for (let i = 0; i < above.length; i++) {
         const aCol = aboveColumns[i];
         const bCol = belowColumns[i];
 
-        const aWidth = Layout.getWidth(aCol);
-        const bWidth = Layout.getWidth(bCol);
+        const aWidth = Layout.hlistWidth(aCol);
+        const bWidth = Layout.hlistWidth(bCol);
 
+        // TODO: if there's an empty column, then we have to give the kern
+        // we create an id that matches the id of the separator char.  We also
+        // have to handle a single column creating two kerns as well as the
+        // case where there's more than two separator chars in a row.
         if (aWidth < bWidth) {
-            // right align
-            aCol.content = [Layout.makeKern(bWidth - aWidth), ...aCol.content];
-            // resize column
-            aCol.width += bWidth - aWidth;
-        }
-        if (bWidth < aWidth) {
-            // right align
-            bCol.content = [Layout.makeKern(aWidth - bWidth), ...bCol.content];
-            // resize column
-            bCol.width += aWidth - bWidth;
+            // right align above content
+            const kern = Layout.makeKern(bWidth - aWidth);
+            aboveOutput.push(kern, ...aCol);
+            belowOutput.push(...bCol);
+        } else if (bWidth < aWidth) {
+            aboveOutput.push(...aCol);
+            // right align below content
+            const kern = Layout.makeKern(aWidth - bWidth);
+            if (below[i].nodes.length === 0) {
+                const node = belowNode.children[below[i].start];
+                kern.id = node.id;
+            }
+            belowOutput.push(kern, ...bCol);
+        } else {
+            aboveOutput.push(...aCol);
+            belowOutput.push(...bCol);
         }
     }
 
-    const aboveRow = Layout.hpackNat(aboveColumns, context.multiplier);
-    const belowRow = Layout.hpackNat(belowColumns, context.multiplier);
+    const aboveRow = Layout.hpackNat(aboveOutput, context.multiplier);
+    const belowRow = Layout.hpackNat(belowOutput, context.multiplier);
+
+    aboveRow.id = aboveNode.id;
+    belowRow.id = belowNode.id;
+
+    console.log("aboveRow");
+    console.log(aboveRow);
+    console.log("belowRow");
+    console.log(belowRow);
 
     const width = Math.max(
         Layout.getWidth(aboveRow),

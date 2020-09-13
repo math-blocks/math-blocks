@@ -21,6 +21,7 @@ type Below = {
 
 type Props = {
     value: Row;
+    work?: Row;
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
@@ -49,9 +50,16 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             selectionStart: undefined,
             cancelRegions: [],
         },
-        below: {
-            columns: [],
-        },
+        below: props.work
+            ? {
+                  math: props.work,
+                  cursor: {
+                      path: [],
+                      prev: -Infinity,
+                      next: 0,
+                  },
+              }
+            : undefined,
         mode: "above",
     });
     useEffect(() => {
@@ -96,16 +104,29 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     const {style} = props;
 
     const fontSize = 64;
-    // $FlowFixMe: make typeset return a Box
-    const box = Typesetter.typeset(state.above.math, {
+    const context = {
         fontMetrics,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
-    }) as Typesetter.Layout.Box;
+    };
 
-    const layoutCursor = Editor.layoutCursorFromState(state.above);
-    console.log(layoutCursor);
+    const box = state.below
+        ? Typesetter.typesetWithWork(
+              state.above.math,
+              state.below.math,
+              context,
+          )
+        : (Typesetter.typeset(state.above.math, {
+              fontMetrics,
+              baseFontSize: fontSize,
+              multiplier: 1.0,
+              cramped: false,
+          }) as Typesetter.Layout.Box); // TODO: make typeset return a Box
+
+    const layoutCursor = state.below
+        ? Editor.layoutCursorFromState(state.below)
+        : Editor.layoutCursorFromState(state.above);
 
     return (
         <div
@@ -120,7 +141,6 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             <MathRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
-                editorCursor={state.above.cursor}
                 cancelRegions={cancelRegions}
             />
         </div>

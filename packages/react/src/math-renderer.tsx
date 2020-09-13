@@ -66,7 +66,6 @@ const CURSOR_WIDTH = 2;
 const MathRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
-    editorCursor?: Editor.Cursor;
     cancelRegions?: LayoutCursor[];
 }> = (props) => {
     const group = SceneGraph.render(props);
