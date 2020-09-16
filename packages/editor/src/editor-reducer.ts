@@ -1,13 +1,9 @@
 import * as Editor from "./editor-ast";
 
 import aboveReducer, {State as AboveState} from "./above-reducer";
+import belowReducer, {State as BelowState} from "./below-reducer";
 
 const {row, glyph, frac} = Editor;
-
-type BelowState = {
-    math: Editor.Row<Editor.Glyph, {id: number}>;
-    cursor: Editor.Cursor;
-};
 
 export type State = {
     above: AboveState;
@@ -36,22 +32,6 @@ const initialState: State = {
 };
 
 type Action = {type: string; shift?: boolean};
-
-// TODO: export reducers separately so they can be tested independently of one another
-const belowReducer = (state: BelowState, action: Action): BelowState => {
-    switch (action.type) {
-        case "ArrowLeft": {
-            console.log("below: ArrowLeft");
-            return state;
-        }
-        case "ArrowRight": {
-            console.log("below: ArrowRight");
-            return state;
-        }
-        default:
-            return state;
-    }
-};
 
 const reducer = (state: State = initialState, action: Action): State => {
     // TODO: if state.above or state.below are not defined used grab the initial

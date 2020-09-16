@@ -60,7 +60,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                   },
               }
             : undefined,
-        mode: "above",
+        mode: "below",
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -124,9 +124,8 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
               cramped: false,
           }) as Typesetter.Layout.Box); // TODO: make typeset return a Box
 
-    const layoutCursor = state.below
-        ? Editor.layoutCursorFromState(state.below)
-        : Editor.layoutCursorFromState(state.above);
+    // @ts-ignore: fix this type error
+    const layoutCursor = Editor.layoutCursorFromState(state[state.mode]);
 
     return (
         <div

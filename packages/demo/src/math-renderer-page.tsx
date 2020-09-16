@@ -13,36 +13,6 @@ const context = {
     cramped: false,
 };
 
-const above1 = Editor.Util.row("2x+5=\u0008\u000810");
-const below1 = Editor.Util.row("\u0008\u0008-5\u0008\u0008-5");
-
-// TODO: render paren wrapped negatives, like (-5) with the correct kerning
-const linearEquation = typesetWithWork(above1, below1, context);
-
-const linearEquation2 = typesetWithWork(
-    Editor.Util.row("2x+10=\u0008\u000820"),
-    Editor.Util.row("\u0008\u0008-5\u0008\u0008-5"),
-    context,
-);
-
-const linearEquation3 = typesetWithWork(
-    Editor.Util.row("(2x+1)+5-y=\u0008\u000810"),
-    Editor.Util.row("\u0008\u0008+123\u0008\u0008\u0008\u0008+5"),
-    context,
-);
-
-const linearEquation4 = typesetWithWork(
-    Editor.Util.row("\u0008\u00085+2x=\u0008\u000810"),
-    Editor.Util.row("-5\u0008\u0008\u0008\u0008-5"),
-    context,
-);
-
-const linearEquation5 = typesetWithWork(
-    Editor.Util.row("\u0008\u00085+2x=\u0008\u000810"),
-    Editor.Util.row("+(-5)\u0008\u0008\u0008\u0008+(-5)"),
-    context,
-);
-
 // const {glyph, row, frac, root, limits} = Editor;
 
 // const pythagoras = typeset(
@@ -111,29 +81,61 @@ const linearEquation5 = typesetWithWork(
 //     context,
 // ) as Layout.Box;
 
-const cursor: Editor.Cursor = {
-    path: [],
-    prev: 0,
-    next: 1,
-};
+const RendererPage: React.SFC<{}> = () => {
+    const above1 = Editor.Util.row("2x+5=\u0008\u000810");
+    const below1 = Editor.Util.row("\u0008\u0008-5\u0008\u0008-5");
 
-const layoutCursor = Editor.layoutCursorFromState({
-    math: below1,
-    cursor: cursor,
-});
+    // TODO: render paren wrapped negatives, like (-5) with the correct kerning
+    const linearEquation = typesetWithWork(above1, below1, context);
 
-const RendererPage: React.SFC<{}> = () => (
-    <div style={{display: "flex", flexDirection: "column"}}>
-        <MathRenderer box={linearEquation} cursor={layoutCursor} />
-        <MathRenderer box={linearEquation2} />
-        <MathRenderer box={linearEquation3} />
-        <MathRenderer box={linearEquation4} />
-        <MathRenderer box={linearEquation5} />
-        {/* <MathRenderer box={pythagoras} />
+    const linearEquation2 = typesetWithWork(
+        Editor.Util.row("2x+10=\u0008\u000820"),
+        Editor.Util.row("\u0008\u0008-5\u0008\u0008-5"),
+        context,
+    );
+
+    const linearEquation3 = typesetWithWork(
+        Editor.Util.row("(2x+1)+5-y=\u0008\u000810"),
+        Editor.Util.row("\u0008\u0008+123\u0008\u0008\u0008\u0008+5"),
+        context,
+    );
+
+    const linearEquation4 = typesetWithWork(
+        Editor.Util.row("\u0008\u00085+2x=\u0008\u000810"),
+        Editor.Util.row("-5\u0008\u0008\u0008\u0008-5"),
+        context,
+    );
+
+    const linearEquation5 = typesetWithWork(
+        Editor.Util.row("\u0008\u00085+2x=\u0008\u000810"),
+        Editor.Util.row("+(-5)\u0008\u0008\u0008\u0008+(-5)"),
+        context,
+    );
+
+    const cursor: Editor.Cursor = {
+        path: [],
+        prev: 0,
+        next: 1,
+    };
+
+    const layoutCursor = Editor.layoutCursorFromState({
+        math: below1,
+        cursor: cursor,
+    });
+
+    return (
+        <div style={{display: "flex", flexDirection: "column"}}>
+            <MathRenderer box={linearEquation} cursor={layoutCursor} />
+            <MathRenderer box={linearEquation2} />
+            <MathRenderer box={linearEquation3} />
+            <MathRenderer box={linearEquation4} />
+            <MathRenderer box={linearEquation5} />
+            {/* <MathRenderer box={pythagoras} />
         <MathRenderer box={quadraticEquation} />
         <MathRenderer box={lim} />
         <MathRenderer box={sum} /> */}
-    </div>
-);
+        </div>
+    );
+};
 
 export default RendererPage;

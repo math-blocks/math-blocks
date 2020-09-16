@@ -147,6 +147,61 @@ export const splitRow = (row: Row): Column[] => {
     return result;
 };
 
+const colToRow = (
+    row: Editor.Row<Editor.Glyph, ID>,
+    columns: Column[],
+    columnLayouts: Layout.Node[][],
+    columnWidths: number[],
+    context: Context,
+): Layout.Node => {
+    const output = [];
+    let i = 0;
+    while (i < columns.length) {
+        if (columns[i].nodes.length === 0) {
+            // Compute and push the first 1/2 column kern
+            const k1 = Layout.makeKern(columnWidths[i] / 2);
+            k1.id = row.children[columns[i].start].id;
+            output.push(k1);
+
+            // Create a kern that's 1/2 the width of the current column
+            let k2 = Layout.makeKern(columnWidths[i] / 2);
+            k2.id = row.children[columns[i].start + 1].id;
+
+            while (i + 1 < columns.length) {
+                // If the next column is empty
+                if (columns[i + 1].nodes.length === 0) {
+                    // Expand the kern by 1/2 the width of the next column
+                    k2.size += columnWidths[i + 1] / 2;
+                    output.push(k2);
+                    // Create a new kern that's 1/2 the width of the next column
+                    k2 = Layout.makeKern(columnWidths[i + 1] / 2);
+                    k2.id = row.children[columns[i + 1].start].id;
+                    // Advance to the column after that
+                    i++;
+                } else {
+                    break;
+                }
+            }
+
+            // Push the last 1/2 column kern
+            output.push(k2);
+        } else {
+            const aWidth = Layout.hlistWidth(columnLayouts[i]);
+            if (aWidth < columnWidths[i]) {
+                const kern = Layout.makeKern(columnWidths[i] - aWidth);
+                output.push(kern);
+            }
+            output.push(...columnLayouts[i]);
+        }
+
+        i++;
+    }
+
+    const layout = Layout.hpackNat(output, context.multiplier);
+    layout.id = row.id;
+    return layout;
+};
+
 const withOperatorPadding = (
     node: Layout.Node,
     context: Context,
@@ -177,14 +232,14 @@ export const typesetWithWork = (
 ): Layout.Box => {
     const {multiplier} = context;
 
-    const above = splitRow(aboveNode);
-    const below = splitRow(belowNode);
+    const aboveCols = splitRow(aboveNode);
+    const belowCols = splitRow(belowNode);
 
-    if (above.length !== below.length) {
+    if (aboveCols.length !== belowCols.length) {
         throw new Error("column count in rows doesn't match");
     }
 
-    const aboveColumns = above.map((column) =>
+    const aboveLayouts = aboveCols.map((column) =>
         typesetChildren(
             column.nodes,
             context,
@@ -192,54 +247,38 @@ export const typesetWithWork = (
             false,
         ),
     );
-    const belowColumns = below.map((column) =>
+    const belowLayouts = belowCols.map((column) =>
         typesetChildren(column.nodes, context, column.nodes.length === 1, true),
     );
+    console.log(belowCols);
 
-    const aboveOutput = [];
-    const belowOutput = [];
+    const columnWidths = [];
 
-    for (let i = 0; i < above.length; i++) {
-        const aCol = aboveColumns[i];
-        const bCol = belowColumns[i];
-
-        const aWidth = Layout.hlistWidth(aCol);
-        const bWidth = Layout.hlistWidth(bCol);
-
-        // TODO: if there's an empty column, then we have to give the kern
-        // we create an id that matches the id of the separator char.  We also
-        // have to handle a single column creating two kerns as well as the
-        // case where there's more than two separator chars in a row.
-        if (aWidth < bWidth) {
-            // right align above content
-            const kern = Layout.makeKern(bWidth - aWidth);
-            aboveOutput.push(kern, ...aCol);
-            belowOutput.push(...bCol);
-        } else if (bWidth < aWidth) {
-            aboveOutput.push(...aCol);
-            // right align below content
-            const kern = Layout.makeKern(aWidth - bWidth);
-            if (below[i].nodes.length === 0) {
-                const node = belowNode.children[below[i].start];
-                kern.id = node.id;
-            }
-            belowOutput.push(kern, ...bCol);
-        } else {
-            aboveOutput.push(...aCol);
-            belowOutput.push(...bCol);
-        }
+    // Compute the width of each column
+    for (let i = 0; i < aboveCols.length; i++) {
+        const aWidth = Layout.hlistWidth(aboveLayouts[i]);
+        const bWidth = Layout.hlistWidth(belowLayouts[i]);
+        columnWidths.push(Math.max(aWidth, bWidth));
     }
 
-    const aboveRow = Layout.hpackNat(aboveOutput, context.multiplier);
-    const belowRow = Layout.hpackNat(belowOutput, context.multiplier);
+    // Compute new rows with properly sized kerns replacing "\u0008"s
+    const aboveRow = colToRow(
+        aboveNode,
+        aboveCols,
+        aboveLayouts,
+        columnWidths,
+        context,
+    );
+    const belowRow = colToRow(
+        belowNode,
+        belowCols,
+        belowLayouts,
+        columnWidths,
+        context,
+    );
 
-    aboveRow.id = aboveNode.id;
-    belowRow.id = belowNode.id;
-
-    console.log("aboveRow");
-    console.log(aboveRow);
-    console.log("belowRow");
-    console.log(belowRow);
+    console.log("aboveRow:", aboveRow);
+    console.log("belowRow:", belowRow);
 
     const width = Math.max(
         Layout.getWidth(aboveRow),
