@@ -60,7 +60,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                   },
               }
             : undefined,
-        mode: "below",
+        mode: props.work ? "below" : "above",
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {

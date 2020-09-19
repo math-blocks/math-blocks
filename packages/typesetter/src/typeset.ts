@@ -198,7 +198,12 @@ const colToRow = (
     }
 
     const layout = Layout.hpackNat(output, context.multiplier);
+
+    const {baseFontSize, multiplier} = context;
+    layout.height = Math.max(layout.height, 0.85 * baseFontSize * multiplier);
+    layout.depth = Math.max(layout.depth, 0.15 * baseFontSize * multiplier);
     layout.id = row.id;
+
     return layout;
 };
 
