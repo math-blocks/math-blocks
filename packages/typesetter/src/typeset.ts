@@ -64,85 +64,45 @@ const typesetChildren = (
 
 type Column = {
     nodes: Node[];
+    // TODO: change this to first and last
     start: number;
-    end: number; // always +1 the character being included
+    end: number; // bounds are inclusive
 };
 
+// TODO: add columns before first separator and after last separator
 export const splitRow = (row: Row): Column[] => {
     const result: Column[] = [];
 
     let column: Node[] = [];
-    let parens = 0;
     let start = 0;
-    let prevCharIsSep = false;
+    let i = 0;
 
-    for (let i = 0; i < row.children.length; i++) {
+    while (i < row.children.length) {
         const child = row.children[i];
 
         const charIsSep =
             child.type === "atom" && child.value.char === "\u0008";
-        console.log(`charIsSep = ${charIsSep}`);
 
         if (charIsSep) {
-            if (prevCharIsSep) {
-                result.push({
-                    nodes: [],
-                    start: start,
-                    end: i + 1,
-                });
-            } else if (column.length > 0) {
-                result.push({
-                    nodes: column,
-                    start: start,
-                    end: i + 1,
-                });
-                column = [];
-                start = i + 1;
-            }
-            // If the previous column wasn't a separator then we ignore the
-            // character altogether.  To have one column we need two separators
-            // in a row.  If there are n separators in a row then there that
-            // represents n-1 columns.
-        } else if (child.type === "atom" && child.value.char === "(") {
-            parens++;
-            column.push(child);
-        } else if (child.type === "atom" && child.value.char === ")") {
-            parens--;
-            column.push(child);
-        } else if (
-            // Handle a +, -, or = in a single column
-            child.type === "atom" &&
-            parens === 0 &&
-            ["+", "=", "\u2212"].includes(child.value.char)
-        ) {
-            if (column.length > 0) {
-                result.push({
-                    nodes: column,
-                    start: start,
-                    end: i + 1,
-                });
-            }
             result.push({
-                nodes: [child],
-                start: i,
-                end: i + 1,
+                nodes: column,
+                start: start,
+                end: i, // column bounds are inclusive
             });
             column = [];
-            start = i + 1;
+            start = i;
         } else {
             column.push(child);
         }
 
-        prevCharIsSep = charIsSep;
+        i++;
     }
 
-    if (column.length > 0) {
-        result.push({
-            nodes: column,
-            start: start,
-            end: row.children.length,
-        });
-    }
+    result.push({
+        nodes: column,
+        start: start,
+        end: start,
+    });
 
     return result;
 };
@@ -156,8 +116,24 @@ const colToRow = (
 ): Layout.Node => {
     const output = [];
     let i = 0;
+
+    // NOTES:
+    // - empty start column: start and end are both zero
+    // - empty end column: start and end are both the last index
+    // - empty middle columns: start and end are separated by 1
+
+    const firstIndex = 0;
+    const lastIndex = row.children.length - 1;
+
     while (i < columns.length) {
-        if (columns[i].nodes.length === 0) {
+        const col = columns[i];
+
+        if (col.start === firstIndex && col.end === lastIndex) {
+            // empty first column
+        } else if (col.start === firstIndex && col.end === lastIndex) {
+            // empty last column
+        } else if (i > 0 && col.end === col.start + 1) {
+            // empty middle column
             // Compute and push the first 1/2 column kern
             const k1 = Layout.makeKern(columnWidths[i] / 2);
             k1.id = row.children[columns[i].start].id;
@@ -169,7 +145,7 @@ const colToRow = (
 
             while (i + 1 < columns.length) {
                 // If the next column is empty
-                if (columns[i + 1].nodes.length === 0) {
+                if (columns[i + 1].end === columns[i + 1].start + 1) {
                     // Expand the kern by 1/2 the width of the next column
                     k2.size += columnWidths[i + 1] / 2;
                     output.push(k2);
@@ -186,6 +162,16 @@ const colToRow = (
             // Push the last 1/2 column kern
             output.push(k2);
         } else {
+            // Handle separators in between two columns with content
+            if (
+                (i > 1 && columns[i - 1].end - columns[i - 1].start > 1) ||
+                (i === 1 && columns[0].end - columns[0].start > 0)
+            ) {
+                const sep = row.children[columns[i].start - 1];
+                const kern = Layout.makeKern(0);
+                kern.id = sep.id;
+                output.push(kern);
+            }
             const aWidth = Layout.hlistWidth(columnLayouts[i]);
             if (aWidth < columnWidths[i]) {
                 const kern = Layout.makeKern(columnWidths[i] - aWidth);
@@ -237,8 +223,13 @@ export const typesetWithWork = (
 ): Layout.Box => {
     const {multiplier} = context;
 
+    console.log("aboveNode: ", aboveNode);
+    console.log("belowNode: ", belowNode);
+
     const aboveCols = splitRow(aboveNode);
     const belowCols = splitRow(belowNode);
+    console.log("aboveCols: ", aboveCols);
+    console.log("belowCols: ", belowCols);
 
     if (aboveCols.length !== belowCols.length) {
         throw new Error("column count in rows doesn't match");
@@ -255,7 +246,7 @@ export const typesetWithWork = (
     const belowLayouts = belowCols.map((column) =>
         typesetChildren(column.nodes, context, column.nodes.length === 1, true),
     );
-    console.log(belowCols);
+    console.log("belowLayouts: ", belowLayouts);
 
     const columnWidths = [];
 

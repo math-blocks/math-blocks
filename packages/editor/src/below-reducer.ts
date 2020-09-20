@@ -45,6 +45,14 @@ const belowReducer = (state: State, action: Action): State => {
                 Reducers.backspace(currentNode, draft);
                 return;
             }
+            case "(": {
+                Reducers.parenLeft(currentNode, draft);
+                return;
+            }
+            case ")": {
+                Reducers.parenRight(currentNode, draft);
+                return;
+            }
             default: {
                 // TODO: check if we're between two "\u0008" and that inserting
                 // a character would result in one (or both) of those "\u0008"s

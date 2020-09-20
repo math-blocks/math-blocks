@@ -126,6 +126,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
 
     // @ts-ignore: fix this type error
     const layoutCursor = Editor.layoutCursorFromState(state[state.mode]);
+    console.log("cursor: ", state[state.mode]?.cursor);
 
     return (
         <div

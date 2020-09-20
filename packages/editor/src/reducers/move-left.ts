@@ -8,6 +8,7 @@ import {
     pathForNode,
     isPrefixArray,
     hasGrandchildren,
+    isGlyph,
 } from "../util";
 import {SUB, SUP, NUMERATOR, RADICAND, DENOMINATOR} from "../constants";
 
@@ -64,7 +65,19 @@ export const moveLeft = (
     if (cursor.prev !== -Infinity) {
         // It's safe to use cursor.prev directly as a key here
         // since we've already checked to make sure it isn't Infinity.
-        const prevNode = currentNode.children[cursor.prev];
+        let prevNode = currentNode.children[cursor.prev];
+
+        // Skip over column separator if the column to the left is non-empty
+        if (isGlyph(prevNode, "\u0008") && cursor.prev !== 0) {
+            const prevPrevNode = currentNode.children[cursor.prev - 1];
+            if (!isGlyph(prevPrevNode, "\u0008")) {
+                prevNode = prevPrevNode;
+                // move to the left by one
+                const newPrev = prevIndex(children, cursor.prev);
+                cursor.next = cursor.prev;
+                cursor.prev = newPrev;
+            }
+        }
 
         if (prevNode && hasGrandchildren(prevNode)) {
             // check if draft.selectionStart is within prevNode
