@@ -66,11 +66,15 @@ export const moveRight = (
         // It's safe to use cursor.next directly as a key here
         // since we've already checked to make sure it isn't Infinity.
         let nextNode = currentNode.children[cursor.next];
+        const prevNode = currentNode.children[cursor.prev];
 
         // Skip over column separator if the column to the right is non-empty
+        // and we're not in an empty column ourselves.
         if (
             isGlyph(nextNode, "\u0008") &&
-            cursor.next !== currentNode.children.length - 1
+            cursor.next !== currentNode.children.length - 1 &&
+            prevNode &&
+            !isGlyph(prevNode, "\u0008")
         ) {
             const nextNextNode = currentNode.children[cursor.next + 1];
             if (!isGlyph(nextNextNode, "\u0008")) {

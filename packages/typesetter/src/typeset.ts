@@ -196,7 +196,7 @@ const colToRow = (
 const withOperatorPadding = (
     node: Layout.Node,
     context: Context,
-    below = false,
+    below = false, // TODO: check to see if there's an "=" in the previous column of any of the rows
 ): Layout.Node => {
     const {baseFontSize, multiplier} = context;
     const fontSize = multiplier * baseFontSize;
@@ -205,13 +205,7 @@ const withOperatorPadding = (
     // for binary operators below.  This is so that we don't get extra space
     // when adding/subtracting something just to the right of an "=" in the above
     return Layout.hpackNat(
-        below
-            ? [node, Layout.makeKern(fontSize / 4)]
-            : [
-                  Layout.makeKern(fontSize / 4),
-                  node,
-                  Layout.makeKern(fontSize / 4),
-              ],
+        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
         multiplier,
     );
 };
