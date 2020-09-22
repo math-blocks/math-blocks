@@ -8,7 +8,10 @@ import CancelButton from "./cancel-button";
 const startingValue = Editor.Util.row(
     "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
 );
-const emptyWork = Editor.Util.row(
+const emptyWork1 = Editor.Util.row(
+    "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
+);
+const emptyWork2 = Editor.Util.row(
     "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
 );
 
@@ -19,8 +22,7 @@ const EditorPage: React.SFC<{}> = () => (
     <div>
         <MathEditor
             readonly={false}
-            value={startingValue}
-            work={emptyWork}
+            rows={[startingValue, emptyWork1, emptyWork2]}
             focus={true}
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>

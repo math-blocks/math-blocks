@@ -112,7 +112,7 @@ export const App: React.SFC<{}> = () => {
                 <MathEditor
                     key={`question`}
                     readonly={true}
-                    value={steps[0].value}
+                    rows={[steps[0].value]}
                     focus={false}
                     style={{marginTop: 8}}
                 />
@@ -159,7 +159,7 @@ export const App: React.SFC<{}> = () => {
                                 readonly={
                                     index !== steps.length - 2 || isComplete
                                 }
-                                value={step.value}
+                                rows={[step.value]}
                                 focus={index === steps.length - 2}
                                 onSubmit={() => {
                                     return handleCheckStep(

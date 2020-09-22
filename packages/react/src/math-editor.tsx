@@ -20,8 +20,7 @@ type Below = {
 };
 
 type Props = {
-    value: Row;
-    work?: Row;
+    rows: Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
@@ -39,28 +38,19 @@ type Props = {
 export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
-    const [state, setState] = useState<Editor.State>({
-        above: {
-            math: props.value,
-            cursor: {
-                path: [],
-                prev: -Infinity,
-                next: 0,
-            },
-            selectionStart: undefined,
-            cancelRegions: [],
+    const rows = props.rows.map((row) => ({
+        math: row,
+        cursor: {
+            path: [],
+            prev: -Infinity,
+            next: 0,
         },
-        below: props.work
-            ? {
-                  math: props.work,
-                  cursor: {
-                      path: [],
-                      prev: -Infinity,
-                      next: 0,
-                  },
-              }
-            : undefined,
-        mode: props.work ? "below" : "above",
+        selectionStart: undefined,
+        cancelRegions: [],
+    }));
+    const [state, setState] = useState<Editor.State>({
+        rows,
+        rowIndex: 0,
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -80,7 +70,8 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                 shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
-                const success = props.onSubmit(state.above.math);
+                // TODO: submit all rows
+                const success = props.onSubmit(state.rows[0].math);
                 if (success) {
                     setActive(false);
                 }
@@ -94,13 +85,14 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                     e.keyCode !== 39 &&
                     e.keyCode !== 40
                 ) {
-                    props.onChange(value.above.math);
+                    // TODO: communicate all rows when sending this event
+                    props.onChange(value.rows[0].math);
                 }
             }
         }
     });
 
-    const {cancelRegions} = state.above;
+    const {cancelRegions} = state.rows[0];
     const {style} = props;
 
     const fontSize = 64;
@@ -111,22 +103,25 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         cramped: false,
     };
 
-    const box = state.below
-        ? Typesetter.typesetWithWork(
-              state.above.math,
-              state.below.math,
-              context,
-          )
-        : (Typesetter.typeset(state.above.math, {
-              fontMetrics,
-              baseFontSize: fontSize,
-              multiplier: 1.0,
-              cramped: false,
-          }) as Typesetter.Layout.Box); // TODO: make typeset return a Box
+    const box =
+        state.rows.length > 1
+            ? // TODO: update typesetWithWork to accept more than two rows
+              Typesetter.typesetWithWork(
+                  state.rows.map((row) => row.math),
+                  context,
+              )
+            : (Typesetter.typeset(state.rows[0].math, {
+                  fontMetrics,
+                  baseFontSize: fontSize,
+                  multiplier: 1.0,
+                  cramped: false,
+              }) as Typesetter.Layout.Box); // TODO: make typeset return a Box
 
-    // @ts-ignore: fix this type error
-    const layoutCursor = Editor.layoutCursorFromState(state[state.mode]);
-    console.log("cursor: ", state[state.mode]?.cursor);
+    const layoutCursor = Editor.layoutCursorFromState(
+        state.rows[state.rowIndex],
+    );
+    console.log("cursor: ", state.rows[state.rowIndex].cursor);
+    console.log(layoutCursor);
 
     return (
         <div

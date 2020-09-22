@@ -90,39 +90,51 @@ const RendererPage: React.SFC<{}> = () => {
     );
 
     // TODO: render paren wrapped negatives, like (-5) with the correct kerning
-    const linearEquation = typesetWithWork(above1, below1, context);
+    const linearEquation = typesetWithWork([above1, below1], context);
 
     const linearEquation2 = typesetWithWork(
-        Editor.Util.row("\u00082x\u0008+\u000810\u0008=\u0008\u000820\u0008"),
-        Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+        [
+            Editor.Util.row(
+                "\u00082x\u0008+\u000810\u0008=\u0008\u000820\u0008",
+            ),
+            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+        ],
         context,
     );
 
     const linearEquation3 = typesetWithWork(
-        Editor.Util.row(
-            "\u0008(2x+1)\u0008+\u00085\u0008-\u0008y\u0008=\u0008\u000810\u0008",
-        ),
-        Editor.Util.row(
-            "\u0008\u0008+\u0008123\u0008\u0008\u0008\u0008+\u00085\u0008",
-        ),
+        [
+            Editor.Util.row(
+                "\u0008(2x+1)\u0008+\u00085\u0008-\u0008y\u0008=\u0008\u000810\u0008",
+            ),
+            Editor.Util.row(
+                "\u0008\u0008+\u0008123\u0008\u0008\u0008\u0008+\u00085\u0008",
+            ),
+        ],
         context,
     );
 
     const linearEquation4 = typesetWithWork(
-        Editor.Util.row(
-            "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
-        ),
-        Editor.Util.row("\u0008-\u00085\u0008\u0008\u0008\u0008-\u00085\u0008"),
+        [
+            Editor.Util.row(
+                "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
+            ),
+            Editor.Util.row(
+                "\u0008-\u00085\u0008\u0008\u0008\u0008-\u00085\u0008",
+            ),
+        ],
         context,
     );
 
     const linearEquation5 = typesetWithWork(
-        Editor.Util.row(
-            "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
-        ),
-        Editor.Util.row(
-            "\u0008+\u0008(-5)\u0008\u0008\u0008\u0008+\u0008(-5)\u0008",
-        ),
+        [
+            Editor.Util.row(
+                "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
+            ),
+            Editor.Util.row(
+                "\u0008+\u0008(-5)\u0008\u0008\u0008\u0008+\u0008(-5)\u0008",
+            ),
+        ],
         context,
     );
 
