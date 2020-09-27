@@ -48,7 +48,7 @@ const aboveReducer = (state: State = initialState, action: Action): State => {
         }
 
         switch (action.type) {
-            case "CANCEL": {
+            case "Cancel": {
                 // updates the cursor position as well
                 Reducers.cancel(draft);
                 return;

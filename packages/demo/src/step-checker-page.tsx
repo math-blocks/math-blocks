@@ -9,8 +9,6 @@ import * as Editor from "@math-blocks/editor";
 import StepChecker from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
 
-import CancelButton from "./cancel-button";
-
 const checker = new StepChecker();
 
 type ID = {
@@ -113,6 +111,7 @@ export const App: React.SFC<{}> = () => {
                     key={`question`}
                     readonly={true}
                     rows={[steps[0].value]}
+                    stepChecker={true}
                     focus={false}
                     style={{marginTop: 8}}
                 />
@@ -160,6 +159,7 @@ export const App: React.SFC<{}> = () => {
                                     index !== steps.length - 2 || isComplete
                                 }
                                 rows={[step.value]}
+                                stepChecker={true}
                                 focus={index === steps.length - 2}
                                 onSubmit={() => {
                                     return handleCheckStep(
@@ -211,7 +211,6 @@ export const App: React.SFC<{}> = () => {
                 <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
             )}
             <div style={{position: "fixed", bottom: 0, left: 0}}>
-                <CancelButton />
                 <MathKeypad />
             </div>
             <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>

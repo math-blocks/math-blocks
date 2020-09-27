@@ -33,6 +33,8 @@ type Props = {
      * Style
      */
     style?: React.CSSProperties;
+
+    stepChecker?: boolean;
 };
 
 export const MathEditor: React.SFC<Props> = (props: Props) => {
@@ -103,19 +105,17 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         cramped: false,
     };
 
-    const box =
-        state.rows.length > 1
-            ? // TODO: update typesetWithWork to accept more than two rows
-              Typesetter.typesetWithWork(
-                  state.rows.map((row) => row.math),
-                  context,
-              )
-            : (Typesetter.typeset(state.rows[0].math, {
-                  fontMetrics,
-                  baseFontSize: fontSize,
-                  multiplier: 1.0,
-                  cramped: false,
-              }) as Typesetter.Layout.Box); // TODO: make typeset return a Box
+    const box = props.stepChecker
+        ? (Typesetter.typeset(state.rows[0].math, {
+              fontMetrics,
+              baseFontSize: fontSize,
+              multiplier: 1.0,
+              cramped: false,
+          }) as Typesetter.Layout.Box) // TODO: make typeset return a Box
+        : Typesetter.typesetWithWork(
+              state.rows.map((row) => row.math),
+              context,
+          );
 
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],

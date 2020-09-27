@@ -1,6 +1,7 @@
 import * as Editor from "./editor-ast";
 
-import rowReducer, {State as RowState} from "./above-reducer";
+import rowReducer, {State as RowState} from "./row-reducer";
+import * as Util from "./util";
 
 const {row, glyph, frac} = Editor;
 
@@ -39,27 +40,64 @@ const reducer = (state: State = initialState, action: Action): State => {
         return state;
     }
 
-    if (action.type === "ArrowUp") {
-        return {
-            ...state,
-            rowIndex: Math.max(0, state.rowIndex - 1),
-        };
-    } else if (action.type === "ArrowDown") {
-        return {
-            ...state,
-            rowIndex: Math.min(state.rows.length - 1, state.rowIndex + 1),
-        };
+    switch (action.type) {
+        case "ArrowUp": {
+            return {
+                ...state,
+                rowIndex: Math.max(0, state.rowIndex - 1),
+            };
+        }
+        case "ArrowDown": {
+            return {
+                ...state,
+                rowIndex: Math.min(state.rows.length - 1, state.rowIndex + 1),
+            };
+        }
+        case "AddRow": {
+            return {
+                ...state,
+                rows: [
+                    ...state.rows,
+                    // TODO: create an empty row with the correct number of columns
+                    {
+                        math: Util.row(
+                            "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
+                        ),
+                        cursor: {
+                            path: [],
+                            prev: -Infinity,
+                            next: 0,
+                        },
+                        selectionStart: undefined,
+                        cancelRegions: undefined,
+                    },
+                ],
+                rowIndex: state.rows.length,
+            };
+        }
+        case "RemoveRow": {
+            // TODO: disable the "Remove row" button if there's one row left
+            if (state.rows.length === 1) {
+                return state;
+            }
+            return {
+                ...state,
+                rows: state.rows.slice(0, -1),
+                rowIndex: Math.min(state.rowIndex, state.rows.length - 2),
+            };
+        }
+        default: {
+            // TODO: use immer for this
+            return {
+                ...state,
+                rows: [
+                    ...state.rows.slice(0, state.rowIndex),
+                    rowReducer(state.rows[state.rowIndex], action),
+                    ...state.rows.slice(state.rowIndex + 1),
+                ],
+            };
+        }
     }
-
-    // TODO: use immer for this
-    return {
-        ...state,
-        rows: [
-            ...state.rows.slice(0, state.rowIndex),
-            rowReducer(state.rows[state.rowIndex], action),
-            ...state.rows.slice(state.rowIndex + 1),
-        ],
-    };
 };
 
 export default reducer;
