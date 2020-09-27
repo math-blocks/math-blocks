@@ -75,6 +75,29 @@ const reducer = (state: State = initialState, action: Action): State => {
                 rowIndex: state.rows.length,
             };
         }
+        case "AddRowWithRule": {
+            return {
+                ...state,
+                rows: [
+                    ...state.rows,
+                    // TODO: create an empty row with the correct number of columns
+                    {
+                        math: Util.row(
+                            "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
+                        ),
+                        hrule: true,
+                        cursor: {
+                            path: [],
+                            prev: -Infinity,
+                            next: 0,
+                        },
+                        selectionStart: undefined,
+                        cancelRegions: undefined,
+                    },
+                ],
+                rowIndex: state.rows.length,
+            };
+        }
         case "RemoveRow": {
             // TODO: disable the "Remove row" button if there's one row left
             if (state.rows.length === 1) {

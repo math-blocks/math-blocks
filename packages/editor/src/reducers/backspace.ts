@@ -103,6 +103,9 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
+        // TODO: if we're at the start of a column, and previous column is
+        // empty except for row that we're in, and there's only a single node
+        // within that cell then we can delete the entire column.
         const newChildren = isGlyph(prevNode, "\u0008")
             ? children
             : removeChildWithIndex(children, removeIndex);

@@ -4,6 +4,16 @@ import * as Util from "../util";
 
 const {glyph, row} = Editor;
 
+expect.extend({
+    toEqualMath(received, actual) {
+        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
+        return {
+            pass: true,
+            message: () => "hello, world!",
+        };
+    },
+});
+
 describe("isEqual", () => {
     describe("equal", () => {
         it("1 + 2", () => {
@@ -379,6 +389,482 @@ describe("isEqual", () => {
                     selection: true,
                 });
             });
+        });
+    });
+});
+
+describe("rowToColumns", () => {
+    test("empty row", () => {
+        const result = Util.rowToColumns(Util.row(""));
+
+        expect(result).toEqual([{nodes: []}]);
+    });
+
+    test("row w/ no column separators", () => {
+        // TODO: we have strip out IDs to make comparison easier
+        const result = Util.rowToColumns(Util.row("123"));
+
+        expect(result.length).toEqual(1);
+        expect(result[0].nodes.length).toEqual(3);
+    });
+
+    test("row with one column separator with no content", () => {
+        const result = Util.rowToColumns(Util.row("\u0008"));
+
+        expect(result.length).toEqual(2);
+        expect(result[0].nodes.length).toEqual(0);
+        expect(result[1].nodes.length).toEqual(0);
+    });
+
+    test("row with mulitple column separator with no content", () => {
+        const result = Util.rowToColumns(Util.row("\u0008\u0008\u0008"));
+
+        expect(result.length).toEqual(4);
+        expect(result[0].nodes.length).toEqual(0);
+        expect(result[1].nodes.length).toEqual(0);
+        expect(result[2].nodes.length).toEqual(0);
+        expect(result[3].nodes.length).toEqual(0);
+    });
+
+    test("row with multiple column separators with content", () => {
+        const result = Util.rowToColumns(Util.row("1\u0008+\u00082"));
+
+        expect(result.length).toEqual(3);
+        expect(result[0].nodes.length).toEqual(1);
+        expect(result[1].nodes.length).toEqual(1);
+        expect(result[1].nodes.length).toEqual(1);
+    });
+});
+
+describe("columnsToRow", () => {
+    test("zero columns throws", () => {
+        expect(() => Util.columnsToRow([])).toThrowErrorMatchingInlineSnapshot(
+            `"expected at least one column"`,
+        );
+    });
+
+    test("one empty column", () => {
+        const result = Util.columnsToRow([{nodes: []}]);
+
+        expect(result).toEqual({
+            id: -1,
+            type: "row",
+            children: [],
+        });
+    });
+
+    test("two empty columns", () => {
+        const result = Util.columnsToRow([{nodes: []}, {nodes: []}]);
+
+        expect(result).toEqualMath(Util.row("\u0008"));
+    });
+
+    test("multiple empty columns", () => {
+        const result = Util.columnsToRow([
+            {nodes: []},
+            {nodes: []},
+            {nodes: []},
+            {nodes: []},
+        ]);
+
+        expect(result).toEqualMath(Util.row("\u0008\u0008\u0008"));
+    });
+
+    test("one column w/ content", () => {
+        // TODO: instead of a one-off type for columns, we could reuse
+        // Editor.Row since we're splitting one large row up into multiple
+        // smaller rows.
+        const result = Util.columnsToRow([{nodes: [glyph("1"), glyph("2")]}]);
+
+        expect(result).toEqualMath(Util.row("12"));
+    });
+
+    test("multiple columns w/ content", () => {
+        // TODO: instead of a one-off type for columns, we could reuse
+        // Editor.Row since we're splitting one large row up into multiple
+        // smaller rows.
+        const result = Util.columnsToRow([
+            {nodes: [glyph("1")]},
+            {nodes: [glyph("+")]},
+            {nodes: [glyph("2")]},
+        ]);
+
+        expect(result).toEqualMath(Util.row("1\u0008+\u00082"));
+    });
+
+    test("multiple columns w/ some empty columns and some with content", () => {
+        // TODO: instead of a one-off type for columns, we could reuse
+        // Editor.Row since we're splitting one large row up into multiple
+        // smaller rows.
+        const result = Util.columnsToRow([
+            {nodes: [glyph("1")]},
+            {nodes: [glyph("+")]},
+            {nodes: []},
+        ]);
+
+        expect(result).toEqualMath(Util.row("1\u0008+\u0008"));
+    });
+});
+
+describe("cursorInColumns", () => {
+    test("single empty column", () => {
+        const result = Util.cursorInColumns([{nodes: []}], {
+            path: [],
+            prev: -Infinity,
+            next: Infinity,
+        });
+
+        expect(result).toEqual({
+            colIndex: 0,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: Infinity,
+            },
+        });
+    });
+
+    test("single column with content w/ cursor at start", () => {
+        const result = Util.cursorInColumns(
+            [{nodes: [Editor.glyph("1"), Editor.glyph("2")]}],
+            {
+                path: [],
+                prev: -Infinity,
+                next: 0,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 0,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: 0,
+            },
+        });
+    });
+
+    test("single column with content w/ cursor at end", () => {
+        const result = Util.cursorInColumns(
+            [{nodes: [Editor.glyph("1"), Editor.glyph("2")]}],
+            {
+                path: [],
+                prev: 1,
+                next: Infinity,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 0,
+            cursor: {
+                path: [],
+                prev: 1,
+                next: Infinity,
+            },
+        });
+    });
+
+    test("multiple empty columns with /w cursor at end of last row", () => {
+        const result = Util.cursorInColumns(
+            [{nodes: []}, {nodes: []}, {nodes: []}],
+            {
+                path: [],
+                prev: 1,
+                next: Infinity,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 2,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: Infinity,
+            },
+        });
+    });
+
+    test("multiple empty columns /w cursor inside middle column", () => {
+        const result = Util.cursorInColumns(
+            [{nodes: []}, {nodes: []}, {nodes: []}],
+            {
+                path: [],
+                prev: 0,
+                next: 1,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 1,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: Infinity,
+            },
+        });
+    });
+
+    test("middle of middle column with content", () => {
+        const result = Util.cursorInColumns(
+            [
+                {nodes: []},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: []},
+            ],
+            {
+                path: [],
+                prev: 1,
+                next: 2,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 1,
+            cursor: {
+                path: [],
+                prev: 0,
+                next: 1,
+            },
+        });
+    });
+
+    test("start of middle column with content", () => {
+        const result = Util.cursorInColumns(
+            [
+                {nodes: []},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: []},
+            ],
+            {
+                path: [],
+                prev: 0,
+                next: 1,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 1,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: 0,
+            },
+        });
+    });
+
+    test("end of middle column with content", () => {
+        const result = Util.cursorInColumns(
+            [
+                {nodes: []},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: []},
+            ],
+            {
+                path: [],
+                prev: 2,
+                next: 3,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 1,
+            cursor: {
+                path: [],
+                prev: 1,
+                next: Infinity,
+            },
+        });
+    });
+
+    test("middle of middle column with content (content in all columns)", () => {
+        const result = Util.cursorInColumns(
+            [
+                {nodes: [Editor.glyph("1"), Editor.glyph("2")]},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: []},
+            ],
+            {
+                path: [],
+                prev: 3,
+                next: 4,
+            },
+        );
+
+        expect(result).toEqual({
+            colIndex: 1,
+            cursor: {
+                path: [],
+                prev: 0,
+                next: 1,
+            },
+        });
+    });
+
+    test("throws on invalid cursor", () => {
+        expect(() =>
+            Util.cursorInColumns([{nodes: []}], {
+                path: [],
+                prev: 1,
+                next: 2,
+            }),
+        ).toThrowErrorMatchingInlineSnapshot(`"Invalid cursor for columns"`);
+    });
+});
+
+describe("cursorColumnToCursor", () => {
+    test("first column of three empty columns", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 0,
+                cursor: {
+                    path: [],
+                    prev: -Infinity,
+                    next: Infinity,
+                },
+            },
+            [{nodes: []}, {nodes: []}, {nodes: []}],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: -Infinity,
+            next: 0,
+        });
+    });
+
+    test("middle column of three empty columns", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 1,
+                cursor: {
+                    path: [],
+                    prev: -Infinity,
+                    next: Infinity,
+                },
+            },
+            [{nodes: []}, {nodes: []}, {nodes: []}],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 0,
+            next: 1,
+        });
+    });
+
+    test("last column of three empty columns", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 2,
+                cursor: {
+                    path: [],
+                    prev: -Infinity,
+                    next: Infinity,
+                },
+            },
+            [{nodes: []}, {nodes: []}, {nodes: []}],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 1,
+            next: Infinity,
+        });
+    });
+
+    test("start of middle column of three columns w/ content", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 1,
+                cursor: {
+                    path: [],
+                    prev: -Infinity,
+                    next: 0,
+                },
+            },
+            [
+                {nodes: [Editor.glyph("1"), Editor.glyph("2")]},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: [Editor.glyph("a"), Editor.glyph("b")]},
+            ],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 2,
+            next: 3,
+        });
+    });
+
+    test("middle of middle column of three columns w/ content", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 1,
+                cursor: {
+                    path: [],
+                    prev: 0,
+                    next: 1,
+                },
+            },
+            [
+                {nodes: [Editor.glyph("1"), Editor.glyph("2")]},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: [Editor.glyph("a"), Editor.glyph("b")]},
+            ],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 3,
+            next: 4,
+        });
+    });
+
+    test("end of middle column of three columns w/ content", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 1,
+                cursor: {
+                    path: [],
+                    prev: 1,
+                    next: Infinity,
+                },
+            },
+            [
+                {nodes: [Editor.glyph("1"), Editor.glyph("2")]},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: [Editor.glyph("a"), Editor.glyph("b")]},
+            ],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 4,
+            next: 5,
+        });
+    });
+
+    test("start of last column of three columns w/ content", () => {
+        const result = Util.columnCursorToCursor(
+            {
+                colIndex: 2,
+                cursor: {
+                    path: [],
+                    prev: -Infinity,
+                    next: 0,
+                },
+            },
+            [
+                {nodes: [Editor.glyph("1"), Editor.glyph("2")]},
+                {nodes: [Editor.glyph("x"), Editor.glyph("y")]},
+                {nodes: [Editor.glyph("a"), Editor.glyph("b")]},
+            ],
+        );
+
+        expect(result).toEqual({
+            path: [],
+            prev: 5,
+            next: 6,
         });
     });
 });

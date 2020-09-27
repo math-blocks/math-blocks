@@ -3,6 +3,13 @@ import * as Layout from "./layout";
 import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "@math-blocks/core";
 
+// Dedupe this with editor/src/util.ts
+export const isGlyph = (
+    node: Editor.Node<Editor.Glyph, ID>,
+    char: string,
+): node is Editor.Atom<Editor.Glyph, ID> =>
+    node.type === "atom" && node.value.char == char;
+
 type ID = {
     id: number;
 };
@@ -61,6 +68,54 @@ const typesetChildren = (
     });
 };
 
+const typesetColumn = (
+    columns: Column[],
+    colIndex: number,
+    context: Context,
+): Layout.Node[] => {
+    const col = columns[colIndex];
+    return col.nodes.map((child, index) => {
+        if (child.type === "atom") {
+            const {value} = child;
+            const prevChild = index > 0 ? col.nodes[index - 1] : undefined;
+            const unary =
+                /[+\u2212]/.test(value.char) &&
+                (prevChild
+                    ? prevChild.type === "atom" &&
+                      /[+\u2212<>\u2260=\u2264\u2265\u00B1(]/.test(
+                          prevChild.value.char,
+                      )
+                    : true);
+            const glyph = typeset(child, context);
+            const singleCharCol = col.nodes.length === 1;
+            const prevCol = columns[colIndex - 1];
+            const prevColPlusMinus = prevCol && prevCol.nodes.length === 1 && 
+                (isGlyph(prevCol.nodes[0], "+") || isGlyph(prevCol.nodes[0], "\u2212") || isGlyph(prevCol.nodes[0], "="));
+
+            if (unary && (!singleCharCol || prevColPlusMinus)) {
+                glyph.id = child.id;
+                return glyph;
+            } else if (
+                /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
+            ) {
+                const box = context.cramped
+                    ? glyph
+                    : withOperatorPadding(glyph, context);
+                box.id = child.id;
+                return box;
+            } else {
+                glyph.id = child.id;
+                if (glyph.type === "Glyph") {
+                    glyph.pending = child.value.pending;
+                }
+                return glyph;
+            }
+        } else {
+            return typeset(child, context);
+        }
+    });
+};
+
 type Column = {
     nodes: Node[];
     // TODO: change this to first and last
@@ -73,7 +128,7 @@ export const splitRow = (row: Row): Column[] => {
     const result: Column[] = [];
 
     let column: Node[] = [];
-    let start = 0;
+    let start = -Infinity;
     let i = 0;
 
     while (i < row.children.length) {
@@ -100,13 +155,13 @@ export const splitRow = (row: Row): Column[] => {
     result.push({
         nodes: column,
         start: start,
-        end: start,
+        end: Infinity,
     });
 
     return result;
 };
 
-const colToRow = (
+const colToLayout = (
     row: Editor.Row<Editor.Glyph, ID>,
     columns: Column[],
     columnLayouts: Layout.Node[][],
@@ -115,54 +170,35 @@ const colToRow = (
 ): Layout.Node => {
     const output = [];
     let i = 0;
-
-    // NOTES:
-    // - empty start column: start and end are both zero
-    // - empty end column: start and end are both the last index
-    // - empty middle columns: start and end are separated by 1
-
-    const firstIndex = 0;
-    const lastIndex = row.children.length - 1;
-
+    
     while (i < columns.length) {
-        const col = columns[i];
+        let col = columns[i];
 
-        if (col.start === firstIndex && col.end === firstIndex) {
-            // If a column is empty we need to make sure it has a
-            // kern in it that's the size of the column width so
-            // that things line up correctly when other rows do have
-            // content in the first column.  As an example:
-            //   2x + 5 = 10
-            // +( x + 1 =  3)
-            const kern = Layout.makeKern(columnWidths[i]);
-            output.push(kern);
-        } else if (col.start === lastIndex && col.end === lastIndex) {
-            // If there's an empty last column, we add an empty kern
-            // with the correct id so that we can render the cursor when
-            // it's there.
-            const kern = Layout.makeKern(columnWidths[i]);
-            kern.id = row.children[col.end].id;
-            output.push(kern);
-        } else if (i > 0 && col.end === col.start + 1) {
+        if (col.nodes.length === 0) {
             // empty middle column
             // Compute and push the first 1/2 column kern
             let kern = Layout.makeKern(columnWidths[i] / 2);
-            kern.id = row.children[columns[i].start].id;
+            if (col.start >= 0) {
+                kern.id = row.children[col.start].id;
+            }
             output.push(kern);
 
             // Create a kern that's 1/2 the width of the current column
             kern = Layout.makeKern(columnWidths[i] / 2);
-            kern.id = row.children[columns[i].start + 1].id;
+            if (col.end < Infinity) {
+                kern.id = row.children[col.end].id;
+            }
 
             while (i + 1 < columns.length) {
+                col = columns[i + 1];
                 // If the next column is empty
-                if (columns[i + 1].end === columns[i + 1].start + 1) {
+                if (col.nodes.length === 0) {
                     // Expand the kern by 1/2 the width of the next column
                     kern.size += columnWidths[i + 1] / 2;
                     output.push(kern);
                     // Create a new kern that's 1/2 the width of the next column
                     kern = Layout.makeKern(columnWidths[i + 1] / 2);
-                    kern.id = row.children[columns[i + 1].start].id;
+                    kern.id = row.children[col.start].id;
                     // Advance to the column after that
                     i++;
                 } else {
@@ -174,10 +210,11 @@ const colToRow = (
             output.push(kern);
         } else {
             // Handle separators in between two columns with content
-            if (
-                (i > 1 && columns[i - 1].end - columns[i - 1].start > 1) ||
-                (i === 1 && columns[0].end - columns[0].start > 0)
-            ) {
+            // TODO: It would be nice if we didn't have to insert these extra
+            // kerns. We could do this if left-right arrow reducers were column
+            // aware. 
+            const prevCol = columns[i - 1];
+            if (prevCol && prevCol.nodes.length !== 0) {
                 const sep = row.children[columns[i].start - 1];
                 const kern = Layout.makeKern(0);
                 kern.id = sep.id;
@@ -185,13 +222,6 @@ const colToRow = (
             }
             const aWidth = Layout.hlistWidth(columnLayouts[i]);
             const kern = Layout.makeKern(Math.max(0, columnWidths[i] - aWidth));
-            // If the first column is empty, then we need a kern to take its
-            // place with the 'id' if the first column separator.  We should
-            // probably check that row.children[col.start] is indeed a column
-            // separator.
-            if (i === 1 && columns[0].start === columns[0].end) {
-                kern.id = row.children[col.start].id;
-            }
             output.push(kern);
             output.push(...columnLayouts[i]);
         }
@@ -227,12 +257,17 @@ const withOperatorPadding = (
 };
 
 export const typesetWithWork = (
-    nodeRows: Editor.Row<Editor.Glyph, ID>[],
+    state: Editor.State,
     context: Context,
 ): Layout.Box => {
     const {multiplier} = context;
 
-    const rowCols = nodeRows.map(splitRow);
+    // TODO: split state.rows in two arrays:
+    // - math rows
+    // - hrule rows
+    // along with a mapping from destination index back to source index
+
+    const rowCols = state.rows.map(rowState => splitRow(rowState.math));
     console.log("rowCols[0]: ", rowCols[0]);
     console.log("rowCols[1]: ", rowCols[1]);
 
@@ -242,28 +277,47 @@ export const typesetWithWork = (
     }
 
     const rowLayouts = rowCols.map((cols) =>
-        cols.map((col) =>
-            typesetChildren(col.nodes, context, col.nodes.length === 1),
+        cols.map((col, index) =>
+            // this function needs more info, in particular what was in the
+            // previous column to determine how to render the spacing around
+            // '+' and '-' characters
+            typesetColumn(cols, index, context), // , col.nodes.length === 1),
         ),
     );
+
+    const currentRow = state.rows[state.rowIndex];
+    const currentCols = rowCols[state.rowIndex];
+    const colCursor = Editor.Util.cursorInColumns(currentCols, currentRow.cursor);
+    console.log(`the cursor is in column ${colCursor.colIndex}`);
 
     const columnWidths = [];
 
     // Compute the width of each column
     for (let i = 0; i < rowCols[0].length; i++) {
         let width = -Infinity;
+        let colEmpty = true;
         for (let j = 0; j < rowCols.length; j++) {
-            width = Math.max(width, Layout.hlistWidth(rowLayouts[j][i]));
+            const cell = rowCols[j][i];
+            const cellLayout = rowLayouts[j][i];
+            colEmpty = colEmpty && cell.nodes.length === 0;
+            width = Math.max(width, Layout.hlistWidth(cellLayout));
         }
-        columnWidths.push(width);
+        if (colEmpty) {
+            // always have padding in the first and last column if they're empty
+            columnWidths.push(30);
+        } else {
+            columnWidths.push(width);
+        }
     }
 
+
     // Compute new rows with properly sized kerns replacing "\u0008"s
-    const outputRows = [];
-    for (let i = 0; i < nodeRows.length; i++) {
+    const outputRows: Layout.Node[] = [];
+    for (let i = 0; i < state.rows.length; i++) {
+        const row = state.rows[i];
         outputRows.push(
-            colToRow(
-                nodeRows[i],
+            colToLayout(
+                row.math,
                 rowCols[i],
                 rowLayouts[i],
                 columnWidths,
@@ -272,26 +326,29 @@ export const typesetWithWork = (
         );
     }
 
-    console.log("outputRows[0]:", outputRows[0]);
-    console.log("outputRows[1]:", outputRows[1]);
+    // console.log("outputRows[0]:", outputRows[0]);
+    // console.log("outputRows[1]:", outputRows[1]);
 
     let width = -Infinity;
     for (let i = 0; i < outputRows.length; i++) {
         width = Math.max(width, Layout.getWidth(outputRows[i]));
     }
 
+    // TODO: add gaps between each row
+    const outputRowsWithRules: Layout.Node[] = [];
+    for (let i = 0; i < state.rows.length; i++) {
+        const row = state.rows[i];
+        if (row.hrule) {
+            outputRowsWithRules.push(Layout.makeHRule(5, width));
+        }
+        outputRowsWithRules.push(outputRows[i]);
+    }
+
     const verticalLayout = Layout.makeVBox(
         width,
-        outputRows[0],
+        outputRowsWithRules[0],
         [],
-        [
-            // TODO: add gaps between each row
-            // TODO: provide a way to add rows and hrules from the UI
-            // outputRows[1],
-            // Layout.makeHRule(5, width),
-            // outputRows[2],
-            ...outputRows.slice(1),
-        ],
+        outputRowsWithRules.slice(1),
         multiplier,
     );
 

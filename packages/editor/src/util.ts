@@ -328,6 +328,12 @@ export const isGlyph = (
 ): node is Editor.Atom<Editor.Glyph, ID> =>
     node.type === "atom" && node.value.char == char;
 
+export const matchesGlyphs = (
+    node: Editor.Node<Editor.Glyph, ID>,
+    chars: string[],
+): node is Editor.Atom<Editor.Glyph, ID> =>
+    node.type === "atom" && chars.includes(node.value.char);
+
 export const nextIndex = (
     children: Editor.Node<Editor.Glyph, ID>[],
     childIndex: number,
@@ -476,4 +482,153 @@ export const selectionParens = (
         prev: newPrev,
     };
     draft.selectionStart = undefined;
+};
+
+type Row = Editor.Row<Editor.Glyph, ID>;
+type Node = Editor.Node<Editor.Glyph, ID>;
+
+type Column = {
+    nodes: Node[];
+};
+
+// invariants:
+// - always return at least one column
+// - return n+1 columns where n is the number of colsep chars in the row
+export const rowToColumns = (row: Row): Column[] => {
+    const result: Column[] = [];
+
+    let column: Node[] = [];
+    let i = 0;
+
+    while (i < row.children.length) {
+        const child = row.children[i];
+
+        const charIsSep =
+            child.type === "atom" && child.value.char === "\u0008";
+
+        if (charIsSep) {
+            result.push({nodes: column});
+            column = [];
+        } else {
+            column.push(child);
+        }
+
+        i++;
+    }
+
+    if (column.length === 0) {
+        result.push({nodes: column});
+    } else {
+        result.push({nodes: column});
+    }
+
+    return result;
+};
+
+export const columnsToRow = (cols: Column[]): Row => {
+    if (cols.length === 0) {
+        throw new Error("expected at least one column");
+    }
+
+    const children: Node[] = [];
+    for (let i = 0; i < cols.length; i++) {
+        if (i > 0) {
+            children.push(Editor.glyph("\u0008"));
+        }
+        children.push(...cols[i].nodes);
+    }
+
+    return {
+        id: -1, // TODO: How to we copy the row ids from the old row to the new row?
+        type: "row",
+        children,
+    };
+};
+
+// TODO: extend to this to selections
+export const cursorInColumns = (
+    cols: Column[],
+    cursor: Editor.Cursor,
+): {colIndex: number; cursor: Editor.Cursor} => {
+    if (cursor.prev === -Infinity) {
+        return {
+            colIndex: 0,
+            cursor: {
+                path: [],
+                prev: -Infinity,
+                next: cols[0].nodes.length > 0 ? 0 : Infinity,
+            },
+        };
+    }
+
+    if (cursor.next === Infinity) {
+        const nodes = cols[cols.length - 1].nodes;
+        return {
+            colIndex: cols.length - 1,
+            cursor: {
+                path: [],
+                prev: nodes.length > 0 ? nodes.length - 1 : -Infinity,
+                next: Infinity,
+            },
+        };
+    }
+
+    let start = 0;
+    for (let i = 0; i < cols.length; i++) {
+        if (cursor.next < start + cols[i].nodes.length + 1) {
+            const nodes = cols[i].nodes;
+            return {
+                colIndex: i,
+                cursor: {
+                    path: cursor.path,
+                    prev:
+                        cursor.prev - start < 0
+                            ? -Infinity
+                            : cursor.prev - start,
+                    next:
+                        cursor.next - start < nodes.length
+                            ? cursor.next - start
+                            : Infinity,
+                },
+            };
+        }
+
+        start += cols[i].nodes.length + 1;
+    }
+
+    throw new Error("Invalid cursor for columns");
+};
+
+type ColumnCursor = {
+    colIndex: number;
+    cursor: Editor.Cursor;
+};
+
+export const columnCursorToCursor = (
+    colCursor: ColumnCursor,
+    cols: Column[],
+): Editor.Cursor => {
+    // TODO: implement this for reals
+    let start = 0;
+    const {cursor, colIndex} = colCursor;
+    const row = columnsToRow(cols);
+
+    for (let i = 0; i < cols.length; i++) {
+        if (colIndex === i) {
+            const prev =
+                cursor.prev === -Infinity ? start - 1 : start + cursor.prev;
+            const next =
+                cursor.next === Infinity
+                    ? start + cols[i].nodes.length
+                    : start + cursor.next;
+            return {
+                path: [],
+                prev: prev < 0 ? -Infinity : prev,
+                next: next > row.children.length - 1 ? Infinity : next,
+            };
+        }
+        start = start + cols[i].nodes.length + 1;
+    }
+
+    throw new Error("invalid args");
 };

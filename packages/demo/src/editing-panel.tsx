@@ -27,6 +27,7 @@ const EditingPanel: React.SFC<{}> = () => {
         <div className={css(styles.container)}>
             <Button keyName="Cancel">Cancel</Button>
             <Button keyName="AddRow">Add Row</Button>
+            <Button keyName="AddRowWithRule">Add Row With Rule</Button>
             <Button keyName="RemoveRow">Remove Row</Button>
         </div>
     );

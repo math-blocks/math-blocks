@@ -63,6 +63,33 @@ export const moveRight = (
     const {children} = currentNode;
 
     if (cursor.next !== Infinity) {
+        const cols = Editor.Util.rowToColumns(currentNode);
+        const {colIndex, cursor: cursorInCol} = Editor.Util.cursorInColumns(
+            cols,
+            cursor,
+        );
+        const nextCol = cols[colIndex + 1];
+        const nextNextCol = cols[colIndex + 2];
+
+        if (
+            cursorInCol.next === Infinity &&
+            nextCol.nodes.length === 1 &&
+            Editor.Util.matchesGlyphs(nextCol.nodes[0], ["+", "\u2212"]) &&
+            nextNextCol
+        ) {
+            return Editor.Util.columnCursorToCursor(
+                {
+                    colIndex: colIndex + 2,
+                    cursor: {
+                        path: [],
+                        prev: -Infinity,
+                        next: nextNextCol.nodes.length > 0 ? 0 : Infinity,
+                    },
+                },
+                cols,
+            );
+        }
+
         // It's safe to use cursor.next directly as a key here
         // since we've already checked to make sure it isn't Infinity.
         let nextNode = currentNode.children[cursor.next];
