@@ -1,4 +1,4 @@
-import {State} from "../above-reducer";
+import {State} from "../row-reducer";
 import * as Editor from "../editor-ast";
 import * as Util from "../util";
 

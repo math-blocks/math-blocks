@@ -1,6 +1,6 @@
 import * as Editor from "@math-blocks/editor";
 
-import {State} from "../above-reducer";
+import {State} from "../row-reducer";
 import {
     HasChildren,
     insertBeforeChildWithIndex,
@@ -103,7 +103,9 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
             draft.cursor = moveLeft(currentNode, draft);
             return;
         }
-        const newChildren = removeChildWithIndex(children, removeIndex);
+        const newChildren = isGlyph(prevNode, "\u0008")
+            ? children
+            : removeChildWithIndex(children, removeIndex);
         const newPrev = prevIndex(newChildren, cursor.prev);
         const newNext = nextIndex(newChildren, newPrev);
         const newCursor = {

@@ -1,4 +1,4 @@
-import reducer, {State} from "../../above-reducer";
+import reducer, {State} from "../../row-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
 
@@ -22,7 +22,7 @@ describe("cancel", () => {
         };
 
         const state: State = {math, cursor};
-        const newState = reducer(state, {type: "CANCEL"});
+        const newState = reducer(state, {type: "Cancel"});
 
         expect(newState.math).toEqualMath(Util.row("1+2"));
     });
@@ -41,7 +41,7 @@ describe("cancel", () => {
         };
 
         const state: State = {math, cursor, selectionStart};
-        const newState = reducer(state, {type: "CANCEL"});
+        const newState = reducer(state, {type: "Cancel"});
 
         expect(newState.selectionStart).toBeUndefined();
     });
@@ -60,7 +60,7 @@ describe("cancel", () => {
         };
 
         const state: State = {math, cursor, selectionStart};
-        const newState = reducer(state, {type: "CANCEL"});
+        const newState = reducer(state, {type: "Cancel"});
 
         // TODO: try to avoid the need for unique IDs by relying on paths instead
         // We can convert paths to strings for easier comparison.

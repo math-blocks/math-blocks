@@ -1,12 +1,17 @@
 import * as Editor from "@math-blocks/editor";
 
-import {State} from "../above-reducer";
+import {State} from "../row-reducer";
 import {
     HasChildren,
     insertBeforeChildWithIndex,
     isGlyph,
     selectionSplit,
 } from "../util";
+
+const advanceCursor = (cursor: Editor.Cursor): void => {
+    cursor.next = cursor.next !== Infinity ? cursor.next + 1 : Infinity;
+    cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
+};
 
 export const insertChar = (
     currentNode: HasChildren,
@@ -55,14 +60,29 @@ export const insertChar = (
             }
         }
 
-        draft.cursor.next =
-            cursor.next !== Infinity ? cursor.next + 1 : Infinity;
-        draft.cursor.prev = cursor.prev !== -Infinity ? cursor.prev + 1 : 0;
+        const nextNode = currentNode.children[next];
 
         currentNode.children = insertBeforeChildWithIndex(
             currentNode.children,
             next,
             newNode,
         );
+
+        advanceCursor(draft.cursor);
+
+        const operators = ["+", "\u2212", "="];
+
+        // If there's a column separtor next and we're not in the first row
+        // and we're inserting an operator then advance the cursor to the next
+        // column.  This helps implement the rule that says that bin ops should
+        // be the only character in their column.
+        if (
+            operators.includes(char) &&
+            prev !== -Infinity &&
+            nextNode &&
+            isGlyph(nextNode, "\u0008")
+        ) {
+            advanceCursor(draft.cursor);
+        }
     }
 };

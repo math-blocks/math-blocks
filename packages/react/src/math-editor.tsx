@@ -11,57 +11,48 @@ import useEventListener from "./use-event-listener";
 
 const {useEffect, useState, useRef} = React;
 
-type ID = {
-    id: number;
-};
+type Row = Editor.Row<Editor.Glyph, {id: number}>;
 
 // TODO: dedupe with typeset.ts
 type Below = {
-    lhs: Editor.Row<Editor.Glyph, ID>;
-    rhs: Editor.Row<Editor.Glyph, ID>;
+    lhs: Row;
+    rhs: Row;
 };
 
 type Props = {
-    /**
-     * value
-     */
-    value: Editor.Row<Editor.Glyph, ID>;
-
-    /**
-     * showing work below
-     */
-    below?: Below;
-
+    rows: Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Row<Editor.Glyph, ID>) => unknown;
-    onChange?: (value: Editor.Row<Editor.Glyph, ID>) => unknown;
+    onSubmit?: (value: Row) => unknown;
+    onChange?: (value: Row) => unknown;
 
     /**
      * Style
      */
     style?: React.CSSProperties;
+
+    stepChecker?: boolean;
 };
 
 export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
-    const [state, setState] = useState<Editor.State>({
-        above: {
-            math: props.value,
-            cursor: {
-                path: [],
-                prev: -Infinity,
-                next: 0,
-            },
-            selectionStart: undefined,
-            cancelRegions: [],
+    const rows = props.rows.map((row) => ({
+        math: row,
+        cursor: {
+            path: [],
+            prev: -Infinity,
+            next: 0,
         },
-        below: {},
-        mode: "above",
+        selectionStart: undefined,
+        cancelRegions: [],
+    }));
+    const [state, setState] = useState<Editor.State>({
+        rows,
+        rowIndex: 0,
     });
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -81,7 +72,8 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                 shift: e.shiftKey,
             };
             if (e.key === "Enter" && props.onSubmit) {
-                const success = props.onSubmit(state.above.math);
+                // TODO: submit all rows
+                const success = props.onSubmit(state.rows[0].math);
                 if (success) {
                     setActive(false);
                 }
@@ -95,29 +87,40 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
                     e.keyCode !== 39 &&
                     e.keyCode !== 40
                 ) {
-                    props.onChange(value.above.math);
+                    // TODO: communicate all rows when sending this event
+                    props.onChange(value.rows[0].math);
                 }
             }
         }
     });
 
-    const {math, cancelRegions} = state.above;
-    const {style, below} = props;
+    const {cancelRegions} = state.rows[0];
+    const {style} = props;
 
     const fontSize = 64;
-    // $FlowFixMe: make typeset return a Box
-    const box = Typesetter.typeset(
-        math,
-        {
-            fontMetrics,
-            baseFontSize: fontSize,
-            multiplier: 1.0,
-            cramped: false,
-        },
-        below,
-    ) as Typesetter.Layout.Box;
+    const context = {
+        fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+    };
 
-    const layoutCursor = Editor.layoutCursorFromState(state.above);
+    const box = props.stepChecker
+        ? (Typesetter.typeset(state.rows[0].math, {
+              fontMetrics,
+              baseFontSize: fontSize,
+              multiplier: 1.0,
+              cramped: false,
+          }) as Typesetter.Layout.Box) // TODO: make typeset return a Box
+        : Typesetter.typesetWithWork(
+              state.rows.map((row) => row.math),
+              context,
+          );
+
+    const layoutCursor = Editor.layoutCursorFromState(
+        state.rows[state.rowIndex],
+    );
+    console.log("cursor: ", state.rows[state.rowIndex].cursor);
     console.log(layoutCursor);
 
     return (
@@ -133,7 +136,6 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
             <MathRenderer
                 box={box}
                 cursor={active ? layoutCursor : undefined}
-                editorCursor={state.above.cursor}
                 cancelRegions={cancelRegions}
             />
         </div>

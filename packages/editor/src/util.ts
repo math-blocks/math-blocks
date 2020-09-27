@@ -1,5 +1,5 @@
 import * as Editor from "./editor-ast";
-import {State} from "./above-reducer";
+import {State} from "./row-reducer";
 
 export const isEqual = (
     a: Editor.Node<Editor.Glyph>,

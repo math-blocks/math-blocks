@@ -1,23 +1,21 @@
 import * as React from "react";
+import {StyleSheet, css} from "aphrodite";
 
 import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 
-import CancelButton from "./cancel-button";
+import EditingPanel from "./editing-panel";
+
+const startingValue = Editor.Util.row(
+    "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
+);
 
 const EditorPage: React.SFC<{}> = () => (
     <div>
-        <MathEditor
-            readonly={false}
-            value={Editor.Util.row("2x+5=10")}
-            below={{
-                lhs: Editor.Util.row("-5"),
-                rhs: Editor.Util.row("-5"),
-            }}
-            focus={true}
-        />
+        <MathEditor readonly={false} rows={[startingValue]} focus={true} />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
-            <CancelButton />
+            <EditingPanel />
+            <div className={css(styles.separator)} />
             <MathKeypad />
         </div>
         <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
@@ -39,3 +37,9 @@ const EditorPage: React.SFC<{}> = () => (
 );
 
 export default EditorPage;
+
+const styles = StyleSheet.create({
+    separator: {
+        height: 8,
+    },
+});
