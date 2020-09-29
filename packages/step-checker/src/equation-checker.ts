@@ -52,6 +52,17 @@ class EquationChecker {
             const lhsNewTerm = lhsNewTerms[0];
             const rhsNewTerm = rhsNewTerms[0];
 
+            if (!lhsNewTerm || !rhsNewTerm) {
+                // TODO: write a test for this
+                // 2x + 5 = 10
+                // 2x + 5 - 5 = 10 - 5
+                // 2x + 5 - 5 = 5 ---> this used cause an error with thiis check
+                return {
+                    equivalent: false,
+                    steps: [],
+                };
+            }
+
             if (reversed) {
                 // This check prevents an infinite loop
                 if (
