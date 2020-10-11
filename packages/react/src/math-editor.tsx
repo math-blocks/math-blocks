@@ -113,10 +113,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
               multiplier: 1.0,
               cramped: false,
           }) as Typesetter.Layout.Box) // TODO: make typeset return a Box
-        : Typesetter.typesetWithWork(
-              state,
-              context,
-          );
+        : Typesetter.typesetWithWork(state, context);
 
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],

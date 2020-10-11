@@ -42,27 +42,33 @@ const reducer = (state: State = initialState, action: Action): State => {
 
     switch (action.type) {
         case "ArrowUp": {
+            // TODO: figure out which column we're in so that we can move up
+            // into the cell above us in the same column.
             return {
                 ...state,
                 rowIndex: Math.max(0, state.rowIndex - 1),
             };
         }
         case "ArrowDown": {
+            // TODO: figure out which column we're in so that we can move down
+            // into the cell below us in the same column.
             return {
                 ...state,
                 rowIndex: Math.min(state.rows.length - 1, state.rowIndex + 1),
             };
         }
         case "AddRow": {
+            const firstRow = state.rows[0];
+            const colSepCount = firstRow.math.children.filter((child) =>
+                Util.isGlyph(child, "\u0008"),
+            ).length;
             return {
                 ...state,
                 rows: [
                     ...state.rows,
                     // TODO: create an empty row with the correct number of columns
                     {
-                        math: Util.row(
-                            "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
-                        ),
+                        math: Util.row("\u0008".repeat(colSepCount)),
                         cursor: {
                             path: [],
                             prev: -Infinity,
@@ -76,15 +82,16 @@ const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "AddRowWithRule": {
+            const firstRow = state.rows[0];
+            const colSepCount = firstRow.math.children.filter((child) =>
+                Util.isGlyph(child, "\u0008"),
+            ).length;
             return {
                 ...state,
                 rows: [
                     ...state.rows,
-                    // TODO: create an empty row with the correct number of columns
                     {
-                        math: Util.row(
-                            "\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008",
-                        ),
+                        math: Util.row("\u0008".repeat(colSepCount)),
                         hrule: true,
                         cursor: {
                             path: [],

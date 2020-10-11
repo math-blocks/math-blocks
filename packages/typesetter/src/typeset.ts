@@ -89,8 +89,12 @@ const typesetColumn = (
             const glyph = typeset(child, context);
             const singleCharCol = col.nodes.length === 1;
             const prevCol = columns[colIndex - 1];
-            const prevColPlusMinus = prevCol && prevCol.nodes.length === 1 && 
-                (isGlyph(prevCol.nodes[0], "+") || isGlyph(prevCol.nodes[0], "\u2212") || isGlyph(prevCol.nodes[0], "="));
+            const prevColPlusMinus =
+                prevCol &&
+                prevCol.nodes.length === 1 &&
+                (isGlyph(prevCol.nodes[0], "+") ||
+                    isGlyph(prevCol.nodes[0], "\u2212") ||
+                    isGlyph(prevCol.nodes[0], "="));
 
             if (unary && (!singleCharCol || prevColPlusMinus)) {
                 glyph.id = child.id;
@@ -170,7 +174,7 @@ const colToLayout = (
 ): Layout.Node => {
     const output = [];
     let i = 0;
-    
+
     while (i < columns.length) {
         let col = columns[i];
 
@@ -212,7 +216,7 @@ const colToLayout = (
             // Handle separators in between two columns with content
             // TODO: It would be nice if we didn't have to insert these extra
             // kerns. We could do this if left-right arrow reducers were column
-            // aware. 
+            // aware.
             const prevCol = columns[i - 1];
             if (prevCol && prevCol.nodes.length !== 0) {
                 const sep = row.children[columns[i].start - 1];
@@ -267,7 +271,7 @@ export const typesetWithWork = (
     // - hrule rows
     // along with a mapping from destination index back to source index
 
-    const rowCols = state.rows.map(rowState => splitRow(rowState.math));
+    const rowCols = state.rows.map((rowState) => splitRow(rowState.math));
     console.log("rowCols[0]: ", rowCols[0]);
     console.log("rowCols[1]: ", rowCols[1]);
 
@@ -277,17 +281,21 @@ export const typesetWithWork = (
     }
 
     const rowLayouts = rowCols.map((cols) =>
-        cols.map((col, index) =>
-            // this function needs more info, in particular what was in the
-            // previous column to determine how to render the spacing around
-            // '+' and '-' characters
-            typesetColumn(cols, index, context), // , col.nodes.length === 1),
+        cols.map(
+            (col, index) =>
+                // this function needs more info, in particular what was in the
+                // previous column to determine how to render the spacing around
+                // '+' and '-' characters
+                typesetColumn(cols, index, context), // , col.nodes.length === 1),
         ),
     );
 
     const currentRow = state.rows[state.rowIndex];
     const currentCols = rowCols[state.rowIndex];
-    const colCursor = Editor.Util.cursorInColumns(currentCols, currentRow.cursor);
+    const colCursor = Editor.Util.cursorInColumns(
+        currentCols,
+        currentRow.cursor,
+    );
     console.log(`the cursor is in column ${colCursor.colIndex}`);
 
     const columnWidths = [];
@@ -309,7 +317,6 @@ export const typesetWithWork = (
             columnWidths.push(width);
         }
     }
-
 
     // Compute new rows with properly sized kerns replacing "\u0008"s
     const outputRows: Layout.Node[] = [];
