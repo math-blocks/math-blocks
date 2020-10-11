@@ -41,11 +41,12 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const rows = props.rows.map((row) => ({
+        type: "math",
         math: row,
         cursor: {
             path: [],
             prev: -Infinity,
-            next: 0,
+            next: row.children.length > 0 ? 0 : Infinity,
         },
         selectionStart: undefined,
         cancelRegions: [],
@@ -112,10 +113,7 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
               multiplier: 1.0,
               cramped: false,
           }) as Typesetter.Layout.Box) // TODO: make typeset return a Box
-        : Typesetter.typesetWithWork(
-              state.rows.map((row) => row.math),
-              context,
-          );
+        : Typesetter.typesetWithWork(state, context);
 
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],

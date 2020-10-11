@@ -8,6 +8,7 @@ import {LayoutCursor} from "./util";
 
 export type State = {
     math: Editor.Row<Editor.Glyph, {id: number}>;
+    hrule?: boolean;
     cursor: Editor.Cursor;
     selectionStart?: Editor.Cursor;
     cancelRegions?: LayoutCursor[];

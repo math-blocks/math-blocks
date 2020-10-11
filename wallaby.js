@@ -36,6 +36,6 @@ module.exports = function (wallaby) {
                 .replace(".ts", ".js");
 
             wallaby.testFramework.configure(jestConfig);
-        },
+        }
     };
 };
