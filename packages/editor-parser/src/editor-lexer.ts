@@ -105,7 +105,7 @@ export type Token =
     | Lim
     | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
@@ -145,6 +145,12 @@ const processGlyphs = (
                         break;
                     case "+":
                         tokens.push(plus(loc));
+                        break;
+                    case "*":
+                        tokens.push(times(loc));
+                        break;
+                    case "\u00B7":
+                        tokens.push(times(loc));
                         break;
                     case "\u2212":
                         tokens.push(minus(loc));

@@ -29,7 +29,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse `1 + a`", () => {
+        it("should lex `1 + a`", () => {
             const glyphTree = row([glyph("1"), glyph("+"), glyph("a")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -41,7 +41,31 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse `1 + 1/x`", () => {
+        it("should lex `1 \u00B7 a`", () => {
+            const glyphTree = row([glyph("1"), glyph("\u00B7"), glyph("a")]);
+            const tokenTree = Lexer.lexRow(glyphTree);
+
+            expect(tokenTree).toMatchInlineSnapshot(`
+                (row 
+                  (num@[]:0:1 1) 
+                  times@[]:1:2 
+                  (ident@[]:2:3 a))
+            `);
+        });
+
+        it("should lex `1 * a`", () => {
+            const glyphTree = row([glyph("1"), glyph("*"), glyph("a")]);
+            const tokenTree = Lexer.lexRow(glyphTree);
+
+            expect(tokenTree).toMatchInlineSnapshot(`
+                (row 
+                  (num@[]:0:1 1) 
+                  times@[]:1:2 
+                  (ident@[]:2:3 a))
+            `);
+        });
+
+        it("should lex `1 + 1/x`", () => {
             const glyphTree = row([
                 glyph("1"),
                 glyph("+"),
@@ -59,7 +83,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse `e^x`", () => {
+        it("should lex `e^x`", () => {
             const glyphTree = row([
                 glyph("e"),
                 subsup(undefined, [glyph("x")]),
@@ -74,7 +98,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse `a_n`", () => {
+        it("should lex `a_n`", () => {
             const glyphTree = row([
                 glyph("a"),
                 subsup([glyph("n")], undefined),
@@ -89,7 +113,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse `a_n^2`", () => {
+        it("should lex `a_n^2`", () => {
             const glyphTree = row([glyph("a"), Editor.Util.subsup("n", "2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -102,7 +126,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse parens", () => {
+        it("should lex parens", () => {
             const glyphTree = Editor.Util.row("(1 + 2)");
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -116,7 +140,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse a square root", () => {
+        it("should lex a square root", () => {
             const glyphTree = row([Editor.Util.sqrt("123")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -127,7 +151,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse a nth root", () => {
+        it("should lex a nth root", () => {
             const glyphTree = row([Editor.Util.root("123", "n")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -139,7 +163,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse multi character identifiers", () => {
+        it("should lex multi character identifiers", () => {
             const glyphTree = row([glyph("s"), glyph("i"), glyph("n")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -149,7 +173,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse a minus sign", () => {
+        it("should lex a minus sign", () => {
             const glyphTree = row([glyph("1"), glyph("\u2212"), glyph("2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -161,7 +185,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse an equal sign", () => {
+        it("should lex an equal sign", () => {
             const glyphTree = row([glyph("1"), glyph("="), glyph("2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -173,7 +197,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse an ellipsis", () => {
+        it("should lex an ellipsis", () => {
             const glyphTree = Editor.Util.row("1+...+n");
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -187,7 +211,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse summation with limits", () => {
+        it("should lex summation with limits", () => {
             const glyphTree = row([
                 limits(
                     glyph("\u03a3"),
@@ -206,7 +230,7 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse products with limits", () => {
+        it("should lex products with limits", () => {
             const glyphTree = row([
                 limits(
                     glyph("\u03a0"),
@@ -225,7 +249,9 @@ describe("Lexer", () => {
             `);
         });
 
-        it("should parse lim", () => {
+        it("should lex lim", () => {
+            // TODO: we should have the editor convert "-", ">" into a unicode
+            // arrow.
             const glyphTree = row([
                 limits(Editor.Util.row("lim"), [
                     glyph("i"),
