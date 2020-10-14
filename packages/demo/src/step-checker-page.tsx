@@ -16,7 +16,6 @@ type ID = {
 };
 
 const question: Editor.Row<Editor.Glyph, ID> = Editor.Util.row("2x+5=10");
-const step1: Editor.Row<Editor.Glyph, ID> = Editor.Util.row("2x+5=10");
 
 enum StepState {
     Correct,
@@ -42,7 +41,9 @@ enum ProblemState {
 // - Delayed feedback will conceal the correctness of each step
 //   until the user submits their answer.
 export const App: React.SFC<{}> = () => {
+    const [mode, setMode] = useState<"edit" | "solve">("solve");
     const [problemState, setProblemState] = useState(ProblemState.InProgress);
+
     const [steps, setSteps] = useState<Step[]>([
         {
             state: StepState.Correct,
@@ -50,7 +51,7 @@ export const App: React.SFC<{}> = () => {
         },
         {
             state: StepState.Duplicate,
-            value: step1,
+            value: JSON.parse(JSON.stringify(question)),
         },
     ]);
 
@@ -109,11 +110,23 @@ export const App: React.SFC<{}> = () => {
             <div style={{display: "flex", flexDirection: "column"}}>
                 <MathEditor
                     key={`question`}
-                    readonly={true}
+                    readonly={false}
                     rows={[steps[0].value]}
                     stepChecker={true}
-                    focus={false}
+                    focus={mode === "edit"}
                     style={{marginTop: 8}}
+                    onChange={(value: Editor.Row<Editor.Glyph, ID>) => {
+                        setSteps([
+                            {
+                                state: StepState.Correct,
+                                value: value,
+                            },
+                            // {
+                            //     state: StepState.Duplicate,
+                            //     value: JSON.parse(JSON.stringify(value)),
+                            // },
+                        ]);
+                    }}
                 />
                 {steps.slice(1).flatMap((step, index) => {
                     const isLast = index !== steps.length - 2;
@@ -160,7 +173,10 @@ export const App: React.SFC<{}> = () => {
                                 }
                                 rows={[step.value]}
                                 stepChecker={true}
-                                focus={index === steps.length - 2}
+                                focus={
+                                    index === steps.length - 2 &&
+                                    mode === "solve"
+                                }
                                 onSubmit={() => {
                                     return handleCheckStep(
                                         steps[index].value,
@@ -210,7 +226,43 @@ export const App: React.SFC<{}> = () => {
             {isComplete && (
                 <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
             )}
-            <div style={{position: "fixed", bottom: 0, left: 0}}>
+            <div
+                style={{
+                    position: "fixed",
+                    bottom: 0,
+                    left: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                {mode === "solve" && (
+                    <button
+                        style={{height: 48, fontSize: 24}}
+                        onClick={() => {
+                            setMode("edit");
+                            setSteps([steps[0]]);
+                        }}
+                    >
+                        Edit Question
+                    </button>
+                )}
+                {mode === "edit" && (
+                    <button
+                        style={{height: 48, fontSize: 24}}
+                        onClick={() => {
+                            setMode("solve");
+                            setSteps([
+                                steps[0],
+                                {
+                                    ...steps[0],
+                                    state: StepState.Duplicate,
+                                },
+                            ]);
+                        }}
+                    >
+                        Solve Question
+                    </button>
+                )}
                 <MathKeypad />
             </div>
             <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
