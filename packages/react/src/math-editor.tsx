@@ -118,8 +118,8 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],
     );
-    console.log("cursor: ", state.rows[state.rowIndex].cursor);
-    console.log(layoutCursor);
+    // console.log("cursor: ", state.rows[state.rowIndex].cursor);
+    // console.log(layoutCursor);
 
     return (
         <div

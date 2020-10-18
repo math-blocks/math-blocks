@@ -10,6 +10,8 @@ import EvalDecompChecker from "./eval-decomp-checker";
 import PolynomialChecker from "./polynomial-checker";
 import AxiomChecker from "./axiom-checker";
 
+import {makeKey} from "./key-maker";
+
 // TODO: fix flowtype/define-flow-type, HasArgs is used below
 // eslint-disable-next-line no-unused-vars
 type HasArgs =
@@ -79,6 +81,8 @@ const defaultOptions: Options = {
     skipEvalChecker: false,
     evalFractions: true,
 };
+
+const resultCache = new Map<string, Result>();
 
 class StepChecker implements IStepChecker {
     options: Options;
@@ -205,32 +209,56 @@ class StepChecker implements IStepChecker {
         next: Semantic.Expression,
         steps: Step[],
     ): Result {
+        let key;
+        if (steps.length === 0) {
+            key = makeKey(prev, next);
+            const cachedResult = resultCache.get(key);
+            if (cachedResult) {
+                return cachedResult;
+            }
+        }
+
         let result: Result;
 
         result = this.exactMatch(prev, next);
         if (result.equivalent) {
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
             return result;
         }
 
         result = this.axiomChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
             return result;
         }
 
         result = this.equationChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
             return result;
         }
 
         if (!this.options.skipEvalChecker) {
             result = this.evalChecker.runChecks(prev, next, steps);
             if (result.equivalent) {
+                if (steps.length === 0 && key) {
+                    resultCache.set(key, result);
+                }
                 return result;
             }
         }
 
         result = this.integerChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
             return result;
         }
 
@@ -238,13 +266,20 @@ class StepChecker implements IStepChecker {
         // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
         result = this.fractionChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
             return result;
         }
 
         // General check if the args are equivalent for things with args
         // than are an array and not a tuple.
         if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
-            return this.checkArgs(prev, next, steps);
+            result = this.checkArgs(prev, next, steps);
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
+            return result;
         } else if (prev.type === "neg" && next.type === "neg") {
             const result = this.checkStep(prev.arg, next.arg, steps);
             return {
@@ -258,21 +293,33 @@ class StepChecker implements IStepChecker {
         }
 
         if (prev.type === "number" && next.type === "number") {
-            return {
+            result = {
                 equivalent: prev.value === next.value,
                 steps: [],
             };
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
+            return result;
         } else if (prev.type === "identifier" && next.type === "identifier") {
-            return {
+            result = {
                 equivalent: prev.name === next.name,
                 steps: [],
             };
+            if (steps.length === 0 && key) {
+                resultCache.set(key, result);
+            }
+            return result;
         }
 
-        return {
+        result = {
             equivalent: false,
             steps: [],
         };
+        if (steps.length === 0 && key) {
+            resultCache.set(key, result);
+        }
+        return result;
     }
 }
 

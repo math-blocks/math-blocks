@@ -9,6 +9,8 @@ import {Result, Step} from "./types";
 // @ts-ignore
 Fraction.REDUCE = false;
 
+// We use Fractions from fraction.js to store values so that we can keep the
+// values exact instead of having them be rounded to so number of decimal places.
 const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
@@ -48,6 +50,8 @@ class EvalDecompChecker {
         const bTerms =
             op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
+        // TODO: move this check into runChecks so that we can shortcircuit
+        // things sooner.
         if (a.type !== op && b.type !== op) {
             return {
                 equivalent: false,
@@ -56,6 +60,7 @@ class EvalDecompChecker {
         }
 
         const steps: Step[] = [];
+        let accumulator: Fraction | null = null;
 
         let i = 0;
         for (let j = 0; j < bTerms.length; j++) {
@@ -74,8 +79,11 @@ class EvalDecompChecker {
 
                 // Accumulate a sum of numeric terms from aTerms until
                 // it matches bTerm's value, we run into a non-numeric
-                // term, or we run out of terms
-                let accumulator = aVal;
+                // term, or we run out of terms.
+                // TODO: instead of accumulating terms to the end of aTerms,
+                // we should look if there's any other matching terms between
+                // a and b.
+                accumulator = aVal;
                 i++;
                 while (i < aTerms.length) {
                     const nextTerm = parseNode(
@@ -134,6 +142,10 @@ class EvalDecompChecker {
             };
         }
 
+        // if (accumulator && !accumulator.equals(bVal)) {
+
+        // }
+
         return {
             equivalent: false,
             steps: [],
@@ -156,6 +168,9 @@ class EvalDecompChecker {
         b: Semantic.Expression,
         steps: Step[],
     ): Result {
+        // if (b.type === "number" && b.value === "3") {
+        //     debugger;
+        // }
         return this.evalDecompNaryOp(a, b, "add", Direction.EVAL);
     }
 
