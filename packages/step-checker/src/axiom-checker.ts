@@ -1,8 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
+import {getId} from "@math-blocks/core";
 
 import {zip, applySubReasons} from "./util";
 import {IStepChecker} from "./step-checker";
 import {Result, Step} from "./types";
+import {mul} from "@math-blocks/semantic";
 
 class AxiomChecker {
     checker: IStepChecker;
@@ -109,20 +111,116 @@ class AxiomChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        steps: Step[],
     ): Result {
+        // TODO: handle the case where a 'mul' within an 'add' was replaced
+        if (prev.type === "add" && next.type === "add") {
+            const results: Result[] = [];
+
+            // TODO: find all 'mul' nodes and then try generating a newPrev
+            // node from each of them.
+            for (let i = 0; i < prev.args.length; i++) {
+                const mul = prev.args[i];
+                if (
+                    mul.type === "mul" &&
+                    mul.args.length === 2 &&
+                    mul.args[1].type === "add"
+                ) {
+                    const newPrev = Semantic.addTerms([
+                        ...prev.args.slice(0, i),
+                        ...(mul.args[1].args.map((arg) =>
+                            Semantic.mul([mul.args[0], arg]),
+                        ) as TwoOrMore<Semantic.Expression>),
+                        ...prev.args.slice(i + 1),
+                    ]);
+
+                    const result = this.checker.checkStep(newPrev, next, steps);
+                    if (result.equivalent) {
+                        results.push({
+                            equivalent: true,
+                            steps: [
+                                {
+                                    message: "distribution",
+                                    nodes: [prev, newPrev],
+                                },
+                                ...result.steps,
+                            ],
+                        });
+                    }
+                }
+            }
+
+            // If there are multiple results, pick the one with the shortest number
+            // of steps.
+            if (results.length > 0) {
+                let shortestResult = results[0];
+                for (const result of results.slice(1)) {
+                    if (result.steps.length < shortestResult.steps.length) {
+                        shortestResult = result;
+                    }
+                }
+                return shortestResult;
+            }
+        }
         if (prev.type !== "mul" || next.type !== "add") {
             return {
                 equivalent: false,
                 steps: [],
             };
         }
-        return this.distributionFactoring(next, prev, "distribution");
+        if (prev.args[1].type === "add") {
+            const newPrev = Semantic.add(
+                prev.args[1].args.map((arg) =>
+                    Semantic.mul([prev.args[0], arg]),
+                ) as TwoOrMore<Semantic.Expression>,
+            );
+
+            const result = this.checker.checkStep(newPrev, next, steps);
+            if (result.equivalent) {
+                return {
+                    equivalent: true,
+                    steps: [
+                        {
+                            message: "distribution",
+                            nodes: [prev, newPrev],
+                        },
+                        ...result.steps,
+                    ],
+                };
+            }
+        }
+        if (prev.args[0].type === "add") {
+            const newPrev = Semantic.add(
+                prev.args[0].args.map((arg) =>
+                    Semantic.mul([arg, prev.args[1]]),
+                ) as TwoOrMore<Semantic.Expression>,
+            );
+
+            const result = this.checker.checkStep(newPrev, next, steps);
+            if (result.equivalent) {
+                return {
+                    equivalent: true,
+                    steps: [
+                        {
+                            message: "distribution",
+                            nodes: [prev, newPrev],
+                        },
+                        ...result.steps,
+                    ],
+                };
+            }
+        }
+        return {
+            equivalent: false,
+            steps: [],
+        };
     }
 
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
     ): Result {
+        // TODO: update to match checkDistribution
         if (prev.type !== "add" || next.type !== "mul") {
             return {
                 equivalent: false,
@@ -445,7 +543,7 @@ class AxiomChecker {
             return result;
         }
 
-        result = this.checkDistribution(prev, next);
+        result = this.checkDistribution(prev, next, steps);
         if (result.equivalent) {
             return result;
         }

@@ -199,7 +199,6 @@ class StepChecker implements IStepChecker {
     // TODO: dividing a fraction: a/b / c -> a / bc
     // TODO: add an identity check for all operations
     // TODO: check removal of parens, i.e. associative property
-    // TODO: memoize checkStep to avoid re-doing the same work
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
@@ -216,6 +215,34 @@ class StepChecker implements IStepChecker {
         if (result.equivalent) {
             return result;
         }
+
+        // General check if the args are equivalent for things with args
+        // than are an array and not a tuple.
+        //
+        // We do this after axiom checks so that we can include commute steps
+        // first and then check if there's an exact match.  checkArgs ignores
+        // ordering of args so if we ran it first we'd never see any commute
+        // steps in the output.
+        if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
+            result = this.checkArgs(prev, next, steps);
+            if (result.equivalent) {
+                return result;
+            }
+        } else if (prev.type === "neg" && next.type === "neg") {
+            let result = this.checkStep(prev.arg, next.arg, steps);
+            result = {
+                equivalent:
+                    prev.subtraction === next.subtraction && result.equivalent,
+                steps:
+                    prev.subtraction === next.subtraction && result.equivalent
+                        ? result.steps
+                        : [],
+            };
+            if (result.equivalent) {
+                return result;
+            }
+        }
+        // TODO: handle roots and other things that don't pass the hasArgs test
 
         result = this.equationChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
@@ -239,22 +266,6 @@ class StepChecker implements IStepChecker {
         result = this.fractionChecker.runChecks(prev, next, steps);
         if (result.equivalent) {
             return result;
-        }
-
-        // General check if the args are equivalent for things with args
-        // than are an array and not a tuple.
-        if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
-            return this.checkArgs(prev, next, steps);
-        } else if (prev.type === "neg" && next.type === "neg") {
-            const result = this.checkStep(prev.arg, next.arg, steps);
-            return {
-                equivalent:
-                    prev.subtraction === next.subtraction && result.equivalent,
-                steps:
-                    prev.subtraction === next.subtraction && result.equivalent
-                        ? result.steps
-                        : [],
-            };
         }
 
         if (prev.type === "number" && next.type === "number") {

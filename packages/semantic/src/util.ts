@@ -102,6 +102,7 @@ export const getTerms = (
 
 export const mulFactors = (
     factors: Semantic.Expression[],
+    implicit = false,
 ): Semantic.Expression => {
     switch (factors.length) {
         case 0:
@@ -112,7 +113,7 @@ export const mulFactors = (
             return {
                 type: "mul",
                 id: getId(),
-                implicit: false,
+                implicit,
                 args: factors as TwoOrMore<Semantic.Expression>,
             };
     }

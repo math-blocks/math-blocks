@@ -1,8 +1,11 @@
 import {parse} from "@math-blocks/text-parser";
+import {serializer} from "@math-blocks/semantic";
 
 import StepChecker from "../step-checker";
 import {Result} from "../types";
 import {deepEquals} from "../util";
+
+expect.addSnapshotSerializer(serializer);
 
 const checker = new StepChecker();
 
@@ -86,7 +89,26 @@ describe("EquationChecker", () => {
             const result = checkStep("x + 5 - 5 = y + 5 + 5 - 5", "x = y + 5");
 
             expect(result.equivalent).toBe(true);
-            expect(result.steps).toHaveLength(3);
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+                (add
+                  x
+                  5
+                  (neg.sub 5))
+            `);
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`x`);
+            expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
+                (add
+                  y
+                  5
+                  5
+                  (neg.sub 5))
+            `);
+            expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(add y 5)`);
+
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "adding inverse",
+                "adding inverse",
+            ]);
         });
 
         it("x = y -> 5 + x = y + 5", () => {

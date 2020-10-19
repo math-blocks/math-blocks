@@ -40,9 +40,6 @@ class FractionChecker {
         const [numeratorB, denominatorB] =
             b.type === "div" ? b.args : [b, Semantic.number("1")];
 
-        numeratorA; // ?
-        numeratorB; // ?
-
         // Include ONE as a factor to handle cases where the denominator disappears
         // or the numerator chnages to 1.
         const numFactorsB = Semantic.getFactors(numeratorB);
@@ -179,12 +176,12 @@ class FractionChecker {
         ) {
             const productA = Semantic.mulFactors([
                 Semantic.div(
-                    Semantic.mulFactors(removedNumFactors),
-                    Semantic.mulFactors(removedDenFactors),
+                    Semantic.mulFactors(removedNumFactors, true),
+                    Semantic.mulFactors(removedDenFactors, true),
                 ),
                 Semantic.div(
-                    Semantic.mulFactors(remainingNumFactors),
-                    Semantic.mulFactors(remainingDenFactors),
+                    Semantic.mulFactors(remainingNumFactors, true),
+                    Semantic.mulFactors(remainingDenFactors, true),
                 ),
             ]);
 
@@ -296,11 +293,7 @@ class FractionChecker {
             const [numerator, denominator] = prev.args;
             const one = Semantic.number("1");
             const result1 = checker.checkStep(numerator, denominator, steps);
-            const result2 = checker.checkStep(
-                next,
-                Semantic.number("1"),
-                steps,
-            );
+            const result2 = checker.checkStep(next, one, steps);
             if (result1.equivalent && result2.equivalent) {
                 return {
                     equivalent: true,
@@ -331,21 +324,6 @@ class FractionChecker {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        // We found a cycle so let's abort
-        if (steps.length > 0) {
-            if (
-                steps[0].message ===
-                    "multiplying by one over something results in a fraction" ||
-                steps[0].message ===
-                    "fraction is the same as multiplying by one over"
-            ) {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
-            }
-        }
-
         // TODO: check if the div is a child of a mul node
         if (
             prev.type === "div" &&
@@ -439,8 +417,8 @@ class FractionChecker {
             }
         }
         const newPrev = Semantic.div(
-            Semantic.mulFactors(numFactors),
-            Semantic.mulFactors(denFactors),
+            Semantic.mulFactors(numFactors, true),
+            Semantic.mulFactors(denFactors, true),
         );
         const result = checker.checkStep(newPrev, next, steps);
         return {
