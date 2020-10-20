@@ -1,4 +1,5 @@
 import {parse} from "@math-blocks/text-parser";
+import {serializer} from "@math-blocks/semantic";
 
 import StepChecker from "../step-checker";
 import {Result} from "../types";
@@ -8,6 +9,8 @@ const checker = new StepChecker();
 const checkStep = (prev: string, next: string): Result => {
     return checker.checkStep(parse(prev), parse(next), []);
 };
+
+expect.addSnapshotSerializer(serializer);
 
 describe("AxiomChecker", () => {
     describe("symmetricProperty", () => {
@@ -306,7 +309,67 @@ describe("AxiomChecker", () => {
             const result = checkStep("a * (b + c)", "a * b + c");
 
             expect(result.equivalent).toBe(false);
-            expect(result.steps.map((reason) => reason.message)).toEqual([]);
+            expect(result.steps).toEqual([]);
+        });
+
+        it("2(x + y) -> 2x + 2y", () => {
+            const result = checkStep("2(x + y)", "2x + 2y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
+        });
+
+        it("-2(x + y) -> -2x - 2y", () => {
+            const result = checkStep("-2(x + y)", "-2x - 2y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("1 + 2(x + y) -> 1 + 2x + 2y", () => {
+            const result = checkStep("1 + 2(x + y)", "1 + 2x + 2y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
+        });
+
+        it("1 + -2(x + y) -> 1 - 2x - 2y", () => {
+            const result = checkStep("1 + -2(x + y)", "1 - 2x - 2y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("1 - 2(x + y) -> 1 - 2x - 2y", () => {
+            const result = checkStep("1 - 2(x + y)", "1 - 2x - 2y");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "distribution",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("1 - 2(x + y) -> 1 + -2(x + y)", () => {
+            const result = checkStep("1 - 2(x + y)", "1 + -2(x + y)");
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+            ]);
         });
 
         // TODO: make this test pass
@@ -342,6 +405,81 @@ describe("AxiomChecker", () => {
 
             expect(result.equivalent).toBe(true);
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
+        });
+
+        it("a * (x + y) + b * (x + y) -> ax + ay + bx + by", () => {
+            const result = checkStep(
+                "a * (x + y) + b * (x + y)",
+                "ax + ay + b * (x + y)",
+            );
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
+        });
+
+        it("(a + b) * (x + y) -> ax + ay + bx + by", () => {
+            const result = checkStep("(a + b) * (x + y)", "ax + ay + bx + by");
+
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+                (mul.exp
+                  (add a b)
+                  (add x y))
+            `);
+
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+                (add
+                  (mul.exp
+                    a
+                    (add x y))
+                  (mul.exp
+                    b
+                    (add x y)))
+            `);
+
+            expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
+                (add
+                  (mul.exp
+                    a
+                    (add x y))
+                  (mul.exp
+                    b
+                    (add x y)))
+            `);
+
+            expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
+                (add
+                  (mul.exp a x)
+                  (mul.exp a y)
+                  (mul.exp
+                    b
+                    (add x y)))
+            `);
+
+            expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
+                (add
+                  (mul.exp a x)
+                  (mul.exp a y)
+                  (mul.exp
+                    b
+                    (add x y)))
+            `);
+
+            expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
+                (add
+                  (mul.exp a x)
+                  (mul.exp a y)
+                  (mul.exp b x)
+                  (mul.exp b y))
+            `);
+
+            expect(result.equivalent).toBe(true);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "distribution",
                 "distribution",
             ]);
         });

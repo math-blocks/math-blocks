@@ -143,32 +143,31 @@ class IntegerChecker {
         steps: Step[],
     ): Result {
         const {checker} = this;
+        const results: Result[] = [];
+
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        if (
-            prev.type === "add" &&
-            next.type === "add" &&
-            prev.args.length === next.args.length
-        ) {
+        if (prev.type === "add" && next.type === "add") {
             const subs: Semantic.Neg[] = prev.args.filter(
                 Semantic.isSubtraction,
             );
+
+            // We iterate through all args that are subtraction and compute
+            // their result so that we can pick the shortest set of steps below.
             for (const sub of subs) {
                 const index = prev.args.indexOf(sub);
-                // Either the corresponding arg in the next add node must be
-                // negative or the sub node must contain a negative.
-                // a - b -> a + -b or a - -b -> a + b
-                if (
-                    !Semantic.isNegative(next.args[index]) &&
-                    !Semantic.isNegative(sub.arg)
-                ) {
-                    continue;
-                }
+                const neg =
+                    sub.arg.type === "mul"
+                        ? Semantic.mul([
+                              Semantic.neg(sub.arg.args[0]),
+                              ...sub.arg.args.slice(1),
+                          ] as TwoOrMore<Semantic.Expression>)
+                        : Semantic.neg(sub.arg);
 
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, index),
-                    Semantic.neg(sub.arg),
+                    neg,
                     ...prev.args.slice(index + 1),
                 ]);
 
@@ -176,7 +175,7 @@ class IntegerChecker {
                     ? checker.checkStep(next, newPrev, steps)
                     : checker.checkStep(newPrev, next, steps);
                 if (result.equivalent) {
-                    return {
+                    results.push({
                         equivalent: true,
                         steps: reverse
                             ? [
@@ -195,9 +194,21 @@ class IntegerChecker {
                                   },
                                   ...result.steps,
                               ],
-                    };
+                    });
                 }
             }
+        }
+
+        // If there are multiple results, pick the one with the shortest number
+        // of steps.
+        if (results.length > 0) {
+            let shortestResult = results[0];
+            for (const result of results.slice(1)) {
+                if (result.steps.length < shortestResult.steps.length) {
+                    shortestResult = result;
+                }
+            }
+            return shortestResult;
         }
 
         return {
@@ -206,7 +217,7 @@ class IntegerChecker {
         };
     }
 
-    negIsMulOne(
+    negIsMulNegOne(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
@@ -217,7 +228,8 @@ class IntegerChecker {
             [prev, next] = [next, prev];
         }
         if (
-            prev.type === "neg" && // exclude -1 to avoid an infinite expansion
+            prev.type === "neg" &&
+            !prev.subtraction && // exclude -1 to avoid an infinite expansion
             !(prev.arg.type == "number" && prev.arg.value == "1")
         ) {
             const newPrev = Semantic.mulFactors([
@@ -380,12 +392,12 @@ class IntegerChecker {
         // alternative path from --a -> a.
         // TODO: provide a way to show this more detailed version of --a -> a so that
         // students know why --a -> a is true.
-        result = this.negIsMulOne(prev, next, false, steps);
+        result = this.negIsMulNegOne(prev, next, false, steps);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.negIsMulOne(prev, next, true, steps);
+        result = this.negIsMulNegOne(prev, next, true, steps);
         if (result.equivalent) {
             return result;
         }
