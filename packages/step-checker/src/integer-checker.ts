@@ -1,22 +1,16 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {IStepChecker} from "./step-checker";
-import {Result, Step} from "./types";
+import {Context} from "./step-checker";
+import {Result} from "./types";
 
 class IntegerChecker {
-    checker: IStepChecker;
-
-    constructor(checker: IStepChecker) {
-        this.checker = checker;
-    }
-
     addInverse(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        steps: Step[],
+        context: Context,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
         if (reverse) {
             [prev, next] = [next, prev];
         }
@@ -40,7 +34,7 @@ class IntegerChecker {
                 const b = terms[j];
                 // TODO: add a sub-step in the subtraction case
                 if (Semantic.isNegative(b) || Semantic.isSubtraction(b)) {
-                    const result = checker.checkStep(a, b.arg, steps);
+                    const result = checker.checkStep(a, b.arg, context);
                     if (
                         result.equivalent &&
                         // Avoid removing a term that matches a term that's
@@ -62,8 +56,8 @@ class IntegerChecker {
                 ),
             );
             const result = reverse
-                ? checker.checkStep(next, newPrev, steps)
-                : checker.checkStep(newPrev, next, steps);
+                ? checker.checkStep(next, newPrev, context)
+                : checker.checkStep(newPrev, next, context);
 
             if (result.equivalent) {
                 return {
@@ -97,17 +91,17 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (reverse) {
             [prev, next] = [next, prev];
         }
-        const {checker} = this;
+        const {checker} = context;
         if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
             const newPrev = prev.arg.arg;
             const result = reverse
-                ? checker.checkStep(next, newPrev, steps)
-                : checker.checkStep(newPrev, next, steps);
+                ? checker.checkStep(next, newPrev, context)
+                : checker.checkStep(newPrev, next, context);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -140,9 +134,9 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        steps: Step[],
+        context: Context,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
         const results: Result[] = [];
 
         if (reverse) {
@@ -172,8 +166,8 @@ class IntegerChecker {
                 ]);
 
                 const result = reverse
-                    ? checker.checkStep(next, newPrev, steps)
-                    : checker.checkStep(newPrev, next, steps);
+                    ? checker.checkStep(next, newPrev, context)
+                    : checker.checkStep(newPrev, next, context);
                 if (result.equivalent) {
                     results.push({
                         equivalent: true,
@@ -221,9 +215,9 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        steps: Step[],
+        context: Context,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
         if (reverse) {
             [prev, next] = [next, prev];
         }
@@ -238,8 +232,8 @@ class IntegerChecker {
             ]);
 
             const result = reverse
-                ? checker.checkStep(next, newPrev, steps)
-                : checker.checkStep(newPrev, next, steps);
+                ? checker.checkStep(next, newPrev, context)
+                : checker.checkStep(newPrev, next, context);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -274,9 +268,9 @@ class IntegerChecker {
         prev: Semantic.Expression,
         next: Semantic.Expression,
         reverse: boolean,
-        steps: Step[],
+        context: Context,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
         if (reverse) {
             [prev, next] = [next, prev];
         }
@@ -293,8 +287,8 @@ class IntegerChecker {
                     ]);
 
                     const result = reverse
-                        ? checker.checkStep(next, newPrev, steps)
-                        : checker.checkStep(newPrev, next, steps);
+                        ? checker.checkStep(next, newPrev, context)
+                        : checker.checkStep(newPrev, next, context);
                     if (result.equivalent) {
                         return {
                             equivalent: true,
@@ -332,24 +326,24 @@ class IntegerChecker {
     runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         let result: Result;
         let result1: Result;
         let result2: Result;
 
-        result = this.addInverse(prev, next, false, steps);
+        result = this.addInverse(prev, next, false, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addInverse(prev, next, true, steps);
+        result = this.addInverse(prev, next, true, context);
         if (result.equivalent) {
             return result;
         }
 
-        result1 = this.subIsNeg(prev, next, false, steps);
-        result2 = this.subIsNeg(prev, next, true, steps);
+        result1 = this.subIsNeg(prev, next, false, context);
+        result2 = this.subIsNeg(prev, next, true, context);
         if (result1.equivalent && result2.equivalent) {
             if (result1.steps.length < result2.steps.length) {
                 return result1;
@@ -362,19 +356,19 @@ class IntegerChecker {
             return result2;
         }
 
-        result = this.mulTwoNegsIsPos(prev, next, false, steps);
+        result = this.mulTwoNegsIsPos(prev, next, false, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulTwoNegsIsPos(prev, next, true, steps);
+        result = this.mulTwoNegsIsPos(prev, next, true, context);
         if (result.equivalent) {
             return result;
         }
 
         // Choose the fastest route when multiple paths exist.
-        result1 = this.doubleNegative(prev, next, false, steps);
-        result2 = this.doubleNegative(prev, next, true, steps);
+        result1 = this.doubleNegative(prev, next, false, context);
+        result2 = this.doubleNegative(prev, next, true, context);
         if (result1.equivalent && result2.equivalent) {
             if (result1.steps.length < result2.steps.length) {
                 return result1;
@@ -392,12 +386,12 @@ class IntegerChecker {
         // alternative path from --a -> a.
         // TODO: provide a way to show this more detailed version of --a -> a so that
         // students know why --a -> a is true.
-        result = this.negIsMulNegOne(prev, next, false, steps);
+        result = this.negIsMulNegOne(prev, next, false, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.negIsMulNegOne(prev, next, true, steps);
+        result = this.negIsMulNegOne(prev, next, true, context);
         if (result.equivalent) {
             return result;
         }

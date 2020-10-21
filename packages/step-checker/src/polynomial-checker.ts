@@ -1,21 +1,15 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {IStepChecker} from "./step-checker";
-import {Result, Step} from "./types";
+import {Context} from "./step-checker";
+import {Result} from "./types";
 
 class PolynomialChecker {
-    checker: IStepChecker;
-
-    constructor(checker: IStepChecker) {
-        this.checker = checker;
-    }
-
     // TODO: Implement this.
     // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
     collectLikeTerms(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         return {
             equivalent: false,
@@ -26,9 +20,9 @@ class PolynomialChecker {
     runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
-        const result = this.collectLikeTerms(prev, next, steps);
+        const result = this.collectLikeTerms(prev, next, context);
         if (result.equivalent) {
             return result;
         }

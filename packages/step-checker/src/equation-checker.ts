@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {IStepChecker} from "./step-checker";
-import {Result, Step} from "./types";
+import {Context} from "./step-checker";
+import {Result} from "./types";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -12,19 +12,13 @@ const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
 class EquationChecker {
-    checker: IStepChecker;
-
-    constructor(checker: IStepChecker) {
-        this.checker = checker;
-    }
-
     checkAddSub(
         a: Semantic.Eq,
         b: Semantic.Eq,
-        steps: Step[],
+        context: Context,
         reversed: boolean,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
 
         if (reversed) {
             [a, b] = [b, a];
@@ -37,17 +31,17 @@ class EquationChecker {
             const lhsNewTerms = checker.difference(
                 Semantic.getTerms(lhsB),
                 Semantic.getTerms(lhsA),
-                steps,
+                context,
             );
             const rhsNewTerms = checker.difference(
                 Semantic.getTerms(rhsB),
                 Semantic.getTerms(rhsA),
-                steps,
+                context,
             );
             // TODO: check thata lhsNew and rhsNew has a single term
             const lhsNew = Semantic.addTerms(lhsNewTerms);
             const rhsNew = Semantic.addTerms(rhsNewTerms);
-            const result = checker.checkStep(lhsNew, rhsNew, steps);
+            const result = checker.checkStep(lhsNew, rhsNew, context);
 
             const lhsNewTerm = lhsNewTerms[0];
             const rhsNewTerm = rhsNewTerms[0];
@@ -66,7 +60,7 @@ class EquationChecker {
             if (reversed) {
                 // This check prevents an infinite loop
                 if (
-                    steps.some(
+                    context.steps.some(
                         (step) =>
                             step.message ===
                             "removing the same term from both sides",
@@ -99,14 +93,17 @@ class EquationChecker {
                 newPrev; // ?
 
                 const newSteps = [
-                    ...steps,
+                    ...context.steps,
                     {
                         message: "removing the same term from both sides",
                         nodes: [],
                     },
                 ];
 
-                const result = checker.checkStep(newPrev, next, newSteps);
+                const result = checker.checkStep(newPrev, next, {
+                    ...context,
+                    steps: newSteps,
+                });
                 if (result.equivalent) {
                     return {
                         equivalent: true,
@@ -166,10 +163,10 @@ class EquationChecker {
     checkMul(
         a: Semantic.Eq,
         b: Semantic.Eq,
-        steps: Step[],
+        context: Context,
         reversed: boolean,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
 
         if (reversed) {
             [a, b] = [b, a];
@@ -182,22 +179,22 @@ class EquationChecker {
             const lhsNewFactors = checker.difference(
                 Semantic.getFactors(lhsB),
                 Semantic.getFactors(lhsA),
-                steps,
+                context,
             );
             const rhsNewFactors = checker.difference(
                 Semantic.getFactors(rhsB),
                 Semantic.getFactors(rhsA),
-                steps,
+                context,
             );
             const result = checker.checkStep(
                 Semantic.mulFactors(lhsNewFactors),
                 Semantic.mulFactors(rhsNewFactors),
-                steps,
+                context,
             );
 
             if (reversed) {
                 if (
-                    steps.some(
+                    context.steps.some(
                         (step) =>
                             step.message ===
                             "remove common factor on both sides",
@@ -218,14 +215,17 @@ class EquationChecker {
                 ]);
 
                 const newSteps = [
-                    ...steps,
+                    ...context.steps,
                     {
                         message: "remove common factor on both sides",
                         nodes: [],
                     },
                 ];
 
-                const result = checker.checkStep(newPrev, next, newSteps);
+                const result = checker.checkStep(newPrev, next, {
+                    ...context,
+                    steps: newSteps,
+                });
                 if (result.equivalent) {
                     return {
                         equivalent: true,
@@ -268,10 +268,10 @@ class EquationChecker {
     checkDiv(
         a: Semantic.Eq,
         b: Semantic.Eq,
-        steps: Step[],
+        context: Context,
         reversed: boolean,
     ): Result {
-        const {checker} = this;
+        const {checker} = context;
 
         if (reversed) {
             [a, b] = [b, a];
@@ -282,19 +282,20 @@ class EquationChecker {
 
         if (lhsB.type === "div" && rhsB.type === "div") {
             if (
-                checker.checkStep(lhsA, lhsB.args[NUMERATOR], steps)
+                checker.checkStep(lhsA, lhsB.args[NUMERATOR], context)
                     .equivalent &&
-                checker.checkStep(rhsA, rhsB.args[NUMERATOR], steps).equivalent
+                checker.checkStep(rhsA, rhsB.args[NUMERATOR], context)
+                    .equivalent
             ) {
                 const result = checker.checkStep(
                     lhsB.args[DENOMINATOR],
                     rhsB.args[DENOMINATOR],
-                    steps,
+                    context,
                 );
 
                 if (reversed) {
                     if (
-                        steps.some(
+                        context.steps.some(
                             (step) =>
                                 step.message ===
                                 "remove division by the same amount",
@@ -315,14 +316,17 @@ class EquationChecker {
                     ]);
 
                     const newSteps = [
-                        ...steps,
+                        ...context.steps,
                         {
                             message: "remove division by the same amount",
                             nodes: [],
                         },
                     ];
 
-                    const result = checker.checkStep(newPrev, next, newSteps);
+                    const result = checker.checkStep(newPrev, next, {
+                        ...context,
+                        steps: newSteps,
+                    });
                     if (result.equivalent) {
                         return {
                             equivalent: true,
@@ -367,7 +371,7 @@ class EquationChecker {
     runChecks(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (a.type !== "eq" || b.type !== "eq") {
             return {
@@ -378,32 +382,32 @@ class EquationChecker {
 
         let result: Result;
 
-        result = this.checkAddSub(a, b, steps, false);
+        result = this.checkAddSub(a, b, context, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkAddSub(a, b, steps, true);
+        result = this.checkAddSub(a, b, context, true);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkMul(a, b, steps, false);
+        result = this.checkMul(a, b, context, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkMul(a, b, steps, true);
+        result = this.checkMul(a, b, context, true);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDiv(a, b, steps, false);
+        result = this.checkDiv(a, b, context, false);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDiv(a, b, steps, true);
+        result = this.checkDiv(a, b, context, true);
         if (result.equivalent) {
             return result;
         }

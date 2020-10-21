@@ -1,22 +1,14 @@
 import * as Semantic from "@math-blocks/semantic";
-import {getId} from "@math-blocks/core";
 
 import {zip, applySubReasons} from "./util";
-import {IStepChecker} from "./step-checker";
+import {Context} from "./step-checker";
 import {Result, Step} from "./types";
-import {mul} from "@math-blocks/semantic";
 
 class AxiomChecker {
-    checker: IStepChecker;
-
-    constructor(checker: IStepChecker) {
-        this.checker = checker;
-    }
-
     addZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (prev.type !== "add") {
             return {
@@ -32,14 +24,14 @@ class AxiomChecker {
             Semantic.number("0"), // TODO: provide a way to have different levels of messages, e.g.
             // "adding zero doesn't change an expression"
             "addition with identity",
-            steps,
+            context,
         );
     }
 
     mulOne(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (prev.type !== "mul") {
             return {
@@ -55,7 +47,7 @@ class AxiomChecker {
             Semantic.number("1"), // TODO: provide a way to have different levels of messages, e.g.
             // "multiplying by one doesn't change an expression"
             "multiplication with identity",
-            steps,
+            context,
         );
     }
 
@@ -65,11 +57,11 @@ class AxiomChecker {
         op: (arg0: Semantic.Expression[]) => Semantic.Expression,
         identity: Semantic.Num, // conditional types would come in handy here
         reason: string,
-        steps: Step[],
+        context: Context,
     ): Result {
         const identityReasons: Step[] = [];
         const nonIdentityArgs = prev.args.filter((arg) => {
-            const result = this.checker.checkStep(arg, identity, steps);
+            const result = context.checker.checkStep(arg, identity, context);
             if (result.equivalent) {
                 identityReasons.push(...result.steps);
             }
@@ -87,7 +79,7 @@ class AxiomChecker {
         const newPrev = applySubReasons(prev, identityReasons);
 
         const newNext = op(nonIdentityArgs);
-        const result = this.checker.checkStep(newNext, next, steps);
+        const result = context.checker.checkStep(newNext, next, context);
         if (result.equivalent) {
             return {
                 equivalent: true,
@@ -111,7 +103,7 @@ class AxiomChecker {
     checkDistribution(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         // TODO: handle the case where a 'mul' within an 'add' was replaced
         if (prev.type === "add" && next.type === "add") {
@@ -134,7 +126,11 @@ class AxiomChecker {
                         ...prev.args.slice(i + 1),
                     ]);
 
-                    const result = this.checker.checkStep(newPrev, next, steps);
+                    const result = context.checker.checkStep(
+                        newPrev,
+                        next,
+                        context,
+                    );
                     if (result.equivalent) {
                         results.push({
                             equivalent: true,
@@ -175,7 +171,7 @@ class AxiomChecker {
                 ) as TwoOrMore<Semantic.Expression>,
             );
 
-            const result = this.checker.checkStep(newPrev, next, steps);
+            const result = context.checker.checkStep(newPrev, next, context);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -196,7 +192,7 @@ class AxiomChecker {
                 ) as TwoOrMore<Semantic.Expression>,
             );
 
-            const result = this.checker.checkStep(newPrev, next, steps);
+            const result = context.checker.checkStep(newPrev, next, context);
             if (result.equivalent) {
                 return {
                     equivalent: true,
@@ -219,6 +215,7 @@ class AxiomChecker {
     checkFactoring(
         prev: Semantic.Expression,
         next: Semantic.Expression,
+        context: Context,
     ): Result {
         // TODO: update to match checkDistribution
         if (prev.type !== "add" || next.type !== "mul") {
@@ -227,13 +224,14 @@ class AxiomChecker {
                 steps: [],
             };
         }
-        return this.distributionFactoring(prev, next, "factoring");
+        return this.distributionFactoring(prev, next, "factoring", context);
     }
 
     distributionFactoring(
         addNode: Semantic.Add,
         mulNode: Semantic.Mul,
         reason: "distribution" | "factoring",
+        context: Context,
     ): Result {
         // TODO: handle distribution across n-ary multiplication later
         if (mulNode.args.length === 2) {
@@ -253,9 +251,13 @@ class AxiomChecker {
                                 ? Semantic.mulFactors([x, y.args[index]])
                                 : Semantic.mulFactors([y.args[index], x]);
 
-                        // We reset the "reasons" parameter here because we checking
-                        // different nodes so we won't run into a cycle here.
-                        const substep = this.checker.checkStep(arg, term, []);
+                        // NOTE: We reset the "steps" parameter here because
+                        // we're checking different nodes so we won't run into
+                        // a cycle here.
+                        const substep = context.checker.checkStep(arg, term, {
+                            ...context,
+                            steps: [],
+                        });
 
                         subReasons.push(...substep.steps);
                         return substep.equivalent;
@@ -304,7 +306,7 @@ class AxiomChecker {
     mulByZero(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (prev.type !== "mul") {
             return {
@@ -317,13 +319,13 @@ class AxiomChecker {
         // are captured.
         const hasZero = prev.args.some(
             (arg) =>
-                this.checker.checkStep(arg, Semantic.number("0"), steps)
+                context.checker.checkStep(arg, Semantic.number("0"), context)
                     .equivalent,
         );
-        const result = this.checker.checkStep(
+        const result = context.checker.checkStep(
             next,
             Semantic.number("0"),
-            steps,
+            context,
         );
         if (hasZero && result.equivalent) {
             return {
@@ -346,7 +348,7 @@ class AxiomChecker {
     commuteAddition(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (
             prev.type === "add" &&
@@ -356,7 +358,7 @@ class AxiomChecker {
             const pairs = zip(prev.args, next.args);
 
             // Check if the args are the same disregarding order.
-            const result = this.checker.checkArgs(prev, next, steps);
+            const result = context.checker.checkArgs(prev, next, context);
 
             // If they aren't we can stop this check right here.
             if (!result.equivalent) {
@@ -372,7 +374,11 @@ class AxiomChecker {
                 // It's safe to ignore the reasons from this call to checkStep
                 // since we're already getting the reasons why the nodes are equivalent
                 // from the call to checkArgs
-                const result = this.checker.checkStep(first, second, steps);
+                const result = context.checker.checkStep(
+                    first,
+                    second,
+                    context,
+                );
                 return !result.equivalent;
             });
 
@@ -409,7 +415,7 @@ class AxiomChecker {
     commuteMultiplication(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (
             prev.type === "mul" &&
@@ -419,7 +425,7 @@ class AxiomChecker {
             const pairs = zip(prev.args, next.args);
 
             // Check if the arguments are the same disregarding order.
-            const result = this.checker.checkArgs(prev, next, steps);
+            const result = context.checker.checkArgs(prev, next, context);
 
             // If the args are the same then we can stop here.
             if (!result.equivalent) {
@@ -434,7 +440,8 @@ class AxiomChecker {
                     // It's safe to ignore the steps from these checks
                     // since we already have the steps from the checkArgs
                     // call.
-                    !this.checker.checkStep(first, second, steps).equivalent,
+                    !context.checker.checkStep(first, second, context)
+                        .equivalent,
             );
 
             const newPrev = applySubReasons(prev, result.steps);
@@ -462,7 +469,7 @@ class AxiomChecker {
     symmetricProperty(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         if (
             prev.type === "eq" &&
@@ -471,14 +478,15 @@ class AxiomChecker {
         ) {
             const pairs = zip(prev.args, next.args);
 
-            const result = this.checker.checkArgs(prev, next, steps);
+            const result = context.checker.checkArgs(prev, next, context);
             if (!result.equivalent) {
                 return result;
             }
 
             const commutative = pairs.some(
                 ([first, second]) =>
-                    !this.checker.checkStep(first, second, steps).equivalent,
+                    !context.checker.checkStep(first, second, context)
+                        .equivalent,
             );
 
             if (commutative) {
@@ -504,63 +512,63 @@ class AxiomChecker {
     runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         let result: Result;
 
-        result = this.symmetricProperty(prev, next, steps);
+        result = this.symmetricProperty(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteAddition(prev, next, steps);
+        result = this.commuteAddition(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.commuteMultiplication(prev, next, steps);
+        result = this.commuteMultiplication(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(prev, next, steps);
+        result = this.addZero(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.addZero(next, prev, steps);
+        result = this.addZero(next, prev, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(prev, next, steps);
+        result = this.mulOne(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.mulOne(next, prev, steps);
+        result = this.mulOne(next, prev, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkDistribution(prev, next, steps);
+        result = this.checkDistribution(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.checkFactoring(prev, next);
+        result = this.checkFactoring(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         // a * 0 -> 0
-        result = this.mulByZero(prev, next, steps);
+        result = this.mulByZero(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         // 0 -> a * 0
-        result = this.mulByZero(next, prev, steps);
+        result = this.mulByZero(next, prev, context);
         if (result.equivalent) {
             return result;
         }

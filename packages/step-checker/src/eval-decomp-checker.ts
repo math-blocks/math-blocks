@@ -2,7 +2,7 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {IStepChecker, Options} from "./step-checker";
+import {Context, Options} from "./step-checker";
 import {Result, Step} from "./types";
 
 // Disable automatic reducing
@@ -30,18 +30,13 @@ enum Direction {
 }
 
 class EvalDecompChecker {
-    checker: IStepChecker;
-
-    constructor(checker: IStepChecker) {
-        this.checker = checker;
-    }
-
     // This handles evaluation and decomposition of addition or multiplication.
     evalDecompNaryOp(
         a: Semantic.Expression,
         b: Semantic.Expression,
         op: "add" | "mul",
         direction: Direction,
+        context: Context,
     ): Result {
         const aTerms =
             op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
@@ -62,15 +57,15 @@ class EvalDecompChecker {
             const aTerm = aTerms[i];
             const bTerm = bTerms[j];
 
-            if (this.checker.exactMatch(aTerm, bTerm).equivalent) {
+            if (context.checker.exactMatch(aTerm, bTerm).equivalent) {
                 i++;
                 continue;
             }
 
             try {
                 // Find the first non-exact match between two numbers
-                const aVal = parseNode(aTerm, this.checker.options);
-                const bVal = parseNode(bTerm, this.checker.options);
+                const aVal = parseNode(aTerm, context.checker.options);
+                const bVal = parseNode(bTerm, context.checker.options);
 
                 // Accumulate a sum of numeric terms from aTerms until
                 // it matches bTerm's value, we run into a non-numeric
@@ -80,7 +75,7 @@ class EvalDecompChecker {
                 while (i < aTerms.length) {
                     const nextTerm = parseNode(
                         aTerms[i++],
-                        this.checker.options,
+                        context.checker.options,
                     );
                     accumulator.toString();
                     switch (op) {
@@ -144,9 +139,9 @@ class EvalDecompChecker {
     evalMul(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
-        return this.evalDecompNaryOp(a, b, "mul", Direction.EVAL);
+        return this.evalDecompNaryOp(a, b, "mul", Direction.EVAL, context);
     }
 
     // This is unidirectional since most of the time we're adding numbers instead
@@ -154,50 +149,50 @@ class EvalDecompChecker {
     evalAdd(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
-        return this.evalDecompNaryOp(a, b, "add", Direction.EVAL);
+        return this.evalDecompNaryOp(a, b, "add", Direction.EVAL, context);
     }
 
     decompSum(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
-        return this.evalDecompNaryOp(b, a, "add", Direction.DECOMP);
+        return this.evalDecompNaryOp(b, a, "add", Direction.DECOMP, context);
     }
 
     decompProduct(
         a: Semantic.Expression,
         b: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
-        return this.evalDecompNaryOp(b, a, "mul", Direction.DECOMP);
+        return this.evalDecompNaryOp(b, a, "mul", Direction.DECOMP, context);
     }
 
     runChecks(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         let result: Result;
 
-        result = this.evalMul(prev, next, steps);
+        result = this.evalMul(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.evalAdd(prev, next, steps);
+        result = this.evalAdd(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.decompProduct(prev, next, steps);
+        result = this.decompProduct(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
-        result = this.decompSum(prev, next, steps);
+        result = this.decompSum(prev, next, context);
         if (result.equivalent) {
             return result;
         }
