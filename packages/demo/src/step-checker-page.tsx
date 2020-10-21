@@ -59,7 +59,10 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph, ID>,
         next: Editor.Row<Editor.Glyph, ID>,
     ): boolean => {
-        const result = checker.checkStep(parse(prev), parse(next), []);
+        const result = checker.checkStep(parse(prev), parse(next), {
+            checker,
+            steps: [],
+        });
 
         if (result.equivalent) {
             const semanticNext = parse(next);
