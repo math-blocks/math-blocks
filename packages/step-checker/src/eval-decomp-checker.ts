@@ -29,179 +29,172 @@ enum Direction {
     DECOMP,
 }
 
-class EvalDecompChecker {
-    // This handles evaluation and decomposition of addition or multiplication.
-    evalDecompNaryOp(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        op: "add" | "mul",
-        direction: Direction,
-        context: Context,
-    ): Result {
-        const aTerms =
-            op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
-        const bTerms =
-            op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
+// This handles evaluation and decomposition of addition or multiplication.
+function evalDecompNaryOp(
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+    op: "add" | "mul",
+    direction: Direction,
+    context: Context,
+): Result {
+    const aTerms = op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
+    const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
-        if (a.type !== op && b.type !== op) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+    if (a.type !== op && b.type !== op) {
+        return {
+            equivalent: false,
+            steps: [],
+        };
+    }
+
+    const steps: Step[] = [];
+
+    let i = 0;
+    for (let j = 0; j < bTerms.length; j++) {
+        const aTerm = aTerms[i];
+        const bTerm = bTerms[j];
+
+        if (context.checker.exactMatch(aTerm, bTerm).equivalent) {
+            i++;
+            continue;
         }
 
-        const steps: Step[] = [];
+        try {
+            // Find the first non-exact match between two numbers
+            const aVal = parseNode(aTerm, context.checker.options);
+            const bVal = parseNode(bTerm, context.checker.options);
 
-        let i = 0;
-        for (let j = 0; j < bTerms.length; j++) {
-            const aTerm = aTerms[i];
-            const bTerm = bTerms[j];
-
-            if (context.checker.exactMatch(aTerm, bTerm).equivalent) {
-                i++;
-                continue;
-            }
-
-            try {
-                // Find the first non-exact match between two numbers
-                const aVal = parseNode(aTerm, context.checker.options);
-                const bVal = parseNode(bTerm, context.checker.options);
-
-                // Accumulate a sum of numeric terms from aTerms until
-                // it matches bTerm's value, we run into a non-numeric
-                // term, or we run out of terms
-                let accumulator = aVal;
-                i++;
-                while (i < aTerms.length) {
-                    const nextTerm = parseNode(
-                        aTerms[i++],
-                        context.checker.options,
-                    );
-                    accumulator.toString();
-                    switch (op) {
-                        case "add":
-                            accumulator = accumulator.add(nextTerm);
-                            break;
-                        case "mul":
-                            accumulator = accumulator.mul(nextTerm);
-                            break;
-                    }
-                    accumulator.toString();
-                    bVal.toString();
-                    if (accumulator.equals(bVal)) {
-                        steps.push({
-                            message:
-                                op === "add"
-                                    ? direction === Direction.EVAL
-                                        ? "evaluation of addition"
-                                        : "decompose sum"
-                                    : direction === Direction.EVAL
-                                    ? "evaluation of multiplication"
-                                    : "decompose product",
-                            // We include the whole nodes for now
-                            // TODO: also specify which children we're involved in this step
-                            // TODO: each step should have its own type so that we can include
-                            // step specific data in the steps if necessary.
-                            nodes: [a, b],
-                        });
+            // Accumulate a sum of numeric terms from aTerms until
+            // it matches bTerm's value, we run into a non-numeric
+            // term, or we run out of terms
+            let accumulator = aVal;
+            i++;
+            while (i < aTerms.length) {
+                const nextTerm = parseNode(
+                    aTerms[i++],
+                    context.checker.options,
+                );
+                accumulator.toString();
+                switch (op) {
+                    case "add":
+                        accumulator = accumulator.add(nextTerm);
                         break;
-                    }
+                    case "mul":
+                        accumulator = accumulator.mul(nextTerm);
+                        break;
                 }
-            } catch (e) {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
+                accumulator.toString();
+                bVal.toString();
+                if (accumulator.equals(bVal)) {
+                    steps.push({
+                        message:
+                            op === "add"
+                                ? direction === Direction.EVAL
+                                    ? "evaluation of addition"
+                                    : "decompose sum"
+                                : direction === Direction.EVAL
+                                ? "evaluation of multiplication"
+                                : "decompose product",
+                        // We include the whole nodes for now
+                        // TODO: also specify which children we're involved in this step
+                        // TODO: each step should have its own type so that we can include
+                        // step specific data in the steps if necessary.
+                        nodes: [a, b],
+                    });
+                    break;
+                }
             }
-        }
-
-        if (i < aTerms.length) {
+        } catch (e) {
             return {
                 equivalent: false,
                 steps: [],
             };
         }
+    }
 
-        if (steps.length > 0) {
-            return {
-                equivalent: true,
-                steps,
-            };
-        }
-
+    if (i < aTerms.length) {
         return {
             equivalent: false,
             steps: [],
         };
     }
 
-    // This handles
-    evalMul(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        context: Context,
-    ): Result {
-        return this.evalDecompNaryOp(a, b, "mul", Direction.EVAL, context);
-    }
-
-    // This is unidirectional since most of the time we're adding numbers instead
-    // of decomposing them.
-    evalAdd(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        context: Context,
-    ): Result {
-        return this.evalDecompNaryOp(a, b, "add", Direction.EVAL, context);
-    }
-
-    decompSum(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        context: Context,
-    ): Result {
-        return this.evalDecompNaryOp(b, a, "add", Direction.DECOMP, context);
-    }
-
-    decompProduct(
-        a: Semantic.Expression,
-        b: Semantic.Expression,
-        context: Context,
-    ): Result {
-        return this.evalDecompNaryOp(b, a, "mul", Direction.DECOMP, context);
-    }
-
-    runChecks(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        context: Context,
-    ): Result {
-        let result: Result;
-
-        result = this.evalMul(prev, next, context);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.evalAdd(prev, next, context);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.decompProduct(prev, next, context);
-        if (result.equivalent) {
-            return result;
-        }
-
-        result = this.decompSum(prev, next, context);
-        if (result.equivalent) {
-            return result;
-        }
-
+    if (steps.length > 0) {
         return {
-            equivalent: false,
-            steps: [],
+            equivalent: true,
+            steps,
         };
     }
+
+    return {
+        equivalent: false,
+        steps: [],
+    };
 }
 
-export default EvalDecompChecker;
+function evalMul(
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+    context: Context,
+): Result {
+    return evalDecompNaryOp(a, b, "mul", Direction.EVAL, context);
+}
+
+// This is unidirectional since most of the time we're adding numbers instead
+// of decomposing them.
+function evalAdd(
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+    context: Context,
+): Result {
+    return evalDecompNaryOp(a, b, "add", Direction.EVAL, context);
+}
+
+function decompSum(
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+    context: Context,
+): Result {
+    return evalDecompNaryOp(b, a, "add", Direction.DECOMP, context);
+}
+
+function decompProduct(
+    a: Semantic.Expression,
+    b: Semantic.Expression,
+    context: Context,
+): Result {
+    return evalDecompNaryOp(b, a, "mul", Direction.DECOMP, context);
+}
+
+export function runChecks(
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+    context: Context,
+): Result {
+    let result: Result;
+
+    result = evalMul(prev, next, context);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = evalAdd(prev, next, context);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = decompProduct(prev, next, context);
+    if (result.equivalent) {
+        return result;
+    }
+
+    result = decompSum(prev, next, context);
+    if (result.equivalent) {
+        return result;
+    }
+
+    return {
+        equivalent: false,
+        steps: [],
+    };
+}

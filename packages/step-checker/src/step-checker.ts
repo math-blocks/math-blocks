@@ -3,12 +3,12 @@ import * as Semantic from "@math-blocks/semantic";
 import {deepEquals} from "./util";
 import {Result, Step} from "./types";
 
-import FractionChecker from "./fraction-checker";
-import EquationChecker from "./equation-checker";
-import IntegerChecker from "./integer-checker";
-import EvalDecompChecker from "./eval-decomp-checker";
-import PolynomialChecker from "./polynomial-checker";
-import AxiomChecker from "./axiom-checker";
+import * as fractionChecker from "./fraction-checker";
+import * as equationChecker from "./equation-checker";
+import * as integerChecker from "./integer-checker";
+import * as evalChecker from "./eval-decomp-checker";
+// import * as polynomialChecker from "./polynomial-checker";
+import * as axiomChecker from "./axiom-checker";
 
 // TODO: fix flowtype/define-flow-type, HasArgs is used below
 // eslint-disable-next-line no-unused-vars
@@ -88,25 +88,11 @@ const defaultOptions: Options = {
 class StepChecker implements IStepChecker {
     options: Options;
 
-    axiomChecker: AxiomChecker;
-    fractionChecker: FractionChecker;
-    equationChecker: EquationChecker;
-    integerChecker: IntegerChecker;
-    evalChecker: EvalDecompChecker;
-    polynomialChecker: PolynomialChecker;
-
     constructor(options?: Options) {
         this.options = {
             ...defaultOptions,
             ...options,
         };
-
-        this.axiomChecker = new AxiomChecker();
-        this.fractionChecker = new FractionChecker();
-        this.equationChecker = new EquationChecker();
-        this.integerChecker = new IntegerChecker();
-        this.evalChecker = new EvalDecompChecker();
-        this.polynomialChecker = new PolynomialChecker();
     }
 
     /**
@@ -216,7 +202,7 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.axiomChecker.runChecks(prev, next, context);
+        result = axiomChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
@@ -249,26 +235,26 @@ class StepChecker implements IStepChecker {
         }
         // TODO: handle roots and other things that don't pass the hasArgs test
 
-        result = this.equationChecker.runChecks(prev, next, context);
+        result = equationChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         if (!this.options.skipEvalChecker) {
-            result = this.evalChecker.runChecks(prev, next, context);
+            result = evalChecker.runChecks(prev, next, context);
             if (result.equivalent) {
                 return result;
             }
         }
 
-        result = this.integerChecker.runChecks(prev, next, context);
+        result = integerChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         // FractionChecker must appear after EvalChecker
         // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
-        result = this.fractionChecker.runChecks(prev, next, context);
+        result = fractionChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
