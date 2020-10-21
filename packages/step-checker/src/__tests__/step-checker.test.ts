@@ -7,7 +7,10 @@ import {Result} from "../types";
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), []);
+    return checker.checkStep(parse(prev), parse(next), {
+        checker,
+        steps: [],
+    });
 };
 
 // TODO: create a test helper
@@ -44,7 +47,10 @@ describe("StepChecker", () => {
             const sum1 = parse("1 + 2 + 3");
             const sum2 = parse("1 + 2 + 3 + 4");
             if (hasArgs(sum1) && hasArgs(sum2)) {
-                const result = checker.checkArgs(sum1, sum2, []);
+                const result = checker.checkArgs(sum1, sum2, {
+                    checker,
+                    steps: [],
+                });
 
                 expect(result.equivalent).toBe(false);
                 expect(checker.checkStep).not.toHaveBeenCalled();
@@ -56,7 +62,10 @@ describe("StepChecker", () => {
         it("should return an empty array if both have the same values", () => {
             const left = [Semantic.number("1"), Semantic.number("2")];
             const right = [Semantic.number("1"), Semantic.number("2")];
-            const result = checker.difference(left, right, []);
+            const result = checker.difference(left, right, {
+                checker,
+                steps: [],
+            });
 
             expect(result).toEqual([]);
         });
@@ -64,7 +73,10 @@ describe("StepChecker", () => {
         it("should return the difference for unique values", () => {
             const left = [Semantic.number("1"), Semantic.number("2")];
             const right = [Semantic.number("2")];
-            const result = checker.difference(left, right, []);
+            const result = checker.difference(left, right, {
+                checker,
+                steps: [],
+            });
 
             expect(result).toEqual([left[0]]);
         });
@@ -72,7 +84,10 @@ describe("StepChecker", () => {
         it("should return the original left array if there are no matches", () => {
             const left = [Semantic.number("1"), Semantic.number("2")];
             const right = [Semantic.number("3")];
-            const result = checker.difference(left, right, []);
+            const result = checker.difference(left, right, {
+                checker,
+                steps: [],
+            });
 
             expect(result).toEqual(left);
         });
@@ -80,7 +95,10 @@ describe("StepChecker", () => {
         it("should return the handle duplicates", () => {
             const left = [Semantic.number("1"), Semantic.number("1")];
             const right = [Semantic.number("1")];
-            const result = checker.difference(left, right, []);
+            const result = checker.difference(left, right, {
+                checker,
+                steps: [],
+            });
 
             expect(result).toEqual([left[1]]);
         });

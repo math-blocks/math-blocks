@@ -10,7 +10,10 @@ expect.addSnapshotSerializer(serializer);
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), []);
+    return checker.checkStep(parse(prev), parse(next), {
+        checker,
+        steps: [],
+    });
 };
 
 expect.extend({

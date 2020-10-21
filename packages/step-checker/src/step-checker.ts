@@ -3,12 +3,12 @@ import * as Semantic from "@math-blocks/semantic";
 import {deepEquals} from "./util";
 import {Result, Step} from "./types";
 
-import FractionChecker from "./fraction-checker";
-import EquationChecker from "./equation-checker";
-import IntegerChecker from "./integer-checker";
-import EvalDecompChecker from "./eval-decomp-checker";
-import PolynomialChecker from "./polynomial-checker";
-import AxiomChecker from "./axiom-checker";
+import * as fractionChecker from "./fraction-checker";
+import * as equationChecker from "./equation-checker";
+import * as integerChecker from "./integer-checker";
+import * as evalChecker from "./eval-decomp-checker";
+// import * as polynomialChecker from "./polynomial-checker";
+import * as axiomChecker from "./axiom-checker";
 
 // TODO: fix flowtype/define-flow-type, HasArgs is used below
 // eslint-disable-next-line no-unused-vars
@@ -42,30 +42,35 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
 // We still want each step to be responsible for deciding how to combine
 // the result of checkStep with the new reason.
 
+export type Context = {
+    steps: Step[];
+    checker: IStepChecker;
+};
+
 export interface IStepChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
         // We pass an array of reasons since cycles may include multiple steps
-        steps: Step[],
+        context: Context,
     ): Result;
     exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
-    checkArgs<T extends HasArgs>(prev: T, next: T, steps: Step[]): Result;
+    checkArgs<T extends HasArgs>(prev: T, next: T, context: Context): Result;
     intersection(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): Semantic.Expression[];
     difference(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): Semantic.Expression[];
     // TODO: change this to return a Result
     equality(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): boolean;
     options: Options;
 }
@@ -83,32 +88,18 @@ const defaultOptions: Options = {
 class StepChecker implements IStepChecker {
     options: Options;
 
-    axiomChecker: AxiomChecker;
-    fractionChecker: FractionChecker;
-    equationChecker: EquationChecker;
-    integerChecker: IntegerChecker;
-    evalChecker: EvalDecompChecker;
-    polynomialChecker: PolynomialChecker;
-
     constructor(options?: Options) {
         this.options = {
             ...defaultOptions,
             ...options,
         };
-
-        this.axiomChecker = new AxiomChecker(this);
-        this.fractionChecker = new FractionChecker(this);
-        this.equationChecker = new EquationChecker(this);
-        this.integerChecker = new IntegerChecker(this);
-        this.evalChecker = new EvalDecompChecker(this);
-        this.polynomialChecker = new PolynomialChecker(this);
     }
 
     /**
      * checkArgs will return true if each node has the same args even if the
      * order doesn't match.
      */
-    checkArgs<T extends HasArgs>(prev: T, next: T, steps: Step[]): Result {
+    checkArgs<T extends HasArgs>(prev: T, next: T, context: Context): Result {
         const _reasons: Step[] = [];
         if (prev.args.length !== next.args.length) {
             return {
@@ -118,7 +109,7 @@ class StepChecker implements IStepChecker {
         }
         const equivalent = prev.args.every((prevArg) =>
             next.args.some((nextArg) => {
-                const result = this.checkStep(prevArg, nextArg, steps);
+                const result = this.checkStep(prevArg, nextArg, context);
                 if (result.equivalent) {
                     _reasons.push(...result.steps);
                 }
@@ -137,12 +128,12 @@ class StepChecker implements IStepChecker {
     intersection(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                (b) => this.checkStep(a, b, steps).equivalent,
+                (b) => this.checkStep(a, b, context).equivalent,
             );
             if (index !== -1) {
                 result.push(a);
@@ -158,12 +149,12 @@ class StepChecker implements IStepChecker {
     difference(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): Semantic.Expression[] {
         const result: Semantic.Expression[] = [];
         for (const a of as) {
             const index = bs.findIndex(
-                (b) => this.checkStep(a, b, steps).equivalent,
+                (b) => this.checkStep(a, b, context).equivalent,
             );
             if (index !== -1) {
                 bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -181,10 +172,10 @@ class StepChecker implements IStepChecker {
     equality(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
-        steps: Step[],
+        context: Context,
     ): boolean {
         return as.every((a) =>
-            bs.some((b) => this.checkStep(a, b, steps).equivalent),
+            bs.some((b) => this.checkStep(a, b, context).equivalent),
         );
     }
 
@@ -202,7 +193,7 @@ class StepChecker implements IStepChecker {
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        steps: Step[],
+        context: Context,
     ): Result {
         let result: Result;
 
@@ -211,7 +202,7 @@ class StepChecker implements IStepChecker {
             return result;
         }
 
-        result = this.axiomChecker.runChecks(prev, next, steps);
+        result = axiomChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
@@ -224,12 +215,12 @@ class StepChecker implements IStepChecker {
         // ordering of args so if we ran it first we'd never see any commute
         // steps in the output.
         if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
-            result = this.checkArgs(prev, next, steps);
+            result = this.checkArgs(prev, next, context);
             if (result.equivalent) {
                 return result;
             }
         } else if (prev.type === "neg" && next.type === "neg") {
-            let result = this.checkStep(prev.arg, next.arg, steps);
+            let result = this.checkStep(prev.arg, next.arg, context);
             result = {
                 equivalent:
                     prev.subtraction === next.subtraction && result.equivalent,
@@ -244,26 +235,26 @@ class StepChecker implements IStepChecker {
         }
         // TODO: handle roots and other things that don't pass the hasArgs test
 
-        result = this.equationChecker.runChecks(prev, next, steps);
+        result = equationChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         if (!this.options.skipEvalChecker) {
-            result = this.evalChecker.runChecks(prev, next, steps);
+            result = evalChecker.runChecks(prev, next, context);
             if (result.equivalent) {
                 return result;
             }
         }
 
-        result = this.integerChecker.runChecks(prev, next, steps);
+        result = integerChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }
 
         // FractionChecker must appear after EvalChecker
         // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
-        result = this.fractionChecker.runChecks(prev, next, steps);
+        result = fractionChecker.runChecks(prev, next, context);
         if (result.equivalent) {
             return result;
         }

@@ -10,7 +10,10 @@ expect.addSnapshotSerializer(serializer);
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), []);
+    return checker.checkStep(parse(prev), parse(next), {
+        checker,
+        steps: [],
+    });
 };
 
 expect.extend({
@@ -139,7 +142,10 @@ describe("FractionChecker", () => {
 
     it("30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5", () => {
         const checker = new StepChecker({skipEvalChecker: true});
-        const result = checker.checkStep(parse("30 / 6"), parse("5"), []);
+        const result = checker.checkStep(parse("30 / 6"), parse("5"), {
+            checker,
+            steps: [],
+        });
 
         expect(result.equivalent).toBe(true);
         expect(result.steps.map((reason) => reason.message)).toEqual([
@@ -153,7 +159,10 @@ describe("FractionChecker", () => {
 
     it("24 / 6 -> 2*2*2*3 / 2*3 -> 2*3/2*3 * 2*2/1 -> 1 * 2*2/1 -> 2*2/1 -> 4/1 -> 4", () => {
         const checker = new StepChecker({evalFractions: false});
-        const result = checker.checkStep(parse("24 / 6"), parse("4"), []);
+        const result = checker.checkStep(parse("24 / 6"), parse("4"), {
+            checker,
+            steps: [],
+        });
 
         expect(result.equivalent).toBe(true);
         expect(result.steps).toHaveLength(6);
@@ -204,7 +213,10 @@ describe("FractionChecker", () => {
         const result = checker.checkStep(
             parse("(2)(2)(2)(3) / (2)(3)"),
             parse("(2)(2)(2) / 2"),
-            [],
+            {
+                checker,
+                steps: [],
+            },
         );
 
         expect(result.equivalent).toBe(true);
