@@ -1,27 +1,42 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {exactMatch} from "./util";
-import {Result, HasArgs, IStepChecker, Options, Context, Check} from "./types";
-
-import * as fractionChecker from "./fraction-checker";
-import * as equationChecker from "./equation-checker";
-import * as integerChecker from "./integer-checker";
-import * as evalChecker from "./eval-decomp-checker";
-// import * as polynomialChecker from "./polynomial-checker";
-import * as axiomChecker from "./axiom-checker";
+import {Result, IStepChecker, Options, Context, Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 import {checkArgs} from "./util";
 
-export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
-    a.type === "add" ||
-    a.type === "mul" ||
-    a.type === "eq" ||
-    a.type === "neq" ||
-    a.type === "lt" ||
-    a.type === "lte" ||
-    a.type === "gt" ||
-    a.type === "gte" ||
-    a.type === "div";
+import {
+    symmetricProperty,
+    commuteAddition,
+    commuteMultiplication,
+    addZero,
+    mulOne,
+    checkDistribution,
+    checkFactoring,
+    mulByZero,
+} from "./axiom-checker";
+import {checkAddSub, checkMul, checkDiv} from "./equation-checker";
+import {
+    evalMul,
+    evalAdd,
+    decompProduct,
+    decompSum,
+} from "./eval-decomp-checker";
+import {
+    addInverse,
+    subIsNeg,
+    mulTwoNegsIsPos,
+    doubleNegative,
+    negIsMulNegOne,
+} from "./integer-checker";
+import {
+    divByFrac,
+    divByOne,
+    divBySame,
+    mulByFrac,
+    divIsMulByOneOver,
+    checkDivisionCanceling,
+} from "./fraction-checker";
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
@@ -57,6 +72,46 @@ const identifierCheck: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+const runChecks = (
+    checks: Check[],
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+    context: Context,
+): Result | void => {
+    for (const check of checks) {
+        if (check.parallel) {
+            const result1 = check(prev, next, context, false);
+            const result2 = check(next, prev, context, true);
+
+            if (result1 && result2) {
+                if (result1.steps.length < result2.steps.length) {
+                    return result1;
+                } else {
+                    return result2;
+                }
+            } else if (result1) {
+                return result1;
+            } else if (result2) {
+                return result2;
+            }
+        } else {
+            const result = check(prev, next, context, false);
+            if (result) {
+                return result;
+            }
+
+            if (check.symmetric) {
+                const result = check(next, prev, context, true);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+    }
+
+    return FAILED_CHECK;
+};
+
 const defaultOptions: Options = {
     skipEvalChecker: false,
     evalFractions: true,
@@ -81,64 +136,58 @@ class StepChecker implements IStepChecker {
         next: Semantic.Expression,
         context: Context,
     ): Result | void {
-        let result: Result | void;
+        const checks = [
+            // basic checks
+            numberCheck,
+            identifierCheck,
+            exactMatch,
 
-        result = exactMatch(prev, next);
-        if (result) {
-            return result;
-        }
+            // axiom checks
+            symmetricProperty,
+            commuteAddition, // should appear before addZero
+            commuteMultiplication, // should appear before mulOne
+            addZero,
+            mulOne,
+            checkDistribution,
+            checkFactoring,
+            mulByZero,
 
-        result = axiomChecker.runChecks(prev, next, context);
-        if (result) {
-            return result;
-        }
+            // We do this after axiom checks so that we can include commute steps
+            // first and then check if there's an exact match.  checkArgs ignores
+            // ordering of args so if we ran it first we'd never see any commute
+            // steps in the output.
+            checkArgs,
 
-        // We do this after axiom checks so that we can include commute steps
-        // first and then check if there's an exact match.  checkArgs ignores
-        // ordering of args so if we ran it first we'd never see any commute
-        // steps in the output.
-        result = checkArgs(prev, next, context);
-        if (result) {
-            return result;
-        }
+            // equation checks
+            checkAddSub,
+            checkMul,
+            checkDiv,
+
+            ...(this.options.skipEvalChecker
+                ? []
+                : [evalMul, evalAdd, decompProduct, decompSum]),
+
+            // integer checks
+            addInverse,
+            subIsNeg,
+            mulTwoNegsIsPos,
+            doubleNegative,
+            negIsMulNegOne,
+
+            // fraction checks
+            // NOTE: these must appear after eval checks
+            // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
+            divByFrac,
+            divByOne,
+            divBySame,
+            mulByFrac,
+            divIsMulByOneOver,
+            checkDivisionCanceling,
+        ];
 
         // TODO: handle roots and other things that don't pass the hasArgs test
 
-        result = equationChecker.runChecks(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        if (!this.options.skipEvalChecker) {
-            result = evalChecker.runChecks(prev, next, context);
-            if (result) {
-                return result;
-            }
-        }
-
-        result = integerChecker.runChecks(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        // FractionChecker must appear after EvalChecker
-        // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
-        result = fractionChecker.runChecks(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        result = numberCheck(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        result = identifierCheck(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        return FAILED_CHECK;
+        return runChecks(checks, prev, next, context);
     }
 }
 

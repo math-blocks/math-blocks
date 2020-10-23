@@ -16,7 +16,7 @@ import {FAILED_CHECK} from "./constants";
 // 30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5
 // There is precedent for this with evaluateMul, we could have evaluateDiv
 
-const checkDivisionCanceling: Check = (prev, next, context) => {
+export const checkDivisionCanceling: Check = (prev, next, context) => {
     if (prev.type !== "div") {
         return FAILED_CHECK;
     }
@@ -159,7 +159,7 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
 
 checkDivisionCanceling.symmetric = true;
 
-const divByFrac: Check = (prev, next, context) => {
+export const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type !== "div") {
         return FAILED_CHECK;
@@ -195,7 +195,7 @@ const divByFrac: Check = (prev, next, context) => {
 
 divByFrac.symmetric = true;
 
-const divByOne: Check = (prev, next, context) => {
+export const divByOne: Check = (prev, next, context) => {
     const {checker} = context;
     if (
         prev.type === "div" &&
@@ -223,7 +223,7 @@ const divByOne: Check = (prev, next, context) => {
 
 divByOne.symmetric = true;
 
-const divBySame: Check = (prev, next, context) => {
+export const divBySame: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type === "div") {
         const [numerator, denominator] = prev.args;
@@ -249,13 +249,13 @@ const divBySame: Check = (prev, next, context) => {
 
 divBySame.symmetric = true;
 
-const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
+export const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     // TODO: check if the div is a child of a mul node
     if (
         prev.type === "div" &&
-        !exactMatch(prev.args[0], Semantic.number("1"))
+        !exactMatch(prev.args[0], Semantic.number("1"), context)
     ) {
         const newPrev = Semantic.mulFactors([
             prev.args[0],
@@ -295,7 +295,7 @@ const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
 
 divIsMulByOneOver.symmetric = true;
 
-const mulByFrac: Check = (prev, next, context) => {
+export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
@@ -307,7 +307,7 @@ const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type !== "div" &&
             prev.args[1].type === "div" &&
-            exactMatch(prev.args[1].args[0], Semantic.number("1"))
+            exactMatch(prev.args[1].args[0], Semantic.number("1"), context)
         ) {
             return FAILED_CHECK;
         }
@@ -316,7 +316,7 @@ const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type === "div" &&
             prev.args[1].type !== "div" &&
-            exactMatch(prev.args[0].args[0], Semantic.number("1"))
+            exactMatch(prev.args[0].args[0], Semantic.number("1"), context)
         ) {
             return FAILED_CHECK;
         }
@@ -355,30 +355,3 @@ const mulByFrac: Check = (prev, next, context) => {
 };
 
 mulByFrac.symmetric = true;
-
-export const runChecks: Check = (prev, next, context) => {
-    const checks = [
-        divByFrac,
-        divByOne,
-        divBySame,
-        mulByFrac,
-        divIsMulByOneOver,
-        checkDivisionCanceling,
-    ];
-
-    for (const check of checks) {
-        const result = check(prev, next, context, false);
-        if (result) {
-            return result;
-        }
-
-        if (check.symmetric) {
-            const result = check(next, prev, context, true);
-            if (result) {
-                return result;
-            }
-        }
-    }
-
-    return FAILED_CHECK;
-};
