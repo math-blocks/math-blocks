@@ -64,7 +64,7 @@ export const App: React.SFC<{}> = () => {
             steps: [],
         });
 
-        if (result.equivalent) {
+        if (result) {
             const semanticNext = parse(next);
             if (
                 semanticNext.type === "eq" &&

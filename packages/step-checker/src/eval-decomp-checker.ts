@@ -32,15 +32,12 @@ function evalDecompNaryOp(
     op: "add" | "mul",
     direction: Direction,
     context: Context,
-): Result {
+): Result | void {
     const aTerms = op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
     const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
     if (a.type !== op && b.type !== op) {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     const steps: Step[] = [];
@@ -50,7 +47,7 @@ function evalDecompNaryOp(
         const aTerm = aTerms[i];
         const bTerm = bTerms[j];
 
-        if (context.checker.exactMatch(aTerm, bTerm).equivalent) {
+        if (context.checker.exactMatch(aTerm, bTerm)) {
             i++;
             continue;
         }
@@ -101,31 +98,21 @@ function evalDecompNaryOp(
                 }
             }
         } catch (e) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+            return FAILED_CHECK;
         }
     }
 
     if (i < aTerms.length) {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     if (steps.length > 0) {
         return {
-            equivalent: true,
             steps,
         };
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
+    return FAILED_CHECK;
 }
 
 const evalMul: Check = (prev, next, context) => {
@@ -147,25 +134,25 @@ const decompProduct: Check = (prev, next, context) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result;
+    let result: Result | void;
 
     result = evalMul(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = evalAdd(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = decompProduct(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = decompSum(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 

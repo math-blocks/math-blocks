@@ -7,10 +7,16 @@ import {Result} from "../types";
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), {
+    const result = checker.checkStep(parse(prev), parse(next), {
         checker,
         steps: [],
     });
+    if (!result) {
+        return {
+            steps: [],
+        };
+    }
+    return result;
 };
 
 // TODO: create a test helper
@@ -20,21 +26,21 @@ describe("StepChecker", () => {
         test("1 -> 1", () => {
             const result = checkStep("1", "1");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
 
         test("a -> a", () => {
             const result = checkStep("a", "a");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
 
         test("-1 -> -1", () => {
             const result = checkStep("-1", "-1");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
     });
@@ -52,7 +58,7 @@ describe("StepChecker", () => {
                     steps: [],
                 });
 
-                expect(result.equivalent).toBe(false);
+                expect(result).toBeUndefined();
                 expect(checker.checkStep).not.toHaveBeenCalled();
             }
         });

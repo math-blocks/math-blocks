@@ -50,12 +50,12 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
             Semantic.mulFactors(addedNumFactors),
             Semantic.number("1"),
             context,
-        ).equivalent ||
+        ) ||
         !checker.checkStep(
             Semantic.mulFactors(addedDenFactors),
             Semantic.number("1"),
             context,
-        ).equivalent
+        )
     ) {
         // If the factors are different then it's possible that the user
         // decomposed one or more of the factors.  We decompose all factors
@@ -89,7 +89,7 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
             // direction, we need to check that that step will also work.
             const result2 = checker.checkStep(newNext, next, context);
 
-            if (result1.equivalent && result2.equivalent) {
+            if (result1 && result2) {
                 return {
                     equivalent: true,
                     steps: [
@@ -105,10 +105,7 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
         }
 
         // TODO: Add reason for why the canceling check failed
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     // TODO: figure out how to handle duplicate factors
@@ -159,7 +156,7 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
         ]);
 
         const result = checker.checkStep(productA, next, context);
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: [
@@ -193,7 +190,7 @@ const divByFrac: Check = (prev, next, context) => {
         const newPrev = Semantic.mulFactors([numerator, reciprocal]);
         const result = checker.checkStep(newPrev, next, context);
 
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: [
@@ -216,11 +213,11 @@ const divByOne: Check = (prev, next, context) => {
     if (
         prev.type === "div" &&
         checker.checkStep(prev.args[1], Semantic.number("1"), context)
-            .equivalent
     ) {
         const result = checker.checkStep(prev.args[0], next, context);
-        const newPrev = applySteps(prev, result.steps);
-        if (result.equivalent) {
+
+        if (result) {
+            const newPrev = applySteps(prev, result.steps);
             return {
                 equivalent: true,
                 steps: [
@@ -233,6 +230,7 @@ const divByOne: Check = (prev, next, context) => {
             };
         }
     }
+
     return FAILED_CHECK;
 };
 
@@ -243,7 +241,7 @@ const divBySame: Check = (prev, next, context) => {
         const one = Semantic.number("1");
         const result1 = checker.checkStep(numerator, denominator, context);
         const result2 = checker.checkStep(next, one, context);
-        if (result1.equivalent && result2.equivalent) {
+        if (result1 && result2) {
             return {
                 equivalent: true,
                 steps: [
@@ -257,10 +255,7 @@ const divBySame: Check = (prev, next, context) => {
             };
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
+    return FAILED_CHECK;
 };
 
 const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
@@ -271,7 +266,7 @@ const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
     // TODO: check if the div is a child of a mul node
     if (
         prev.type === "div" &&
-        !checker.exactMatch(prev.args[0], Semantic.number("1")).equivalent
+        !checker.exactMatch(prev.args[0], Semantic.number("1"))
     ) {
         const newPrev = Semantic.mulFactors([
             prev.args[0],
@@ -296,14 +291,14 @@ const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
                   steps: [step, ...context.steps],
               });
 
-        const newReasons = reverse
-            ? [...result.steps, step]
-            : [step, ...result.steps];
-
-        return {
-            equivalent: result.equivalent,
-            steps: result.equivalent ? newReasons : [],
-        };
+        if (result) {
+            return {
+                equivalent: true,
+                steps: reverse
+                    ? [...result.steps, step]
+                    : [step, ...result.steps],
+            };
+        }
     }
 
     return FAILED_CHECK;
@@ -313,10 +308,7 @@ const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     // We have another check method to handle a * 1/b
@@ -325,7 +317,6 @@ const mulByFrac: Check = (prev, next, context) => {
             prev.args[0].type !== "div" &&
             prev.args[1].type === "div" &&
             checker.exactMatch(prev.args[1].args[0], Semantic.number("1"))
-                .equivalent
         ) {
             return FAILED_CHECK;
         }
@@ -356,7 +347,7 @@ const mulByFrac: Check = (prev, next, context) => {
         Semantic.mulFactors(denFactors, true),
     );
     const result = checker.checkStep(newPrev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return {
             equivalent: true,
             steps: [
@@ -373,71 +364,71 @@ const mulByFrac: Check = (prev, next, context) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result;
+    let result: Result | void;
 
     result = divByFrac(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // TODO: add a test case for this
     result = divByFrac(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divByOne(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divByOne(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divBySame(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divBySame(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // a * b/c -> ab / c
     result = mulByFrac(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // ab / c -> a * b/c
     result = mulByFrac(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divIsMulByOneOver(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = divIsMulByOneOver(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // relies on divByOne being called first
     // TODO: figure out a way to avoid the need for specific ordering
     result = checkDivisionCanceling(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // TODO: add a test case for this
     result = checkDivisionCanceling(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 

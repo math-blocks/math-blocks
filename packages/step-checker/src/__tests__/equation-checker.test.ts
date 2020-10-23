@@ -10,10 +10,14 @@ expect.addSnapshotSerializer(serializer);
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), {
+    const result = checker.checkStep(parse(prev), parse(next), {
         checker,
         steps: [],
     });
+    if (!result) {
+        throw new Error("no path found");
+    }
+    return result;
 };
 
 expect.extend({
@@ -36,7 +40,7 @@ describe("EquationChecker", () => {
         it("x = y -> x + 5 = y + 5", () => {
             const result = checkStep("x = y", "x + 5 = y + 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
@@ -45,7 +49,7 @@ describe("EquationChecker", () => {
         it("x + 5 = y + 5 -> x = y", () => {
             const result = checkStep("x + 5 = y + 5", "x = y");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toHaveLength(3);
 
             expect(result.steps[0].message).toEqual(
@@ -68,7 +72,7 @@ describe("EquationChecker", () => {
         it("x + 5 = y + 5 + 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 = y + 5 + 5", "x = y + 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toHaveLength(3);
 
             expect(result.steps[0].message).toEqual(
@@ -91,7 +95,7 @@ describe("EquationChecker", () => {
         it("x + 5 - 5 = y + 5 + 5 - 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 - 5 = y + 5 + 5 - 5", "x = y + 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
                 (add
                   x
@@ -117,7 +121,7 @@ describe("EquationChecker", () => {
         it("x = y -> 5 + x = y + 5", () => {
             const result = checkStep("x = y", "5 + x = y + 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
@@ -129,17 +133,14 @@ describe("EquationChecker", () => {
                 "x + 10 + 5 = y + 15 + 5",
             );
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
             ]);
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
-
-            expect(result.equivalent).toBe(false);
-            expect(result.steps).toEqual([]);
+            expect(() => checkStep("2x + 5 = 10", "2x + 5 - 5 = 10")).toThrow();
         });
     });
 
@@ -147,7 +148,7 @@ describe("EquationChecker", () => {
         it("x = y -> x - 5 = y - 5", () => {
             const result = checkStep("x = y", "x - 5 = y - 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
@@ -156,7 +157,7 @@ describe("EquationChecker", () => {
         it("x - 5 = y - 5 -> x = y", () => {
             const result = checkStep("x - 5 = y - 5", "x = y");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toHaveLength(3);
 
             expect(result.steps[0].message).toEqual(
@@ -182,17 +183,16 @@ describe("EquationChecker", () => {
                 "x + 10 - 5 = y + 15 - 5",
             );
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting the same value from both sides",
             ]);
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
-
-            expect(result.equivalent).toBe(false);
-            expect(result.steps).toEqual([]);
+            expect(() =>
+                checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10"),
+            ).toThrow();
         });
     });
 
@@ -200,7 +200,7 @@ describe("EquationChecker", () => {
         it("x = y -> x * 5 = y * 5", () => {
             const result = checkStep("x = y", "x * 5 = y * 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiply both sides by the same value",
             ]);
@@ -212,7 +212,7 @@ describe("EquationChecker", () => {
                 "x * 10 * 5 = y * 15 * 5",
             );
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiply both sides by the same value",
             ]);
@@ -221,7 +221,7 @@ describe("EquationChecker", () => {
         test("2(x + 2.5) = (5)2 -> x + 2.5 = 5", () => {
             const result = checkStep("2(x + 2.5) = (5)2", "x + 2.5 = 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
 
             // The reason why there are so many substeps, is that cancelling
             // values in the numerator and denominator result it lots of sub steps.
@@ -241,7 +241,7 @@ describe("EquationChecker", () => {
         it("x = y -> x / 5 = y / 5", () => {
             const result = checkStep("x = y", "x / 5 = y / 5");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "divide both sides by the same value",
             ]);
@@ -250,7 +250,7 @@ describe("EquationChecker", () => {
         it("x / 5 = y / 5 -> x = y", () => {
             const result = checkStep("x / 5 = y / 5", "x = y");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toHaveLength(11);
 
             expect(result.steps[0].message).toEqual(
@@ -264,10 +264,7 @@ describe("EquationChecker", () => {
         });
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
-            const result = checkStep("x = y", "x / 5 = y / 10");
-
-            expect(result.equivalent).toBe(false);
-            expect(result.steps).toEqual([]);
+            expect(() => checkStep("x = y", "x / 5 = y / 10")).toThrow();
         });
     });
 });

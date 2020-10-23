@@ -62,10 +62,7 @@ const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
                         "removing the same term from both sides",
                 )
             ) {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
+                return FAILED_CHECK;
             }
 
             const newPrev = Semantic.eq([
@@ -99,7 +96,7 @@ const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
                 ...context,
                 steps: newSteps,
             });
-            if (result.equivalent) {
+            if (result) {
                 return {
                     equivalent: true,
                     steps: [
@@ -119,7 +116,7 @@ const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
         // TODO: handle adding multiple things to lhs and rhs as the same time
         // TODO: do we want to enforce that the thing being added is exactly
         // the same or do we want to allow equivalent expressions?
-        if (result.equivalent && result.steps.length === 0) {
+        if (result && result.steps.length === 0) {
             if (
                 Semantic.isSubtraction(lhsNewTerms[0]) &&
                 Semantic.isSubtraction(rhsNewTerms[0])
@@ -212,7 +209,7 @@ const checkMul: Check<Semantic.Eq, Semantic.Eq> = (
                 ...context,
                 steps: newSteps,
             });
-            if (result.equivalent) {
+            if (result) {
                 return {
                     equivalent: true,
                     steps: [
@@ -231,7 +228,7 @@ const checkMul: Check<Semantic.Eq, Semantic.Eq> = (
 
         // TODO: do we want to enforce that the thing being added is exactly
         // the same or do we want to allow equivalent expressions?
-        if (result.equivalent && result.steps.length === 0) {
+        if (result && result.steps.length === 0) {
             return {
                 equivalent: true,
                 steps: [
@@ -263,8 +260,8 @@ const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
 
     if (lhsB.type === "div" && rhsB.type === "div") {
         if (
-            checker.checkStep(lhsA, lhsB.args[NUMERATOR], context).equivalent &&
-            checker.checkStep(rhsA, rhsB.args[NUMERATOR], context).equivalent
+            checker.checkStep(lhsA, lhsB.args[NUMERATOR], context) &&
+            checker.checkStep(rhsA, rhsB.args[NUMERATOR], context)
         ) {
             const result = checker.checkStep(
                 lhsB.args[DENOMINATOR],
@@ -302,7 +299,7 @@ const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
                     ...context,
                     steps: newSteps,
                 });
-                if (result.equivalent) {
+                if (result) {
                     return {
                         equivalent: true,
                         steps: [
@@ -320,7 +317,7 @@ const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
                 }
             }
 
-            if (result.equivalent) {
+            if (result) {
                 return {
                     equivalent: true,
                     steps: [
@@ -341,41 +338,38 @@ const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
 
 export const runChecks: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
-    let result: Result;
+    let result: Result | void;
 
     result = checkAddSub(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkAddSub(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkMul(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkMul(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkDiv(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkDiv(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
