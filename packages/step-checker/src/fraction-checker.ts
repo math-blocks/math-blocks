@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Context} from "./step-checker";
 import {Result} from "./types";
-import {decomposeFactors, applySubReasons} from "./util";
+import {decomposeFactors, applySteps} from "./util";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
@@ -252,7 +252,7 @@ function divByOne(
             .equivalent
     ) {
         const result = checker.checkStep(prev.args[0], next, context);
-        const newPrev = applySubReasons(prev, result.steps);
+        const newPrev = applySteps(prev, result.steps);
         if (result.equivalent) {
             return {
                 equivalent: true,

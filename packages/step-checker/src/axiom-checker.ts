@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySubReasons} from "./util";
+import {zip, applySteps} from "./util";
 import {Context} from "./step-checker";
 import {Result, Step} from "./types";
 
@@ -16,15 +16,7 @@ function addZero(
         };
     }
 
-    return checkIdentity(
-        prev,
-        next,
-        Semantic.addTerms,
-        Semantic.number("0"), // TODO: provide a way to have different levels of messages, e.g.
-        // "adding zero doesn't change an expression"
-        "addition with identity",
-        context,
-    );
+    return checkIdentity(prev, next, context);
 }
 
 function mulOne(
@@ -39,33 +31,27 @@ function mulOne(
         };
     }
 
-    return checkIdentity(
-        prev,
-        next,
-        Semantic.mulFactors,
-        Semantic.number("1"), // TODO: provide a way to have different levels of messages, e.g.
-        // "multiplying by one doesn't change an expression"
-        "multiplication with identity",
-        context,
-    );
+    return checkIdentity(prev, next, context);
 }
 
 function checkIdentity<T extends Semantic.Add | Semantic.Mul>(
     prev: T,
     next: Semantic.Expression,
-    op: (arg0: Semantic.Expression[]) => Semantic.Expression,
-    identity: Semantic.Num, // conditional types would come in handy here
-    reason: string,
     context: Context,
 ): Result {
-    const identityReasons: Step[] = [];
-    const nonIdentityArgs = prev.args.filter((arg) => {
+    const identity =
+        prev.type === "add" ? Semantic.number("0") : Semantic.number("1");
+
+    const identitySteps: Step[] = [];
+    const nonIdentityArgs: Semantic.Expression[] = [];
+    for (const arg of prev.args) {
         const result = context.checker.checkStep(arg, identity, context);
         if (result.equivalent) {
-            identityReasons.push(...result.steps);
+            identitySteps.push(...result.steps);
+        } else {
+            nonIdentityArgs.push(arg);
         }
-        return !result.equivalent;
-    });
+    }
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === prev.args.length) {
@@ -75,15 +61,30 @@ function checkIdentity<T extends Semantic.Add | Semantic.Mul>(
         };
     }
 
-    const newPrev = applySubReasons(prev, identityReasons);
+    // Steps are local to the nodes involved which are descendents of prev so
+    // in order to get a version of prev where all of the nodes that are equivalent
+    // to the identiy have been replaced with the identity we need to call
+    // applySteps which will do this for us.
+    const newPrev = applySteps(prev, identitySteps);
 
-    const newNext = op(nonIdentityArgs);
+    const newNext =
+        prev.type === "add"
+            ? Semantic.addTerms(nonIdentityArgs)
+            : Semantic.mulFactors(nonIdentityArgs);
+
+    // TODO: provide a way to have different levels of messages, e.g.
+    // "multiplying by one doesn't change an expression.
+    const reason =
+        prev.type === "add"
+            ? "addition with identity"
+            : "multiplication with identity";
+
     const result = context.checker.checkStep(newNext, next, context);
     if (result.equivalent) {
         return {
             equivalent: true,
             steps: [
-                ...identityReasons,
+                ...identitySteps,
                 {
                     message: reason,
                     nodes: [newPrev, newNext],
@@ -270,7 +271,7 @@ function distributionFactoring(
 
                     // TODO: include the original nodes[0] in the result somehow
                     if (subReasons.length > 0) {
-                        nodes[0] = applySubReasons(nodes[0], subReasons);
+                        nodes[0] = applySteps(nodes[0], subReasons);
                     }
 
                     return {
@@ -438,7 +439,7 @@ function commuteMultiplication(
                 !context.checker.checkStep(first, second, context).equivalent,
         );
 
-        const newPrev = applySubReasons(prev, result.steps);
+        const newPrev = applySteps(prev, result.steps);
 
         if (reordered && result.equivalent) {
             return {

@@ -11,9 +11,10 @@ export const identifier = (name: string): Semantic.Ident => ({
     name,
 });
 
-export const number = (value: string): Semantic.Num => ({
+export const number = <T extends string>(value: T): Semantic.Num<T> => ({
     type: "number",
     id: getId(),
+    // @ts-ignore: $FIXME
     value: value.replace(/-/g, "\u2212"),
 });
 

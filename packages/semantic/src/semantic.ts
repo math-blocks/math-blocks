@@ -3,9 +3,9 @@
  */
 type Node = {id: number};
 
-export type Num = Node & {
+export type Num<Value extends string = string> = Node & {
     type: "number";
-    value: string;
+    value: Value;
     // TODO: unit
     // without 'unit', the number is considered dimensionless
 };
@@ -405,6 +405,9 @@ export type SetExpression =
     | Complexes;
 
 export type Expression = NumericExpression | LogicExpression | SetExpression;
+
+export type Zero = Num<"0">;
+export type One = Num<"1">;
 
 // TODO: vectors and matrices
 

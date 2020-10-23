@@ -109,15 +109,16 @@ export const replaceNodeWithId = (
     }
 };
 
-export const applySubReasons = (
+export const applySteps = (
     root: Semantic.Expression,
-    subreasons: Step[],
+    steps: Step[],
 ): Semantic.Expression => {
     const nextState = produce(root, (draft) => {
-        for (const reason of subreasons) {
-            // Not all reaons come with nodes yet.
-            if (reason.nodes.length === 2) {
-                replaceNodeWithId(draft, reason.nodes[0].id, reason.nodes[1]);
+        // We need to apply each step
+        for (const step of steps) {
+            // Not all reasons come with nodes yet.
+            if (step.nodes.length === 2) {
+                replaceNodeWithId(draft, step.nodes[0].id, step.nodes[1]);
             }
         }
     });
