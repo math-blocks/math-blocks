@@ -12,7 +12,7 @@ import {difference} from "./util";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-const checkAddSub: Check = (prev, next, context, reversed) => {
+export const checkAddSub: Check = (prev, next, context, reversed) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -146,7 +146,7 @@ const checkAddSub: Check = (prev, next, context, reversed) => {
 
 checkAddSub.symmetric = true;
 
-const checkMul: Check = (prev, next, context, reversed) => {
+export const checkMul: Check = (prev, next, context, reversed) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -238,7 +238,7 @@ const checkMul: Check = (prev, next, context, reversed) => {
 
 checkMul.symmetric = true;
 
-const checkDiv: Check = (prev, next, context, reversed) => {
+export const checkDiv: Check = (prev, next, context, reversed) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -327,23 +327,3 @@ const checkDiv: Check = (prev, next, context, reversed) => {
 };
 
 checkDiv.symmetric = true;
-
-export const runChecks: Check = (prev, next, context) => {
-    const checks = [checkAddSub, checkMul, checkDiv];
-
-    for (const check of checks) {
-        const result = check(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        if (check.symmetric) {
-            const result = check(next, prev, context, true);
-            if (result) {
-                return result;
-            }
-        }
-    }
-
-    return FAILED_CHECK;
-};

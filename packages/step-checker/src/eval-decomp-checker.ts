@@ -48,7 +48,7 @@ function evalDecompNaryOp(
         const aTerm = aTerms[i];
         const bTerm = bTerms[j];
 
-        if (exactMatch(aTerm, bTerm)) {
+        if (exactMatch(aTerm, bTerm, context)) {
             i++;
             continue;
         }
@@ -116,33 +116,20 @@ function evalDecompNaryOp(
     return FAILED_CHECK;
 }
 
-const evalMul: Check = (prev, next, context) => {
+export const evalMul: Check = (prev, next, context) => {
     return evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
 };
 
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
-const evalAdd: Check = (prev, next, context) => {
+export const evalAdd: Check = (prev, next, context) => {
     return evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
 };
 
-const decompSum: Check = (prev, next, context) => {
+export const decompSum: Check = (prev, next, context) => {
     return evalDecompNaryOp(next, prev, "add", Direction.DECOMP, context);
 };
 
-const decompProduct: Check = (prev, next, context) => {
+export const decompProduct: Check = (prev, next, context) => {
     return evalDecompNaryOp(next, prev, "mul", Direction.DECOMP, context);
-};
-
-export const runChecks: Check = (prev, next, context) => {
-    const checks = [evalMul, evalAdd, decompProduct, decompSum];
-
-    for (const check of checks) {
-        const result = check(prev, next, context);
-        if (result) {
-            return result;
-        }
-    }
-
-    return FAILED_CHECK;
 };

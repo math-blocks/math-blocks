@@ -256,10 +256,7 @@ export const equality = (
     return as.every((a) => bs.some((b) => checker.checkStep(a, b, context)));
 };
 
-export const exactMatch = (
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-): Result | void => {
+export const exactMatch: Check = (prev, next, context) => {
     return deepEquals(prev, next)
         ? {
               steps: [],

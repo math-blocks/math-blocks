@@ -3,7 +3,7 @@ import * as Semantic from "@math-blocks/semantic";
 import {Result, Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 
-const addInverse: Check = (prev, next, context, reverse) => {
+export const addInverse: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     if (prev.type !== "add") {
@@ -75,7 +75,7 @@ const addInverse: Check = (prev, next, context, reverse) => {
 
 addInverse.symmetric = true;
 
-const doubleNegative: Check = (prev, next, context, reverse) => {
+export const doubleNegative: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
@@ -111,7 +111,7 @@ const doubleNegative: Check = (prev, next, context, reverse) => {
 doubleNegative.symmetric = true;
 doubleNegative.parallel = true;
 
-const subIsNeg: Check = (prev, next, context, reverse) => {
+export const subIsNeg: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     const results: Result[] = [];
 
@@ -180,7 +180,7 @@ const subIsNeg: Check = (prev, next, context, reverse) => {
 
 subIsNeg.symmetric = true;
 
-const negIsMulNegOne: Check = (prev, next, context, reverse) => {
+export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     if (
@@ -225,7 +225,7 @@ const negIsMulNegOne: Check = (prev, next, context, reverse) => {
 
 negIsMulNegOne.symmetric = true;
 
-const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
+export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
@@ -270,46 +270,3 @@ const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
 };
 
 mulTwoNegsIsPos.symmetric = true;
-
-export const runChecks: Check = (prev, next, context) => {
-    const checks = [
-        addInverse,
-        subIsNeg,
-        mulTwoNegsIsPos,
-        doubleNegative,
-        negIsMulNegOne,
-    ];
-
-    for (const check of checks) {
-        if (check.parallel) {
-            const result1 = check(prev, next, context, false);
-            const result2 = check(next, prev, context, true);
-
-            if (result1 && result2) {
-                if (result1.steps.length < result2.steps.length) {
-                    return result1;
-                } else {
-                    return result2;
-                }
-            } else if (result1) {
-                return result1;
-            } else if (result2) {
-                return result2;
-            }
-        } else {
-            const result = check(prev, next, context, false);
-            if (result) {
-                return result;
-            }
-
-            if (check.symmetric) {
-                const result = check(next, prev, context, true);
-                if (result) {
-                    return result;
-                }
-            }
-        }
-    }
-
-    return FAILED_CHECK;
-};

@@ -1,11 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {zip, applySteps} from "./util";
-import {Result, Step, Check, HasArgs} from "./types";
+import {Result, Step, Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 import {checkArgs} from "./util";
 
-const addZero: Check = (prev, next, context) => {
+export const addZero: Check = (prev, next, context) => {
     return prev.type === "add"
         ? checkIdentity(prev, next, context)
         : FAILED_CHECK;
@@ -13,7 +13,7 @@ const addZero: Check = (prev, next, context) => {
 
 addZero.symmetric = true;
 
-const mulOne: Check = (prev, next, context) => {
+export const mulOne: Check = (prev, next, context) => {
     return prev.type === "mul"
         ? checkIdentity(prev, next, context)
         : FAILED_CHECK;
@@ -21,7 +21,7 @@ const mulOne: Check = (prev, next, context) => {
 
 mulOne.symmetric = true;
 
-const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
+export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     prev,
     next,
     context,
@@ -81,7 +81,7 @@ const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     return FAILED_CHECK;
 };
 
-const checkDistribution: Check = (prev, next, context) => {
+export const checkDistribution: Check = (prev, next, context) => {
     // TODO: handle the case where a 'mul' within an 'add' was replaced
     if (prev.type === "add" && next.type === "add") {
         const results: Result[] = [];
@@ -183,7 +183,7 @@ const checkDistribution: Check = (prev, next, context) => {
 };
 
 // TODO: update this to follow what checkDistribution is doing more closely
-const checkFactoring: Check = (prev, next, context) => {
+export const checkFactoring: Check = (prev, next, context) => {
     if (prev.type !== "add" || next.type !== "mul") {
         return FAILED_CHECK;
     }
@@ -246,7 +246,7 @@ const checkFactoring: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
-const mulByZero: Check = (prev, next, context) => {
+export const mulByZero: Check = (prev, next, context) => {
     if (prev.type !== "mul") {
         return FAILED_CHECK;
     }
@@ -278,7 +278,7 @@ const mulByZero: Check = (prev, next, context) => {
 
 mulByZero.symmetric = true;
 
-const commuteAddition: Check = (prev, next, context) => {
+export const commuteAddition: Check = (prev, next, context) => {
     if (
         prev.type === "add" &&
         next.type === "add" &&
@@ -331,7 +331,7 @@ const commuteAddition: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
-const commuteMultiplication: Check = (prev, next, context) => {
+export const commuteMultiplication: Check = (prev, next, context) => {
     if (
         prev.type === "mul" &&
         next.type === "mul" &&
@@ -374,7 +374,7 @@ const commuteMultiplication: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
-const symmetricProperty: Check = (prev, next, context) => {
+export const symmetricProperty: Check = (prev, next, context) => {
     if (
         prev.type === "eq" &&
         next.type === "eq" &&
@@ -403,35 +403,6 @@ const symmetricProperty: Check = (prev, next, context) => {
                     ...result.steps,
                 ],
             };
-        }
-    }
-
-    return FAILED_CHECK;
-};
-
-export const runChecks: Check = (prev, next, context) => {
-    const checks = [
-        symmetricProperty,
-        commuteAddition,
-        commuteMultiplication,
-        addZero,
-        mulOne,
-        checkDistribution,
-        checkFactoring,
-        mulByZero,
-    ];
-
-    for (const check of checks) {
-        const result = check(prev, next, context);
-        if (result) {
-            return result;
-        }
-
-        if (check.symmetric) {
-            const result = check(next, prev, context);
-            if (result) {
-                return result;
-            }
         }
     }
 
