@@ -1,27 +1,20 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Context} from "./step-checker";
-import {Result} from "./types";
 import {decomposeFactors, applySteps} from "./util";
+import {Result, Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
 // 30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5
 // There is precedent for this with evaluateMul, we could have evaluateDiv
 
-function checkDivisionCanceling(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    if (a.type !== "div") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+const checkDivisionCanceling: Check = (prev, next, context) => {
+    if (prev.type !== "div") {
+        return FAILED_CHECK;
     }
     const {checker} = context;
-    const [numeratorA, denominatorA] = a.args;
+    const [numeratorA, denominatorA] = prev.args;
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
     const numFactorsA = Semantic.getFactors(numeratorA);
@@ -31,7 +24,7 @@ function checkDivisionCanceling(
     // - ab/ac -> a/a * b/c
     // - ab/a -> a/1 -> a
     const [numeratorB, denominatorB] =
-        b.type === "div" ? b.args : [b, Semantic.number("1")];
+        next.type === "div" ? next.args : [next, Semantic.number("1")];
 
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
@@ -91,19 +84,10 @@ function checkDivisionCanceling(
             // to handle cases where we modify both prev and next to work the
             // problem from both sides essentially.
             const result1 = checkDivisionCanceling(newPrev, newNext, context);
-            a; // ?
-            b; // ?
-            newPrev.args[0]; // ?
-            newPrev.args[1]; // ?
-            newNext.args[0]; // ?
-            newNext.args[1]; // ?
 
             // Because we're also creating a new step coming from the opposite
             // direction, we need to check that that step will also work.
-            const result2 = checker.checkStep(newNext, b, context);
-
-            result2.equivalent; //?
-            result1.equivalent; //?
+            const result2 = checker.checkStep(newNext, next, context);
 
             if (result1.equivalent && result2.equivalent) {
                 return {
@@ -111,7 +95,7 @@ function checkDivisionCanceling(
                     steps: [
                         {
                             message: "prime factorization",
-                            nodes: [a, newPrev],
+                            nodes: [prev, newPrev],
                         },
                         ...result1.steps,
                         ...result2.steps,
@@ -174,7 +158,7 @@ function checkDivisionCanceling(
             ),
         ]);
 
-        const result = checker.checkStep(productA, b, context);
+        const result = checker.checkStep(productA, next, context);
         if (result.equivalent) {
             return {
                 equivalent: true,
@@ -182,7 +166,7 @@ function checkDivisionCanceling(
                     {
                         message:
                             "extract common factors from numerator and denominator",
-                        nodes: [a, productA],
+                        nodes: [prev, productA],
                     },
                     ...result.steps,
                 ],
@@ -190,23 +174,13 @@ function checkDivisionCanceling(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function divByFrac(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type !== "div") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     const [numerator, denominator] = prev.args;
@@ -234,17 +208,10 @@ function divByFrac(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function divByOne(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const divByOne: Check = (prev, next, context) => {
     const {checker} = context;
     if (
         prev.type === "div" &&
@@ -266,17 +233,10 @@ function divByOne(
             };
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function divBySame(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const divBySame: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type === "div") {
         const [numerator, denominator] = prev.args;
@@ -301,14 +261,9 @@ function divBySame(
         equivalent: false,
         steps: [],
     };
-}
+};
 
-function divIsMulByOneOver(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     if (reverse) {
         [prev, next] = [next, prev];
@@ -350,17 +305,11 @@ function divIsMulByOneOver(
             steps: result.equivalent ? newReasons : [],
         };
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
 
-function mulByFrac(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+    return FAILED_CHECK;
+};
+
+const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
@@ -378,10 +327,7 @@ function mulByFrac(
             checker.exactMatch(prev.args[1].args[0], Semantic.number("1"))
                 .equivalent
         ) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+            return FAILED_CHECK;
         }
         // Handle 1/b * a as well since this can come up during factoring
         // and distribution of division.
@@ -390,10 +336,7 @@ function mulByFrac(
             prev.args[1].type !== "div" &&
             checker.exactMatch(prev.args[0].args[0], Semantic.number("1"))
         ) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+            return FAILED_CHECK;
         }
     }
 
@@ -413,25 +356,23 @@ function mulByFrac(
         Semantic.mulFactors(denFactors, true),
     );
     const result = checker.checkStep(newPrev, next, context);
-    return {
-        equivalent: result.equivalent,
-        steps: result.equivalent
-            ? [
-                  {
-                      message: "multiplying fractions",
-                      nodes: [prev, newPrev],
-                  },
-                  ...result.steps,
-              ]
-            : [],
-    };
-}
+    if (result.equivalent) {
+        return {
+            equivalent: true,
+            steps: [
+                {
+                    message: "multiplying fractions",
+                    nodes: [prev, newPrev],
+                },
+                ...result.steps,
+            ],
+        };
+    }
 
-export function runChecks(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+    return FAILED_CHECK;
+};
+
+export const runChecks: Check = (prev, next, context) => {
     let result: Result;
 
     result = divByFrac(prev, next, context);
@@ -477,12 +418,12 @@ export function runChecks(
         return result;
     }
 
-    result = divIsMulByOneOver(prev, next, false, context);
+    result = divIsMulByOneOver(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = divIsMulByOneOver(prev, next, true, context);
+    result = divIsMulByOneOver(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
@@ -500,8 +441,5 @@ export function runChecks(
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};

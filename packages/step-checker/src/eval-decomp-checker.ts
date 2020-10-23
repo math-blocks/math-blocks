@@ -2,12 +2,8 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Context, Options} from "./step-checker";
-import {Result, Step} from "./types";
-
-// Disable automatic reducing
-// @ts-ignore
-Fraction.REDUCE = false;
+import {Result, Step, Context, Options, Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
 const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
     if (node.type === "number") {
@@ -132,45 +128,25 @@ function evalDecompNaryOp(
     };
 }
 
-function evalMul(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    return evalDecompNaryOp(a, b, "mul", Direction.EVAL, context);
-}
+const evalMul: Check = (prev, next, context) => {
+    return evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
+};
 
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
-function evalAdd(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    return evalDecompNaryOp(a, b, "add", Direction.EVAL, context);
-}
+const evalAdd: Check = (prev, next, context) => {
+    return evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
+};
 
-function decompSum(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    return evalDecompNaryOp(b, a, "add", Direction.DECOMP, context);
-}
+const decompSum: Check = (prev, next, context) => {
+    return evalDecompNaryOp(next, prev, "add", Direction.DECOMP, context);
+};
 
-function decompProduct(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    return evalDecompNaryOp(b, a, "mul", Direction.DECOMP, context);
-}
+const decompProduct: Check = (prev, next, context) => {
+    return evalDecompNaryOp(next, prev, "mul", Direction.DECOMP, context);
+};
 
-export function runChecks(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+export const runChecks: Check = (prev, next, context) => {
     let result: Result;
 
     result = evalMul(prev, next, context);
@@ -193,8 +169,5 @@ export function runChecks(
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};

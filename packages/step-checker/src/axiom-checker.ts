@@ -1,44 +1,26 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {zip, applySteps} from "./util";
-import {Context} from "./step-checker";
-import {Result, Step} from "./types";
+import {Result, Step, Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
-function addZero(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
-    if (prev.type !== "add") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
-    }
+const addZero: Check = (prev, next, context) => {
+    return prev.type === "add"
+        ? checkIdentity(prev, next, context)
+        : FAILED_CHECK;
+};
 
-    return checkIdentity(prev, next, context);
-}
+const mulOne: Check = (prev, next, context) => {
+    return prev.type === "mul"
+        ? checkIdentity(prev, next, context)
+        : FAILED_CHECK;
+};
 
-function mulOne(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
-    if (prev.type !== "mul") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
-    }
-
-    return checkIdentity(prev, next, context);
-}
-
-function checkIdentity<T extends Semantic.Add | Semantic.Mul>(
-    prev: T,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
+    prev,
+    next,
+    context,
+) => {
     const identity =
         prev.type === "add" ? Semantic.number("0") : Semantic.number("1");
 
@@ -55,10 +37,7 @@ function checkIdentity<T extends Semantic.Add | Semantic.Mul>(
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === prev.args.length) {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     // Steps are local to the nodes involved which are descendents of prev so
@@ -94,17 +73,10 @@ function checkIdentity<T extends Semantic.Add | Semantic.Mul>(
         };
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function checkDistribution(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const checkDistribution: Check = (prev, next, context) => {
     // TODO: handle the case where a 'mul' within an 'add' was replaced
     if (prev.type === "add" && next.type === "add") {
         const results: Result[] = [];
@@ -206,43 +178,25 @@ function checkDistribution(
             };
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function checkFactoring(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
-    // TODO: update to match checkDistribution
+// TODO: update this to follow what checkDistribution is doing more closely
+const checkFactoring: Check = (prev, next, context) => {
     if (prev.type !== "add" || next.type !== "mul") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
-    return distributionFactoring(prev, next, "factoring", context);
-}
 
-function distributionFactoring(
-    addNode: Semantic.Add,
-    mulNode: Semantic.Mul,
-    reason: "distribution" | "factoring",
-    context: Context,
-): Result {
     // TODO: handle distribution across n-ary multiplication later
-    if (mulNode.args.length === 2) {
-        const [left, right] = mulNode.args;
+    if (next.args.length === 2) {
+        const [left, right] = next.args;
         for (const [x, y] of [
             [left, right],
             [right, left],
         ]) {
-            if (y.type === "add" && y.args.length === addNode.args.length) {
+            if (y.type === "add" && y.args.length === prev.args.length) {
                 const subReasons: Step[] = [];
-                const equivalent = addNode.args.every((arg, index) => {
+                const equivalent = prev.args.every((arg, index) => {
                     // Each term is in the correct order based on whether
                     // we're distributing/factoring from left to right or
                     // the reverse
@@ -264,10 +218,7 @@ function distributionFactoring(
                 });
 
                 if (equivalent) {
-                    const nodes: Semantic.Expression[] =
-                        reason === "distribution"
-                            ? [mulNode, addNode]
-                            : [addNode, mulNode];
+                    const nodes: Semantic.Expression[] = [prev, next];
 
                     // TODO: include the original nodes[0] in the result somehow
                     if (subReasons.length > 0) {
@@ -276,43 +227,25 @@ function distributionFactoring(
 
                     return {
                         equivalent: true,
-                        steps:
-                            reason === "distribution"
-                                ? [
-                                      {
-                                          message: reason,
-                                          nodes,
-                                      },
-                                      ...subReasons,
-                                  ]
-                                : [
-                                      ...subReasons,
-                                      {
-                                          message: reason,
-                                          nodes,
-                                      },
-                                  ],
+                        steps: [
+                            ...subReasons,
+                            {
+                                message: "factoring",
+                                nodes,
+                            },
+                        ],
                     };
                 }
             }
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
 
-function mulByZero(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+    return FAILED_CHECK;
+};
+
+const mulByZero: Check = (prev, next, context) => {
     if (prev.type !== "mul") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     // TODO: ensure that steps from these calls to checkStep
@@ -334,22 +267,15 @@ function mulByZero(
                 ...result.steps,
                 {
                     message: "multiplication by zero",
-                    nodes: [],
+                    nodes: [], // TODO: add nodes
                 },
             ],
         };
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function commuteAddition(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const commuteAddition: Check = (prev, next, context) => {
     if (
         prev.type === "add" &&
         next.type === "add" &&
@@ -402,17 +328,10 @@ function commuteAddition(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function commuteMultiplication(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const commuteMultiplication: Check = (prev, next, context) => {
     if (
         prev.type === "mul" &&
         next.type === "mul" &&
@@ -425,10 +344,7 @@ function commuteMultiplication(
 
         // If the args are the same then we can stop here.
         if (!result.equivalent) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+            return FAILED_CHECK;
         }
 
         const reordered = pairs.some(
@@ -455,17 +371,10 @@ function commuteMultiplication(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function symmetricProperty(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+const symmetricProperty: Check = (prev, next, context) => {
     if (
         prev.type === "eq" &&
         next.type === "eq" &&
@@ -497,17 +406,10 @@ function symmetricProperty(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-export function runChecks(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+export const runChecks: Check = (prev, next, context) => {
     let result: Result;
 
     result = symmetricProperty(prev, next, context);
@@ -567,8 +469,5 @@ export function runChecks(
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};

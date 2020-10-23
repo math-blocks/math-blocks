@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Context} from "./step-checker";
-import {Result} from "./types";
+import {Result, Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -11,20 +11,20 @@ import {Result} from "./types";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-function checkAddSub(
-    a: Semantic.Eq,
-    b: Semantic.Eq,
-    context: Context,
-    reversed: boolean,
-): Result {
+const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
+    prev,
+    next,
+    context,
+    reversed,
+) => {
     const {checker} = context;
 
     if (reversed) {
-        [a, b] = [b, a];
+        [prev, next] = [next, prev];
     }
 
-    const [lhsA, rhsA] = a.args;
-    const [lhsB, rhsB] = b.args;
+    const [lhsA, rhsA] = prev.args;
+    const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "add" && rhsB.type === "add") {
         const lhsNewTerms = checker.difference(
@@ -50,10 +50,7 @@ function checkAddSub(
             // 2x + 5 = 10
             // 2x + 5 - 5 = 10 - 5
             // 2x + 5 - 5 = 5 ---> this used cause an error with thiis check
-            return {
-                equivalent: false,
-                steps: [],
-            };
+            return FAILED_CHECK;
         }
 
         if (reversed) {
@@ -71,8 +68,6 @@ function checkAddSub(
                 };
             }
 
-            const prev = b;
-            const next = a;
             const newPrev = Semantic.eq([
                 // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
                 Semantic.add([
@@ -89,17 +84,18 @@ function checkAddSub(
                         : Semantic.neg(rhsNewTerm, true),
                 ]),
             ]);
-            newPrev; // ?
+            newPrev;
 
             const newSteps = [
                 ...context.steps,
                 {
                     message: "removing the same term from both sides",
+                    // TODO: add nodes
                     nodes: [],
                 },
             ];
 
-            const result = checker.checkStep(newPrev, next, {
+            const result = checker.checkStep(newPrev, prev, {
                 ...context,
                 steps: newSteps,
             });
@@ -109,16 +105,14 @@ function checkAddSub(
                     steps: [
                         {
                             message: "subtract the same value from both sides",
-                            nodes: [prev, newPrev],
+                            nodes: [next, newPrev],
                         },
                         ...result.steps,
                     ],
                 };
             } else {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
+                // TODO: write test for this case
+                return FAILED_CHECK;
             }
         }
 
@@ -136,6 +130,7 @@ function checkAddSub(
                         {
                             message:
                                 "subtracting the same value from both sides",
+                            // TODO: add nodes
                             nodes: [],
                         },
                     ],
@@ -146,32 +141,30 @@ function checkAddSub(
                 steps: [
                     {
                         message: "adding the same value to both sides",
+                        // TODO: add nodes
                         nodes: [],
                     },
                 ],
             };
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function checkMul(
-    a: Semantic.Eq,
-    b: Semantic.Eq,
-    context: Context,
-    reversed: boolean,
-): Result {
+const checkMul: Check<Semantic.Eq, Semantic.Eq> = (
+    prev,
+    next,
+    context,
+    reversed,
+) => {
     const {checker} = context;
 
     if (reversed) {
-        [a, b] = [b, a];
+        [prev, next] = [next, prev];
     }
 
-    const [lhsA, rhsA] = a.args;
-    const [lhsB, rhsB] = b.args;
+    const [lhsA, rhsA] = prev.args;
+    const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "mul" && rhsB.type === "mul") {
         const lhsNewFactors = checker.difference(
@@ -198,14 +191,10 @@ function checkMul(
                 )
             ) {
                 // prevent infinite loop
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
+                // TODO: determine if this is still needed
+                return FAILED_CHECK;
             }
 
-            const prev = b;
-            const next = a;
             const newPrev = Semantic.eq([
                 Semantic.div(lhsB, Semantic.mulFactors(lhsNewFactors)),
                 Semantic.div(rhsB, Semantic.mulFactors(rhsNewFactors)),
@@ -219,7 +208,7 @@ function checkMul(
                 },
             ];
 
-            const result = checker.checkStep(newPrev, next, {
+            const result = checker.checkStep(newPrev, prev, {
                 ...context,
                 steps: newSteps,
             });
@@ -229,16 +218,14 @@ function checkMul(
                     steps: [
                         {
                             message: "divide both sides by the same value",
-                            nodes: [prev, newPrev],
+                            nodes: [next, newPrev],
                         },
                         ...result.steps,
                     ],
                 };
             } else {
-                return {
-                    equivalent: false,
-                    steps: [],
-                };
+                // TODO: write test for this case
+                return FAILED_CHECK;
             }
         }
 
@@ -256,26 +243,23 @@ function checkMul(
             };
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function checkDiv(
-    a: Semantic.Eq,
-    b: Semantic.Eq,
-    context: Context,
-    reversed: boolean,
-): Result {
+const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
+    prev,
+    next,
+    context,
+    reversed,
+) => {
     const {checker} = context;
 
     if (reversed) {
-        [a, b] = [b, a];
+        [prev, next] = [next, prev];
     }
 
-    const [lhsA, rhsA] = a.args;
-    const [lhsB, rhsB] = b.args;
+    const [lhsA, rhsA] = prev.args;
+    const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "div" && rhsB.type === "div") {
         if (
@@ -297,14 +281,10 @@ function checkDiv(
                     )
                 ) {
                     // prevent infinite loop
-                    return {
-                        equivalent: false,
-                        steps: [],
-                    };
+                    // TODO: determine if this is still needed
+                    return FAILED_CHECK;
                 }
 
-                const prev = b;
-                const next = a;
                 const newPrev = Semantic.eq([
                     Semantic.mul([lhsB.args[DENOMINATOR], lhsB]),
                     Semantic.mul([rhsB.args[DENOMINATOR], rhsB]),
@@ -318,7 +298,7 @@ function checkDiv(
                     },
                 ];
 
-                const result = checker.checkStep(newPrev, next, {
+                const result = checker.checkStep(newPrev, prev, {
                     ...context,
                     steps: newSteps,
                 });
@@ -329,16 +309,14 @@ function checkDiv(
                             {
                                 message:
                                     "multiply both sides by the same value",
-                                nodes: [prev, newPrev],
+                                nodes: [next, newPrev],
                             },
                             ...result.steps,
                         ],
                     };
                 } else {
-                    return {
-                        equivalent: false,
-                        steps: [],
-                    };
+                    // TODO: write a test case for this
+                    return FAILED_CHECK;
                 }
             }
 
@@ -357,18 +335,12 @@ function checkDiv(
             }
         }
     }
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
 
-export function runChecks(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    if (a.type !== "eq" || b.type !== "eq") {
+    return FAILED_CHECK;
+};
+
+export const runChecks: Check = (prev, next, context) => {
+    if (prev.type !== "eq" || next.type !== "eq") {
         return {
             equivalent: false,
             steps: [],
@@ -377,38 +349,35 @@ export function runChecks(
 
     let result: Result;
 
-    result = checkAddSub(a, b, context, false);
+    result = checkAddSub(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = checkAddSub(a, b, context, true);
+    result = checkAddSub(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
-    result = checkMul(a, b, context, false);
+    result = checkMul(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = checkMul(a, b, context, true);
+    result = checkMul(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
-    result = checkDiv(a, b, context, false);
+    result = checkDiv(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = checkDiv(a, b, context, true);
+    result = checkDiv(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};

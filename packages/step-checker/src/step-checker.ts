@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {deepEquals} from "./util";
-import {Result, Step} from "./types";
+import {Result, Step, HasArgs, IStepChecker, Options, Context} from "./types";
 
 import * as fractionChecker from "./fraction-checker";
 import * as equationChecker from "./equation-checker";
@@ -9,19 +9,6 @@ import * as integerChecker from "./integer-checker";
 import * as evalChecker from "./eval-decomp-checker";
 // import * as polynomialChecker from "./polynomial-checker";
 import * as axiomChecker from "./axiom-checker";
-
-// TODO: fix flowtype/define-flow-type, HasArgs is used below
-// eslint-disable-next-line no-unused-vars
-type HasArgs =
-    | Semantic.Add
-    | Semantic.Mul
-    | Semantic.Eq
-    | Semantic.Neq
-    | Semantic.Lt
-    | Semantic.Lte
-    | Semantic.Gt
-    | Semantic.Gte
-    | Semantic.Div;
 
 export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "add" ||
@@ -41,44 +28,6 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
 // between steps in addition sequential relations.
 // We still want each step to be responsible for deciding how to combine
 // the result of checkStep with the new reason.
-
-export type Context = {
-    steps: Step[];
-    checker: IStepChecker;
-};
-
-export interface IStepChecker {
-    checkStep(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-        // We pass an array of reasons since cycles may include multiple steps
-        context: Context,
-    ): Result;
-    exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
-    checkArgs<T extends HasArgs>(prev: T, next: T, context: Context): Result;
-    intersection(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): Semantic.Expression[];
-    difference(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): Semantic.Expression[];
-    // TODO: change this to return a Result
-    equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): boolean;
-    options: Options;
-}
-
-export type Options = {
-    skipEvalChecker?: boolean;
-    evalFractions?: boolean;
-};
 
 const defaultOptions: Options = {
     skipEvalChecker: false,

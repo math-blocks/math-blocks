@@ -1,23 +1,15 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Context} from "./step-checker";
-import {Result} from "./types";
+import {Result, Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
-function addInverse(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const addInverse: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     if (reverse) {
         [prev, next] = [next, prev];
     }
     if (prev.type !== "add") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
 
     const indicesToRemove = new Set();
@@ -80,18 +72,10 @@ function addInverse(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function doubleNegative(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const doubleNegative: Check = (prev, next, context, reverse) => {
     if (reverse) {
         [prev, next] = [next, prev];
     }
@@ -123,18 +107,10 @@ function doubleNegative(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function subIsNeg(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const subIsNeg: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     const results: Result[] = [];
 
@@ -202,18 +178,10 @@ function subIsNeg(
         return shortestResult;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function negIsMulNegOne(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const negIsMulNegOne: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     if (reverse) {
         [prev, next] = [next, prev];
@@ -255,18 +223,10 @@ function negIsMulNegOne(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-function mulTwoNegsIsPos(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    reverse: boolean,
-    context: Context,
-): Result {
+const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     if (reverse) {
         [prev, next] = [next, prev];
@@ -309,33 +269,26 @@ function mulTwoNegsIsPos(
         }
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
 
-export function runChecks(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+export const runChecks: Check = (prev, next, context) => {
     let result: Result;
     let result1: Result;
     let result2: Result;
 
-    result = addInverse(prev, next, false, context);
+    result = addInverse(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = addInverse(prev, next, true, context);
+    result = addInverse(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
-    result1 = subIsNeg(prev, next, false, context);
-    result2 = subIsNeg(prev, next, true, context);
+    result1 = subIsNeg(prev, next, context, false);
+    result2 = subIsNeg(prev, next, context, true);
     if (result1.equivalent && result2.equivalent) {
         if (result1.steps.length < result2.steps.length) {
             return result1;
@@ -348,19 +301,19 @@ export function runChecks(
         return result2;
     }
 
-    result = mulTwoNegsIsPos(prev, next, false, context);
+    result = mulTwoNegsIsPos(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = mulTwoNegsIsPos(prev, next, true, context);
+    result = mulTwoNegsIsPos(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
     // Choose the fastest route when multiple paths exist.
-    result1 = doubleNegative(prev, next, false, context);
-    result2 = doubleNegative(prev, next, true, context);
+    result1 = doubleNegative(prev, next, context, false);
+    result2 = doubleNegative(prev, next, context, true);
     if (result1.equivalent && result2.equivalent) {
         if (result1.steps.length < result2.steps.length) {
             return result1;
@@ -378,18 +331,15 @@ export function runChecks(
     // alternative path from --a -> a.
     // TODO: provide a way to show this more detailed version of --a -> a so that
     // students know why --a -> a is true.
-    result = negIsMulNegOne(prev, next, false, context);
+    result = negIsMulNegOne(prev, next, context, false);
     if (result.equivalent) {
         return result;
     }
 
-    result = negIsMulNegOne(prev, next, true, context);
+    result = negIsMulNegOne(prev, next, context, true);
     if (result.equivalent) {
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};

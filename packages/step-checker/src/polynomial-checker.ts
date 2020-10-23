@@ -1,33 +1,17 @@
-import * as Semantic from "@math-blocks/semantic";
-
-import {Context} from "./step-checker";
-import {Result} from "./types";
+import {Check} from "./types";
+import {FAILED_CHECK} from "./constants";
 
 // TODO: Implement this.
 // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
-function collectLikeTerms(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
-    context: Context,
-): Result {
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+const collectLikeTerms: Check = (prev, next, context) => {
+    return FAILED_CHECK;
+};
 
-export function runChecks(
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
-    context: Context,
-): Result {
+export const runChecks: Check = (prev, next, context) => {
     const result = collectLikeTerms(prev, next, context);
     if (result.equivalent) {
         return result;
     }
 
-    return {
-        equivalent: false,
-        steps: [],
-    };
-}
+    return FAILED_CHECK;
+};
