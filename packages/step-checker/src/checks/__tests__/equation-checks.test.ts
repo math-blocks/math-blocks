@@ -1,9 +1,9 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import StepChecker from "../step-checker";
-import {Result} from "../types";
-import {deepEquals} from "../util";
+import StepChecker from "../../step-checker";
+import {Result} from "../../types";
+import {deepEquals} from "../../util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -35,7 +35,7 @@ expect.extend({
     },
 });
 
-describe("EquationChecker", () => {
+describe("Equation checks", () => {
     describe("adding the same value to both sides", () => {
         it("x = y -> x + 5 = y + 5", () => {
             const result = checkStep("x = y", "x + 5 = y + 5");

@@ -7,9 +7,9 @@ import {
     equality,
     exactMatch,
     intersection,
-} from "./util";
-import {Check} from "./types";
-import {FAILED_CHECK} from "./constants";
+} from "../util";
+import {Check} from "../types";
+import {FAILED_CHECK} from "../constants";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:

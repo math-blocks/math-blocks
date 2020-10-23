@@ -2,9 +2,9 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Step, Context, Options, Check} from "./types";
-import {FAILED_CHECK} from "./constants";
-import {exactMatch} from "./util";
+import {Result, Step, Context, Options, Check} from "../types";
+import {FAILED_CHECK} from "../constants";
+import {exactMatch} from "../util";
 
 const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
     if (node.type === "number") {

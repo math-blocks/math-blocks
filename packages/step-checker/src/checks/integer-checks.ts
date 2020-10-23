@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check} from "./types";
-import {FAILED_CHECK} from "./constants";
+import {Result, Check} from "../types";
+import {FAILED_CHECK} from "../constants";
 
 export const addInverse: Check = (prev, next, context, reverse) => {
     const {checker} = context;

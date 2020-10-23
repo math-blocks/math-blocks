@@ -1,8 +1,8 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import StepChecker from "../step-checker";
-import {Result} from "../types";
+import StepChecker from "../../step-checker";
+import {Result} from "../../types";
 
 const checker = new StepChecker();
 
@@ -19,7 +19,7 @@ const checkStep = (prev: string, next: string): Result => {
 
 expect.addSnapshotSerializer(serializer);
 
-describe("AxiomChecker", () => {
+describe("Axiom checks", () => {
     describe("symmetricProperty", () => {
         it("a = 3 -> 3 = a", () => {
             const result = checkStep("a = 3", "3 = a");

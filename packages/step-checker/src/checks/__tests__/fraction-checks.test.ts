@@ -1,9 +1,9 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
-import StepChecker from "../step-checker";
-import {Result} from "../types";
-import {deepEquals} from "../util";
+import StepChecker from "../../step-checker";
+import {Result} from "../../types";
+import {deepEquals} from "../../util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -35,7 +35,7 @@ expect.extend({
     },
 });
 
-describe("FractionChecker", () => {
+describe("Fraction checks", () => {
     it("a * 1/b -> a / b", () => {
         const result = checkStep("a * 1/b", "a / b");
 

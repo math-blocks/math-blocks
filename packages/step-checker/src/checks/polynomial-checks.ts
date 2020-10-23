@@ -1,5 +1,5 @@
-import {Check} from "./types";
-import {FAILED_CHECK} from "./constants";
+import {Check} from "../types";
+import {FAILED_CHECK} from "../constants";
 
 // TODO: Implement this.
 // It should handle things like: 2a + 3 + 5a + 7 -> 7a + 10
