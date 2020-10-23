@@ -5,9 +5,7 @@ import {FAILED_CHECK} from "./constants";
 
 const addInverse: Check = (prev, next, context, reverse) => {
     const {checker} = context;
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
+
     if (prev.type !== "add") {
         return FAILED_CHECK;
     }
@@ -75,11 +73,11 @@ const addInverse: Check = (prev, next, context, reverse) => {
     return FAILED_CHECK;
 };
 
+addInverse.symmetric = true;
+
 const doubleNegative: Check = (prev, next, context, reverse) => {
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
     const {checker} = context;
+
     if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
         const newPrev = prev.arg.arg;
         const result = reverse
@@ -110,13 +108,12 @@ const doubleNegative: Check = (prev, next, context, reverse) => {
     return FAILED_CHECK;
 };
 
+doubleNegative.symmetric = true;
+doubleNegative.parallel = true;
+
 const subIsNeg: Check = (prev, next, context, reverse) => {
     const {checker} = context;
     const results: Result[] = [];
-
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
 
     if (prev.type === "add" && next.type === "add") {
         const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
@@ -181,11 +178,11 @@ const subIsNeg: Check = (prev, next, context, reverse) => {
     return FAILED_CHECK;
 };
 
+subIsNeg.symmetric = true;
+
 const negIsMulNegOne: Check = (prev, next, context, reverse) => {
     const {checker} = context;
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
+
     if (
         prev.type === "neg" &&
         !prev.subtraction && // exclude -1 to avoid an infinite expansion
@@ -226,11 +223,11 @@ const negIsMulNegOne: Check = (prev, next, context, reverse) => {
     return FAILED_CHECK;
 };
 
+negIsMulNegOne.symmetric = true;
+
 const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
     const {checker} = context;
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
+
     if (prev.type === "mul" && next.type === "mul") {
         // TODO: handle more factors
         if (prev.args.length === 2 && next.args.length === 2) {
@@ -272,73 +269,46 @@ const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
     return FAILED_CHECK;
 };
 
+mulTwoNegsIsPos.symmetric = true;
+
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result | void;
-    let result1: Result | void;
-    let result2: Result | void;
+    const checks = [
+        addInverse,
+        subIsNeg,
+        mulTwoNegsIsPos,
+        doubleNegative,
+        negIsMulNegOne,
+    ];
 
-    result = addInverse(prev, next, context, false);
-    if (result) {
-        return result;
-    }
+    for (const check of checks) {
+        if (check.parallel) {
+            const result1 = check(prev, next, context, false);
+            const result2 = check(next, prev, context, true);
 
-    result = addInverse(prev, next, context, true);
-    if (result) {
-        return result;
-    }
-
-    result1 = subIsNeg(prev, next, context, false);
-    result2 = subIsNeg(prev, next, context, true);
-    if (result1 && result2) {
-        if (result1.steps.length < result2.steps.length) {
-            return result1;
+            if (result1 && result2) {
+                if (result1.steps.length < result2.steps.length) {
+                    return result1;
+                } else {
+                    return result2;
+                }
+            } else if (result1) {
+                return result1;
+            } else if (result2) {
+                return result2;
+            }
         } else {
-            return result2;
+            const result = check(prev, next, context, false);
+            if (result) {
+                return result;
+            }
+
+            if (check.symmetric) {
+                const result = check(next, prev, context, true);
+                if (result) {
+                    return result;
+                }
+            }
         }
-    } else if (result1) {
-        return result1;
-    } else if (result2) {
-        return result2;
-    }
-
-    result = mulTwoNegsIsPos(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = mulTwoNegsIsPos(prev, next, context, true);
-    if (result) {
-        return result;
-    }
-
-    // Choose the fastest route when multiple paths exist.
-    result1 = doubleNegative(prev, next, context, false);
-    result2 = doubleNegative(prev, next, context, true);
-    if (result1 && result2) {
-        if (result1.steps.length < result2.steps.length) {
-            return result1;
-        } else {
-            return result2;
-        }
-    } else if (result1) {
-        return result1;
-    } else if (result2) {
-        return result2;
-    }
-
-    // It's important that these methods are called after doubleNegative.  This
-    // is because negatives can be interpreted as multiplying by -1 providing an
-    // alternative path from --a -> a.
-    // TODO: provide a way to show this more detailed version of --a -> a so that
-    // students know why --a -> a is true.
-    result = negIsMulNegOne(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = negIsMulNegOne(prev, next, context, true);
-    if (result) {
-        return result;
     }
 
     return FAILED_CHECK;

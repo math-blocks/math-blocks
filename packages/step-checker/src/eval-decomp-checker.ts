@@ -134,26 +134,13 @@ const decompProduct: Check = (prev, next, context) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result | void;
+    const checks = [evalMul, evalAdd, decompProduct, decompSum];
 
-    result = evalMul(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = evalAdd(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = decompProduct(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = decompSum(prev, next, context);
-    if (result) {
-        return result;
+    for (const check of checks) {
+        const result = check(prev, next, context);
+        if (result) {
+            return result;
+        }
     }
 
     return FAILED_CHECK;

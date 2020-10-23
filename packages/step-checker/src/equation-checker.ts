@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check} from "./types";
+import {Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
@@ -11,17 +11,12 @@ import {FAILED_CHECK} from "./constants";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
-    prev,
-    next,
-    context,
-    reversed,
-) => {
-    const {checker} = context;
-
-    if (reversed) {
-        [prev, next] = [next, prev];
+const checkAddSub: Check = (prev, next, context, reversed) => {
+    if (prev.type !== "eq" || next.type !== "eq") {
+        return FAILED_CHECK;
     }
+
+    const {checker} = context;
 
     const [lhsA, rhsA] = prev.args;
     const [lhsB, rhsB] = next.args;
@@ -148,17 +143,14 @@ const checkAddSub: Check<Semantic.Eq, Semantic.Eq> = (
     return FAILED_CHECK;
 };
 
-const checkMul: Check<Semantic.Eq, Semantic.Eq> = (
-    prev,
-    next,
-    context,
-    reversed,
-) => {
-    const {checker} = context;
+checkAddSub.symmetric = true;
 
-    if (reversed) {
-        [prev, next] = [next, prev];
+const checkMul: Check = (prev, next, context, reversed) => {
+    if (prev.type !== "eq" || next.type !== "eq") {
+        return FAILED_CHECK;
     }
+
+    const {checker} = context;
 
     const [lhsA, rhsA] = prev.args;
     const [lhsB, rhsB] = next.args;
@@ -243,17 +235,14 @@ const checkMul: Check<Semantic.Eq, Semantic.Eq> = (
     return FAILED_CHECK;
 };
 
-const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
-    prev,
-    next,
-    context,
-    reversed,
-) => {
-    const {checker} = context;
+checkMul.symmetric = true;
 
-    if (reversed) {
-        [prev, next] = [next, prev];
+const checkDiv: Check = (prev, next, context, reversed) => {
+    if (prev.type !== "eq" || next.type !== "eq") {
+        return FAILED_CHECK;
     }
+
+    const {checker} = context;
 
     const [lhsA, rhsA] = prev.args;
     const [lhsB, rhsB] = next.args;
@@ -336,41 +325,23 @@ const checkDiv: Check<Semantic.Eq, Semantic.Eq> = (
     return FAILED_CHECK;
 };
 
+checkDiv.symmetric = true;
+
 export const runChecks: Check = (prev, next, context) => {
-    if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
-    }
+    const checks = [checkAddSub, checkMul, checkDiv];
 
-    let result: Result | void;
+    for (const check of checks) {
+        const result = check(prev, next, context);
+        if (result) {
+            return result;
+        }
 
-    result = checkAddSub(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = checkAddSub(prev, next, context, true);
-    if (result) {
-        return result;
-    }
-
-    result = checkMul(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = checkMul(prev, next, context, true);
-    if (result) {
-        return result;
-    }
-
-    result = checkDiv(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = checkDiv(prev, next, context, true);
-    if (result) {
-        return result;
+        if (check.symmetric) {
+            const result = check(next, prev, context, true);
+            if (result) {
+                return result;
+            }
+        }
     }
 
     return FAILED_CHECK;
