@@ -1,8 +1,8 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
-import StepChecker from "../step-checker";
-import {Result} from "../types";
+import StepChecker from "../../step-checker";
+import {Result} from "../../types";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -19,7 +19,7 @@ const checkStep = (prev: string, next: string): Result => {
     return result;
 };
 
-describe("IntegerChecker", () => {
+describe("Integer checks", () => {
     it("a + -a -> 0", () => {
         const result = checkStep("a + -a", "0");
 

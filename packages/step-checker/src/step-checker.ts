@@ -14,21 +14,21 @@ import {
     checkDistribution,
     checkFactoring,
     mulByZero,
-} from "./axiom-checker";
-import {checkAddSub, checkMul, checkDiv} from "./equation-checker";
+} from "./checks/axiom-checks";
+import {checkAddSub, checkMul, checkDiv} from "./checks/equation-checks";
 import {
     evalMul,
     evalAdd,
     decompProduct,
     decompSum,
-} from "./eval-decomp-checker";
+} from "./checks/eval-decomp-checks";
 import {
     addInverse,
     subIsNeg,
     mulTwoNegsIsPos,
     doubleNegative,
     negIsMulNegOne,
-} from "./integer-checker";
+} from "./checks/integer-checks";
 import {
     divByFrac,
     divByOne,
@@ -36,7 +36,7 @@ import {
     mulByFrac,
     divIsMulByOneOver,
     checkDivisionCanceling,
-} from "./fraction-checker";
+} from "./checks/fraction-checks";
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true

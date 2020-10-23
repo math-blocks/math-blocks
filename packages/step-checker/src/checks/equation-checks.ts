@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "./types";
-import {FAILED_CHECK} from "./constants";
-import {difference} from "./util";
+import {Check} from "../types";
+import {FAILED_CHECK} from "../constants";
+import {difference} from "../util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason

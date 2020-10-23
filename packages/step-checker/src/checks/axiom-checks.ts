@@ -1,9 +1,9 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps} from "./util";
-import {Result, Step, Check} from "./types";
-import {FAILED_CHECK} from "./constants";
-import {checkArgs} from "./util";
+import {zip, applySteps} from "../util";
+import {Result, Step, Check} from "../types";
+import {FAILED_CHECK} from "../constants";
+import {checkArgs} from "../util";
 
 export const addZero: Check = (prev, next, context) => {
     return prev.type === "add"

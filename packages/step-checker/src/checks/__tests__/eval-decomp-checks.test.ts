@@ -1,7 +1,7 @@
 import {parse} from "@math-blocks/text-parser";
 
-import StepChecker from "../step-checker";
-import {Result} from "../types";
+import StepChecker from "../../step-checker";
+import {Result} from "../../types";
 
 const checker = new StepChecker();
 
@@ -16,7 +16,7 @@ const checkStep = (prev: string, next: string): Result => {
     return result;
 };
 
-describe("EvalChecker", () => {
+describe("Eval (decomposition) checks", () => {
     describe("evalAdd", () => {
         it("2 + 3 -> 5", () => {
             const result = checkStep("2 + 3", "5");
