@@ -2,6 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "./types";
 import {FAILED_CHECK} from "./constants";
+import {difference} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -22,12 +23,12 @@ const checkAddSub: Check = (prev, next, context, reversed) => {
     const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "add" && rhsB.type === "add") {
-        const lhsNewTerms = checker.difference(
+        const lhsNewTerms = difference(
             Semantic.getTerms(lhsB),
             Semantic.getTerms(lhsA),
             context,
         );
-        const rhsNewTerms = checker.difference(
+        const rhsNewTerms = difference(
             Semantic.getTerms(rhsB),
             Semantic.getTerms(rhsA),
             context,
@@ -156,12 +157,12 @@ const checkMul: Check = (prev, next, context, reversed) => {
     const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "mul" && rhsB.type === "mul") {
-        const lhsNewFactors = checker.difference(
+        const lhsNewFactors = difference(
             Semantic.getFactors(lhsB),
             Semantic.getFactors(lhsA),
             context,
         );
-        const rhsNewFactors = checker.difference(
+        const rhsNewFactors = difference(
             Semantic.getFactors(rhsB),
             Semantic.getFactors(rhsA),
             context,

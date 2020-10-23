@@ -16,31 +16,6 @@ export type Context = {
 
 export interface IStepChecker {
     checkStep: Check;
-    exactMatch(
-        prev: Semantic.Expression,
-        next: Semantic.Expression,
-    ): Result | void;
-    checkArgs<T extends HasArgs>(
-        prev: T,
-        next: T,
-        context: Context,
-    ): Result | void;
-    intersection(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): Semantic.Expression[];
-    difference(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): Semantic.Expression[];
-    // TODO: change this to return a Result
-    equality(
-        as: Semantic.Expression[],
-        bs: Semantic.Expression[],
-        context: Context,
-    ): boolean;
     options: Options;
 }
 
