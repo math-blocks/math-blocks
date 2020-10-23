@@ -1,11 +1,16 @@
 import * as Semantic from "@math-blocks/semantic";
+import {parse} from "@math-blocks/text-parser";
 
 import {
     primeDecomp,
     findNodeById,
     replaceNodeWithId,
+    checkArgs,
     deepEquals,
+    difference,
+    hasArgs,
 } from "../util";
+import StepChecker from "../step-checker";
 
 expect.addSnapshotSerializer(Semantic.serializer);
 
@@ -132,5 +137,75 @@ describe("deepEquals", () => {
                 Semantic.neg(Semantic.number("1"), false),
             ),
         ).toBe(false);
+    });
+});
+
+describe("checkArgs", () => {
+    const checker = new StepChecker();
+
+    // TODO: move this test to util-checks.test.ts
+    it("should return false immediately if the number of steps are different", () => {
+        jest.spyOn(checker, "checkStep");
+        expect.assertions(2);
+
+        const sum1 = parse("1 + 2 + 3");
+        const sum2 = parse("1 + 2 + 3 + 4");
+        if (hasArgs(sum1) && hasArgs(sum2)) {
+            const result = checkArgs(sum1, sum2, {
+                checker,
+                steps: [],
+            });
+
+            expect(result).toBeUndefined();
+            expect(checker.checkStep).not.toHaveBeenCalled();
+        }
+    });
+});
+
+describe("difference", () => {
+    const checker = new StepChecker();
+
+    it("should return an empty array if both have the same values", () => {
+        const left = [Semantic.number("1"), Semantic.number("2")];
+        const right = [Semantic.number("1"), Semantic.number("2")];
+        const result = difference(left, right, {
+            checker,
+            steps: [],
+        });
+
+        expect(result).toEqual([]);
+    });
+
+    it("should return the difference for unique values", () => {
+        const left = [Semantic.number("1"), Semantic.number("2")];
+        const right = [Semantic.number("2")];
+        const result = difference(left, right, {
+            checker,
+            steps: [],
+        });
+
+        expect(result).toEqual([left[0]]);
+    });
+
+    it("should return the original left array if there are no matches", () => {
+        const left = [Semantic.number("1"), Semantic.number("2")];
+        const right = [Semantic.number("3")];
+        const result = difference(left, right, {
+            checker,
+            steps: [],
+        });
+
+        expect(result).toEqual(left);
+    });
+
+    it("should return the handle duplicates", () => {
+        const left = [Semantic.number("1"), Semantic.number("1")];
+        const right = [Semantic.number("1")];
+        const result = difference(left, right, {
+            checker,
+            steps: [],
+        });
+
+        expect(result).toEqual([left[1]]);
     });
 });

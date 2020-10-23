@@ -1,8 +1,9 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {zip, applySteps} from "./util";
-import {Result, Step, Check} from "./types";
+import {Result, Step, Check, HasArgs} from "./types";
 import {FAILED_CHECK} from "./constants";
+import {checkArgs} from "./util";
 
 const addZero: Check = (prev, next, context) => {
     return prev.type === "add"
@@ -286,7 +287,7 @@ const commuteAddition: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the args are the same disregarding order.
-        const result = context.checker.checkArgs(prev, next, context);
+        const result = checkArgs(prev, next, context);
 
         // If they aren't we can stop this check right here.
         if (!result) {
@@ -339,7 +340,7 @@ const commuteMultiplication: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the arguments are the same disregarding order.
-        const result = context.checker.checkArgs(prev, next, context);
+        const result = checkArgs(prev, next, context);
 
         // If the args are the same then we can stop here.
         if (!result) {
@@ -381,7 +382,7 @@ const symmetricProperty: Check = (prev, next, context) => {
     ) {
         const pairs = zip(prev.args, next.args);
 
-        const result = context.checker.checkArgs(prev, next, context);
+        const result = checkArgs(prev, next, context);
         if (!result) {
             return result;
         }

@@ -1,6 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {decomposeFactors, applySteps} from "./util";
+import {
+    applySteps,
+    decomposeFactors,
+    difference,
+    equality,
+    exactMatch,
+    intersection,
+} from "./util";
 import {Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 
@@ -34,16 +41,8 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
     // Ensure that no extra factors were added to either the numerator
     // or denominator.  It's okay to ignore factors that ONE since multiplying
     // by 1 doesn't affect the value of the numerator or denominator.
-    const addedNumFactors = checker.difference(
-        numFactorsB,
-        numFactorsA,
-        context,
-    );
-    const addedDenFactors = checker.difference(
-        denFactorsB,
-        denFactorsA,
-        context,
-    );
+    const addedNumFactors = difference(numFactorsB, numFactorsA, context);
+    const addedDenFactors = difference(denFactorsB, denFactorsA, context);
 
     if (
         !checker.checkStep(
@@ -109,26 +108,10 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
     }
 
     // TODO: figure out how to handle duplicate factors
-    const removedNumFactors = checker.difference(
-        numFactorsA,
-        numFactorsB,
-        context,
-    );
-    const remainingNumFactors = checker.intersection(
-        numFactorsA,
-        numFactorsB,
-        context,
-    );
-    const removedDenFactors = checker.difference(
-        denFactorsA,
-        denFactorsB,
-        context,
-    );
-    const remainingDenFactors = checker.intersection(
-        denFactorsA,
-        denFactorsB,
-        context,
-    );
+    const removedNumFactors = difference(numFactorsA, numFactorsB, context);
+    const remainingNumFactors = intersection(numFactorsA, numFactorsB, context);
+    const removedDenFactors = difference(denFactorsA, denFactorsB, context);
+    const remainingDenFactors = intersection(denFactorsA, denFactorsB, context);
 
     if (remainingNumFactors.length === 0) {
         remainingNumFactors.push(Semantic.number("1"));
@@ -142,7 +125,7 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
     if (
         removedNumFactors.length > 0 &&
         removedNumFactors.length === removedDenFactors.length &&
-        checker.equality(removedNumFactors, removedDenFactors, context)
+        equality(removedNumFactors, removedDenFactors, context)
     ) {
         const productA = Semantic.mulFactors([
             Semantic.div(
@@ -272,7 +255,7 @@ const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
     // TODO: check if the div is a child of a mul node
     if (
         prev.type === "div" &&
-        !checker.exactMatch(prev.args[0], Semantic.number("1"))
+        !exactMatch(prev.args[0], Semantic.number("1"))
     ) {
         const newPrev = Semantic.mulFactors([
             prev.args[0],
@@ -324,7 +307,7 @@ const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type !== "div" &&
             prev.args[1].type === "div" &&
-            checker.exactMatch(prev.args[1].args[0], Semantic.number("1"))
+            exactMatch(prev.args[1].args[0], Semantic.number("1"))
         ) {
             return FAILED_CHECK;
         }
@@ -333,7 +316,7 @@ const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type === "div" &&
             prev.args[1].type !== "div" &&
-            checker.exactMatch(prev.args[0].args[0], Semantic.number("1"))
+            exactMatch(prev.args[0].args[0], Semantic.number("1"))
         ) {
             return FAILED_CHECK;
         }
