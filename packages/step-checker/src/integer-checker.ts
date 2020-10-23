@@ -27,7 +27,7 @@ const addInverse: Check = (prev, next, context, reverse) => {
             if (Semantic.isNegative(b) || Semantic.isSubtraction(b)) {
                 const result = checker.checkStep(a, b.arg, context);
                 if (
-                    result.equivalent &&
+                    result &&
                     // Avoid removing a term that matches a term that's
                     // already been removed.
                     (!indicesToRemove.has(j) || !indicesToRemove.has(j))
@@ -50,7 +50,7 @@ const addInverse: Check = (prev, next, context, reverse) => {
             ? checker.checkStep(next, newPrev, context)
             : checker.checkStep(newPrev, next, context);
 
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: reverse
@@ -85,7 +85,7 @@ const doubleNegative: Check = (prev, next, context, reverse) => {
         const result = reverse
             ? checker.checkStep(next, newPrev, context)
             : checker.checkStep(newPrev, next, context);
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: reverse
@@ -117,6 +117,7 @@ const subIsNeg: Check = (prev, next, context, reverse) => {
     if (reverse) {
         [prev, next] = [next, prev];
     }
+
     if (prev.type === "add" && next.type === "add") {
         const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
 
@@ -141,7 +142,7 @@ const subIsNeg: Check = (prev, next, context, reverse) => {
             const result = reverse
                 ? checker.checkStep(next, newPrev, context)
                 : checker.checkStep(newPrev, next, context);
-            if (result.equivalent) {
+            if (result) {
                 results.push({
                     equivalent: true,
                     steps: reverse
@@ -199,7 +200,7 @@ const negIsMulNegOne: Check = (prev, next, context, reverse) => {
         const result = reverse
             ? checker.checkStep(next, newPrev, context)
             : checker.checkStep(newPrev, next, context);
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: reverse
@@ -243,7 +244,7 @@ const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
                 const result = reverse
                     ? checker.checkStep(next, newPrev, context)
                     : checker.checkStep(newPrev, next, context);
-                if (result.equivalent) {
+                if (result) {
                     return {
                         equivalent: true,
                         steps: reverse
@@ -273,56 +274,56 @@ const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result;
-    let result1: Result;
-    let result2: Result;
+    let result: Result | void;
+    let result1: Result | void;
+    let result2: Result | void;
 
     result = addInverse(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = addInverse(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result1 = subIsNeg(prev, next, context, false);
     result2 = subIsNeg(prev, next, context, true);
-    if (result1.equivalent && result2.equivalent) {
+    if (result1 && result2) {
         if (result1.steps.length < result2.steps.length) {
             return result1;
         } else {
             return result2;
         }
-    } else if (result1.equivalent) {
+    } else if (result1) {
         return result1;
-    } else if (result2.equivalent) {
+    } else if (result2) {
         return result2;
     }
 
     result = mulTwoNegsIsPos(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = mulTwoNegsIsPos(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // Choose the fastest route when multiple paths exist.
     result1 = doubleNegative(prev, next, context, false);
     result2 = doubleNegative(prev, next, context, true);
-    if (result1.equivalent && result2.equivalent) {
+    if (result1 && result2) {
         if (result1.steps.length < result2.steps.length) {
             return result1;
         } else {
             return result2;
         }
-    } else if (result1.equivalent) {
+    } else if (result1) {
         return result1;
-    } else if (result2.equivalent) {
+    } else if (result2) {
         return result2;
     }
 
@@ -332,12 +333,12 @@ export const runChecks: Check = (prev, next, context) => {
     // TODO: provide a way to show this more detailed version of --a -> a so that
     // students know why --a -> a is true.
     result = negIsMulNegOne(prev, next, context, false);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = negIsMulNegOne(prev, next, context, true);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 

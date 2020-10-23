@@ -10,10 +10,17 @@ expect.addSnapshotSerializer(serializer);
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), {
+    const result = checker.checkStep(parse(prev), parse(next), {
         checker,
         steps: [],
     });
+    if (!result) {
+        return {
+            equivalent: false,
+            steps: [],
+        };
+    }
+    return result;
 };
 
 expect.extend({
@@ -147,6 +154,10 @@ describe("FractionChecker", () => {
             steps: [],
         });
 
+        if (!result) {
+            throw new Error("failure");
+        }
+
         expect(result.equivalent).toBe(true);
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "prime factorization",
@@ -163,6 +174,10 @@ describe("FractionChecker", () => {
             checker,
             steps: [],
         });
+
+        if (!result) {
+            throw new Error("failure");
+        }
 
         expect(result.equivalent).toBe(true);
         expect(result.steps).toHaveLength(6);
@@ -218,6 +233,10 @@ describe("FractionChecker", () => {
                 steps: [],
             },
         );
+
+        if (!result) {
+            throw new Error("failure");
+        }
 
         expect(result.equivalent).toBe(true);
         expect(result.steps.map((reason) => reason.message)).toEqual([
@@ -360,8 +379,7 @@ describe("FractionChecker", () => {
     it("2a/a -> 2b [incorrect]", () => {
         const result = checkStep("2a/a", "2b");
 
-        expect(result.equivalent).toBe(false);
-        expect(result.steps).toEqual([]);
+        expect(result.equivalent).toEqual(false);
     });
 
     it("2abc/ab -> ab/ab * 2c/1 -> 1 * 2c/1 -> 2c", () => {

@@ -9,7 +9,7 @@ const collectLikeTerms: Check = (prev, next, context) => {
 
 export const runChecks: Check = (prev, next, context) => {
     const result = collectLikeTerms(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 

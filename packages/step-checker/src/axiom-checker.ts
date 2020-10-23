@@ -28,7 +28,7 @@ const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     const nonIdentityArgs: Semantic.Expression[] = [];
     for (const arg of prev.args) {
         const result = context.checker.checkStep(arg, identity, context);
-        if (result.equivalent) {
+        if (result) {
             identitySteps.push(...result.steps);
         } else {
             nonIdentityArgs.push(arg);
@@ -59,7 +59,7 @@ const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
             : "multiplication with identity";
 
     const result = context.checker.checkStep(newNext, next, context);
-    if (result.equivalent) {
+    if (result) {
         return {
             equivalent: true,
             steps: [
@@ -103,7 +103,7 @@ const checkDistribution: Check = (prev, next, context) => {
                     next,
                     context,
                 );
-                if (result.equivalent) {
+                if (result) {
                     results.push({
                         equivalent: true,
                         steps: [
@@ -131,10 +131,7 @@ const checkDistribution: Check = (prev, next, context) => {
         }
     }
     if (prev.type !== "mul" || next.type !== "add") {
-        return {
-            equivalent: false,
-            steps: [],
-        };
+        return FAILED_CHECK;
     }
     if (prev.args[1].type === "add") {
         const newPrev = Semantic.add(
@@ -144,7 +141,7 @@ const checkDistribution: Check = (prev, next, context) => {
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: [
@@ -165,7 +162,7 @@ const checkDistribution: Check = (prev, next, context) => {
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
-        if (result.equivalent) {
+        if (result) {
             return {
                 equivalent: true,
                 steps: [
@@ -213,8 +210,10 @@ const checkFactoring: Check = (prev, next, context) => {
                         steps: [],
                     });
 
-                    subReasons.push(...substep.steps);
-                    return substep.equivalent;
+                    if (substep) {
+                        subReasons.push(...substep.steps);
+                    }
+                    return substep;
                 });
 
                 if (equivalent) {
@@ -250,17 +249,15 @@ const mulByZero: Check = (prev, next, context) => {
 
     // TODO: ensure that steps from these calls to checkStep
     // are captured.
-    const hasZero = prev.args.some(
-        (arg) =>
-            context.checker.checkStep(arg, Semantic.number("0"), context)
-                .equivalent,
+    const hasZero = prev.args.some((arg) =>
+        context.checker.checkStep(arg, Semantic.number("0"), context),
     );
     const result = context.checker.checkStep(
         next,
         Semantic.number("0"),
         context,
     );
-    if (hasZero && result.equivalent) {
+    if (hasZero && result) {
         return {
             equivalent: true,
             steps: [
@@ -287,11 +284,8 @@ const commuteAddition: Check = (prev, next, context) => {
         const result = context.checker.checkArgs(prev, next, context);
 
         // If they aren't we can stop this check right here.
-        if (!result.equivalent) {
-            return {
-                equivalent: false,
-                steps: [],
-            };
+        if (!result) {
+            return FAILED_CHECK;
         }
 
         // If at least some of the pairs don't line up then it's safe to
@@ -301,7 +295,7 @@ const commuteAddition: Check = (prev, next, context) => {
             // since we're already getting the reasons why the nodes are equivalent
             // from the call to checkArgs
             const result = context.checker.checkStep(first, second, context);
-            return !result.equivalent;
+            return !result;
         });
 
         if (reordered) {
@@ -343,7 +337,7 @@ const commuteMultiplication: Check = (prev, next, context) => {
         const result = context.checker.checkArgs(prev, next, context);
 
         // If the args are the same then we can stop here.
-        if (!result.equivalent) {
+        if (!result) {
             return FAILED_CHECK;
         }
 
@@ -352,12 +346,12 @@ const commuteMultiplication: Check = (prev, next, context) => {
                 // It's safe to ignore the steps from these checks
                 // since we already have the steps from the checkArgs
                 // call.
-                !context.checker.checkStep(first, second, context).equivalent,
+                !context.checker.checkStep(first, second, context),
         );
 
         const newPrev = applySteps(prev, result.steps);
 
-        if (reordered && result.equivalent) {
+        if (reordered && result) {
             return {
                 equivalent: true,
                 steps: [
@@ -383,13 +377,13 @@ const symmetricProperty: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         const result = context.checker.checkArgs(prev, next, context);
-        if (!result.equivalent) {
+        if (!result) {
             return result;
         }
 
         const commutative = pairs.some(
             ([first, second]) =>
-                !context.checker.checkStep(first, second, context).equivalent,
+                !context.checker.checkStep(first, second, context),
         );
 
         if (commutative) {
@@ -410,62 +404,62 @@ const symmetricProperty: Check = (prev, next, context) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result;
+    let result: Result | void;
 
     result = symmetricProperty(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = commuteAddition(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = commuteMultiplication(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = addZero(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = addZero(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = mulOne(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = mulOne(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkDistribution(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     result = checkFactoring(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // a * 0 -> 0
     result = mulByZero(prev, next, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 
     // 0 -> a * 0
     result = mulByZero(next, prev, context);
-    if (result.equivalent) {
+    if (result) {
         return result;
     }
 

@@ -7,10 +7,17 @@ import {Result} from "../types";
 const checker = new StepChecker();
 
 const checkStep = (prev: string, next: string): Result => {
-    return checker.checkStep(parse(prev), parse(next), {
+    const result = checker.checkStep(parse(prev), parse(next), {
         checker,
         steps: [],
     });
+    if (!result) {
+        return {
+            equivalent: false,
+            steps: [],
+        };
+    }
+    return result;
 };
 
 expect.addSnapshotSerializer(serializer);

@@ -1,4 +1,1 @@
-export const FAILED_CHECK = {
-    equivalent: false,
-    steps: [],
-};
+export const FAILED_CHECK = undefined;

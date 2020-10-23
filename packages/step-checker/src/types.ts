@@ -16,14 +16,16 @@ export type Context = {
 };
 
 export interface IStepChecker {
-    checkStep(
+    checkStep: Check;
+    exactMatch(
         prev: Semantic.Expression,
         next: Semantic.Expression,
-        // We pass an array of reasons since cycles may include multiple steps
+    ): Result | void;
+    checkArgs<T extends HasArgs>(
+        prev: T,
+        next: T,
         context: Context,
-    ): Result;
-    exactMatch(prev: Semantic.Expression, next: Semantic.Expression): Result;
-    checkArgs<T extends HasArgs>(prev: T, next: T, context: Context): Result;
+    ): Result | void;
     intersection(
         as: Semantic.Expression[],
         bs: Semantic.Expression[],
@@ -51,7 +53,12 @@ export type Options = {
 export type Check<
     Prev extends Semantic.Expression = Semantic.Expression,
     Next extends Semantic.Expression = Semantic.Expression
-> = (prev: Prev, next: Next, context: Context, reverse?: boolean) => Result;
+> = (
+    prev: Prev,
+    next: Next,
+    context: Context,
+    reverse?: boolean,
+) => Result | void;
 
 export type HasArgs =
     | Semantic.Add

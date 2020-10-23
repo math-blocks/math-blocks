@@ -13,6 +13,12 @@ const checkStep = (prev: string, next: string): Result => {
         checker,
         steps: [],
     });
+    if (!result) {
+        return {
+            equivalent: false,
+            steps: [],
+        };
+    }
     return result;
 };
 
@@ -80,7 +86,7 @@ describe("IntegerChecker", () => {
         ]);
     });
 
-    it.skip("a - b - c -> a + -b + -c", () => {
+    it("a - b - c -> a + -b + -c", () => {
         const result = checkStep("a - b - c", "a + -b + -c");
 
         expect(result.equivalent).toBe(true);
