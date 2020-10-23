@@ -144,7 +144,6 @@ const subIsNeg: Check = (prev, next, context, reverse) => {
                 : checker.checkStep(newPrev, next, context);
             if (result) {
                 results.push({
-                    equivalent: true,
                     steps: reverse
                         ? [
                               ...result.steps,

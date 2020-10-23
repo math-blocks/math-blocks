@@ -13,7 +13,6 @@ const checkStep = (prev: string, next: string): Result => {
     });
     if (!result) {
         return {
-            equivalent: false,
             steps: [],
         };
     }
@@ -27,21 +26,21 @@ describe("StepChecker", () => {
         test("1 -> 1", () => {
             const result = checkStep("1", "1");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
 
         test("a -> a", () => {
             const result = checkStep("a", "a");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
 
         test("-1 -> -1", () => {
             const result = checkStep("-1", "-1");
 
-            expect(result.equivalent).toBe(true);
+            expect(result).toBeTruthy();
             expect(result.steps).toEqual([]);
         });
     });

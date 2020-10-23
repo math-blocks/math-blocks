@@ -108,7 +108,6 @@ function evalDecompNaryOp(
 
     if (steps.length > 0) {
         return {
-            equivalent: true,
             steps,
         };
     }

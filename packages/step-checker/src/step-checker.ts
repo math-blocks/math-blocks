@@ -69,7 +69,6 @@ class StepChecker implements IStepChecker {
         );
         return equivalent
             ? {
-                  equivalent: true,
                   steps: _reasons,
               }
             : FAILED_CHECK;
@@ -132,7 +131,6 @@ class StepChecker implements IStepChecker {
     ): Result | void {
         return deepEquals(prev, next)
             ? {
-                  equivalent: true,
                   steps: [],
               }
             : FAILED_CHECK;
@@ -175,7 +173,6 @@ class StepChecker implements IStepChecker {
             const result = this.checkStep(prev.arg, next.arg, context);
             if (result && prev.subtraction === next.subtraction) {
                 return {
-                    equivalent: true,
                     steps: result.steps,
                 };
             } else {
@@ -211,14 +208,12 @@ class StepChecker implements IStepChecker {
         if (prev.type === "number" && next.type === "number") {
             return prev.value === next.value
                 ? {
-                      equivalent: true,
                       steps: [],
                   }
                 : FAILED_CHECK;
         } else if (prev.type === "identifier" && next.type === "identifier") {
             return prev.name === next.name
                 ? {
-                      equivalent: true,
                       steps: [],
                   }
                 : FAILED_CHECK;

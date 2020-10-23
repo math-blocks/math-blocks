@@ -6,7 +6,6 @@ export type Step = {
 };
 
 export type Result = {
-    equivalent: boolean;
     steps: Step[];
 };
 

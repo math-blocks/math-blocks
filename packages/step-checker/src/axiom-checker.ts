@@ -105,7 +105,6 @@ const checkDistribution: Check = (prev, next, context) => {
                 );
                 if (result) {
                     results.push({
-                        equivalent: true,
                         steps: [
                             {
                                 message: "distribution",
