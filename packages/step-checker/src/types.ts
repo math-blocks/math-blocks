@@ -52,12 +52,16 @@ export type Options = {
 export type Check<
     Prev extends Semantic.Expression = Semantic.Expression,
     Next extends Semantic.Expression = Semantic.Expression
-> = (
-    prev: Prev,
-    next: Next,
-    context: Context,
-    reverse?: boolean,
-) => Result | void;
+> = {
+    (
+        prev: Prev,
+        next: Next,
+        context: Context,
+        reverse?: boolean,
+    ): Result | void;
+    symmetric?: boolean;
+    parallel?: boolean;
+};
 
 export type HasArgs =
     | Semantic.Add

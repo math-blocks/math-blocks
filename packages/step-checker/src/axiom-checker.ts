@@ -10,11 +10,15 @@ const addZero: Check = (prev, next, context) => {
         : FAILED_CHECK;
 };
 
+addZero.symmetric = true;
+
 const mulOne: Check = (prev, next, context) => {
     return prev.type === "mul"
         ? checkIdentity(prev, next, context)
         : FAILED_CHECK;
 };
+
+mulOne.symmetric = true;
 
 const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     prev,
@@ -271,6 +275,8 @@ const mulByZero: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+mulByZero.symmetric = true;
+
 const commuteAddition: Check = (prev, next, context) => {
     if (
         prev.type === "add" &&
@@ -403,63 +409,29 @@ const symmetricProperty: Check = (prev, next, context) => {
 };
 
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result | void;
+    const checks = [
+        symmetricProperty,
+        commuteAddition,
+        commuteMultiplication,
+        addZero,
+        mulOne,
+        checkDistribution,
+        checkFactoring,
+        mulByZero,
+    ];
 
-    result = symmetricProperty(prev, next, context);
-    if (result) {
-        return result;
-    }
+    for (const check of checks) {
+        const result = check(prev, next, context);
+        if (result) {
+            return result;
+        }
 
-    result = commuteAddition(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = commuteMultiplication(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = addZero(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = addZero(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    result = mulOne(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = mulOne(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    result = checkDistribution(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = checkFactoring(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    // a * 0 -> 0
-    result = mulByZero(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    // 0 -> a * 0
-    result = mulByZero(next, prev, context);
-    if (result) {
-        return result;
+        if (check.symmetric) {
+            const result = check(next, prev, context);
+            if (result) {
+                return result;
+            }
+        }
     }
 
     return FAILED_CHECK;

@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {decomposeFactors, applySteps} from "./util";
-import {Result, Check} from "./types";
+import {Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
@@ -174,6 +174,8 @@ const checkDivisionCanceling: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+checkDivisionCanceling.symmetric = true;
+
 const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type !== "div") {
@@ -208,6 +210,8 @@ const divByFrac: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+divByFrac.symmetric = true;
+
 const divByOne: Check = (prev, next, context) => {
     const {checker} = context;
     if (
@@ -234,6 +238,8 @@ const divByOne: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+divByOne.symmetric = true;
+
 const divBySame: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type === "div") {
@@ -258,11 +264,11 @@ const divBySame: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+divBySame.symmetric = true;
+
 const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
     const {checker} = context;
-    if (reverse) {
-        [prev, next] = [next, prev];
-    }
+
     // TODO: check if the div is a child of a mul node
     if (
         prev.type === "div" &&
@@ -303,6 +309,8 @@ const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
 
     return FAILED_CHECK;
 };
+
+divIsMulByOneOver.symmetric = true;
 
 const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
@@ -363,73 +371,30 @@ const mulByFrac: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
+mulByFrac.symmetric = true;
+
 export const runChecks: Check = (prev, next, context) => {
-    let result: Result | void;
+    const checks = [
+        divByFrac,
+        divByOne,
+        divBySame,
+        mulByFrac,
+        divIsMulByOneOver,
+        checkDivisionCanceling,
+    ];
 
-    result = divByFrac(prev, next, context);
-    if (result) {
-        return result;
-    }
+    for (const check of checks) {
+        const result = check(prev, next, context, false);
+        if (result) {
+            return result;
+        }
 
-    // TODO: add a test case for this
-    result = divByFrac(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    result = divByOne(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = divByOne(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    result = divBySame(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    result = divBySame(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    // a * b/c -> ab / c
-    result = mulByFrac(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    // ab / c -> a * b/c
-    result = mulByFrac(next, prev, context);
-    if (result) {
-        return result;
-    }
-
-    result = divIsMulByOneOver(prev, next, context, false);
-    if (result) {
-        return result;
-    }
-
-    result = divIsMulByOneOver(prev, next, context, true);
-    if (result) {
-        return result;
-    }
-
-    // relies on divByOne being called first
-    // TODO: figure out a way to avoid the need for specific ordering
-    result = checkDivisionCanceling(prev, next, context);
-    if (result) {
-        return result;
-    }
-
-    // TODO: add a test case for this
-    result = checkDivisionCanceling(next, prev, context);
-    if (result) {
-        return result;
+        if (check.symmetric) {
+            const result = check(next, prev, context, true);
+            if (result) {
+                return result;
+            }
+        }
     }
 
     return FAILED_CHECK;
