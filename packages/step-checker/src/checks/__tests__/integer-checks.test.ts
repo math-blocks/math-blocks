@@ -1,23 +1,8 @@
 import {serializer} from "@math-blocks/semantic";
-import {parse} from "@math-blocks/text-parser";
 
-import StepChecker from "../../step-checker";
-import {Result} from "../../types";
+import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-
-const checker = new StepChecker();
-
-const checkStep = (prev: string, next: string): Result => {
-    const result = checker.checkStep(parse(prev), parse(next), {
-        checker,
-        steps: [],
-    });
-    if (!result) {
-        throw new Error("no path found");
-    }
-    return result;
-};
 
 describe("Integer checks", () => {
     it("a + -a -> 0", () => {

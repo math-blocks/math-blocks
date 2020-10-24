@@ -154,6 +154,7 @@ describe("checkArgs", () => {
             const result = checkArgs(sum1, sum2, {
                 checker,
                 steps: [],
+                successfulChecks: new Set<string>(),
             });
 
             expect(result).toBeUndefined();
@@ -171,6 +172,7 @@ describe("difference", () => {
         const result = difference(left, right, {
             checker,
             steps: [],
+            successfulChecks: new Set<string>(),
         });
 
         expect(result).toEqual([]);
@@ -182,6 +184,7 @@ describe("difference", () => {
         const result = difference(left, right, {
             checker,
             steps: [],
+            successfulChecks: new Set<string>(),
         });
 
         expect(result).toEqual([left[0]]);
@@ -193,6 +196,7 @@ describe("difference", () => {
         const result = difference(left, right, {
             checker,
             steps: [],
+            successfulChecks: new Set<string>(),
         });
 
         expect(result).toEqual(left);
@@ -204,6 +208,7 @@ describe("difference", () => {
         const result = difference(left, right, {
             checker,
             steps: [],
+            successfulChecks: new Set<string>(),
         });
 
         expect(result).toEqual([left[1]]);

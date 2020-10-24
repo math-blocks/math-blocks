@@ -1,21 +1,6 @@
-import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import StepChecker from "../../step-checker";
-import {Result} from "../../types";
-
-const checker = new StepChecker();
-
-const checkStep = (prev: string, next: string): Result => {
-    const result = checker.checkStep(parse(prev), parse(next), {
-        checker,
-        steps: [],
-    });
-    if (!result) {
-        throw new Error("no path found");
-    }
-    return result;
-};
+import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -339,28 +324,6 @@ describe("Axiom checks", () => {
                 "distribution",
             ]);
         });
-
-        // it.only("1 + -2(x + y) -> 1 + (-2)(x + y)", () => {
-        //     const result = checkStep("1 + -2(x + y)", "1 + (-2)(x + y)");
-
-        //     expect(result).toBeTruthy();
-        //     expect(result.steps.map((reason) => reason.message)).toEqual([
-        //         // "distribution",
-        //         // "subtracting is the same as adding the inverse",
-        //         // "subtracting is the same as adding the inverse",
-        //     ]);
-        // });
-
-        // it.only("foo", () => {
-        //     const result = checkStep("1 + (-2)(x + y)", "1 - 2x - 2y");
-
-        //     expect(result).toBeTruthy();
-        //     expect(result.steps.map((reason) => reason.message)).toEqual([
-        //         "distribution",
-        //         "subtracting is the same as adding the inverse",
-        //         "subtracting is the same as adding the inverse",
-        //     ]);
-        // });
 
         it("1 - 2(x + y) -> 1 - 2x - 2y", () => {
             const result = checkStep("1 - 2(x + y)", "1 - 2x - 2y");

@@ -1,20 +1,4 @@
-import {parse} from "@math-blocks/text-parser";
-
-import StepChecker from "../../step-checker";
-import {Result} from "../../types";
-
-const checker = new StepChecker();
-
-const checkStep = (prev: string, next: string): Result => {
-    const result = checker.checkStep(parse(prev), parse(next), {
-        checker,
-        steps: [],
-    });
-    if (!result) {
-        throw new Error("no path found");
-    }
-    return result;
-};
+import {checkStep} from "../test-util";
 
 describe("Eval (decomposition) checks", () => {
     describe("evalAdd", () => {

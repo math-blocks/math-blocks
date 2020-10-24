@@ -12,7 +12,11 @@ export type Result = {
 export type Context = {
     steps: Step[];
     checker: IStepChecker;
-    filter?: (checkName: string) => boolean;
+    filters?: {
+        allowedChecks?: Set<string>;
+        disallowedChecks?: Set<string>;
+    };
+    successfulChecks: Set<string>;
 };
 
 export interface IStepChecker {
@@ -36,7 +40,6 @@ export type Check<
         reverse?: boolean,
     ): Result | void;
     symmetric?: boolean;
-    parallel?: boolean;
     unfilterable?: boolean;
 };
 

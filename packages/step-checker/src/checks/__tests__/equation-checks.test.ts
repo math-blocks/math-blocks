@@ -1,24 +1,10 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import StepChecker from "../../step-checker";
-import {Result} from "../../types";
 import {deepEquals} from "../../util";
+import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-
-const checker = new StepChecker();
-
-const checkStep = (prev: string, next: string): Result => {
-    const result = checker.checkStep(parse(prev), parse(next), {
-        checker,
-        steps: [],
-    });
-    if (!result) {
-        throw new Error("no path found");
-    }
-    return result;
-};
 
 expect.extend({
     toParseLike(received, expected) {
@@ -193,6 +179,15 @@ describe("Equation checks", () => {
             expect(() =>
                 checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10"),
             ).toThrow();
+        });
+
+        it("2x + 5 - 5 = 10 - 5 -> 2x + 5 - 5 = 5", () => {
+            const result = checkStep("2x + 5 - 5 = 10 - 5", "2x + 5 - 5 = 5");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "evaluation of addition",
+            ]);
         });
     });
 

@@ -2,23 +2,10 @@ import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
 import StepChecker from "../../step-checker";
-import {Result} from "../../types";
 import {deepEquals} from "../../util";
+import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-
-const checker = new StepChecker();
-
-const checkStep = (prev: string, next: string): Result => {
-    const result = checker.checkStep(parse(prev), parse(next), {
-        checker,
-        steps: [],
-    });
-    if (!result) {
-        throw new Error("no path found");
-    }
-    return result;
-};
 
 expect.extend({
     toParseLike(received, expected) {
@@ -149,6 +136,7 @@ describe("Fraction checks", () => {
         const result = checker.checkStep(parse("30 / 6"), parse("5"), {
             checker,
             steps: [],
+            successfulChecks: new Set(),
         });
 
         if (!result) {
@@ -170,6 +158,7 @@ describe("Fraction checks", () => {
         const result = checker.checkStep(parse("24 / 6"), parse("4"), {
             checker,
             steps: [],
+            successfulChecks: new Set(),
         });
 
         if (!result) {
@@ -228,6 +217,7 @@ describe("Fraction checks", () => {
             {
                 checker,
                 steps: [],
+                successfulChecks: new Set(),
             },
         );
 
