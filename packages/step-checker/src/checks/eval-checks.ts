@@ -116,20 +116,20 @@ function evalDecompNaryOp(
     return FAILED_CHECK;
 }
 
-export const evalMul: Check = (prev, next, context) => {
-    return evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
+export const evalMul: Check = (prev, next, context, reverse) => {
+    return reverse
+        ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
+        : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
 };
+
+evalMul.symmetric = true;
 
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
-export const evalAdd: Check = (prev, next, context) => {
-    return evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
+export const evalAdd: Check = (prev, next, context, reverse) => {
+    return reverse
+        ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
+        : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
 };
 
-export const decompSum: Check = (prev, next, context) => {
-    return evalDecompNaryOp(next, prev, "add", Direction.DECOMP, context);
-};
-
-export const decompProduct: Check = (prev, next, context) => {
-    return evalDecompNaryOp(next, prev, "mul", Direction.DECOMP, context);
-};
+evalAdd.symmetric = true;

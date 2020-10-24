@@ -16,12 +16,7 @@ import {
     mulByZero,
 } from "./checks/axiom-checks";
 import {checkAddSub, checkMul, checkDiv} from "./checks/equation-checks";
-import {
-    evalMul,
-    evalAdd,
-    decompProduct,
-    decompSum,
-} from "./checks/eval-decomp-checks";
+import {evalMul, evalAdd} from "./checks/eval-checks";
 import {
     addInverse,
     subIsNeg,
@@ -163,9 +158,7 @@ class StepChecker implements IStepChecker {
             checkMul,
             checkDiv,
 
-            ...(this.options.skipEvalChecker
-                ? []
-                : [evalMul, evalAdd, decompProduct, decompSum]),
+            ...(this.options.skipEvalChecker ? [] : [evalMul, evalAdd]),
 
             // integer checks
             addInverse,
