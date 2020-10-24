@@ -185,7 +185,8 @@ export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
 
     if (
         prev.type === "neg" &&
-        !prev.subtraction && // exclude -1 to avoid an infinite expansion
+        !prev.subtraction &&
+        // exclude -1 to avoid an infinite expansion
         !(prev.arg.type == "number" && prev.arg.value == "1")
     ) {
         const newPrev = Semantic.mulFactors([
@@ -229,40 +230,65 @@ export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
-        // TODO: handle more factors
-        if (prev.args.length === 2 && next.args.length === 2) {
-            if (prev.args[0].type === "neg" && prev.args[1].type === "neg") {
-                const newPrev = Semantic.mulFactors([
-                    prev.args[0].arg,
-                    prev.args[1].arg,
-                ]);
+        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
 
-                const result = reverse
-                    ? checker.checkStep(next, newPrev, context)
-                    : checker.checkStep(newPrev, next, context);
-                if (result) {
-                    return {
-                        equivalent: true,
-                        steps: reverse
-                            ? [
-                                  ...result.steps,
-                                  {
-                                      message:
-                                          "multiplying two negatives is a positive",
-                                      nodes: [],
-                                  },
-                              ]
-                            : [
-                                  {
-                                      message:
-                                          "multiplying two negatives is a positive",
-                                      nodes: [],
-                                  },
-                                  ...result.steps,
-                              ],
-                    };
+        const negIndices: number[] = [];
+
+        for (let i = 0; i < factors.length; i++) {
+            const factor = factors[i];
+            if (factor.type === "neg") {
+                negIndices.push(i);
+            }
+        }
+
+        if (negIndices.length >= 2) {
+            // remove each pair of negatives
+            for (let i = 0; i < negIndices.length; i += 2) {
+                const neg1 = factors[negIndices[i]];
+                const neg2 = factors[negIndices[i + 1]];
+                if (neg1.type === "neg" && neg2.type === "neg") {
+                    factors[negIndices[i]] = neg1.arg;
+                    factors[negIndices[i + 1]] = neg2.arg;
                 }
             }
+        } else {
+            return FAILED_CHECK;
+        }
+
+        const newPrev = Semantic.mul(factors);
+
+        const result = reverse
+            ? checker.checkStep(next, newPrev, {
+                  ...context,
+                  filter: (checkName: string) =>
+                      mulTwoNegsIsPos.name !== checkName,
+              })
+            : checker.checkStep(newPrev, next, {
+                  ...context,
+                  filter: (checkName: string) =>
+                      mulTwoNegsIsPos.name !== checkName,
+              });
+        if (result) {
+            return {
+                equivalent: true,
+                steps: reverse
+                    ? [
+                          ...result.steps,
+                          {
+                              message:
+                                  "a positive is the same as multiplying two negatives",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message:
+                                  "multiplying two negatives is a positive",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
+            };
         }
     }
 
@@ -270,3 +296,53 @@ export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
 };
 
 mulTwoNegsIsPos.symmetric = true;
+
+/**
+ * This is kind of a weird rule in that it's not normally something that people
+ * would show when working through steps manually.  It's necessary though to
+ * handle distribution involving negatives.
+ *
+ * example: (x)(-y) -> -xy
+ *
+ * A more detailed version of this would be:
+ * (x)(-y) -> (x)(-1)(y) -> (-1)(x)(y) -> -xy
+ *
+ * @param prev
+ * @param next
+ * @param context
+ */
+export const moveNegToFirstFactor: Check = (prev, next, context) => {
+    const {checker} = context;
+
+    if (prev.type === "mul" && prev.args[0].type !== "neg") {
+        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
+        const index = factors.findIndex((factor) => factor.type === "neg");
+        const neg = factors[index];
+
+        if (index !== -1 && neg.type === "neg") {
+            factors[0] = Semantic.neg(factors[0]);
+            factors[index] = neg.arg;
+        } else {
+            // If there are no negatives then we can't transfer a negative
+            return FAILED_CHECK;
+        }
+
+        const newPrev = Semantic.mul(factors);
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return {
+                equivalent: true,
+                steps: [
+                    {
+                        message: "move negative to first factor",
+                        nodes: [prev, newPrev],
+                    },
+                    ...result.steps,
+                ],
+            };
+        }
+    }
+
+    return FAILED_CHECK;
+};

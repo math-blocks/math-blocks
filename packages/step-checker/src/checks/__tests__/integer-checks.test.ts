@@ -308,6 +308,49 @@ describe("Integer checks", () => {
         ]);
     });
 
+    it("1 + -xy -> 1 - xy", () => {
+        const result = checkStep("1 + -xy", "1 - xy");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "subtracting is the same as adding the inverse",
+        ]);
+    });
+
+    it("(x)(y)(-z) -> -xyz", () => {
+        const result = checkStep("(x)(y)(-z)", "-xyz");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "move negative to first factor",
+        ]);
+    });
+
+    it("(x)(-y)(-z) -> xyz", () => {
+        const result = checkStep("(x)(-y)(-z)", "xyz");
+
+        expect(result).toBeTruthy();
+    });
+
+    it("xyz -> (x)(-y)(-z)", () => {
+        const result = checkStep("xyz", "(x)(-y)(-z)");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "a positive is the same as multiplying two negatives",
+        ]);
+    });
+
+    it("1 + (x)(-y) -> 1 - xy", () => {
+        const result = checkStep("1 + (x)(-y)", "1 - xy");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "move negative to first factor",
+            "subtracting is the same as adding the inverse",
+        ]);
+    });
+
     it("-1*a -> -a", () => {
         const result = checkStep("-1 * a", "-a");
 
@@ -331,7 +374,7 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
-            "multiplying two negatives is a positive",
+            "a positive is the same as multiplying two negatives",
         ]);
     });
 

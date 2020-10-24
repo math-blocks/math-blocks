@@ -12,7 +12,7 @@ import {serializer} from "@math-blocks/semantic";
 
 expect.addSnapshotSerializer(serializer);
 
-describe("NewMathParser", () => {
+describe("EditorParser", () => {
     it("should handle equations", () => {
         const tokens = [
             Lexer.number("2", location([], 0, 1)),
@@ -330,6 +330,44 @@ describe("NewMathParser", () => {
             (add
               a
               (add b c))
+        `);
+    });
+
+    it("negation is higher precedence than implicit multiplication", () => {
+        // -ab
+        const tokens = [
+            Lexer.minus(location([], 0, 1)),
+            Lexer.identifier("a", location([], 1, 2)),
+            Lexer.identifier("b", location([], 2, 3)),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (neg a)
+              b)
+        `);
+    });
+
+    it("negation can be on individual factors when wrapped in parens", () => {
+        // (-a)(b)
+        const tokens = [
+            Lexer.lparens(location([], 0, 1)),
+            Lexer.minus(location([], 1, 2)),
+            Lexer.identifier("a", location([], 2, 3)),
+            Lexer.rparens(location([], 3, 4)),
+            Lexer.lparens(location([], 4, 5)),
+            Lexer.identifier("b", location([], 5, 6)),
+            Lexer.rparens(location([], 6, 7)),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (neg a)
+              b)
         `);
     });
 
