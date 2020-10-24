@@ -340,16 +340,27 @@ describe("Axiom checks", () => {
             ]);
         });
 
-        it("1 + -2(x + y) -> 1 - 2x - 2y", () => {
-            const result = checkStep("1 + -2(x + y)", "1 - 2x - 2y");
+        // it.only("1 + -2(x + y) -> 1 + (-2)(x + y)", () => {
+        //     const result = checkStep("1 + -2(x + y)", "1 + (-2)(x + y)");
 
-            expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-                "subtracting is the same as adding the inverse",
-                "subtracting is the same as adding the inverse",
-            ]);
-        });
+        //     expect(result).toBeTruthy();
+        //     expect(result.steps.map((reason) => reason.message)).toEqual([
+        //         // "distribution",
+        //         // "subtracting is the same as adding the inverse",
+        //         // "subtracting is the same as adding the inverse",
+        //     ]);
+        // });
+
+        // it.only("foo", () => {
+        //     const result = checkStep("1 + (-2)(x + y)", "1 - 2x - 2y");
+
+        //     expect(result).toBeTruthy();
+        //     expect(result.steps.map((reason) => reason.message)).toEqual([
+        //         "distribution",
+        //         "subtracting is the same as adding the inverse",
+        //         "subtracting is the same as adding the inverse",
+        //     ]);
+        // });
 
         it("1 - 2(x + y) -> 1 - 2x - 2y", () => {
             const result = checkStep("1 - 2(x + y)", "1 - 2x - 2y");
@@ -368,6 +379,108 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("1 - (x + y) -> 1 - x - y", () => {
+            const result = checkStep("1 - (x + y)", "1 - x - y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtraction is the same as multiplying by negative one",
+                "distribution",
+                "negation is the same as multipling by negative one",
+                "negation is the same as multipling by negative one",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("2(x - y) -> 2(x + -y)", () => {
+            const result = checkStep("2(x - y)", "2(x + -y)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("2(x - y) -> 2x - 2y", () => {
+            const result = checkStep("2(x - y)", "2x - 2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "move negative to first factor",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("2x + 2(-y) -> 2x - 2y", () => {
+            const result = checkStep("2x + 2(-y)", "2x - 2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "move negative to first factor",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("-2(x - y) -> -2x + 2y", () => {
+            const result = checkStep("-2(x - y)", "-2x + 2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "multiplying two negatives is a positive",
+            ]);
+        });
+
+        it("1 - 2(x - y) -> 1 - 2x + 2y", () => {
+            const result = checkStep("1 - 2(x - y)", "1 - 2x + 2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "distribution",
+                "multiplying two negatives is a positive",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        it("1 - (x - y) -> 1 - x + y", () => {
+            const result = checkStep("1 - 2(x - y)", "1 - 2x + 2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "distribution",
+                "multiplying two negatives is a positive",
+                "subtracting is the same as adding the inverse",
+            ]);
+        });
+
+        // TODO: improve the performance of this test
+        it("1 - (x + y) - (a + b) -> 1 - x - y - a - b", () => {
+            const result = checkStep(
+                "1 - (x + y) - (a + b)",
+                "1 - x - y - a - b",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtraction is the same as multiplying by negative one",
+                "distribution",
+                "subtraction is the same as multiplying by negative one",
+                "distribution",
+                "negation is the same as multipling by negative one",
+                "negation is the same as multipling by negative one",
+                "negation is the same as multipling by negative one",
+                "negation is the same as multipling by negative one",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
             ]);
         });

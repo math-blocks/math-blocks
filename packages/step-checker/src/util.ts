@@ -198,6 +198,7 @@ export const checkArgs: Check = (prev, next, context) => {
 
     return FAILED_CHECK;
 };
+checkArgs.unfilterable = true;
 
 /**
  * Returns all of the elements that appear in both as and bs.
@@ -263,3 +264,4 @@ export const exactMatch: Check = (prev, next, context) => {
           }
         : FAILED_CHECK;
 };
+exactMatch.unfilterable = true;

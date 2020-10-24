@@ -23,6 +23,7 @@ import {
     mulTwoNegsIsPos,
     doubleNegative,
     negIsMulNegOne,
+    moveNegToFirstFactor,
 } from "./checks/integer-checks";
 import {
     divByFrac,
@@ -53,6 +54,7 @@ const numberCheck: Check = (prev, next, context) => {
     }
     return FAILED_CHECK;
 };
+numberCheck.unfilterable = true;
 
 const identifierCheck: Check = (prev, next, context) => {
     if (
@@ -66,6 +68,7 @@ const identifierCheck: Check = (prev, next, context) => {
     }
     return FAILED_CHECK;
 };
+numberCheck.unfilterable = true;
 
 const runChecks = (
     checks: Check[],
@@ -126,6 +129,8 @@ class StepChecker implements IStepChecker {
     // TODO: dividing a fraction: a/b / c -> a / bc
     // TODO: add an identity check for all operations
     // TODO: check removal of parens, i.e. associative property
+    // TODO: handle roots and other things that don't pass the hasArgs test
+
     checkStep(
         prev: Semantic.Expression,
         next: Semantic.Expression,
@@ -166,6 +171,7 @@ class StepChecker implements IStepChecker {
             mulTwoNegsIsPos,
             doubleNegative,
             negIsMulNegOne,
+            moveNegToFirstFactor,
 
             // fraction checks
             // NOTE: these must appear after eval checks
@@ -178,9 +184,14 @@ class StepChecker implements IStepChecker {
             checkDivisionCanceling,
         ];
 
-        // TODO: handle roots and other things that don't pass the hasArgs test
+        const filter = context.filter;
+        const filteredChecks = filter
+            ? checks.filter((check) =>
+                  check.unfilterable ? check : filter(check.name),
+              )
+            : checks;
 
-        return runChecks(checks, prev, next, context);
+        return runChecks(filteredChecks, prev, next, context);
     }
 }
 

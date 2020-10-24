@@ -66,7 +66,6 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     const result = context.checker.checkStep(newNext, next, context);
     if (result) {
         return {
-            equivalent: true,
             steps: [
                 ...identitySteps,
                 {
@@ -86,6 +85,30 @@ export const checkDistribution: Check = (prev, next, context) => {
     if (prev.type === "add" && next.type === "add") {
         const results: Result[] = [];
 
+        // ignore all other checks in subsequent calls to checkStep
+        const filter = (checkName: string): boolean => {
+            if (context.filter) {
+                return (
+                    context.filter(checkName) &&
+                    [
+                        "checkDistribution",
+                        "negIsMulNegOne",
+                        "subIsNeg",
+                        "mulTwoNegsIsPos",
+                        "moveNegToFirstFactor",
+                    ].includes(checkName)
+                );
+            } else {
+                return [
+                    "checkDistribution",
+                    "negIsMulNegOne",
+                    "subIsNeg",
+                    "mulTwoNegsIsPos",
+                    "moveNegToFirstFactor",
+                ].includes(checkName);
+            }
+        };
+
         // TODO: find all 'mul' nodes and then try generating a newPrev
         // node from each of them.
         for (let i = 0; i < prev.args.length; i++) {
@@ -98,21 +121,48 @@ export const checkDistribution: Check = (prev, next, context) => {
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
                     ...(mul.args[1].args.map((arg) =>
+                        // Here we didn't bubble the negative up.
                         Semantic.mul([mul.args[0], arg]),
                     ) as TwoOrMore<Semantic.Expression>),
                     ...prev.args.slice(i + 1),
                 ]);
 
-                const result = context.checker.checkStep(
-                    newPrev,
-                    next,
-                    context,
-                );
+                const result = context.checker.checkStep(newPrev, next, {
+                    ...context,
+                    filter,
+                });
                 if (result) {
                     results.push({
                         steps: [
                             {
                                 message: "distribution",
+                                nodes: [prev, newPrev],
+                            },
+                            ...result.steps,
+                        ],
+                    });
+                }
+            } else if (
+                mul.type === "neg" &&
+                mul.subtraction &&
+                mul.arg.type === "add"
+            ) {
+                // TODO: include a step that converts 1 - (x + y) to 1 + -(x + y)
+                const newPrev = Semantic.addTerms([
+                    ...prev.args.slice(0, i),
+                    Semantic.mul([Semantic.neg(Semantic.number("1")), mul.arg]),
+                    ...prev.args.slice(i + 1),
+                ]);
+                const result = context.checker.checkStep(newPrev, next, {
+                    ...context,
+                    filter,
+                });
+                if (result) {
+                    results.push({
+                        steps: [
+                            {
+                                message:
+                                    "subtraction is the same as multiplying by negative one",
                                 nodes: [prev, newPrev],
                             },
                             ...result.steps,
@@ -139,9 +189,14 @@ export const checkDistribution: Check = (prev, next, context) => {
     }
     if (prev.args[1].type === "add") {
         const newPrev = Semantic.add(
-            prev.args[1].args.map((arg) =>
-                Semantic.mul([prev.args[0], arg]),
-            ) as TwoOrMore<Semantic.Expression>,
+            prev.args[1].args.map((arg) => {
+                if (arg.type === "neg") {
+                    // Set 'subtraction' prop to false
+                    return Semantic.mul([prev.args[0], Semantic.neg(arg.arg)]);
+                } else {
+                    return Semantic.mul([prev.args[0], arg]);
+                }
+            }) as TwoOrMore<Semantic.Expression>,
         );
 
         const result = context.checker.checkStep(newPrev, next, context);

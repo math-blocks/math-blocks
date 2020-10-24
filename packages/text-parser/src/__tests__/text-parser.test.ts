@@ -87,6 +87,36 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`(mul.imp a b)`);
     });
 
+    it("negation is higher precedence than implicit multplication", () => {
+        const ast = parse("-ab");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (neg a)
+              b)
+        `);
+    });
+
+    it("negation can be on individual factors when wrapped in parens", () => {
+        const ast = parse("(-a)(b)");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (neg a)
+              b)
+        `);
+    });
+
+    it("implicit multiplication is higher precedence than addition", () => {
+        const ast = parse("ab + cd");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (add
+              (mul.imp a b)
+              (mul.imp c d))
+        `);
+    });
+
     it("parses n-ary implicit multiplication", () => {
         const ast = parse("abc");
 
