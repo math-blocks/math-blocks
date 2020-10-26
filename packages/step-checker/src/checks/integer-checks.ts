@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check, ParallelStrategy} from "../types";
+import {Result, Check} from "../types";
 import {FAILED_CHECK} from "../constants";
 
 export const addInverse: Check = (prev, next, context) => {
@@ -172,7 +172,6 @@ export const subIsNeg: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
-// subIsNeg.parallel = ParallelStrategy.ShortestPathWins;
 subIsNeg.symmetric = true;
 
 export const negIsMulNegOne: Check = (prev, next, context) => {
