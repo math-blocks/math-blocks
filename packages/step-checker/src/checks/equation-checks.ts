@@ -12,7 +12,7 @@ import {difference} from "../util";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-export const checkAddSub: Check = (prev, next, context, reversed) => {
+export const checkAddSub: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -33,10 +33,23 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
             Semantic.getTerms(rhsA),
             context,
         );
-        // TODO: check thata lhsNew and rhsNew has a single term
+
+        // TODO: check that lhsNew and rhsNew has a single term
         const lhsNew = Semantic.addTerms(lhsNewTerms);
         const rhsNew = Semantic.addTerms(rhsNewTerms);
-        const result = checker.checkStep(lhsNew, rhsNew, context);
+        let result = checker.checkStep(lhsNew, rhsNew, {
+            ...context,
+            filters: {
+                // prevent an infinite loop
+                disallowedChecks: new Set(["checkAddSub"]),
+            },
+        });
+
+        // If what we're adding to both sides isn't equivalent then fail
+        // TODO: report this error back to the user
+        if (!result) {
+            return FAILED_CHECK;
+        }
 
         const lhsNewTerm = lhsNewTerms[0];
         const rhsNewTerm = rhsNewTerms[0];
@@ -46,101 +59,60 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
             return FAILED_CHECK;
         }
 
-        if (reversed) {
-            // This check prevents an infinite loop
-            if (
-                context.steps.some(
-                    (step) =>
-                        step.message ===
-                        "removing the same term from both sides",
-                )
-            ) {
-                return FAILED_CHECK;
-            }
+        const newPrev = Semantic.eq([
+            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
+            Semantic.add([...Semantic.getTerms(lhsA), lhsNewTerm]),
+            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
+            Semantic.add([...Semantic.getTerms(rhsA), rhsNewTerm]),
+        ]);
 
-            const newPrev = Semantic.eq([
-                // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-                Semantic.add([
-                    ...Semantic.getTerms(lhsB),
-                    lhsNewTerm.type === "neg"
-                        ? lhsNewTerm.arg
-                        : Semantic.neg(lhsNewTerm, true),
-                ]),
-                // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-                Semantic.add([
-                    ...Semantic.getTerms(rhsB),
-                    rhsNewTerm.type === "neg"
-                        ? rhsNewTerm.arg
-                        : Semantic.neg(rhsNewTerm, true),
-                ]),
-            ]);
-            newPrev;
+        const newSteps = [
+            ...context.steps,
+            {
+                message: "removing the same term from both sides",
+                // TODO: add nodes
+                nodes: [],
+            },
+        ];
 
-            const newSteps = [
-                ...context.steps,
-                {
-                    message: "removing the same term from both sides",
-                    // TODO: add nodes
-                    nodes: [],
-                },
-            ];
+        result = checker.checkStep(newPrev, next, {
+            ...context,
+            steps: newSteps,
+            filters: {
+                // prevent an infinite loop
+                disallowedChecks: new Set(["checkAddSub"]),
+            },
+        });
 
-            const result = checker.checkStep(newPrev, prev, {
-                ...context,
-                steps: newSteps,
-            });
-            if (result) {
-                return {
-                    steps: [
-                        {
-                            message: "subtract the same value from both sides",
-                            nodes: [next, newPrev],
-                        },
-                        ...result.steps,
-                    ],
-                };
-            } else {
-                // TODO: write test for this case
-                return FAILED_CHECK;
-            }
-        }
-
-        // TODO: handle adding multiple things to lhs and rhs as the same time
-        // TODO: do we want to enforce that the thing being added is exactly
-        // the same or do we want to allow equivalent expressions?
-        if (result && result.steps.length === 0) {
-            if (
-                Semantic.isSubtraction(lhsNewTerms[0]) &&
-                Semantic.isSubtraction(rhsNewTerms[0])
-            ) {
-                return {
-                    steps: [
-                        {
-                            message:
-                                "subtracting the same value from both sides",
-                            // TODO: add nodes
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
+        if (result) {
             return {
-                steps: [
-                    {
-                        message: "adding the same value to both sides",
-                        // TODO: add nodes
-                        nodes: [],
-                    },
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message:
+                                  "removing adding the same value to both sides",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "adding the same value to both sides",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
+
     return FAILED_CHECK;
 };
 
+// TODO: make this check parallel prefer the forward direction
 checkAddSub.symmetric = true;
 
-export const checkMul: Check = (prev, next, context, reversed) => {
+export const checkMul: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -167,7 +139,7 @@ export const checkMul: Check = (prev, next, context, reversed) => {
             context,
         );
 
-        if (reversed) {
+        if (context.reversed) {
             if (
                 context.steps.some(
                     (step) =>
@@ -230,7 +202,7 @@ export const checkMul: Check = (prev, next, context, reversed) => {
 
 checkMul.symmetric = true;
 
-export const checkDiv: Check = (prev, next, context, reversed) => {
+export const checkDiv: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -251,7 +223,7 @@ export const checkDiv: Check = (prev, next, context, reversed) => {
                 context,
             );
 
-            if (reversed) {
+            if (context.reversed) {
                 if (
                     context.steps.some(
                         (step) =>

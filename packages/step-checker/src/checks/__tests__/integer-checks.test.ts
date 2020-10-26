@@ -1,8 +1,25 @@
 import {serializer} from "@math-blocks/semantic";
+import {parse} from "@math-blocks/text-parser";
 
 import {checkStep} from "../test-util";
+import {deepEquals} from "../../util";
 
 expect.addSnapshotSerializer(serializer);
+
+expect.extend({
+    toParseLike(received, expected) {
+        if (deepEquals(received, parse(expected))) {
+            return {
+                message: () => `expected steps not to match`,
+                pass: true,
+            };
+        }
+        return {
+            message: () => `expected steps not to match`,
+            pass: false,
+        };
+    },
+});
 
 describe("Integer checks", () => {
     it("a + -a -> 0", () => {
@@ -48,6 +65,26 @@ describe("Integer checks", () => {
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a - b");
+        expect(result.steps[0].nodes[1]).toParseLike("a + -b");
+    });
+
+    it("a - bc -> a + -bc", () => {
+        const result = checkStep("a - bc", "a + -bc");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "subtracting is the same as adding the inverse",
+        ]);
+
+        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+            (add
+              a
+              (mul.imp
+                (neg b)
+                c))
+        `);
     });
 
     it("a + -b -> a - b", () => {
@@ -427,55 +464,24 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
 
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg a)`);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              a)
-        `);
-        expect(result.steps[0].message).toEqual(
+        expect(result.steps.map((step) => step.message)).toEqual([
             "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg b)`);
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              b)
-        `);
-        expect(result.steps[1].message).toEqual(
             "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
-            (add
-              (mul.exp
-                (neg 1)
-                a)
-              (mul.exp
-                (neg 1)
-                b))
-        `);
-        expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[2].message).toEqual("factoring");
-
-        expect(result.steps[3].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[3].nodes[1]).toMatchInlineSnapshot(
-            `(neg (add a b))`,
-        );
-        expect(result.steps[3].message).toEqual(
+            "factoring",
             "negation is the same as multipling by negative one",
-        );
+        ]);
 
-        expect(result.steps).toHaveLength(4);
+        expect(result.steps[0].nodes[0]).toParseLike("-a");
+        expect(result.steps[0].nodes[1]).toParseLike("-1 * a");
+
+        expect(result.steps[1].nodes[0]).toParseLike("-b");
+        expect(result.steps[1].nodes[1]).toParseLike("-1 * b");
+
+        expect(result.steps[2].nodes[0]).toParseLike("-1*a + -1*b");
+        expect(result.steps[2].nodes[1]).toParseLike("-1*(a + b)");
+
+        expect(result.steps[3].nodes[0]).toParseLike("-1*(a + b)");
+        expect(result.steps[3].nodes[1]).toParseLike("-(a + b)");
     });
 
     it("-a + -b -> -1a + -1b", () => {
@@ -513,10 +519,10 @@ describe("Integer checks", () => {
 
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (mul.imp
+              (mul.exp
                 (neg 1)
                 a)
-              (mul.imp
+              (mul.exp
                 (neg 1)
                 b))
         `);

@@ -12,7 +12,6 @@ import {
     addZero,
     mulOne,
     checkDistribution,
-    checkFactoring,
     mulByZero,
 } from "./checks/axiom-checks";
 import {checkAddSub, checkMul, checkDiv} from "./checks/equation-checks";
@@ -77,14 +76,21 @@ const runChecks = (
     context: Context,
 ): Result | void => {
     for (const check of checks) {
-        const result = check(prev, next, context, false);
+        const result = check(prev, next, context);
         if (result) {
             context.successfulChecks.add(check.name);
             return result;
         }
 
+        // We can't rely on simply calling each symmetric check with a 'reversed'
+        // param since some paths modify the root node multiple times.  If we
+        // reverse for one of the checks then the subsequent checks in that path
+        // must also be reversed.
         if (check.symmetric) {
-            const result = check(next, prev, context, true);
+            const result = check(next, prev, {
+                ...context,
+                reversed: !context.reversed,
+            });
             if (result) {
                 context.successfulChecks.add(check.name);
                 return result;
@@ -134,7 +140,7 @@ class StepChecker implements IStepChecker {
             addZero,
             mulOne,
             checkDistribution,
-            checkFactoring,
+            // checkFactoring,
             mulByZero,
 
             // We do this after axiom checks so that we can include commute steps

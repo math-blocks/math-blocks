@@ -116,8 +116,8 @@ function evalDecompNaryOp(
     return FAILED_CHECK;
 }
 
-export const evalMul: Check = (prev, next, context, reverse) => {
-    return reverse
+export const evalMul: Check = (prev, next, context) => {
+    return context.reversed
         ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
 };
@@ -126,8 +126,8 @@ evalMul.symmetric = true;
 
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
-export const evalAdd: Check = (prev, next, context, reverse) => {
-    return reverse
+export const evalAdd: Check = (prev, next, context) => {
+    return context.reversed
         ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
 };

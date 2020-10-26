@@ -124,13 +124,21 @@ export const checkDistribution: Check = (prev, next, context) => {
                 });
                 if (result) {
                     results.push({
-                        steps: [
-                            {
-                                message: "distribution",
-                                nodes: [prev, newPrev],
-                            },
-                            ...result.steps,
-                        ],
+                        steps: context.reversed
+                            ? [
+                                  ...result.steps,
+                                  {
+                                      message: "factoring",
+                                      nodes: [newPrev, prev],
+                                  },
+                              ]
+                            : [
+                                  {
+                                      message: "distribution",
+                                      nodes: [prev, newPrev],
+                                  },
+                                  ...result.steps,
+                              ],
                     });
                 }
             } else if (
@@ -195,19 +203,31 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: [
-                    {
-                        message: "distribution",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "factoring",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "distribution",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
 
     // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
+        prev.type; // ?
+        next.type; // ?
+        console.log(JSON.stringify(prev, null, 4));
+        console.log(JSON.stringify(next, null, 4));
         const newPrev = Semantic.add(
             prev.args[0].args.map((arg) =>
                 Semantic.mul([arg, prev.args[1]]),
@@ -217,81 +237,28 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: [
-                    {
-                        message: "distribution",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "factoring",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "distribution",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
     return FAILED_CHECK;
 };
 
-// TODO: update this to follow what checkDistribution is doing more closely
-export const checkFactoring: Check = (prev, next, context) => {
-    if (prev.type !== "add" || next.type !== "mul") {
-        return FAILED_CHECK;
-    }
-
-    // TODO: handle distribution across n-ary multiplication later
-    if (next.args.length === 2) {
-        const [left, right] = next.args;
-        for (const [x, y] of [
-            [left, right],
-            [right, left],
-        ]) {
-            if (y.type === "add" && y.args.length === prev.args.length) {
-                const subSteps: Step[] = [];
-                const equivalent = prev.args.every((arg, index) => {
-                    // Each term is in the correct order based on whether
-                    // we're distributing/factoring from left to right or
-                    // the reverse
-                    const term =
-                        x === left
-                            ? Semantic.mulFactors([x, y.args[index]])
-                            : Semantic.mulFactors([y.args[index], x]);
-
-                    // NOTE: We reset the "steps" parameter here because
-                    // we're checking different nodes so we won't run into
-                    // a cycle here.
-                    const substep = context.checker.checkStep(arg, term, {
-                        ...context,
-                        steps: [],
-                    });
-
-                    if (substep) {
-                        subSteps.push(...substep.steps);
-                    }
-                    return substep;
-                });
-
-                if (equivalent) {
-                    const nodes: Semantic.Expression[] = [prev, next];
-
-                    // TODO: include the original nodes[0] in the result somehow
-                    if (subSteps.length > 0) {
-                        nodes[0] = applySteps(nodes[0], subSteps);
-                    }
-
-                    return {
-                        steps: [
-                            ...subSteps,
-                            {
-                                message: "factoring",
-                                nodes,
-                            },
-                        ],
-                    };
-                }
-            }
-        }
-    }
-
-    return FAILED_CHECK;
-};
+checkDistribution.symmetric = true;
 
 export const mulByZero: Check = (prev, next, context) => {
     if (prev.type !== "mul") {
@@ -400,16 +367,14 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 !context.checker.checkStep(first, second, context),
         );
 
-        const newPrev = applySteps(prev, result.steps);
-
         if (reordered && result) {
             return {
                 steps: [
-                    ...result.steps,
                     {
                         message: "commutative property",
-                        nodes: [newPrev, next],
+                        nodes: [prev, next],
                     },
+                    ...result.steps,
                 ],
             };
         }

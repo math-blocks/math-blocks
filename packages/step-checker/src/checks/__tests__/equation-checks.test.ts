@@ -36,46 +36,28 @@ describe("Equation checks", () => {
             const result = checkStep("x + 5 = y + 5", "x = y");
 
             expect(result).toBeTruthy();
-            expect(result.steps).toHaveLength(3);
 
-            expect(result.steps[0].message).toEqual(
-                "subtract the same value from both sides",
-            );
-            expect(result.steps[0].nodes[0]).toParseLike("x + 5 = y + 5");
-            expect(result.steps[0].nodes[1]).toParseLike(
-                "x + 5 - 5 = y + 5 - 5",
-            );
-
-            expect(result.steps[1].message).toEqual("adding inverse");
-            expect(result.steps[1].nodes[0]).toParseLike("x + 5 - 5");
-            expect(result.steps[1].nodes[1]).toParseLike("x");
-
-            expect(result.steps[2].message).toEqual("adding inverse");
-            expect(result.steps[2].nodes[0]).toParseLike("y + 5 - 5");
-            expect(result.steps[2].nodes[1]).toParseLike("y");
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "removing adding the same value to both sides",
+            ]);
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+                (eq
+                  (add x 5)
+                  (add y 5))
+            `);
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(eq x y)`);
         });
 
         it("x + 5 = y + 5 + 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 = y + 5 + 5", "x = y + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps).toHaveLength(3);
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "removing adding the same value to both sides",
+            ]);
 
-            expect(result.steps[0].message).toEqual(
-                "subtract the same value from both sides",
-            );
             expect(result.steps[0].nodes[0]).toParseLike("x + 5 = y + 5 + 5");
-            expect(result.steps[0].nodes[1]).toParseLike(
-                "x + 5 - 5 = y + 5 + 5 - 5",
-            );
-
-            expect(result.steps[1].message).toEqual("adding inverse");
-            expect(result.steps[1].nodes[0]).toParseLike("x + 5 - 5");
-            expect(result.steps[1].nodes[1]).toParseLike("x");
-
-            expect(result.steps[2].message).toEqual("adding inverse");
-            expect(result.steps[2].nodes[0]).toParseLike("y + 5 + 5 - 5");
-            expect(result.steps[2].nodes[1]).toParseLike("y + 5");
+            expect(result.steps[0].nodes[1]).toParseLike("x = y + 5");
         });
 
         it("x + 5 - 5 = y + 5 + 5 - 5 -> x = y + 5", () => {
@@ -110,6 +92,7 @@ describe("Equation checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "adding the same value to both sides",
+                "commutative property",
             ]);
         });
 
@@ -135,8 +118,9 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x - 5 = y - 5");
 
             expect(result).toBeTruthy();
+            // TODO: customize this message for subtraction
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "subtracting the same value from both sides",
+                "adding the same value to both sides",
             ]);
         });
 
@@ -144,23 +128,21 @@ describe("Equation checks", () => {
             const result = checkStep("x - 5 = y - 5", "x = y");
 
             expect(result).toBeTruthy();
-            expect(result.steps).toHaveLength(3);
+            // TODO: customize this to add the same value to both sides
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "removing adding the same value to both sides",
+            ]);
 
-            expect(result.steps[0].message).toEqual(
-                "subtract the same value from both sides",
-            );
-            expect(result.steps[0].nodes[0]).toParseLike("x - 5 = y - 5");
-            expect(result.steps[0].nodes[1]).toParseLike(
-                "x - 5 + 5 = y - 5 + 5",
-            );
-
-            expect(result.steps[1].message).toEqual("adding inverse");
-            expect(result.steps[1].nodes[0]).toParseLike("x - 5 + 5");
-            expect(result.steps[1].nodes[1]).toParseLike("x");
-
-            expect(result.steps[2].message).toEqual("adding inverse");
-            expect(result.steps[2].nodes[0]).toParseLike("y - 5 + 5");
-            expect(result.steps[2].nodes[1]).toParseLike("y");
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+                (eq
+                  (add
+                    x
+                    (neg.sub 5))
+                  (add
+                    y
+                    (neg.sub 5)))
+            `);
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(eq x y)`);
         });
 
         it("x + 10 = y + 15 -> x + 10 - 5 -> y + 15 - 5", () => {
@@ -170,8 +152,9 @@ describe("Equation checks", () => {
             );
 
             expect(result).toBeTruthy();
+            // TODO: customize this to add the same value to both sides
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "subtracting the same value from both sides",
+                "adding the same value to both sides",
             ]);
         });
 
@@ -218,6 +201,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
 
+            // TODO: handle context.reversed in checkMul better
             // The reason why there are so many substeps, is that cancelling
             // values in the numerator and denominator result it lots of sub steps.
             expect(result.steps).toHaveLength(9);
@@ -246,6 +230,7 @@ describe("Equation checks", () => {
             const result = checkStep("x / 5 = y / 5", "x = y");
 
             expect(result).toBeTruthy();
+            // TODO: update checkDiv to handle context.reversed better
             expect(result.steps).toHaveLength(11);
 
             expect(result.steps[0].message).toEqual(

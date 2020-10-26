@@ -1,8 +1,25 @@
 import {serializer} from "@math-blocks/semantic";
+import {parse} from "@math-blocks/text-parser";
 
 import {checkStep} from "../test-util";
+import {deepEquals} from "../../util";
 
 expect.addSnapshotSerializer(serializer);
+
+expect.extend({
+    toParseLike(received, expected) {
+        if (deepEquals(received, parse(expected))) {
+            return {
+                message: () => `expected steps not to match`,
+                pass: true,
+            };
+        }
+        return {
+            message: () => `expected steps not to match`,
+            pass: false,
+        };
+    },
+});
 
 describe("Axiom checks", () => {
     describe("symmetricProperty", () => {
@@ -142,9 +159,9 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-                "evaluation of addition",
                 "commutative property",
+                "evaluation of addition",
+                "evaluation of addition",
             ]);
         });
 
@@ -153,9 +170,9 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose sum",
-                "decompose sum",
                 "commutative property",
+                "decompose sum",
+                "decompose sum",
             ]);
         });
     });
@@ -341,9 +358,15 @@ describe("Axiom checks", () => {
             const result = checkStep("1 - 2(x + y)", "1 + -2(x + y)");
 
             expect(result).toBeTruthy();
+            // TODO: figure out why we don't stop after the first step
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
+                "distribution",
+                "factoring",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("1 - 2(x + y)");
+            expect(result.steps[0].nodes[1]).toParseLike("1 + -2(x + y)");
         });
 
         it("1 - (x + y) -> 1 - x - y", () => {
@@ -485,15 +508,18 @@ describe("Axiom checks", () => {
             ]);
         });
 
-        it("a * (x + y) + b * (x + y) -> ax + ay + bx + by", () => {
+        it("a * (x + y) + b * (x + y) -> ax + ay + b * (x + y)", () => {
             const result = checkStep(
                 "a * (x + y) + b * (x + y)",
                 "ax + ay + b * (x + y)",
             );
 
             expect(result).toBeTruthy();
+            // TODO: make distribution parallel and pick the shortest path
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
+                "distribution",
+                "factoring",
             ]);
         });
 
@@ -568,6 +594,67 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "factoring",
+            ]);
+        });
+
+        it("ab + a -> a(b + 1)", () => {
+            const result = checkStep("ab + a", "a(b + 1)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplication with identity", // a -> (a)(1)
+                "factoring",
+            ]);
+        });
+
+        it("a - ab -> (a)(1) + (-a)(b)", () => {
+            const result = checkStep("a - ab", "(a)(1) + (-a)(b)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "multiplication with identity",
+            ]);
+        });
+
+        it("a - ab -> a(1 - b)", () => {
+            const result = checkStep("a - ab", "a(1 - b)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "multiplication with identity",
+                "move negative to first factor",
+                "factoring",
+            ]);
+        });
+
+        it("-a - ab -> -a(1 + b)", () => {
+            const result = checkStep("-a - ab", "-a(1 + b)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "multiplication with identity", // -a -> (-a)(1)
+                "factoring",
+            ]);
+        });
+
+        it("2x + 3x -> (2 + 3)x", () => {
+            const result = checkStep("2x + 3x", "(2 + 3)x");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "factoring",
+            ]);
+        });
+
+        it("(2 + 3)x -> 5x", () => {
+            const result = checkStep("(2 + 3)x", "5x");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "evaluation of addition",
             ]);
         });
     });

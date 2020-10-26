@@ -39,8 +39,8 @@ describe("Fraction checks", () => {
         expect(result.steps).toHaveLength(2);
 
         expect(result.steps[0].message).toEqual("commutative property");
-        expect(result.steps[0].nodes[0]).toParseLike("1/b * a");
-        expect(result.steps[0].nodes[1]).toParseLike("a * 1/b");
+        expect(result.steps[0].nodes[0]).toParseLike("a * 1/b");
+        expect(result.steps[0].nodes[1]).toParseLike("1/b * a");
 
         expect(result.steps[1].message).toEqual(
             "multiplying by one over something results in a fraction",
@@ -137,6 +137,7 @@ describe("Fraction checks", () => {
             checker,
             steps: [],
             successfulChecks: new Set(),
+            reversed: false,
         });
 
         if (!result) {
@@ -159,6 +160,7 @@ describe("Fraction checks", () => {
             checker,
             steps: [],
             successfulChecks: new Set(),
+            reversed: false,
         });
 
         if (!result) {
@@ -218,6 +220,7 @@ describe("Fraction checks", () => {
                 checker,
                 steps: [],
                 successfulChecks: new Set(),
+                reversed: false,
             },
         );
 
@@ -477,6 +480,37 @@ describe("Fraction checks", () => {
             "commutative property",
             "factoring",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a/c");
+        expect(result.steps[0].nodes[1]).toParseLike("a * 1/c");
+
+        expect(result.steps[1].nodes[0]).toParseLike("a * 1/c");
+        expect(result.steps[1].nodes[1]).toParseLike("1/c * a");
+
+        expect(result.steps[2].nodes[0]).toParseLike("b/c");
+        expect(result.steps[2].nodes[1]).toParseLike("b * 1/c");
+
+        expect(result.steps[3].nodes[0]).toParseLike("b * 1/c");
+        expect(result.steps[3].nodes[1]).toParseLike("1/c * b");
+
+        expect(result.steps[4].nodes[0]).toParseLike("1/c * a + 1/c * b");
+        expect(result.steps[4].nodes[1]).toParseLike("1/c * (a + b)");
+    });
+
+    it("a/c -> 1/c * a", () => {
+        const result = checkStep("a/c", "1/c * a");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "fraction is the same as multiplying by one over",
+            "commutative property",
+        ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a/c");
+        expect(result.steps[0].nodes[1]).toParseLike("a * 1/c");
+
+        expect(result.steps[1].nodes[0]).toParseLike("a * 1/c");
+        expect(result.steps[1].nodes[1]).toParseLike("1/c * a");
     });
 
     it("(a + b) / c -> (a + b) * 1/c -> a * 1/c + b * 1/c -> a/c + b/c", () => {
@@ -506,26 +540,28 @@ describe("Fraction checks", () => {
         expect(result).toBeTruthy();
         expect(result.steps).toHaveLength(4);
 
-        expect(result.steps[0].message).toEqual(
+        expect(result.steps.map((reason) => reason.message)).toEqual([
             "fraction is the same as multiplying by one over",
-        );
-        expect(result.steps[0].nodes[0]).toParseLike("a / c");
+            "fraction is the same as multiplying by one over",
+            "factoring",
+            "multiplying by one over something results in a fraction",
+        ]);
+
+        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(div a c)`);
+        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+            (mul.exp
+              a
+              (div 1 c))
+        `);
         expect(result.steps[0].nodes[1]).toParseLike("a * 1/c");
 
-        expect(result.steps[1].message).toEqual(
-            "fraction is the same as multiplying by one over",
-        );
         expect(result.steps[1].nodes[0]).toParseLike("b / c");
         expect(result.steps[1].nodes[1]).toParseLike("b * 1/c");
 
-        expect(result.steps[2].message).toEqual("factoring");
         expect(result.steps[2].nodes[0]).toParseLike("a * 1/c + b * 1/c");
         expect(result.steps[2].nodes[1]).toParseLike("(a + b) * 1/c");
 
-        expect(result.steps[3].message).toEqual(
-            "multiplying by one over something results in a fraction",
-        );
         expect(result.steps[3].nodes[0]).toParseLike("(a + b) * 1/c");
-        expect(result.steps[3].nodes[1]).toParseLike("(a + b) / c");
+        expect(result.steps[3].nodes[1]).toParseLike("(a + b)/c");
     });
 });

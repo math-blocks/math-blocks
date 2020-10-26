@@ -244,7 +244,7 @@ export const divBySame: Check = (prev, next, context) => {
 
 divBySame.symmetric = true;
 
-export const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
+export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 
     // TODO: check if the div is a child of a mul node
@@ -259,25 +259,20 @@ export const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
 
         // TODO: write more tests to check that all of this is correct
         const step = {
-            message: reverse
+            message: context.reversed
                 ? "multiplying by one over something results in a fraction"
                 : "fraction is the same as multiplying by one over",
-            nodes: reverse ? [newPrev, prev] : [prev, newPrev],
+            nodes: context.reversed ? [newPrev, prev] : [prev, newPrev],
         };
 
-        const result = reverse
-            ? checker.checkStep(next, newPrev, {
-                  ...context,
-                  steps: [step, ...context.steps],
-              })
-            : checker.checkStep(newPrev, next, {
-                  ...context,
-                  steps: [step, ...context.steps],
-              });
+        const result = checker.checkStep(newPrev, next, {
+            ...context,
+            steps: [...context.steps, step],
+        });
 
         if (result) {
             return {
-                steps: reverse
+                steps: context.reversed
                     ? [...result.steps, step]
                     : [step, ...result.steps],
             };
