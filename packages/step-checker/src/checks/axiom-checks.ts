@@ -81,36 +81,28 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
 };
 
 export const checkDistribution: Check = (prev, next, context) => {
-    // TODO: handle the case where a 'mul' within an 'add' was replaced
+    // Handle the situation where we have a term within an 'add' node that needs
+    // distributing.
     if (prev.type === "add" && next.type === "add") {
         const results: Result[] = [];
 
-        // ignore all other checks in subsequent calls to checkStep
-        const filter = (checkName: string): boolean => {
-            if (context.filter) {
-                return (
-                    context.filter(checkName) &&
-                    [
-                        "checkDistribution",
-                        "negIsMulNegOne",
-                        "subIsNeg",
-                        "mulTwoNegsIsPos",
-                        "moveNegToFirstFactor",
-                    ].includes(checkName)
-                );
-            } else {
-                return [
-                    "checkDistribution",
-                    "negIsMulNegOne",
-                    "subIsNeg",
-                    "mulTwoNegsIsPos",
-                    "moveNegToFirstFactor",
-                ].includes(checkName);
-            }
+        // Only allow the following checks in subsequent calls to checkStep.
+        const filters = {
+            allowedChecks: new Set([
+                // NOTE: If more checks use filters then we may have to
+                // uncomment this line.
+                // ...(context?.filters?.allowedChecks || []),
+                "checkDistribution",
+                "negIsMulNegOne",
+                "subIsNeg",
+                "mulTwoNegsIsPos",
+                "moveNegToFirstFactor",
+            ]),
+            disallowedChecks: context.filters?.disallowedChecks,
         };
 
-        // TODO: find all 'mul' nodes and then try generating a newPrev
-        // node from each of them.
+        // Find all 'mul' nodes and then try generating a newPrev node from
+        // each of them.
         for (let i = 0; i < prev.args.length; i++) {
             const mul = prev.args[i];
             if (
@@ -121,7 +113,6 @@ export const checkDistribution: Check = (prev, next, context) => {
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
                     ...(mul.args[1].args.map((arg) =>
-                        // Here we didn't bubble the negative up.
                         Semantic.mul([mul.args[0], arg]),
                     ) as TwoOrMore<Semantic.Expression>),
                     ...prev.args.slice(i + 1),
@@ -129,7 +120,7 @@ export const checkDistribution: Check = (prev, next, context) => {
 
                 const result = context.checker.checkStep(newPrev, next, {
                     ...context,
-                    filter,
+                    filters,
                 });
                 if (result) {
                     results.push({
@@ -147,7 +138,6 @@ export const checkDistribution: Check = (prev, next, context) => {
                 mul.subtraction &&
                 mul.arg.type === "add"
             ) {
-                // TODO: include a step that converts 1 - (x + y) to 1 + -(x + y)
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
                     Semantic.mul([Semantic.neg(Semantic.number("1")), mul.arg]),
@@ -155,7 +145,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 ]);
                 const result = context.checker.checkStep(newPrev, next, {
                     ...context,
-                    filter,
+                    filters,
                 });
                 if (result) {
                     results.push({
@@ -184,9 +174,12 @@ export const checkDistribution: Check = (prev, next, context) => {
             return shortestResult;
         }
     }
+
     if (prev.type !== "mul" || next.type !== "add") {
         return FAILED_CHECK;
     }
+
+    // If the second factor is an add, e.g. a(b + c) -> ...
     if (prev.args[1].type === "add") {
         const newPrev = Semantic.add(
             prev.args[1].args.map((arg) => {
@@ -202,7 +195,6 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "distribution",
@@ -213,6 +205,8 @@ export const checkDistribution: Check = (prev, next, context) => {
             };
         }
     }
+
+    // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
         const newPrev = Semantic.add(
             prev.args[0].args.map((arg) =>
@@ -223,7 +217,6 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "distribution",
@@ -251,7 +244,7 @@ export const checkFactoring: Check = (prev, next, context) => {
             [right, left],
         ]) {
             if (y.type === "add" && y.args.length === prev.args.length) {
-                const subReasons: Step[] = [];
+                const subSteps: Step[] = [];
                 const equivalent = prev.args.every((arg, index) => {
                     // Each term is in the correct order based on whether
                     // we're distributing/factoring from left to right or
@@ -270,7 +263,7 @@ export const checkFactoring: Check = (prev, next, context) => {
                     });
 
                     if (substep) {
-                        subReasons.push(...substep.steps);
+                        subSteps.push(...substep.steps);
                     }
                     return substep;
                 });
@@ -279,14 +272,13 @@ export const checkFactoring: Check = (prev, next, context) => {
                     const nodes: Semantic.Expression[] = [prev, next];
 
                     // TODO: include the original nodes[0] in the result somehow
-                    if (subReasons.length > 0) {
-                        nodes[0] = applySteps(nodes[0], subReasons);
+                    if (subSteps.length > 0) {
+                        nodes[0] = applySteps(nodes[0], subSteps);
                     }
 
                     return {
-                        equivalent: true,
                         steps: [
-                            ...subReasons,
+                            ...subSteps,
                             {
                                 message: "factoring",
                                 nodes,
@@ -318,7 +310,6 @@ export const mulByZero: Check = (prev, next, context) => {
     );
     if (hasZero && result) {
         return {
-            equivalent: true,
             steps: [
                 ...result.steps,
                 {
@@ -361,7 +352,6 @@ export const commuteAddition: Check = (prev, next, context) => {
 
         if (reordered) {
             return {
-                equivalent: true,
                 steps: [
                     // We'd like any of the reasons from the checkArgs call to appear
                     // first since it'll be easier to see that commutative property is
@@ -414,7 +404,6 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 
         if (reordered && result) {
             return {
-                equivalent: true,
                 steps: [
                     ...result.steps,
                     {
@@ -449,7 +438,6 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
         if (commutative) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "symmetric property",

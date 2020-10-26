@@ -62,6 +62,7 @@ export const App: React.SFC<{}> = () => {
         const result = checker.checkStep(parse(prev), parse(next), {
             checker,
             steps: [],
+            successfulChecks: new Set<string>(),
         });
 
         if (result) {

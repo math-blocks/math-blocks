@@ -50,7 +50,6 @@ export const addInverse: Check = (prev, next, context, reverse) => {
 
         if (result) {
             return {
-                equivalent: true,
                 steps: reverse
                     ? [
                           ...result.steps,
@@ -85,7 +84,6 @@ export const doubleNegative: Check = (prev, next, context, reverse) => {
             : checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                equivalent: true,
                 steps: reverse
                     ? [
                           ...result.steps,
@@ -109,7 +107,6 @@ export const doubleNegative: Check = (prev, next, context, reverse) => {
 };
 
 doubleNegative.symmetric = true;
-doubleNegative.parallel = true;
 
 export const subIsNeg: Check = (prev, next, context, reverse) => {
     const {checker} = context;
@@ -199,7 +196,6 @@ export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
             : checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                equivalent: true,
                 steps: reverse
                     ? [
                           ...result.steps,
@@ -258,19 +254,11 @@ export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
         const newPrev = Semantic.mul(factors);
 
         const result = reverse
-            ? checker.checkStep(next, newPrev, {
-                  ...context,
-                  filter: (checkName: string) =>
-                      mulTwoNegsIsPos.name !== checkName,
-              })
-            : checker.checkStep(newPrev, next, {
-                  ...context,
-                  filter: (checkName: string) =>
-                      mulTwoNegsIsPos.name !== checkName,
-              });
+            ? checker.checkStep(next, newPrev, context)
+            : checker.checkStep(newPrev, next, context);
+
         if (result) {
             return {
-                equivalent: true,
                 steps: reverse
                     ? [
                           ...result.steps,
@@ -332,7 +320,6 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
         if (result) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "move negative to first factor",

@@ -43,9 +43,6 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
 
         if (!lhsNewTerm || !rhsNewTerm) {
             // TODO: write a test for this
-            // 2x + 5 = 10
-            // 2x + 5 - 5 = 10 - 5
-            // 2x + 5 - 5 = 5 ---> this used cause an error with thiis check
             return FAILED_CHECK;
         }
 
@@ -94,7 +91,6 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
             });
             if (result) {
                 return {
-                    equivalent: true,
                     steps: [
                         {
                             message: "subtract the same value from both sides",
@@ -118,7 +114,6 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
                 Semantic.isSubtraction(rhsNewTerms[0])
             ) {
                 return {
-                    equivalent: true,
                     steps: [
                         {
                             message:
@@ -130,7 +125,6 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
                 };
             }
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "adding the same value to both sides",
@@ -204,7 +198,6 @@ export const checkMul: Check = (prev, next, context, reversed) => {
             });
             if (result) {
                 return {
-                    equivalent: true,
                     steps: [
                         {
                             message: "divide both sides by the same value",
@@ -223,7 +216,6 @@ export const checkMul: Check = (prev, next, context, reversed) => {
         // the same or do we want to allow equivalent expressions?
         if (result && result.steps.length === 0) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message: "multiply both sides by the same value",
@@ -291,7 +283,6 @@ export const checkDiv: Check = (prev, next, context, reversed) => {
                 });
                 if (result) {
                     return {
-                        equivalent: true,
                         steps: [
                             {
                                 message:
@@ -309,7 +300,6 @@ export const checkDiv: Check = (prev, next, context, reversed) => {
 
             if (result) {
                 return {
-                    equivalent: true,
                     steps: [
                         {
                             message: "divide both sides by the same value",

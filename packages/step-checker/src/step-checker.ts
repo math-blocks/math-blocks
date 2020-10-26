@@ -77,32 +77,17 @@ const runChecks = (
     context: Context,
 ): Result | void => {
     for (const check of checks) {
-        if (check.parallel) {
-            const result1 = check(prev, next, context, false);
-            const result2 = check(next, prev, context, true);
+        const result = check(prev, next, context, false);
+        if (result) {
+            context.successfulChecks.add(check.name);
+            return result;
+        }
 
-            if (result1 && result2) {
-                if (result1.steps.length < result2.steps.length) {
-                    return result1;
-                } else {
-                    return result2;
-                }
-            } else if (result1) {
-                return result1;
-            } else if (result2) {
-                return result2;
-            }
-        } else {
-            const result = check(prev, next, context, false);
+        if (check.symmetric) {
+            const result = check(next, prev, context, true);
             if (result) {
+                context.successfulChecks.add(check.name);
                 return result;
-            }
-
-            if (check.symmetric) {
-                const result = check(next, prev, context, true);
-                if (result) {
-                    return result;
-                }
             }
         }
     }
@@ -184,11 +169,22 @@ class StepChecker implements IStepChecker {
             checkDivisionCanceling,
         ];
 
-        const filter = context.filter;
-        const filteredChecks = filter
-            ? checks.filter((check) =>
-                  check.unfilterable ? check : filter(check.name),
-              )
+        const filters = context.filters;
+        const filteredChecks = filters
+            ? checks.filter((check) => {
+                  if (check.unfilterable) {
+                      return true;
+                  }
+                  let result = true;
+                  if (filters.allowedChecks) {
+                      result = result && filters.allowedChecks.has(check.name);
+                  }
+                  if (filters.disallowedChecks) {
+                      result =
+                          result && !filters.disallowedChecks.has(check.name);
+                  }
+                  return result;
+              })
             : checks;
 
         return runChecks(filteredChecks, prev, next, context);

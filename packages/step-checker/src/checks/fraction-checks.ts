@@ -90,7 +90,6 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
 
             if (result1 && result2) {
                 return {
-                    equivalent: true,
                     steps: [
                         {
                             message: "prime factorization",
@@ -141,7 +140,6 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         const result = checker.checkStep(productA, next, context);
         if (result) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message:
@@ -177,7 +175,6 @@ export const divByFrac: Check = (prev, next, context) => {
 
         if (result) {
             return {
-                equivalent: true,
                 steps: [
                     {
                         message:
@@ -206,7 +203,6 @@ export const divByOne: Check = (prev, next, context) => {
         if (result) {
             const newPrev = applySteps(prev, result.steps);
             return {
-                equivalent: true,
                 steps: [
                     ...result.steps,
                     {
@@ -232,7 +228,6 @@ export const divBySame: Check = (prev, next, context) => {
         const result2 = checker.checkStep(next, one, context);
         if (result1 && result2) {
             return {
-                equivalent: true,
                 steps: [
                     ...result1.steps,
                     {
@@ -282,7 +277,6 @@ export const divIsMulByOneOver: Check = (prev, next, context, reverse) => {
 
         if (result) {
             return {
-                equivalent: true,
                 steps: reverse
                     ? [...result.steps, step]
                     : [step, ...result.steps],
@@ -340,7 +334,6 @@ export const mulByFrac: Check = (prev, next, context) => {
     const result = checker.checkStep(newPrev, next, context);
     if (result) {
         return {
-            equivalent: true,
             steps: [
                 {
                     message: "multiplying fractions",
