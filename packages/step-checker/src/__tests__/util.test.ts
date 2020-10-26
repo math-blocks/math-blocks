@@ -155,6 +155,7 @@ describe("checkArgs", () => {
                 checker,
                 steps: [],
                 successfulChecks: new Set<string>(),
+                reversed: false,
             });
 
             expect(result).toBeUndefined();
@@ -173,6 +174,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([]);
@@ -185,6 +187,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([left[0]]);
@@ -197,6 +200,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual(left);
@@ -209,6 +213,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([left[1]]);

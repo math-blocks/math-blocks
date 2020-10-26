@@ -63,6 +63,7 @@ export const App: React.SFC<{}> = () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         if (result) {

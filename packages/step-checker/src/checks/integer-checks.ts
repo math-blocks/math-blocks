@@ -132,9 +132,6 @@ export const subIsNeg: Check = (prev, next, context) => {
                 ...prev.args.slice(index + 1),
             ]);
 
-            context.reversed; // ?
-            console.log(JSON.stringify(newPrev, null, 2));
-            console.log(JSON.stringify(next, null, 2));
             const result = checker.checkStep(newPrev, next, context);
             if (result) {
                 results.push({

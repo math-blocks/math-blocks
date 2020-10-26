@@ -224,10 +224,6 @@ export const checkDistribution: Check = (prev, next, context) => {
 
     // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
-        prev.type; // ?
-        next.type; // ?
-        console.log(JSON.stringify(prev, null, 4));
-        console.log(JSON.stringify(next, null, 4));
         const newPrev = Semantic.add(
             prev.args[0].args.map((arg) =>
                 Semantic.mul([arg, prev.args[1]]),
