@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {FAILED_CHECK} from "../constants";
-import {difference} from "../util";
+import {difference, applySteps} from "../util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -109,7 +109,6 @@ export const checkAddSub: Check = (prev, next, context) => {
     return FAILED_CHECK;
 };
 
-// TODO: make this check parallel prefer the forward direction
 checkAddSub.symmetric = true;
 
 export const checkMul: Check = (prev, next, context) => {
@@ -139,61 +138,31 @@ export const checkMul: Check = (prev, next, context) => {
             context,
         );
 
-        if (context.reversed) {
-            if (
-                context.steps.some(
-                    (step) =>
-                        step.message === "remove common factor on both sides",
-                )
-            ) {
-                // prevent infinite loop
-                // TODO: determine if this is still needed
-                return FAILED_CHECK;
-            }
+        // using applySteps with result.steps won't work because we're not
+        // passing in either prev or next, we're creating temporary multiplication
+        // nodes.
 
-            const newPrev = Semantic.eq([
-                Semantic.div(lhsB, Semantic.mulFactors(lhsNewFactors)),
-                Semantic.div(rhsB, Semantic.mulFactors(rhsNewFactors)),
-            ]);
-
-            const newSteps = [
-                ...context.steps,
-                {
-                    message: "remove common factor on both sides",
-                    nodes: [],
-                },
-            ];
-
-            const result = checker.checkStep(newPrev, prev, {
-                ...context,
-                steps: newSteps,
-            });
-            if (result) {
-                return {
-                    steps: [
-                        {
-                            message: "divide both sides by the same value",
-                            nodes: [next, newPrev],
-                        },
-                        ...result.steps,
-                    ],
-                };
-            } else {
-                // TODO: write test for this case
-                return FAILED_CHECK;
-            }
-        }
+        // TODO: create a newPrev node
 
         // TODO: do we want to enforce that the thing being added is exactly
         // the same or do we want to allow equivalent expressions?
-        if (result && result.steps.length === 0) {
+        if (result) {
             return {
-                steps: [
-                    {
-                        message: "multiply both sides by the same value",
-                        nodes: [],
-                    },
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "remove multiplication from both sides",
+                              nodes: [next, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "multiply both sides by the same value",
+                              nodes: [prev, next],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
@@ -223,61 +192,22 @@ export const checkDiv: Check = (prev, next, context) => {
                 context,
             );
 
-            if (context.reversed) {
-                if (
-                    context.steps.some(
-                        (step) =>
-                            step.message ===
-                            "remove division by the same amount",
-                    )
-                ) {
-                    // prevent infinite loop
-                    // TODO: determine if this is still needed
-                    return FAILED_CHECK;
-                }
-
-                const newPrev = Semantic.eq([
-                    Semantic.mul([lhsB.args[DENOMINATOR], lhsB]),
-                    Semantic.mul([rhsB.args[DENOMINATOR], rhsB]),
-                ]);
-
-                const newSteps = [
-                    ...context.steps,
-                    {
-                        message: "remove division by the same amount",
-                        nodes: [],
-                    },
-                ];
-
-                const result = checker.checkStep(newPrev, prev, {
-                    ...context,
-                    steps: newSteps,
-                });
-                if (result) {
-                    return {
-                        steps: [
-                            {
-                                message:
-                                    "multiply both sides by the same value",
-                                nodes: [next, newPrev],
-                            },
-                            ...result.steps,
-                        ],
-                    };
-                } else {
-                    // TODO: write a test case for this
-                    return FAILED_CHECK;
-                }
-            }
-
             if (result) {
                 return {
-                    steps: [
-                        {
-                            message: "divide both sides by the same value",
-                            nodes: [],
-                        },
-                    ],
+                    steps: context.reversed
+                        ? [
+                              {
+                                  message: "remove division by the same amount",
+                                  nodes: [next, prev],
+                              },
+                          ]
+                        : [
+                              {
+                                  message:
+                                      "divide both sides by the same value",
+                                  nodes: [prev, next],
+                              },
+                          ],
                 };
             } else {
                 // TODO: custom error message for this case

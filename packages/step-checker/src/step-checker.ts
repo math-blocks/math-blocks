@@ -1,7 +1,14 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {exactMatch} from "./util";
-import {Result, IStepChecker, Options, Context, Check} from "./types";
+import {
+    Result,
+    IStepChecker,
+    Options,
+    Context,
+    Check,
+    ParallelStrategy,
+} from "./types";
 import {FAILED_CHECK} from "./constants";
 import {checkArgs} from "./util";
 
@@ -75,6 +82,7 @@ const runChecks = (
     next: Semantic.Expression,
     context: Context,
 ): Result | void => {
+    // TODO: create a copy of context before calling 'check' just in case.
     for (const check of checks) {
         const result = check(prev, next, context);
         if (result) {
