@@ -32,6 +32,32 @@ describe("Equation checks", () => {
             ]);
         });
 
+        it("x = y -> x + 5 + 10 = y + 5 + 10", () => {
+            const result = checkStep("x = y", "x + 5 + 10 = y + 5 + 10");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding the same value to both sides",
+            ]);
+        });
+
+        it("x = y -> x + 5 + 10 = y + 15", () => {
+            const result = checkStep("x = y", "x + 5 + 10 = y + 15");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding the same value to both sides",
+                "evaluation of addition",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(eq x y)`);
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+                (eq
+                  (add x 5 10)
+                  (add y 15))
+            `);
+        });
+
         it("x + 5 = y + 5 -> x = y", () => {
             const result = checkStep("x + 5 = y + 5", "x = y");
 
@@ -218,11 +244,24 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
 
-            expect(result.steps[0].message).toEqual(
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "commutative property",
                 "remove multiplication from both sides",
-            );
-            expect(result.steps[0].nodes[0]).toParseLike("2(x + 2.5) = (5)2");
-            expect(result.steps[0].nodes[1]).toParseLike("x + 2.5 = 5");
+            ]);
+
+            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+                (mul.imp
+                  2
+                  (add x 2.5))
+            `);
+            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+                (mul.exp
+                  (add x 2.5)
+                  2)
+            `);
+
+            expect(result.steps[1].nodes[0]).toParseLike("2(x + 2.5) = (5)2");
+            expect(result.steps[1].nodes[1]).toParseLike("x + 2.5 = 5");
         });
     });
 

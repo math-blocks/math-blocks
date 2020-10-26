@@ -41,13 +41,53 @@ describe("Axiom checks", () => {
             ]);
         });
 
+        it("a = b + 0 = c + 0 -> b = c = a", () => {
+            const result = checkStep("a = b + 0 = c + 0", "b = c = a");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+                "addition with identity",
+                "symmetric property",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("b + 0");
+            expect(result.steps[0].nodes[1]).toParseLike("b");
+
+            expect(result.steps[1].nodes[0]).toParseLike("c + 0");
+            expect(result.steps[1].nodes[1]).toParseLike("c");
+
+            expect(result.steps[2].nodes[0]).toParseLike("a = b = c");
+            expect(result.steps[2].nodes[1]).toParseLike("b = c = a");
+        });
+
         it("a = 1 + 2 -> 3 = a", () => {
             const result = checkStep("a = 1 + 2", "3 = a");
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "symmetric property",
                 "evaluation of addition",
+                "symmetric property",
+            ]);
+        });
+
+        it("x = x + 0 -> x + 0 = x", () => {
+            const result = checkStep("x = x + 0", "x + 0 = x");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "symmetric property",
+            ]);
+        });
+
+        it("x = y + 0 -> y = x * 1", () => {
+            const result = checkStep("x = y + 0", "y = x * 1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+                "multiplication with identity",
+                "symmetric property",
             ]);
         });
     });
@@ -67,6 +107,7 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                // TODO: change the message to "evaluation of subtraction"
                 "evaluation of addition",
                 "evaluation of addition",
                 "commutative property",

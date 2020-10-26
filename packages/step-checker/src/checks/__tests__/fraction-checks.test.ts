@@ -39,8 +39,8 @@ describe("Fraction checks", () => {
         expect(result.steps).toHaveLength(2);
 
         expect(result.steps[0].message).toEqual("commutative property");
-        expect(result.steps[0].nodes[0]).toParseLike("a * 1/b");
-        expect(result.steps[0].nodes[1]).toParseLike("1/b * a");
+        expect(result.steps[0].nodes[0]).toParseLike("1/b * a");
+        expect(result.steps[0].nodes[1]).toParseLike("a * 1/b");
 
         expect(result.steps[1].message).toEqual(
             "multiplying by one over something results in a fraction",

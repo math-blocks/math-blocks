@@ -157,6 +157,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
 
 checkDivisionCanceling.symmetric = true;
 
+// TODO: handle this in the same way we handle other symmetric checks
 export const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type !== "div") {
@@ -214,11 +215,41 @@ export const divByOne: Check = (prev, next, context) => {
         }
     }
 
+    // TODO: handle this in the same way we handle other symmetric checks
+    // const newPrev = Semantic.div(prev, Semantic.number("1"));
+    // const result = checker.checkStep(newPrev, next, {
+    //     ...context,
+    //     filters: {
+    //         disallowedChecks: new Set([divByOne.name]),
+    //     },
+    // });
+
+    // if (result) {
+    //     return {
+    //         steps: context.reversed
+    //             ? [
+    //                   ...result.steps,
+    //                   {
+    //                       message: "division by one",
+    //                       nodes: [newPrev, prev],
+    //                   },
+    //               ]
+    //             : [
+    //                   {
+    //                       message: "division by one",
+    //                       nodes: [prev, newPrev],
+    //                   },
+    //                   ...result.steps,
+    //               ],
+    //     };
+    // }
+
     return FAILED_CHECK;
 };
 
 divByOne.symmetric = true;
 
+// TODO: handle this in the same way we handle other symmetric checks
 export const divBySame: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type === "div") {
@@ -244,6 +275,7 @@ export const divBySame: Check = (prev, next, context) => {
 
 divBySame.symmetric = true;
 
+// TODO: handle this in the same way we handle other symmetric checks
 export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -284,6 +316,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
 divIsMulByOneOver.symmetric = true;
 
+// TODO: handle this in the same way we handle other symmetric checks
 export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction

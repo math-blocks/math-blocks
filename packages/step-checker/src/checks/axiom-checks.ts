@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps} from "../util";
+import {zip, applySteps, exactMatch} from "../util";
 import {Result, Step, Check} from "../types";
 import {FAILED_CHECK} from "../constants";
 import {checkArgs} from "../util";
@@ -51,6 +51,7 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     // applySteps which will do this for us.
     const newPrev = applySteps(prev, identitySteps);
 
+    // TODO: make this check symmetric - we should be able to get rid of newNext
     const newNext =
         prev.type === "add"
             ? Semantic.addTerms(nonIdentityArgs)
@@ -313,25 +314,33 @@ export const commuteAddition: Check = (prev, next, context) => {
             return !result;
         });
 
-        if (reordered) {
+        if (reordered && result) {
             return {
-                steps: [
-                    // We'd like any of the reasons from the checkArgs call to appear
-                    // first since it'll be easier to see that commutative property is
-                    // be applied once all of the values are the same.
-                    //
-                    // What about when we're going in reverse and splitting numbers up?
-                    // That seems like a very unlikely situation.
-                    //
-                    // The order doesn't really matter.  We could provide a way to indicate
-                    // the precedence between different operations and use that to decide
-                    // the ordering.
-                    ...result.steps,
-                    {
-                        message: "commutative property",
-                        nodes: [],
-                    },
-                ],
+                // We'd like any of the reasons from the checkArgs call to appear
+                // first since it'll be easier to see that commutative property is
+                // be applied once all of the values are the same.
+                //
+                // What about when we're going in reverse and splitting numbers up?
+                // That seems like a very unlikely situation.
+                //
+                // The order doesn't really matter.  We could provide a way to indicate
+                // the precedence between different operations and use that to decide
+                // the ordering.
+                steps: context.reversed
+                    ? [
+                          {
+                              message: "commutative property",
+                              nodes: [next, prev],
+                          },
+                          ...result.steps,
+                      ]
+                    : [
+                          ...result.steps,
+                          {
+                              message: "commutative property",
+                              nodes: [prev, next],
+                          },
+                      ],
             };
         }
     }
@@ -365,13 +374,22 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 
         if (reordered && result) {
             return {
-                steps: [
-                    {
-                        message: "commutative property",
-                        nodes: [prev, next],
-                    },
-                    ...result.steps,
-                ],
+                // TODO: do the same for commuteAddition
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "commutative property",
+                              nodes: [next, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "commutative property",
+                              nodes: [prev, next],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
@@ -380,6 +398,14 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 };
 
 export const symmetricProperty: Check = (prev, next, context) => {
+    // We prefer that 'symmetric property' always appear last in the list of
+    // steps.  This is because it's common to do a bunch of steps to an equation
+    // and then swap sides at the last moment so that the variable that we're
+    // looking to isolate is on the left.
+    if (!context.reversed) {
+        return FAILED_CHECK;
+    }
+
     if (
         prev.type === "eq" &&
         next.type === "eq" &&
@@ -387,28 +413,58 @@ export const symmetricProperty: Check = (prev, next, context) => {
     ) {
         const pairs = zip(prev.args, next.args);
 
-        const result = checkArgs(prev, next, context);
-        if (!result) {
-            return result;
+        // If there are only two args, we swap them and then check that it
+        // exactly matches the next step.
+        if (pairs.length === 2) {
+            const newPrev = Semantic.eq([prev.args[1], prev.args[0]]);
+            const result = exactMatch(newPrev, next, context);
+
+            if (result) {
+                return {
+                    steps: [
+                        ...result.steps,
+                        {
+                            message: "symmetric property",
+                            nodes: [newPrev, prev],
+                        },
+                    ],
+                };
+            }
         }
 
+        // If at least one of the pairs doesn't match then we've swapped the
+        // pairs around.  The issue with using checkStep here is that we could
+        // end up making changes to items that are equivalent, e.g.
+        // x + 0 = x -> x = x + 0 in which case we wouldn't identify this as
+        // the symmetric property of equality.
         const commutative = pairs.some(
             ([first, second]) =>
                 !context.checker.checkStep(first, second, context),
         );
 
         if (commutative) {
-            return {
-                steps: [
-                    {
-                        message: "symmetric property",
-                        nodes: [],
-                    },
-                    ...result.steps,
-                ],
-            };
+            const result = checkArgs(prev, next, context);
+            if (!result) {
+                return result;
+            }
+
+            const newNext = applySteps(next, result.steps);
+
+            if (result) {
+                return {
+                    steps: [
+                        ...result.steps,
+                        {
+                            message: "symmetric property",
+                            nodes: [newNext, prev],
+                        },
+                    ],
+                };
+            }
         }
     }
 
     return FAILED_CHECK;
 };
+
+symmetricProperty.symmetric = true;

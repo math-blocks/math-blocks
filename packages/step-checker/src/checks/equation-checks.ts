@@ -34,73 +34,70 @@ export const checkAddSub: Check = (prev, next, context) => {
             context,
         );
 
-        // TODO: check that lhsNew and rhsNew has a single term
-        const lhsNew = Semantic.addTerms(lhsNewTerms);
-        const rhsNew = Semantic.addTerms(rhsNewTerms);
-        let result = checker.checkStep(lhsNew, rhsNew, {
-            ...context,
-            filters: {
-                // prevent an infinite loop
-                disallowedChecks: new Set(["checkAddSub"]),
+        const result1 = checker.checkStep(
+            Semantic.addTerms(lhsNewTerms),
+            Semantic.addTerms(rhsNewTerms),
+            {
+                ...context,
+                filters: {
+                    // prevent an infinite loop
+                    disallowedChecks: new Set(["checkAddSub"]),
+                },
             },
-        });
+        );
 
         // If what we're adding to both sides isn't equivalent then fail
         // TODO: report this error back to the user
-        if (!result) {
+        if (!result1) {
             return FAILED_CHECK;
         }
 
-        const lhsNewTerm = lhsNewTerms[0];
-        const rhsNewTerm = rhsNewTerms[0];
-
-        if (!lhsNewTerm || !rhsNewTerm) {
+        if (lhsNewTerms.length === 0 || rhsNewTerms.length === 0) {
             // TODO: write a test for this
             return FAILED_CHECK;
         }
 
         const newPrev = Semantic.eq([
             // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.add([...Semantic.getTerms(lhsA), lhsNewTerm]),
+            Semantic.add([...Semantic.getTerms(lhsA), ...lhsNewTerms]),
             // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.add([...Semantic.getTerms(rhsA), rhsNewTerm]),
+            Semantic.add([...Semantic.getTerms(rhsA), ...rhsNewTerms]),
         ]);
 
-        const newSteps = [
-            ...context.steps,
-            {
-                message: "removing the same term from both sides",
-                // TODO: add nodes
-                nodes: [],
-            },
-        ];
-
-        result = checker.checkStep(newPrev, next, {
+        // This checkStep allows for commutation of the result, but doesn't
+        // handle evaluation that might happen during result1.
+        const result2 = checker.checkStep(newPrev, next, {
             ...context,
-            steps: newSteps,
             filters: {
                 // prevent an infinite loop
                 disallowedChecks: new Set(["checkAddSub"]),
             },
         });
 
-        if (result) {
+        // Using applySteps with result.steps won't work because we're not
+        // passing in either prev or next, we're creating temporary multiplication
+        // nodes.
+        // TODO: create a newPrev node
+
+        if (result1 && result2) {
             return {
                 steps: context.reversed
                     ? [
-                          ...result.steps,
+                          ...result1.steps,
+                          ...result2.steps,
                           {
                               message:
                                   "removing adding the same value to both sides",
-                              nodes: [newPrev, prev],
+                              nodes: [next, prev],
                           },
                       ]
                     : [
                           {
                               message: "adding the same value to both sides",
-                              nodes: [prev, newPrev],
+                              nodes: [prev, next],
                           },
-                          ...result.steps,
+                          ...result2.steps,
+                          ...result1.steps,
                       ],
             };
         }
@@ -132,25 +129,40 @@ export const checkMul: Check = (prev, next, context) => {
             Semantic.getFactors(rhsA),
             context,
         );
-        const result = checker.checkStep(
+        const result1 = checker.checkStep(
             Semantic.mulFactors(lhsNewFactors),
             Semantic.mulFactors(rhsNewFactors),
             context,
         );
 
-        // using applySteps with result.steps won't work because we're not
+        const newPrev = Semantic.eq([
+            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
+            Semantic.mul([...Semantic.getFactors(lhsA), ...lhsNewFactors]),
+            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
+            Semantic.mul([...Semantic.getFactors(rhsA), ...rhsNewFactors]),
+        ]);
+
+        // This checkStep allows for commutation of the result, but doesn't
+        // handle evaluation that might happen during result1.
+        const result2 = checker.checkStep(newPrev, next, {
+            ...context,
+            filters: {
+                // prevent an infinite loop
+                disallowedChecks: new Set(["checkAddSub"]),
+            },
+        });
+
+        // Using applySteps with result.steps won't work because we're not
         // passing in either prev or next, we're creating temporary multiplication
         // nodes.
-
         // TODO: create a newPrev node
 
-        // TODO: do we want to enforce that the thing being added is exactly
-        // the same or do we want to allow equivalent expressions?
-        if (result) {
+        if (result1 && result2) {
             return {
                 steps: context.reversed
                     ? [
-                          ...result.steps,
+                          ...result1.steps,
+                          ...result2.steps,
                           {
                               message: "remove multiplication from both sides",
                               nodes: [next, prev],
@@ -161,7 +173,8 @@ export const checkMul: Check = (prev, next, context) => {
                               message: "multiply both sides by the same value",
                               nodes: [prev, next],
                           },
-                          ...result.steps,
+                          ...result2.steps,
+                          ...result1.steps,
                       ],
             };
         }
