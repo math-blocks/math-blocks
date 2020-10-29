@@ -1,14 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {exactMatch} from "./util";
-import {
-    Result,
-    IStepChecker,
-    Options,
-    Context,
-    Check,
-    ParallelStrategy,
-} from "./types";
+import {Result, IStepChecker, Options, Context, Check} from "./types";
 import {FAILED_CHECK} from "./constants";
 import {checkArgs} from "./util";
 
@@ -33,7 +26,6 @@ import {
 } from "./checks/integer-checks";
 import {
     divByFrac,
-    divByOne,
     divBySame,
     mulByFrac,
     divIsMulByOneOver,
@@ -176,7 +168,6 @@ class StepChecker implements IStepChecker {
             // NOTE: these must appear after eval checks
             // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
             divByFrac,
-            divByOne,
             divBySame,
             mulByFrac,
             divIsMulByOneOver,

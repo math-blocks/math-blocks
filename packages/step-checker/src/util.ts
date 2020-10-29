@@ -2,7 +2,7 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step, HasArgs, Check, Context, Result} from "./types";
+import {Step, HasArgs, Check, Context} from "./types";
 import {FAILED_CHECK} from "./constants";
 
 // TODO: handle negative numbers

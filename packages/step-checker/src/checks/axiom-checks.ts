@@ -49,13 +49,17 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     // in order to get a version of prev where all of the nodes that are equivalent
     // to the identiy have been replaced with the identity we need to call
     // applySteps which will do this for us.
-    const newPrev = applySteps(prev, identitySteps);
 
     // TODO: make this check symmetric - we should be able to get rid of newNext
-    const newNext =
+    const newPrev =
         prev.type === "add"
             ? Semantic.addTerms(nonIdentityArgs)
             : Semantic.mulFactors(nonIdentityArgs);
+
+    const newNext =
+        prev.type === "add"
+            ? Semantic.addTerms([...nonIdentityArgs, identity])
+            : Semantic.mulFactors([...nonIdentityArgs, identity]);
 
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
@@ -64,22 +68,33 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
             ? "addition with identity"
             : "multiplication with identity";
 
-    const result = context.checker.checkStep(newNext, next, context);
+    const result = context.checker.checkStep(newPrev, next, context);
     if (result) {
         return {
-            steps: [
-                ...identitySteps,
-                {
-                    message: reason,
-                    nodes: [newPrev, newNext],
-                },
-                ...result.steps,
-            ],
+            steps: context.reversed
+                ? [
+                      ...result.steps,
+                      {
+                          message: reason,
+                          nodes: [newPrev, newNext],
+                      },
+                      ...identitySteps,
+                  ]
+                : [
+                      ...identitySteps,
+                      {
+                          message: reason,
+                          nodes: [applySteps(prev, identitySteps), newPrev],
+                      },
+                      ...result.steps,
+                  ],
         };
     }
 
     return FAILED_CHECK;
 };
+
+checkIdentity.symmetric = true;
 
 export const checkDistribution: Check = (prev, next, context) => {
     // Handle the situation where we have a term within an 'add' node that needs

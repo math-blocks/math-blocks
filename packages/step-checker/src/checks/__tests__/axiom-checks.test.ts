@@ -260,9 +260,16 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
                 "commutative property",
+                "addition with identity",
+                // TODO: we're missing another "commutative property" step here
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a + b");
+            expect(result.steps[0].nodes[1]).toParseLike("b + a");
+
+            expect(result.steps[1].nodes[0]).toParseLike("b + a");
+            expect(result.steps[1].nodes[1]).toParseLike("b + a + 0");
         });
 
         it("a + b -> a + 0 + b + 0", () => {
@@ -317,9 +324,16 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication with identity",
                 "commutative property",
+                "multiplication with identity",
+                // TODO: we're missing another "commutative property" step here
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a * b");
+            expect(result.steps[0].nodes[1]).toParseLike("b * a");
+
+            expect(result.steps[1].nodes[0]).toParseLike("b * a");
+            expect(result.steps[1].nodes[1]).toParseLike("b * a * 1");
         });
 
         it("a * b -> a * 1 * b * 1", () => {
