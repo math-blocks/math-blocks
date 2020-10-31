@@ -7,7 +7,13 @@ export type Step = {
     nodes: Expression[];
 };
 
+export enum Status {
+    Correct,
+    Incorrect,
+}
+
 export type Result = {
+    status: Status;
     steps: Step[];
 };
 

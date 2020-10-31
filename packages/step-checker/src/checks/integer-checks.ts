@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check} from "../types";
+import {Result, Check, Status} from "../types";
 
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
@@ -47,6 +47,7 @@ export const addInverse: Check = (prev, next, context) => {
 
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -79,6 +80,7 @@ export const doubleNegative: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -134,6 +136,7 @@ export const subIsNeg: Check = (prev, next, context) => {
             const result = checker.checkStep(newPrev, next, context);
             if (result) {
                 results.push({
+                    status: Status.Correct,
                     steps: context.reversed
                         ? [
                               ...result.steps,
@@ -190,6 +193,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -251,6 +255,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
 
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -312,6 +317,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,

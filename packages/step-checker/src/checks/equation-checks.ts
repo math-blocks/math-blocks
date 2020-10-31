@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "../types";
+import {Check, Status} from "../types";
 import {difference} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
@@ -84,6 +84,7 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         if (result1 && result2) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result1.steps,
@@ -166,6 +167,7 @@ export const checkMul: Check = (prev, next, context) => {
 
         if (result1 && result2) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result1.steps,
@@ -214,6 +216,7 @@ export const checkDiv: Check = (prev, next, context) => {
 
             if (result) {
                 return {
+                    status: Status.Correct,
                     steps: context.reversed
                         ? [
                               {

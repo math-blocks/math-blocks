@@ -7,7 +7,7 @@ import {
     equality,
     intersection,
 } from "./util";
-import {Check} from "../types";
+import {Check, Status} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
@@ -90,6 +90,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
 
             if (result1 && result2) {
                 return {
+                    status: Status.Correct,
                     steps: [
                         {
                             message: "prime factorization",
@@ -140,6 +141,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         const result = checker.checkStep(productA, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: [
                     {
                         message:
@@ -176,6 +178,7 @@ export const divByFrac: Check = (prev, next, context) => {
 
         if (result) {
             return {
+                status: Status.Correct,
                 steps: [
                     {
                         message:
@@ -207,6 +210,7 @@ export const divBySame: Check = (prev, next, context) => {
 
             if (result1 && result2) {
                 return {
+                    status: Status.Correct,
                     steps: context.reversed
                         ? [
                               ...result2.steps,
@@ -269,6 +273,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -320,6 +325,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
             if (result) {
                 return {
+                    status: Status.Correct,
                     steps: context.reversed
                         ? [
                               ...result.steps,
@@ -393,6 +399,7 @@ export const mulByFrac: Check = (prev, next, context) => {
     const result = checker.checkStep(newPrev, next, context);
     if (result) {
         return {
+            status: Status.Correct,
             steps: context.reversed
                 ? [
                       ...result.steps,

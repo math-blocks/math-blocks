@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {zip, applySteps} from "./util";
-import {Result, Step, Check} from "../types";
+import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 
@@ -67,6 +67,7 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     const result = context.checker.checkStep(newPrev, next, context);
     if (result) {
         return {
+            status: Status.Correct,
             steps: context.reversed
                 ? [
                       ...result.steps,
@@ -136,6 +137,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 });
                 if (result) {
                     results.push({
+                        status: Status.Correct,
                         steps: context.reversed
                             ? [
                                   ...result.steps,
@@ -169,6 +171,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 });
                 if (result) {
                     results.push({
+                        status: Status.Correct,
                         steps: [
                             {
                                 message:
@@ -215,6 +218,7 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -245,6 +249,7 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -285,6 +290,7 @@ export const mulByZero: Check = (prev, next, context) => {
     );
     if (hasZero && result) {
         return {
+            status: Status.Correct,
             steps: [
                 ...result.steps,
                 {
@@ -327,6 +333,7 @@ export const commuteAddition: Check = (prev, next, context) => {
 
         if (reordered && result) {
             return {
+                status: Status.Correct,
                 // We'd like any of the reasons from the checkArgs call to appear
                 // first since it'll be easier to see that commutative property is
                 // be applied once all of the values are the same.
@@ -337,6 +344,7 @@ export const commuteAddition: Check = (prev, next, context) => {
                 // The order doesn't really matter.  We could provide a way to indicate
                 // the precedence between different operations and use that to decide
                 // the ordering.
+                // TODO: fix the order of the steps to match commuteMultiplications
                 steps: context.reversed
                     ? [
                           {
@@ -385,7 +393,7 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 
         if (reordered && result) {
             return {
-                // TODO: do the same for commuteAddition
+                status: Status.Correct,
                 steps: context.reversed
                     ? [
                           ...result.steps,
@@ -408,6 +416,7 @@ export const commuteMultiplication: Check = (prev, next, context) => {
     return;
 };
 
+// TODO: check that context.reversed is being handled correctly
 export const symmetricProperty: Check = (prev, next, context) => {
     // We prefer that 'symmetric property' always appear last in the list of
     // steps.  This is because it's common to do a bunch of steps to an equation
@@ -432,6 +441,7 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
             if (result) {
                 return {
+                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
@@ -463,6 +473,7 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
             if (result) {
                 return {
+                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {

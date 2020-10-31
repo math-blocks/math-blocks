@@ -1,4 +1,4 @@
-import {Check, Step} from "../types";
+import {Check, Step, Status} from "../types";
 import {deepEquals, hasArgs} from "./util";
 
 export const numberCheck: Check = (prev, next, context) => {
@@ -8,6 +8,7 @@ export const numberCheck: Check = (prev, next, context) => {
         prev.value === next.value
     ) {
         return {
+            status: Status.Correct,
             steps: [],
         };
     }
@@ -22,6 +23,7 @@ export const identifierCheck: Check = (prev, next, context) => {
         prev.name === next.name
     ) {
         return {
+            status: Status.Correct,
             steps: [],
         };
     }
@@ -32,6 +34,7 @@ numberCheck.unfilterable = true;
 export const exactMatch: Check = (prev, next, context) => {
     if (deepEquals(prev, next)) {
         return {
+            status: Status.Correct,
             steps: [],
         };
     }
@@ -59,6 +62,7 @@ export const checkArgs: Check = (prev, next, context) => {
         );
         if (equivalent) {
             return {
+                status: Status.Correct,
                 steps: steps,
             };
         }
@@ -66,6 +70,7 @@ export const checkArgs: Check = (prev, next, context) => {
         const result = checker.checkStep(prev.arg, next.arg, context);
         if (result && prev.subtraction === next.subtraction) {
             return {
+                status: Status.Correct,
                 steps: result.steps,
             };
         }

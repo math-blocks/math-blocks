@@ -2,7 +2,7 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Step, Context, Options, Check} from "../types";
+import {Result, Step, Context, Options, Check, Status} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
@@ -109,6 +109,7 @@ function evalDecompNaryOp(
 
     if (steps.length > 0) {
         return {
+            status: Status.Correct,
             steps,
         };
     }
