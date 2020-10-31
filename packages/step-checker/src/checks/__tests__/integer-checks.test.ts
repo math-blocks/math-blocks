@@ -2,7 +2,7 @@ import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
 import {checkStep} from "../test-util";
-import {deepEquals} from "../../util";
+import {deepEquals} from "../util";
 
 expect.addSnapshotSerializer(serializer);
 

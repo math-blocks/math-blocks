@@ -1,7 +1,7 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import {deepEquals} from "../../util";
+import {deepEquals} from "../util";
 import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);

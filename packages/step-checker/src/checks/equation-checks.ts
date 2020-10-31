@@ -1,8 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
-import {FAILED_CHECK} from "../constants";
-import {difference} from "../util";
+import {difference} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -14,7 +13,7 @@ const DENOMINATOR = 1;
 
 export const checkAddSub: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
@@ -49,12 +48,12 @@ export const checkAddSub: Check = (prev, next, context) => {
         // If what we're adding to both sides isn't equivalent then fail
         // TODO: report this error back to the user
         if (!result1) {
-            return FAILED_CHECK;
+            return;
         }
 
         if (lhsNewTerms.length === 0 || rhsNewTerms.length === 0) {
             // TODO: write a test for this
-            return FAILED_CHECK;
+            return;
         }
 
         const newPrev = Semantic.eq([
@@ -107,14 +106,14 @@ export const checkAddSub: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 checkAddSub.symmetric = true;
 
 export const checkMul: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
@@ -187,14 +186,14 @@ export const checkMul: Check = (prev, next, context) => {
             };
         }
     }
-    return FAILED_CHECK;
+    return;
 };
 
 checkMul.symmetric = true;
 
 export const checkDiv: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
@@ -236,7 +235,7 @@ export const checkDiv: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 checkDiv.symmetric = true;

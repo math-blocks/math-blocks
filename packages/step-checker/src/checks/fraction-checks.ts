@@ -6,9 +6,8 @@ import {
     difference,
     equality,
     intersection,
-} from "../util";
+} from "./util";
 import {Check} from "../types";
-import {FAILED_CHECK} from "../constants";
 
 import {exactMatch} from "./basic-checks";
 
@@ -19,7 +18,7 @@ import {exactMatch} from "./basic-checks";
 
 export const checkDivisionCanceling: Check = (prev, next, context) => {
     if (prev.type !== "div") {
-        return FAILED_CHECK;
+        return;
     }
     const {checker} = context;
     const [numeratorA, denominatorA] = prev.args;
@@ -104,7 +103,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         }
 
         // TODO: Add reason for why the canceling check failed
-        return FAILED_CHECK;
+        return;
     }
 
     // TODO: figure out how to handle duplicate factors
@@ -153,7 +152,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 checkDivisionCanceling.symmetric = true;
@@ -162,7 +161,7 @@ checkDivisionCanceling.symmetric = true;
 export const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     if (prev.type !== "div") {
-        return FAILED_CHECK;
+        return;
     }
 
     const [numerator, denominator] = prev.args;
@@ -189,7 +188,7 @@ export const divByFrac: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 divByFrac.symmetric = true;
@@ -236,7 +235,7 @@ export const divBySame: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 divBySame.symmetric = true;
@@ -245,7 +244,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 
     // if (argsSet.has(prev) || argsSet.has(next)) {
-    //     return FAILED_CHECK;
+    //     return
     // }
 
     // a/b -> a * 1/b, omit a/1 -> a * 1/1... acutally maybe we can get rid of divByOne
@@ -343,7 +342,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 divIsMulByOneOver.symmetric = true;
@@ -352,7 +351,7 @@ export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
-        return FAILED_CHECK;
+        return;
     }
 
     // TODO: handle more than two args
@@ -363,7 +362,7 @@ export const mulByFrac: Check = (prev, next, context) => {
             prev.args[1].type === "div" &&
             exactMatch(prev.args[1].args[0], Semantic.number("1"), context)
         ) {
-            return FAILED_CHECK;
+            return;
         }
         // Handle 1/b * a as well since this can come up during factoring
         // and distribution of division.
@@ -372,7 +371,7 @@ export const mulByFrac: Check = (prev, next, context) => {
             prev.args[1].type !== "div" &&
             exactMatch(prev.args[0].args[0], Semantic.number("1"), context)
         ) {
-            return FAILED_CHECK;
+            return;
         }
     }
 
@@ -412,7 +411,7 @@ export const mulByFrac: Check = (prev, next, context) => {
         };
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 mulByFrac.symmetric = true;

@@ -1,8 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
 
+type Expression = Semantic.Expression;
+
 export type Step = {
     message: string;
-    nodes: Semantic.Expression[];
+    nodes: Expression[];
 };
 
 export type Result = {
@@ -38,8 +40,8 @@ export type Options = {
 };
 
 export type Check<
-    Prev extends Semantic.Expression = Semantic.Expression,
-    Next extends Semantic.Expression = Semantic.Expression
+    Prev extends Expression = Expression,
+    Next extends Expression = Expression
 > = {
     (prev: Prev, next: Next, context: Context): Result | undefined;
 

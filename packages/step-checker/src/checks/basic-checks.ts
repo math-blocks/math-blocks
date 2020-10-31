@@ -1,6 +1,5 @@
 import {Check, Step} from "../types";
-import {FAILED_CHECK} from "../constants";
-import {deepEquals, hasArgs} from "../util";
+import {deepEquals, hasArgs} from "./util";
 
 export const numberCheck: Check = (prev, next, context) => {
     if (
@@ -12,7 +11,7 @@ export const numberCheck: Check = (prev, next, context) => {
             steps: [],
         };
     }
-    return FAILED_CHECK;
+    return;
 };
 numberCheck.unfilterable = true;
 
@@ -26,16 +25,16 @@ export const identifierCheck: Check = (prev, next, context) => {
             steps: [],
         };
     }
-    return FAILED_CHECK;
+    return;
 };
 numberCheck.unfilterable = true;
 
 export const exactMatch: Check = (prev, next, context) => {
-    return deepEquals(prev, next)
-        ? {
-              steps: [],
-          }
-        : FAILED_CHECK;
+    if (deepEquals(prev, next)) {
+        return {
+            steps: [],
+        };
+    }
 };
 exactMatch.unfilterable = true;
 
@@ -47,7 +46,7 @@ export const checkArgs: Check = (prev, next, context) => {
     if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
         const steps: Step[] = [];
         if (prev.args.length !== next.args.length) {
-            return FAILED_CHECK;
+            return;
         }
         const equivalent = prev.args.every((prevArg) =>
             next.args.some((nextArg) => {
@@ -58,11 +57,11 @@ export const checkArgs: Check = (prev, next, context) => {
                 return result;
             }),
         );
-        return equivalent
-            ? {
-                  steps: steps,
-              }
-            : FAILED_CHECK;
+        if (equivalent) {
+            return {
+                steps: steps,
+            };
+        }
     } else if (prev.type === "neg" && next.type === "neg") {
         const result = checker.checkStep(prev.arg, next.arg, context);
         if (result && prev.subtraction === next.subtraction) {
@@ -72,6 +71,6 @@ export const checkArgs: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 checkArgs.unfilterable = true;

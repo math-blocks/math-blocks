@@ -1,7 +1,7 @@
 import {parse} from "@math-blocks/text-parser";
 
 import StepChecker from "../../step-checker";
-import {hasArgs} from "../../util";
+import {hasArgs} from "../util";
 
 import {checkArgs} from "../basic-checks";
 

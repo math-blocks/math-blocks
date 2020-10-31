@@ -6,7 +6,7 @@ import {
     replaceNodeWithId,
     deepEquals,
     difference,
-} from "../util";
+} from "../checks/util";
 import StepChecker from "../step-checker";
 
 expect.addSnapshotSerializer(Semantic.serializer);

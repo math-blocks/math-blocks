@@ -1,13 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Result, Check} from "../types";
-import {FAILED_CHECK} from "../constants";
 
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type !== "add") {
-        return FAILED_CHECK;
+        return;
     }
 
     const indicesToRemove = new Set();
@@ -67,7 +66,7 @@ export const addInverse: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 addInverse.symmetric = true;
@@ -99,7 +98,7 @@ export const doubleNegative: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 doubleNegative.symmetric = true;
@@ -169,7 +168,7 @@ export const subIsNeg: Check = (prev, next, context) => {
         return shortestResult;
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 subIsNeg.symmetric = true;
@@ -212,7 +211,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 negIsMulNegOne.symmetric = true;
@@ -243,7 +242,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
                 }
             }
         } else {
-            return FAILED_CHECK;
+            return;
         }
 
         const newPrev = Semantic.mul(factors);
@@ -273,7 +272,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 mulTwoNegsIsPos.symmetric = true;
@@ -305,7 +304,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
             factors[index] = neg.arg;
         } else {
             // If there are no negatives then we can't transfer a negative
-            return FAILED_CHECK;
+            return;
         }
 
         const newPrev = Semantic.mul(factors);
@@ -332,7 +331,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 moveNegToFirstFactor.symmetric = true;

@@ -3,7 +3,6 @@ import Fraction from "fraction.js";
 import * as Semantic from "@math-blocks/semantic";
 
 import {Result, Step, Context, Options, Check} from "../types";
-import {FAILED_CHECK} from "../constants";
 
 import {exactMatch} from "./basic-checks";
 
@@ -39,7 +38,7 @@ function evalDecompNaryOp(
     const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
     if (a.type !== op && b.type !== op) {
-        return FAILED_CHECK;
+        return;
     }
 
     const steps: Step[] = [];
@@ -100,12 +99,12 @@ function evalDecompNaryOp(
                 }
             }
         } catch (e) {
-            return FAILED_CHECK;
+            return;
         }
     }
 
     if (i < aTerms.length) {
-        return FAILED_CHECK;
+        return;
     }
 
     if (steps.length > 0) {
@@ -114,7 +113,7 @@ function evalDecompNaryOp(
         };
     }
 
-    return FAILED_CHECK;
+    return;
 }
 
 export const evalMul: Check = (prev, next, context) => {
