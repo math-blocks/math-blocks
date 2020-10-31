@@ -4,7 +4,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Result, Step, Context, Options, Check} from "../types";
 import {FAILED_CHECK} from "../constants";
-import {exactMatch} from "../util";
+
+import {exactMatch} from "./basic-checks";
 
 const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
     if (node.type === "number") {
@@ -33,7 +34,7 @@ function evalDecompNaryOp(
     op: "add" | "mul",
     direction: Direction,
     context: Context,
-): Result | void {
+): Result | undefined {
     const aTerms = op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
     const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
@@ -116,8 +117,8 @@ function evalDecompNaryOp(
     return FAILED_CHECK;
 }
 
-export const evalMul: Check = (prev, next, context, reverse) => {
-    return reverse
+export const evalMul: Check = (prev, next, context) => {
+    return context.reversed
         ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
 };
@@ -126,8 +127,8 @@ evalMul.symmetric = true;
 
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
-export const evalAdd: Check = (prev, next, context, reverse) => {
-    return reverse
+export const evalAdd: Check = (prev, next, context) => {
+    return context.reversed
         ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
 };

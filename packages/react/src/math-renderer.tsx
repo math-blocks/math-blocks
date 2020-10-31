@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import {SceneGraph, Layout} from "@math-blocks/typesetter";
-import * as Editor from "@math-blocks/editor";
 
 type LayoutCursor = {
     parent: number;

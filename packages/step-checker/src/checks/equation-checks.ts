@@ -12,7 +12,7 @@ import {difference} from "../util";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-export const checkAddSub: Check = (prev, next, context, reversed) => {
+export const checkAddSub: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -33,114 +33,86 @@ export const checkAddSub: Check = (prev, next, context, reversed) => {
             Semantic.getTerms(rhsA),
             context,
         );
-        // TODO: check thata lhsNew and rhsNew has a single term
-        const lhsNew = Semantic.addTerms(lhsNewTerms);
-        const rhsNew = Semantic.addTerms(rhsNewTerms);
-        const result = checker.checkStep(lhsNew, rhsNew, context);
 
-        const lhsNewTerm = lhsNewTerms[0];
-        const rhsNewTerm = rhsNewTerms[0];
+        const result1 = checker.checkStep(
+            Semantic.addTerms(lhsNewTerms),
+            Semantic.addTerms(rhsNewTerms),
+            {
+                ...context,
+                filters: {
+                    // prevent an infinite loop
+                    disallowedChecks: new Set(["checkAddSub"]),
+                },
+            },
+        );
 
-        if (!lhsNewTerm || !rhsNewTerm) {
+        // If what we're adding to both sides isn't equivalent then fail
+        // TODO: report this error back to the user
+        if (!result1) {
+            return FAILED_CHECK;
+        }
+
+        if (lhsNewTerms.length === 0 || rhsNewTerms.length === 0) {
             // TODO: write a test for this
             return FAILED_CHECK;
         }
 
-        if (reversed) {
-            // This check prevents an infinite loop
-            if (
-                context.steps.some(
-                    (step) =>
-                        step.message ===
-                        "removing the same term from both sides",
-                )
-            ) {
-                return FAILED_CHECK;
-            }
+        const newPrev = Semantic.eq([
+            Semantic.add([
+                ...Semantic.getTerms(lhsA),
+                ...lhsNewTerms,
+            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.add([
+                ...Semantic.getTerms(rhsA),
+                ...rhsNewTerms,
+            ] as TwoOrMore<Semantic.Expression>),
+        ]);
 
-            const newPrev = Semantic.eq([
-                // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-                Semantic.add([
-                    ...Semantic.getTerms(lhsB),
-                    lhsNewTerm.type === "neg"
-                        ? lhsNewTerm.arg
-                        : Semantic.neg(lhsNewTerm, true),
-                ]),
-                // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-                Semantic.add([
-                    ...Semantic.getTerms(rhsB),
-                    rhsNewTerm.type === "neg"
-                        ? rhsNewTerm.arg
-                        : Semantic.neg(rhsNewTerm, true),
-                ]),
-            ]);
-            newPrev;
+        // This checkStep allows for commutation of the result, but doesn't
+        // handle evaluation that might happen during result1.
+        const result2 = checker.checkStep(newPrev, next, {
+            ...context,
+            filters: {
+                // prevent an infinite loop
+                disallowedChecks: new Set(["checkAddSub"]),
+            },
+        });
 
-            const newSteps = [
-                ...context.steps,
-                {
-                    message: "removing the same term from both sides",
-                    // TODO: add nodes
-                    nodes: [],
-                },
-            ];
+        // Using applySteps with result.steps won't work because we're not
+        // passing in either prev or next, we're creating temporary multiplication
+        // nodes.
+        // TODO: create a newPrev node
 
-            const result = checker.checkStep(newPrev, prev, {
-                ...context,
-                steps: newSteps,
-            });
-            if (result) {
-                return {
-                    steps: [
-                        {
-                            message: "subtract the same value from both sides",
-                            nodes: [next, newPrev],
-                        },
-                        ...result.steps,
-                    ],
-                };
-            } else {
-                // TODO: write test for this case
-                return FAILED_CHECK;
-            }
-        }
-
-        // TODO: handle adding multiple things to lhs and rhs as the same time
-        // TODO: do we want to enforce that the thing being added is exactly
-        // the same or do we want to allow equivalent expressions?
-        if (result && result.steps.length === 0) {
-            if (
-                Semantic.isSubtraction(lhsNewTerms[0]) &&
-                Semantic.isSubtraction(rhsNewTerms[0])
-            ) {
-                return {
-                    steps: [
-                        {
-                            message:
-                                "subtracting the same value from both sides",
-                            // TODO: add nodes
-                            nodes: [],
-                        },
-                    ],
-                };
-            }
+        if (result1 && result2) {
             return {
-                steps: [
-                    {
-                        message: "adding the same value to both sides",
-                        // TODO: add nodes
-                        nodes: [],
-                    },
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result1.steps,
+                          ...result2.steps,
+                          {
+                              message:
+                                  "removing adding the same value to both sides",
+                              nodes: [next, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "adding the same value to both sides",
+                              nodes: [prev, next],
+                          },
+                          ...result2.steps,
+                          ...result1.steps,
+                      ],
             };
         }
     }
+
     return FAILED_CHECK;
 };
 
 checkAddSub.symmetric = true;
 
-export const checkMul: Check = (prev, next, context, reversed) => {
+export const checkMul: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -161,67 +133,57 @@ export const checkMul: Check = (prev, next, context, reversed) => {
             Semantic.getFactors(rhsA),
             context,
         );
-        const result = checker.checkStep(
+        const result1 = checker.checkStep(
             Semantic.mulFactors(lhsNewFactors),
             Semantic.mulFactors(rhsNewFactors),
             context,
         );
 
-        if (reversed) {
-            if (
-                context.steps.some(
-                    (step) =>
-                        step.message === "remove common factor on both sides",
-                )
-            ) {
-                // prevent infinite loop
-                // TODO: determine if this is still needed
-                return FAILED_CHECK;
-            }
+        const newPrev = Semantic.eq([
+            Semantic.mul([
+                ...Semantic.getFactors(lhsA),
+                ...lhsNewFactors,
+            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.mul([
+                ...Semantic.getFactors(rhsA),
+                ...rhsNewFactors,
+            ] as TwoOrMore<Semantic.Expression>),
+        ]);
 
-            const newPrev = Semantic.eq([
-                Semantic.div(lhsB, Semantic.mulFactors(lhsNewFactors)),
-                Semantic.div(rhsB, Semantic.mulFactors(rhsNewFactors)),
-            ]);
+        // This checkStep allows for commutation of the result, but doesn't
+        // handle evaluation that might happen during result1.
+        const result2 = checker.checkStep(newPrev, next, {
+            ...context,
+            filters: {
+                // prevent an infinite loop
+                disallowedChecks: new Set(["checkAddSub"]),
+            },
+        });
 
-            const newSteps = [
-                ...context.steps,
-                {
-                    message: "remove common factor on both sides",
-                    nodes: [],
-                },
-            ];
+        // Using applySteps with result.steps won't work because we're not
+        // passing in either prev or next, we're creating temporary multiplication
+        // nodes.
+        // TODO: create a newPrev node
 
-            const result = checker.checkStep(newPrev, prev, {
-                ...context,
-                steps: newSteps,
-            });
-            if (result) {
-                return {
-                    steps: [
-                        {
-                            message: "divide both sides by the same value",
-                            nodes: [next, newPrev],
-                        },
-                        ...result.steps,
-                    ],
-                };
-            } else {
-                // TODO: write test for this case
-                return FAILED_CHECK;
-            }
-        }
-
-        // TODO: do we want to enforce that the thing being added is exactly
-        // the same or do we want to allow equivalent expressions?
-        if (result && result.steps.length === 0) {
+        if (result1 && result2) {
             return {
-                steps: [
-                    {
-                        message: "multiply both sides by the same value",
-                        nodes: [],
-                    },
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result1.steps,
+                          ...result2.steps,
+                          {
+                              message: "remove multiplication from both sides",
+                              nodes: [next, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "multiply both sides by the same value",
+                              nodes: [prev, next],
+                          },
+                          ...result2.steps,
+                          ...result1.steps,
+                      ],
             };
         }
     }
@@ -230,7 +192,7 @@ export const checkMul: Check = (prev, next, context, reversed) => {
 
 checkMul.symmetric = true;
 
-export const checkDiv: Check = (prev, next, context, reversed) => {
+export const checkDiv: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return FAILED_CHECK;
     }
@@ -251,61 +213,22 @@ export const checkDiv: Check = (prev, next, context, reversed) => {
                 context,
             );
 
-            if (reversed) {
-                if (
-                    context.steps.some(
-                        (step) =>
-                            step.message ===
-                            "remove division by the same amount",
-                    )
-                ) {
-                    // prevent infinite loop
-                    // TODO: determine if this is still needed
-                    return FAILED_CHECK;
-                }
-
-                const newPrev = Semantic.eq([
-                    Semantic.mul([lhsB.args[DENOMINATOR], lhsB]),
-                    Semantic.mul([rhsB.args[DENOMINATOR], rhsB]),
-                ]);
-
-                const newSteps = [
-                    ...context.steps,
-                    {
-                        message: "remove division by the same amount",
-                        nodes: [],
-                    },
-                ];
-
-                const result = checker.checkStep(newPrev, prev, {
-                    ...context,
-                    steps: newSteps,
-                });
-                if (result) {
-                    return {
-                        steps: [
-                            {
-                                message:
-                                    "multiply both sides by the same value",
-                                nodes: [next, newPrev],
-                            },
-                            ...result.steps,
-                        ],
-                    };
-                } else {
-                    // TODO: write a test case for this
-                    return FAILED_CHECK;
-                }
-            }
-
             if (result) {
                 return {
-                    steps: [
-                        {
-                            message: "divide both sides by the same value",
-                            nodes: [],
-                        },
-                    ],
+                    steps: context.reversed
+                        ? [
+                              {
+                                  message: "remove division by the same amount",
+                                  nodes: [next, prev],
+                              },
+                          ]
+                        : [
+                              {
+                                  message:
+                                      "divide both sides by the same value",
+                                  nodes: [prev, next],
+                              },
+                          ],
                 };
             } else {
                 // TODO: custom error message for this case

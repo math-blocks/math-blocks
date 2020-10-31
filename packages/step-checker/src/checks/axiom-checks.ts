@@ -3,7 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {zip, applySteps} from "../util";
 import {Result, Step, Check} from "../types";
 import {FAILED_CHECK} from "../constants";
-import {checkArgs} from "../util";
+
+import {exactMatch, checkArgs} from "./basic-checks";
 
 export const addZero: Check = (prev, next, context) => {
     return prev.type === "add"
@@ -49,12 +50,17 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     // in order to get a version of prev where all of the nodes that are equivalent
     // to the identiy have been replaced with the identity we need to call
     // applySteps which will do this for us.
-    const newPrev = applySteps(prev, identitySteps);
 
-    const newNext =
+    // TODO: make this check symmetric - we should be able to get rid of newNext
+    const newPrev =
         prev.type === "add"
             ? Semantic.addTerms(nonIdentityArgs)
             : Semantic.mulFactors(nonIdentityArgs);
+
+    const newNext =
+        prev.type === "add"
+            ? Semantic.addTerms([...nonIdentityArgs, identity])
+            : Semantic.mulFactors([...nonIdentityArgs, identity]);
 
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
@@ -63,22 +69,33 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
             ? "addition with identity"
             : "multiplication with identity";
 
-    const result = context.checker.checkStep(newNext, next, context);
+    const result = context.checker.checkStep(newPrev, next, context);
     if (result) {
         return {
-            steps: [
-                ...identitySteps,
-                {
-                    message: reason,
-                    nodes: [newPrev, newNext],
-                },
-                ...result.steps,
-            ],
+            steps: context.reversed
+                ? [
+                      ...result.steps,
+                      {
+                          message: reason,
+                          nodes: [newPrev, newNext],
+                      },
+                      ...identitySteps,
+                  ]
+                : [
+                      ...identitySteps,
+                      {
+                          message: reason,
+                          nodes: [applySteps(prev, identitySteps), newPrev],
+                      },
+                      ...result.steps,
+                  ],
         };
     }
 
     return FAILED_CHECK;
 };
+
+checkIdentity.symmetric = true;
 
 export const checkDistribution: Check = (prev, next, context) => {
     // Handle the situation where we have a term within an 'add' node that needs
@@ -124,13 +141,21 @@ export const checkDistribution: Check = (prev, next, context) => {
                 });
                 if (result) {
                     results.push({
-                        steps: [
-                            {
-                                message: "distribution",
-                                nodes: [prev, newPrev],
-                            },
-                            ...result.steps,
-                        ],
+                        steps: context.reversed
+                            ? [
+                                  ...result.steps,
+                                  {
+                                      message: "factoring",
+                                      nodes: [newPrev, prev],
+                                  },
+                              ]
+                            : [
+                                  {
+                                      message: "distribution",
+                                      nodes: [prev, newPrev],
+                                  },
+                                  ...result.steps,
+                              ],
                     });
                 }
             } else if (
@@ -195,13 +220,21 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: [
-                    {
-                        message: "distribution",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "factoring",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "distribution",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
@@ -217,81 +250,28 @@ export const checkDistribution: Check = (prev, next, context) => {
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: [
-                    {
-                        message: "distribution",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "factoring",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "distribution",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
     return FAILED_CHECK;
 };
 
-// TODO: update this to follow what checkDistribution is doing more closely
-export const checkFactoring: Check = (prev, next, context) => {
-    if (prev.type !== "add" || next.type !== "mul") {
-        return FAILED_CHECK;
-    }
-
-    // TODO: handle distribution across n-ary multiplication later
-    if (next.args.length === 2) {
-        const [left, right] = next.args;
-        for (const [x, y] of [
-            [left, right],
-            [right, left],
-        ]) {
-            if (y.type === "add" && y.args.length === prev.args.length) {
-                const subSteps: Step[] = [];
-                const equivalent = prev.args.every((arg, index) => {
-                    // Each term is in the correct order based on whether
-                    // we're distributing/factoring from left to right or
-                    // the reverse
-                    const term =
-                        x === left
-                            ? Semantic.mulFactors([x, y.args[index]])
-                            : Semantic.mulFactors([y.args[index], x]);
-
-                    // NOTE: We reset the "steps" parameter here because
-                    // we're checking different nodes so we won't run into
-                    // a cycle here.
-                    const substep = context.checker.checkStep(arg, term, {
-                        ...context,
-                        steps: [],
-                    });
-
-                    if (substep) {
-                        subSteps.push(...substep.steps);
-                    }
-                    return substep;
-                });
-
-                if (equivalent) {
-                    const nodes: Semantic.Expression[] = [prev, next];
-
-                    // TODO: include the original nodes[0] in the result somehow
-                    if (subSteps.length > 0) {
-                        nodes[0] = applySteps(nodes[0], subSteps);
-                    }
-
-                    return {
-                        steps: [
-                            ...subSteps,
-                            {
-                                message: "factoring",
-                                nodes,
-                            },
-                        ],
-                    };
-                }
-            }
-        }
-    }
-
-    return FAILED_CHECK;
-};
+checkDistribution.symmetric = true;
 
 export const mulByZero: Check = (prev, next, context) => {
     if (prev.type !== "mul") {
@@ -350,25 +330,33 @@ export const commuteAddition: Check = (prev, next, context) => {
             return !result;
         });
 
-        if (reordered) {
+        if (reordered && result) {
             return {
-                steps: [
-                    // We'd like any of the reasons from the checkArgs call to appear
-                    // first since it'll be easier to see that commutative property is
-                    // be applied once all of the values are the same.
-                    //
-                    // What about when we're going in reverse and splitting numbers up?
-                    // That seems like a very unlikely situation.
-                    //
-                    // The order doesn't really matter.  We could provide a way to indicate
-                    // the precedence between different operations and use that to decide
-                    // the ordering.
-                    ...result.steps,
-                    {
-                        message: "commutative property",
-                        nodes: [],
-                    },
-                ],
+                // We'd like any of the reasons from the checkArgs call to appear
+                // first since it'll be easier to see that commutative property is
+                // be applied once all of the values are the same.
+                //
+                // What about when we're going in reverse and splitting numbers up?
+                // That seems like a very unlikely situation.
+                //
+                // The order doesn't really matter.  We could provide a way to indicate
+                // the precedence between different operations and use that to decide
+                // the ordering.
+                steps: context.reversed
+                    ? [
+                          {
+                              message: "commutative property",
+                              nodes: [next, prev],
+                          },
+                          ...result.steps,
+                      ]
+                    : [
+                          ...result.steps,
+                          {
+                              message: "commutative property",
+                              nodes: [prev, next],
+                          },
+                      ],
             };
         }
     }
@@ -400,17 +388,24 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 !context.checker.checkStep(first, second, context),
         );
 
-        const newPrev = applySteps(prev, result.steps);
-
         if (reordered && result) {
             return {
-                steps: [
-                    ...result.steps,
-                    {
-                        message: "commutative property",
-                        nodes: [newPrev, next],
-                    },
-                ],
+                // TODO: do the same for commuteAddition
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "commutative property",
+                              nodes: [next, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "commutative property",
+                              nodes: [prev, next],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
@@ -419,6 +414,14 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 };
 
 export const symmetricProperty: Check = (prev, next, context) => {
+    // We prefer that 'symmetric property' always appear last in the list of
+    // steps.  This is because it's common to do a bunch of steps to an equation
+    // and then swap sides at the last moment so that the variable that we're
+    // looking to isolate is on the left.
+    if (!context.reversed) {
+        return FAILED_CHECK;
+    }
+
     if (
         prev.type === "eq" &&
         next.type === "eq" &&
@@ -426,28 +429,58 @@ export const symmetricProperty: Check = (prev, next, context) => {
     ) {
         const pairs = zip(prev.args, next.args);
 
-        const result = checkArgs(prev, next, context);
-        if (!result) {
-            return result;
+        // If there are only two args, we swap them and then check that it
+        // exactly matches the next step.
+        if (pairs.length === 2) {
+            const newPrev = Semantic.eq([prev.args[1], prev.args[0]]);
+            const result = exactMatch(newPrev, next, context);
+
+            if (result) {
+                return {
+                    steps: [
+                        ...result.steps,
+                        {
+                            message: "symmetric property",
+                            nodes: [newPrev, prev],
+                        },
+                    ],
+                };
+            }
         }
 
+        // If at least one of the pairs doesn't match then we've swapped the
+        // pairs around.  The issue with using checkStep here is that we could
+        // end up making changes to items that are equivalent, e.g.
+        // x + 0 = x -> x = x + 0 in which case we wouldn't identify this as
+        // the symmetric property of equality.
         const commutative = pairs.some(
             ([first, second]) =>
                 !context.checker.checkStep(first, second, context),
         );
 
         if (commutative) {
-            return {
-                steps: [
-                    {
-                        message: "symmetric property",
-                        nodes: [],
-                    },
-                    ...result.steps,
-                ],
-            };
+            const result = checkArgs(prev, next, context);
+            if (!result) {
+                return result;
+            }
+
+            const newNext = applySteps(next, result.steps);
+
+            if (result) {
+                return {
+                    steps: [
+                        ...result.steps,
+                        {
+                            message: "symmetric property",
+                            nodes: [newNext, prev],
+                        },
+                    ],
+                };
+            }
         }
     }
 
     return FAILED_CHECK;
 };
+
+symmetricProperty.symmetric = true;

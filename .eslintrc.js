@@ -18,6 +18,11 @@ module.exports = {
             "error",
             {prefixWithI: "always"},
         ],
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            // NOTE: args: "after-used" doens't work for some reason
+            {args: "none"},
+        ],
     },
     env: {
         jest: true,

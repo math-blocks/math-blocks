@@ -3,7 +3,7 @@ import * as Semantic from "@math-blocks/semantic";
 import {Result, Check} from "../types";
 import {FAILED_CHECK} from "../constants";
 
-export const addInverse: Check = (prev, next, context, reverse) => {
+export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type !== "add") {
@@ -44,13 +44,11 @@ export const addInverse: Check = (prev, next, context, reverse) => {
                     !indicesToRemove.has(index),
             ),
         );
-        const result = reverse
-            ? checker.checkStep(next, newPrev, context)
-            : checker.checkStep(newPrev, next, context);
+        const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
             return {
-                steps: reverse
+                steps: context.reversed
                     ? [
                           ...result.steps,
                           {
@@ -74,17 +72,15 @@ export const addInverse: Check = (prev, next, context, reverse) => {
 
 addInverse.symmetric = true;
 
-export const doubleNegative: Check = (prev, next, context, reverse) => {
+export const doubleNegative: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
         const newPrev = prev.arg.arg;
-        const result = reverse
-            ? checker.checkStep(next, newPrev, context)
-            : checker.checkStep(newPrev, next, context);
+        const result = checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: reverse
+                steps: context.reversed
                     ? [
                           ...result.steps,
                           {
@@ -108,7 +104,7 @@ export const doubleNegative: Check = (prev, next, context, reverse) => {
 
 doubleNegative.symmetric = true;
 
-export const subIsNeg: Check = (prev, next, context, reverse) => {
+export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
     const results: Result[] = [];
 
@@ -121,10 +117,13 @@ export const subIsNeg: Check = (prev, next, context, reverse) => {
             const index = prev.args.indexOf(sub);
             const neg =
                 sub.arg.type === "mul"
-                    ? Semantic.mul([
-                          Semantic.neg(sub.arg.args[0]),
-                          ...sub.arg.args.slice(1),
-                      ] as TwoOrMore<Semantic.Expression>)
+                    ? Semantic.mul(
+                          [
+                              Semantic.neg(sub.arg.args[0]),
+                              ...sub.arg.args.slice(1),
+                          ] as TwoOrMore<Semantic.Expression>,
+                          sub.arg.implicit,
+                      )
                     : Semantic.neg(sub.arg);
 
             const newPrev = Semantic.addTerms([
@@ -133,12 +132,10 @@ export const subIsNeg: Check = (prev, next, context, reverse) => {
                 ...prev.args.slice(index + 1),
             ]);
 
-            const result = reverse
-                ? checker.checkStep(next, newPrev, context)
-                : checker.checkStep(newPrev, next, context);
+            const result = checker.checkStep(newPrev, next, context);
             if (result) {
                 results.push({
-                    steps: reverse
+                    steps: context.reversed
                         ? [
                               ...result.steps,
                               {
@@ -177,7 +174,7 @@ export const subIsNeg: Check = (prev, next, context, reverse) => {
 
 subIsNeg.symmetric = true;
 
-export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
+export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (
@@ -191,12 +188,10 @@ export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
             ...Semantic.getFactors(prev.arg),
         ]);
 
-        const result = reverse
-            ? checker.checkStep(next, newPrev, context)
-            : checker.checkStep(newPrev, next, context);
+        const result = checker.checkStep(newPrev, next, context);
         if (result) {
             return {
-                steps: reverse
+                steps: context.reversed
                     ? [
                           ...result.steps,
                           {
@@ -222,7 +217,7 @@ export const negIsMulNegOne: Check = (prev, next, context, reverse) => {
 
 negIsMulNegOne.symmetric = true;
 
-export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
+export const mulTwoNegsIsPos: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
@@ -253,13 +248,11 @@ export const mulTwoNegsIsPos: Check = (prev, next, context, reverse) => {
 
         const newPrev = Semantic.mul(factors);
 
-        const result = reverse
-            ? checker.checkStep(next, newPrev, context)
-            : checker.checkStep(newPrev, next, context);
+        const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
             return {
-                steps: reverse
+                steps: context.reversed
                     ? [
                           ...result.steps,
                           {
@@ -320,16 +313,26 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
         if (result) {
             return {
-                steps: [
-                    {
-                        message: "move negative to first factor",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
+                steps: context.reversed
+                    ? [
+                          ...result.steps,
+                          {
+                              message: "move negative to first factor",
+                              nodes: [newPrev, prev],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "move negative to first factor",
+                              nodes: [prev, newPrev],
+                          },
+                          ...result.steps,
+                      ],
             };
         }
     }
 
     return FAILED_CHECK;
 };
+
+moveNegToFirstFactor.symmetric = true;

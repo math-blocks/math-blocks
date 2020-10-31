@@ -14,6 +14,7 @@ export const checkStep = (
         checker,
         steps: [],
         successfulChecks,
+        reversed: false,
     });
     if (!result) {
         throw new Error("no path found");

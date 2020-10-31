@@ -1,14 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
-import {parse} from "@math-blocks/text-parser";
 
 import {
     primeDecomp,
     findNodeById,
     replaceNodeWithId,
-    checkArgs,
     deepEquals,
     difference,
-    hasArgs,
 } from "../util";
 import StepChecker from "../step-checker";
 
@@ -140,29 +137,6 @@ describe("deepEquals", () => {
     });
 });
 
-describe("checkArgs", () => {
-    const checker = new StepChecker();
-
-    // TODO: move this test to util-checks.test.ts
-    it("should return false immediately if the number of steps are different", () => {
-        jest.spyOn(checker, "checkStep");
-        expect.assertions(2);
-
-        const sum1 = parse("1 + 2 + 3");
-        const sum2 = parse("1 + 2 + 3 + 4");
-        if (hasArgs(sum1) && hasArgs(sum2)) {
-            const result = checkArgs(sum1, sum2, {
-                checker,
-                steps: [],
-                successfulChecks: new Set<string>(),
-            });
-
-            expect(result).toBeUndefined();
-            expect(checker.checkStep).not.toHaveBeenCalled();
-        }
-    });
-});
-
 describe("difference", () => {
     const checker = new StepChecker();
 
@@ -173,6 +147,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([]);
@@ -185,6 +160,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([left[0]]);
@@ -197,6 +173,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual(left);
@@ -209,6 +186,7 @@ describe("difference", () => {
             checker,
             steps: [],
             successfulChecks: new Set<string>(),
+            reversed: false,
         });
 
         expect(result).toEqual([left[1]]);

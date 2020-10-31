@@ -12,10 +12,18 @@ export type Result = {
 export type Context = {
     steps: Step[];
     checker: IStepChecker;
+
+    // Tracks whether we're currently reversed or not, see `runChecks` in
+    // step-checker.ts for details.
+    reversed: boolean;
+
     filters?: {
         allowedChecks?: Set<string>;
         disallowedChecks?: Set<string>;
     };
+
+    // Used for debugging purposes to see which checks ran successfully as part
+    // of the return result.
     successfulChecks: Set<string>;
 };
 
@@ -33,13 +41,12 @@ export type Check<
     Prev extends Semantic.Expression = Semantic.Expression,
     Next extends Semantic.Expression = Semantic.Expression
 > = {
-    (
-        prev: Prev,
-        next: Next,
-        context: Context,
-        reverse?: boolean,
-    ): Result | void;
+    (prev: Prev, next: Next, context: Context): Result | undefined;
+
+    // Whether or not the check should be run by reversing the prev, next params.
+    // Most checks are symmetric.
     symmetric?: boolean;
+
     unfilterable?: boolean;
 };
 
