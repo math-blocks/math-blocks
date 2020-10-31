@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {FAILED_CHECK} from "../constants";
-import {difference, applySteps} from "../util";
+import {difference} from "../util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -58,10 +58,14 @@ export const checkAddSub: Check = (prev, next, context) => {
         }
 
         const newPrev = Semantic.eq([
-            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.add([...Semantic.getTerms(lhsA), ...lhsNewTerms]),
-            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.add([...Semantic.getTerms(rhsA), ...rhsNewTerms]),
+            Semantic.add([
+                ...Semantic.getTerms(lhsA),
+                ...lhsNewTerms,
+            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.add([
+                ...Semantic.getTerms(rhsA),
+                ...rhsNewTerms,
+            ] as TwoOrMore<Semantic.Expression>),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -136,10 +140,14 @@ export const checkMul: Check = (prev, next, context) => {
         );
 
         const newPrev = Semantic.eq([
-            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.mul([...Semantic.getFactors(lhsA), ...lhsNewFactors]),
-            // @ts-ignore: array destructuring converts OneOrMore<T> to T[]
-            Semantic.mul([...Semantic.getFactors(rhsA), ...rhsNewFactors]),
+            Semantic.mul([
+                ...Semantic.getFactors(lhsA),
+                ...lhsNewFactors,
+            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.mul([
+                ...Semantic.getFactors(rhsA),
+                ...rhsNewFactors,
+            ] as TwoOrMore<Semantic.Expression>),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't

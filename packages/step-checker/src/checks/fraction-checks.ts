@@ -5,11 +5,12 @@ import {
     decomposeFactors,
     difference,
     equality,
-    exactMatch,
     intersection,
 } from "../util";
 import {Check} from "../types";
 import {FAILED_CHECK} from "../constants";
+
+import {exactMatch} from "./basic-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
@@ -287,6 +288,58 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                           ...result.steps,
                       ],
             };
+        }
+    }
+
+    if (prev.type === "mul") {
+        const divIndex = prev.args.findIndex(
+            (arg) =>
+                arg.type === "div" &&
+                !exactMatch(arg.args[0], Semantic.number("1"), context),
+        );
+
+        const div = prev.args[divIndex];
+
+        if (div && div.type === "div") {
+            const [numerator, denominator] = div.args;
+
+            const newFactor = Semantic.mul([
+                numerator,
+                Semantic.div(Semantic.number("1"), denominator),
+            ]);
+
+            const newPrev = Semantic.mul(
+                [
+                    ...prev.args.slice(0, divIndex),
+                    ...newFactor.args,
+                    ...prev.args.slice(divIndex + 1),
+                ] as TwoOrMore<Semantic.Expression>,
+                prev.implicit,
+            );
+
+            const result = checker.checkStep(newPrev, next, context);
+
+            if (result) {
+                return {
+                    steps: context.reversed
+                        ? [
+                              ...result.steps,
+                              {
+                                  message:
+                                      "multiplying by one over something results in a fraction",
+                                  nodes: [newPrev, prev],
+                              },
+                          ]
+                        : [
+                              {
+                                  message:
+                                      "fraction is the same as multiplying by one over",
+                                  nodes: [prev, newPrev],
+                              },
+                              ...result.steps,
+                          ],
+                };
+            }
         }
     }
 

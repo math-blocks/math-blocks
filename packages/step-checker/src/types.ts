@@ -41,7 +41,7 @@ export type Check<
     Prev extends Semantic.Expression = Semantic.Expression,
     Next extends Semantic.Expression = Semantic.Expression
 > = {
-    (prev: Prev, next: Next, context: Context): Result | void;
+    (prev: Prev, next: Next, context: Context): Result | undefined;
 
     // Whether or not the check should be run by reversing the prev, next params.
     // Most checks are symmetric.

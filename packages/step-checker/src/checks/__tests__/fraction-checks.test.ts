@@ -32,6 +32,55 @@ describe("Fraction checks", () => {
         ]);
     });
 
+    it("a * 1/b * c -> a/b * c", () => {
+        const result = checkStep("a * 1/b * c", "a/b * c");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("a * b * 1/c -> a * b/c", () => {
+        const result = checkStep("a * b * 1/c", "a * b/c");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("a * b * 1/c -> a/c * b", () => {
+        const result = checkStep("a * b * 1/c", "a/c * b");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "commutative property",
+            "multiplying by one over something results in a fraction",
+        ]);
+    });
+
+    it("a * b * 1/c -> ab / c", () => {
+        const result = checkStep("a * b * 1/c", "ab / c");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "multiplying fractions",
+            "multiplication with identity",
+        ]);
+
+        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+            (div
+              (mul.imp a b 1)
+              c)
+        `);
+
+        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(
+            `(mul.imp a b 1)`,
+        );
+        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(mul.exp a b)`);
+    });
+
     it("1/b * a -> a / b", () => {
         const result = checkStep("1/b * a", "a / b");
 

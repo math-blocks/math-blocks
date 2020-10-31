@@ -2,8 +2,7 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step, HasArgs, Check, Context} from "./types";
-import {FAILED_CHECK} from "./constants";
+import {Step, HasArgs, Context} from "./types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
@@ -163,43 +162,6 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
     a.type === "gte" ||
     a.type === "div";
 
-// General check if the args are equivalent for things with args
-// than are an array and not a tuple.
-export const checkArgs: Check = (prev, next, context) => {
-    const {checker} = context;
-
-    if (prev.type === next.type && hasArgs(prev) && hasArgs(next)) {
-        const steps: Step[] = [];
-        if (prev.args.length !== next.args.length) {
-            return FAILED_CHECK;
-        }
-        const equivalent = prev.args.every((prevArg) =>
-            next.args.some((nextArg) => {
-                const result = checker.checkStep(prevArg, nextArg, context);
-                if (result) {
-                    steps.push(...result.steps);
-                }
-                return result;
-            }),
-        );
-        return equivalent
-            ? {
-                  steps: steps,
-              }
-            : FAILED_CHECK;
-    } else if (prev.type === "neg" && next.type === "neg") {
-        const result = checker.checkStep(prev.arg, next.arg, context);
-        if (result && prev.subtraction === next.subtraction) {
-            return {
-                steps: result.steps,
-            };
-        }
-    }
-
-    return FAILED_CHECK;
-};
-checkArgs.unfilterable = true;
-
 /**
  * Returns all of the elements that appear in both as and bs.
  */
@@ -256,12 +218,3 @@ export const equality = (
 
     return as.every((a) => bs.some((b) => checker.checkStep(a, b, context)));
 };
-
-export const exactMatch: Check = (prev, next, context) => {
-    return deepEquals(prev, next)
-        ? {
-              steps: [],
-          }
-        : FAILED_CHECK;
-};
-exactMatch.unfilterable = true;
