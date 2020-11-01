@@ -93,7 +93,7 @@ function evalDecompNaryOp(
                         // TODO: also specify which children we're involved in this step
                         // TODO: each step should have its own type so that we can include
                         // step specific data in the steps if necessary.
-                        nodes: [a, b],
+                        nodes: direction === Direction.EVAL ? [a, b] : [b, a],
                     });
                     break;
                 }

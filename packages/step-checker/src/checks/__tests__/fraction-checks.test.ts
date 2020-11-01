@@ -541,7 +541,7 @@ describe("Fraction checks", () => {
         expect(result.steps[0].nodes[0]).toParseLike("a");
         expect(result.steps[0].nodes[1]).toParseLike("a * 1");
 
-        expect(result.steps[1].nodes[0]).toParseLike("1");
+        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`1`);
         expect(result.steps[1].nodes[1]).toParseLike("b/b");
     });
 
@@ -584,13 +584,7 @@ describe("Fraction checks", () => {
         ]);
 
         expect(result.steps[0].nodes[0]).toParseLike("ab");
-        // TODO: figure out how we get this node to be `ab * 1` instead of
-        // `ab * 1/1`.
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (mul.imp a b)
-              1)
-        `);
+        expect(result.steps[0].nodes[1]).toParseLike("ab * 1");
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`1`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(div 1 1)`);

@@ -208,6 +208,8 @@ export const divBySame: Check = (prev, next, context) => {
             const newPrev = Semantic.number("1");
             const result2 = checker.checkStep(newPrev, next, context);
 
+            // TODO: check cases where result1.length > 0, add if statements
+            // to determine if that situation happens
             if (result1 && result2) {
                 return {
                     status: Status.Correct,
@@ -217,8 +219,8 @@ export const divBySame: Check = (prev, next, context) => {
                               {
                                   message: "division by the same value",
                                   nodes: [
-                                      newPrev,
                                       applySteps(prev, result1.steps),
+                                      newPrev,
                                   ],
                               },
                               ...result1.steps,

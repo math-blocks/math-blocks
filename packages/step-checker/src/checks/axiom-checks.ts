@@ -52,11 +52,6 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
             ? Semantic.addTerms(nonIdentityArgs)
             : Semantic.mulFactors(nonIdentityArgs);
 
-    const newNext =
-        prev.type === "add"
-            ? Semantic.addTerms([...nonIdentityArgs, identity])
-            : Semantic.mulFactors([...nonIdentityArgs, identity]);
-
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
     const reason =
@@ -73,9 +68,20 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
                       ...result.steps,
                       {
                           message: reason,
-                          nodes: [newPrev, newNext],
+                          nodes: [newPrev, applySteps(prev, identitySteps)],
                       },
-                      ...identitySteps,
+                      ...identitySteps.map((step) => {
+                          // TODO: How do we know to reverse the order here?
+                          // Should we check what the value of context.reversed
+                          // before and after we called checker.checkStep above
+                          // This code is necessary for the following test cases:
+                          // - ab -> ab / 1
+                          // - a -> a * 1 -> a * b/b
+                          return {
+                              ...step,
+                              nodes: [step.nodes[1], step.nodes[0]],
+                          };
+                      }),
                   ]
                 : [
                       ...identitySteps,
@@ -306,6 +312,8 @@ export const mulByZero: Check = (prev, next, context) => {
 mulByZero.symmetric = true;
 
 export const commuteAddition: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (
         prev.type === "add" &&
         next.type === "add" &&
@@ -314,12 +322,14 @@ export const commuteAddition: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the args are the same disregarding order.
-        const result = checkArgs(prev, next, context);
+        const result1 = checkArgs(prev, next, context);
 
         // If they aren't we can stop this check right here.
-        if (!result) {
+        if (!result1) {
             return;
         }
+
+        const steps: Step[] = [];
 
         // If at least some of the pairs don't line up then it's safe to
         // say the args have been reordered.
@@ -327,11 +337,21 @@ export const commuteAddition: Check = (prev, next, context) => {
             // It's safe to ignore the reasons from this call to checkStep
             // since we're already getting the reasons why the nodes are equivalent
             // from the call to checkArgs
-            const result = context.checker.checkStep(first, second, context);
+            const result = checker.checkStep(first, second, context);
+            if (result) {
+                steps.push(...result.steps);
+            }
             return !result;
         });
 
-        if (reordered && result) {
+        const newPrev = applySteps(prev, result1.steps);
+
+        if (reordered && result1) {
+            // No need to run checkStep(newPrev, next) since we already know
+            // they're equivalent because of checkArgs.  The only difference
+            // is the order of the args which is what we're communicate with
+            // the "commutative property" message in the result.
+
             return {
                 status: Status.Correct,
                 // We'd like any of the reasons from the checkArgs call to appear
@@ -344,20 +364,19 @@ export const commuteAddition: Check = (prev, next, context) => {
                 // The order doesn't really matter.  We could provide a way to indicate
                 // the precedence between different operations and use that to decide
                 // the ordering.
-                // TODO: fix the order of the steps to match commuteMultiplications
                 steps: context.reversed
                     ? [
                           {
                               message: "commutative property",
-                              nodes: [next, prev],
+                              nodes: [next, newPrev],
                           },
-                          ...result.steps,
+                          ...result1.steps,
                       ]
                     : [
-                          ...result.steps,
+                          ...result1.steps,
                           {
                               message: "commutative property",
-                              nodes: [prev, next],
+                              nodes: [newPrev, next],
                           },
                       ],
             };
@@ -368,6 +387,8 @@ export const commuteAddition: Check = (prev, next, context) => {
 };
 
 export const commuteMultiplication: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (
         prev.type === "mul" &&
         next.type === "mul" &&
@@ -376,10 +397,10 @@ export const commuteMultiplication: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the arguments are the same disregarding order.
-        const result = checkArgs(prev, next, context);
+        const result1 = checkArgs(prev, next, context);
 
         // If the args are the same then we can stop here.
-        if (!result) {
+        if (!result1) {
             return;
         }
 
@@ -388,26 +409,33 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 // It's safe to ignore the steps from these checks
                 // since we already have the steps from the checkArgs
                 // call.
-                !context.checker.checkStep(first, second, context),
+                !checker.checkStep(first, second, context),
         );
 
-        if (reordered && result) {
+        const newPrev = applySteps(prev, result1.steps);
+
+        if (reordered && result1) {
+            // No need to run checkStep(newPrev, next) since we already know
+            // they're equivalent because of checkArgs.  The only difference
+            // is the order of the args which is what we're communicate with
+            // the "commutative property" message in the result.
+
             return {
                 status: Status.Correct,
                 steps: context.reversed
                     ? [
-                          ...result.steps,
                           {
                               message: "commutative property",
-                              nodes: [next, prev],
+                              nodes: [next, newPrev],
                           },
+                          ...result1.steps,
                       ]
                     : [
+                          ...result1.steps,
                           {
                               message: "commutative property",
-                              nodes: [prev, next],
+                              nodes: [newPrev, next],
                           },
-                          ...result.steps,
                       ],
             };
         }
