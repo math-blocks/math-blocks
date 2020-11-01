@@ -22,14 +22,17 @@ export const checkAddSub: Check = (prev, next, context) => {
     const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "add" && rhsB.type === "add") {
+        const lhsATerms = Semantic.getTerms(lhsA);
+        const rhsATerms = Semantic.getTerms(rhsA);
+
         const lhsNewTerms = difference(
             Semantic.getTerms(lhsB),
-            Semantic.getTerms(lhsA),
+            lhsATerms,
             context,
         );
         const rhsNewTerms = difference(
             Semantic.getTerms(rhsB),
-            Semantic.getTerms(rhsA),
+            rhsATerms,
             context,
         );
 
@@ -56,15 +59,17 @@ export const checkAddSub: Check = (prev, next, context) => {
             return;
         }
 
+        // We prefer adding fewer terms to both sides.
+        const newTerms =
+            lhsNewTerms.length < rhsNewTerms.length ? lhsNewTerms : rhsNewTerms;
+
         const newPrev = Semantic.eq([
-            Semantic.add([
-                ...Semantic.getTerms(lhsA),
-                ...lhsNewTerms,
-            ] as TwoOrMore<Semantic.Expression>),
-            Semantic.add([
-                ...Semantic.getTerms(rhsA),
-                ...rhsNewTerms,
-            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.add([...lhsATerms, ...newTerms] as TwoOrMore<
+                Semantic.Expression
+            >),
+            Semantic.add([...rhsATerms, ...newTerms] as TwoOrMore<
+                Semantic.Expression
+            >),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -82,7 +87,7 @@ export const checkAddSub: Check = (prev, next, context) => {
                 prev,
                 newPrev,
                 context.reversed,
-                result1.steps,
+                [],
                 result2.steps,
                 "adding the same value to both sides",
                 "removing adding the same value to both sides",
@@ -103,36 +108,47 @@ export const checkMul: Check = (prev, next, context) => {
     const [lhsB, rhsB] = next.args;
 
     if (lhsB.type === "mul" && rhsB.type === "mul") {
+        const lhsAFactors = Semantic.getFactors(lhsA);
+        const rhsAFactors = Semantic.getFactors(rhsA);
+
         const lhsNewFactors = difference(
             Semantic.getFactors(lhsB),
-            Semantic.getFactors(lhsA),
+            lhsAFactors,
             context,
         );
         const rhsNewFactors = difference(
             Semantic.getFactors(rhsB),
-            Semantic.getFactors(rhsA),
+            rhsAFactors,
             context,
         );
-        const result1 = checker.checkStep(
+        const equivalent = checker.checkStep(
             Semantic.mulFactors(lhsNewFactors),
             Semantic.mulFactors(rhsNewFactors),
             context,
         );
 
+        if (!equivalent) {
+            return;
+        }
+
+        // We prefer multiplying both sides by fewer factors.
+        const newFactors =
+            lhsNewFactors.length < rhsNewFactors.length
+                ? lhsNewFactors
+                : rhsNewFactors;
+
         const newPrev = Semantic.eq([
-            Semantic.mul([
-                ...Semantic.getFactors(lhsA),
-                ...lhsNewFactors,
-            ] as TwoOrMore<Semantic.Expression>),
-            Semantic.mul([
-                ...Semantic.getFactors(rhsA),
-                ...rhsNewFactors,
-            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.mul([...lhsAFactors, ...newFactors] as TwoOrMore<
+                Semantic.Expression
+            >),
+            Semantic.mul([...rhsAFactors, ...newFactors] as TwoOrMore<
+                Semantic.Expression
+            >),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
-        const result2 = checker.checkStep(newPrev, next, {
+        const result = checker.checkStep(newPrev, next, {
             ...context,
             filters: {
                 // prevent an infinite loop
@@ -140,18 +156,13 @@ export const checkMul: Check = (prev, next, context) => {
             },
         });
 
-        // Using applySteps with result.steps won't work because we're not
-        // passing in either prev or next, we're creating temporary multiplication
-        // nodes.
-        // TODO: create a newPrev node
-
-        if (result1 && result2) {
+        if (result) {
             return correctResult(
                 prev,
                 newPrev,
                 context.reversed,
-                result1.steps,
-                result2.steps,
+                [],
+                result.steps,
                 "multiply both sides by the same value",
                 "remove multiplication from both sides",
             );

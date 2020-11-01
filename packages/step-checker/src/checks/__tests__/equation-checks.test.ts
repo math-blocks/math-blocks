@@ -46,17 +46,15 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
                 "adding the same value to both sides",
+                "decompose sum",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("5 + 10");
-            expect(result.steps[0].nodes[1]).toParseLike("15");
+            expect(result.steps[0].nodes[0]).toParseLike("x = y");
+            expect(result.steps[0].nodes[1]).toParseLike("x + 15 = y + 15");
 
-            // TODO: add a step where 'x = y' -> 'x + 15 = y + 15'
-
-            expect(result.steps[1].nodes[0]).toParseLike("x = y");
-            expect(result.steps[1].nodes[1]).toParseLike("x + 5 + 10 = y + 15");
+            expect(result.steps[1].nodes[0]).toParseLike("x + 15");
+            expect(result.steps[1].nodes[1]).toParseLike("x + 5 + 10");
         });
 
         it("x + 5 = y + 5 -> x = y", () => {
@@ -224,17 +222,22 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
                 "multiply both sides by the same value",
+                "decompose product",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("5 * 2");
-            expect(result.steps[0].nodes[1]).toParseLike("10");
+            expect(result.steps[0].nodes[0]).toParseLike("x = y");
+            expect(result.steps[0].nodes[1]).toParseLike("x * 10 = y * 10");
 
-            // TODO: how can we have step from 'x = y' to 'x * 10 = y * 10'?
+            expect(result.steps[1].nodes[0]).toParseLike("x * 10");
+            expect(result.steps[1].nodes[1]).toParseLike("x * 5 * 2");
+        });
 
-            expect(result.steps[1].nodes[0]).toParseLike("x = y");
-            expect(result.steps[1].nodes[1]).toParseLike("x * 5 * 2 = y * 10");
+        // TODO: figure out how to make this work
+        it.skip("y = x -> x * 5 * 2 = y * 10", () => {
+            const result = checkStep("y = x", "x * 5 * 2 = y * 10");
+
+            expect(result).toBeTruthy();
         });
 
         it("x * 10 = y * 15 -> x * 10 * 5 = y * 15 * 5", () => {
