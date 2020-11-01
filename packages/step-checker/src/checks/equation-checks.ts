@@ -18,27 +18,27 @@ export const checkAddSub: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "add" && rhsB.type === "add") {
-        const lhsATerms = Semantic.getTerms(lhsA);
-        const rhsATerms = Semantic.getTerms(rhsA);
+    if (nextLHS.type === "add" && nextRHS.type === "add") {
+        const prevTermsLHS = Semantic.getTerms(prevLHS);
+        const prevTermsRHS = Semantic.getTerms(prevRHS);
 
-        const lhsNewTerms = difference(
-            Semantic.getTerms(lhsB),
-            lhsATerms,
+        const newTermsLHS = difference(
+            Semantic.getTerms(nextLHS),
+            prevTermsLHS,
             context,
         );
-        const rhsNewTerms = difference(
-            Semantic.getTerms(rhsB),
-            rhsATerms,
+        const newTermsRHS = difference(
+            Semantic.getTerms(nextRHS),
+            prevTermsRHS,
             context,
         );
 
-        const result1 = checker.checkStep(
-            Semantic.addTerms(lhsNewTerms),
-            Semantic.addTerms(rhsNewTerms),
+        const areNewTermsEquivalent = checker.checkStep(
+            Semantic.addTerms(newTermsLHS),
+            Semantic.addTerms(newTermsRHS),
             {
                 ...context,
                 filters: {
@@ -50,31 +50,31 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         // If what we're adding to both sides isn't equivalent then fail
         // TODO: report this error back to the user
-        if (!result1) {
+        if (!areNewTermsEquivalent) {
             return;
         }
 
-        if (lhsNewTerms.length === 0 || rhsNewTerms.length === 0) {
+        if (newTermsLHS.length === 0 || newTermsRHS.length === 0) {
             // TODO: write a test for this
             return;
         }
 
         // We prefer adding fewer terms to both sides.
         const newTerms =
-            lhsNewTerms.length < rhsNewTerms.length ? lhsNewTerms : rhsNewTerms;
+            newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
         const newPrev = Semantic.eq([
-            Semantic.add([...lhsATerms, ...newTerms] as TwoOrMore<
+            Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
                 Semantic.Expression
             >),
-            Semantic.add([...rhsATerms, ...newTerms] as TwoOrMore<
+            Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
                 Semantic.Expression
             >),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
-        const result2 = checker.checkStep(newPrev, next, {
+        const result = checker.checkStep(newPrev, next, {
             ...context,
             filters: {
                 // prevent an infinite loop
@@ -82,13 +82,13 @@ export const checkAddSub: Check = (prev, next, context) => {
             },
         });
 
-        if (result1 && result2) {
+        if (result) {
             return correctResult(
                 prev,
                 newPrev,
                 context.reversed,
                 [],
-                result2.steps,
+                result.steps,
                 "adding the same value to both sides",
                 "removing adding the same value to both sides",
             );
@@ -104,44 +104,47 @@ export const checkMul: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "mul" && rhsB.type === "mul") {
-        const lhsAFactors = Semantic.getFactors(lhsA);
-        const rhsAFactors = Semantic.getFactors(rhsA);
+    if (nextLHS.type === "mul" && nextRHS.type === "mul") {
+        const prevFactorsLHS = Semantic.getFactors(prevLHS);
+        const prevFactorsRHS = Semantic.getFactors(prevRHS);
 
-        const lhsNewFactors = difference(
-            Semantic.getFactors(lhsB),
-            lhsAFactors,
+        const newFactorsLHS = difference(
+            Semantic.getFactors(nextLHS),
+            prevFactorsLHS,
             context,
         );
-        const rhsNewFactors = difference(
-            Semantic.getFactors(rhsB),
-            rhsAFactors,
-            context,
-        );
-        const equivalent = checker.checkStep(
-            Semantic.mulFactors(lhsNewFactors),
-            Semantic.mulFactors(rhsNewFactors),
+        const newFactorsRHS = difference(
+            Semantic.getFactors(nextRHS),
+            prevFactorsRHS,
             context,
         );
 
-        if (!equivalent) {
+        const areNewFactorsEquivalent = checker.checkStep(
+            Semantic.mulFactors(newFactorsLHS),
+            Semantic.mulFactors(newFactorsRHS),
+            context,
+        );
+
+        // If what we're multiplying both sides by isn't equivalent then fail
+        // TODO: report this error back to the user
+        if (!areNewFactorsEquivalent) {
             return;
         }
 
         // We prefer multiplying both sides by fewer factors.
         const newFactors =
-            lhsNewFactors.length < rhsNewFactors.length
-                ? lhsNewFactors
-                : rhsNewFactors;
+            newFactorsLHS.length < newFactorsRHS.length
+                ? newFactorsLHS
+                : newFactorsRHS;
 
         const newPrev = Semantic.eq([
-            Semantic.mul([...lhsAFactors, ...newFactors] as TwoOrMore<
+            Semantic.mul([...prevFactorsLHS, ...newFactors] as TwoOrMore<
                 Semantic.Expression
             >),
-            Semantic.mul([...rhsAFactors, ...newFactors] as TwoOrMore<
+            Semantic.mul([...prevFactorsRHS, ...newFactors] as TwoOrMore<
                 Semantic.Expression
             >),
         ]);
@@ -178,27 +181,50 @@ export const checkDiv: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "div" && rhsB.type === "div") {
+    if (nextLHS.type === "div" && nextRHS.type === "div") {
         if (
-            checker.checkStep(lhsA, lhsB.args[NUMERATOR], context) &&
-            checker.checkStep(rhsA, rhsB.args[NUMERATOR], context)
+            checker.checkStep(prevLHS, nextLHS.args[NUMERATOR], context) &&
+            checker.checkStep(prevRHS, nextRHS.args[NUMERATOR], context)
         ) {
-            const result = checker.checkStep(
-                lhsB.args[DENOMINATOR],
-                rhsB.args[DENOMINATOR],
+            const areDenominatorsEquivalent = checker.checkStep(
+                nextLHS.args[DENOMINATOR],
+                nextRHS.args[DENOMINATOR],
                 context,
             );
+
+            if (!areDenominatorsEquivalent) {
+                return;
+            }
+
+            const denFactorsLSH = Semantic.getFactors(
+                nextLHS.args[DENOMINATOR],
+            );
+            const denFactorsRHS = Semantic.getFactors(
+                nextRHS.args[DENOMINATOR],
+            );
+
+            const denFactors =
+                denFactorsLSH.length < denFactorsRHS.length
+                    ? denFactorsLSH
+                    : denFactorsRHS;
+
+            const newPrev = Semantic.eq([
+                Semantic.div(prevLHS, Semantic.mulFactors(denFactors)),
+                Semantic.div(prevRHS, Semantic.mulFactors(denFactors)),
+            ]);
+
+            const result = checker.checkStep(newPrev, next, context);
 
             if (result) {
                 return correctResult(
                     prev,
-                    next,
+                    newPrev,
                     context.reversed,
                     [],
-                    [],
+                    result.steps,
                     "divide both sides by the same value",
                     "remove division by the same amount",
                 );

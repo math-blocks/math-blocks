@@ -295,6 +295,22 @@ describe("Equation checks", () => {
             expect(result.steps[0].nodes[1]).toParseLike("x = y");
         });
 
+        it("x = y -> x / (5 + 10) = y / 15", () => {
+            const result = checkStep("x = y", "x / (5 + 10) = y / 15");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "divide both sides by the same value",
+                "decompose sum",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("x = y");
+            expect(result.steps[0].nodes[1]).toParseLike("x / 15 = y / 15");
+
+            expect(result.steps[1].nodes[0]).toParseLike("15");
+            expect(result.steps[1].nodes[1]).toParseLike("5 + 10");
+        });
+
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
             expect(() => checkStep("x = y", "x / 5 = y / 10")).toThrow();
         });

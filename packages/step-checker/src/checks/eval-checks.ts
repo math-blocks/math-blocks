@@ -27,6 +27,7 @@ enum Direction {
 }
 
 // This handles evaluation and decomposition of addition or multiplication.
+// TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
     a: Semantic.Expression,
     b: Semantic.Expression,
