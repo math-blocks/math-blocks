@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps} from "./util";
+import {zip, applySteps, correctResult} from "./util";
 import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
@@ -61,37 +61,14 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
 
     const result = context.checker.checkStep(newPrev, next, context);
     if (result) {
-        return {
-            status: Status.Correct,
-            steps: context.reversed
-                ? [
-                      ...result.steps,
-                      {
-                          message: reason,
-                          nodes: [newPrev, applySteps(prev, identitySteps)],
-                      },
-                      ...identitySteps.map((step) => {
-                          // TODO: How do we know to reverse the order here?
-                          // Should we check what the value of context.reversed
-                          // before and after we called checker.checkStep above
-                          // This code is necessary for the following test cases:
-                          // - ab -> ab / 1
-                          // - a -> a * 1 -> a * b/b
-                          return {
-                              ...step,
-                              nodes: [step.nodes[1], step.nodes[0]],
-                          };
-                      }),
-                  ]
-                : [
-                      ...identitySteps,
-                      {
-                          message: reason,
-                          nodes: [applySteps(prev, identitySteps), newPrev],
-                      },
-                      ...result.steps,
-                  ],
-        };
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            identitySteps,
+            result.steps,
+            reason,
+        );
     }
 
     return;
@@ -142,24 +119,17 @@ export const checkDistribution: Check = (prev, next, context) => {
                     filters,
                 });
                 if (result) {
-                    results.push({
-                        status: Status.Correct,
-                        steps: context.reversed
-                            ? [
-                                  ...result.steps,
-                                  {
-                                      message: "factoring",
-                                      nodes: [newPrev, prev],
-                                  },
-                              ]
-                            : [
-                                  {
-                                      message: "distribution",
-                                      nodes: [prev, newPrev],
-                                  },
-                                  ...result.steps,
-                              ],
-                    });
+                    results.push(
+                        correctResult(
+                            prev,
+                            newPrev,
+                            context.reversed,
+                            [],
+                            result.steps,
+                            "distribution",
+                            "factoring",
+                        ),
+                    );
                 }
             } else if (
                 mul.type === "neg" &&
@@ -176,17 +146,25 @@ export const checkDistribution: Check = (prev, next, context) => {
                     filters,
                 });
                 if (result) {
-                    results.push({
-                        status: Status.Correct,
-                        steps: [
-                            {
-                                message:
-                                    "subtraction is the same as multiplying by negative one",
-                                nodes: [prev, newPrev],
-                            },
-                            ...result.steps,
-                        ],
-                    });
+                    return correctResult(
+                        prev,
+                        newPrev,
+                        context.reversed,
+                        [],
+                        result.steps,
+                        "subtraction is the same as multiplying by negative one",
+                    );
+                    // results.push({
+                    //     status: Status.Correct,
+                    //     steps: [
+                    //         {
+                    //             message:
+                    //                 "subtraction is the same as multiplying by negative one",
+                    //             nodes: [prev, newPrev],
+                    //         },
+                    //         ...result.steps,
+                    //     ],
+                    // });
                 }
             }
         }
@@ -223,24 +201,15 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "factoring",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "distribution",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "distribution",
+                "factoring",
+            );
         }
     }
 
@@ -254,27 +223,17 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "factoring",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "distribution",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "distribution",
+                "factoring",
+            );
         }
     }
-    return;
 };
 
 checkDistribution.symmetric = true;
@@ -289,24 +248,19 @@ export const mulByZero: Check = (prev, next, context) => {
     const hasZero = prev.args.some((arg) =>
         context.checker.checkStep(arg, Semantic.number("0"), context),
     );
-    const result = context.checker.checkStep(
-        next,
-        Semantic.number("0"),
-        context,
-    );
+    const newPrev = Semantic.number("0");
+    const result = context.checker.checkStep(newPrev, next, context);
+
     if (hasZero && result) {
-        return {
-            status: Status.Correct,
-            steps: [
-                ...result.steps,
-                {
-                    message: "multiplication by zero",
-                    nodes: [], // TODO: add nodes
-                },
-            ],
-        };
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "multiplication by zero",
+        );
     }
-    return;
 };
 
 mulByZero.symmetric = true;
@@ -352,38 +306,26 @@ export const commuteAddition: Check = (prev, next, context) => {
             // is the order of the args which is what we're communicate with
             // the "commutative property" message in the result.
 
-            return {
-                status: Status.Correct,
-                // We'd like any of the reasons from the checkArgs call to appear
-                // first since it'll be easier to see that commutative property is
-                // be applied once all of the values are the same.
-                //
-                // What about when we're going in reverse and splitting numbers up?
-                // That seems like a very unlikely situation.
-                //
-                // The order doesn't really matter.  We could provide a way to indicate
-                // the precedence between different operations and use that to decide
-                // the ordering.
-                steps: context.reversed
-                    ? [
-                          {
-                              message: "commutative property",
-                              nodes: [next, newPrev],
-                          },
-                          ...result1.steps,
-                      ]
-                    : [
-                          ...result1.steps,
-                          {
-                              message: "commutative property",
-                              nodes: [newPrev, next],
-                          },
-                      ],
-            };
+            // We'd like any of the reasons from the checkArgs call to appear
+            // first since it'll be easier to see that commutative property is
+            // be applied once all of the values are the same.
+            //
+            // What about when we're going in reverse and splitting numbers up?
+            // That seems like a very unlikely situation.
+            //
+            // The order doesn't really matter.  We could provide a way to indicate
+            // the precedence between different operations and use that to decide
+            // the ordering.
+            return correctResult(
+                newPrev,
+                next,
+                context.reversed,
+                result1.steps,
+                [],
+                "commutative property",
+            );
         }
     }
-
-    return;
 };
 
 export const commuteMultiplication: Check = (prev, next, context) => {
@@ -420,28 +362,16 @@ export const commuteMultiplication: Check = (prev, next, context) => {
             // is the order of the args which is what we're communicate with
             // the "commutative property" message in the result.
 
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          {
-                              message: "commutative property",
-                              nodes: [next, newPrev],
-                          },
-                          ...result1.steps,
-                      ]
-                    : [
-                          ...result1.steps,
-                          {
-                              message: "commutative property",
-                              nodes: [newPrev, next],
-                          },
-                      ],
-            };
+            return correctResult(
+                newPrev,
+                next,
+                context.reversed,
+                result1.steps,
+                [],
+                "commutative property",
+            );
         }
     }
-
-    return;
 };
 
 // TODO: check that context.reversed is being handled correctly
@@ -493,13 +423,9 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
         if (commutative) {
             const result = checkArgs(prev, next, context);
-            if (!result) {
-                return result;
-            }
-
-            const newNext = applySteps(next, result.steps);
 
             if (result) {
+                const newNext = applySteps(next, result.steps);
                 return {
                     status: Status.Correct,
                     steps: [
@@ -513,8 +439,6 @@ export const symmetricProperty: Check = (prev, next, context) => {
             }
         }
     }
-
-    return;
 };
 
 symmetricProperty.symmetric = true;

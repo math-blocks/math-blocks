@@ -338,6 +338,17 @@ describe("Fraction checks", () => {
             ]);
         });
 
+        it("a * c/b -> a / (b/c)", () => {
+            const result = checkStep("a * c/b", "a / (b/c)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a * c/b");
+        });
+
         it("1 / (a/b) -> b / a", () => {
             const result = checkStep("1 / (a/b)", "b / a");
 

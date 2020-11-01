@@ -46,16 +46,17 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "adding the same value to both sides",
                 "evaluation of addition",
+                "adding the same value to both sides",
             ]);
 
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(eq x y)`);
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-                (eq
-                  (add x 5 10)
-                  (add y 15))
-            `);
+            expect(result.steps[0].nodes[0]).toParseLike("5 + 10");
+            expect(result.steps[0].nodes[1]).toParseLike("15");
+
+            // TODO: add a step where 'x = y' -> 'x + 15 = y + 15'
+
+            expect(result.steps[1].nodes[0]).toParseLike("x = y");
+            expect(result.steps[1].nodes[1]).toParseLike("x + 5 + 10 = y + 15");
         });
 
         it("x + 5 = y + 5 -> x = y", () => {
@@ -120,6 +121,12 @@ describe("Equation checks", () => {
                 "adding the same value to both sides",
                 "commutative property",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("x = y");
+            expect(result.steps[0].nodes[1]).toParseLike("x + 5 = y + 5");
+
+            expect(result.steps[1].nodes[0]).toParseLike("x + 5");
+            expect(result.steps[1].nodes[1]).toParseLike("5 + x");
         });
 
         it("x + 10 = y + 15 -> x + 10 + 5 = y + 15 + 5", () => {
@@ -217,14 +224,17 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiply both sides by the same value",
                 "evaluation of multiplication",
+                "multiply both sides by the same value",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("x * 5 * 2 = y * 10");
-            expect(result.steps[1].nodes[0]).toParseLike("5 * 2");
-            expect(result.steps[1].nodes[1]).toParseLike("10");
+            expect(result.steps[0].nodes[0]).toParseLike("5 * 2");
+            expect(result.steps[0].nodes[1]).toParseLike("10");
+
+            // TODO: how can we have step from 'x = y' to 'x * 10 = y * 10'?
+
+            expect(result.steps[1].nodes[0]).toParseLike("x = y");
+            expect(result.steps[1].nodes[1]).toParseLike("x * 5 * 2 = y * 10");
         });
 
         it("x * 10 = y * 15 -> x * 10 * 5 = y * 15 * 5", () => {
@@ -249,18 +259,12 @@ describe("Equation checks", () => {
                 "remove multiplication from both sides",
             ]);
 
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
-                (mul.imp
-                  2
-                  (add x 2.5))
-            `);
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-                (mul.exp
-                  (add x 2.5)
-                  2)
-            `);
+            expect(result.steps[0].nodes[0]).toParseLike("2(x + 2.5)");
+            expect(result.steps[0].nodes[1]).toParseLike("(x + 2.5)*2");
 
-            expect(result.steps[1].nodes[0]).toParseLike("2(x + 2.5) = (5)2");
+            // TODO: how can we make there be preference for having the '2' at
+            // the start of the product?
+            expect(result.steps[1].nodes[0]).toParseLike("(x + 2.5)*2 = 5*2");
             expect(result.steps[1].nodes[1]).toParseLike("x + 2.5 = 5");
         });
     });

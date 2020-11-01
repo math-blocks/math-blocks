@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check, Status} from "../types";
+import {Result, Check} from "../types";
+import {correctResult} from "./util";
 
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
@@ -46,24 +47,14 @@ export const addInverse: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "adding inverse",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "adding inverse",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "adding inverse",
+            );
         }
     }
 
@@ -79,24 +70,14 @@ export const doubleNegative: Check = (prev, next, context) => {
         const newPrev = prev.arg.arg;
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "negative of a negative is positive",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "negative of a negative is positive",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "negative of a negative is positive",
+            );
         }
     }
 
@@ -135,26 +116,16 @@ export const subIsNeg: Check = (prev, next, context) => {
 
             const result = checker.checkStep(newPrev, next, context);
             if (result) {
-                results.push({
-                    status: Status.Correct,
-                    steps: context.reversed
-                        ? [
-                              ...result.steps,
-                              {
-                                  message:
-                                      "subtracting is the same as adding the inverse",
-                                  nodes: [newPrev, prev],
-                              },
-                          ]
-                        : [
-                              {
-                                  message:
-                                      "subtracting is the same as adding the inverse",
-                                  nodes: [prev, newPrev],
-                              },
-                              ...result.steps,
-                          ],
-                });
+                results.push(
+                    correctResult(
+                        prev,
+                        newPrev,
+                        context.reversed,
+                        [],
+                        result.steps,
+                        "subtracting is the same as adding the inverse",
+                    ),
+                );
             }
         }
     }
@@ -192,26 +163,14 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
 
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message:
-                                  "negation is the same as multipling by negative one",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message:
-                                  "negation is the same as multipling by negative one",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "negation is the same as multipling by negative one",
+            );
         }
     }
 
@@ -254,30 +213,17 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message:
-                                  "a positive is the same as multiplying two negatives",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message:
-                                  "multiplying two negatives is a positive",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "multiplying two negatives is a positive",
+                "a positive is the same as multiplying two negatives",
+            );
         }
     }
-
-    return;
 };
 
 mulTwoNegsIsPos.symmetric = true;
@@ -316,24 +262,14 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "move negative to first factor",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "move negative to first factor",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "move negative to first factor",
+            );
         }
     }
 

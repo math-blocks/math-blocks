@@ -538,8 +538,8 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtraction is the same as multiplying by negative one",
-                "distribution",
                 "subtraction is the same as multiplying by negative one",
+                "distribution",
                 "distribution",
                 "negation is the same as multipling by negative one",
                 "negation is the same as multipling by negative one",
@@ -550,6 +550,35 @@ describe("Axiom checks", () => {
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
             ]);
+
+            // TODO: use implicit multiplication in more places
+            expect(result.steps[0].nodes[0]).toParseLike(
+                "1 - (x + y) - (a + b)",
+            );
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "1 + -1*(x + y) - (a + b)",
+            );
+
+            expect(result.steps[1].nodes[0]).toParseLike(
+                "1 + -1*(x + y) - (a + b)",
+            );
+            expect(result.steps[1].nodes[1]).toParseLike(
+                "1 + -1*(x + y) + -1*(a + b)",
+            );
+
+            expect(result.steps[2].nodes[0]).toParseLike(
+                "1 + -1*(x + y) + -1*(a + b)",
+            );
+            expect(result.steps[2].nodes[1]).toParseLike(
+                "1 + -1*x + -1*y + -1*(a + b)",
+            );
+
+            expect(result.steps[3].nodes[0]).toParseLike(
+                "1 + -1*x + -1*y + -1*(a + b)",
+            );
+            expect(result.steps[3].nodes[1]).toParseLike(
+                "1 + -1*x + -1*y + -1*a + -1*b",
+            );
         });
 
         // TODO: make this test pass

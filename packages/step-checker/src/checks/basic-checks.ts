@@ -69,10 +69,7 @@ export const checkArgs: Check = (prev, next, context) => {
     } else if (prev.type === "neg" && next.type === "neg") {
         const result = checker.checkStep(prev.arg, next.arg, context);
         if (result && prev.subtraction === next.subtraction) {
-            return {
-                status: Status.Correct,
-                steps: result.steps,
-            };
+            return result;
         }
     }
 

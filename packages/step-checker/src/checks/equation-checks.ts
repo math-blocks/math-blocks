@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, Status} from "../types";
-import {difference} from "./util";
+import {Check} from "../types";
+import {difference, correctResult} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -77,39 +77,19 @@ export const checkAddSub: Check = (prev, next, context) => {
             },
         });
 
-        // Using applySteps with result.steps won't work because we're not
-        // passing in either prev or next, we're creating temporary multiplication
-        // nodes.
-        // TODO: create a newPrev node
-
         if (result1 && result2) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result1.steps,
-                          ...result2.steps,
-                          {
-                              message:
-                                  "removing adding the same value to both sides",
-                              nodes: [next, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "adding the same value to both sides",
-                              nodes: [prev, next],
-                          },
-                          ...result2.steps,
-                          ...result1.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "adding the same value to both sides",
+                "removing adding the same value to both sides",
+            );
         }
     }
-
-    return;
 };
-
 checkAddSub.symmetric = true;
 
 export const checkMul: Check = (prev, next, context) => {
@@ -166,31 +146,18 @@ export const checkMul: Check = (prev, next, context) => {
         // TODO: create a newPrev node
 
         if (result1 && result2) {
-            return {
-                status: Status.Correct,
-                steps: context.reversed
-                    ? [
-                          ...result1.steps,
-                          ...result2.steps,
-                          {
-                              message: "remove multiplication from both sides",
-                              nodes: [next, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "multiply both sides by the same value",
-                              nodes: [prev, next],
-                          },
-                          ...result2.steps,
-                          ...result1.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "multiply both sides by the same value",
+                "remove multiplication from both sides",
+            );
         }
     }
-    return;
 };
-
 checkMul.symmetric = true;
 
 export const checkDiv: Check = (prev, next, context) => {
@@ -215,30 +182,17 @@ export const checkDiv: Check = (prev, next, context) => {
             );
 
             if (result) {
-                return {
-                    status: Status.Correct,
-                    steps: context.reversed
-                        ? [
-                              {
-                                  message: "remove division by the same amount",
-                                  nodes: [next, prev],
-                              },
-                          ]
-                        : [
-                              {
-                                  message:
-                                      "divide both sides by the same value",
-                                  nodes: [prev, next],
-                              },
-                          ],
-                };
-            } else {
-                // TODO: custom error message for this case
+                return correctResult(
+                    prev,
+                    next,
+                    context.reversed,
+                    [],
+                    [],
+                    "divide both sides by the same value",
+                    "remove division by the same amount",
+                );
             }
         }
     }
-
-    return;
 };
-
 checkDiv.symmetric = true;
