@@ -225,6 +225,12 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         !exactMatch(prev.args[0], Semantic.number("1"), context)
     ) {
         const [numerator, denominator] = prev.args;
+        // What if numerator is a mul itself?  Should we have a step that
+        // flattens muls inside of muls, e.g.
+        // (mul (mul a b) (div 1 c)) -> (mul a b (div 1 c))
+        // The problem is that this can lead to:
+        // (mul a b (div 1 c)) -> (mul a (div b c)) -> (div (mul a b) c)
+        // and then back to (mul (mul a b) (div 1 c))
         const newPrev = Semantic.mul([
             numerator,
             Semantic.div(Semantic.number("1"), denominator),

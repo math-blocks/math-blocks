@@ -273,3 +273,58 @@ export const correctResult = (
               ],
     };
 };
+
+export const incorrectResult = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+    reversed: boolean,
+    beforeSteps: Step[],
+    afterSteps: Step[],
+    forwardMessage: string,
+    reverseMessage: string = forwardMessage,
+): Result => {
+    const newPrev = beforeSteps
+        ? reversed
+            ? applySteps(
+                  prev,
+                  beforeSteps.map((step) => {
+                      return {
+                          ...step,
+                          // The order of the nodes needs to be reversed when
+                          // operating in a reversed context.
+                          nodes: [step.nodes[1], step.nodes[0]],
+                      };
+                  }),
+              )
+            : applySteps(prev, beforeSteps)
+        : prev;
+
+    // TODO: figure out why afterSteps.reverse() and beforeSteps.reverse()
+    // breaks a number of our tests.
+
+    // if (reversed) {
+    //     afterSteps.reverse();
+    //     beforeSteps.reverse();
+    // }
+
+    return {
+        status: Status.Incorrect,
+        steps: reversed
+            ? [
+                  ...afterSteps,
+                  {
+                      message: reverseMessage,
+                      nodes: [next, newPrev],
+                  },
+                  ...beforeSteps,
+              ]
+            : [
+                  ...beforeSteps,
+                  {
+                      message: forwardMessage,
+                      nodes: [newPrev, next],
+                  },
+                  ...afterSteps,
+              ],
+    };
+};

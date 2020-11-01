@@ -1,6 +1,8 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
+import {Status} from "../../types";
+
 import {deepEquals} from "../util";
 import {checkStep} from "../test-util";
 
@@ -139,8 +141,89 @@ describe("Equation checks", () => {
             ]);
         });
 
+        it("x + a = y + b -> x + a + 5 = y + b + 5", () => {
+            const result = checkStep("x + a = y + b", "a + x + 5 = b + y + 5");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding the same value to both sides",
+                "commutative property",
+                "commutative property",
+            ]);
+        });
+
+        it("x = y -> x = y + 0", () => {
+            const result = checkStep("x = y", "x = y + 0");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("y");
+            expect(result.steps[0].nodes[1]).toParseLike("y + 0");
+        });
+
+        it("x = y -> x + 3 = y + 7", () => {
+            const result = checkStep("x = y", "x + 3 = y + 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were added to both sides",
+            ]);
+
+            // TODO: include which nodes weren't equivalent
+        });
+
+        it("x = y -> x = y + 7", () => {
+            const result = checkStep("x = y", "x = y + 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were added to both sides",
+            ]);
+
+            // TODO: include which nodes weren't equivalent
+        });
+
+        it("x + y = x + y -> x + y = x + y + 7", () => {
+            const result = checkStep("x + y = x + y", "x + y = x + y + 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were added to both sides",
+            ]);
+
+            // TODO: include which nodes weren't equivalent
+        });
+
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
-            expect(() => checkStep("2x + 5 = 10", "2x + 5 - 5 = 10")).toThrow();
+            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were added to both sides",
+            ]);
+
+            // TODO: include which nodes weren't equivalent
+        });
+
+        // TODO: make this work
+        // The issue here is that we're swapping x and y before multiplying
+        // factors on each side.
+        it.skip("y = x -> x + 10 = y + 10", () => {
+            const result = checkStep("y = x", "x + 10 = y + 10");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Correct);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding the same value to both sides",
+                "decompose product",
+            ]);
         });
     });
 
@@ -190,9 +273,15 @@ describe("Equation checks", () => {
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
-            expect(() =>
-                checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10"),
-            ).toThrow();
+            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "different values were added to both sides",
+            ]);
+
+            // TODO: include which nodes weren't equivalent
         });
 
         it("2x + 5 - 5 = 10 - 5 -> 2x + 5 - 5 = 5", () => {
@@ -233,11 +322,18 @@ describe("Equation checks", () => {
             expect(result.steps[1].nodes[1]).toParseLike("x * 5 * 2");
         });
 
-        // TODO: figure out how to make this work
-        it.skip("y = x -> x * 5 * 2 = y * 10", () => {
-            const result = checkStep("y = x", "x * 5 * 2 = y * 10");
+        // TODO: make this work
+        // The issue here is that we're swapping x and y before multiplying
+        // factors on each side.
+        it.skip("y = x -> x * 10 = y * 10", () => {
+            const result = checkStep("y = x", "x * 10 = y * 10");
 
             expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Correct);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiply both sides by the same value",
+                "decompose product",
+            ]);
         });
 
         it("x * 10 = y * 15 -> x * 10 * 5 = y * 15 * 5", () => {
@@ -250,6 +346,66 @@ describe("Equation checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiply both sides by the same value",
             ]);
+        });
+
+        it("x * a = y * b -> a * x * 5 = b * y * 5", () => {
+            const result = checkStep("x * a = y * b", "a * x * 5 = b * y * 5");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Correct);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiply both sides by the same value",
+                "commutative property",
+                "commutative property",
+            ]);
+        });
+
+        it("x = y -> x = y * 7", () => {
+            const result = checkStep("x = y", "x = y * 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were multiplied on both sides",
+            ]);
+        });
+
+        it("x * a = y * b -> x * a = y * b * 7", () => {
+            const result = checkStep("x * a = y * b", "x * a = y * b * 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were multiplied on both sides",
+            ]);
+        });
+
+        it("x = y -> x * 3 = y * 7", () => {
+            const result = checkStep("x = y", "x * 3 = y * 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were multiplied on both sides",
+            ]);
+        });
+
+        it("x * a = y * b -> x * a * 3 = y * b * 7", () => {
+            const result = checkStep("x * a = y * b", "x * a * 3 = y * b * 7");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "different values were multiplied on both sides",
+            ]);
+        });
+
+        // TODO: return an incorrect result for this test case
+        // PLAN: we can write a custom check that see if we're multiplying one
+        // side by a certain value and then if the other side is an 'add' node
+        // check if we multiplied one of the terms by that same value.
+        it("x = y + 1 -> 2x + 2y + 1 [incorrect]", () => {
+            expect(() => checkStep("x = y + 1", "2x = 2y + 1")).toThrow();
         });
 
         test("2(x + 2.5) = (5)2 -> x + 2.5 = 5", () => {

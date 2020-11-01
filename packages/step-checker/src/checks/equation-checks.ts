@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
-import {difference, correctResult} from "./util";
+import {difference, correctResult, incorrectResult, intersection} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -21,20 +21,25 @@ export const checkAddSub: Check = (prev, next, context) => {
     const [prevLHS, prevRHS] = prev.args;
     const [nextLHS, nextRHS] = next.args;
 
-    if (nextLHS.type === "add" && nextRHS.type === "add") {
+    // TODO: take into account LHS and RHS being swapped
+    // e.g. y = x -> x + 10 = y + 10
+    if (nextLHS.type === "add" || nextRHS.type === "add") {
         const prevTermsLHS = Semantic.getTerms(prevLHS);
         const prevTermsRHS = Semantic.getTerms(prevRHS);
+        const nextTermsLHS = Semantic.getTerms(nextLHS);
+        const nextTermsRHS = Semantic.getTerms(nextRHS);
 
-        const newTermsLHS = difference(
-            Semantic.getTerms(nextLHS),
-            prevTermsLHS,
-            context,
-        );
-        const newTermsRHS = difference(
-            Semantic.getTerms(nextRHS),
-            prevTermsRHS,
-            context,
-        );
+        const oldTermsLHS = intersection(nextTermsLHS, prevTermsLHS, context);
+        const oldTermsRHS = intersection(nextTermsRHS, prevTermsRHS, context);
+
+        // If one of the sides has no old factors then we're doing something
+        // other than adding some value to both sides.
+        if (oldTermsLHS.length === 0 || oldTermsRHS.length === 0) {
+            return;
+        }
+
+        const newTermsLHS = difference(nextTermsLHS, prevTermsLHS, context);
+        const newTermsRHS = difference(nextTermsRHS, prevTermsRHS, context);
 
         const areNewTermsEquivalent = checker.checkStep(
             Semantic.addTerms(newTermsLHS),
@@ -48,10 +53,17 @@ export const checkAddSub: Check = (prev, next, context) => {
             },
         );
 
-        // If what we're adding to both sides isn't equivalent then fail
-        // TODO: report this error back to the user
+        // If what we're adding to both sides isn't equivalent then report that
+        // this step was incorrect and include which nodes weren't the same.
         if (!areNewTermsEquivalent) {
-            return;
+            return incorrectResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                [],
+                "different values were added to both sides",
+            );
         }
 
         if (newTermsLHS.length === 0 || newTermsRHS.length === 0) {
@@ -107,9 +119,30 @@ export const checkMul: Check = (prev, next, context) => {
     const [prevLHS, prevRHS] = prev.args;
     const [nextLHS, nextRHS] = next.args;
 
-    if (nextLHS.type === "mul" && nextRHS.type === "mul") {
+    // TODO: take into account LHS and RHS being swapped
+    // e.g. y = x -> x * 10 = y * 10
+    if (nextLHS.type === "mul" || nextRHS.type === "mul") {
         const prevFactorsLHS = Semantic.getFactors(prevLHS);
         const prevFactorsRHS = Semantic.getFactors(prevRHS);
+        const nextFactorsLHS = Semantic.getFactors(nextLHS);
+        const nextFacotrsRHS = Semantic.getFactors(nextRHS);
+
+        const oldFactorsLHS = intersection(
+            nextFactorsLHS,
+            prevFactorsLHS,
+            context,
+        );
+        const oldFactorsRHS = intersection(
+            nextFacotrsRHS,
+            prevFactorsRHS,
+            context,
+        );
+
+        // If one of the sides has no old factors then we're doing something
+        // other than multiplying both sides by some value.
+        if (oldFactorsLHS.length === 0 || oldFactorsRHS.length === 0) {
+            return;
+        }
 
         const newFactorsLHS = difference(
             Semantic.getFactors(nextLHS),
@@ -131,7 +164,14 @@ export const checkMul: Check = (prev, next, context) => {
         // If what we're multiplying both sides by isn't equivalent then fail
         // TODO: report this error back to the user
         if (!areNewFactorsEquivalent) {
-            return;
+            return incorrectResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                [],
+                "different values were multiplied on both sides",
+            );
         }
 
         // We prefer multiplying both sides by fewer factors.

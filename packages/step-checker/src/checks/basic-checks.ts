@@ -51,21 +51,42 @@ export const checkArgs: Check = (prev, next, context) => {
         if (prev.args.length !== next.args.length) {
             return;
         }
-        const equivalent = prev.args.every((prevArg) =>
-            next.args.some((nextArg) => {
+
+        let remainingNextArgs = [...next.args];
+        for (const prevArg of prev.args) {
+            const index = remainingNextArgs.findIndex((nextArg) => {
                 const result = checker.checkStep(prevArg, nextArg, context);
                 if (result) {
-                    steps.push(...result.steps);
+                    if (result.status === Status.Correct) {
+                        steps.push(...result.steps);
+                        return result;
+                    } else {
+                        throw new Error(
+                            "TODO: handle incorrect results in checkArgs",
+                        );
+                    }
                 }
-                return result;
-            }),
-        );
-        if (equivalent) {
-            return {
-                status: Status.Correct,
-                steps: steps,
-            };
+            });
+
+            // Many of our checks rely on there being different numbers of args
+            // This is especially true from fraction checks and some of the axiom
+            // checks.
+            if (index === -1) {
+                return;
+            }
+
+            // If there's a matching arg, remove it from remainingNextArgs so
+            // that we don't end up matching it twice.
+            remainingNextArgs = [
+                ...remainingNextArgs.slice(0, index),
+                ...remainingNextArgs.slice(index + 1),
+            ];
         }
+
+        return {
+            status: Status.Correct,
+            steps: steps,
+        };
     } else if (prev.type === "neg" && next.type === "neg") {
         const result = checker.checkStep(prev.arg, next.arg, context);
         if (result && prev.subtraction === next.subtraction) {
