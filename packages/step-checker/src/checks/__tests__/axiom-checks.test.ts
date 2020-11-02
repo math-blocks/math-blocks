@@ -1,8 +1,10 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
+import {Status} from "../../types";
+
 import {checkStep} from "../test-util";
-import {deepEquals} from "../../util";
+import {deepEquals} from "../util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -112,6 +114,15 @@ describe("Axiom checks", () => {
                 "evaluation of addition",
                 "commutative property",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("2 - 1");
+            expect(result.steps[0].nodes[1]).toParseLike("1");
+
+            expect(result.steps[1].nodes[0]).toParseLike("1 + 1");
+            expect(result.steps[1].nodes[1]).toParseLike("2");
+
+            expect(result.steps[2].nodes[0]).toParseLike("1 + 2");
+            expect(result.steps[2].nodes[1]).toParseLike("2 + 1");
         });
 
         // nested commutative property
@@ -200,10 +211,19 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                "evaluation of addition",
+                "evaluation of addition",
                 "commutative property",
-                "evaluation of addition",
-                "evaluation of addition",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("1 + 1");
+            expect(result.steps[0].nodes[1]).toParseLike("2");
+
+            expect(result.steps[1].nodes[0]).toParseLike("1 + 2");
+            expect(result.steps[1].nodes[1]).toParseLike("3");
+
+            expect(result.steps[2].nodes[0]).toParseLike("2 * 3");
+            expect(result.steps[2].nodes[1]).toParseLike("3 * 2");
         });
 
         it("3 * 2 -> (1 + 1) * (1 + 2)", () => {
@@ -211,16 +231,34 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                "decompose sum",
+                "decompose sum",
                 "commutative property",
-                "decompose sum",
-                "decompose sum",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("3");
+            expect(result.steps[0].nodes[1]).toParseLike("1 + 2");
+
+            expect(result.steps[1].nodes[0]).toParseLike("2");
+            expect(result.steps[1].nodes[1]).toParseLike("1 + 1");
+
+            expect(result.steps[2].nodes[0]).toParseLike("(1 + 2) * (1 + 1)");
+            expect(result.steps[2].nodes[1]).toParseLike("(1 + 1) * (1 + 2)");
         });
     });
 
     describe("addZero", () => {
         it("a + 0 -> a", () => {
             const result = checkStep("a + 0", "a");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+            ]);
+        });
+
+        it("2(a + 0) -> 2a", () => {
+            const result = checkStep("2(a + 0)", "2a");
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
@@ -235,6 +273,23 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "addition with identity",
             ]);
+        });
+
+        it("2a -> 2(a + 0)", () => {
+            const result = checkStep("2a", "2(a + 0)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+            ]);
+        });
+
+        // TODO: make this test pass
+        it.skip("2a -> 2(a + 7)", () => {
+            const result = checkStep("2a", "2(a + 7)");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
         });
 
         it("a + b -> a + b + 0", () => {
@@ -269,7 +324,7 @@ describe("Axiom checks", () => {
             expect(result.steps[0].nodes[1]).toParseLike("b + a");
 
             expect(result.steps[1].nodes[0]).toParseLike("b + a");
-            expect(result.steps[1].nodes[1]).toParseLike("b + a + 0");
+            expect(result.steps[1].nodes[1]).toParseLike("b + 0 + a");
         });
 
         it("a + b -> a + 0 + b + 0", () => {
@@ -326,14 +381,13 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "commutative property",
                 "multiplication with identity",
-                // TODO: we're missing another "commutative property" step here
             ]);
 
             expect(result.steps[0].nodes[0]).toParseLike("a * b");
             expect(result.steps[0].nodes[1]).toParseLike("b * a");
 
             expect(result.steps[1].nodes[0]).toParseLike("b * a");
-            expect(result.steps[1].nodes[1]).toParseLike("b * a * 1");
+            expect(result.steps[1].nodes[1]).toParseLike("b * 1 * a");
         });
 
         it("a * b -> a * 1 * b * 1", () => {
@@ -512,8 +566,8 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtraction is the same as multiplying by negative one",
-                "distribution",
                 "subtraction is the same as multiplying by negative one",
+                "distribution",
                 "distribution",
                 "negation is the same as multipling by negative one",
                 "negation is the same as multipling by negative one",
@@ -524,6 +578,35 @@ describe("Axiom checks", () => {
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
             ]);
+
+            // TODO: use implicit multiplication in more places
+            expect(result.steps[0].nodes[0]).toParseLike(
+                "1 - (x + y) - (a + b)",
+            );
+            expect(result.steps[0].nodes[1]).toParseLike(
+                "1 + -1*(x + y) - (a + b)",
+            );
+
+            expect(result.steps[1].nodes[0]).toParseLike(
+                "1 + -1*(x + y) - (a + b)",
+            );
+            expect(result.steps[1].nodes[1]).toParseLike(
+                "1 + -1*(x + y) + -1*(a + b)",
+            );
+
+            expect(result.steps[2].nodes[0]).toParseLike(
+                "1 + -1*(x + y) + -1*(a + b)",
+            );
+            expect(result.steps[2].nodes[1]).toParseLike(
+                "1 + -1*x + -1*y + -1*(a + b)",
+            );
+
+            expect(result.steps[3].nodes[0]).toParseLike(
+                "1 + -1*x + -1*y + -1*(a + b)",
+            );
+            expect(result.steps[3].nodes[1]).toParseLike(
+                "1 + -1*x + -1*y + -1*a + -1*b",
+            );
         });
 
         // TODO: make this test pass

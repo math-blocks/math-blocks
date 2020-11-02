@@ -43,6 +43,17 @@ describe("Eval (decomposition) checks", () => {
             ]);
         });
 
+        // TODO: make this pass
+        it.skip("1 + 2 + 3 + 4 -> 1 + 6 + 3", () => {
+            const result = checkStep("1 + 2 + 3 + 4", "1 + 6 + 3");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "evaluation of addition",
+                "evaluation of addition",
+            ]);
+        });
+
         // TODO: the reason should be "evaluation of subtraction"
         it("10 - 5 -> 5", () => {
             const before = "10 - 5";

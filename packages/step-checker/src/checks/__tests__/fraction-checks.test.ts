@@ -2,7 +2,7 @@ import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
 import StepChecker from "../../step-checker";
-import {deepEquals} from "../../util";
+import {deepEquals} from "../util";
 import {checkStep} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
@@ -338,6 +338,17 @@ describe("Fraction checks", () => {
             ]);
         });
 
+        it("a * c/b -> a / (b/c)", () => {
+            const result = checkStep("a * c/b", "a / (b/c)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a * c/b");
+        });
+
         it("1 / (a/b) -> b / a", () => {
             const result = checkStep("1 / (a/b)", "b / a");
 
@@ -541,7 +552,7 @@ describe("Fraction checks", () => {
         expect(result.steps[0].nodes[0]).toParseLike("a");
         expect(result.steps[0].nodes[1]).toParseLike("a * 1");
 
-        expect(result.steps[1].nodes[0]).toParseLike("1");
+        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`1`);
         expect(result.steps[1].nodes[1]).toParseLike("b/b");
     });
 
@@ -584,13 +595,7 @@ describe("Fraction checks", () => {
         ]);
 
         expect(result.steps[0].nodes[0]).toParseLike("ab");
-        // TODO: figure out how we get this node to be `ab * 1` instead of
-        // `ab * 1/1`.
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (mul.imp a b)
-              1)
-        `);
+        expect(result.steps[0].nodes[1]).toParseLike("ab * 1");
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`1`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(div 1 1)`);

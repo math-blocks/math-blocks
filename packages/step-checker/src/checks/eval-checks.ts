@@ -2,8 +2,7 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Step, Context, Options, Check} from "../types";
-import {FAILED_CHECK} from "../constants";
+import {Result, Step, Context, Options, Check, Status} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
@@ -28,6 +27,7 @@ enum Direction {
 }
 
 // This handles evaluation and decomposition of addition or multiplication.
+// TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
     a: Semantic.Expression,
     b: Semantic.Expression,
@@ -39,7 +39,7 @@ function evalDecompNaryOp(
     const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
 
     if (a.type !== op && b.type !== op) {
-        return FAILED_CHECK;
+        return;
     }
 
     const steps: Step[] = [];
@@ -94,27 +94,28 @@ function evalDecompNaryOp(
                         // TODO: also specify which children we're involved in this step
                         // TODO: each step should have its own type so that we can include
                         // step specific data in the steps if necessary.
-                        nodes: [a, b],
+                        nodes: direction === Direction.EVAL ? [a, b] : [b, a],
                     });
                     break;
                 }
             }
         } catch (e) {
-            return FAILED_CHECK;
+            return;
         }
     }
 
     if (i < aTerms.length) {
-        return FAILED_CHECK;
+        return;
     }
 
     if (steps.length > 0) {
         return {
+            status: Status.Correct,
             steps,
         };
     }
 
-    return FAILED_CHECK;
+    return;
 }
 
 export const evalMul: Check = (prev, next, context) => {

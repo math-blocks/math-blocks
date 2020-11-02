@@ -1,14 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {
-    applySteps,
     decomposeFactors,
     difference,
     equality,
     intersection,
-} from "../util";
-import {Check} from "../types";
-import {FAILED_CHECK} from "../constants";
+    correctResult,
+} from "./util";
+import {Check, Status} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
@@ -19,7 +18,7 @@ import {exactMatch} from "./basic-checks";
 
 export const checkDivisionCanceling: Check = (prev, next, context) => {
     if (prev.type !== "div") {
-        return FAILED_CHECK;
+        return;
     }
     const {checker} = context;
     const [numeratorA, denominatorA] = prev.args;
@@ -91,6 +90,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
 
             if (result1 && result2) {
                 return {
+                    status: Status.Correct,
                     steps: [
                         {
                             message: "prime factorization",
@@ -104,7 +104,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         }
 
         // TODO: Add reason for why the canceling check failed
-        return FAILED_CHECK;
+        return;
     }
 
     // TODO: figure out how to handle duplicate factors
@@ -141,6 +141,7 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         const result = checker.checkStep(productA, next, context);
         if (result) {
             return {
+                status: Status.Correct,
                 steps: [
                     {
                         message:
@@ -152,17 +153,14 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
             };
         }
     }
-
-    return FAILED_CHECK;
 };
-
 checkDivisionCanceling.symmetric = true;
 
-// TODO: handle this in the same way we handle other symmetric checks
 export const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
+
     if (prev.type !== "div") {
-        return FAILED_CHECK;
+        return;
     }
 
     const [numerator, denominator] = prev.args;
@@ -176,22 +174,17 @@ export const divByFrac: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            return {
-                steps: [
-                    {
-                        message:
-                            "dividing by a fraction is the same as multiplying by the reciprocal",
-                        nodes: [prev, newPrev],
-                    },
-                    ...result.steps,
-                ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+            );
         }
     }
-
-    return FAILED_CHECK;
 };
-
 divByFrac.symmetric = true;
 
 export const divBySame: Check = (prev, next, context) => {
@@ -206,37 +199,20 @@ export const divBySame: Check = (prev, next, context) => {
             const newPrev = Semantic.number("1");
             const result2 = checker.checkStep(newPrev, next, context);
 
+            // TODO: check cases where result1.length > 0, add if statements
+            // to determine if that situation happens
             if (result1 && result2) {
-                return {
-                    steps: context.reversed
-                        ? [
-                              ...result2.steps,
-                              {
-                                  message: "division by the same value",
-                                  nodes: [
-                                      newPrev,
-                                      applySteps(prev, result1.steps),
-                                  ],
-                              },
-                              ...result1.steps,
-                          ]
-                        : [
-                              ...result1.steps,
-                              {
-                                  message: "division by the same value",
-                                  nodes: [
-                                      applySteps(prev, result1.steps),
-                                      newPrev,
-                                  ],
-                              },
-                              ...result2.steps,
-                          ],
-                };
+                return correctResult(
+                    prev,
+                    newPrev,
+                    context.reversed,
+                    result1.steps,
+                    result2.steps,
+                    "division by the same value",
+                );
             }
         }
     }
-
-    return FAILED_CHECK;
 };
 
 divBySame.symmetric = true;
@@ -244,23 +220,17 @@ divBySame.symmetric = true;
 export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 
-    // if (argsSet.has(prev) || argsSet.has(next)) {
-    //     return FAILED_CHECK;
-    // }
-
-    // a/b -> a * 1/b, omit a/1 -> a * 1/1... acutally maybe we can get rid of divByOne
-    //
-    // why is a / 1 -> a?
-    // a * 1/1 by definition of division and 1/1 = 1 because of inverses
-
-    // TODO: check if the div is a child of a mul node... if we are then we'll
-    // want the args of the mul node we create to be injected into the parent's
-    // args.  We need tests for this.
     if (
         prev.type === "div" &&
         !exactMatch(prev.args[0], Semantic.number("1"), context)
     ) {
         const [numerator, denominator] = prev.args;
+        // What if numerator is a mul itself?  Should we have a step that
+        // flattens muls inside of muls, e.g.
+        // (mul (mul a b) (div 1 c)) -> (mul a b (div 1 c))
+        // The problem is that this can lead to:
+        // (mul a b (div 1 c)) -> (mul a (div b c)) -> (div (mul a b) c)
+        // and then back to (mul (mul a b) (div 1 c))
         const newPrev = Semantic.mul([
             numerator,
             Semantic.div(Semantic.number("1"), denominator),
@@ -269,25 +239,15 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            return {
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message:
-                                  "multiplying by one over something results in a fraction",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message:
-                                  "fraction is the same as multiplying by one over",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "fraction is the same as multiplying by one over",
+                "multiplying by one over something results in a fraction",
+            );
         }
     }
 
@@ -320,30 +280,18 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
             const result = checker.checkStep(newPrev, next, context);
 
             if (result) {
-                return {
-                    steps: context.reversed
-                        ? [
-                              ...result.steps,
-                              {
-                                  message:
-                                      "multiplying by one over something results in a fraction",
-                                  nodes: [newPrev, prev],
-                              },
-                          ]
-                        : [
-                              {
-                                  message:
-                                      "fraction is the same as multiplying by one over",
-                                  nodes: [prev, newPrev],
-                              },
-                              ...result.steps,
-                          ],
-                };
+                return correctResult(
+                    prev,
+                    newPrev,
+                    context.reversed,
+                    [],
+                    result.steps,
+                    "fraction is the same as multiplying by one over",
+                    "multiplying by one over something results in a fraction",
+                );
             }
         }
     }
-
-    return FAILED_CHECK;
 };
 
 divIsMulByOneOver.symmetric = true;
@@ -352,7 +300,7 @@ export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
     if (prev.type !== "mul" || prev.args.every((arg) => arg.type !== "div")) {
-        return FAILED_CHECK;
+        return;
     }
 
     // TODO: handle more than two args
@@ -363,7 +311,7 @@ export const mulByFrac: Check = (prev, next, context) => {
             prev.args[1].type === "div" &&
             exactMatch(prev.args[1].args[0], Semantic.number("1"), context)
         ) {
-            return FAILED_CHECK;
+            return;
         }
         // Handle 1/b * a as well since this can come up during factoring
         // and distribution of division.
@@ -372,7 +320,7 @@ export const mulByFrac: Check = (prev, next, context) => {
             prev.args[1].type !== "div" &&
             exactMatch(prev.args[0].args[0], Semantic.number("1"), context)
         ) {
-            return FAILED_CHECK;
+            return;
         }
     }
 
@@ -387,32 +335,23 @@ export const mulByFrac: Check = (prev, next, context) => {
             numFactors.push(...Semantic.getFactors(arg));
         }
     }
+
     const newPrev = Semantic.div(
         Semantic.mulFactors(numFactors, true),
         Semantic.mulFactors(denFactors, true), // denFactors = [] -> 1
     );
     const result = checker.checkStep(newPrev, next, context);
-    if (result) {
-        return {
-            steps: context.reversed
-                ? [
-                      ...result.steps,
-                      {
-                          message: "multiplying fractions",
-                          nodes: [newPrev, prev],
-                      },
-                  ]
-                : [
-                      {
-                          message: "multiplying fractions",
-                          nodes: [prev, newPrev],
-                      },
-                      ...result.steps,
-                  ],
-        };
-    }
 
-    return FAILED_CHECK;
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "multiplying fractions",
+        );
+    }
 };
 
 mulByFrac.symmetric = true;

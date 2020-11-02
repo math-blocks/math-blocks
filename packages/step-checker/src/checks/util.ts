@@ -2,7 +2,7 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step, HasArgs, Context} from "./types";
+import {Step, HasArgs, Context, Result, Status} from "../types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
@@ -217,4 +217,114 @@ export const equality = (
     const {checker} = context;
 
     return as.every((a) => bs.some((b) => checker.checkStep(a, b, context)));
+};
+
+export const correctResult = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+    reversed: boolean,
+    beforeSteps: Step[],
+    afterSteps: Step[],
+    forwardMessage: string,
+    reverseMessage: string = forwardMessage,
+): Result => {
+    const newPrev = beforeSteps
+        ? reversed
+            ? applySteps(
+                  prev,
+                  beforeSteps.map((step) => {
+                      return {
+                          ...step,
+                          // The order of the nodes needs to be reversed when
+                          // operating in a reversed context.
+                          nodes: [step.nodes[1], step.nodes[0]],
+                      };
+                  }),
+              )
+            : applySteps(prev, beforeSteps)
+        : prev;
+
+    // TODO: figure out why afterSteps.reverse() and beforeSteps.reverse()
+    // breaks a number of our tests.
+
+    // if (reversed) {
+    //     afterSteps.reverse();
+    //     beforeSteps.reverse();
+    // }
+
+    return {
+        status: Status.Correct,
+        steps: reversed
+            ? [
+                  ...afterSteps,
+                  {
+                      message: reverseMessage,
+                      nodes: [next, newPrev],
+                  },
+                  ...beforeSteps,
+              ]
+            : [
+                  ...beforeSteps,
+                  {
+                      message: forwardMessage,
+                      nodes: [newPrev, next],
+                  },
+                  ...afterSteps,
+              ],
+    };
+};
+
+export const incorrectResult = (
+    prev: Semantic.Expression,
+    next: Semantic.Expression,
+    reversed: boolean,
+    beforeSteps: Step[],
+    afterSteps: Step[],
+    forwardMessage: string,
+    reverseMessage: string = forwardMessage,
+): Result => {
+    const newPrev = beforeSteps
+        ? reversed
+            ? applySteps(
+                  prev,
+                  beforeSteps.map((step) => {
+                      return {
+                          ...step,
+                          // The order of the nodes needs to be reversed when
+                          // operating in a reversed context.
+                          nodes: [step.nodes[1], step.nodes[0]],
+                      };
+                  }),
+              )
+            : applySteps(prev, beforeSteps)
+        : prev;
+
+    // TODO: figure out why afterSteps.reverse() and beforeSteps.reverse()
+    // breaks a number of our tests.
+
+    // if (reversed) {
+    //     afterSteps.reverse();
+    //     beforeSteps.reverse();
+    // }
+
+    return {
+        status: Status.Incorrect,
+        steps: reversed
+            ? [
+                  ...afterSteps,
+                  {
+                      message: reverseMessage,
+                      nodes: [next, newPrev],
+                  },
+                  ...beforeSteps,
+              ]
+            : [
+                  ...beforeSteps,
+                  {
+                      message: forwardMessage,
+                      nodes: [newPrev, next],
+                  },
+                  ...afterSteps,
+              ],
+    };
 };

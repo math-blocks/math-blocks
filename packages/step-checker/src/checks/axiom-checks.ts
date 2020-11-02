@@ -1,23 +1,18 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps} from "../util";
-import {Result, Step, Check} from "../types";
-import {FAILED_CHECK} from "../constants";
+import {zip, applySteps, correctResult} from "./util";
+import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 
 export const addZero: Check = (prev, next, context) => {
-    return prev.type === "add"
-        ? checkIdentity(prev, next, context)
-        : FAILED_CHECK;
+    return prev.type === "add" ? checkIdentity(prev, next, context) : undefined;
 };
 
 addZero.symmetric = true;
 
 export const mulOne: Check = (prev, next, context) => {
-    return prev.type === "mul"
-        ? checkIdentity(prev, next, context)
-        : FAILED_CHECK;
+    return prev.type === "mul" ? checkIdentity(prev, next, context) : undefined;
 };
 
 mulOne.symmetric = true;
@@ -27,6 +22,10 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     next,
     context,
 ) => {
+    // TODO: refactor this check to use do:
+    // newPrev = prev * 1
+    // newPrev = prev + 1
+    // that way we're going in the forward direction
     const identity =
         prev.type === "add" ? Semantic.number("0") : Semantic.number("1");
 
@@ -43,7 +42,7 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === prev.args.length) {
-        return FAILED_CHECK;
+        return;
     }
 
     // Steps are local to the nodes involved which are descendents of prev so
@@ -57,11 +56,6 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
             ? Semantic.addTerms(nonIdentityArgs)
             : Semantic.mulFactors(nonIdentityArgs);
 
-    const newNext =
-        prev.type === "add"
-            ? Semantic.addTerms([...nonIdentityArgs, identity])
-            : Semantic.mulFactors([...nonIdentityArgs, identity]);
-
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
     const reason =
@@ -71,28 +65,17 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
 
     const result = context.checker.checkStep(newPrev, next, context);
     if (result) {
-        return {
-            steps: context.reversed
-                ? [
-                      ...result.steps,
-                      {
-                          message: reason,
-                          nodes: [newPrev, newNext],
-                      },
-                      ...identitySteps,
-                  ]
-                : [
-                      ...identitySteps,
-                      {
-                          message: reason,
-                          nodes: [applySteps(prev, identitySteps), newPrev],
-                      },
-                      ...result.steps,
-                  ],
-        };
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            identitySteps,
+            result.steps,
+            reason,
+        );
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 checkIdentity.symmetric = true;
@@ -140,23 +123,17 @@ export const checkDistribution: Check = (prev, next, context) => {
                     filters,
                 });
                 if (result) {
-                    results.push({
-                        steps: context.reversed
-                            ? [
-                                  ...result.steps,
-                                  {
-                                      message: "factoring",
-                                      nodes: [newPrev, prev],
-                                  },
-                              ]
-                            : [
-                                  {
-                                      message: "distribution",
-                                      nodes: [prev, newPrev],
-                                  },
-                                  ...result.steps,
-                              ],
-                    });
+                    results.push(
+                        correctResult(
+                            prev,
+                            newPrev,
+                            context.reversed,
+                            [],
+                            result.steps,
+                            "distribution",
+                            "factoring",
+                        ),
+                    );
                 }
             } else if (
                 mul.type === "neg" &&
@@ -173,16 +150,14 @@ export const checkDistribution: Check = (prev, next, context) => {
                     filters,
                 });
                 if (result) {
-                    results.push({
-                        steps: [
-                            {
-                                message:
-                                    "subtraction is the same as multiplying by negative one",
-                                nodes: [prev, newPrev],
-                            },
-                            ...result.steps,
-                        ],
-                    });
+                    return correctResult(
+                        prev,
+                        newPrev,
+                        context.reversed,
+                        [],
+                        result.steps,
+                        "subtraction is the same as multiplying by negative one",
+                    );
                 }
             }
         }
@@ -201,7 +176,7 @@ export const checkDistribution: Check = (prev, next, context) => {
     }
 
     if (prev.type !== "mul" || next.type !== "add") {
-        return FAILED_CHECK;
+        return;
     }
 
     // If the second factor is an add, e.g. a(b + c) -> ...
@@ -219,23 +194,15 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "factoring",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "distribution",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "distribution",
+                "factoring",
+            );
         }
     }
 
@@ -249,33 +216,24 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return {
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "factoring",
-                              nodes: [newPrev, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "distribution",
-                              nodes: [prev, newPrev],
-                          },
-                          ...result.steps,
-                      ],
-            };
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "distribution",
+                "factoring",
+            );
         }
     }
-    return FAILED_CHECK;
 };
 
 checkDistribution.symmetric = true;
 
 export const mulByZero: Check = (prev, next, context) => {
     if (prev.type !== "mul") {
-        return FAILED_CHECK;
+        return;
     }
 
     // TODO: ensure that steps from these calls to checkStep
@@ -283,28 +241,26 @@ export const mulByZero: Check = (prev, next, context) => {
     const hasZero = prev.args.some((arg) =>
         context.checker.checkStep(arg, Semantic.number("0"), context),
     );
-    const result = context.checker.checkStep(
-        next,
-        Semantic.number("0"),
-        context,
-    );
+    const newPrev = Semantic.number("0");
+    const result = context.checker.checkStep(newPrev, next, context);
+
     if (hasZero && result) {
-        return {
-            steps: [
-                ...result.steps,
-                {
-                    message: "multiplication by zero",
-                    nodes: [], // TODO: add nodes
-                },
-            ],
-        };
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "multiplication by zero",
+        );
     }
-    return FAILED_CHECK;
 };
 
 mulByZero.symmetric = true;
 
 export const commuteAddition: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (
         prev.type === "add" &&
         next.type === "add" &&
@@ -313,12 +269,14 @@ export const commuteAddition: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the args are the same disregarding order.
-        const result = checkArgs(prev, next, context);
+        const result1 = checkArgs(prev, next, context);
 
         // If they aren't we can stop this check right here.
-        if (!result) {
-            return FAILED_CHECK;
+        if (!result1) {
+            return;
         }
+
+        const steps: Step[] = [];
 
         // If at least some of the pairs don't line up then it's safe to
         // say the args have been reordered.
@@ -326,45 +284,46 @@ export const commuteAddition: Check = (prev, next, context) => {
             // It's safe to ignore the reasons from this call to checkStep
             // since we're already getting the reasons why the nodes are equivalent
             // from the call to checkArgs
-            const result = context.checker.checkStep(first, second, context);
+            const result = checker.checkStep(first, second, context);
+            if (result) {
+                steps.push(...result.steps);
+            }
             return !result;
         });
 
-        if (reordered && result) {
-            return {
-                // We'd like any of the reasons from the checkArgs call to appear
-                // first since it'll be easier to see that commutative property is
-                // be applied once all of the values are the same.
-                //
-                // What about when we're going in reverse and splitting numbers up?
-                // That seems like a very unlikely situation.
-                //
-                // The order doesn't really matter.  We could provide a way to indicate
-                // the precedence between different operations and use that to decide
-                // the ordering.
-                steps: context.reversed
-                    ? [
-                          {
-                              message: "commutative property",
-                              nodes: [next, prev],
-                          },
-                          ...result.steps,
-                      ]
-                    : [
-                          ...result.steps,
-                          {
-                              message: "commutative property",
-                              nodes: [prev, next],
-                          },
-                      ],
-            };
+        const newPrev = applySteps(prev, result1.steps);
+
+        if (reordered && result1) {
+            // No need to run checkStep(newPrev, next) since we already know
+            // they're equivalent because of checkArgs.  The only difference
+            // is the order of the args which is what we're communicate with
+            // the "commutative property" message in the result.
+
+            // We'd like any of the reasons from the checkArgs call to appear
+            // first since it'll be easier to see that commutative property is
+            // be applied once all of the values are the same.
+            //
+            // What about when we're going in reverse and splitting numbers up?
+            // That seems like a very unlikely situation.
+            //
+            // The order doesn't really matter.  We could provide a way to indicate
+            // the precedence between different operations and use that to decide
+            // the ordering.
+            return correctResult(
+                newPrev,
+                next,
+                context.reversed,
+                result1.steps,
+                [],
+                "commutative property",
+            );
         }
     }
-
-    return FAILED_CHECK;
 };
 
 export const commuteMultiplication: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (
         prev.type === "mul" &&
         next.type === "mul" &&
@@ -373,11 +332,11 @@ export const commuteMultiplication: Check = (prev, next, context) => {
         const pairs = zip(prev.args, next.args);
 
         // Check if the arguments are the same disregarding order.
-        const result = checkArgs(prev, next, context);
+        const result1 = checkArgs(prev, next, context);
 
         // If the args are the same then we can stop here.
-        if (!result) {
-            return FAILED_CHECK;
+        if (!result1) {
+            return;
         }
 
         const reordered = pairs.some(
@@ -385,41 +344,37 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 // It's safe to ignore the steps from these checks
                 // since we already have the steps from the checkArgs
                 // call.
-                !context.checker.checkStep(first, second, context),
+                !checker.checkStep(first, second, context),
         );
 
-        if (reordered && result) {
-            return {
-                // TODO: do the same for commuteAddition
-                steps: context.reversed
-                    ? [
-                          ...result.steps,
-                          {
-                              message: "commutative property",
-                              nodes: [next, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "commutative property",
-                              nodes: [prev, next],
-                          },
-                          ...result.steps,
-                      ],
-            };
+        const newPrev = applySteps(prev, result1.steps);
+
+        if (reordered && result1) {
+            // No need to run checkStep(newPrev, next) since we already know
+            // they're equivalent because of checkArgs.  The only difference
+            // is the order of the args which is what we're communicate with
+            // the "commutative property" message in the result.
+
+            return correctResult(
+                newPrev,
+                next,
+                context.reversed,
+                result1.steps,
+                [],
+                "commutative property",
+            );
         }
     }
-
-    return FAILED_CHECK;
 };
 
+// TODO: check that context.reversed is being handled correctly
 export const symmetricProperty: Check = (prev, next, context) => {
     // We prefer that 'symmetric property' always appear last in the list of
     // steps.  This is because it's common to do a bunch of steps to an equation
     // and then swap sides at the last moment so that the variable that we're
     // looking to isolate is on the left.
     if (!context.reversed) {
-        return FAILED_CHECK;
+        return;
     }
 
     if (
@@ -437,6 +392,7 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
             if (result) {
                 return {
+                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
@@ -460,14 +416,11 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
         if (commutative) {
             const result = checkArgs(prev, next, context);
-            if (!result) {
-                return result;
-            }
-
-            const newNext = applySteps(next, result.steps);
 
             if (result) {
+                const newNext = applySteps(next, result.steps);
                 return {
+                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
@@ -479,8 +432,6 @@ export const symmetricProperty: Check = (prev, next, context) => {
             }
         }
     }
-
-    return FAILED_CHECK;
 };
 
 symmetricProperty.symmetric = true;

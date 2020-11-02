@@ -1,7 +1,6 @@
 import {Expression} from "@math-blocks/semantic";
 
 import {Check, Result, Context} from "./types";
-import {FAILED_CHECK} from "./constants";
 
 /**
  * Returns a Check that runs all checks until one returns a result.
@@ -17,7 +16,7 @@ export const first = (checks: Check[]): Check => (prev, next, context) => {
         }
     }
 
-    return FAILED_CHECK;
+    return;
 };
 
 /**
@@ -32,7 +31,7 @@ export const shortest = (checks: Check[]): Check => (prev, next, context) => {
         .filter(notUndefined);
 
     if (results.length === 0) {
-        return FAILED_CHECK;
+        return;
     }
 
     let shortestResult = results[0];

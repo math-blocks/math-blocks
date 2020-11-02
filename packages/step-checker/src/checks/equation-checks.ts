@@ -1,8 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
-import {FAILED_CHECK} from "../constants";
-import {difference} from "../util";
+import {difference, correctResult, incorrectResult, intersection} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -14,29 +13,43 @@ const DENOMINATOR = 1;
 
 export const checkAddSub: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "add" && rhsB.type === "add") {
-        const lhsNewTerms = difference(
-            Semantic.getTerms(lhsB),
-            Semantic.getTerms(lhsA),
-            context,
-        );
-        const rhsNewTerms = difference(
-            Semantic.getTerms(rhsB),
-            Semantic.getTerms(rhsA),
-            context,
-        );
+    // TODO: take into account LHS and RHS being swapped
+    // e.g. y = x -> x + 10 = y + 10
+    if (nextLHS.type === "add" || nextRHS.type === "add") {
+        const prevTermsLHS = Semantic.getTerms(prevLHS);
+        const prevTermsRHS = Semantic.getTerms(prevRHS);
+        const nextTermsLHS = Semantic.getTerms(nextLHS);
+        const nextTermsRHS = Semantic.getTerms(nextRHS);
 
-        const result1 = checker.checkStep(
-            Semantic.addTerms(lhsNewTerms),
-            Semantic.addTerms(rhsNewTerms),
+        // Which terms from the previous step appear in the next step on each
+        // side.
+        const oldTermsLHS = intersection(nextTermsLHS, prevTermsLHS, context);
+        const oldTermsRHS = intersection(nextTermsRHS, prevTermsRHS, context);
+
+        // All previous terms for each side should appear in the next step as
+        // terms as well.  If any are missing then we're doing something other
+        // than adding something to both sides.
+        if (
+            oldTermsLHS.length !== prevTermsLHS.length ||
+            oldTermsRHS.length !== prevTermsRHS.length
+        ) {
+            return;
+        }
+
+        const newTermsLHS = difference(nextTermsLHS, prevTermsLHS, context);
+        const newTermsRHS = difference(nextTermsRHS, prevTermsRHS, context);
+
+        const areNewTermsEquivalent = checker.checkStep(
+            Semantic.addTerms(newTermsLHS),
+            Semantic.addTerms(newTermsRHS),
             {
                 ...context,
                 filters: {
@@ -46,31 +59,40 @@ export const checkAddSub: Check = (prev, next, context) => {
             },
         );
 
-        // If what we're adding to both sides isn't equivalent then fail
-        // TODO: report this error back to the user
-        if (!result1) {
-            return FAILED_CHECK;
+        // If what we're adding to both sides isn't equivalent then report that
+        // this step was incorrect and include which nodes weren't the same.
+        if (!areNewTermsEquivalent) {
+            return incorrectResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                [],
+                "different values were added to both sides",
+            );
         }
 
-        if (lhsNewTerms.length === 0 || rhsNewTerms.length === 0) {
+        if (newTermsLHS.length === 0 || newTermsRHS.length === 0) {
             // TODO: write a test for this
-            return FAILED_CHECK;
+            return;
         }
+
+        // We prefer adding fewer terms to both sides.
+        const newTerms =
+            newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
         const newPrev = Semantic.eq([
-            Semantic.add([
-                ...Semantic.getTerms(lhsA),
-                ...lhsNewTerms,
-            ] as TwoOrMore<Semantic.Expression>),
-            Semantic.add([
-                ...Semantic.getTerms(rhsA),
-                ...rhsNewTerms,
-            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
+                Semantic.Expression
+            >),
+            Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
+                Semantic.Expression
+            >),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
-        const result2 = checker.checkStep(newPrev, next, {
+        const result = checker.checkStep(newPrev, next, {
             ...context,
             filters: {
                 // prevent an infinite loop
@@ -78,165 +100,285 @@ export const checkAddSub: Check = (prev, next, context) => {
             },
         });
 
-        // Using applySteps with result.steps won't work because we're not
-        // passing in either prev or next, we're creating temporary multiplication
-        // nodes.
-        // TODO: create a newPrev node
-
-        if (result1 && result2) {
-            return {
-                steps: context.reversed
-                    ? [
-                          ...result1.steps,
-                          ...result2.steps,
-                          {
-                              message:
-                                  "removing adding the same value to both sides",
-                              nodes: [next, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "adding the same value to both sides",
-                              nodes: [prev, next],
-                          },
-                          ...result2.steps,
-                          ...result1.steps,
-                      ],
-            };
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "adding the same value to both sides",
+                "removing adding the same value to both sides",
+            );
         }
     }
-
-    return FAILED_CHECK;
 };
-
 checkAddSub.symmetric = true;
 
 export const checkMul: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "mul" && rhsB.type === "mul") {
-        const lhsNewFactors = difference(
-            Semantic.getFactors(lhsB),
-            Semantic.getFactors(lhsA),
+    // TODO: take into account LHS and RHS being swapped
+    // e.g. y = x -> x * 10 = y * 10
+    if (nextLHS.type === "mul" || nextRHS.type === "mul") {
+        const prevFactorsLHS = Semantic.getFactors(prevLHS);
+        const prevFactorsRHS = Semantic.getFactors(prevRHS);
+        const nextFactorsLHS = Semantic.getFactors(nextLHS);
+        const nextFacotrsRHS = Semantic.getFactors(nextRHS);
+
+        const oldFactorsLHS = intersection(
+            nextFactorsLHS,
+            prevFactorsLHS,
             context,
         );
-        const rhsNewFactors = difference(
-            Semantic.getFactors(rhsB),
-            Semantic.getFactors(rhsA),
-            context,
-        );
-        const result1 = checker.checkStep(
-            Semantic.mulFactors(lhsNewFactors),
-            Semantic.mulFactors(rhsNewFactors),
+        const oldFactorsRHS = intersection(
+            nextFacotrsRHS,
+            prevFactorsRHS,
             context,
         );
 
+        // All previous factors for each side should appear in the next step as
+        // factors as well.  If any are missing then we're doing something other
+        // than multiplying something to both sides.
+        if (
+            oldFactorsLHS.length !== prevFactorsLHS.length ||
+            oldFactorsRHS.length !== prevFactorsRHS.length
+        ) {
+            return;
+        }
+
+        const newFactorsLHS = difference(
+            Semantic.getFactors(nextLHS),
+            prevFactorsLHS,
+            context,
+        );
+        const newFactorsRHS = difference(
+            Semantic.getFactors(nextRHS),
+            prevFactorsRHS,
+            context,
+        );
+
+        const areNewFactorsEquivalent = checker.checkStep(
+            Semantic.mulFactors(newFactorsLHS),
+            Semantic.mulFactors(newFactorsRHS),
+            context,
+        );
+
+        // If what we're multiplying both sides by isn't equivalent then fail
+        // TODO: report this error back to the user
+        if (!areNewFactorsEquivalent) {
+            return incorrectResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                [],
+                "different values were multiplied on both sides",
+            );
+        }
+
+        // We prefer multiplying both sides by fewer factors.
+        const newFactors =
+            newFactorsLHS.length < newFactorsRHS.length
+                ? newFactorsLHS
+                : newFactorsRHS;
+
+        // We place the new factors at the start since it is common to go
+        // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = Semantic.eq([
-            Semantic.mul([
-                ...Semantic.getFactors(lhsA),
-                ...lhsNewFactors,
-            ] as TwoOrMore<Semantic.Expression>),
-            Semantic.mul([
-                ...Semantic.getFactors(rhsA),
-                ...rhsNewFactors,
-            ] as TwoOrMore<Semantic.Expression>),
+            Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
+                Semantic.Expression
+            >),
+            Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
+                Semantic.Expression
+            >),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
-        const result2 = checker.checkStep(newPrev, next, {
+        const result = checker.checkStep(newPrev, next, {
             ...context,
             filters: {
                 // prevent an infinite loop
-                disallowedChecks: new Set(["checkAddSub"]),
+                disallowedChecks: new Set(["checkMul"]),
             },
         });
 
-        // Using applySteps with result.steps won't work because we're not
-        // passing in either prev or next, we're creating temporary multiplication
-        // nodes.
-        // TODO: create a newPrev node
-
-        if (result1 && result2) {
-            return {
-                steps: context.reversed
-                    ? [
-                          ...result1.steps,
-                          ...result2.steps,
-                          {
-                              message: "remove multiplication from both sides",
-                              nodes: [next, prev],
-                          },
-                      ]
-                    : [
-                          {
-                              message: "multiply both sides by the same value",
-                              nodes: [prev, next],
-                          },
-                          ...result2.steps,
-                          ...result1.steps,
-                      ],
-            };
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "multiply both sides by the same value",
+                "remove multiplication from both sides",
+            );
         }
     }
-    return FAILED_CHECK;
 };
-
 checkMul.symmetric = true;
+
+// export const checkBadMul: Check = (prev, next, context) => {
+//     if (prev.type !== "eq" || next.type !== "eq") {
+//         return;
+//     }
+
+//     const {checker} = context;
+
+//     const [prevLHS, prevRHS] = prev.args;
+//     const [nextLHS, nextRHS] = next.args;
+
+//     // TODO: take into account LHS and RHS being swapped
+//     // e.g. y = x -> x * 10 = y * 10
+//     if (nextLHS.type === "mul" || nextRHS.type === "add") {
+//         const prevFactorsLHS = Semantic.getFactors(prevLHS);
+//         const nextFactorsLHS = Semantic.getFactors(nextLHS);
+
+//         const oldFactorsLHS = intersection(
+//             nextFactorsLHS,
+//             prevFactorsLHS,
+//             context,
+//         );
+
+//         // If one of the sides has no old factors then we're doing something
+//         // other than multiplying both sides by some value.
+//         if (oldFactorsLHS.length === 0) {
+//             return;
+//         }
+
+//         const newFactorsLHS = difference(
+//             Semantic.getFactors(nextLHS),
+//             prevFactorsLHS,
+//             context,
+//         );
+
+//         // TODO: find new factor being multiplied by one of the terms in RHS
+
+//         const areNewFactorsEquivalent = checker.checkStep(
+//             Semantic.mulFactors(newFactorsLHS),
+//             Semantic.mulFactors(newFactorsRHS),
+//             context,
+//         );
+
+//         // // If what we're multiplying both sides by isn't equivalent then fail
+//         // // TODO: report this error back to the user
+//         // if (!areNewFactorsEquivalent) {
+//         //     return incorrectResult(
+//         //         prev,
+//         //         next,
+//         //         context.reversed,
+//         //         [],
+//         //         [],
+//         //         "different values were multiplied on both sides",
+//         //     );
+//         // }
+
+//         // // We prefer multiplying both sides by fewer factors.
+//         // const newFactors =
+//         //     newFactorsLHS.length < newFactorsRHS.length
+//         //         ? newFactorsLHS
+//         //         : newFactorsRHS;
+
+//         // // We place the new factors at the start since it is common to go
+//         // // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
+//         // const newPrev = Semantic.eq([
+//         //     Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
+//         //         Semantic.Expression
+//         //     >),
+//         //     Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
+//         //         Semantic.Expression
+//         //     >),
+//         // ]);
+
+//         // // This checkStep allows for commutation of the result, but doesn't
+//         // // handle evaluation that might happen during result1.
+//         // const result = checker.checkStep(newPrev, next, {
+//         //     ...context,
+//         //     filters: {
+//         //         // prevent an infinite loop
+//         //         disallowedChecks: new Set(["checkMul"]),
+//         //     },
+//         // });
+
+//         // if (result) {
+//         //     return correctResult(
+//         //         prev,
+//         //         newPrev,
+//         //         context.reversed,
+//         //         [],
+//         //         result.steps,
+//         //         "multiply both sides by the same value",
+//         //         "remove multiplication from both sides",
+//         //     );
+//         // }
+//     }
+// };
+// checkMul.symmetric = true;
 
 export const checkDiv: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
-        return FAILED_CHECK;
+        return;
     }
 
     const {checker} = context;
 
-    const [lhsA, rhsA] = prev.args;
-    const [lhsB, rhsB] = next.args;
+    const [prevLHS, prevRHS] = prev.args;
+    const [nextLHS, nextRHS] = next.args;
 
-    if (lhsB.type === "div" && rhsB.type === "div") {
+    if (nextLHS.type === "div" && nextRHS.type === "div") {
         if (
-            checker.checkStep(lhsA, lhsB.args[NUMERATOR], context) &&
-            checker.checkStep(rhsA, rhsB.args[NUMERATOR], context)
+            checker.checkStep(prevLHS, nextLHS.args[NUMERATOR], context) &&
+            checker.checkStep(prevRHS, nextRHS.args[NUMERATOR], context)
         ) {
-            const result = checker.checkStep(
-                lhsB.args[DENOMINATOR],
-                rhsB.args[DENOMINATOR],
+            const areDenominatorsEquivalent = checker.checkStep(
+                nextLHS.args[DENOMINATOR],
+                nextRHS.args[DENOMINATOR],
                 context,
             );
 
+            if (!areDenominatorsEquivalent) {
+                return;
+            }
+
+            const denFactorsLSH = Semantic.getFactors(
+                nextLHS.args[DENOMINATOR],
+            );
+            const denFactorsRHS = Semantic.getFactors(
+                nextRHS.args[DENOMINATOR],
+            );
+
+            const denFactors =
+                denFactorsLSH.length < denFactorsRHS.length
+                    ? denFactorsLSH
+                    : denFactorsRHS;
+
+            const newPrev = Semantic.eq([
+                Semantic.div(prevLHS, Semantic.mulFactors(denFactors)),
+                Semantic.div(prevRHS, Semantic.mulFactors(denFactors)),
+            ]);
+
+            const result = checker.checkStep(newPrev, next, context);
+
             if (result) {
-                return {
-                    steps: context.reversed
-                        ? [
-                              {
-                                  message: "remove division by the same amount",
-                                  nodes: [next, prev],
-                              },
-                          ]
-                        : [
-                              {
-                                  message:
-                                      "divide both sides by the same value",
-                                  nodes: [prev, next],
-                              },
-                          ],
-                };
-            } else {
-                // TODO: custom error message for this case
+                return correctResult(
+                    prev,
+                    newPrev,
+                    context.reversed,
+                    [],
+                    result.steps,
+                    "divide both sides by the same value",
+                    "remove division by the same amount",
+                );
             }
         }
     }
-
-    return FAILED_CHECK;
 };
-
 checkDiv.symmetric = true;
