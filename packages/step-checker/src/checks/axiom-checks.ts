@@ -5,72 +5,78 @@ import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 
-export const addZero: Check = (prev, next, context) => {
-    return prev.type === "add" ? checkIdentity(prev, next, context) : undefined;
-};
-
-addZero.symmetric = true;
-
-export const mulOne: Check = (prev, next, context) => {
-    return prev.type === "mul" ? checkIdentity(prev, next, context) : undefined;
-};
-
-mulOne.symmetric = true;
-
-export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
+export const checkIdentity = (type: "add" | "mul"): Check => (
     prev,
     next,
     context,
 ) => {
-    // TODO: refactor this check to use do:
-    // newPrev = prev * 1
-    // newPrev = prev + 1
-    // that way we're going in the forward direction
-    const identity =
-        prev.type === "add" ? Semantic.number("0") : Semantic.number("1");
-
-    const identitySteps: Step[] = [];
-    const nonIdentityArgs: Semantic.Expression[] = [];
-    for (const arg of prev.args) {
-        const result = context.checker.checkStep(arg, identity, context);
-        if (result) {
-            identitySteps.push(...result.steps);
-        } else {
-            nonIdentityArgs.push(arg);
-        }
-    }
-
-    // If we haven't removed any identities then this check has failed
-    if (nonIdentityArgs.length === prev.args.length) {
+    if (next.type !== type) {
         return;
     }
 
-    // Steps are local to the nodes involved which are descendents of prev so
-    // in order to get a version of prev where all of the nodes that are equivalent
-    // to the identiy have been replaced with the identity we need to call
-    // applySteps which will do this for us.
+    const identity =
+        type === "add" ? Semantic.number("0") : Semantic.number("1");
 
-    // TODO: make this check symmetric - we should be able to get rid of newNext
-    const newPrev =
-        prev.type === "add"
-            ? Semantic.addTerms(nonIdentityArgs)
-            : Semantic.mulFactors(nonIdentityArgs);
+    const identitySteps: Step[] = [];
+    const nonIdentityArgs: Semantic.Expression[] = [];
+
+    const newNextArgs = next.args.map((arg) => {
+        // The order of the args passed to checkStep is important.  We want to
+        // maintain the correct direction.
+        const result = context.checker.checkStep(identity, arg, context);
+        if (result) {
+            identitySteps.push(...result.steps);
+            // We include all identities in the output so that we can handle
+            // expressions with multiple identities, e.g. a + 0 + b + 0
+            return identity;
+        } else {
+            nonIdentityArgs.push(arg);
+            return arg;
+        }
+    });
+
+    // If we haven't removed any identities then this check has failed
+    if (nonIdentityArgs.length === next.args.length) {
+        return;
+    }
+
+    const newNext =
+        type === "add"
+            ? Semantic.addTerms(newNextArgs)
+            : Semantic.mulFactors(newNextArgs);
 
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
     const reason =
-        prev.type === "add"
+        type === "add"
             ? "addition with identity"
             : "multiplication with identity";
 
-    const result = context.checker.checkStep(newPrev, next, context);
-    if (result) {
+    const newPrev =
+        type === "add"
+            ? Semantic.addTerms(nonIdentityArgs)
+            : Semantic.mulFactors(nonIdentityArgs);
+
+    const result1 = context.checker.checkStep(prev, newPrev, context);
+    const result2 = context.checker.checkStep(newNext, next, {
+        ...context,
+        filters: {
+            disallowedChecks: new Set(
+                type === "add" ? ["addZero"] : ["mulOne"],
+            ),
+        },
+    });
+
+    if (result1 && result2) {
         return correctResult(
-            prev,
-            newPrev,
+            // If there are no steps from prev to newPrev, use prev since it
+            // won't have any new nodes
+            result1.steps.length > 0 ? newPrev : prev,
+            // Same for newNext and next
+            result2.steps.length > 0 ? newNext : next,
             context.reversed,
+            result1.steps,
             identitySteps,
-            result.steps,
             reason,
         );
     }
@@ -78,7 +84,13 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     return;
 };
 
-checkIdentity.symmetric = true;
+export const addZero: Check = checkIdentity("add");
+Object.defineProperty(addZero, "name", {value: "addZero"});
+addZero.symmetric = true;
+
+export const mulOne: Check = checkIdentity("mul");
+Object.defineProperty(mulOne, "name", {value: "mulOne"});
+mulOne.symmetric = true;
 
 export const checkDistribution: Check = (prev, next, context) => {
     // Handle the situation where we have a term within an 'add' node that needs
