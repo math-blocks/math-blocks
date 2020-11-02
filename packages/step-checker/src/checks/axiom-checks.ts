@@ -22,6 +22,10 @@ export const checkIdentity: Check<Semantic.Add | Semantic.Mul> = (
     next,
     context,
 ) => {
+    // TODO: refactor this check to use do:
+    // newPrev = prev * 1
+    // newPrev = prev + 1
+    // that way we're going in the forward direction
     const identity =
         prev.type === "add" ? Semantic.number("0") : Semantic.number("1");
 
@@ -154,17 +158,6 @@ export const checkDistribution: Check = (prev, next, context) => {
                         result.steps,
                         "subtraction is the same as multiplying by negative one",
                     );
-                    // results.push({
-                    //     status: Status.Correct,
-                    //     steps: [
-                    //         {
-                    //             message:
-                    //                 "subtraction is the same as multiplying by negative one",
-                    //             nodes: [prev, newPrev],
-                    //         },
-                    //         ...result.steps,
-                    //     ],
-                    // });
                 }
             }
         }

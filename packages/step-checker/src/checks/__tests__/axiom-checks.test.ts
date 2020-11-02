@@ -1,6 +1,8 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
+import {Status} from "../../types";
+
 import {checkStep} from "../test-util";
 import {deepEquals} from "../util";
 
@@ -255,6 +257,15 @@ describe("Axiom checks", () => {
             ]);
         });
 
+        it("2(a + 0) -> 2a", () => {
+            const result = checkStep("2(a + 0)", "2a");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+            ]);
+        });
+
         it("a -> a + 0", () => {
             const result = checkStep("a", "a + 0");
 
@@ -262,6 +273,23 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "addition with identity",
             ]);
+        });
+
+        it("2a -> 2(a + 0)", () => {
+            const result = checkStep("2a", "2(a + 0)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+            ]);
+        });
+
+        // TODO: make this test pass
+        it.skip("2a -> 2(a + 7)", () => {
+            const result = checkStep("2a", "2(a + 7)");
+
+            expect(result).toBeTruthy();
+            expect(result.status).toEqual(Status.Incorrect);
         });
 
         it("a + b -> a + b + 0", () => {
