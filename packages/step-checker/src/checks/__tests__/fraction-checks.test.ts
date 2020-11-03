@@ -69,16 +69,18 @@ describe("Fraction checks", () => {
             "multiplication with identity",
         ]);
 
+        // TODO: handle this differently depending on whether the multiplication
+        // is explicit or implicit, e.g.
+        // a * b * 1/c -> a * b/c vs. (a)(b)(1/c) -> ab / c
+        expect(result.steps[0].nodes[0]).toParseLike("a * b * 1/c");
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
             (div
               (mul.imp a b 1)
               c)
         `);
 
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(
-            `(mul.imp a b 1)`,
-        );
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(mul.exp a b)`);
+        expect(result.steps[1].nodes[0]).toParseLike("(a)(b)(1)");
+        expect(result.steps[1].nodes[1]).toParseLike("ab");
     });
 
     it("1/b * a -> a / b", () => {
@@ -285,7 +287,7 @@ describe("Fraction checks", () => {
         expect(result.steps[2].nodes[1]).toParseLike("1");
 
         expect(result.steps[3].nodes[0]).toParseLike("1 * (2)(2) / 1");
-        expect(result.steps[3].nodes[1]).toParseLike("(2)(2) / 1");
+        expect(result.steps[3].nodes[1]).toParseLike("(2 * 2) / 1");
 
         // START: division by one
         expect(result.steps[4].nodes[0]).toParseLike("(2*2) / 1");
@@ -552,7 +554,7 @@ describe("Fraction checks", () => {
         expect(result.steps[0].nodes[0]).toParseLike("a");
         expect(result.steps[0].nodes[1]).toParseLike("a * 1");
 
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`1`);
+        expect(result.steps[1].nodes[0]).toParseLike("1");
         expect(result.steps[1].nodes[1]).toParseLike("b/b");
     });
 

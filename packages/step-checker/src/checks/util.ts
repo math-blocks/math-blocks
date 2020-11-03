@@ -174,6 +174,8 @@ export const intersection = (
 
     const result: Semantic.Expression[] = [];
     for (const a of as) {
+        // TODO: figure out a way to return steps from this check if there are
+        // any.
         const index = bs.findIndex((b) => checker.checkStep(a, b, context));
         if (index !== -1) {
             result.push(a);
@@ -195,6 +197,8 @@ export const difference = (
 
     const result: Semantic.Expression[] = [];
     for (const a of as) {
+        // TODO: figure out a way to return steps from this check if there are
+        // any.
         const index = bs.findIndex((b) => checker.checkStep(a, b, context));
         if (index !== -1) {
             bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -216,6 +220,7 @@ export const equality = (
 ): boolean => {
     const {checker} = context;
 
+    // TODO: figure out a way to return steps from this check if there are any.
     return as.every((a) => bs.some((b) => checker.checkStep(a, b, context)));
 };
 
