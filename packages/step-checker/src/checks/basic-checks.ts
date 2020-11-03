@@ -61,9 +61,10 @@ export const checkArgs: Check = (prev, next, context) => {
                         steps.push(...result.steps);
                         return result;
                     } else {
-                        throw new Error(
-                            "TODO: handle incorrect results in checkArgs",
-                        );
+                        // TODO: how do we bubble up incorrect answers
+                        // throw new Error(
+                        //     "TODO: handle incorrect results in checkArgs",
+                        // );
                     }
                 }
             });

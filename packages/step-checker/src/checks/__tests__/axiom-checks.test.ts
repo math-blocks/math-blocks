@@ -336,7 +336,19 @@ describe("Axiom checks", () => {
             ]);
         });
 
-        it("0 + (a + b) -> a + b", () => {
+        // TODO: re-enable this once we're accumulating mistakes in the context
+        it.skip("a + b -> a + b + 7", () => {
+            const result = checkStep("a + b", "a + b + 7");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding a non-zero valid is not allowed",
+            ]);
+        });
+
+        // TODO: reenable this test once we're able to handle adding/removing
+        // parens
+        it.skip("0 + (a + b) -> a + b", () => {
             const result = checkStep("0 + (a + b)", "a + b");
 
             expect(result).toBeTruthy();

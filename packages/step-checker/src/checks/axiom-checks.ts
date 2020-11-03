@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps, correctResult} from "./util";
+import {zip, applySteps, correctResult, difference} from "./util";
 import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
@@ -10,6 +10,7 @@ export const addZero: Check = (prev, next, context) => {
         return;
     }
 
+    // Check that each new term is equivalent to zero
     const identity = Semantic.number("0");
 
     const identitySteps: Step[] = [];
@@ -32,6 +33,17 @@ export const addZero: Check = (prev, next, context) => {
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === next.args.length) {
+        const prevTerms = Semantic.getTerms(prev);
+        const newNonIdentityTerms = difference(next.args, prevTerms, context);
+        if (newNonIdentityTerms.length > 0) {
+            // TODO: Instead of returning incorrectResults, we need to accumulated
+            // them in the context.  Then, if the final result is undefined, we
+            // look at the accumulated 'mistakes' in the context and return the
+            // best candidate from those as the incorrect result.
+            // return incorrectResult(
+            //     prev, next, context.reversed, [], [], "adding a non-zero valid is not allowed"
+            // )
+        }
         return;
     }
 
