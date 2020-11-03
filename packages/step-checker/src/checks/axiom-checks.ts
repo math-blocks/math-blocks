@@ -5,17 +5,12 @@ import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 
-export const checkIdentity = (type: "add" | "mul"): Check => (
-    prev,
-    next,
-    context,
-) => {
-    if (next.type !== type) {
+export const addZero: Check = (prev, next, context) => {
+    if (next.type !== "add") {
         return;
     }
 
-    const identity =
-        type === "add" ? Semantic.number("0") : Semantic.number("1");
+    const identity = Semantic.number("0");
 
     const identitySteps: Step[] = [];
     const nonIdentityArgs: Semantic.Expression[] = [];
@@ -40,37 +35,93 @@ export const checkIdentity = (type: "add" | "mul"): Check => (
         return;
     }
 
-    const newNext =
-        type === "add"
-            ? Semantic.addTerms(newNextArgs)
-            : Semantic.mulFactors(newNextArgs);
-
-    // TODO: provide a way to have different levels of messages, e.g.
-    // "multiplying by one doesn't change an expression.
-    const reason =
-        type === "add"
-            ? "addition with identity"
-            : "multiplication with identity";
-
-    const newPrev =
-        type === "add"
-            ? Semantic.addTerms(nonIdentityArgs)
-            : Semantic.mulFactors(nonIdentityArgs);
+    const newNext = Semantic.addTerms(newNextArgs);
+    const newPrev = Semantic.addTerms(nonIdentityArgs);
 
     const result1 = context.checker.checkStep(prev, newPrev, context);
     const result2 = context.checker.checkStep(newNext, next, {
         ...context,
         filters: {
-            disallowedChecks: new Set(
-                type === "add" ? ["addZero"] : ["mulOne"],
-            ),
+            disallowedChecks: new Set(["addZero"]),
         },
     });
 
     if (result1 && result2) {
+        // TODO: figure out how to incorporate steps from result2.
+        // Do we need to apply afterSteps to newNext in correctResult?
         return correctResult(
             // If there are no steps from prev to newPrev, use prev since it
-            // won't have any new nodes
+            // won't have any new nodes.  We can do this here because result1
+            // comes from calling checkStep() on prev and newPrev.  This is
+            // currently the only check that does this.
+            result1.steps.length > 0 ? newPrev : prev,
+            // Same for newNext and next
+            result2.steps.length > 0 ? newNext : next,
+            context.reversed,
+            result1.steps,
+            identitySteps,
+            "addition with identity",
+        );
+    }
+
+    return;
+};
+addZero.symmetric = true;
+
+export const mulOne: Check = (prev, next, context) => {
+    if (next.type !== "mul") {
+        return;
+    }
+
+    const identity = Semantic.number("1");
+
+    const identitySteps: Step[] = [];
+    const nonIdentityArgs: Semantic.Expression[] = [];
+
+    const newNextArgs = next.args.map((arg) => {
+        // The order of the args passed to checkStep is important.  We want to
+        // maintain the correct direction.
+        const result = context.checker.checkStep(identity, arg, context);
+        if (result) {
+            identitySteps.push(...result.steps);
+            // We include all identities in the output so that we can handle
+            // expressions with multiple identities, e.g. a + 0 + b + 0
+            return identity;
+        } else {
+            nonIdentityArgs.push(arg);
+            return arg;
+        }
+    });
+
+    // If we haven't removed any identities then this check has failed
+    if (nonIdentityArgs.length === next.args.length) {
+        return;
+    }
+
+    const newNext = Semantic.mulFactors(newNextArgs);
+
+    // TODO: provide a way to have different levels of messages, e.g.
+    // "multiplying by one doesn't change an expression.
+    const reason = "multiplication with identity";
+
+    const newPrev = Semantic.mulFactors(nonIdentityArgs);
+
+    const result1 = context.checker.checkStep(prev, newPrev, context);
+    const result2 = context.checker.checkStep(newNext, next, {
+        ...context,
+        filters: {
+            disallowedChecks: new Set(["mulOne"]),
+        },
+    });
+
+    if (result1 && result2) {
+        // TODO: figure out how to incorporate steps from result2.
+        // Do we need to apply afterSteps to newNext in correctResult?
+        return correctResult(
+            // If there are no steps from prev to newPrev, use prev since it
+            // won't have any new nodes.  We can do this here because result1
+            // comes from calling checkStep() on prev and newPrev.  This is
+            // currently the only check that does this.
             result1.steps.length > 0 ? newPrev : prev,
             // Same for newNext and next
             result2.steps.length > 0 ? newNext : next,
@@ -83,13 +134,6 @@ export const checkIdentity = (type: "add" | "mul"): Check => (
 
     return;
 };
-
-export const addZero: Check = checkIdentity("add");
-Object.defineProperty(addZero, "name", {value: "addZero"});
-addZero.symmetric = true;
-
-export const mulOne: Check = checkIdentity("mul");
-Object.defineProperty(mulOne, "name", {value: "mulOne"});
 mulOne.symmetric = true;
 
 export const checkDistribution: Check = (prev, next, context) => {
