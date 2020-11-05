@@ -43,6 +43,8 @@ exactMatch.unfilterable = true;
 
 // General check if the args are equivalent for things with args
 // than are an array and not a tuple.
+// TODO: filter out equation checks if prev and next are equations since equations
+// can't be nested
 export const checkArgs: Check = (prev, next, context) => {
     const {checker} = context;
 

@@ -34,15 +34,11 @@ export const addZero: Check = (prev, next, context) => {
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === next.args.length) {
         const prevTerms = Semantic.getTerms(prev);
-        const newNonIdentityTerms = difference(next.args, prevTerms, context);
+        const newNonIdentityTerms = difference(next.args, prevTerms);
         if (newNonIdentityTerms.length > 0) {
-            // TODO: Instead of returning incorrectResults, we need to accumulated
-            // them in the context.  Then, if the final result is undefined, we
-            // look at the accumulated 'mistakes' in the context and return the
-            // best candidate from those as the incorrect result.
-            // return incorrectResult(
-            //     prev, next, context.reversed, [], [], "adding a non-zero valid is not allowed"
-            // )
+            context.mistakes.push({
+                message: "adding a non-identity valid is not allowed",
+            });
         }
         return;
     }
@@ -107,6 +103,13 @@ export const mulOne: Check = (prev, next, context) => {
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === next.args.length) {
+        const prevFactors = Semantic.getFactors(prev);
+        const newNonIdentityFactors = difference(next.args, prevFactors);
+        if (newNonIdentityFactors.length > 0) {
+            context.mistakes.push({
+                message: "multiplying a non-identity valid is not allowed",
+            });
+        }
         return;
     }
 

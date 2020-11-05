@@ -7,7 +7,6 @@ import {
     deepEquals,
     difference,
 } from "../checks/util";
-import StepChecker from "../step-checker";
 
 expect.addSnapshotSerializer(Semantic.serializer);
 
@@ -138,17 +137,10 @@ describe("deepEquals", () => {
 });
 
 describe("difference", () => {
-    const checker = new StepChecker();
-
     it("should return an empty array if both have the same values", () => {
         const left = [Semantic.number("1"), Semantic.number("2")];
         const right = [Semantic.number("1"), Semantic.number("2")];
-        const result = difference(left, right, {
-            checker,
-            steps: [],
-            successfulChecks: new Set<string>(),
-            reversed: false,
-        });
+        const result = difference(left, right);
 
         expect(result).toEqual([]);
     });
@@ -156,12 +148,7 @@ describe("difference", () => {
     it("should return the difference for unique values", () => {
         const left = [Semantic.number("1"), Semantic.number("2")];
         const right = [Semantic.number("2")];
-        const result = difference(left, right, {
-            checker,
-            steps: [],
-            successfulChecks: new Set<string>(),
-            reversed: false,
-        });
+        const result = difference(left, right);
 
         expect(result).toEqual([left[0]]);
     });
@@ -169,12 +156,7 @@ describe("difference", () => {
     it("should return the original left array if there are no matches", () => {
         const left = [Semantic.number("1"), Semantic.number("2")];
         const right = [Semantic.number("3")];
-        const result = difference(left, right, {
-            checker,
-            steps: [],
-            successfulChecks: new Set<string>(),
-            reversed: false,
-        });
+        const result = difference(left, right);
 
         expect(result).toEqual(left);
     });
@@ -182,12 +164,7 @@ describe("difference", () => {
     it("should return the handle duplicates", () => {
         const left = [Semantic.number("1"), Semantic.number("1")];
         const right = [Semantic.number("1")];
-        const result = difference(left, right, {
-            checker,
-            steps: [],
-            successfulChecks: new Set<string>(),
-            reversed: false,
-        });
+        const result = difference(left, right);
 
         expect(result).toEqual([left[1]]);
     });

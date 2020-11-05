@@ -17,6 +17,12 @@ export type Result = {
     steps: Step[];
 };
 
+export type Mistake = {
+    message: string;
+
+    // TODO: add more properties
+};
+
 export type Context = {
     steps: Step[];
     checker: IStepChecker;
@@ -29,6 +35,8 @@ export type Context = {
         allowedChecks?: Set<string>;
         disallowedChecks?: Set<string>;
     };
+
+    mistakes: Mistake[];
 
     // Used for debugging purposes to see which checks ran successfully as part
     // of the return result.

@@ -4,7 +4,7 @@ import {serializer} from "@math-blocks/semantic";
 import {Status} from "../../types";
 
 import {deepEquals} from "../util";
-import {checkStep} from "../test-util";
+import {checkStep, checkMistake} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -165,49 +165,41 @@ describe("Equation checks", () => {
         });
 
         it("x = y -> x + 3 = y + 7", () => {
-            const result = checkStep("x = y", "x + 3 = y + 7");
+            const mistake = checkMistake("x = y", "x + 3 = y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were added to both sides",
-            ]);
+            );
 
             // TODO: include which nodes weren't equivalent
         });
 
         it("x = y -> x = y + 7", () => {
-            const result = checkStep("x = y", "x = y + 7");
+            const mistake = checkMistake("x = y", "x = y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were added to both sides",
-            ]);
+            );
 
             // TODO: include which nodes weren't equivalent
         });
 
         it("x + y = x + y -> x + y = x + y + 7", () => {
-            const result = checkStep("x + y = x + y", "x + y = x + y + 7");
+            const mistake = checkMistake("x + y = x + y", "x + y = x + y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were added to both sides",
-            ]);
+            );
 
             // TODO: include which nodes weren't equivalent
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
+            const mistake = checkMistake("2x + 5 = 10", "2x + 5 - 5 = 10");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were added to both sides",
-            ]);
+            );
 
             // TODO: include which nodes weren't equivalent
         });
@@ -273,13 +265,11 @@ describe("Equation checks", () => {
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
+            const mistake = checkMistake("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were added to both sides",
-            ]);
+            );
 
             // TODO: include which nodes weren't equivalent
         });
@@ -393,43 +383,35 @@ describe("Equation checks", () => {
         });
 
         it("x = y -> x = 7y", () => {
-            const result = checkStep("x = y", "x = 7y");
+            const mistake = checkMistake("x = y", "x = 7y");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
-            ]);
+            );
         });
 
         it("xa = yb -> xa = 7yb", () => {
-            const result = checkStep("xa = yb", "xa = 7yb");
+            const mistake = checkMistake("xa = yb", "xa = 7yb");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
-            ]);
+            );
         });
 
         it("x = y -> 3x = 7y", () => {
-            const result = checkStep("x = y", "3x = 7y");
+            const mistake = checkMistake("x = y", "3x = 7y");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
-            ]);
+            );
         });
 
         it("xa = yb -> 3xa = 7yb", () => {
-            const result = checkStep("xa = yb", "3xa = 7yb");
+            const mistake = checkMistake("xa = yb", "3xa = 7yb");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
-            ]);
+            );
         });
 
         // TODO: return an incorrect result for this test case

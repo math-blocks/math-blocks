@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
-import {difference, correctResult, incorrectResult, intersection} from "./util";
+import {difference, correctResult, intersection} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
@@ -31,8 +31,8 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         // Which terms from the previous step appear in the next step on each
         // side.
-        const oldTermsLHS = intersection(nextTermsLHS, prevTermsLHS, context);
-        const oldTermsRHS = intersection(nextTermsRHS, prevTermsRHS, context);
+        const oldTermsLHS = intersection(nextTermsLHS, prevTermsLHS);
+        const oldTermsRHS = intersection(nextTermsRHS, prevTermsRHS);
 
         // All previous terms for each side should appear in the next step as
         // terms as well.  If any are missing then we're doing something other
@@ -44,8 +44,8 @@ export const checkAddSub: Check = (prev, next, context) => {
             return;
         }
 
-        const newTermsLHS = difference(nextTermsLHS, prevTermsLHS, context);
-        const newTermsRHS = difference(nextTermsRHS, prevTermsRHS, context);
+        const newTermsLHS = difference(nextTermsLHS, prevTermsLHS);
+        const newTermsRHS = difference(nextTermsRHS, prevTermsRHS);
 
         const areNewTermsEquivalent = checker.checkStep(
             Semantic.addTerms(newTermsLHS),
@@ -62,14 +62,10 @@ export const checkAddSub: Check = (prev, next, context) => {
         // If what we're adding to both sides isn't equivalent then report that
         // this step was incorrect and include which nodes weren't the same.
         if (!areNewTermsEquivalent) {
-            return incorrectResult(
-                prev,
-                next,
-                context.reversed,
-                [],
-                [],
-                "different values were added to both sides",
-            );
+            context.mistakes.push({
+                message: "different values were added to both sides",
+            });
+            return;
         }
 
         if (newTermsLHS.length === 0 || newTermsRHS.length === 0) {
@@ -133,16 +129,8 @@ export const checkMul: Check = (prev, next, context) => {
         const nextFactorsLHS = Semantic.getFactors(nextLHS);
         const nextFacotrsRHS = Semantic.getFactors(nextRHS);
 
-        const oldFactorsLHS = intersection(
-            nextFactorsLHS,
-            prevFactorsLHS,
-            context,
-        );
-        const oldFactorsRHS = intersection(
-            nextFacotrsRHS,
-            prevFactorsRHS,
-            context,
-        );
+        const oldFactorsLHS = intersection(nextFactorsLHS, prevFactorsLHS);
+        const oldFactorsRHS = intersection(nextFacotrsRHS, prevFactorsRHS);
 
         // All previous factors for each side should appear in the next step as
         // factors as well.  If any are missing then we're doing something other
@@ -157,12 +145,10 @@ export const checkMul: Check = (prev, next, context) => {
         const newFactorsLHS = difference(
             Semantic.getFactors(nextLHS),
             prevFactorsLHS,
-            context,
         );
         const newFactorsRHS = difference(
             Semantic.getFactors(nextRHS),
             prevFactorsRHS,
-            context,
         );
 
         const areNewFactorsEquivalent = checker.checkStep(
@@ -174,14 +160,10 @@ export const checkMul: Check = (prev, next, context) => {
         // If what we're multiplying both sides by isn't equivalent then fail
         // TODO: report this error back to the user
         if (!areNewFactorsEquivalent) {
-            return incorrectResult(
-                prev,
-                next,
-                context.reversed,
-                [],
-                [],
-                "different values were multiplied on both sides",
-            );
+            context.mistakes.push({
+                message: "different values were multiplied on both sides",
+            });
+            return;
         }
 
         // We prefer multiplying both sides by fewer factors.
