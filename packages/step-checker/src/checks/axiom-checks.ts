@@ -38,6 +38,7 @@ export const addZero: Check = (prev, next, context) => {
         if (newNonIdentityTerms.length > 0) {
             context.mistakes.push({
                 message: "adding a non-identity valid is not allowed",
+                nodes: newNonIdentityTerms,
             });
         }
         return;
@@ -108,6 +109,7 @@ export const mulOne: Check = (prev, next, context) => {
         if (newNonIdentityFactors.length > 0) {
             context.mistakes.push({
                 message: "multiplying a non-identity valid is not allowed",
+                nodes: newNonIdentityFactors,
             });
         }
         return;

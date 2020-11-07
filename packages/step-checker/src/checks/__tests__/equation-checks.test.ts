@@ -23,7 +23,7 @@ expect.extend({
     },
 });
 
-describe("Equation checks", () => {
+describe.only("Equation checks", () => {
     describe("adding the same value to both sides", () => {
         it("x = y -> x + 5 = y + 5", () => {
             const result = checkStep("x = y", "x + 5 = y + 5");
@@ -170,8 +170,9 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were added to both sides",
             );
-
-            // TODO: include which nodes weren't equivalent
+            expect(mistake.nodes).toHaveLength(2);
+            expect(mistake.nodes[0]).toParseLike("3");
+            expect(mistake.nodes[1]).toParseLike("7");
         });
 
         it("x = y -> x = y + 7", () => {
@@ -180,8 +181,8 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were added to both sides",
             );
-
-            // TODO: include which nodes weren't equivalent
+            expect(mistake.nodes).toHaveLength(1);
+            expect(mistake.nodes[0]).toParseLike("7");
         });
 
         it("x + y = x + y -> x + y = x + y + 7", () => {
@@ -190,8 +191,8 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were added to both sides",
             );
-
-            // TODO: include which nodes weren't equivalent
+            expect(mistake.nodes).toHaveLength(1);
+            expect(mistake.nodes[0]).toParseLike("7");
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
@@ -200,8 +201,8 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were added to both sides",
             );
-
-            // TODO: include which nodes weren't equivalent
+            expect(mistake.nodes).toHaveLength(1);
+            expect(mistake.nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
         });
 
         // TODO: make this work
@@ -388,6 +389,8 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
             );
+            expect(mistake.nodes).toHaveLength(1);
+            expect(mistake.nodes[0]).toParseLike("7");
         });
 
         it("xa = yb -> xa = 7yb", () => {
@@ -396,6 +399,8 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
             );
+            expect(mistake.nodes).toHaveLength(1);
+            expect(mistake.nodes[0]).toParseLike("7");
         });
 
         it("x = y -> 3x = 7y", () => {
@@ -404,6 +409,9 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
             );
+            expect(mistake.nodes).toHaveLength(2);
+            expect(mistake.nodes[0]).toParseLike("3");
+            expect(mistake.nodes[1]).toParseLike("7");
         });
 
         it("xa = yb -> 3xa = 7yb", () => {
@@ -412,6 +420,9 @@ describe("Equation checks", () => {
             expect(mistake.message).toEqual(
                 "different values were multiplied on both sides",
             );
+            expect(mistake.nodes).toHaveLength(2);
+            expect(mistake.nodes[0]).toParseLike("3");
+            expect(mistake.nodes[1]).toParseLike("7");
         });
 
         // TODO: return an incorrect result for this test case

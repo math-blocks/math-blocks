@@ -310,6 +310,8 @@ describe("Axiom checks", () => {
             expect(mistake.message).toEqual(
                 "adding a non-identity valid is not allowed",
             );
+            expect(mistake.nodes[0]).toParseLike("7");
+            expect(mistake.nodes).toHaveLength(1);
         });
 
         // TODO: This should report multiple mistakes
@@ -319,6 +321,9 @@ describe("Axiom checks", () => {
             expect(mistake.message).toEqual(
                 "adding a non-identity valid is not allowed",
             );
+            // TODO: handle reporting multiple mistakes
+            expect(mistake.nodes[0]).toParseLike("7");
+            expect(mistake.nodes).toHaveLength(1);
         });
 
         it("a + b -> a + b + 0", () => {

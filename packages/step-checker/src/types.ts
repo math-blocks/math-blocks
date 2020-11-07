@@ -19,8 +19,7 @@ export type Result = {
 
 export type Mistake = {
     message: string;
-
-    // TODO: add more properties
+    nodes: Expression[];
 };
 
 export type Context = {

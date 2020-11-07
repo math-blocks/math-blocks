@@ -64,6 +64,8 @@ export const checkAddSub: Check = (prev, next, context) => {
         if (!areNewTermsEquivalent) {
             context.mistakes.push({
                 message: "different values were added to both sides",
+                // TODO: make structures that are specific to each mistake
+                nodes: [...newTermsLHS, ...newTermsRHS],
             });
             return;
         }
@@ -158,10 +160,11 @@ export const checkMul: Check = (prev, next, context) => {
         );
 
         // If what we're multiplying both sides by isn't equivalent then fail
-        // TODO: report this error back to the user
         if (!areNewFactorsEquivalent) {
             context.mistakes.push({
                 message: "different values were multiplied on both sides",
+                // TODO: make structures that are specific to each mistake
+                nodes: [...newFactorsLHS, ...newFactorsRHS],
             });
             return;
         }
