@@ -78,11 +78,17 @@ const Step: React.SFC<Props> = (props) => {
                     </div>
                 </VStack>
             </HStack>
-            {step.state === StepState.Incorrect && step.mistake && (
-                <span style={{fontFamily: "sans-serif", fontSize: 20}}>
-                    {step.mistake.message}
-                </span>
-            )}
+            {step.state === StepState.Incorrect &&
+                step.mistakes.map((mistake, index) => {
+                    return (
+                        <HStack
+                            key={`mistake=${index}`}
+                            style={{fontFamily: "sans-serif", fontSize: 20}}
+                        >
+                            {mistake.message}
+                        </HStack>
+                    );
+                })}
         </VStack>
     );
 };

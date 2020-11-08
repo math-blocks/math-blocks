@@ -6,7 +6,7 @@ const {useState} = React;
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import {parse} from "@math-blocks/editor-parser";
 import * as Editor from "@math-blocks/editor";
-import StepChecker, {Context} from "@math-blocks/step-checker";
+import StepChecker, {Context, Mistake} from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
 
 import Step from "./step";
@@ -25,16 +25,15 @@ enum ProblemState {
     Complete,
 }
 
-// Mistakes that appear earlier in this list are given priority.
-const MISTAKE_MESSAGES = [
+const MISTAKE_PRIORITIES = {
     // Equation mistakes
-    "different values were added to both sides",
-    "different values were multiplied on both sides",
+    "different values were added to both sides": 10,
+    "different values were multiplied on both sides": 10,
 
     // Expression mistakes
-    "adding a non-identity valid is not allowed",
-    "multiplying a non-identity valid is not allowed",
-];
+    "adding a non-identity valid is not allowed": 5,
+    "multiplying a non-identity valid is not allowed": 5,
+};
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -101,30 +100,43 @@ export const App: React.SFC<{}> = () => {
             }
             return true;
         } else {
-            if (context.mistakes.length > 0) {
-                let mistake = context.mistakes[0];
-                let index = MISTAKE_MESSAGES.indexOf(mistake.message);
-
-                for (let i = 0; i < context.mistakes.length; i++) {
-                    const currentMistake = context.mistakes[i];
-
-                    if (
-                        index > MISTAKE_MESSAGES.indexOf(currentMistake.message)
-                    ) {
-                        index = i;
-                        mistake = currentMistake;
+            // Deduplicate mistakes based on the message and matching node ids
+            const uniqueMistakes: Mistake[] = [];
+            for (const mistake of context.mistakes) {
+                if (!uniqueMistakes.find(um => {
+                    if (um.message === mistake.message && um.nodes.length === mistake.nodes.length) {
+                        const umIds = um.nodes.map(node => node.id);
+                        const mIds = mistake.nodes.map(node => node.id);
+                        return umIds.every((id, index) => id === mIds[index]);
                     }
+                    return false;
+                })) {
+                    uniqueMistakes.push(mistake);
                 }
+            }
+
+            // Find the highest priority mistake filter out all mistakes with a
+            // lower priority
+            if (uniqueMistakes.length > 0) {
+                const priorities = uniqueMistakes.map(mistake => {
+                    // @ts-ignore: properly type mistakes using an enum instead of strings
+                    return MISTAKE_PRIORITIES[mistake.message];
+                });
+                const maxPriority = Math.max(...priorities);
+                const maxPriorityMistakes = uniqueMistakes.filter(mistake => {
+                    // @ts-ignore: properly type mistakes using an enum instead of strings
+                    return MISTAKE_PRIORITIES[mistake.message] === maxPriority;
+                });
 
                 // TODO: figure out how to how report multiple mistakes
-                console.log(mistake);
+                console.log(maxPriorityMistakes);
 
                 setSteps([
                     ...steps.slice(0, -1),
                     {
                         ...steps[steps.length - 1],
                         state: StepState.Incorrect,
-                        mistake: mistake,
+                        mistakes: maxPriorityMistakes,
                     },
                 ]);
             } else {
@@ -133,6 +145,7 @@ export const App: React.SFC<{}> = () => {
                     {
                         ...steps[steps.length - 1],
                         state: StepState.Incorrect,
+                        mistakes: [],
                     },
                 ]);
             }

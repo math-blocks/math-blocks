@@ -305,25 +305,29 @@ describe("Axiom checks", () => {
         });
 
         it("2a -> 2(a + 7)", () => {
-            const mistake = checkMistake("2a", "2(a + 7)");
+            const mistakes = checkMistake("2a", "2(a + 7)");
 
-            expect(mistake.message).toEqual(
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].message).toEqual(
                 "adding a non-identity valid is not allowed",
             );
-            expect(mistake.nodes[0]).toParseLike("7");
-            expect(mistake.nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].nodes).toHaveLength(1);
         });
 
         // TODO: This should report multiple mistakes
         it("2a + 2b -> 2(a + 7) + 2(b + 3)", () => {
-            const mistake = checkMistake("2a + 2b", "2(a + 7) + 2(b + 3)");
+            const mistakes = checkMistake("2a + 2b", "2(a + 7) + 2(b + 3)");
 
-            expect(mistake.message).toEqual(
-                "adding a non-identity valid is not allowed",
-            );
-            // TODO: handle reporting multiple mistakes
-            expect(mistake.nodes[0]).toParseLike("7");
-            expect(mistake.nodes).toHaveLength(1);
+            expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].message).toEqual("adding a non-identity valid is not allowed");
+            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].nodes).toHaveLength(1);
+
+            expect(mistakes[1].message).toEqual("adding a non-identity valid is not allowed");
+            expect(mistakes[1].nodes[0]).toParseLike("3");
+            expect(mistakes[1].nodes).toHaveLength(1);
         });
 
         it("a + b -> a + b + 0", () => {
@@ -446,19 +450,27 @@ describe("Axiom checks", () => {
         });
 
         it("a * b -> 2 * a * b", () => {
-            const mistake = checkMistake("a * b", "2 * a * b");
+            const mistakes = checkMistake("a * b", "2 * a * b");
 
-            expect(mistake.message).toEqual(
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].message).toEqual(
                 "multiplying a non-identity valid is not allowed",
             );
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
         });
 
         it("1 + ab -> 1 + 2ab", () => {
-            const mistake = checkMistake("1 + ab", "1 + 2ab");
+            const mistakes = checkMistake("1 + ab", "1 + 2ab");
 
-            expect(mistake.message).toEqual(
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].message).toEqual(
                 "multiplying a non-identity valid is not allowed",
             );
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
         });
     });
 

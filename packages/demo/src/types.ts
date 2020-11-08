@@ -30,5 +30,5 @@ export type StepType =
     | {
           state: StepState.Incorrect;
           value: EditorNode;
-          mistake?: Mistake;
+          mistakes: Mistake[];
       };

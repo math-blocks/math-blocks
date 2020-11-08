@@ -55,6 +55,7 @@ export const checkArgs: Check = (prev, next, context) => {
         }
 
         let remainingNextArgs = [...next.args];
+        let pathExists = true;
         for (const prevArg of prev.args) {
             const index = remainingNextArgs.findIndex((nextArg) => {
                 const result = checker.checkStep(prevArg, nextArg, context);
@@ -71,11 +72,12 @@ export const checkArgs: Check = (prev, next, context) => {
                 }
             });
 
-            // Many of our checks rely on there being different numbers of args
-            // This is especially true from fraction checks and some of the axiom
-            // checks.
+            // We continue to check the remaining args even after we find one
+            // that doesn't have an equivalent next arg.  This is so that we
+            // can collect all of the mistakes if there happens to be more than
+            // one.
             if (index === -1) {
-                return;
+                pathExists = false;
             }
 
             // If there's a matching arg, remove it from remainingNextArgs so
@@ -84,6 +86,10 @@ export const checkArgs: Check = (prev, next, context) => {
                 ...remainingNextArgs.slice(0, index),
                 ...remainingNextArgs.slice(index + 1),
             ];
+        }
+
+        if (!pathExists) {
+            return;
         }
 
         return {

@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {zip, applySteps, correctResult, difference} from "./util";
+import {zip, applySteps, correctResult, difference, intersection} from "./util";
 import {Result, Step, Check, Status} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
@@ -9,6 +9,8 @@ export const addZero: Check = (prev, next, context) => {
     if (next.type !== "add") {
         return;
     }
+
+    const {checker} = context;
 
     // Check that each new term is equivalent to zero
     const identity = Semantic.number("0");
@@ -19,7 +21,16 @@ export const addZero: Check = (prev, next, context) => {
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
         // maintain the correct direction.
-        const result = context.checker.checkStep(identity, arg, context);
+        const result = checker.checkStep(identity, arg, {
+            ...context,
+            // This has the effect of discarding any mistakes accumulated by
+            // this call to checkStep.
+            // 'identity' is synthetic which means if any mistakes are reported
+            // invovling it, we won't be able to report those back to the user
+            // it's not a node that appears in any of the expressions that the
+            // user has entered themselves.
+            mistakes: [],
+        });
         if (result) {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
@@ -35,7 +46,13 @@ export const addZero: Check = (prev, next, context) => {
     if (nonIdentityArgs.length === next.args.length) {
         const prevTerms = Semantic.getTerms(prev);
         const newNonIdentityTerms = difference(next.args, prevTerms);
-        if (newNonIdentityTerms.length > 0) {
+        const oldTerms = intersection(prevTerms, next.args);
+
+        if (
+            newNonIdentityTerms.length > 0 &&
+            // check that no terms were removed
+            oldTerms.length === prevTerms.length
+        ) {
             context.mistakes.push({
                 message: "adding a non-identity valid is not allowed",
                 nodes: newNonIdentityTerms,
@@ -47,7 +64,13 @@ export const addZero: Check = (prev, next, context) => {
     const newNext = Semantic.addTerms(newNextArgs);
     const newPrev = Semantic.addTerms(nonIdentityArgs);
 
+    // This first check is fine since nonIdentityArgs only contains nodes from
+    // an expression entered by a user.
     const result1 = context.checker.checkStep(prev, newPrev, context);
+    // This second check is not fine since newNext contains 'identity'.
+    // TODO: If a mistake is reported involving 'identity' then we'll need to
+    // filter it out of the 'mistakes' array.  We should try to come up with a
+    // scenario where this will matter.
     const result2 = context.checker.checkStep(newNext, next, {
         ...context,
         filters: {
@@ -82,6 +105,8 @@ export const mulOne: Check = (prev, next, context) => {
         return;
     }
 
+    const {checker} = context;
+
     const identity = Semantic.number("1");
 
     const identitySteps: Step[] = [];
@@ -90,7 +115,16 @@ export const mulOne: Check = (prev, next, context) => {
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
         // maintain the correct direction.
-        const result = context.checker.checkStep(identity, arg, context);
+        const result = checker.checkStep(identity, arg, {
+            ...context,
+            // This has the effect of discarding any mistakes accumulated by
+            // this call to checkStep.
+            // 'identity' is synthetic which means if any mistakes are reported
+            // invovling it, we won't be able to report those back to the user
+            // it's not a node that appears in any of the expressions that the
+            // user has entered themselves.
+            mistakes: [],
+        });
         if (result) {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
@@ -106,7 +140,11 @@ export const mulOne: Check = (prev, next, context) => {
     if (nonIdentityArgs.length === next.args.length) {
         const prevFactors = Semantic.getFactors(prev);
         const newNonIdentityFactors = difference(next.args, prevFactors);
-        if (newNonIdentityFactors.length > 0) {
+        const oldFactors = intersection(prevFactors, next.args);
+        if (newNonIdentityFactors.length > 0 &&
+            // check that no factors were removed
+            oldFactors.length === prevFactors.length
+        ) {
             context.mistakes.push({
                 message: "multiplying a non-identity valid is not allowed",
                 nodes: newNonIdentityFactors,
@@ -123,7 +161,16 @@ export const mulOne: Check = (prev, next, context) => {
 
     const newPrev = Semantic.mulFactors(nonIdentityArgs);
 
+    // This first check is fine since nonIdentityArgs only contains nodes from
+    // an expression entered by a user.
     const result1 = context.checker.checkStep(prev, newPrev, context);
+    // This second check is not fine since newNext contains 'identity'.
+    // TODO: If a mistake is reported involving 'identity' then we'll need to
+    // filter it out of the 'mistakes' array.  We should try to come up with a
+    // scenario where this will matter.
+    // TODO: instead of trying to filter mistakes out at each point, we can
+    // wait until the end and cross check the ids against those in the original
+    // expressions.
     const result2 = context.checker.checkStep(newNext, next, {
         ...context,
         filters: {
