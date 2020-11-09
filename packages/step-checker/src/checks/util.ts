@@ -2,7 +2,8 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step, HasArgs, Context, Result, Status} from "../types";
+import {Status} from "../enums";
+import {Step, HasArgs, Context, Result} from "../types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
@@ -168,15 +169,13 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
 export const intersection = (
     as: Semantic.Expression[],
     bs: Semantic.Expression[],
-    context: Context,
 ): Semantic.Expression[] => {
-    const {checker} = context;
-
     const result: Semantic.Expression[] = [];
     for (const a of as) {
-        // TODO: figure out a way to return steps from this check if there are
-        // any.
-        const index = bs.findIndex((b) => checker.checkStep(a, b, context));
+        // We use deepEquals here as an optimization.  If there are equivalent
+        // nodes that aren't exactly the same between the as and bs then one of
+        // out other checks will find it.
+        const index = bs.findIndex((b) => deepEquals(a, b));
         if (index !== -1) {
             result.push(a);
             bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
@@ -191,15 +190,13 @@ export const intersection = (
 export const difference = (
     as: Semantic.Expression[],
     bs: Semantic.Expression[],
-    context: Context,
 ): Semantic.Expression[] => {
-    const {checker} = context;
-
     const result: Semantic.Expression[] = [];
     for (const a of as) {
-        // TODO: figure out a way to return steps from this check if there are
-        // any.
-        const index = bs.findIndex((b) => checker.checkStep(a, b, context));
+        // We use deepEquals here as an optimization.  If there are equivalent
+        // nodes that aren't exactly the same between the as and bs then one of
+        // out other checks will find it.
+        const index = bs.findIndex((b) => deepEquals(a, b));
         if (index !== -1) {
             bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
         } else {

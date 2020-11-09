@@ -2,7 +2,8 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Step, Context, Options, Check, Status} from "../types";
+import {Status} from "../enums";
+import {Result, Step, Context, Options, Check} from "../types";
 
 import {exactMatch} from "./basic-checks";
 

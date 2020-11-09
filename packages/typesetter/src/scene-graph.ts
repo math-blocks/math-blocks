@@ -2,6 +2,11 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
 
+type Common = {
+    id?: number;
+    color?: string;
+};
+
 export type Group = {
     type: "group";
     // position relative the parent group
@@ -10,7 +15,7 @@ export type Group = {
     width: number;
     height: number;
     layers: Node[][];
-};
+} & Common;
 
 export type Glyph = {
     type: "glyph";
@@ -18,7 +23,7 @@ export type Glyph = {
     y: number;
     width: number;
     glyph: Layout.Glyph;
-};
+} & Common;
 
 export type Line = {
     type: "line";
@@ -26,7 +31,7 @@ export type Line = {
     y1: number;
     x2: number;
     y2: number;
-};
+} & Common;
 
 export type Rect = {
     type: "rect";
@@ -35,13 +40,13 @@ export type Rect = {
     width: number;
     height: number;
     fill?: string;
-};
+} & Common;
 
 export type Kern = {
     type: "kern";
     x: number;
     width: number;
-};
+} & Common;
 
 const unionRect = (rects: Rect[]): Rect => {
     let xMin = Infinity;
@@ -88,6 +93,8 @@ const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
         y1: loc.y,
         x2: loc.x + advance,
         y2: loc.y,
+        color: hrule.color,
+        id: hrule.id,
     };
 };
 
@@ -96,6 +103,8 @@ const renderKern = (kern: Layout.Kern, loc: Point): Node => {
         type: "kern",
         x: loc.x,
         width: kern.size,
+        color: kern.color, // this does nothing
+        id: kern.id,
     };
 };
 
@@ -106,6 +115,8 @@ const renderGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
         y: loc.y,
         width: Layout.getWidth(glyph),
         glyph: glyph,
+        color: glyph.color,
+        id: glyph.id,
     };
 };
 
@@ -324,6 +335,8 @@ const renderHBox = ({
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
         layers: [belowLayer, editorLayer, nonEditorLayer, aboveLayer],
+        color: box.color,
+        id: box.id,
     };
 };
 
@@ -406,6 +419,8 @@ const renderVBox = ({
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
         layers: [editorLayer, nonEditorLayer],
+        color: box.color,
+        id: box.id,
     };
 };
 

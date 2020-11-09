@@ -11,36 +11,38 @@ type Dim = {
 
 type BoxKind = "hbox" | "vbox";
 
-export type Box = Dim & {
-    type: "Box";
+type Common = {
     id?: number;
+    color?: string;
+};
+
+export type Box = {
+    type: "Box";
     kind: BoxKind;
     shift: Dist;
     content: readonly Node[];
     multiplier: number;
-};
+} & Common &
+    Dim;
 
 export type Glyph = {
     type: "Glyph";
-    id?: number;
     char: string;
     size: number;
     metrics: FontMetrics;
     pending?: boolean;
-};
+} & Common;
 
 export type Kern = {
     type: "Kern";
-    id?: number;
     size: Dist;
-};
+} & Common;
 
 export type HRule = {
     type: "HRule";
-    id?: number;
     thickness: number;
     width: number;
-};
+} & Common;
 
 export type Node = Box | Glyph | Kern | HRule;
 

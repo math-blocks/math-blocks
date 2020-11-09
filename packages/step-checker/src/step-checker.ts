@@ -1,7 +1,16 @@
-import {IStepChecker, Options, Context, Check} from "./types";
+import {
+    IStepChecker,
+    Options,
+    Context,
+    Check,
+    Mistake,
+    Result,
+    MISTAKE_PRIORITIES,
+} from "./types";
 import {ALL_CHECKS} from "./all-checks";
 import {first} from "./strategies";
 import {evalMul, evalAdd} from "./checks/eval-checks";
+import {Expression} from "../../../out/semantic/src";
 
 const filterChecks = (
     checks: Check[],
@@ -57,3 +66,68 @@ class StepChecker implements IStepChecker {
 }
 
 export default StepChecker;
+
+const checker = new StepChecker();
+
+const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
+    // Deduplicate mistakes based on the message and matching node ids
+    const uniqueMistakes: Mistake[] = [];
+    for (const mistake of mistakes) {
+        if (
+            !uniqueMistakes.find((um) => {
+                if (
+                    um.id === mistake.id &&
+                    um.nodes.length === mistake.nodes.length
+                ) {
+                    const umIds = um.nodes.map((node) => node.id);
+                    const mIds = mistake.nodes.map((node) => node.id);
+                    return umIds.every((id, index) => id === mIds[index]);
+                }
+                return false;
+            })
+        ) {
+            uniqueMistakes.push(mistake);
+        }
+    }
+
+    // Find the highest priority mistake filter out all mistakes with a
+    // lower priority
+    if (uniqueMistakes.length > 0) {
+        const priorities = uniqueMistakes.map((mistake) => {
+            return MISTAKE_PRIORITIES[mistake.id];
+        });
+        const maxPriority = Math.max(...priorities);
+        const maxPriorityMistakes = uniqueMistakes.filter((mistake) => {
+            return MISTAKE_PRIORITIES[mistake.id] === maxPriority;
+        });
+        return maxPriorityMistakes;
+    }
+
+    return [];
+};
+
+export const checkStep = (
+    before: Expression,
+    after: Expression,
+): {
+    result?: Result;
+    successfulChecks: Set<string>;
+    mistakes: Mistake[];
+} => {
+    const successfulChecks = new Set<string>();
+    const context: Context = {
+        checker,
+        steps: [],
+        successfulChecks,
+        reversed: false,
+        mistakes: [],
+    };
+
+    const result = checker.checkStep(before, after, context);
+
+    return {
+        result,
+        successfulChecks: context.successfulChecks,
+        mistakes: filterMistakes(context.mistakes),
+    };
+};

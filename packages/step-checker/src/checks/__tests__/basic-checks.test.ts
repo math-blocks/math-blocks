@@ -21,6 +21,7 @@ describe("checkArgs", () => {
                 steps: [],
                 successfulChecks: new Set<string>(),
                 reversed: false,
+                mistakes: [],
             });
 
             expect(result).toBeUndefined();

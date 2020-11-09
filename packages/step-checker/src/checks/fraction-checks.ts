@@ -1,5 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
+import {Status} from "../enums";
+import {Check} from "../types";
+
 import {
     decomposeFactors,
     difference,
@@ -7,8 +10,6 @@ import {
     intersection,
     correctResult,
 } from "./util";
-import {Check, Status} from "../types";
-
 import {exactMatch} from "./basic-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
@@ -41,8 +42,8 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     // Ensure that no extra factors were added to either the numerator
     // or denominator.  It's okay to ignore factors that ONE since multiplying
     // by 1 doesn't affect the value of the numerator or denominator.
-    const addedNumFactors = difference(numFactorsB, numFactorsA, context);
-    const addedDenFactors = difference(denFactorsB, denFactorsA, context);
+    const addedNumFactors = difference(numFactorsB, numFactorsA);
+    const addedDenFactors = difference(denFactorsB, denFactorsA);
 
     if (
         !checker.checkStep(
@@ -108,10 +109,10 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     }
 
     // TODO: figure out how to handle duplicate factors
-    const removedNumFactors = difference(numFactorsA, numFactorsB, context);
-    const remainingNumFactors = intersection(numFactorsA, numFactorsB, context);
-    const removedDenFactors = difference(denFactorsA, denFactorsB, context);
-    const remainingDenFactors = intersection(denFactorsA, denFactorsB, context);
+    const removedNumFactors = difference(numFactorsA, numFactorsB);
+    const remainingNumFactors = intersection(numFactorsA, numFactorsB);
+    const removedDenFactors = difference(denFactorsA, denFactorsB);
+    const remainingDenFactors = intersection(denFactorsA, denFactorsB);
 
     if (remainingNumFactors.length === 0) {
         remainingNumFactors.push(Semantic.number("1"));

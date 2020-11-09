@@ -1,9 +1,9 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
-import {Status} from "../../types";
+import {MistakeId} from "../../enums";
 
-import {checkStep} from "../test-util";
+import {checkStep, checkMistake} from "../test-util";
 import {deepEquals} from "../util";
 
 expect.addSnapshotSerializer(serializer);
@@ -275,6 +275,28 @@ describe("Axiom checks", () => {
             ]);
         });
 
+        // nesting
+        it("(a + b + 0) + c + 0 -> (a + b) + c", () => {
+            const result = checkStep("(a + b + 0) + c + 0", "(a + b) + c");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+                "addition with identity",
+            ]);
+        });
+
+        // nesting in reverse
+        it("(a + b) + c -> (a + b + 0) + c + 0", () => {
+            const result = checkStep("(a + b) + c", "(a + b + 0) + c + 0");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "addition with identity",
+                "addition with identity",
+            ]);
+        });
+
         it("2a -> 2(a + 0)", () => {
             const result = checkStep("2a", "2(a + 0)");
 
@@ -284,12 +306,28 @@ describe("Axiom checks", () => {
             ]);
         });
 
-        // TODO: make this test pass
-        it.skip("2a -> 2(a + 7)", () => {
-            const result = checkStep("2a", "2(a + 7)");
+        it("2a -> 2(a + 7)", () => {
+            const mistakes = checkMistake("2a", "2(a + 7)");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].nodes).toHaveLength(1);
+        });
+
+        // TODO: This should report multiple mistakes
+        it("2a + 2b -> 2(a + 7) + 2(b + 3)", () => {
+            const mistakes = checkMistake("2a + 2b", "2(a + 7) + 2(b + 3)");
+
+            expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].nodes).toHaveLength(1);
+
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[1].nodes[0]).toParseLike("3");
+            expect(mistakes[1].nodes).toHaveLength(1);
         });
 
         it("a + b -> a + b + 0", () => {
@@ -409,6 +447,26 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiplication with identity",
             ]);
+        });
+
+        it("a * b -> 2 * a * b", () => {
+            const mistakes = checkMistake("a * b", "2 * a * b");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
+        });
+
+        it("1 + ab -> 1 + 2ab", () => {
+            const mistakes = checkMistake("1 + ab", "1 + 2ab");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
         });
     });
 

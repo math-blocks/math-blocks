@@ -222,6 +222,7 @@ describe("Fraction checks", () => {
             steps: [],
             successfulChecks: new Set(),
             reversed: false,
+            mistakes: [],
         });
 
         if (!result) {
@@ -249,6 +250,7 @@ describe("Fraction checks", () => {
             steps: [],
             successfulChecks: new Set(),
             reversed: false,
+            mistakes: [],
         });
 
         if (!result) {
@@ -315,6 +317,7 @@ describe("Fraction checks", () => {
                 steps: [],
                 successfulChecks: new Set(),
                 reversed: false,
+                mistakes: [],
             },
         );
 

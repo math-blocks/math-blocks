@@ -1,10 +1,10 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import {Status} from "../../types";
+import {Status, MistakeId} from "../../enums";
 
 import {deepEquals} from "../util";
-import {checkStep} from "../test-util";
+import {checkStep, checkMistake} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -165,51 +165,44 @@ describe("Equation checks", () => {
         });
 
         it("x = y -> x + 3 = y + 7", () => {
-            const result = checkStep("x = y", "x + 3 = y + 7");
+            const mistakes = checkMistake("x = y", "x + 3 = y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were added to both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
 
-            // TODO: include which nodes weren't equivalent
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("3");
+            expect(mistakes[0].nodes[1]).toParseLike("7");
         });
 
         it("x = y -> x = y + 7", () => {
-            const result = checkStep("x = y", "x = y + 7");
+            const mistakes = checkMistake("x = y", "x = y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were added to both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
 
-            // TODO: include which nodes weren't equivalent
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
         });
 
         it("x + y = x + y -> x + y = x + y + 7", () => {
-            const result = checkStep("x + y = x + y", "x + y = x + y + 7");
+            const mistakes = checkMistake("x + y = x + y", "x + y = x + y + 7");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were added to both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
 
-            // TODO: include which nodes weren't equivalent
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10");
+            const mistakes = checkMistake("2x + 5 = 10", "2x + 5 - 5 = 10");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were added to both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
 
-            // TODO: include which nodes weren't equivalent
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
         });
 
         // TODO: make this work
@@ -273,15 +266,17 @@ describe("Equation checks", () => {
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 - 10 [incorrect step]", () => {
-            const result = checkStep("2x + 5 = 10", "2x + 5 - 5 = 10 - 10");
+            const mistakes = checkMistake(
+                "2x + 5 = 10",
+                "2x + 5 - 5 = 10 - 10",
+            );
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((step) => step.message)).toEqual([
-                "different values were added to both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
 
-            // TODO: include which nodes weren't equivalent
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
+            expect(mistakes[0].nodes[1]).toMatchInlineSnapshot(`(neg.sub 10)`);
         });
 
         it("2x + 5 - 5 = 10 - 5 -> 2x + 5 - 5 = 5", () => {
@@ -393,43 +388,45 @@ describe("Equation checks", () => {
         });
 
         it("x = y -> x = 7y", () => {
-            const result = checkStep("x = y", "x = 7y");
+            const mistakes = checkMistake("x = y", "x = 7y");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were multiplied on both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
         });
 
         it("xa = yb -> xa = 7yb", () => {
-            const result = checkStep("xa = yb", "xa = 7yb");
+            const mistakes = checkMistake("xa = yb", "xa = 7yb");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were multiplied on both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("7");
         });
 
         it("x = y -> 3x = 7y", () => {
-            const result = checkStep("x = y", "3x = 7y");
+            const mistakes = checkMistake("x = y", "3x = 7y");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were multiplied on both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("3");
+            expect(mistakes[0].nodes[1]).toParseLike("7");
         });
 
         it("xa = yb -> 3xa = 7yb", () => {
-            const result = checkStep("xa = yb", "3xa = 7yb");
+            const mistakes = checkMistake("xa = yb", "3xa = 7yb");
 
-            expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Incorrect);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "different values were multiplied on both sides",
-            ]);
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("3");
+            expect(mistakes[0].nodes[1]).toParseLike("7");
         });
 
         // TODO: return an incorrect result for this test case
@@ -507,6 +504,47 @@ describe("Equation checks", () => {
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
             expect(() => checkStep("x = y", "x / 5 = y / 10")).toThrow();
+        });
+    });
+
+    describe("mistakes", () => {
+        it("2x + 5 = 10 -> 2(x+1) + 2(5) = 10", () => {
+            const mistakes = checkMistake("2x + 5 = 10", "2(x+1) + 2(5) = 10");
+
+            expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("1");
+
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("2");
+        });
+
+        // TODO: while we indeed have detected a mistake here, a better
+        // explanation for this mistake is that the user didn't multiply both
+        // sides by '2' correctly.  The LHS is correct, but in the RHS only the
+        // first term has been multiplied by '2'.
+        it("y = x + 1 -> 2y = 2x + 1", () => {
+            const mistakes = checkMistake("y = x + 1", "2y = 2x + 1");
+
+            expect(mistakes).toHaveLength(2);
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
+
+            expect(mistakes).toHaveLength(2);
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("2");
+        });
+
+        // TODO: make this pass
+        it.skip("2x + 3y -> 2(x + 1) + 3(y + 1) + 4", () => {
+            const mistakes = checkMistake("2x + 3y", "2(x + 1) + 3(y + 1) + 4");
+
+            expect(mistakes).toHaveLength(3);
         });
     });
 });

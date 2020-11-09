@@ -9,38 +9,48 @@ type LayoutCursor = {
     selection: boolean;
 };
 
-const Line: React.SFC<SceneGraph.Line> = (props) => {
+const Line: React.SFC<SceneGraph.Line> = ({id, color, ...props}) => {
     return (
         <line
             {...props}
-            stroke="currentColor"
+            stroke={color || "currentColor"}
             strokeWidth={5}
             strokeLinecap="round"
         />
     );
 };
 
-const Rect: React.SFC<SceneGraph.Rect> = (props) => {
-    return <rect {...props} />;
+const Rect: React.SFC<SceneGraph.Rect> = ({color, id, ...props}) => {
+    return <rect {...props} fill={color} />;
 };
 
 const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
+    const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
+
     return (
         <text
             x={x}
             y={y}
             fontFamily="comic sans ms"
             fontSize={glyph.size}
-            fill={glyph.pending ? "#CCC" : "black"}
+            fill={glyph.color || (glyph.pending ? "#CCC" : "black")}
+            id={id}
         >
             {glyph.char}
         </text>
     );
 };
 
-const Group: React.SFC<SceneGraph.Group> = ({x, y, layers}) => {
+const Group: React.SFC<SceneGraph.Group> = ({x, y, layers, color, id}) => {
+    const _id = typeof id !== undefined ? String(id) : undefined;
+
     return (
-        <g transform={`translate(${x},${y})`}>
+        <g
+            transform={`translate(${x},${y})`}
+            fill={color}
+            stroke={color}
+            id={_id}
+        >
             {layers.flatMap((layer, i) =>
                 layer.map((child, j) => {
                     const key = `${i}-${j}`;
