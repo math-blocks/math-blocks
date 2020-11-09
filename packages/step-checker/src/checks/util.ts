@@ -2,7 +2,8 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step, HasArgs, Context, Result, Status} from "../types";
+import {Status} from "../enums";
+import {Step, HasArgs, Context, Result} from "../types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {

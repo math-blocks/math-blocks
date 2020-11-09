@@ -1,5 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
+import {Status} from "../enums";
+import {Check} from "../types";
+
 import {
     decomposeFactors,
     difference,
@@ -7,8 +10,6 @@ import {
     intersection,
     correctResult,
 } from "./util";
-import {Check, Status} from "../types";
-
 import {exactMatch} from "./basic-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now

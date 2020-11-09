@@ -1,5 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
+import {MistakeId, Status} from "./enums";
+
 type Expression = Semantic.Expression;
 
 export type Step = {
@@ -7,22 +9,10 @@ export type Step = {
     nodes: Expression[];
 };
 
-export enum Status {
-    Correct,
-    Incorrect,
-}
-
 export type Result = {
     status: Status;
     steps: Step[];
 };
-
-export enum MistakeId {
-    EQN_ADD_DIFF,
-    EQN_MUL_DIFF,
-    EXPR_ADD_NON_IDENTITY,
-    EXPR_MUL_NON_IDENTITY,
-}
 
 export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
     [MistakeId.EQN_ADD_DIFF]: 10,

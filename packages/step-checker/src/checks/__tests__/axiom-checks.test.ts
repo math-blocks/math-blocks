@@ -1,9 +1,10 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
 
+import {MistakeId} from "../../enums";
+
 import {checkStep, checkMistake} from "../test-util";
 import {deepEquals} from "../util";
-import {MistakeId} from "../../types";
 
 expect.addSnapshotSerializer(serializer);
 

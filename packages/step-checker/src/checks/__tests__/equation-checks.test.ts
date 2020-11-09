@@ -1,7 +1,7 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import {Status, MistakeId} from "../../types";
+import {Status, MistakeId} from "../../enums";
 
 import {deepEquals} from "../util";
 import {checkStep, checkMistake} from "../test-util";

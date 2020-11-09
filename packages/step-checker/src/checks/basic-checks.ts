@@ -1,4 +1,5 @@
-import {Check, Step, Status} from "../types";
+import {Status} from "../enums";
+import {Check, Step} from "../types";
 import {deepEquals, hasArgs} from "./util";
 
 export const numberCheck: Check = (prev, next, context) => {

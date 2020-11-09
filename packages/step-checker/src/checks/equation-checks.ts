@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, MistakeId} from "../types";
+import {Check} from "../types";
+import {MistakeId} from "../enums";
 import {difference, correctResult, intersection} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
