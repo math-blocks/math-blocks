@@ -6,13 +6,11 @@ const {useState} = React;
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import {parse} from "@math-blocks/editor-parser";
 import * as Editor from "@math-blocks/editor";
-import StepChecker, {Context, Mistake} from "@math-blocks/step-checker";
+import {checkStep} from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
 
 import Step from "./step";
 import {StepType, StepState} from "./types";
-
-const checker = new StepChecker();
 
 type ID = {
     id: number;
@@ -24,16 +22,6 @@ enum ProblemState {
     InProgress,
     Complete,
 }
-
-const MISTAKE_PRIORITIES = {
-    // Equation mistakes
-    "different values were added to both sides": 10,
-    "different values were multiplied on both sides": 10,
-
-    // Expression mistakes
-    "adding a non-identity valid is not allowed": 5,
-    "multiplying a non-identity valid is not allowed": 5,
-};
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -60,21 +48,10 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph, ID>,
         next: Editor.Row<Editor.Glyph, ID>,
     ): boolean => {
-        console.log("EDITOR NEXT");
-        console.log(next);
+        const parsedPrev = parse(prev);
         const parsedNext = parse(next);
-        console.log("PARSED NEXT");
-        console.log(parsedNext);
 
-        const context: Context = {
-            checker,
-            steps: [],
-            successfulChecks: new Set<string>(),
-            reversed: false,
-            mistakes: [],
-        };
-
-        const result = checker.checkStep(parse(prev), parsedNext, context);
+        const {result, mistakes} = checkStep(parsedPrev, parsedNext);
 
         if (result) {
             if (
@@ -105,63 +82,14 @@ export const App: React.SFC<{}> = () => {
             }
             return true;
         } else {
-            // Deduplicate mistakes based on the message and matching node ids
-            const uniqueMistakes: Mistake[] = [];
-            console.log(context.mistakes);
-            for (const mistake of context.mistakes) {
-                if (
-                    !uniqueMistakes.find((um) => {
-                        if (
-                            um.message === mistake.message &&
-                            um.nodes.length === mistake.nodes.length
-                        ) {
-                            const umIds = um.nodes.map((node) => node.id);
-                            const mIds = mistake.nodes.map((node) => node.id);
-                            return umIds.every(
-                                (id, index) => id === mIds[index],
-                            );
-                        }
-                        return false;
-                    })
-                ) {
-                    uniqueMistakes.push(mistake);
-                }
-            }
-
-            // Find the highest priority mistake filter out all mistakes with a
-            // lower priority
-            if (uniqueMistakes.length > 0) {
-                const priorities = uniqueMistakes.map((mistake) => {
-                    // @ts-ignore: properly type mistakes using an enum instead of strings
-                    return MISTAKE_PRIORITIES[mistake.message];
-                });
-                const maxPriority = Math.max(...priorities);
-                const maxPriorityMistakes = uniqueMistakes.filter((mistake) => {
-                    // @ts-ignore: properly type mistakes using an enum instead of strings
-                    return MISTAKE_PRIORITIES[mistake.message] === maxPriority;
-                });
-
-                // TODO: figure out how to how report multiple mistakes
-                console.log(maxPriorityMistakes);
-
-                setSteps([
-                    ...steps.slice(0, -1),
-                    {
-                        ...steps[steps.length - 1],
-                        state: StepState.Incorrect,
-                        mistakes: maxPriorityMistakes,
-                    },
-                ]);
-            } else {
-                setSteps([
-                    ...steps.slice(0, -1),
-                    {
-                        ...steps[steps.length - 1],
-                        state: StepState.Incorrect,
-                        mistakes: [],
-                    },
-                ]);
-            }
+            setSteps([
+                ...steps.slice(0, -1),
+                {
+                    ...steps[steps.length - 1],
+                    state: StepState.Incorrect,
+                    mistakes: mistakes,
+                },
+            ]);
         }
 
         return false;
