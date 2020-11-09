@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as Editor from "@math-blocks/editor";
 import {Icon, MathEditor} from "@math-blocks/react";
+import {MistakeId} from "@math-blocks/step-checker";
 
 import {StepType, StepState} from "./types";
 import {HStack, VStack} from "./containers";
@@ -18,6 +19,15 @@ type Props = {
 
     onSubmit: () => unknown;
     onChange: (value: EditorNode) => unknown;
+};
+
+const MistakeMessages: Record<MistakeId, string> = {
+    [MistakeId.EQN_ADD_DIFF]: "different values were added to both sides",
+    [MistakeId.EQN_MUL_DIFF]: "different values were multiplied on both sides",
+    [MistakeId.EXPR_ADD_NON_IDENTITY]:
+        "adding a non-identity valid is not allowed",
+    [MistakeId.EXPR_MUL_NON_IDENTITY]:
+        "multiplying a non-identity valid is not allowed",
 };
 
 const Step: React.SFC<Props> = (props) => {
@@ -96,7 +106,7 @@ const Step: React.SFC<Props> = (props) => {
                             key={`mistake=${index}`}
                             style={{fontFamily: "sans-serif", fontSize: 20}}
                         >
-                            {mistake.message}
+                            {MistakeMessages[mistake.id]}
                         </HStack>
                     );
                 })}

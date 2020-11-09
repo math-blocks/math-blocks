@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {zip, applySteps, correctResult, difference, intersection} from "./util";
-import {Result, Step, Check, Status} from "../types";
+import {Result, Step, Check, Status, MistakeId} from "../types";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 
@@ -54,7 +54,7 @@ export const addZero: Check = (prev, next, context) => {
             oldTerms.length === prevTerms.length
         ) {
             context.mistakes.push({
-                message: "adding a non-identity valid is not allowed",
+                id: MistakeId.EXPR_ADD_NON_IDENTITY,
                 nodes: newNonIdentityTerms,
             });
         }
@@ -147,7 +147,7 @@ export const mulOne: Check = (prev, next, context) => {
             oldFactors.length === prevFactors.length
         ) {
             context.mistakes.push({
-                message: "multiplying a non-identity valid is not allowed",
+                id: MistakeId.EXPR_MUL_NON_IDENTITY,
                 nodes: newNonIdentityFactors,
             });
         }

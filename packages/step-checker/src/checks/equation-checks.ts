@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "../types";
+import {Check, MistakeId} from "../types";
 import {difference, correctResult, intersection} from "./util";
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
@@ -63,7 +63,7 @@ export const checkAddSub: Check = (prev, next, context) => {
         // this step was incorrect and include which nodes weren't the same.
         if (!areNewTermsEquivalent) {
             context.mistakes.push({
-                message: "different values were added to both sides",
+                id: MistakeId.EQN_ADD_DIFF,
                 // TODO: make structures that are specific to each mistake
                 nodes: [...newTermsLHS, ...newTermsRHS],
             });
@@ -162,7 +162,7 @@ export const checkMul: Check = (prev, next, context) => {
         // If what we're multiplying both sides by isn't equivalent then fail
         if (!areNewFactorsEquivalent) {
             context.mistakes.push({
-                message: "different values were multiplied on both sides",
+                id: MistakeId.EQN_MUL_DIFF,
                 // TODO: make structures that are specific to each mistake
                 nodes: [...newFactorsLHS, ...newFactorsRHS],
             });

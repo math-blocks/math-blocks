@@ -1,4 +1,12 @@
-import {IStepChecker, Options, Context, Check, Mistake, Result} from "./types";
+import {
+    IStepChecker,
+    Options,
+    Context,
+    Check,
+    Mistake,
+    Result,
+    MISTAKE_PRIORITIES,
+} from "./types";
 import {ALL_CHECKS} from "./all-checks";
 import {first} from "./strategies";
 import {evalMul, evalAdd} from "./checks/eval-checks";
@@ -61,16 +69,6 @@ export default StepChecker;
 
 const checker = new StepChecker();
 
-const MISTAKE_PRIORITIES = {
-    // Equation mistakes
-    "different values were added to both sides": 10,
-    "different values were multiplied on both sides": 10,
-
-    // Expression mistakes
-    "adding a non-identity valid is not allowed": 5,
-    "multiplying a non-identity valid is not allowed": 5,
-};
-
 const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
@@ -78,7 +76,7 @@ const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
         if (
             !uniqueMistakes.find((um) => {
                 if (
-                    um.message === mistake.message &&
+                    um.id === mistake.id &&
                     um.nodes.length === mistake.nodes.length
                 ) {
                     const umIds = um.nodes.map((node) => node.id);
@@ -96,13 +94,11 @@ const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
     // lower priority
     if (uniqueMistakes.length > 0) {
         const priorities = uniqueMistakes.map((mistake) => {
-            // @ts-ignore: properly type mistakes using an enum instead of strings
-            return MISTAKE_PRIORITIES[mistake.message];
+            return MISTAKE_PRIORITIES[mistake.id];
         });
         const maxPriority = Math.max(...priorities);
         const maxPriorityMistakes = uniqueMistakes.filter((mistake) => {
-            // @ts-ignore: properly type mistakes using an enum instead of strings
-            return MISTAKE_PRIORITIES[mistake.message] === maxPriority;
+            return MISTAKE_PRIORITIES[mistake.id] === maxPriority;
         });
         return maxPriorityMistakes;
     }

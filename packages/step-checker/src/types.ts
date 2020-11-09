@@ -17,8 +17,22 @@ export type Result = {
     steps: Step[];
 };
 
+export enum MistakeId {
+    EQN_ADD_DIFF,
+    EQN_MUL_DIFF,
+    EXPR_ADD_NON_IDENTITY,
+    EXPR_MUL_NON_IDENTITY,
+}
+
+export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
+    [MistakeId.EQN_ADD_DIFF]: 10,
+    [MistakeId.EQN_MUL_DIFF]: 10,
+    [MistakeId.EXPR_ADD_NON_IDENTITY]: 5,
+    [MistakeId.EXPR_MUL_NON_IDENTITY]: 5,
+};
+
 export type Mistake = {
-    message: string;
+    id: MistakeId;
     nodes: Expression[];
 };
 
