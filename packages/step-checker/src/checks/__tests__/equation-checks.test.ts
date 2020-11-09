@@ -1,7 +1,7 @@
 import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
-import {Status} from "../../types";
+import {Status, MistakeId} from "../../types";
 
 import {deepEquals} from "../util";
 import {checkStep, checkMistake} from "../test-util";
@@ -169,9 +169,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were added to both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
             expect(mistakes[0].nodes).toHaveLength(2);
             expect(mistakes[0].nodes[0]).toParseLike("3");
             expect(mistakes[0].nodes[1]).toParseLike("7");
@@ -182,9 +180,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were added to both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("7");
         });
@@ -194,9 +190,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were added to both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("7");
         });
@@ -206,9 +200,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were added to both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
         });
@@ -281,9 +273,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were added to both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
             expect(mistakes[0].nodes).toHaveLength(2);
             expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
             expect(mistakes[0].nodes[1]).toMatchInlineSnapshot(`(neg.sub 10)`);
@@ -402,9 +392,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were multiplied on both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("7");
         });
@@ -414,9 +402,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were multiplied on both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("7");
         });
@@ -426,9 +412,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were multiplied on both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
             expect(mistakes[0].nodes).toHaveLength(2);
             expect(mistakes[0].nodes[0]).toParseLike("3");
             expect(mistakes[0].nodes[1]).toParseLike("7");
@@ -439,9 +423,7 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "different values were multiplied on both sides",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
             expect(mistakes[0].nodes).toHaveLength(2);
             expect(mistakes[0].nodes[0]).toParseLike("3");
             expect(mistakes[0].nodes[1]).toParseLike("7");
@@ -531,15 +513,11 @@ describe("Equation checks", () => {
 
             expect(mistakes).toHaveLength(2);
 
-            expect(mistakes[0].message).toEqual(
-                "adding a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("1");
 
-            expect(mistakes[1].message).toEqual(
-                "multiplying a non-identity valid is not allowed",
-            );
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[1].nodes).toHaveLength(1);
             expect(mistakes[1].nodes[0]).toParseLike("2");
         });
@@ -552,16 +530,12 @@ describe("Equation checks", () => {
             const mistakes = checkMistake("y = x + 1", "2y = 2x + 1");
 
             expect(mistakes).toHaveLength(2);
-            expect(mistakes[0].message).toEqual(
-                "multiplying a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("2");
 
             expect(mistakes).toHaveLength(2);
-            expect(mistakes[1].message).toEqual(
-                "multiplying a non-identity valid is not allowed",
-            );
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[1].nodes).toHaveLength(1);
             expect(mistakes[1].nodes[0]).toParseLike("2");
         });

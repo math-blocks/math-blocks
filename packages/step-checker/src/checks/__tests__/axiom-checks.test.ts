@@ -3,6 +3,7 @@ import {parse} from "@math-blocks/text-parser";
 
 import {checkStep, checkMistake} from "../test-util";
 import {deepEquals} from "../util";
+import {MistakeId} from "../../types";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -308,9 +309,7 @@ describe("Axiom checks", () => {
             const mistakes = checkMistake("2a", "2(a + 7)");
 
             expect(mistakes).toHaveLength(1);
-            expect(mistakes[0].message).toEqual(
-                "adding a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
             expect(mistakes[0].nodes[0]).toParseLike("7");
             expect(mistakes[0].nodes).toHaveLength(1);
         });
@@ -321,15 +320,11 @@ describe("Axiom checks", () => {
 
             expect(mistakes).toHaveLength(2);
 
-            expect(mistakes[0].message).toEqual(
-                "adding a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
             expect(mistakes[0].nodes[0]).toParseLike("7");
             expect(mistakes[0].nodes).toHaveLength(1);
 
-            expect(mistakes[1].message).toEqual(
-                "adding a non-identity valid is not allowed",
-            );
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
             expect(mistakes[1].nodes[0]).toParseLike("3");
             expect(mistakes[1].nodes).toHaveLength(1);
         });
@@ -458,9 +453,7 @@ describe("Axiom checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "multiplying a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("2");
         });
@@ -470,9 +463,7 @@ describe("Axiom checks", () => {
 
             expect(mistakes).toHaveLength(1);
 
-            expect(mistakes[0].message).toEqual(
-                "multiplying a non-identity valid is not allowed",
-            );
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("2");
         });
