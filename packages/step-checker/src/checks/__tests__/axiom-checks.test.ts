@@ -321,11 +321,15 @@ describe("Axiom checks", () => {
 
             expect(mistakes).toHaveLength(2);
 
-            expect(mistakes[0].message).toEqual("adding a non-identity valid is not allowed");
+            expect(mistakes[0].message).toEqual(
+                "adding a non-identity valid is not allowed",
+            );
             expect(mistakes[0].nodes[0]).toParseLike("7");
             expect(mistakes[0].nodes).toHaveLength(1);
 
-            expect(mistakes[1].message).toEqual("adding a non-identity valid is not allowed");
+            expect(mistakes[1].message).toEqual(
+                "adding a non-identity valid is not allowed",
+            );
             expect(mistakes[1].nodes[0]).toParseLike("3");
             expect(mistakes[1].nodes).toHaveLength(1);
         });

@@ -141,7 +141,8 @@ export const mulOne: Check = (prev, next, context) => {
         const prevFactors = Semantic.getFactors(prev);
         const newNonIdentityFactors = difference(next.args, prevFactors);
         const oldFactors = intersection(prevFactors, next.args);
-        if (newNonIdentityFactors.length > 0 &&
+        if (
+            newNonIdentityFactors.length > 0 &&
             // check that no factors were removed
             oldFactors.length === prevFactors.length
         ) {

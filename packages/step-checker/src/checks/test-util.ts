@@ -51,14 +51,19 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
         // Deduplicate mistakes based on the message and matching node ids
         const uniqueMistakes: Mistake[] = [];
         for (const mistake of context.mistakes) {
-            if (!uniqueMistakes.find(um => {
-                if (um.message === mistake.message && um.nodes.length === mistake.nodes.length) {
-                    const umIds = um.nodes.map(node => node.id);
-                    const mIds = mistake.nodes.map(node => node.id);
-                    return umIds.every((id, index) => id === mIds[index]);
-                }
-                return false;
-            })) {
+            if (
+                !uniqueMistakes.find((um) => {
+                    if (
+                        um.message === mistake.message &&
+                        um.nodes.length === mistake.nodes.length
+                    ) {
+                        const umIds = um.nodes.map((node) => node.id);
+                        const mIds = mistake.nodes.map((node) => node.id);
+                        return umIds.every((id, index) => id === mIds[index]);
+                    }
+                    return false;
+                })
+            ) {
                 uniqueMistakes.push(mistake);
             }
         }
@@ -66,15 +71,15 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
         // Find the highest priority mistake filter out all mistakes with a
         // lower priority
         if (uniqueMistakes.length > 0) {
-            const priorities = uniqueMistakes.map(mistake => {
+            const priorities = uniqueMistakes.map((mistake) => {
                 // @ts-ignore: properly type mistakes using an enum instead of strings
                 return MISTAKE_PRIORITIES[mistake.message];
             });
             const maxPriority = Math.max(...priorities);
-            const maxPriorityMistakes = uniqueMistakes.filter(mistake => {
+            const maxPriorityMistakes = uniqueMistakes.filter((mistake) => {
                 // @ts-ignore: properly type mistakes using an enum instead of strings
                 return MISTAKE_PRIORITIES[mistake.message] === maxPriority;
-            })
+            });
             return maxPriorityMistakes;
         } else {
             throw new Error("No mistakes found");
