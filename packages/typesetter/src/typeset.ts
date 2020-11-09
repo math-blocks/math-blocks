@@ -22,6 +22,7 @@ type Context = {
     baseFontSize: number;
     multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
     cramped: boolean;
+    colorMap?: Map<number, string>;
 };
 
 // Adds appropriate padding around operators where appropriate
@@ -33,6 +34,7 @@ const typesetChildren = (
     return children.map((child, index) => {
         if (child.type === "atom") {
             const {value} = child;
+
             const prevChild = index > 0 ? children[index - 1] : undefined;
             const unary =
                 /[+\u2212]/.test(value.char) &&
@@ -374,6 +376,8 @@ const typeset = (
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
+    // console.log(node.id);
+
     switch (node.type) {
         case "row": {
             const row = Layout.hpackNat(
@@ -383,7 +387,7 @@ const typeset = (
             row.height = Math.max(row.height, 0.85 * baseFontSize * multiplier);
             row.depth = Math.max(row.depth, 0.15 * baseFontSize * multiplier);
             row.id = node.id;
-
+            row.color = context?.colorMap?.get(node.id);
             return row;
         }
         case "subsup": {
@@ -620,7 +624,10 @@ const typeset = (
         }
         case "atom": {
             const {value} = node;
-            return _makeGlyph(value.char);
+            const glyph = _makeGlyph(value.char);
+            glyph.id = node.id;
+            glyph.color = context.colorMap?.get(node.id);
+            return glyph;
         }
         default:
             throw new UnreachableCaseError(node);

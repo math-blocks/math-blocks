@@ -544,6 +544,28 @@ describe("Equation checks", () => {
             expect(mistakes[1].nodes[0]).toParseLike("2");
         });
 
+        // TODO: while we indeed have detected a mistake here, a better
+        // explanation for this mistake is that the user didn't multiply both
+        // sides by '2' correctly.  The LHS is correct, but in the RHS only the
+        // first term has been multiplied by '2'.
+        it("y = x + 1 -> 2y = 2x + 1", () => {
+            const mistakes = checkMistake("y = x + 1", "2y = 2x + 1");
+
+            expect(mistakes).toHaveLength(2);
+            expect(mistakes[0].message).toEqual(
+                "multiplying a non-identity valid is not allowed",
+            );
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
+
+            expect(mistakes).toHaveLength(2);
+            expect(mistakes[1].message).toEqual(
+                "multiplying a non-identity valid is not allowed",
+            );
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("2");
+        });
+
         // TODO: make this pass
         it.skip("2x + 3y -> 2(x + 1) + 3(y + 1) + 4", () => {
             const mistakes = checkMistake("2x + 3y", "2(x + 1) + 3(y + 1) + 4");

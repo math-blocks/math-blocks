@@ -45,6 +45,16 @@ const Step: React.SFC<Props> = (props) => {
         buttonOrIcon = <Icon name="correct" size={48} />;
     }
 
+    const colorMap = new Map<number, string>();
+
+    if (step.state === StepState.Incorrect) {
+        for (const mistake of step.mistakes) {
+            for (const node of mistake.nodes) {
+                colorMap.set(node.id, "pink");
+            }
+        }
+    }
+
     return (
         <VStack>
             <HStack
@@ -61,6 +71,7 @@ const Step: React.SFC<Props> = (props) => {
                     onSubmit={onSubmit}
                     onChange={onChange}
                     style={{flexGrow: 1}}
+                    colorMap={colorMap}
                 />
                 <VStack
                     style={{

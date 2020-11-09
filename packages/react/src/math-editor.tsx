@@ -35,6 +35,8 @@ type Props = {
     style?: React.CSSProperties;
 
     stepChecker?: boolean;
+
+    colorMap?: Map<number, string>;
 };
 
 export const MathEditor: React.SFC<Props> = (props: Props) => {
@@ -104,22 +106,23 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
+        colorMap: props.colorMap,
     };
 
+    // console.log(props.colorMap);
+
     const box = props.stepChecker
-        ? (Typesetter.typeset(state.rows[0].math, {
-              fontMetrics,
-              baseFontSize: fontSize,
-              multiplier: 1.0,
-              cramped: false,
-          }) as Typesetter.Layout.Box) // TODO: make typeset return a Box
+        ? (Typesetter.typeset(
+              state.rows[0].math,
+              context,
+          ) as Typesetter.Layout.Box) // TODO: make typeset return a Box
         : Typesetter.typesetWithWork(state, context);
 
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],
     );
-    console.log("cursor: ", state.rows[state.rowIndex].cursor);
-    console.log(layoutCursor);
+    // console.log("cursor: ", state.rows[state.rowIndex].cursor);
+    // console.log(layoutCursor);
 
     return (
         <div

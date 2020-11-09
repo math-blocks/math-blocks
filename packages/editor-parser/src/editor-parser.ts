@@ -7,6 +7,10 @@ import {Location} from "./editor-lexer";
 
 type Token = Editor.Node<Lexer.Token, {loc: Location}>;
 
+// TODO: include source node ids in each parse node
+
+// TODO: parse -7x as (neg (mul 7 x))
+
 // TODO: fill out this list
 type Operator =
     | "add"

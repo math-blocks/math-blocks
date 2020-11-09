@@ -13,15 +13,15 @@ const Line: React.SFC<SceneGraph.Line> = (props) => {
     return (
         <line
             {...props}
-            stroke="currentColor"
+            stroke={props.color || "currentColor"}
             strokeWidth={5}
             strokeLinecap="round"
         />
     );
 };
 
-const Rect: React.SFC<SceneGraph.Rect> = (props) => {
-    return <rect {...props} />;
+const Rect: React.SFC<SceneGraph.Rect> = ({color, ...props}) => {
+    return <rect {...props} fill={color} />;
 };
 
 const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
@@ -31,16 +31,22 @@ const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
             y={y}
             fontFamily="comic sans ms"
             fontSize={glyph.size}
-            fill={glyph.pending ? "#CCC" : "black"}
+            fill={glyph.color || (glyph.pending ? "#CCC" : "black")}
+            id={glyph.id}
         >
             {glyph.char}
         </text>
     );
 };
 
-const Group: React.SFC<SceneGraph.Group> = ({x, y, layers}) => {
+const Group: React.SFC<SceneGraph.Group> = ({x, y, layers, color, id}) => {
     return (
-        <g transform={`translate(${x},${y})`}>
+        <g
+            transform={`translate(${x},${y})`}
+            fill={color}
+            stroke={color}
+            id={id}
+        >
             {layers.flatMap((layer, i) =>
                 layer.map((child, j) => {
                     const key = `${i}-${j}`;

@@ -60,6 +60,12 @@ export const App: React.SFC<{}> = () => {
         prev: Editor.Row<Editor.Glyph, ID>,
         next: Editor.Row<Editor.Glyph, ID>,
     ): boolean => {
+        console.log("EDITOR NEXT");
+        console.log(next);
+        const parsedNext = parse(next);
+        console.log("PARSED NEXT");
+        console.log(parsedNext);
+
         const context: Context = {
             checker,
             steps: [],
@@ -68,14 +74,13 @@ export const App: React.SFC<{}> = () => {
             mistakes: [],
         };
 
-        const result = checker.checkStep(parse(prev), parse(next), context);
+        const result = checker.checkStep(parse(prev), parsedNext, context);
 
         if (result) {
-            const semanticNext = parse(next);
             if (
-                semanticNext.type === "eq" &&
-                semanticNext.args[0].type === "identifier" &&
-                Semantic.isNumber(semanticNext.args[1])
+                parsedNext.type === "eq" &&
+                parsedNext.args[0].type === "identifier" &&
+                Semantic.isNumber(parsedNext.args[1])
             ) {
                 setSteps([
                     ...steps.slice(0, -1),
@@ -102,15 +107,23 @@ export const App: React.SFC<{}> = () => {
         } else {
             // Deduplicate mistakes based on the message and matching node ids
             const uniqueMistakes: Mistake[] = [];
+            console.log(context.mistakes);
             for (const mistake of context.mistakes) {
-                if (!uniqueMistakes.find(um => {
-                    if (um.message === mistake.message && um.nodes.length === mistake.nodes.length) {
-                        const umIds = um.nodes.map(node => node.id);
-                        const mIds = mistake.nodes.map(node => node.id);
-                        return umIds.every((id, index) => id === mIds[index]);
-                    }
-                    return false;
-                })) {
+                if (
+                    !uniqueMistakes.find((um) => {
+                        if (
+                            um.message === mistake.message &&
+                            um.nodes.length === mistake.nodes.length
+                        ) {
+                            const umIds = um.nodes.map((node) => node.id);
+                            const mIds = mistake.nodes.map((node) => node.id);
+                            return umIds.every(
+                                (id, index) => id === mIds[index],
+                            );
+                        }
+                        return false;
+                    })
+                ) {
                     uniqueMistakes.push(mistake);
                 }
             }
@@ -118,12 +131,12 @@ export const App: React.SFC<{}> = () => {
             // Find the highest priority mistake filter out all mistakes with a
             // lower priority
             if (uniqueMistakes.length > 0) {
-                const priorities = uniqueMistakes.map(mistake => {
+                const priorities = uniqueMistakes.map((mistake) => {
                     // @ts-ignore: properly type mistakes using an enum instead of strings
                     return MISTAKE_PRIORITIES[mistake.message];
                 });
                 const maxPriority = Math.max(...priorities);
-                const maxPriorityMistakes = uniqueMistakes.filter(mistake => {
+                const maxPriorityMistakes = uniqueMistakes.filter((mistake) => {
                     // @ts-ignore: properly type mistakes using an enum instead of strings
                     return MISTAKE_PRIORITIES[mistake.message] === maxPriority;
                 });
