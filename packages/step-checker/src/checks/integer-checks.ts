@@ -137,8 +137,16 @@ export const subIsNeg: Check = (prev, next, context) => {
 
 subIsNeg.symmetric = true;
 
+// TODO: Do the same thing with a nodeSet in other places where a check function
+// processes both individual nodes and nodes within an 'add' or 'mull' node.
+// TODO: have difference messages based on direction
+const nodeSet = new Set<Semantic.Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
+
+    if (nodeSet.has(prev) || nodeSet.has(next)) {
+        return;
+    }
 
     if (
         prev.type === "neg" &&
@@ -153,8 +161,50 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
             ],
             true,
         );
+        nodeSet.add(newPrev);
 
         const result = checker.checkStep(newPrev, next, context);
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "negation is the same as multipling by negative one",
+            );
+        }
+    } else if (prev.type === "add") {
+        let changed = false;
+        const newArgs = prev.args.map((arg) => {
+            if (
+                arg.type === "neg" &&
+                !arg.subtraction &&
+                // exclude -1 to avoid an infinite expansion
+                !(arg.arg.type == "number" && arg.arg.value == "1")
+            ) {
+                const newArg = Semantic.mul(
+                    [
+                        Semantic.neg(Semantic.number("1")),
+                        ...Semantic.getFactors(arg.arg),
+                    ] as TwoOrMore<Semantic.Expression>,
+                    true,
+                );
+                nodeSet.add(newArg);
+                changed = true;
+                return newArg;
+            }
+            return arg;
+        }) as TwoOrMore<Semantic.Expression>;
+
+        if (!changed) {
+            return;
+        }
+
+        const newPrev = Semantic.add(newArgs);
+
+        const result = checker.checkStep(newPrev, next, context);
+
         if (result) {
             return correctResult(
                 prev,
@@ -298,7 +348,6 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
             );
         }
     } else if (prev.type === "add") {
-        // TODO: iterate through all terms as check if any
         let changed = false;
         const newArgs = prev.args.map((arg) => {
             if (
