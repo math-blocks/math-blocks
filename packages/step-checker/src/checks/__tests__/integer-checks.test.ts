@@ -416,7 +416,7 @@ describe("Integer checks", () => {
             `(neg (add a b))`,
         );
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               (add a b))
         `);
@@ -425,16 +425,16 @@ describe("Integer checks", () => {
         );
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               (add a b))
         `);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
             (add
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 a)
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 b))
         `);
@@ -444,7 +444,7 @@ describe("Integer checks", () => {
         // or better yet, apply [2] and [3] to [1] to the next step at global
         // level.
         expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               a)
         `);
@@ -454,7 +454,7 @@ describe("Integer checks", () => {
         );
 
         expect(result.steps[3].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               b)
         `);
@@ -479,26 +479,26 @@ describe("Integer checks", () => {
         ]);
 
         expect(result.steps[0].nodes[0]).toParseLike("-a");
-        expect(result.steps[0].nodes[1]).toParseLike("-1 * a");
+        expect(result.steps[0].nodes[1]).toParseLike("-1a");
 
         expect(result.steps[1].nodes[0]).toParseLike("-b");
-        expect(result.steps[1].nodes[1]).toParseLike("-1 * b");
+        expect(result.steps[1].nodes[1]).toParseLike("-1b");
 
-        expect(result.steps[2].nodes[0]).toParseLike("-1*a + -1*b");
-        expect(result.steps[2].nodes[1]).toParseLike("-1*(a + b)");
+        expect(result.steps[2].nodes[0]).toParseLike("-1a + -1b");
+        expect(result.steps[2].nodes[1]).toParseLike("-1(a + b)");
 
-        expect(result.steps[3].nodes[0]).toParseLike("-1*(a + b)");
+        expect(result.steps[3].nodes[0]).toParseLike("-1(a + b)");
         expect(result.steps[3].nodes[1]).toParseLike("-(a + b)");
     });
 
-    it("-a + -b -> (-1)(a) + (-1)(b)", () => {
-        const result = checkStep("-a + -b", "(-1)(a) + (-1)(b)");
+    it("-a + -b -> -1a + -1b", () => {
+        const result = checkStep("-a + -b", "-1a + -1b");
 
         expect(result).toBeTruthy();
 
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg a)`);
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               a)
         `);
@@ -508,7 +508,7 @@ describe("Integer checks", () => {
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg b)`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               b)
         `);
@@ -551,7 +551,7 @@ describe("Integer checks", () => {
 
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg a)`);
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               a)
         `);
@@ -561,7 +561,7 @@ describe("Integer checks", () => {
 
         expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg b)`);
         expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
+            (mul.imp
               (neg 1)
               b)
         `);

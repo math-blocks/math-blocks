@@ -98,16 +98,6 @@ export const subIsNeg: Check = (prev, next, context) => {
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
             const neg = Semantic.neg(sub.arg);
-            // sub.arg.type === "mul"
-            //     ? Semantic.mul(
-            //           [
-            //               Semantic.neg(sub.arg.args[0]),
-            //               ...sub.arg.args.slice(1),
-            //           ] as TwoOrMore<Semantic.Expression>,
-            //           sub.arg.implicit,
-            //       )
-            //     : Semantic.neg(sub.arg);
-
             const newPrev = Semantic.addTerms([
                 ...prev.args.slice(0, index),
                 neg,
@@ -156,10 +146,13 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         // exclude -1 to avoid an infinite expansion
         !(prev.arg.type == "number" && prev.arg.value == "1")
     ) {
-        const newPrev = Semantic.mulFactors([
-            Semantic.neg(Semantic.number("1")),
-            ...Semantic.getFactors(prev.arg),
-        ]);
+        const newPrev = Semantic.mulFactors(
+            [
+                Semantic.neg(Semantic.number("1")),
+                ...Semantic.getFactors(prev.arg),
+            ],
+            true,
+        );
 
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
