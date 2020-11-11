@@ -218,6 +218,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 "negIsMulNegOne",
                 "subIsNeg",
                 "mulTwoNegsIsPos",
+                "moveNegInsideMul",
                 "moveNegToFirstFactor",
             ]),
             disallowedChecks: context.filters?.disallowedChecks,
@@ -227,6 +228,7 @@ export const checkDistribution: Check = (prev, next, context) => {
         // each of them.
         for (let i = 0; i < prev.args.length; i++) {
             const mul = prev.args[i];
+
             if (
                 mul.type === "mul" &&
                 mul.args.length === 2 &&
@@ -235,7 +237,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
                     ...(mul.args[1].args.map((arg) =>
-                        Semantic.mul([mul.args[0], arg]),
+                        Semantic.mul([mul.args[0], arg], mul.implicit),
                     ) as TwoOrMore<Semantic.Expression>),
                     ...prev.args.slice(i + 1),
                 ]);
@@ -259,7 +261,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 }
             } else if (
                 mul.type === "neg" &&
-                mul.subtraction &&
+                !mul.subtraction &&
                 mul.arg.type === "add"
             ) {
                 const newPrev = Semantic.addTerms([
@@ -309,7 +311,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                     // Set 'subtraction' prop to false
                     return Semantic.mul([prev.args[0], Semantic.neg(arg.arg)]);
                 } else {
-                    return Semantic.mul([prev.args[0], arg]);
+                    return Semantic.mul([prev.args[0], arg], prev.implicit);
                 }
             }) as TwoOrMore<Semantic.Expression>,
         );

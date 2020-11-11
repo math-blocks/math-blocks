@@ -97,16 +97,16 @@ export const subIsNeg: Check = (prev, next, context) => {
         // their result so that we can pick the shortest set of steps below.
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
-            const neg =
-                sub.arg.type === "mul"
-                    ? Semantic.mul(
-                          [
-                              Semantic.neg(sub.arg.args[0]),
-                              ...sub.arg.args.slice(1),
-                          ] as TwoOrMore<Semantic.Expression>,
-                          sub.arg.implicit,
-                      )
-                    : Semantic.neg(sub.arg);
+            const neg = Semantic.neg(sub.arg);
+            // sub.arg.type === "mul"
+            //     ? Semantic.mul(
+            //           [
+            //               Semantic.neg(sub.arg.args[0]),
+            //               ...sub.arg.args.slice(1),
+            //           ] as TwoOrMore<Semantic.Expression>,
+            //           sub.arg.implicit,
+            //       )
+            //     : Semantic.neg(sub.arg);
 
             const newPrev = Semantic.addTerms([
                 ...prev.args.slice(0, index),
@@ -277,3 +277,75 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 };
 
 moveNegToFirstFactor.symmetric = true;
+
+export const moveNegInsideMul: Check = (prev, next, context) => {
+    const {checker} = context;
+
+    if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
+        const mul = prev.arg;
+
+        const newPrev = Semantic.mul(
+            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
+                Semantic.Expression
+            >,
+            prev.arg.implicit,
+        );
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "move negation inside multiplication",
+                "move negation out of multiplication",
+            );
+        }
+    } else if (prev.type === "add") {
+        // TODO: iterate through all terms as check if any
+        let changed = false;
+        const newArgs = prev.args.map((arg) => {
+            if (
+                arg.type === "neg" &&
+                !arg.subtraction &&
+                arg.arg.type === "mul"
+            ) {
+                const mul = arg.arg;
+                const newArg = Semantic.mul(
+                    [
+                        Semantic.neg(mul.args[0]),
+                        ...mul.args.slice(1),
+                    ] as TwoOrMore<Semantic.Expression>,
+                    mul.implicit,
+                );
+                changed = true;
+                return newArg;
+            }
+            return arg;
+        }) as TwoOrMore<Semantic.Expression>;
+
+        if (!changed) {
+            return;
+        }
+
+        const newPrev = Semantic.add(newArgs);
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "move negation inside multiplication",
+                "move negation out of multiplication",
+            );
+        }
+    }
+};
+moveNegInsideMul.symmetric = true;

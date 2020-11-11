@@ -76,14 +76,13 @@ describe("Integer checks", () => {
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
+            "move negation inside multiplication",
         ]);
 
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
             (add
               a
-              (mul.imp
-                (neg b)
-                c))
+              (neg (mul.imp b c)))
         `);
     });
 
@@ -335,8 +334,15 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
+            "move negation out of multiplication",
             "subtracting is the same as adding the inverse",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("-xy");
+        expect(result.steps[0].nodes[1]).toParseLike("-(xy)");
+
+        expect(result.steps[1].nodes[0]).toParseLike("1 + -(xy)");
+        expect(result.steps[1].nodes[1]).toParseLike("1 - xy");
     });
 
     it("(x)(y)(-z) -> -xyz", () => {
@@ -369,6 +375,7 @@ describe("Integer checks", () => {
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "move negative to first factor",
+            "move negation out of multiplication",
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -459,7 +466,7 @@ describe("Integer checks", () => {
         expect(result.steps).toHaveLength(4);
     });
 
-    it("-a + -b -> -1a + -1b -> -1 * (a + b) -> -(a + b)", () => {
+    it("-a + -b -> -(a + b)", () => {
         const result = checkStep("-a + -b", "-(a + b)");
 
         expect(result).toBeTruthy();
@@ -484,8 +491,8 @@ describe("Integer checks", () => {
         expect(result.steps[3].nodes[1]).toParseLike("-(a + b)");
     });
 
-    it("-a + -b -> -1a + -1b", () => {
-        const result = checkStep("-a + -b", "-1a + -1b");
+    it("-a + -b -> (-1)(a) + (-1)(b)", () => {
+        const result = checkStep("-a + -b", "(-1)(a) + (-1)(b)");
 
         expect(result).toBeTruthy();
 
@@ -513,16 +520,17 @@ describe("Integer checks", () => {
     });
 
     it("-1a + -1b -> -1(a + b)", () => {
-        const result = checkStep("-1a + -1b", "-1(a + b)");
+        // 1 - 5x -> 1 + -(5x) -> 1 + -5x
+        const result = checkStep("(-1)(a) + (-1)(b)", "(-1)(a + b)");
 
         expect(result).toBeTruthy();
 
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 a)
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 b))
         `);
@@ -563,10 +571,10 @@ describe("Integer checks", () => {
 
         expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 a)
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 b))
         `);

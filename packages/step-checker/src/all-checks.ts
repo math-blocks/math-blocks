@@ -24,6 +24,7 @@ import {
     doubleNegative,
     negIsMulNegOne,
     moveNegToFirstFactor,
+    moveNegInsideMul,
 } from "./checks/integer-checks";
 import {
     divByFrac,
@@ -59,8 +60,6 @@ export const ALL_CHECKS = [
     commuteMultiplication, // should appear before mulOne
     addZero,
     mulOne,
-    checkDistribution,
-    // checkFactoring,
     mulByZero,
 
     // We do this after axiom checks so that we can include commute steps
@@ -79,10 +78,17 @@ export const ALL_CHECKS = [
     // integer checks
     addInverse,
     subIsNeg,
+
+    moveNegInsideMul, // this needs to come after subIsNeg
+
     mulTwoNegsIsPos,
     doubleNegative,
     negIsMulNegOne,
     moveNegToFirstFactor,
+
+    checkDistribution, // we put this to ensure simpler checks run first
+    // we could avoid having to order thing carefully bu running everything
+    // in parallel and picking the shortest path, but this would be very expensive
 
     // fraction checks
     // NOTE: these must appear after eval checks
