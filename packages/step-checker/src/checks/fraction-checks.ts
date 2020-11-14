@@ -218,6 +218,8 @@ export const divBySame: Check = (prev, next, context) => {
 
 divBySame.symmetric = true;
 
+// TODO: split this check into two checks.  This should help fix tests like
+// a * b * 1/a -> b while avoiding having to change mulOne.
 export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 

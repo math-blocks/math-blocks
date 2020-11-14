@@ -515,8 +515,8 @@ describe("Axiom checks", () => {
             expect(result.steps[0].nodes[0]).toParseLike("-2(x + y)");
             expect(result.steps[0].nodes[1]).toParseLike("-2x + -2y");
 
-            expect(result.steps[1].nodes[0]).toParseLike("-2y");
-            expect(result.steps[1].nodes[1]).toParseLike("-(2y)");
+            expect(result.steps[1].nodes[0]).toParseLike("-2x + -2y");
+            expect(result.steps[1].nodes[1]).toParseLike("-2x + -(2y)");
 
             expect(result.steps[2].nodes[0]).toParseLike("-2x + -(2y)");
             expect(result.steps[2].nodes[1]).toParseLike("-2x - 2y");
@@ -878,8 +878,8 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
-                "multiplication with identity",
                 "move negation inside multiplication",
+                "multiplication with identity",
                 "move negative to first factor",
                 "factoring",
             ]);
@@ -891,19 +891,19 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
-                "multiplication with identity",
                 "move negation inside multiplication",
+                "multiplication with identity",
                 "factoring",
             ]);
 
             expect(result.steps[0].nodes[0]).toParseLike("-a - ab");
             expect(result.steps[0].nodes[1]).toParseLike("-a + -(ab)");
 
-            expect(result.steps[1].nodes[0]).toParseLike("-a");
-            expect(result.steps[1].nodes[1]).toParseLike("(-a)(1)");
+            expect(result.steps[1].nodes[0]).toParseLike("-a + -(ab)");
+            expect(result.steps[1].nodes[1]).toParseLike("-a + (-a)(b)");
 
-            expect(result.steps[2].nodes[0]).toParseLike("-(ab)");
-            expect(result.steps[2].nodes[1]).toParseLike("(-a)(b)");
+            expect(result.steps[2].nodes[0]).toParseLike("-a");
+            expect(result.steps[2].nodes[1]).toParseLike("(-a)(1)");
 
             expect(result.steps[3].nodes[0]).toParseLike("(-a)(1) + (-a)(b)");
             expect(result.steps[3].nodes[1]).toParseLike("-a(1 + b)");
@@ -926,8 +926,8 @@ describe("Axiom checks", () => {
             expect(result.steps[1].nodes[0]).toParseLike("(-a)(1)");
             expect(result.steps[1].nodes[1]).toParseLike("-a");
 
-            expect(result.steps[2].nodes[0]).toParseLike("(-a)(b)");
-            expect(result.steps[2].nodes[1]).toParseLike("-(ab)");
+            expect(result.steps[2].nodes[0]).toParseLike("-a + (-a)(b)");
+            expect(result.steps[2].nodes[1]).toParseLike("-a + -(ab)");
 
             expect(result.steps[3].nodes[0]).toParseLike("-a + -(ab)");
             expect(result.steps[3].nodes[1]).toParseLike("-a - ab");
@@ -987,6 +987,8 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
+                "subtracting is the same as adding the inverse",
+                "adding inverse",
                 "multiplication by zero",
                 "addition with identity",
             ]);

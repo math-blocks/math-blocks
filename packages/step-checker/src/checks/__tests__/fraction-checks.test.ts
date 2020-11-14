@@ -156,6 +156,26 @@ describe("Fraction checks", () => {
         expect(result).toBeTruthy();
     });
 
+    // TODO: make this test pass
+    it.skip("a * b * 1/b -> a", () => {
+        const result = checkStep("a * b * 1/b", "a");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "division by the same value",
+        ]);
+    });
+
+    // TODO: make this test pass
+    it.skip("a * b * 1/a -> b", () => {
+        const result = checkStep("a * b * 1/a", "b");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "division by the same value",
+        ]);
+    });
+
     it("a * b/c -> ab / b", () => {
         const result = checkStep("a * b/c", "ab / c");
 
