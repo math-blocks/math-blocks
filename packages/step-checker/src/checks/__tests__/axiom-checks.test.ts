@@ -913,13 +913,24 @@ describe("Axiom checks", () => {
             const result = checkStep("-a(1 + b)", "-a - ab");
 
             expect(result).toBeTruthy();
-            // TODO: get rid of unnecessary steps
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
                 "multiplication with identity",
                 "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("-a(1 + b)");
+            expect(result.steps[0].nodes[1]).toParseLike("(-a)(1) + (-a)(b)");
+
+            expect(result.steps[1].nodes[0]).toParseLike("(-a)(1)");
+            expect(result.steps[1].nodes[1]).toParseLike("-a");
+
+            expect(result.steps[2].nodes[0]).toParseLike("(-a)(b)");
+            expect(result.steps[2].nodes[1]).toParseLike("-(ab)");
+
+            expect(result.steps[3].nodes[0]).toParseLike("-a + -(ab)");
+            expect(result.steps[3].nodes[1]).toParseLike("-a - ab");
         });
 
         it("2x + 3x -> (2 + 3)x", () => {
@@ -957,6 +968,27 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiplication by zero",
+            ]);
+        });
+
+        it("1 + 0a + 0b -> 1", () => {
+            const result = checkStep("1 + 0a + 0b", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplication by zero",
+                "multiplication by zero",
+                "addition with identity",
+            ]);
+        });
+
+        it("1 + (a - a)b -> 1", () => {
+            const result = checkStep("1 + (a - a)b", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplication by zero",
+                "addition with identity",
             ]);
         });
     });

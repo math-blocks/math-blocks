@@ -86,8 +86,14 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
+const subIsNegNodeSet = new WeakSet<Semantic.Expression>();
 export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
+
+    if (subIsNegNodeSet.has(prev) || subIsNegNodeSet.has(next)) {
+        return;
+    }
+
     const results: Result[] = [];
 
     if (prev.type === "add" && next.type === "add") {
@@ -98,6 +104,7 @@ export const subIsNeg: Check = (prev, next, context) => {
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
             const neg = Semantic.neg(sub.arg);
+            subIsNegNodeSet.add(neg);
             const newPrev = Semantic.addTerms([
                 ...prev.args.slice(0, index),
                 neg,
@@ -137,14 +144,12 @@ export const subIsNeg: Check = (prev, next, context) => {
 
 subIsNeg.symmetric = true;
 
-// TODO: Do the same thing with a nodeSet in other places where a check function
-// processes both individual nodes and nodes within an 'add' or 'mull' node.
-// TODO: have difference messages based on direction
-const nodeSet = new Set<Semantic.Expression>();
+// TODO: have different messages based on direction
+const negIsMulNegOneNodeSet = new WeakSet<Semantic.Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
 
-    if (nodeSet.has(prev) || nodeSet.has(next)) {
+    if (negIsMulNegOneNodeSet.has(prev) || negIsMulNegOneNodeSet.has(next)) {
         return;
     }
 
@@ -161,7 +166,6 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
             ],
             true,
         );
-        nodeSet.add(newPrev);
 
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
@@ -190,7 +194,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                     ] as TwoOrMore<Semantic.Expression>,
                     true,
                 );
-                nodeSet.add(newArg);
+                negIsMulNegOneNodeSet.add(newArg);
                 changed = true;
                 return newArg;
             }
@@ -318,11 +322,18 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
     return;
 };
-
 moveNegToFirstFactor.symmetric = true;
 
+const moveNegInsideMulNodeSet = new WeakSet<Semantic.Expression>();
 export const moveNegInsideMul: Check = (prev, next, context) => {
     const {checker} = context;
+
+    if (
+        moveNegInsideMulNodeSet.has(prev) ||
+        moveNegInsideMulNodeSet.has(next)
+    ) {
+        return;
+    }
 
     if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
         const mul = prev.arg;
@@ -363,6 +374,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                     ] as TwoOrMore<Semantic.Expression>,
                     mul.implicit,
                 );
+                moveNegInsideMulNodeSet.add(newArg);
                 changed = true;
                 return newArg;
             }

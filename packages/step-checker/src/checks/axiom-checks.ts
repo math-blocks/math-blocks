@@ -335,7 +335,10 @@ export const checkDistribution: Check = (prev, next, context) => {
 
 checkDistribution.symmetric = true;
 
+// TODO: copy what addZero does
 export const mulByZero: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (prev.type !== "mul") {
         return;
     }
@@ -343,10 +346,10 @@ export const mulByZero: Check = (prev, next, context) => {
     // TODO: ensure that steps from these calls to checkStep
     // are captured.
     const hasZero = prev.args.some((arg) =>
-        context.checker.checkStep(arg, Semantic.number("0"), context),
+        checker.checkStep(arg, Semantic.number("0"), context),
     );
     const newPrev = Semantic.number("0");
-    const result = context.checker.checkStep(newPrev, next, context);
+    const result = checker.checkStep(newPrev, next, context);
 
     if (hasZero && result) {
         return correctResult(

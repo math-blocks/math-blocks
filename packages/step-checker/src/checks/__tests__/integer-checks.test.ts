@@ -415,7 +415,7 @@ describe("Integer checks", () => {
             "negation is the same as multipling by negative one",
             "distribution",
             "negation is the same as multipling by negative one",
-            "negation is the same as multipling by negative one",
+            // "negation is the same as multipling by negative one",
         ]);
 
         expect(result.steps[0].nodes[0]).toParseLike("-(a + b)");
@@ -424,11 +424,23 @@ describe("Integer checks", () => {
         expect(result.steps[1].nodes[0]).toParseLike("-1(a + b)");
         expect(result.steps[1].nodes[1]).toParseLike("-1a + -1b");
 
-        expect(result.steps[2].nodes[0]).toParseLike("-1a");
-        expect(result.steps[2].nodes[1]).toParseLike("-a");
+        expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
+            (add
+              (mul.imp
+                (neg 1)
+                a)
+              (mul.imp
+                (neg 1)
+                b))
+        `);
+        expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
+            (add
+              (neg a)
+              (neg b))
+        `);
 
-        expect(result.steps[3].nodes[0]).toParseLike("-1b");
-        expect(result.steps[3].nodes[1]).toParseLike("-b");
+        // expect(result.steps[3].nodes[0]).toParseLike("-1b");
+        // expect(result.steps[3].nodes[1]).toParseLike("-b");
     });
 
     it("-a + -b -> -(a + b)", () => {
