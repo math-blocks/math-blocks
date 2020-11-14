@@ -76,14 +76,13 @@ describe("Integer checks", () => {
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "subtracting is the same as adding the inverse",
+            "move negation inside multiplication",
         ]);
 
         expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
             (add
               a
-              (mul.imp
-                (neg b)
-                c))
+              (neg (mul.imp b c)))
         `);
     });
 
@@ -335,8 +334,15 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
+            "move negation out of multiplication",
             "subtracting is the same as adding the inverse",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("-xy");
+        expect(result.steps[0].nodes[1]).toParseLike("-(xy)");
+
+        expect(result.steps[1].nodes[0]).toParseLike("1 + -(xy)");
+        expect(result.steps[1].nodes[1]).toParseLike("1 - xy");
     });
 
     it("(x)(y)(-z) -> -xyz", () => {
@@ -369,6 +375,7 @@ describe("Integer checks", () => {
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
             "move negative to first factor",
+            "move negation out of multiplication",
             "subtracting is the same as adding the inverse",
         ]);
     });
@@ -404,179 +411,56 @@ describe("Integer checks", () => {
         const result = checkStep("-(a + b)", "-a + -b");
 
         expect(result).toBeTruthy();
-
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(
-            `(neg (add a b))`,
-        );
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[0].message).toEqual(
+        expect(result.steps.map((step) => step.message)).toEqual([
             "negation is the same as multipling by negative one",
-        );
+            "distribution",
+            "negation is the same as multipling by negative one",
+            // "negation is the same as multipling by negative one",
+        ]);
 
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
+        expect(result.steps[0].nodes[0]).toParseLike("-(a + b)");
+        expect(result.steps[0].nodes[1]).toParseLike("-1(a + b)");
+
+        expect(result.steps[1].nodes[0]).toParseLike("-1(a + b)");
+        expect(result.steps[1].nodes[1]).toParseLike("-1a + -1b");
+
+        expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
             (add
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 a)
-              (mul.exp
+              (mul.imp
                 (neg 1)
                 b))
         `);
-        expect(result.steps[1].message).toEqual("distribution");
-
-        // TODO: make reasons[2] and reasons[3] be sub-steps for reasons[1]
-        // or better yet, apply [2] and [3] to [1] to the next step at global
-        // level.
-        expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              a)
+        expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
+            (add
+              (neg a)
+              (neg b))
         `);
-        expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`(neg a)`);
-        expect(result.steps[2].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
 
-        expect(result.steps[3].nodes[0]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              b)
-        `);
-        expect(result.steps[3].nodes[1]).toMatchInlineSnapshot(`(neg b)`);
-        expect(result.steps[3].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps).toHaveLength(4);
+        // expect(result.steps[3].nodes[0]).toParseLike("-1b");
+        // expect(result.steps[3].nodes[1]).toParseLike("-b");
     });
 
-    it("-a + -b -> -1a + -1b -> -1 * (a + b) -> -(a + b)", () => {
+    it("-a + -b -> -(a + b)", () => {
         const result = checkStep("-a + -b", "-(a + b)");
 
         expect(result).toBeTruthy();
 
         expect(result.steps.map((step) => step.message)).toEqual([
             "negation is the same as multipling by negative one",
-            "negation is the same as multipling by negative one",
             "factoring",
             "negation is the same as multipling by negative one",
         ]);
 
-        expect(result.steps[0].nodes[0]).toParseLike("-a");
-        expect(result.steps[0].nodes[1]).toParseLike("-1 * a");
+        expect(result.steps[0].nodes[0]).toParseLike("-a + -b");
+        expect(result.steps[0].nodes[1]).toParseLike("-1a + -1b");
 
-        expect(result.steps[1].nodes[0]).toParseLike("-b");
-        expect(result.steps[1].nodes[1]).toParseLike("-1 * b");
+        expect(result.steps[1].nodes[0]).toParseLike("-1a + -1b");
+        expect(result.steps[1].nodes[1]).toParseLike("-1(a + b)");
 
-        expect(result.steps[2].nodes[0]).toParseLike("-1*a + -1*b");
-        expect(result.steps[2].nodes[1]).toParseLike("-1*(a + b)");
-
-        expect(result.steps[3].nodes[0]).toParseLike("-1*(a + b)");
-        expect(result.steps[3].nodes[1]).toParseLike("-(a + b)");
-    });
-
-    it("-a + -b -> -1a + -1b", () => {
-        const result = checkStep("-a + -b", "-1a + -1b");
-
-        expect(result).toBeTruthy();
-
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg a)`);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              a)
-        `);
-        expect(result.steps[0].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg b)`);
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              b)
-        `);
-        expect(result.steps[1].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps).toHaveLength(2);
-    });
-
-    it("-1a + -1b -> -1(a + b)", () => {
-        const result = checkStep("-1a + -1b", "-1(a + b)");
-
-        expect(result).toBeTruthy();
-
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
-            (add
-              (mul.exp
-                (neg 1)
-                a)
-              (mul.exp
-                (neg 1)
-                b))
-        `);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.imp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[0].message).toEqual("factoring");
-
-        expect(result.steps).toHaveLength(1);
-    });
-
-    it("-a + -b -> -1a + -1b -> -1(a + b)", () => {
-        const result = checkStep("-a + -b", "-1(a + b)");
-
-        expect(result).toBeTruthy();
-
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`(neg a)`);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              a)
-        `);
-        expect(result.steps[0].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`(neg b)`);
-        expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
-            (mul.exp
-              (neg 1)
-              b)
-        `);
-        expect(result.steps[1].message).toEqual(
-            "negation is the same as multipling by negative one",
-        );
-
-        expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
-            (add
-              (mul.exp
-                (neg 1)
-                a)
-              (mul.exp
-                (neg 1)
-                b))
-        `);
-        expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
-            (mul.imp
-              (neg 1)
-              (add a b))
-        `);
-        expect(result.steps[2].message).toEqual("factoring");
-
-        expect(result.steps).toHaveLength(3);
+        expect(result.steps[2].nodes[0]).toParseLike("-1(a + b)");
+        expect(result.steps[2].nodes[1]).toParseLike("-(a + b)");
     });
 });

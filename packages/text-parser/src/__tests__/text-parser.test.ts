@@ -97,6 +97,16 @@ describe("TextParser", () => {
         `);
     });
 
+    it("negation is higher precedence than explicit multplication", () => {
+        const ast = parse("-a * b");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.exp
+              (neg a)
+              b)
+        `);
+    });
+
     it("negation can be on individual factors when wrapped in parens", () => {
         const ast = parse("(-a)(b)");
 

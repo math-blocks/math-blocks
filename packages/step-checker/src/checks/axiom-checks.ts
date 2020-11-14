@@ -102,6 +102,10 @@ export const addZero: Check = (prev, next, context) => {
 addZero.symmetric = true;
 
 export const mulOne: Check = (prev, next, context) => {
+    // This check prunes a lot of paths... we could try multiplying by "1" as
+    // long as prev.
+    // This is going in the direction of (a)(1) -> a
+    // so if we have -a we can go from (-a)(1) -> a
     if (next.type !== "mul") {
         return;
     }
@@ -218,6 +222,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 "negIsMulNegOne",
                 "subIsNeg",
                 "mulTwoNegsIsPos",
+                "moveNegInsideMul",
                 "moveNegToFirstFactor",
             ]),
             disallowedChecks: context.filters?.disallowedChecks,
@@ -227,6 +232,7 @@ export const checkDistribution: Check = (prev, next, context) => {
         // each of them.
         for (let i = 0; i < prev.args.length; i++) {
             const mul = prev.args[i];
+
             if (
                 mul.type === "mul" &&
                 mul.args.length === 2 &&
@@ -235,7 +241,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
                     ...(mul.args[1].args.map((arg) =>
-                        Semantic.mul([mul.args[0], arg]),
+                        Semantic.mul([mul.args[0], arg], mul.implicit),
                     ) as TwoOrMore<Semantic.Expression>),
                     ...prev.args.slice(i + 1),
                 ]);
@@ -255,30 +261,6 @@ export const checkDistribution: Check = (prev, next, context) => {
                             "distribution",
                             "factoring",
                         ),
-                    );
-                }
-            } else if (
-                mul.type === "neg" &&
-                mul.subtraction &&
-                mul.arg.type === "add"
-            ) {
-                const newPrev = Semantic.addTerms([
-                    ...prev.args.slice(0, i),
-                    Semantic.mul([Semantic.neg(Semantic.number("1")), mul.arg]),
-                    ...prev.args.slice(i + 1),
-                ]);
-                const result = context.checker.checkStep(newPrev, next, {
-                    ...context,
-                    filters,
-                });
-                if (result) {
-                    return correctResult(
-                        prev,
-                        newPrev,
-                        context.reversed,
-                        [],
-                        result.steps,
-                        "subtraction is the same as multiplying by negative one",
                     );
                 }
             }
@@ -309,7 +291,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                     // Set 'subtraction' prop to false
                     return Semantic.mul([prev.args[0], Semantic.neg(arg.arg)]);
                 } else {
-                    return Semantic.mul([prev.args[0], arg]);
+                    return Semantic.mul([prev.args[0], arg], prev.implicit);
                 }
             }) as TwoOrMore<Semantic.Expression>,
         );
@@ -353,7 +335,10 @@ export const checkDistribution: Check = (prev, next, context) => {
 
 checkDistribution.symmetric = true;
 
+// TODO: copy what addZero does
 export const mulByZero: Check = (prev, next, context) => {
+    const {checker} = context;
+
     if (prev.type !== "mul") {
         return;
     }
@@ -361,10 +346,10 @@ export const mulByZero: Check = (prev, next, context) => {
     // TODO: ensure that steps from these calls to checkStep
     // are captured.
     const hasZero = prev.args.some((arg) =>
-        context.checker.checkStep(arg, Semantic.number("0"), context),
+        checker.checkStep(arg, Semantic.number("0"), context),
     );
     const newPrev = Semantic.number("0");
-    const result = context.checker.checkStep(newPrev, next, context);
+    const result = checker.checkStep(newPrev, next, context);
 
     if (hasZero && result) {
         return correctResult(

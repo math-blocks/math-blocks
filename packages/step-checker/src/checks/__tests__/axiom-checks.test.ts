@@ -508,8 +508,18 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("-2(x + y)");
+            expect(result.steps[0].nodes[1]).toParseLike("-2x + -2y");
+
+            expect(result.steps[1].nodes[0]).toParseLike("-2y");
+            expect(result.steps[1].nodes[1]).toParseLike("-(2y)");
+
+            expect(result.steps[2].nodes[0]).toParseLike("-2x + -(2y)");
+            expect(result.steps[2].nodes[1]).toParseLike("-2x - 2y");
         });
 
         it("1 + 2(x + y) -> 1 + 2x + 2y", () => {
@@ -527,7 +537,9 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
+                "move negation inside multiplication",
                 "distribution",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
             ]);
@@ -537,15 +549,38 @@ describe("Axiom checks", () => {
             const result = checkStep("1 - 2(x + y)", "1 + -2(x + y)");
 
             expect(result).toBeTruthy();
-            // TODO: figure out why we don't stop after the first step
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
-                "distribution",
-                "factoring",
+                "move negation inside multiplication",
             ]);
 
             expect(result.steps[0].nodes[0]).toParseLike("1 - 2(x + y)");
-            expect(result.steps[0].nodes[1]).toParseLike("1 + -2(x + y)");
+            expect(result.steps[0].nodes[1]).toParseLike("1 + -(2(x + y))");
+
+            expect(result.steps[1].nodes[0]).toParseLike("-(2(x + y))");
+            expect(result.steps[1].nodes[1]).toParseLike("-2(x + y)");
+        });
+
+        it("1 + (-2)(x + y) -> 1 + -2x + -2y", () => {
+            const result = checkStep("1 + -2(x + y)", "1 + -2x + -2y");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("1 + -2(x + y)");
+            expect(result.steps[0].nodes[1]).toParseLike("1 + -2x + -2y");
+        });
+
+        it("1 + -2(x + y) -> 1 + -2x + -2y", () => {
+            const result = checkStep("1 + -2(x + y)", "1 + -2x + -2y");
+
+            expect(result).toBeTruthy();
+
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+            ]);
         });
 
         it("1 - (x + y) -> 1 - x - y", () => {
@@ -553,9 +588,9 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "subtraction is the same as multiplying by negative one",
-                "distribution",
+                "subtracting is the same as adding the inverse",
                 "negation is the same as multipling by negative one",
+                "distribution",
                 "negation is the same as multipling by negative one",
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
@@ -578,6 +613,7 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
                 "move negative to first factor",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
         });
@@ -588,6 +624,7 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "move negative to first factor",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
         });
@@ -608,8 +645,10 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
+                "move negation inside multiplication",
                 "distribution",
                 "multiplying two negatives is a positive",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
         });
@@ -620,8 +659,10 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
+                "move negation inside multiplication",
                 "distribution",
                 "multiplying two negatives is a positive",
+                "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
         });
@@ -635,13 +676,11 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                "subtraction is the same as multiplying by negative one",
-                "subtraction is the same as multiplying by negative one",
+                "subtracting is the same as adding the inverse",
+                "subtracting is the same as adding the inverse",
+                "negation is the same as multipling by negative one",
                 "distribution",
                 "distribution",
-                "negation is the same as multipling by negative one",
-                "negation is the same as multipling by negative one",
-                "negation is the same as multipling by negative one",
                 "negation is the same as multipling by negative one",
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
@@ -654,29 +693,38 @@ describe("Axiom checks", () => {
                 "1 - (x + y) - (a + b)",
             );
             expect(result.steps[0].nodes[1]).toParseLike(
-                "1 + -1*(x + y) - (a + b)",
+                "1 + -(x + y) - (a + b)",
             );
 
             expect(result.steps[1].nodes[0]).toParseLike(
-                "1 + -1*(x + y) - (a + b)",
+                "1 + -(x + y) - (a + b)",
             );
             expect(result.steps[1].nodes[1]).toParseLike(
-                "1 + -1*(x + y) + -1*(a + b)",
+                "1 + -(x + y) + -(a + b)",
             );
 
             expect(result.steps[2].nodes[0]).toParseLike(
-                "1 + -1*(x + y) + -1*(a + b)",
+                "1 + -(x + y) + -(a + b)",
             );
             expect(result.steps[2].nodes[1]).toParseLike(
-                "1 + -1*x + -1*y + -1*(a + b)",
+                "1 + -1(x + y) + -1(a + b)",
             );
 
             expect(result.steps[3].nodes[0]).toParseLike(
-                "1 + -1*x + -1*y + -1*(a + b)",
+                "1 + -1(x + y) + -1(a + b)",
             );
             expect(result.steps[3].nodes[1]).toParseLike(
-                "1 + -1*x + -1*y + -1*a + -1*b",
+                "1 + -1x + -1y + -1(a + b)",
             );
+
+            expect(result.steps[4].nodes[0]).toParseLike(
+                "1 + -1x + -1y + -1(a + b)",
+            );
+            expect(result.steps[4].nodes[1]).toParseLike(
+                "1 + -1x + -1y + -1a + -1b",
+            );
+
+            // TODO: finish writing this test
         });
 
         // TODO: make this test pass
@@ -726,8 +774,6 @@ describe("Axiom checks", () => {
             // TODO: make distribution parallel and pick the shortest path
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
-                "distribution",
-                "factoring",
             ]);
         });
 
@@ -822,6 +868,7 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
                 "multiplication with identity",
+                "move negation inside multiplication",
             ]);
         });
 
@@ -832,6 +879,7 @@ describe("Axiom checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
                 "multiplication with identity",
+                "move negation inside multiplication",
                 "move negative to first factor",
                 "factoring",
             ]);
@@ -843,9 +891,46 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "subtracting is the same as adding the inverse",
-                "multiplication with identity", // -a -> (-a)(1)
+                "multiplication with identity",
+                "move negation inside multiplication",
                 "factoring",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("-a - ab");
+            expect(result.steps[0].nodes[1]).toParseLike("-a + -(ab)");
+
+            expect(result.steps[1].nodes[0]).toParseLike("-a");
+            expect(result.steps[1].nodes[1]).toParseLike("(-a)(1)");
+
+            expect(result.steps[2].nodes[0]).toParseLike("-(ab)");
+            expect(result.steps[2].nodes[1]).toParseLike("(-a)(b)");
+
+            expect(result.steps[3].nodes[0]).toParseLike("(-a)(1) + (-a)(b)");
+            expect(result.steps[3].nodes[1]).toParseLike("-a(1 + b)");
+        });
+
+        it("-a(1 + b) -> -a - ab", () => {
+            const result = checkStep("-a(1 + b)", "-a - ab");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "multiplication with identity",
+                "move negation out of multiplication",
+                "subtracting is the same as adding the inverse",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("-a(1 + b)");
+            expect(result.steps[0].nodes[1]).toParseLike("(-a)(1) + (-a)(b)");
+
+            expect(result.steps[1].nodes[0]).toParseLike("(-a)(1)");
+            expect(result.steps[1].nodes[1]).toParseLike("-a");
+
+            expect(result.steps[2].nodes[0]).toParseLike("(-a)(b)");
+            expect(result.steps[2].nodes[1]).toParseLike("-(ab)");
+
+            expect(result.steps[3].nodes[0]).toParseLike("-a + -(ab)");
+            expect(result.steps[3].nodes[1]).toParseLike("-a - ab");
         });
 
         it("2x + 3x -> (2 + 3)x", () => {
@@ -883,6 +968,27 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "multiplication by zero",
+            ]);
+        });
+
+        it("1 + 0a + 0b -> 1", () => {
+            const result = checkStep("1 + 0a + 0b", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplication by zero",
+                "multiplication by zero",
+                "addition with identity",
+            ]);
+        });
+
+        it("1 + (a - a)b -> 1", () => {
+            const result = checkStep("1 + (a - a)b", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplication by zero",
+                "addition with identity",
             ]);
         });
     });

@@ -86,8 +86,14 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
+const subIsNegNodeSet = new WeakSet<Semantic.Expression>();
 export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
+
+    if (subIsNegNodeSet.has(prev) || subIsNegNodeSet.has(next)) {
+        return;
+    }
+
     const results: Result[] = [];
 
     if (prev.type === "add" && next.type === "add") {
@@ -97,17 +103,8 @@ export const subIsNeg: Check = (prev, next, context) => {
         // their result so that we can pick the shortest set of steps below.
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
-            const neg =
-                sub.arg.type === "mul"
-                    ? Semantic.mul(
-                          [
-                              Semantic.neg(sub.arg.args[0]),
-                              ...sub.arg.args.slice(1),
-                          ] as TwoOrMore<Semantic.Expression>,
-                          sub.arg.implicit,
-                      )
-                    : Semantic.neg(sub.arg);
-
+            const neg = Semantic.neg(sub.arg);
+            subIsNegNodeSet.add(neg);
             const newPrev = Semantic.addTerms([
                 ...prev.args.slice(0, index),
                 neg,
@@ -147,8 +144,14 @@ export const subIsNeg: Check = (prev, next, context) => {
 
 subIsNeg.symmetric = true;
 
+// TODO: have different messages based on direction
+const negIsMulNegOneNodeSet = new WeakSet<Semantic.Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
+
+    if (negIsMulNegOneNodeSet.has(prev) || negIsMulNegOneNodeSet.has(next)) {
+        return;
+    }
 
     if (
         prev.type === "neg" &&
@@ -156,12 +159,56 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         // exclude -1 to avoid an infinite expansion
         !(prev.arg.type == "number" && prev.arg.value == "1")
     ) {
-        const newPrev = Semantic.mulFactors([
-            Semantic.neg(Semantic.number("1")),
-            ...Semantic.getFactors(prev.arg),
-        ]);
+        const newPrev = Semantic.mulFactors(
+            [
+                Semantic.neg(Semantic.number("1")),
+                ...Semantic.getFactors(prev.arg),
+            ],
+            true,
+        );
 
         const result = checker.checkStep(newPrev, next, context);
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "negation is the same as multipling by negative one",
+            );
+        }
+    } else if (prev.type === "add") {
+        let changed = false;
+        const newArgs = prev.args.map((arg) => {
+            if (
+                arg.type === "neg" &&
+                !arg.subtraction &&
+                // exclude -1 to avoid an infinite expansion
+                !(arg.arg.type == "number" && arg.arg.value == "1")
+            ) {
+                const newArg = Semantic.mul(
+                    [
+                        Semantic.neg(Semantic.number("1")),
+                        ...Semantic.getFactors(arg.arg),
+                    ] as TwoOrMore<Semantic.Expression>,
+                    true,
+                );
+                negIsMulNegOneNodeSet.add(newArg);
+                changed = true;
+                return newArg;
+            }
+            return arg;
+        }) as TwoOrMore<Semantic.Expression>;
+
+        if (!changed) {
+            return;
+        }
+
+        const newPrev = Semantic.add(newArgs);
+
+        const result = checker.checkStep(newPrev, next, context);
+
         if (result) {
             return correctResult(
                 prev,
@@ -275,5 +322,84 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
     return;
 };
-
 moveNegToFirstFactor.symmetric = true;
+
+const moveNegInsideMulNodeSet = new WeakSet<Semantic.Expression>();
+export const moveNegInsideMul: Check = (prev, next, context) => {
+    const {checker} = context;
+
+    if (
+        moveNegInsideMulNodeSet.has(prev) ||
+        moveNegInsideMulNodeSet.has(next)
+    ) {
+        return;
+    }
+
+    if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
+        const mul = prev.arg;
+
+        const newPrev = Semantic.mul(
+            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
+                Semantic.Expression
+            >,
+            prev.arg.implicit,
+        );
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "move negation inside multiplication",
+                "move negation out of multiplication",
+            );
+        }
+    } else if (prev.type === "add") {
+        let changed = false;
+        const newArgs = prev.args.map((arg) => {
+            if (
+                arg.type === "neg" &&
+                !arg.subtraction &&
+                arg.arg.type === "mul"
+            ) {
+                const mul = arg.arg;
+                const newArg = Semantic.mul(
+                    [
+                        Semantic.neg(mul.args[0]),
+                        ...mul.args.slice(1),
+                    ] as TwoOrMore<Semantic.Expression>,
+                    mul.implicit,
+                );
+                moveNegInsideMulNodeSet.add(newArg);
+                changed = true;
+                return newArg;
+            }
+            return arg;
+        }) as TwoOrMore<Semantic.Expression>;
+
+        if (!changed) {
+            return;
+        }
+
+        const newPrev = Semantic.add(newArgs);
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "move negation inside multiplication",
+                "move negation out of multiplication",
+            );
+        }
+    }
+};
+moveNegInsideMul.symmetric = true;
