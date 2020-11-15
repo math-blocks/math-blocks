@@ -106,6 +106,7 @@ export const mulOne: Check = (prev, next, context) => {
     // long as prev.
     // This is going in the direction of (a)(1) -> a
     // so if we have -a we can go from (-a)(1) -> a
+    // TODO: figure out how we can drop this without running into recursion limits
     if (next.type !== "mul") {
         return;
     }
@@ -133,7 +134,7 @@ export const mulOne: Check = (prev, next, context) => {
         if (result) {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
-            // expressions with multiple identities, e.g. a + 0 + b + 0
+            // expressions with multiple identities, e.g. a * 1 * b * 1
             return identity;
         } else {
             nonIdentityArgs.push(arg);
@@ -335,7 +336,6 @@ export const checkDistribution: Check = (prev, next, context) => {
 
 checkDistribution.symmetric = true;
 
-// TODO: copy what addZero does
 export const mulByZero: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -343,11 +343,17 @@ export const mulByZero: Check = (prev, next, context) => {
         return;
     }
 
-    // TODO: ensure that steps from these calls to checkStep
-    // are captured.
-    const hasZero = prev.args.some((arg) =>
-        checker.checkStep(arg, Semantic.number("0"), context),
-    );
+    const identitySteps: Step[] = [];
+
+    // It's sufficient to find only one zero since mutliplying one zero is
+    // enough to turn the whole product to zero.
+    const hasZero = prev.args.some((arg) => {
+        const result = checker.checkStep(arg, Semantic.number("0"), context);
+        if (result) {
+            identitySteps.push(...result.steps);
+            return result;
+        }
+    });
     const newPrev = Semantic.number("0");
     const result = checker.checkStep(newPrev, next, context);
 
@@ -356,7 +362,7 @@ export const mulByZero: Check = (prev, next, context) => {
             prev,
             newPrev,
             context.reversed,
-            [],
+            identitySteps,
             result.steps,
             "multiplication by zero",
         );

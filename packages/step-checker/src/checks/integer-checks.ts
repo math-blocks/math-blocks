@@ -1,8 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check} from "../types";
+import {Result, Check, Step} from "../types";
 import {correctResult} from "./util";
 
+function notNull<T>(x: T | null): x is T {
+    return x !== null;
+}
+
+// a + -a -> 0
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -10,8 +15,9 @@ export const addInverse: Check = (prev, next, context) => {
         return;
     }
 
-    const indicesToRemove = new Set();
+    const indicesToRemove: number[] = [];
     const terms = Semantic.getTerms(prev);
+    const beforeSteps: Step[] = [];
 
     // TODO: extract this code into a helper so that we can test it better
     for (let i = 0; i < terms.length; i++) {
@@ -21,28 +27,41 @@ export const addInverse: Check = (prev, next, context) => {
             }
             const a = terms[i];
             const b = terms[j];
-            // TODO: add a sub-step in the subtraction case
-            if (Semantic.isNegative(b) || Semantic.isSubtraction(b)) {
+            if (Semantic.isNegative(b)) {
                 const result = checker.checkStep(a, b.arg, context);
                 if (
                     result &&
                     // Avoid removing a term that matches a term that's
                     // already been removed.
-                    (!indicesToRemove.has(j) || !indicesToRemove.has(j))
+                    !indicesToRemove.includes(i) &&
+                    !indicesToRemove.includes(j)
                 ) {
-                    // TODO: capture the reasons and include them down below
-                    indicesToRemove.add(i);
-                    indicesToRemove.add(j);
+                    indicesToRemove.push(i);
+                    indicesToRemove.push(j);
+                    beforeSteps.push(...result.steps);
                 }
             }
         }
     }
-    if (indicesToRemove.size > 0) {
+    // TODO: introduce a commutative step so that the pairs of terms being
+    // removed are beside each other.
+
+    // We convert every even indexed one to zero and remove every odd indexed one.
+    if (indicesToRemove.length > 0) {
         const newPrev = Semantic.addTerms(
-            terms.filter(
-                (term: Semantic.Expression, index: number) =>
-                    !indicesToRemove.has(index),
-            ),
+            terms
+                .map((term: Semantic.Expression, index: number) => {
+                    if (indicesToRemove.includes(index)) {
+                        if (indicesToRemove.indexOf(index) % 2 === 0) {
+                            return Semantic.number("0");
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        return term;
+                    }
+                })
+                .filter(notNull),
         );
         const result = checker.checkStep(newPrev, next, context);
 
@@ -51,7 +70,7 @@ export const addInverse: Check = (prev, next, context) => {
                 prev,
                 newPrev,
                 context.reversed,
-                [],
+                beforeSteps,
                 result.steps,
                 "adding inverse",
             );
@@ -60,7 +79,6 @@ export const addInverse: Check = (prev, next, context) => {
 
     return;
 };
-
 addInverse.symmetric = true;
 
 export const doubleNegative: Check = (prev, next, context) => {
@@ -96,7 +114,7 @@ export const subIsNeg: Check = (prev, next, context) => {
 
     const results: Result[] = [];
 
-    if (prev.type === "add" && next.type === "add") {
+    if (prev.type === "add") {
         const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
 
         // We iterate through all args that are subtraction and compute

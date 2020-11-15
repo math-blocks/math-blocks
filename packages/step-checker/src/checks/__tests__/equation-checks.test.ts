@@ -90,27 +90,32 @@ describe("Equation checks", () => {
         it("x + 5 - 5 = y + 5 + 5 - 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 - 5 = y + 5 + 5 - 5", "x = y + 5");
 
-            expect(result).toBeTruthy();
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
-                (add
-                  x
-                  5
-                  (neg.sub 5))
-            `);
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`x`);
-            expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
-                (add
-                  y
-                  5
-                  5
-                  (neg.sub 5))
-            `);
-            expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`(add y 5)`);
-
             expect(result.steps.map((step) => step.message)).toEqual([
+                "subtracting is the same as adding the inverse",
                 "adding inverse",
+                "addition with identity",
+                "subtracting is the same as adding the inverse",
                 "adding inverse",
+                "addition with identity",
             ]);
+
+            expect(result).toBeTruthy();
+            expect(result.steps[0].nodes[0]).toParseLike("x + 5 - 5");
+            expect(result.steps[0].nodes[1]).toParseLike("x + 5 + -5");
+
+            expect(result.steps[1].nodes[0]).toParseLike("x + 5 + -5");
+            expect(result.steps[1].nodes[1]).toParseLike("x + 0");
+
+            expect(result.steps[2].nodes[0]).toParseLike("x + 0");
+            expect(result.steps[2].nodes[1]).toParseLike("x");
+
+            expect(result.steps[3].nodes[0]).toParseLike("y + 5 + 5 - 5");
+            expect(result.steps[3].nodes[1]).toParseLike("y + 5 + 5 + -5");
+
+            // TODO: figure out how to get addInverse to match the last two
+            // terms instead of the 2nd and the 4th.
+            expect(result.steps[4].nodes[0]).toParseLike("y + 5 + 5 + -5");
+            expect(result.steps[4].nodes[1]).toParseLike("y + 0 + 5");
         });
 
         it("x = y -> 5 + x = y + 5", () => {
