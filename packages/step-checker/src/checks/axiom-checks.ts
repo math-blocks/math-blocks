@@ -35,8 +35,10 @@ export const addZero: Check = (prev, next, context) => {
         if (result) {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
-            // expressions with multiple identities, e.g. a + 0 + b + 0
-            return identity;
+            // expressions with multiple identities, e.g. a + 0 + b + 0.
+            // We create a new number("0") each time so that we can differentiate
+            // each instance.
+            return Semantic.number("0");
         } else {
             nonIdentityArgs.push(arg);
             return arg;
@@ -135,7 +137,9 @@ export const mulOne: Check = (prev, next, context) => {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
             // expressions with multiple identities, e.g. a * 1 * b * 1
-            return identity;
+            // We create a new number("1") each time so that we can differentiate
+            // each instance.
+            return Semantic.number("1");
         } else {
             nonIdentityArgs.push(arg);
             return arg;
