@@ -30,8 +30,8 @@ export const Editable: React.SFC<{}> = () => {
     return (
         <MathEditor
             readonly={false}
-            value={math}
-            focus={false}
+            rows={[math]}
+            focus={true}
             onChange={action("onChange")}
             onSubmit={action("onSubmit")}
         />
@@ -50,5 +50,5 @@ export const Readonly: React.SFC<{}> = () => {
         glyph("0"),
     ]);
 
-    return <MathEditor readonly={true} value={math} focus={false} />;
+    return <MathEditor readonly={true} rows={[math]} focus={false} />;
 };
