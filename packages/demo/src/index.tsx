@@ -4,7 +4,6 @@ import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
 
 import StepCheckerPage from "./step-checker-page";
 import EditorPage from "./editor-page";
-import MathRendererPage from "./math-renderer-page";
 import HandwritingPage from "./handwriting-page";
 
 const container = document.createElement("div");
@@ -21,9 +20,6 @@ ReactDOM.render(
             </Route>
             <Route path="/editor">
                 <EditorPage />
-            </Route>
-            <Route path="/math-renderer">
-                <MathRendererPage />
             </Route>
             <Route path="/handwriting">
                 <HandwritingPage />
