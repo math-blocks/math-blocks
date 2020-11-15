@@ -1,8 +1,9 @@
 {
   "files": [],
   "references": [
+    {"path": "./demo"},
+    {"path": "./stories"},
     {"path": "./packages/core"},
-    {"path": "./packages/demo"},
     {"path": "./packages/editor"},
     {"path": "./packages/editor-parser"},
     {"path": "./packages/metrics"},
