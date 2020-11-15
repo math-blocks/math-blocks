@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {getId} from "@math-blocks/core";
 
 import {Status} from "../enums";
 import {Check, Step} from "../types";
@@ -188,6 +189,39 @@ export const divByFrac: Check = (prev, next, context) => {
 };
 divByFrac.symmetric = true;
 
+export const divByOne: Check = (prev, next, context) => {
+    const {checker} = context;
+    if (prev.type === "div") {
+        const result1 = checker.checkStep(
+            prev.args[1],
+            Semantic.number("1"),
+            context,
+        );
+        if (result1) {
+            // Clone prev.args[0] and give it a new id.  If we don't,
+            // `correctResults` will change it applies steps from result1.
+            const newPrev = {
+                ...prev.args[0],
+                id: getId(),
+            };
+            const result2 = checker.checkStep(newPrev, next, context);
+
+            if (result2) {
+                return correctResult(
+                    prev,
+                    newPrev,
+                    context.reversed,
+                    result1.steps,
+                    result2.steps,
+                    "division by one",
+                );
+            }
+        }
+    }
+};
+
+divByOne.symmetric = true;
+
 // a/a -> 1
 export const divBySame: Check = (prev, next, context) => {
     const {checker} = context;
@@ -202,7 +236,7 @@ export const divBySame: Check = (prev, next, context) => {
 
             // TODO: check cases where result1.length > 0, add if statements
             // to determine if that situation happens
-            if (result1 && result2) {
+            if (result2) {
                 return correctResult(
                     prev,
                     newPrev,
@@ -238,7 +272,6 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
-            context.reversed; // ?
             return correctResult(
                 prev,
                 newPrev,

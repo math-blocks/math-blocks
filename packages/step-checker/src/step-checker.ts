@@ -43,16 +43,18 @@ const defaultOptions: Options = {
 
 class StepChecker implements IStepChecker {
     options: Options;
+    checks: Check[];
 
-    constructor(options?: Options) {
+    constructor(options?: Options, checks: Check[] = ALL_CHECKS) {
         this.options = {
             ...defaultOptions,
             ...options,
         };
+        this.checks = checks;
     }
 
     checkStep: Check = (prev, next, context) => {
-        const filteredChecks = filterChecks(ALL_CHECKS, context, this.options);
+        const filteredChecks = filterChecks(this.checks, context, this.options);
 
         // We return the first successful check.  This is necessary to reduce
         // computation to a manageable amount, but it means that the order of
