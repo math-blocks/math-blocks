@@ -28,6 +28,7 @@ import {
 } from "./checks/integer-checks";
 import {
     divByFrac,
+    divByOne,
     divBySame,
     mulByFrac,
     mulInverse,
@@ -55,19 +56,17 @@ export const ALL_CHECKS = [
     identifierCheck,
     exactMatch,
 
-    // axiom checks
-    symmetricProperty,
+    symmetricProperty, // like commutative property but for equations
     commuteAddition, // should appear before addZero
     commuteMultiplication, // should appear before mulOne
+
+    // checkArgs ignores the order of args so we need to run the commutative
+    // checks first otherwise checkArgs would always find a solution first.
+    checkArgs,
+
     addZero,
     mulOne,
     mulByZero,
-
-    // We do this after axiom checks so that we can include commute steps
-    // first and then check if there's an exact match.  checkArgs ignores
-    // ordering of args so if we ran it first we'd never see any commute
-    // steps in the output.
-    checkArgs,
 
     // equation checks
     checkAddSub,
@@ -95,11 +94,15 @@ export const ALL_CHECKS = [
     // NOTE: these must appear after eval checks
     // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
     divByFrac,
-    divBySame,
+    // NOTE: checks that are equivalent to an array of checks should appear
+    // above those checks in this list.
+    divByOne, // equivalent to [divIsMulByOneOver, divBySame, mulOne]
+    divBySame, // equivalent to [divIsMulByOneOver, mulInverse]
+
     // NOTE: When checking certain steps, both of these will return a
     // valid path with one usually being much shorter than the other.
     // We use 'fastest' to evaluate both paths and pick the shortest.
-    shortest([mulByFrac, divIsMulByOneOver]),
+    shortest([mulByFrac, divIsMulByOneOver]), // TODO: make this work with filters
     checkDivisionCanceling,
 
     // divBySame is equivalent to [divIsMulByOneOver, mulInverse]
