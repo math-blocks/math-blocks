@@ -4,7 +4,7 @@ var HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
     mode: "development",
     entry: {
-        index: "./packages/demo/src/index.tsx",
+        index: "./demo/src/index.tsx",
     },
     output: {
         publicPath: "/",

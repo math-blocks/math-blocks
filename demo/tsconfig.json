@@ -1,18 +1,17 @@
 {
   "extends": "../packages/tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "../out/stories",
+    "outDir": "../out/demo",
     "rootDir": ".",
   },
   "references": [
     {"path": "../packages/core"},
-    {"path": "../packages/editor"},
     {"path": "../packages/editor-parser"},
     {"path": "../packages/metrics"},
     {"path": "../packages/parser"},
     {"path": "../packages/react"},
     {"path": "../packages/semantic"},
-    {"path": "../packages/text-parser"},
-    {"path": "../packages/typesetter"},
+    {"path": "../packages/step-checker"},
+    {"path": "../packages/typesetter"}
   ]
 }

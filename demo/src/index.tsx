@@ -31,9 +31,6 @@ ReactDOM.render(
                         <Link to="/editor">Editor</Link>
                     </li>
                     <li>
-                        <Link to="/math-renderer">Math Renderer</Link>
-                    </li>
-                    <li>
                         <Link to="/step-checker">Step Checker</Link>
                     </li>
                     <li>
