@@ -35,7 +35,7 @@ describe("Integer checks", () => {
         expect(result.steps[0].message).toEqual("adding inverse");
     });
 
-    it("1 + a + -a -> 0", () => {
+    it("1 + a + -a -> 1", () => {
         const result = checkStep("1 + a + -a", "1");
 
         expect(result.steps.map((step) => step.message)).toEqual([
@@ -50,7 +50,7 @@ describe("Integer checks", () => {
         expect(result.steps[1].nodes[1]).toParseLike("1");
     });
 
-    it("a + 1 + -a -> 0", () => {
+    it("a + 1 + -a -> 1", () => {
         const result = checkStep("a + 1 + -a", "1");
 
         expect(result.steps.map((step) => step.message)).toEqual([
@@ -62,6 +62,21 @@ describe("Integer checks", () => {
         expect(result.steps[0].nodes[1]).toParseLike("0 + 1");
 
         expect(result.steps[1].nodes[0]).toParseLike("0 + 1");
+        expect(result.steps[1].nodes[1]).toParseLike("1");
+    });
+
+    it("a + 1 + b + -a + -b -> 1", () => {
+        const result = checkStep("a + 1 + b + -a + -b", "1");
+
+        expect(result.steps.map((step) => step.message)).toEqual([
+            "adding inverse",
+            "addition with identity",
+        ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a + 1 + b + -a + -b");
+        expect(result.steps[0].nodes[1]).toParseLike("0 + 1 + 0");
+
+        expect(result.steps[1].nodes[0]).toParseLike("0 + 1 + 0");
         expect(result.steps[1].nodes[1]).toParseLike("1");
     });
 

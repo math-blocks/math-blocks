@@ -30,6 +30,7 @@ import {
     divByFrac,
     divBySame,
     mulByFrac,
+    mulInverse,
     divIsMulByOneOver,
     checkDivisionCanceling,
 } from "./checks/fraction-checks";
@@ -100,4 +101,8 @@ export const ALL_CHECKS = [
     // We use 'fastest' to evaluate both paths and pick the shortest.
     shortest([mulByFrac, divIsMulByOneOver]),
     checkDivisionCanceling,
+
+    // divBySame is equivalent to [divIsMulByOneOver, mulInverse]
+    // TODO: nest steps in a hierarchy
+    mulInverse,
 ];

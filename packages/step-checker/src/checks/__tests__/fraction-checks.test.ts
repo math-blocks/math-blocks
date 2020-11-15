@@ -150,30 +150,65 @@ describe("Fraction checks", () => {
         ]);
     });
 
+    // This is one of the test cases that blew up when removing 'divBySame'
+    // TODO: make it work with 'mulInverse' instead of 'divBySame'
     it("b(a/b) -> a", () => {
         const result = checkStep("b(a/b)", "a");
 
         expect(result).toBeTruthy();
+        expect(result.steps.map((step) => step.message)).toEqual([
+            "fraction is the same as multiplying by one over",
+            "multiplying the inverse",
+            "multiplication with identity",
+        ]);
     });
 
-    // TODO: make this test pass
-    it.skip("a * b * 1/b -> a", () => {
+    it("a * b * 1/b -> a", () => {
         const result = checkStep("a * b * 1/b", "a");
 
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
-            "division by the same value",
+            "multiplying the inverse",
+            "multiplication with identity",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a * b * 1/b");
+        expect(result.steps[0].nodes[1]).toParseLike("a * 1");
+
+        expect(result.steps[1].nodes[0]).toParseLike("a * 1");
+        expect(result.steps[1].nodes[1]).toParseLike("a");
     });
 
-    // TODO: make this test pass
-    it.skip("a * b * 1/a -> b", () => {
+    it("a * b * 1/a -> b", () => {
         const result = checkStep("a * b * 1/a", "b");
 
         expect(result).toBeTruthy();
         expect(result.steps.map((reason) => reason.message)).toEqual([
-            "division by the same value",
+            "multiplying the inverse",
+            "multiplication with identity",
         ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a * b * 1/a");
+        expect(result.steps[0].nodes[1]).toParseLike("1 * b");
+
+        expect(result.steps[1].nodes[0]).toParseLike("1 * b");
+        expect(result.steps[1].nodes[1]).toParseLike("b");
+    });
+
+    it("a * b * c * 1/a * 1/c -> b", () => {
+        const result = checkStep("a * b * c * 1/a * 1/c", "b");
+
+        expect(result).toBeTruthy();
+        expect(result.steps.map((reason) => reason.message)).toEqual([
+            "multiplying the inverse",
+            "multiplication with identity",
+        ]);
+
+        expect(result.steps[0].nodes[0]).toParseLike("a * b * c * 1/a * 1/c");
+        expect(result.steps[0].nodes[1]).toParseLike("1 * b * 1");
+
+        expect(result.steps[1].nodes[0]).toParseLike("1 * b * 1");
+        expect(result.steps[1].nodes[1]).toParseLike("b");
     });
 
     it("a * b/c -> ab / b", () => {
@@ -544,6 +579,7 @@ describe("Fraction checks", () => {
         ]);
     });
 
+    // TODO: simplify the steps in this test case
     it("ab/abde -> ab/ab * 1/de -> 1 * 1/de -> 1/de", () => {
         const result = checkStep("ab/abde", "1/de");
 

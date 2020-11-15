@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Status} from "../enums";
-import {Check} from "../types";
+import {Check, Step} from "../types";
 
 import {
     decomposeFactors,
@@ -188,10 +188,10 @@ export const divByFrac: Check = (prev, next, context) => {
 };
 divByFrac.symmetric = true;
 
+// a/a -> 1
 export const divBySame: Check = (prev, next, context) => {
-    // a/a -> 1
-
     const {checker} = context;
+
     if (prev.type === "div") {
         const [numerator, denominator] = prev.args;
         const result1 = checker.checkStep(numerator, denominator, context);
@@ -215,11 +215,9 @@ export const divBySame: Check = (prev, next, context) => {
         }
     }
 };
-
 divBySame.symmetric = true;
 
-// TODO: split this check into two checks.  This should help fix tests like
-// a * b * 1/a -> b while avoiding having to change mulOne.
+// a/b -> a * 1/b
 export const divIsMulByOneOver: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -234,14 +232,13 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         // The problem is that this can lead to:
         // (mul a b (div 1 c)) -> (mul a (div b c)) -> (div (mul a b) c)
         // and then back to (mul (mul a b) (div 1 c))
-        const newPrev = Semantic.mul([
-            numerator,
-            Semantic.div(Semantic.number("1"), denominator),
-        ]);
+        const newDiv = Semantic.div(Semantic.number("1"), denominator);
+        const newPrev = Semantic.mul([numerator, newDiv]);
 
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
+            context.reversed; // ?
             return correctResult(
                 prev,
                 newPrev,
@@ -296,8 +293,88 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         }
     }
 };
-
 divIsMulByOneOver.symmetric = true;
+
+function notNull<T>(x: T | null): x is T {
+    return x !== null;
+}
+
+// a * 1/a -> 1
+export const mulInverse: Check = (prev, next, context) => {
+    const {checker} = context;
+
+    if (prev.type !== "mul") {
+        return;
+    }
+
+    const indicesToRemove: number[] = [];
+    const factors = Semantic.getFactors(prev);
+    const beforeSteps: Step[] = [];
+
+    const one = Semantic.number("1");
+
+    // TODO: extract this code into a helper so that we can test it better
+    for (let i = 0; i < factors.length; i++) {
+        for (let j = 0; j < factors.length; j++) {
+            if (i === j) {
+                continue;
+            }
+            const a = factors[i];
+            const b = factors[j];
+            if (b.type === "div") {
+                const result1 = checker.checkStep(one, b.args[0], context);
+                const result2 = checker.checkStep(a, b.args[1], context);
+                if (
+                    result1 &&
+                    result2 &&
+                    // Avoid removing a term that matches a term that's
+                    // already been removed.
+                    !indicesToRemove.includes(i) &&
+                    !indicesToRemove.includes(j)
+                ) {
+                    // TODO: capture the reasons and include them down below
+                    indicesToRemove.push(i);
+                    indicesToRemove.push(j);
+                    beforeSteps.push(...result1.steps, ...result2.steps);
+                }
+            }
+        }
+    }
+    // TODO: introduce a commutative step so that the pairs of terms being
+    // removed are beside each other.
+
+    // We convert every even indexed one to zero and remove every odd indexed one.
+    if (indicesToRemove.length > 0) {
+        const newPrev = Semantic.mulFactors(
+            factors
+                .map((term: Semantic.Expression, index: number) => {
+                    if (indicesToRemove.includes(index)) {
+                        if (indicesToRemove.indexOf(index) % 2 === 0) {
+                            return Semantic.number("1");
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        return term;
+                    }
+                })
+                .filter(notNull),
+        );
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                beforeSteps,
+                result.steps,
+                "multiplying the inverse",
+            );
+        }
+    }
+};
+mulInverse.symmetric = true;
 
 export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;

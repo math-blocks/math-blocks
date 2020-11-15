@@ -134,7 +134,7 @@ export const mulOne: Check = (prev, next, context) => {
         if (result) {
             identitySteps.push(...result.steps);
             // We include all identities in the output so that we can handle
-            // expressions with multiple identities, e.g. a + 0 + b + 0
+            // expressions with multiple identities, e.g. a * 1 * b * 1
             return identity;
         } else {
             nonIdentityArgs.push(arg);

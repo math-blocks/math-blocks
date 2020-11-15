@@ -7,6 +7,7 @@ function notNull<T>(x: T | null): x is T {
     return x !== null;
 }
 
+// a + -a -> 0
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -35,7 +36,6 @@ export const addInverse: Check = (prev, next, context) => {
                     !indicesToRemove.includes(i) &&
                     !indicesToRemove.includes(j)
                 ) {
-                    // TODO: capture the reasons and include them down below
                     indicesToRemove.push(i);
                     indicesToRemove.push(j);
                     beforeSteps.push(...result.steps);
@@ -79,7 +79,6 @@ export const addInverse: Check = (prev, next, context) => {
 
     return;
 };
-
 addInverse.symmetric = true;
 
 export const doubleNegative: Check = (prev, next, context) => {
