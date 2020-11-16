@@ -8,6 +8,12 @@ describe("TextParser", () => {
         const ast = parse("1 + 2");
 
         expect(ast).toMatchInlineSnapshot(`(add 1 2)`);
+
+        expect(ast.loc).toEqual({start: 0, end: 5});
+        if (ast.type === "add") {
+            expect(ast.args[0].loc).toEqual({start: 0, end: 1});
+            expect(ast.args[1].loc).toEqual({start: 4, end: 5});
+        }
     });
 
     it("parse n-ary addition", () => {
@@ -24,6 +30,15 @@ describe("TextParser", () => {
               a
               (neg.sub b))
         `);
+
+        expect(ast.loc).toEqual({start: 0, end: 5});
+        if (ast.type === "add") {
+            expect(ast.args[0].loc).toEqual({start: 0, end: 1});
+            expect(ast.args[1].loc).toEqual({start: 2, end: 5});
+            if (ast.args[1].type === "neg") {
+                expect(ast.args[1].arg.loc).toEqual({start: 4, end: 5});
+            }
+        }
     });
 
     it("parses minus in longer expression", () => {
@@ -63,6 +78,15 @@ describe("TextParser", () => {
               a
               (neg a))
         `);
+
+        expect(ast.loc).toEqual({start: 0, end: 6});
+        if (ast.type === "add") {
+            expect(ast.args[0].loc).toEqual({start: 0, end: 1});
+            expect(ast.args[1].loc).toEqual({start: 4, end: 6});
+            if (ast.args[1].type === "neg") {
+                expect(ast.args[1].arg.loc).toEqual({start: 5, end: 6});
+            }
+        }
     });
 
     it("parses multiple unary minuses", () => {
@@ -95,6 +119,15 @@ describe("TextParser", () => {
               (neg a)
               b)
         `);
+
+        expect(ast.loc).toEqual({start: 0, end: 3});
+        if (ast.type === "mul") {
+            expect(ast.args[0].loc).toEqual({start: 0, end: 2});
+            expect(ast.args[1].loc).toEqual({start: 2, end: 3});
+            if (ast.args[0].type === "neg") {
+                expect(ast.args[0].arg.loc).toEqual({start: 1, end: 2});
+            }
+        }
     });
 
     it("negation is higher precedence than explicit multplication", () => {
@@ -115,6 +148,17 @@ describe("TextParser", () => {
               (neg a)
               b)
         `);
+
+        // TODO: figure out why the opening paren isn't included
+        expect(ast.loc).toEqual({start: 1, end: 6});
+        if (ast.type === "mul") {
+            // TODO: figure out why the opening and closing parens aren't included
+            expect(ast.args[0].loc).toEqual({start: 1, end: 3});
+            expect(ast.args[1].loc).toEqual({start: 5, end: 6});
+            if (ast.args[0].type === "neg") {
+                expect(ast.args[0].arg.loc).toEqual({start: 2, end: 3});
+            }
+        }
     });
 
     it("implicit multiplication is higher precedence than addition", () => {
@@ -177,6 +221,13 @@ describe("TextParser", () => {
         const ast = parse("(x + y)");
 
         expect(ast).toMatchInlineSnapshot(`(add x y)`);
+
+        // TODO: figure out how to include the opening paren
+        expect(ast.loc).toEqual({start: 1, end: 6});
+        if (ast.type === "add") {
+            expect(ast.args[0].loc).toEqual({start: 1, end: 2});
+            expect(ast.args[1].loc).toEqual({start: 5, end: 6});
+        }
     });
 
     it("throws if lparen is missing", () => {
@@ -205,6 +256,13 @@ describe("TextParser", () => {
               a
               (add x y))
         `);
+
+        expect(ast.loc).toEqual({start: 0, end: 7});
+        if (ast.type === "mul") {
+            expect(ast.args[0].loc).toEqual({start: 0, end: 1});
+            // TODO: figure out how to include the opening paren
+            expect(ast.args[1].loc).toEqual({start: 2, end: 7});
+        }
     });
 
     it("parses adding parenthesis", () => {

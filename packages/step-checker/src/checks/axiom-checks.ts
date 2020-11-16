@@ -1,12 +1,24 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Step, Check} from "../types";
+import {Result, Step, Check, Context} from "../types";
 import {Status, MistakeId} from "../enums";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 import {zip, applySteps, correctResult, difference, intersection} from "./util";
 
-export const addZero: Check = (prev, next, context) => {
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+type Expression = Semantic.Expression<Location | undefined>;
+
+export function addZero<Loc>(
+    prev: Semantic.Expression<Loc>,
+    next: Semantic.Expression<Loc>,
+    context: Context<Loc>,
+): Result<Loc | undefined> | undefined {
     if (next.type !== "add") {
         return;
     }
@@ -14,10 +26,10 @@ export const addZero: Check = (prev, next, context) => {
     const {checker} = context;
 
     // Check that each new term is equivalent to zero
-    const identity = Semantic.number("0");
+    const identity = Semantic.number("0", undefined);
 
-    const identitySteps: Step[] = [];
-    const nonIdentityArgs: Semantic.Expression[] = [];
+    const identitySteps: Step<Loc>[] = [];
+    const nonIdentityArgs: Expression[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -38,7 +50,7 @@ export const addZero: Check = (prev, next, context) => {
             // expressions with multiple identities, e.g. a + 0 + b + 0.
             // We create a new number("0") each time so that we can differentiate
             // each instance.
-            return Semantic.number("0");
+            return Semantic.number("0", undefined);
         } else {
             nonIdentityArgs.push(arg);
             return arg;
@@ -64,8 +76,8 @@ export const addZero: Check = (prev, next, context) => {
         return;
     }
 
-    const newNext = Semantic.addTerms(newNextArgs);
-    const newPrev = Semantic.addTerms(nonIdentityArgs);
+    const newNext = Semantic.addTerms(newNextArgs, undefined);
+    const newPrev = Semantic.addTerms(nonIdentityArgs, undefined);
 
     // This first check is fine since nonIdentityArgs only contains nodes from
     // an expression entered by a user.
@@ -100,7 +112,7 @@ export const addZero: Check = (prev, next, context) => {
     }
 
     return;
-};
+}
 addZero.symmetric = true;
 
 export const mulOne: Check = (prev, next, context) => {
@@ -115,10 +127,10 @@ export const mulOne: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const identity = Semantic.number("1");
+    const identity = Semantic.number("1", undefined);
 
     const identitySteps: Step[] = [];
-    const nonIdentityArgs: Semantic.Expression[] = [];
+    const nonIdentityArgs: Expression[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -139,7 +151,7 @@ export const mulOne: Check = (prev, next, context) => {
             // expressions with multiple identities, e.g. a * 1 * b * 1
             // We create a new number("1") each time so that we can differentiate
             // each instance.
-            return Semantic.number("1");
+            return Semantic.number("1", undefined);
         } else {
             nonIdentityArgs.push(arg);
             return arg;
@@ -164,13 +176,13 @@ export const mulOne: Check = (prev, next, context) => {
         return;
     }
 
-    const newNext = Semantic.mulFactors(newNextArgs);
+    const newNext = Semantic.mulFactors(newNextArgs, undefined);
 
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
     const reason = "multiplication with identity";
 
-    const newPrev = Semantic.mulFactors(nonIdentityArgs);
+    const newPrev = Semantic.mulFactors(nonIdentityArgs, undefined);
 
     // This first check is fine since nonIdentityArgs only contains nodes from
     // an expression entered by a user.
@@ -243,13 +255,20 @@ export const checkDistribution: Check = (prev, next, context) => {
                 mul.args.length === 2 &&
                 mul.args[1].type === "add"
             ) {
-                const newPrev = Semantic.addTerms([
-                    ...prev.args.slice(0, i),
-                    ...(mul.args[1].args.map((arg) =>
-                        Semantic.mul([mul.args[0], arg], mul.implicit),
-                    ) as TwoOrMore<Semantic.Expression>),
-                    ...prev.args.slice(i + 1),
-                ]);
+                const newPrev = Semantic.addTerms(
+                    [
+                        ...prev.args.slice(0, i),
+                        ...(mul.args[1].args.map((arg) =>
+                            Semantic.mul(
+                                [mul.args[0], arg],
+                                undefined,
+                                mul.implicit,
+                            ),
+                        ) as TwoOrMore<Semantic.Expression<undefined>>),
+                        ...prev.args.slice(i + 1),
+                    ],
+                    undefined,
+                );
 
                 const result = context.checker.checkStep(newPrev, next, {
                     ...context,
@@ -294,11 +313,19 @@ export const checkDistribution: Check = (prev, next, context) => {
             prev.args[1].args.map((arg) => {
                 if (arg.type === "neg") {
                     // Set 'subtraction' prop to false
-                    return Semantic.mul([prev.args[0], Semantic.neg(arg.arg)]);
+                    return Semantic.mul(
+                        [prev.args[0], Semantic.neg(arg.arg, undefined)],
+                        undefined,
+                    );
                 } else {
-                    return Semantic.mul([prev.args[0], arg], prev.implicit);
+                    return Semantic.mul(
+                        [prev.args[0], arg],
+                        undefined,
+                        prev.implicit,
+                    );
                 }
-            }) as TwoOrMore<Semantic.Expression>,
+            }) as TwoOrMore<Expression>,
+            undefined,
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
@@ -319,8 +346,9 @@ export const checkDistribution: Check = (prev, next, context) => {
     if (prev.args[0].type === "add") {
         const newPrev = Semantic.add(
             prev.args[0].args.map((arg) =>
-                Semantic.mul([arg, prev.args[1]]),
-            ) as TwoOrMore<Semantic.Expression>,
+                Semantic.mul([arg, prev.args[1]], undefined),
+            ) as TwoOrMore<Expression>,
+            undefined,
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
@@ -352,13 +380,17 @@ export const mulByZero: Check = (prev, next, context) => {
     // It's sufficient to find only one zero since mutliplying one zero is
     // enough to turn the whole product to zero.
     const hasZero = prev.args.some((arg) => {
-        const result = checker.checkStep(arg, Semantic.number("0"), context);
+        const result = checker.checkStep(
+            arg,
+            Semantic.number("0", undefined),
+            context,
+        );
         if (result) {
             identitySteps.push(...result.steps);
             return result;
         }
     });
-    const newPrev = Semantic.number("0");
+    const newPrev = Semantic.number("0", undefined);
     const result = checker.checkStep(newPrev, next, context);
 
     if (hasZero && result) {
@@ -504,7 +536,10 @@ export const symmetricProperty: Check = (prev, next, context) => {
         // If there are only two args, we swap them and then check that it
         // exactly matches the next step.
         if (pairs.length === 2) {
-            const newPrev = Semantic.eq([prev.args[1], prev.args[0]]);
+            const newPrev = Semantic.eq(
+                [prev.args[1], prev.args[0]],
+                undefined,
+            );
             const result = exactMatch(newPrev, next, context);
 
             if (result) {

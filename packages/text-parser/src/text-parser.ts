@@ -2,6 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 import * as Parser from "@math-blocks/parser";
 
 import {lex, Token} from "./text-lexer";
+import {TextLocation} from "./types";
 
 // TODO: fill out this list
 type Operator =
@@ -17,11 +18,11 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = Semantic.Expression;
+type Node = Semantic.Expression<TextLocation>;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
-const EOL: Token = {type: "eol"};
+const EOL: Token = {type: "eol", loc: {start: -1, end: -1}};
 
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
@@ -36,20 +37,32 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Semantic.Ident => Semantic.identifier(token.name),
+                parse: (): Semantic.Ident<TextLocation> => {
+                    return Semantic.identifier(token.name, token.loc);
+                },
             };
         case "number":
             return {
-                parse: (): Semantic.Num => Semantic.number(token.value),
+                parse: (): Semantic.Num<TextLocation> => {
+                    return Semantic.number(token.value, token.loc);
+                },
             };
         case "minus":
             return {
-                parse: (parser): Semantic.Neg =>
-                    Semantic.neg(parser.parseWithOperator("neg"), false),
+                parse: (parser): Semantic.Neg<TextLocation> => {
+                    const right = parser.parseWithOperator("neg");
+                    const loc: TextLocation = {
+                        start: token.loc.start,
+                        end: right.loc.end,
+                    };
+                    return Semantic.neg(right, loc, false);
+                },
             };
         case "lparen":
             return {
-                parse: (parser): Semantic.Expression => {
+                // TODO: how do we include the parens in the location of the
+                // parsed expression?
+                parse: (parser): Semantic.Expression<TextLocation> => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
@@ -74,7 +87,7 @@ const getPrefixParselet = (
 
 const parseMulByParen = (
     parser: TextParser,
-): OneOrMore<Semantic.Expression> => {
+): OneOrMore<Semantic.Expression<TextLocation>> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -97,21 +110,28 @@ const getInfixParselet = (
         case "slash":
             return {
                 op: "div",
-                parse: (parser, left): Semantic.Div => {
+                parse: (parser, left): Semantic.Div<TextLocation> => {
                     parser.consume();
-                    return Semantic.div(left, parser.parseWithOperator("div"));
+                    const right = parser.parseWithOperator("div");
+                    const loc: TextLocation = {
+                        start: left.loc.start,
+                        end: right.loc.end,
+                    };
+                    return Semantic.div(left, right, loc);
                 },
             };
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left): Semantic.Exp => {
+                parse: (parser, left): Semantic.Exp<TextLocation> => {
                     parser.consume();
                     // exponents are right-associative
-                    return Semantic.exp(
-                        left,
-                        parser.parseWithOperator("caret", "right"),
-                    );
+                    const right = parser.parseWithOperator("caret", "right");
+                    const loc: TextLocation = {
+                        start: left.loc.start,
+                        end: right.loc.end,
+                    };
+                    return Semantic.exp(left, right, loc);
                 },
             };
         case "identifier":
@@ -121,15 +141,22 @@ const getInfixParselet = (
         case "lparen":
             return {
                 op: "mul.imp",
-                parse: (parser, left): Semantic.Mul => {
+                parse: (parser, left): Semantic.Mul<TextLocation> => {
                     const [right, ...rest] = parseMulByParen(parser);
-                    return Semantic.mul([left, right, ...rest], true);
+                    const loc: TextLocation = {
+                        start: left.loc.start,
+                        end:
+                            rest.length > 0
+                                ? rest[rest.length - 1].loc.end
+                                : right.loc.end,
+                    };
+                    return Semantic.mul([left, right, ...rest], loc, true);
                 },
             };
         case "rparen":
             return {
                 op: "nul",
-                parse: (): Semantic.Expression => {
+                parse: (): Semantic.Expression<TextLocation> => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -143,16 +170,20 @@ const parseNaryInfix = (op: NAryOperator) => (
     left: Node,
 ): Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
+    const loc: TextLocation = {
+        start: left.loc.start,
+        end: rest.length > 0 ? rest[rest.length - 1].loc.end : right.loc.end,
+    };
     switch (op) {
         case "add":
         case "sub":
-            return Semantic.add([left, right, ...rest]);
+            return Semantic.add([left, right, ...rest], loc);
         case "mul.imp":
-            return Semantic.mul([left, right, ...rest], true);
+            return Semantic.mul([left, right, ...rest], loc, true);
         case "mul.exp":
-            return Semantic.mul([left, right, ...rest], false);
+            return Semantic.mul([left, right, ...rest], loc, false);
         case "eq":
-            return Semantic.eq([left, right, ...rest]);
+            return Semantic.eq([left, right, ...rest], loc);
     }
 };
 
@@ -171,7 +202,11 @@ const parseNaryArgs = (
     }
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
-        expr = Semantic.neg(expr, true);
+        const loc = {
+            start: token.loc.start,
+            end: expr.loc.end,
+        };
+        expr = Semantic.neg(expr, loc, true);
     }
     const nextToken = parser.peek();
 

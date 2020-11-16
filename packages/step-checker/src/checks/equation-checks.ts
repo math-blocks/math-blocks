@@ -12,6 +12,14 @@ import {difference, correctResult, intersection} from "./util";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+type Expression = Semantic.Expression<Location | undefined>;
+
 export const checkAddSub: Check = (prev, next, context) => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return;
@@ -49,8 +57,8 @@ export const checkAddSub: Check = (prev, next, context) => {
         const newTermsRHS = difference(nextTermsRHS, prevTermsRHS);
 
         const areNewTermsEquivalent = checker.checkStep(
-            Semantic.addTerms(newTermsLHS),
-            Semantic.addTerms(newTermsRHS),
+            Semantic.addTerms(newTermsLHS, undefined),
+            Semantic.addTerms(newTermsRHS, undefined),
             {
                 ...context,
                 filters: {
@@ -80,14 +88,19 @@ export const checkAddSub: Check = (prev, next, context) => {
         const newTerms =
             newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
-        const newPrev = Semantic.eq([
-            Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
-                Semantic.Expression
-            >),
-            Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
-                Semantic.Expression
-            >),
-        ]);
+        const newPrev = Semantic.eq(
+            [
+                Semantic.add(
+                    [...prevTermsLHS, ...newTerms] as TwoOrMore<Expression>,
+                    undefined,
+                ),
+                Semantic.add(
+                    [...prevTermsRHS, ...newTerms] as TwoOrMore<Expression>,
+                    undefined,
+                ),
+            ],
+            undefined,
+        );
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
@@ -155,8 +168,8 @@ export const checkMul: Check = (prev, next, context) => {
         );
 
         const areNewFactorsEquivalent = checker.checkStep(
-            Semantic.mulFactors(newFactorsLHS),
-            Semantic.mulFactors(newFactorsRHS),
+            Semantic.mulFactors(newFactorsLHS, undefined),
+            Semantic.mulFactors(newFactorsRHS, undefined),
             context,
         );
 
@@ -178,14 +191,19 @@ export const checkMul: Check = (prev, next, context) => {
 
         // We place the new factors at the start since it is common to go
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
-        const newPrev = Semantic.eq([
-            Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
-                Semantic.Expression
-            >),
-            Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
-                Semantic.Expression
-            >),
-        ]);
+        const newPrev = Semantic.eq(
+            [
+                Semantic.mul(
+                    [...newFactors, ...prevFactorsLHS] as TwoOrMore<Expression>,
+                    undefined,
+                ),
+                Semantic.mul(
+                    [...newFactors, ...prevFactorsRHS] as TwoOrMore<Expression>,
+                    undefined,
+                ),
+            ],
+            undefined,
+        );
 
         // This checkStep allows for commutation of the result, but doesn't
         // handle evaluation that might happen during result1.
@@ -346,10 +364,21 @@ export const checkDiv: Check = (prev, next, context) => {
                     ? denFactorsLSH
                     : denFactorsRHS;
 
-            const newPrev = Semantic.eq([
-                Semantic.div(prevLHS, Semantic.mulFactors(denFactors)),
-                Semantic.div(prevRHS, Semantic.mulFactors(denFactors)),
-            ]);
+            const newPrev = Semantic.eq(
+                [
+                    Semantic.div(
+                        prevLHS,
+                        Semantic.mulFactors(denFactors, undefined),
+                        undefined,
+                    ),
+                    Semantic.div(
+                        prevRHS,
+                        Semantic.mulFactors(denFactors, undefined),
+                        undefined,
+                    ),
+                ],
+                undefined,
+            );
 
             const result = checker.checkStep(newPrev, next, context);
 

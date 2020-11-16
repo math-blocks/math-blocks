@@ -7,7 +7,15 @@ import {Result, Step, Context, Options, Check} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
-const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+type Expression = Semantic.Expression<Location | undefined>;
+
+const parseNode = (node: Expression, options: Options): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
     } else if (node.type === "neg") {
@@ -30,8 +38,8 @@ enum Direction {
 // This handles evaluation and decomposition of addition or multiplication.
 // TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
+    a: Expression,
+    b: Expression,
     op: "add" | "mul",
     direction: Direction,
     context: Context,

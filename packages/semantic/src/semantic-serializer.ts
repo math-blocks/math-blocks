@@ -1,6 +1,6 @@
 import * as Semantic from "./semantic";
 
-type Node = Semantic.Expression;
+type Node = Semantic.Expression<undefined>;
 
 const print = (
     ast: Node,

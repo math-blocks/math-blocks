@@ -7,6 +7,14 @@ function notNull<T>(x: T | null): x is T {
     return x !== null;
 }
 
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+type Expression = Semantic.Expression<Location | undefined>;
+
 // a + -a -> 0
 export const addInverse: Check = (prev, next, context) => {
     const {checker} = context;
@@ -50,10 +58,10 @@ export const addInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.addTerms(
             terms
-                .map((term: Semantic.Expression, index: number) => {
+                .map((term: Expression, index: number) => {
                     if (indicesToRemove.includes(index)) {
                         if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("0");
+                            return Semantic.number("0", undefined);
                         } else {
                             return null;
                         }
@@ -62,6 +70,7 @@ export const addInverse: Check = (prev, next, context) => {
                     }
                 })
                 .filter(notNull),
+            undefined,
         );
         const result = checker.checkStep(newPrev, next, context);
 
@@ -104,7 +113,7 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
-const subIsNegNodeSet = new WeakSet<Semantic.Expression>();
+const subIsNegNodeSet = new WeakSet<Expression>();
 export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -115,19 +124,24 @@ export const subIsNeg: Check = (prev, next, context) => {
     const results: Result[] = [];
 
     if (prev.type === "add") {
-        const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
+        const subs: Semantic.Neg<Location | undefined>[] = prev.args.filter(
+            Semantic.isSubtraction,
+        );
 
         // We iterate through all args that are subtraction and compute
         // their result so that we can pick the shortest set of steps below.
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
-            const neg = Semantic.neg(sub.arg);
+            const neg = Semantic.neg(sub.arg, undefined);
             subIsNegNodeSet.add(neg);
-            const newPrev = Semantic.addTerms([
-                ...prev.args.slice(0, index),
-                neg,
-                ...prev.args.slice(index + 1),
-            ]);
+            const newPrev = Semantic.addTerms(
+                [
+                    ...prev.args.slice(0, index),
+                    neg,
+                    ...prev.args.slice(index + 1),
+                ],
+                undefined,
+            );
 
             const result = checker.checkStep(newPrev, next, context);
             if (result) {
@@ -163,7 +177,7 @@ export const subIsNeg: Check = (prev, next, context) => {
 subIsNeg.symmetric = true;
 
 // TODO: have different messages based on direction
-const negIsMulNegOneNodeSet = new WeakSet<Semantic.Expression>();
+const negIsMulNegOneNodeSet = new WeakSet<Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -179,9 +193,10 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
     ) {
         const newPrev = Semantic.mulFactors(
             [
-                Semantic.neg(Semantic.number("1")),
+                Semantic.neg(Semantic.number("1", undefined), undefined),
                 ...Semantic.getFactors(prev.arg),
             ],
+            undefined,
             true,
         );
 
@@ -207,9 +222,13 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
             ) {
                 const newArg = Semantic.mul(
                     [
-                        Semantic.neg(Semantic.number("1")),
+                        Semantic.neg(
+                            Semantic.number("1", undefined),
+                            undefined,
+                        ),
                         ...Semantic.getFactors(arg.arg),
-                    ] as TwoOrMore<Semantic.Expression>,
+                    ] as TwoOrMore<Expression>,
+                    undefined,
                     true,
                 );
                 negIsMulNegOneNodeSet.add(newArg);
@@ -217,13 +236,13 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Expression>;
+        }) as TwoOrMore<Expression>;
 
         if (!changed) {
             return;
         }
 
-        const newPrev = Semantic.add(newArgs);
+        const newPrev = Semantic.add(newArgs, undefined);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -248,7 +267,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
-        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
+        const factors: TwoOrMore<Expression> = [...prev.args];
 
         const negIndices: number[] = [];
 
@@ -273,7 +292,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
             return;
         }
 
-        const newPrev = Semantic.mul(factors);
+        const newPrev = Semantic.mul(factors, undefined);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -311,19 +330,19 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
-        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
+        const factors: TwoOrMore<Expression> = [...prev.args];
         const index = factors.findIndex((factor) => factor.type === "neg");
         const neg = factors[index];
 
         if (index !== -1 && neg.type === "neg") {
-            factors[0] = Semantic.neg(factors[0]);
+            factors[0] = Semantic.neg(factors[0], undefined);
             factors[index] = neg.arg;
         } else {
             // If there are no negatives then we can't transfer a negative
             return;
         }
 
-        const newPrev = Semantic.mul(factors);
+        const newPrev = Semantic.mul(factors, undefined);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -342,7 +361,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 };
 moveNegToFirstFactor.symmetric = true;
 
-const moveNegInsideMulNodeSet = new WeakSet<Semantic.Expression>();
+const moveNegInsideMulNodeSet = new WeakSet<Expression>();
 export const moveNegInsideMul: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -357,9 +376,11 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
         const mul = prev.arg;
 
         const newPrev = Semantic.mul(
-            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
-                Semantic.Expression
-            >,
+            [
+                Semantic.neg(mul.args[0], undefined),
+                ...mul.args.slice(1),
+            ] as TwoOrMore<Expression>,
+            undefined,
             prev.arg.implicit,
         );
 
@@ -387,9 +408,10 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 const mul = arg.arg;
                 const newArg = Semantic.mul(
                     [
-                        Semantic.neg(mul.args[0]),
+                        Semantic.neg(mul.args[0], undefined),
                         ...mul.args.slice(1),
-                    ] as TwoOrMore<Semantic.Expression>,
+                    ] as TwoOrMore<Expression>,
+                    undefined,
                     mul.implicit,
                 );
                 moveNegInsideMulNodeSet.add(newArg);
@@ -397,13 +419,13 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Expression>;
+        }) as TwoOrMore<Expression>;
 
         if (!changed) {
             return;
         }
 
-        const newPrev = Semantic.add(newArgs);
+        const newPrev = Semantic.add(newArgs, undefined);
 
         const result = checker.checkStep(newPrev, next, context);
 

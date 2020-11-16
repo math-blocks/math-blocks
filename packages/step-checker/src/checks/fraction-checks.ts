@@ -13,6 +13,14 @@ import {
 } from "./util";
 import {exactMatch} from "./basic-checks";
 
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+type Expression = Semantic.Expression<Location | undefined>;
+
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
 // 30 / 6 -> 2*3*5 / 2*3 -> 2*3/2*3 * 5/1 -> 1 * 5/1 -> 5/1 -> 5
@@ -33,7 +41,9 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     // - ab/ac -> a/a * b/c
     // - ab/a -> a/1 -> a
     const [numeratorB, denominatorB] =
-        next.type === "div" ? next.args : [next, Semantic.number("1")];
+        next.type === "div"
+            ? next.args
+            : [next, Semantic.number("1", undefined)];
 
     // Include ONE as a factor to handle cases where the denominator disappears
     // or the numerator chnages to 1.
@@ -48,13 +58,13 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
 
     if (
         !checker.checkStep(
-            Semantic.mulFactors(addedNumFactors),
-            Semantic.number("1"),
+            Semantic.mulFactors(addedNumFactors, undefined),
+            Semantic.number("1", undefined),
             context,
         ) ||
         !checker.checkStep(
-            Semantic.mulFactors(addedDenFactors),
-            Semantic.number("1"),
+            Semantic.mulFactors(addedDenFactors, undefined),
+            Semantic.number("1", undefined),
             context,
         )
     ) {
@@ -73,12 +83,14 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
             factoredDenFactorsA.length !== denFactorsA.length
         ) {
             const newPrev = Semantic.div(
-                Semantic.mulFactors(factoredNumFactorsA),
-                Semantic.mulFactors(factoredDenFactorsA),
+                Semantic.mulFactors(factoredNumFactorsA, undefined),
+                Semantic.mulFactors(factoredDenFactorsA, undefined),
+                undefined,
             );
             const newNext = Semantic.div(
-                Semantic.mulFactors(factoredNumFactorsB),
-                Semantic.mulFactors(factoredDenFactorsB),
+                Semantic.mulFactors(factoredNumFactorsB, undefined),
+                Semantic.mulFactors(factoredDenFactorsB, undefined),
+                undefined,
             );
 
             // TODO: allow `nodes` in Reason type to have more than two nodes
@@ -116,11 +128,11 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     const remainingDenFactors = intersection(denFactorsA, denFactorsB);
 
     if (remainingNumFactors.length === 0) {
-        remainingNumFactors.push(Semantic.number("1"));
+        remainingNumFactors.push(Semantic.number("1", undefined));
     }
 
     if (remainingDenFactors.length === 0) {
-        remainingDenFactors.push(Semantic.number("1"));
+        remainingDenFactors.push(Semantic.number("1", undefined));
     }
 
     // ab/ac -> a/a * b/c
@@ -129,16 +141,21 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
         removedNumFactors.length === removedDenFactors.length &&
         equality(removedNumFactors, removedDenFactors, context)
     ) {
-        const productA = Semantic.mulFactors([
-            Semantic.div(
-                Semantic.mulFactors(removedNumFactors, true),
-                Semantic.mulFactors(removedDenFactors, true),
-            ),
-            Semantic.div(
-                Semantic.mulFactors(remainingNumFactors, true),
-                Semantic.mulFactors(remainingDenFactors, true),
-            ),
-        ]);
+        const productA = Semantic.mulFactors(
+            [
+                Semantic.div(
+                    Semantic.mulFactors(removedNumFactors, undefined, true),
+                    Semantic.mulFactors(removedDenFactors, undefined, true),
+                    undefined,
+                ),
+                Semantic.div(
+                    Semantic.mulFactors(remainingNumFactors, undefined, true),
+                    Semantic.mulFactors(remainingDenFactors, undefined, true),
+                    undefined,
+                ),
+            ],
+            undefined,
+        );
 
         const result = checker.checkStep(productA, next, context);
         if (result) {
@@ -171,8 +188,9 @@ export const divByFrac: Check = (prev, next, context) => {
         const reciprocal = Semantic.div(
             denominator.args[1],
             denominator.args[0],
+            undefined,
         );
-        const newPrev = Semantic.mulFactors([numerator, reciprocal]);
+        const newPrev = Semantic.mulFactors([numerator, reciprocal], undefined);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -194,7 +212,7 @@ export const divByOne: Check = (prev, next, context) => {
     if (prev.type === "div") {
         const result1 = checker.checkStep(
             prev.args[1],
-            Semantic.number("1"),
+            Semantic.number("1", undefined),
             context,
         );
         if (result1) {
@@ -231,7 +249,7 @@ export const divBySame: Check = (prev, next, context) => {
         const result1 = checker.checkStep(numerator, denominator, context);
 
         if (result1) {
-            const newPrev = Semantic.number("1");
+            const newPrev = Semantic.number("1", undefined);
             const result2 = checker.checkStep(newPrev, next, context);
 
             // TODO: check cases where result1.length > 0, add if statements
@@ -257,7 +275,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
     if (
         prev.type === "div" &&
-        !exactMatch(prev.args[0], Semantic.number("1"), context)
+        !exactMatch(prev.args[0], Semantic.number("1", undefined), context)
     ) {
         const [numerator, denominator] = prev.args;
         // What if numerator is a mul itself?  Should we have a step that
@@ -266,8 +284,12 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         // The problem is that this can lead to:
         // (mul a b (div 1 c)) -> (mul a (div b c)) -> (div (mul a b) c)
         // and then back to (mul (mul a b) (div 1 c))
-        const newDiv = Semantic.div(Semantic.number("1"), denominator);
-        const newPrev = Semantic.mul([numerator, newDiv]);
+        const newDiv = Semantic.div(
+            Semantic.number("1", undefined),
+            denominator,
+            undefined,
+        );
+        const newPrev = Semantic.mul([numerator, newDiv], undefined);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -288,7 +310,11 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         const divIndex = prev.args.findIndex(
             (arg) =>
                 arg.type === "div" &&
-                !exactMatch(arg.args[0], Semantic.number("1"), context),
+                !exactMatch(
+                    arg.args[0],
+                    Semantic.number("1", undefined),
+                    context,
+                ),
         );
 
         const div = prev.args[divIndex];
@@ -296,17 +322,25 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         if (div && div.type === "div") {
             const [numerator, denominator] = div.args;
 
-            const newFactor = Semantic.mul([
-                numerator,
-                Semantic.div(Semantic.number("1"), denominator),
-            ]);
+            const newFactor = Semantic.mul(
+                [
+                    numerator,
+                    Semantic.div(
+                        Semantic.number("1", undefined),
+                        denominator,
+                        undefined,
+                    ),
+                ],
+                undefined,
+            );
 
             const newPrev = Semantic.mul(
                 [
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<Semantic.Expression>,
+                ] as TwoOrMore<Expression>,
+                undefined,
                 prev.implicit,
             );
 
@@ -344,7 +378,7 @@ export const mulInverse: Check = (prev, next, context) => {
     const factors = Semantic.getFactors(prev);
     const beforeSteps: Step[] = [];
 
-    const one = Semantic.number("1");
+    const one = Semantic.number("1", undefined);
 
     // TODO: extract this code into a helper so that we can test it better
     for (let i = 0; i < factors.length; i++) {
@@ -380,10 +414,10 @@ export const mulInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.mulFactors(
             factors
-                .map((term: Semantic.Expression, index: number) => {
+                .map((term: Expression, index: number) => {
                     if (indicesToRemove.includes(index)) {
                         if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("1");
+                            return Semantic.number("1", undefined);
                         } else {
                             return null;
                         }
@@ -392,6 +426,7 @@ export const mulInverse: Check = (prev, next, context) => {
                     }
                 })
                 .filter(notNull),
+            undefined,
         );
         const result = checker.checkStep(newPrev, next, context);
 
@@ -422,7 +457,11 @@ export const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type !== "div" &&
             prev.args[1].type === "div" &&
-            exactMatch(prev.args[1].args[0], Semantic.number("1"), context)
+            exactMatch(
+                prev.args[1].args[0],
+                Semantic.number("1", undefined),
+                context,
+            )
         ) {
             return;
         }
@@ -431,14 +470,18 @@ export const mulByFrac: Check = (prev, next, context) => {
         if (
             prev.args[0].type === "div" &&
             prev.args[1].type !== "div" &&
-            exactMatch(prev.args[0].args[0], Semantic.number("1"), context)
+            exactMatch(
+                prev.args[0].args[0],
+                Semantic.number("1", undefined),
+                context,
+            )
         ) {
             return;
         }
     }
 
-    const numFactors: Semantic.Expression[] = [];
-    const denFactors: Semantic.Expression[] = [];
+    const numFactors: Expression[] = [];
+    const denFactors: Expression[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;
@@ -450,8 +493,9 @@ export const mulByFrac: Check = (prev, next, context) => {
     }
 
     const newPrev = Semantic.div(
-        Semantic.mulFactors(numFactors, true),
-        Semantic.mulFactors(denFactors, true), // denFactors = [] -> 1
+        Semantic.mulFactors(numFactors, undefined, true),
+        Semantic.mulFactors(denFactors, undefined, true), // denFactors = [] -> 1
+        undefined,
     );
     const result = checker.checkStep(newPrev, next, context);
 

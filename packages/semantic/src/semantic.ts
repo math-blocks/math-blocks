@@ -1,55 +1,58 @@
 /**
  * AST describing semantic expression of mathematic expressions.
  */
-type Node = {id: number};
+type Node<Loc> = {
+    id: number;
+    loc: Loc;
+};
 
-export type Num<Value extends string = string> = Node & {
+export type Num<Loc, Value extends string = string> = Node<Loc> & {
     type: "number";
     value: Value;
     // TODO: unit
     // without 'unit', the number is considered dimensionless
 };
 
-export type Infinity = Node & {
+export type Infinity<Loc> = Node<Loc> & {
     type: "infinity";
 };
 
-export type Pi = Node & {
+export type Pi<Loc> = Node<Loc> & {
     type: "pi";
 };
 
-export type Ident = Node & {
+export type Ident<Loc> = Node<Loc> & {
     type: "identifier";
     name: string;
     // TODO: unit
     // it's possible that variables could have units associated with them as well
     // it seems like a bit of an edge case though
 
-    subscript?: Expression;
+    subscript?: Expression<Loc | undefined>;
 };
 
-export type Ellipsis = Node & {
+export type Ellipsis<Loc> = Node<Loc> & {
     type: "ellipsis";
 };
 
-export type Add = Node & {
+export type Add<Loc> = Node<Loc> & {
     type: "add";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Mul = Node & {
+export type Mul<Loc> = Node<Loc> & {
     type: "mul";
     implicit: boolean;
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Func = Node & {
+export type Func<Loc> = Node<Loc> & {
     type: "func";
     // We want to limit this to identifiers and expression of identifiers
     // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-    func: Expression;
+    func: Expression<Loc | undefined>;
     // There's a special case when each of the args is a variable then it could be a variable definition
-    args: Expression[];
+    args: Expression<Loc | undefined>[];
 };
 
 // I'm not sure how useful having a special node for this is given we'll have
@@ -57,9 +60,9 @@ export type Func = Node & {
 // things that can be defined include functions
 // type FuncDef = {
 //     type: "funcdef",
-//     func: Expression | Expression,
+//     func: Expression<Loc> | Expression<Loc>,
 //     bvars: Identifier[],
-//     value: Expression,
+//     value: Expression<Loc>,
 // }
 
 // f(x, y) = 2x + y
@@ -71,340 +74,343 @@ export type Func = Node & {
 // given a statement like this we can derive a deeper semantic meaning
 // from the separate parts
 
-export type Div = Node & {
+export type Div<Loc> = Node<Loc> & {
     type: "div";
-    args: [Expression, Expression];
+    args: [Expression<Loc | undefined>, Expression<Loc | undefined>];
 };
 
-export type Mod = Node & {
+export type Mod<Loc> = Node<Loc> & {
     type: "mod";
-    args: [Expression, Expression];
+    args: [Expression<Loc | undefined>, Expression<Loc | undefined>];
 };
 
-export type Root = Node & {
+export type Root<Loc> = Node<Loc> & {
     type: "root";
-    radicand: Expression;
-    index: Expression;
+    radicand: Expression<Loc | undefined>;
+    index: Expression<Loc | undefined>;
 };
 
-export type Exp = Node & {
+export type Exp<Loc> = Node<Loc> & {
     type: "exp";
-    base: Expression;
-    exp: Expression;
+    base: Expression<Loc | undefined>;
+    exp: Expression<Loc | undefined>;
 };
 
-export type Log = Node & {
+export type Log<Loc> = Node<Loc> & {
     type: "log";
-    base: Expression;
-    arg: Expression;
+    base: Expression<Loc | undefined>;
+    arg: Expression<Loc | undefined>;
 };
 
-export type Neg = Node & {
+export type Neg<Loc> = Node<Loc> & {
     type: "neg";
     subtraction: boolean;
-    arg: Expression;
+    arg: Expression<Loc | undefined>;
 };
 
-export type Abs = Node & {
+export type Abs<Loc> = Node<Loc> & {
     type: "abs";
-    arg: Expression;
+    arg: Expression<Loc | undefined>;
 };
 
 // TODO: think about how to define other types of bounds, e.g. sets
-export type Limits = Node & {
+export type Limits<Loc> = Node<Loc> & {
     type: "limits";
-    args: [Expression, Expression]; // lower, upper
+    args: [Expression<Loc>, Expression<Loc>]; // lower, upper
 };
 
-export type Sum = Node & {
+export type Sum<Loc> = Node<Loc> & {
     type: "sum";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    arg: Expression<Loc | undefined>;
+    bvar: Ident<Loc | undefined>;
+    limits: Limits<Loc | undefined>;
 };
 
-export type Prod = Node & {
+export type Prod<Loc> = Node<Loc> & {
     type: "prod";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    arg: Expression<Loc | undefined>;
+    bvar: Ident<Loc | undefined>;
+    limits: Limits<Loc | undefined>;
 };
 
-export type Limit = Node & {
+export type Limit<Loc> = Node<Loc> & {
     type: "lim";
     // side: "left" | "right" | "both";
-    bvar: Ident;
-    target: Expression;
-    value: Expression;
+    bvar: Ident<Loc | undefined>;
+    target: Expression<Loc | undefined>;
+    value: Expression<Loc | undefined>;
 };
 
-export type Diff = Node & {
+export type Diff<Loc> = Node<Loc> & {
     type: "diff";
     // TODO: figure out how to handle degrees
-    args: [Expression]; // arg
+    args: [Expression<Loc | undefined>]; // arg
 };
 
-export type PDiff = Node & {
+export type PDiff<Loc> = Node<Loc> & {
     type: "pdiff";
-    args: [Expression, Expression]; // numerator, denominator
+    args: [Expression<Loc | undefined>, Expression<Loc | undefined>]; // numerator, denominator
 };
 
 // TODO: think about multiple integrals
-export type Int = Node & {
+export type Int<Loc> = Node<Loc> & {
     type: "int";
-    arg: Expression;
-    bvar: Ident;
-    limits: Limits;
+    arg: Expression<Loc | undefined>;
+    bvar: Ident<Loc | undefined>;
+    limits: Limits<Loc | undefined>;
 };
 
 // TODO
 // - Complex numbers
 // - Round, Ceil, Floor, etc.
 
-export type NumericExpression =  // numbers
-    | Num
-    | Infinity
-    | Pi
-    | Ident
-    | Ellipsis
+export type NumericExpression<Loc> =  // numbers
+    | Num<Loc>
+    | Infinity<Loc>
+    | Pi<Loc>
+    | Ident<Loc>
+    | Ellipsis<Loc>
 
     // n-ary
-    | Add
-    | Mul
-    | Func
+    | Add<Loc>
+    | Mul<Loc>
+    | Func<Loc>
 
     // binary
-    | Div
-    | Mod
-    | Root
-    | Exp
-    | Log
+    | Div<Loc>
+    | Mod<Loc>
+    | Root<Loc>
+    | Exp<Loc>
+    | Log<Loc>
 
     // unary
-    | Neg
-    | Abs
-    | Sum
-    | Prod
-    | Limit
-    | Diff
-    | Int;
+    | Neg<Loc>
+    | Abs<Loc>
+    | Sum<Loc>
+    | Prod<Loc>
+    | Limit<Loc>
+    | Diff<Loc>
+    | Int<Loc>;
 
-export type Eq = Node & {
+export type Eq<Loc> = Node<Loc> & {
     type: "eq";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Neq = Node & {
+export type Neq<Loc> = Node<Loc> & {
     type: "neq";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Lt = Node & {
+export type Lt<Loc> = Node<Loc> & {
     type: "lt";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Lte = Node & {
+export type Lte<Loc> = Node<Loc> & {
     type: "lte";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Gt = Node & {
+export type Gt<Loc> = Node<Loc> & {
     type: "gt";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Gte = Node & {
+export type Gte<Loc> = Node<Loc> & {
     type: "gte";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type And = Node & {
+export type And<Loc> = Node<Loc> & {
     type: "and";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Or = Node & {
+export type Or<Loc> = Node<Loc> & {
     type: "or";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Xor = Node & {
+export type Xor<Loc> = Node<Loc> & {
     type: "xor";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type Not = Node & {
+export type Not<Loc> = Node<Loc> & {
     type: "not";
-    args: [Expression];
+    args: [Expression<Loc | undefined>];
 };
 
-export type Implies = Node & {
+export type Implies<Loc> = Node<Loc> & {
     type: "implies";
-    args: [Expression, Expression];
+    args: [Expression<Loc | undefined>, Expression<Loc | undefined>];
 };
 
-export type Iff = Node & {
+export type Iff<Loc> = Node<Loc> & {
     type: "iff";
-    args: [Expression, Expression];
+    args: [Expression<Loc | undefined>, Expression<Loc | undefined>];
 };
 
-export type True = Node & {
+export type True<Loc> = Node<Loc> & {
     type: "true";
 };
 
-export type False = Node & {
+export type False<Loc> = Node<Loc> & {
     type: "false";
 };
 
-export type Subset = Node & {
+export type Subset<Loc> = Node<Loc> & {
     type: "subset";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type ProperSubset = Node & {
+export type ProperSubset<Loc> = Node<Loc> & {
     type: "prsubset";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type NotSubset = Node & {
+export type NotSubset<Loc> = Node<Loc> & {
     type: "notsubset";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type NotProperSubset = Node & {
+export type NotProperSubset<Loc> = Node<Loc> & {
     type: "notprsubset";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc | undefined>>;
 };
 
-export type In = Node & {
+export type In<Loc> = Node<Loc> & {
     type: "in";
-    element: Expression;
-    set: Expression; // identifier or set
+    element: Expression<Loc | undefined>;
+    set: Expression<Loc | undefined>; // identifier or set
 };
 
-export type NotIn = Node & {
+export type NotIn<Loc> = Node<Loc> & {
     type: "notin";
-    element: Expression;
-    set: Expression; // identifier or set
+    element: Expression<Loc | undefined>;
+    set: Expression<Loc | undefined>; // identifier or set
 };
 
-export type LogicExpression =
-    | Ident
+export type LogicExpression<Loc> =
+    | Ident<Loc>
 
     // values
-    | True
-    | False
+    | True<Loc>
+    | False<Loc>
 
     // operations
-    | And
-    | Or
-    | Not
-    | Xor
-    | Implies
-    | Iff
+    | And<Loc>
+    | Or<Loc>
+    | Not<Loc>
+    | Xor<Loc>
+    | Implies<Loc>
+    | Iff<Loc>
 
-    // relations, result in a Expression which may be evaluated to True or False
-    | Eq
-    | Neq
-    | Lt
-    | Lte
-    | Gt
-    | Gte
+    // relations, result in a Expression<Loc> which may be evaluated to True or False
+    | Eq<Loc>
+    | Neq<Loc>
+    | Lt<Loc>
+    | Lte<Loc>
+    | Gt<Loc>
+    | Gte<Loc>
 
     // set relations
-    | In
-    | NotIn
-    | Subset
-    | ProperSubset
-    | NotSubset
-    | NotProperSubset;
+    | In<Loc>
+    | NotIn<Loc>
+    | Subset<Loc>
+    | ProperSubset<Loc>
+    | NotSubset<Loc>
+    | NotProperSubset<Loc>;
 
 // TODO: Predicate Logic
 
 // type Universal = {
 //     type: "univ",
 //     bvar: Identifier,
-//     arg: Expression,
+//     arg: Expression<Loc>,
 // };
 
 // type Existential = {
 //     type: "exist",
 //     bvar: Identifier,
-//     arg: Expression,
+//     arg: Expression<Loc>,
 // };
 
 // type Predicate = {
 // };
 
 // TODO: handle things like { x^2 | x ∈ ℕ } and stuff like that
-export type Set = Node & {
+export type Set<Loc> = Node<Loc> & {
     type: "set";
-    args: Expression[]; // could also include shapes, strings, images, etc.
+    args: Expression<Loc>[]; // could also include shapes, strings, images, etc.
 };
 
-export type EmptySet = Node & {
+export type EmptySet<Loc> = Node<Loc> & {
     type: "empty";
 };
 
-export type Union = Node & {
+export type Union<Loc> = Node<Loc> & {
     type: "union";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc>>;
 };
 
-export type Intersection = Node & {
+export type Intersection<Loc> = Node<Loc> & {
     type: "intersection";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc>>;
 };
 
-export type SetDiff = Node & {
+export type SetDiff<Loc> = Node<Loc> & {
     type: "setdiff";
-    args: [Expression, Expression];
+    args: [Expression<Loc>, Expression<Loc>];
 };
 
-export type CartesianProduct = Node & {
+export type CartesianProduct<Loc> = Node<Loc> & {
     type: "cartesianproduct";
-    args: TwoOrMore<Expression>;
+    args: TwoOrMore<Expression<Loc>>;
 };
 
-export type Naturals = Node & {
+export type Naturals<Loc> = Node<Loc> & {
     type: "naturals";
 };
 
-export type Integers = Node & {
+export type Integers<Loc> = Node<Loc> & {
     type: "integers";
 };
 
-export type Rationals = Node & {
+export type Rationals<Loc> = Node<Loc> & {
     type: "rationals";
 };
 
-export type Reals = Node & {
+export type Reals<Loc> = Node<Loc> & {
     type: "reals";
 };
 
-export type Complexes = Node & {
+export type Complexes<Loc> = Node<Loc> & {
     type: "complexes";
 };
 
-export type SetExpression =
-    | Set
+export type SetExpression<Loc> =
+    | Set<Loc>
 
     // set operations
-    | EmptySet
-    | Union
-    | Intersection
-    | SetDiff
+    | EmptySet<Loc>
+    | Union<Loc>
+    | Intersection<Loc>
+    | SetDiff<Loc>
 
     // number sets
-    | CartesianProduct
-    | Naturals
-    | Integers
-    | Rationals
-    | Reals
-    | Complexes;
+    | CartesianProduct<Loc>
+    | Naturals<Loc>
+    | Integers<Loc>
+    | Rationals<Loc>
+    | Reals<Loc>
+    | Complexes<Loc>;
 
-export type Expression = NumericExpression | LogicExpression | SetExpression;
+export type Expression<Loc> =
+    | NumericExpression<Loc>
+    | LogicExpression<Loc>
+    | SetExpression<Loc>;
 
 export type Zero = Num<"0">;
 export type One = Num<"1">;
