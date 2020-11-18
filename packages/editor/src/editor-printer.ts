@@ -13,6 +13,8 @@ type ID = {
     id: number;
 };
 
+// TODO: write more tests for this
+// TODO: have a top-evel function that returns an Editor.Row
 const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
     switch (expr.type) {
         case "identifier": {
@@ -23,7 +25,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
         }
         case "number": {
             return {
-                id: expr.id,
+                id: expr.id, // TODO: generate a new id
                 type: "row",
                 children: expr.value
                     .split("")
@@ -40,6 +42,8 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                     children.push(Editor.glyph("+"));
                 }
 
+                // number is returned as a row so if we do this check, every
+                // number will be encapsulated in parens.
                 const node = print(arg);
                 if (node.type === "row") {
                     if (arg.type === "add") {
@@ -61,7 +65,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             children.shift(); // remove extra "+"
 
             return {
-                id: expr.id, // this doesn't really make sense
+                id: expr.id, // TODO: generate a new id
                 type: "row",
                 children: children,
             };
@@ -69,29 +73,45 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
         case "mul": {
             const children: Editor.Node<Editor.Glyph, ID>[] = [];
 
+            const wrapAll = expr.args.slice(1).some((arg) => {
+                if (arg.type === "number") {
+                    return true;
+                }
+                if (arg.type === "neg" && arg.arg.type === "number") {
+                    return true;
+                }
+                return false;
+            });
+
             for (const arg of expr.args) {
                 const node = print(arg);
+                const wrap = (wrapAll && expr.implicit) || arg.type === "add";
+
+                if (wrap) {
+                    children.push(Editor.glyph("("));
+                }
+
                 if (node.type === "row") {
-                    if (arg.type === "add" || arg.type === "number") {
-                        children.push(Editor.glyph("("));
-                    }
                     children.push(...node.children);
-                    if (arg.type === "add" || arg.type === "number") {
-                        children.push(Editor.glyph(")"));
-                    }
                 } else {
                     children.push(node);
                 }
+
+                if (wrap) {
+                    children.push(Editor.glyph(")"));
+                }
+
                 if (!expr.implicit) {
                     children.push(Editor.glyph("*"));
                 }
             }
+
             if (!expr.implicit) {
-                children.pop(); // remove extra "+"
+                children.pop(); // remove extra "*"
             }
 
             return {
-                id: expr.id, // this doesn't really make sense
+                id: expr.id, // TODO: generate a new id
                 type: "row",
                 children: children,
             };
@@ -104,20 +124,26 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                 expr.arg.type !== "identifier"
             ) {
                 return {
-                    id: expr.id,
+                    id: expr.id, // TODO: generate a new id
                     type: "row",
                     children: [
-                        Editor.glyph("-"),
+                        Editor.glyph("\u2212"),
                         Editor.glyph("("),
                         ...node.children,
                         Editor.glyph(")"),
                     ],
                 };
+            } else if (node.type === "row") {
+                return {
+                    id: expr.id, // TODO: generate a new id
+                    type: "row",
+                    children: [Editor.glyph("\u2212"), ...node.children],
+                };
             } else {
                 return {
-                    id: expr.id,
+                    id: expr.id, // TODO: generate a new id
                     type: "row",
-                    children: [Editor.glyph("-"), node],
+                    children: [Editor.glyph("\u2212"), node],
                 };
             }
         }
@@ -125,7 +151,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             const numerator = print(expr.args[0]);
             const denominator = print(expr.args[1]);
             return {
-                id: expr.id,
+                id: expr.id, // TODO: generate a new id
                 type: "frac",
                 children: [
                     numerator.type === "row"

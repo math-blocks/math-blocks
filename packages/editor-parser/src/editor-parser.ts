@@ -33,6 +33,7 @@ const isIdentifier = (node: Token): boolean =>
 const getPrefixParselet = (
     token: Token,
 ): Parser.PrefixParselet<Token, Semantic.Expression, Operator> => {
+    token.type; // ?
     switch (token.type) {
         case "atom": {
             const atom = token.value;
