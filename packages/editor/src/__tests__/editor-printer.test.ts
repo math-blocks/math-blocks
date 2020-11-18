@@ -199,7 +199,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.frac("a", "b"));
+        expect(node).toEqualMath(Editor.row([Util.frac("a", "b")]));
     });
 
     test("(a+b)/(x+y)", () => {
@@ -210,7 +210,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.frac("a+b", "x+y"));
+        expect(node).toEqualMath(Editor.row([Util.frac("a+b", "x+y")]));
     });
 
     test("a + -a", () => {
@@ -269,5 +269,16 @@ describe("print", () => {
         const node = print(ast);
 
         expect(node).toEqualMath(Util.row("a*b*1"));
+    });
+
+    test("y = x + 1", () => {
+        const ast = Semantic.eq([
+            Semantic.identifier("y"),
+            Semantic.add([Semantic.identifier("x"), Semantic.number("1")]),
+        ]);
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("y=x+1"));
     });
 });

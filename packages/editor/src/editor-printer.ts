@@ -14,7 +14,6 @@ type ID = {
 };
 
 // TODO: write more tests for this
-// TODO: have a top-evel function that returns an Editor.Row
 const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
     switch (expr.type) {
         case "identifier": {
@@ -163,10 +162,37 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                 ],
             };
         }
+        case "eq": {
+            const children: Editor.Node<Editor.Glyph, ID>[] = [];
+
+            for (const arg of expr.args) {
+                const node = print(arg);
+                if (node.type === "row") {
+                    children.push(...node.children);
+                } else {
+                    children.push(node);
+                }
+                children.push(Editor.glyph("="));
+            }
+
+            children.pop(); // remove extra "="
+
+            return {
+                id: expr.id, // TODO: generate a new id
+                type: "row",
+                children: children,
+            };
+        }
         default: {
-            throw new Error("print doesn't handle this case yet");
+            throw new Error(`print doesn't handle ${expr.type} nodes yet`);
         }
     }
 };
 
-export default print;
+export default (expr: Semantic.Expression): Editor.Row<Editor.Glyph, ID> => {
+    const node = print(expr);
+    if (node.type === "row") {
+        return node;
+    }
+    return Editor.row([node]);
+};

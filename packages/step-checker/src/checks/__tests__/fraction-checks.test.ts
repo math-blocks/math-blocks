@@ -1,14 +1,10 @@
 import {serializer} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/text-parser";
-import {parse as _parse} from "@math-blocks/editor-parser";
-import * as Editor from "@math-blocks/editor";
-import * as Semantic from "@math-blocks/semantic";
 
 import StepChecker from "../../step-checker";
 import {Context} from "../../types";
 
-import {deepEquals} from "../util";
-import {checkStep} from "../test-util";
+import {checkStep, toParseLike} from "../test-util";
 import {mulOne} from "../axiom-checks";
 import {divIsMulByOneOver, mulInverse, divBySame} from "../fraction-checks";
 import {
@@ -19,33 +15,7 @@ import {
 } from "../basic-checks";
 
 expect.addSnapshotSerializer(serializer);
-
-type ID = {
-    id: number;
-};
-
-const myParse = (text: string): Semantic.Expression => {
-    let node = Editor.print(parse(text)) as Editor.Row<Editor.Glyph, ID>;
-    if (node.type !== "row") {
-        node = Editor.row([node]);
-    }
-    return _parse(node);
-};
-
-expect.extend({
-    toParseLike(received, expected) {
-        if (deepEquals(received, myParse(expected))) {
-            return {
-                message: () => `expected steps not to match`,
-                pass: true,
-            };
-        }
-        return {
-            message: () => `expected steps not to match`,
-            pass: false,
-        };
-    },
-});
+expect.extend({toParseLike});
 
 describe("Fraction checks", () => {
     it("a * 1/b -> a / b", () => {

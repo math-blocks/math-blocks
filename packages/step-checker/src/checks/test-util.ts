@@ -1,7 +1,12 @@
+import * as Editor from "@math-blocks/editor";
+import * as Semantic from "@math-blocks/semantic";
+import {parse as _parse} from "@math-blocks/editor-parser";
 import {parse} from "@math-blocks/text-parser";
 
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";
+
+import {deepEquals} from "./util";
 
 export const checkStep = (
     prev: string,
@@ -27,4 +32,29 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
         }
     }
     throw new Error("Unexpected result");
+};
+
+type ID = {
+    id: number;
+};
+
+const myParse = (text: string): Semantic.Expression => {
+    const node = Editor.print(parse(text)) as Editor.Row<Editor.Glyph, ID>;
+    return _parse(node);
+};
+
+export const toParseLike = (
+    received: string,
+    expected: string,
+): {message: () => string; pass: boolean} => {
+    if (deepEquals(received, myParse(expected))) {
+        return {
+            message: () => `expected steps not to match`,
+            pass: true,
+        };
+    }
+    return {
+        message: () => `expected steps not to match`,
+        pass: false,
+    };
 };

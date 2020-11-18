@@ -1,27 +1,11 @@
-import {parse} from "@math-blocks/text-parser";
 import {serializer} from "@math-blocks/semantic";
 
 import {Status, MistakeId} from "../../enums";
 
-import {deepEquals} from "../util";
-import {checkStep, checkMistake} from "../test-util";
+import {checkStep, checkMistake, toParseLike} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-
-expect.extend({
-    toParseLike(received, expected) {
-        if (deepEquals(received, parse(expected))) {
-            return {
-                message: () => `expected steps not to match`,
-                pass: true,
-            };
-        }
-        return {
-            message: () => `expected steps not to match`,
-            pass: false,
-        };
-    },
-});
+expect.extend({toParseLike});
 
 describe("Equation checks", () => {
     describe("adding the same value to both sides", () => {
