@@ -1,8 +1,8 @@
 /**
  * Converts a Semantic AST to an Editor AST.
  */
-
 import * as Semantic from "@math-blocks/semantic";
+
 import * as Editor from "./editor-ast";
 
 // TODO: when parsing editor nodes provide some way to link to the IDs of
@@ -23,13 +23,12 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             return Editor.glyph(expr.name);
         }
         case "number": {
-            return {
-                id: expr.id, // TODO: generate a new id
-                type: "row",
-                children: expr.value
-                    .split("")
-                    .map((char) => Editor.glyph(char)),
-            };
+            // How do we avoid creating a bunch of ids that we immediately
+            // throw away because this number is part of a larger expression
+            // and thus contained within a larger row?
+            return Editor.row(
+                expr.value.split("").map((char) => Editor.glyph(char)),
+            );
         }
         case "add": {
             const children: Editor.Node<Editor.Glyph, ID>[] = [];
@@ -63,11 +62,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             }
             children.shift(); // remove extra "+"
 
-            return {
-                id: expr.id, // TODO: generate a new id
-                type: "row",
-                children: children,
-            };
+            return Editor.row(children);
         }
         case "mul": {
             const children: Editor.Node<Editor.Glyph, ID>[] = [];
@@ -109,11 +104,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                 children.pop(); // remove extra "*"
             }
 
-            return {
-                id: expr.id, // TODO: generate a new id
-                type: "row",
-                children: children,
-            };
+            return Editor.row(children);
         }
         case "neg": {
             const node = print(expr.arg);
@@ -122,45 +113,27 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
                 expr.arg.type !== "number" &&
                 expr.arg.type !== "identifier"
             ) {
-                return {
-                    id: expr.id, // TODO: generate a new id
-                    type: "row",
-                    children: [
-                        Editor.glyph("\u2212"),
-                        Editor.glyph("("),
-                        ...node.children,
-                        Editor.glyph(")"),
-                    ],
-                };
+                return Editor.row([
+                    Editor.glyph("\u2212"),
+                    Editor.glyph("("),
+                    ...node.children,
+                    Editor.glyph(")"),
+                ]);
             } else if (node.type === "row") {
-                return {
-                    id: expr.id, // TODO: generate a new id
-                    type: "row",
-                    children: [Editor.glyph("\u2212"), ...node.children],
-                };
+                return Editor.row([Editor.glyph("\u2212"), ...node.children]);
             } else {
-                return {
-                    id: expr.id, // TODO: generate a new id
-                    type: "row",
-                    children: [Editor.glyph("\u2212"), node],
-                };
+                return Editor.row([Editor.glyph("\u2212"), node]);
             }
         }
         case "div": {
             const numerator = print(expr.args[0]);
             const denominator = print(expr.args[1]);
-            return {
-                id: expr.id, // TODO: generate a new id
-                type: "frac",
-                children: [
-                    numerator.type === "row"
-                        ? numerator
-                        : Editor.row([numerator]),
-                    denominator.type === "row"
-                        ? denominator
-                        : Editor.row([denominator]),
-                ],
-            };
+            return Editor.frac(
+                numerator.type === "row" ? numerator.children : [numerator],
+                denominator.type === "row"
+                    ? denominator.children
+                    : [denominator],
+            );
         }
         case "eq": {
             const children: Editor.Node<Editor.Glyph, ID>[] = [];
@@ -177,11 +150,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
 
             children.pop(); // remove extra "="
 
-            return {
-                id: expr.id, // TODO: generate a new id
-                type: "row",
-                children: children,
-            };
+            return Editor.row(children);
         }
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);
