@@ -284,3 +284,34 @@ export const Summation: React.SFC<{}> = () => {
 
     return <MathRenderer box={sum} />;
 };
+
+export const ColorizedFraction: React.SFC<{}> = () => {
+    const fontSize = 60;
+    const colorMap = new Map<number, string>();
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+        colorMap: colorMap,
+    };
+
+    const fracNode = frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]);
+
+    colorMap.set(fracNode.id, "darkcyan");
+    colorMap.set(fracNode.children[1].id, "orange");
+    const subsup = fracNode.children[1].children[1];
+    if (subsup.type === "subsup" && subsup.children[1]) {
+        colorMap.set(subsup.children[1].id, "pink");
+    }
+
+    console.log(colorMap);
+
+    // console.log(editorNode.children[1].id);
+
+    const sum = typeset(fracNode, context) as Layout.Box;
+
+    console.log(sum);
+
+    return <MathRenderer box={sum} />;
+};

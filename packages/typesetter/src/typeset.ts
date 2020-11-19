@@ -405,6 +405,7 @@ const typeset = (
                     newMultiplier,
                 );
                 subBox.id = sub.id;
+                subBox.color = context?.colorMap?.get(sub.id);
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
                     const jDepth =
@@ -435,6 +436,7 @@ const typeset = (
                     newMultiplier,
                 );
                 supBox.id = sup.id;
+                supBox.color = context?.colorMap?.get(sup.id);
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
                     const jDepth =
@@ -458,6 +460,7 @@ const typeset = (
             return parentBox;
         }
         case "limits": {
+            // TODO: add colorization
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const [lower, upper] = node.children;
 
@@ -553,6 +556,7 @@ const typeset = (
                 }),
                 newMultiplier,
             );
+            numerator.color = context?.colorMap?.get(node.children[0].id);
             const denominator = Layout.hpackNat(
                 typesetChildren(node.children[1].children, {
                     ...context,
@@ -560,6 +564,7 @@ const typeset = (
                 }),
                 newMultiplier,
             );
+            denominator.color = context?.colorMap?.get(node.children[1].id);
 
             // TODO: try to reuse getCharDepth
             if (jmetrics) {
@@ -592,9 +597,11 @@ const typeset = (
                 denominator,
             );
             frac.id = node.id;
+            frac.color = context?.colorMap?.get(node.id);
             return frac;
         }
         case "root": {
+            // TODO: add colorization
             const radicand = Layout.hpackNat(
                 typesetChildren(node.children[0].children, context), // radicand
                 multiplier,
@@ -623,6 +630,7 @@ const typeset = (
             return root;
         }
         case "atom": {
+            // TODO: add colorization
             const {value} = node;
             const glyph = _makeGlyph(value.char);
             glyph.id = node.id;
