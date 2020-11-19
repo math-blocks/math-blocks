@@ -1,9 +1,21 @@
 import {parse} from "@math-blocks/text-parser";
+import * as Editor from "@math-blocks/editor";
+import {parse as _parse} from "@math-blocks/editor-parser";
+import * as Semantic from "@math-blocks/semantic";
 
 import StepChecker from "../../step-checker";
 import {hasArgs} from "../util";
 
 import {checkArgs} from "../basic-checks";
+
+type ID = {
+    id: number;
+};
+
+const myParse = (text: string): Semantic.Expression => {
+    const node = Editor.print(parse(text)) as Editor.Row<Editor.Glyph, ID>;
+    return _parse(node);
+};
 
 describe("checkArgs", () => {
     const checker = new StepChecker();
@@ -13,8 +25,8 @@ describe("checkArgs", () => {
         jest.spyOn(checker, "checkStep");
         expect.assertions(2);
 
-        const sum1 = parse("1 + 2 + 3");
-        const sum2 = parse("1 + 2 + 3 + 4");
+        const sum1 = myParse("1 + 2 + 3");
+        const sum2 = myParse("1 + 2 + 3 + 4");
         if (hasArgs(sum1) && hasArgs(sum2)) {
             const result = checkArgs(sum1, sum2, {
                 checker,

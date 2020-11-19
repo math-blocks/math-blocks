@@ -4,8 +4,7 @@ import {parse} from "@math-blocks/text-parser";
 import StepChecker from "../../step-checker";
 import {Context} from "../../types";
 
-import {deepEquals} from "../util";
-import {checkStep} from "../test-util";
+import {checkStep, toParseLike} from "../test-util";
 import {mulOne} from "../axiom-checks";
 import {divIsMulByOneOver, mulInverse, divBySame} from "../fraction-checks";
 import {
@@ -16,21 +15,7 @@ import {
 } from "../basic-checks";
 
 expect.addSnapshotSerializer(serializer);
-
-expect.extend({
-    toParseLike(received, expected) {
-        if (deepEquals(received, parse(expected))) {
-            return {
-                message: () => `expected steps not to match`,
-                pass: true,
-            };
-        }
-        return {
-            message: () => `expected steps not to match`,
-            pass: false,
-        };
-    },
-});
+expect.extend({toParseLike});
 
 describe("Fraction checks", () => {
     it("a * 1/b -> a / b", () => {

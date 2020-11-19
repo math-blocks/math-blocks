@@ -1,31 +1,16 @@
 import {serializer} from "@math-blocks/semantic";
-import {parse} from "@math-blocks/text-parser";
 
-import {checkStep} from "../test-util";
-import {deepEquals} from "../util";
+import {checkStep, toParseLike} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-
-expect.extend({
-    toParseLike(received, expected) {
-        if (deepEquals(received, parse(expected))) {
-            return {
-                message: () => `expected steps not to match`,
-                pass: true,
-            };
-        }
-        return {
-            message: () => `expected steps not to match`,
-            pass: false,
-        };
-    },
-});
+expect.extend({toParseLike});
 
 describe("Integer checks", () => {
     it("a + -a -> 0", () => {
         const result = checkStep("a + -a", "0");
 
         expect(result).toBeTruthy();
+        expect(result.steps[0].nodes[0]).toParseLike("a + -a");
         expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
             (add
               a

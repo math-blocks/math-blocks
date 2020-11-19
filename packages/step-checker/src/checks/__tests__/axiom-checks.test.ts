@@ -1,27 +1,12 @@
 import {serializer} from "@math-blocks/semantic";
-import {parse} from "@math-blocks/text-parser";
 
 import {MistakeId} from "../../enums";
 
-import {checkStep, checkMistake} from "../test-util";
-import {deepEquals} from "../util";
+import {checkStep, checkMistake, toParseLike} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
-expect.extend({
-    toParseLike(received, expected) {
-        if (deepEquals(received, parse(expected))) {
-            return {
-                message: () => `expected steps not to match`,
-                pass: true,
-            };
-        }
-        return {
-            message: () => `expected steps not to match`,
-            pass: false,
-        };
-    },
-});
+expect.extend({toParseLike});
 
 describe("Axiom checks", () => {
     describe("symmetricProperty", () => {
