@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
+import format from "xml-formatter";
 
-import {typeset, Layout} from "@math-blocks/typesetter";
+import {typeset, typesetWithWork, Layout} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor";
 import fontMetrics from "@math-blocks/metrics";
 
@@ -58,8 +59,9 @@ expect.extend({
 
         // TODO: format the output
         const output = ReactDOMServer.renderToStaticMarkup(element);
-        const svgText =
-            '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output;
+        const svgText = format(
+            '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output,
+        );
 
         // TODO: Determine if Jest is in `-u`?
         // can be done via the private API
@@ -216,16 +218,36 @@ describe("renderer", () => {
         });
     });
 
-    // TODO: fix this after refactoring how we show work
-    describe.skip("showing work", () => {
+    describe("showing work", () => {
         test("subtracting from both sides", () => {
-            const equationWithWork = typeset(
-                Editor.Util.row("(2x-1)+5=10"),
+            const state: Editor.State = {
+                rows: [
+                    {
+                        cursor: {
+                            path: [],
+                            prev: -Infinity,
+                            next: 0,
+                        },
+                        math: Editor.Util.row(
+                            "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
+                        ),
+                    },
+                    {
+                        cursor: {
+                            path: [],
+                            prev: -Infinity,
+                            next: 0,
+                        },
+                        math: Editor.Util.row(
+                            "\u0008\u0008-\u00085\u0008\u0008\u0008-\u00085\u0008",
+                        ),
+                    },
+                ],
+                rowIndex: 0,
+            };
+            const equationWithWork = typesetWithWork(
+                state,
                 context,
-                // {
-                //     lhs: Editor.Util.row("-5"),
-                //     rhs: Editor.Util.row("-5"),
-                // },
             ) as Layout.Box;
 
             expect(
