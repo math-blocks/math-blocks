@@ -4,13 +4,23 @@ import React from "react";
 import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
 
-import {typeset, typesetWithWork, Layout} from "@math-blocks/typesetter";
+import * as Core from "@math-blocks/core";
+import {typeset, Layout} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor";
 import fontMetrics from "@math-blocks/metrics";
 
 import {MathRenderer} from "@math-blocks/react";
+import {
+    ColorizedFraction,
+    Equation,
+    Limit,
+    Pythagoras,
+    QuadraticEquation,
+    ShowingWork,
+    Summation,
+} from "../../stories/2-math-renderer.stories";
 
-const {glyph, row, frac, root, limits, subsup} = Editor;
+const {glyph, row, subsup} = Editor;
 
 const fontSize = 60;
 const context = {
@@ -99,67 +109,31 @@ expect.extend({
 } as any);
 
 describe("renderer", () => {
-    test("equation", () => {
-        const linearEquation = typeset(
-            Editor.Util.row("2x+5=10"),
-            context,
-        ) as Layout.Box;
+    beforeEach(() => {
+        // Mock getId() so that we can have stable ids between tests.
+        let i = 0;
+        jest.spyOn(Core, "getId").mockImplementation(() => {
+            return i++;
+        });
+    });
 
-        expect(<MathRenderer box={linearEquation} />).toMatchSVGSnapshot();
+    test("equation", () => {
+        expect(<Equation />).toMatchSVGSnapshot();
     });
 
     describe("fractions", () => {
-        test("quadratic", () => {
-            const quadraticEquation = typeset(
-                row([
-                    glyph("x"),
-                    glyph("="),
-                    frac(
-                        [
-                            glyph("\u2212"),
-                            glyph("b"),
-                            glyph("\u00B1"),
-                            root(
-                                [
-                                    glyph("b"),
-                                    Editor.Util.sup("2"),
-                                    glyph("\u2212"),
-                                    glyph("4"),
-                                    glyph("a"),
-                                    glyph("c"),
-                                ],
-                                [],
-                            ),
-                        ],
-                        [glyph("2"), glyph("a")],
-                    ),
-                ]),
-                context,
-            ) as Layout.Box;
+        test("colorized", () => {
+            expect(<ColorizedFraction />).toMatchSVGSnapshot();
+        });
 
-            expect(
-                <MathRenderer box={quadraticEquation} />,
-            ).toMatchSVGSnapshot();
+        test("quadratic", () => {
+            expect(<QuadraticEquation />).toMatchSVGSnapshot();
         });
     });
 
     describe("subsup", () => {
         test("pythagoras", () => {
-            const pythagoras = typeset(
-                row([
-                    glyph("a"),
-                    Editor.Util.sup("2"),
-                    glyph("+"),
-                    glyph("b"),
-                    Editor.Util.sup("2"),
-                    glyph("="),
-                    glyph("c"),
-                    Editor.Util.sup("2"),
-                ]),
-                context,
-            ) as Layout.Box;
-
-            expect(<MathRenderer box={pythagoras} />).toMatchSVGSnapshot();
+            expect(<Pythagoras />).toMatchSVGSnapshot();
         });
 
         test("subscripts", () => {
@@ -185,74 +159,17 @@ describe("renderer", () => {
 
     describe("limits", () => {
         test("lim", () => {
-            const lim = typeset(
-                row([
-                    limits(row([glyph("l"), glyph("i"), glyph("m")]), [
-                        glyph("x"),
-                        glyph("—"),
-                        glyph(">"),
-                        glyph("0"),
-                    ]),
-                    glyph("x"),
-                ]),
-                context,
-            ) as Layout.Box;
-
-            expect(<MathRenderer box={lim} />).toMatchSVGSnapshot();
+            expect(<Limit />).toMatchSVGSnapshot();
         });
 
         test("sum", () => {
-            const sum = typeset(
-                row([
-                    limits(
-                        glyph("\u03a3"),
-                        [glyph("i"), glyph("="), glyph("0")],
-                        [glyph("\u221e")],
-                    ),
-                    frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
-                ]),
-                context,
-            ) as Layout.Box;
-
-            expect(<MathRenderer box={sum} />).toMatchSVGSnapshot();
+            expect(<Summation />).toMatchSVGSnapshot();
         });
     });
 
     describe("showing work", () => {
         test("subtracting from both sides", () => {
-            const state: Editor.State = {
-                rows: [
-                    {
-                        cursor: {
-                            path: [],
-                            prev: -Infinity,
-                            next: 0,
-                        },
-                        math: Editor.Util.row(
-                            "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
-                        ),
-                    },
-                    {
-                        cursor: {
-                            path: [],
-                            prev: -Infinity,
-                            next: 0,
-                        },
-                        math: Editor.Util.row(
-                            "\u0008\u0008-\u00085\u0008\u0008\u0008-\u00085\u0008",
-                        ),
-                    },
-                ],
-                rowIndex: 0,
-            };
-            const equationWithWork = typesetWithWork(
-                state,
-                context,
-            ) as Layout.Box;
-
-            expect(
-                <MathRenderer box={equationWithWork} />,
-            ).toMatchSVGSnapshot();
+            expect(<ShowingWork />).toMatchSVGSnapshot();
         });
     });
 });
