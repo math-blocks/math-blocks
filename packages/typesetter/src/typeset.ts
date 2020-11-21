@@ -460,7 +460,6 @@ const typeset = (
             return parentBox;
         }
         case "limits": {
-            // TODO: add colorization
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const [lower, upper] = node.children;
 
@@ -473,7 +472,7 @@ const typeset = (
                 newMultiplier,
             );
             lowerBox.id = lower.id;
-            const inner = typeset(node.inner, context);
+            lowerBox.color = context?.colorMap?.get(lowerBox.id);
 
             let upperBox: Layout.Box | undefined;
             if (upper) {
@@ -486,6 +485,7 @@ const typeset = (
                     newMultiplier,
                 );
                 upperBox.id = upper.id;
+                upperBox.color = context?.colorMap?.get(upperBox.id);
             }
 
             // TODO: try to reuse getCharDepth
@@ -511,6 +511,10 @@ const typeset = (
                     upperBox.height = Math.max(upperBox.height, EHeight);
                 }
             }
+
+            const inner = typeset(node.inner, context);
+            inner.id = node.inner.id;
+            inner.color = context?.colorMap?.get(inner.id);
 
             const innerWidth = Layout.getWidth(inner);
             const width = Math.max(
@@ -545,6 +549,8 @@ const typeset = (
                 multiplier,
             );
             limits.id = node.id;
+            limits.color = context?.colorMap?.get(limits.id);
+
             return limits;
         }
         case "frac": {
@@ -601,7 +607,6 @@ const typeset = (
             return frac;
         }
         case "root": {
-            // TODO: add colorization
             const radicand = Layout.hpackNat(
                 typesetChildren(node.children[0].children, context), // radicand
                 multiplier,
@@ -611,6 +616,10 @@ const typeset = (
             radicand.width = Math.max(radicand.width, 30 * multiplier);
             radicand.height = Math.max(radicand.height, Eheight * multiplier);
             radicand.depth = Math.max(radicand.depth, 0);
+            radicand.color = context?.colorMap?.get(radicand.id);
+
+            // TODO: make the surd stretchy
+            const surd = Layout.hpackNat([_makeGlyph("\u221A")], multiplier);
             const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
             const vbox = Layout.makeVBox(
                 radicand.width,
@@ -619,18 +628,18 @@ const typeset = (
                 [],
                 multiplier,
             );
-            // TODO: make the surd stretchy
-            const surd = Layout.hpackNat([_makeGlyph("\u221A")], multiplier);
             surd.shift = surd.height - vbox.height;
+
             const root = Layout.hpackNat(
                 [surd, Layout.makeKern(-10), vbox],
                 multiplier,
             );
             root.id = node.id;
+            root.color = context?.colorMap?.get(root.id);
+
             return root;
         }
         case "atom": {
-            // TODO: add colorization
             const {value} = node;
             const glyph = _makeGlyph(value.char);
             glyph.id = node.id;
