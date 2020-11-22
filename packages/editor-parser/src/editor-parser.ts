@@ -5,6 +5,7 @@ import * as Parser from "@math-blocks/parser";
 
 import * as Lexer from "./editor-lexer";
 import {Location} from "./editor-lexer";
+import {locFromRange} from "./util";
 
 type Token = Editor.Node<Lexer.Token, {loc: Location}>;
 
@@ -30,21 +31,6 @@ type EditorParser = Parser.IParser<Token, Expression, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
-
-const locFromRange = (
-    start?: Location,
-    end?: Location,
-): Location | undefined => {
-    if (start && end) {
-        // TODO: assert start.path === end.path
-        return {
-            path: start.path,
-            start: start.start,
-            end: end.end,
-        };
-    }
-    return undefined;
-};
 
 const getPrefixParselet = (
     token: Token,
@@ -316,7 +302,12 @@ const getInfixParselet = (
                     }
 
                     if (sup) {
-                        const loc = locFromRange(left.loc, sup.loc);
+                        const loc = locFromRange(left.loc, left.loc);
+                        if (loc) {
+                            // Add 1 to account for the subsup itself since left
+                            // is the node the supsub is being applied to
+                            loc.end += 1;
+                        }
 
                         return Semantic.exp(
                             left,

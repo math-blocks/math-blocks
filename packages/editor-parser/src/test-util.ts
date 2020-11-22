@@ -1,16 +1,23 @@
 import * as Editor from "@math-blocks/editor";
 import {Node, SubSup, Frac, Row, Atom, Root} from "@math-blocks/editor";
 
-import {Token} from "./editor-lexer";
-import {Location} from "./editor-lexer";
+import {Location, Token} from "./editor-lexer";
+import {locFromRange} from "./util";
 
 export function row(
     children: Node<Token, {loc: Location}>[],
 ): Row<Token, {loc: Location}> {
+    // What should the location be for an empty row?
+    const loc =
+        children.length > 0
+            ? locFromRange(children[0].loc, children[children.length - 1].loc)
+            : undefined;
+
     return {
         type: "row",
         children,
-        loc: {path: [], start: -1, end: -1},
+        // TODO: fix the path
+        loc: loc || {path: [], start: -1, end: -1},
     };
 }
 
