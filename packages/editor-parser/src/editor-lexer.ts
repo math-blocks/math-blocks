@@ -205,7 +205,7 @@ function assertOneOrMore<T>(
     msg: string,
 ): asserts array is OneOrMore<T> {
     if (array.length === 0) {
-        throw new Error("foo bar");
+        throw new Error(msg);
     }
 }
 
@@ -218,13 +218,7 @@ export const lexRow = (row: Editor.Row, path: number[] = []): Row => {
     };
 };
 
-// TODO: the entry point should be lexRow since the root node of the
-// editor is a row.
-export const lex = (
-    node: Editor.Node,
-    path: number[],
-    offset: number,
-): Node => {
+const lex = (node: Editor.Node, path: number[], offset: number): Node => {
     switch (node.type) {
         case "row":
             // This never gets called because rows must be children of
