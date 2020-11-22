@@ -11,23 +11,15 @@ import useEventListener from "./use-event-listener";
 
 const {useEffect, useState, useRef} = React;
 
-type Row = Editor.Row<Editor.Glyph, {id: number}>;
-
-// TODO: dedupe with typeset.ts
-type Below = {
-    lhs: Row;
-    rhs: Row;
-};
-
 type Props = {
-    rows: Row[];
+    rows: Editor.Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Row) => unknown;
-    onChange?: (value: Row) => unknown;
+    onSubmit?: (value: Editor.Row) => unknown;
+    onChange?: (value: Editor.Row) => unknown;
 
     /**
      * Style

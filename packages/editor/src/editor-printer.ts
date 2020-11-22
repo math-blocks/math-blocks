@@ -9,12 +9,8 @@ import * as Editor from "./editor-ast";
 // the original nodes, even if they don't appear in the semantic tree as
 // is the case with most operators
 
-type ID = {
-    id: number;
-};
-
 // TODO: write more tests for this
-const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
+const print = (expr: Semantic.Expression): Editor.Node => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -31,7 +27,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             );
         }
         case "add": {
-            const children: Editor.Node<Editor.Glyph, ID>[] = [];
+            const children: Editor.Node[] = [];
 
             for (const arg of expr.args) {
                 if (arg.type === "neg" && arg.subtraction) {
@@ -65,7 +61,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             return Editor.row(children);
         }
         case "mul": {
-            const children: Editor.Node<Editor.Glyph, ID>[] = [];
+            const children: Editor.Node[] = [];
 
             const wrapAll = expr.args.slice(1).some((arg) => {
                 if (arg.type === "number") {
@@ -136,7 +132,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
             );
         }
         case "eq": {
-            const children: Editor.Node<Editor.Glyph, ID>[] = [];
+            const children: Editor.Node[] = [];
 
             for (const arg of expr.args) {
                 const node = print(arg);
@@ -158,7 +154,7 @@ const print = (expr: Semantic.Expression): Editor.Node<Editor.Glyph, ID> => {
     }
 };
 
-export default (expr: Semantic.Expression): Editor.Row<Editor.Glyph, ID> => {
+export default (expr: Semantic.Expression): Editor.Row => {
     const node = print(expr);
     if (node.type === "row") {
         return node;

@@ -9,11 +9,14 @@
 import * as Editor from "@math-blocks/editor";
 import {UnreachableCaseError} from "@math-blocks/core";
 
-export type Location = {
-    path: number[];
-    start: number;
-    end: number;
-};
+import {Node, Row, Atom} from "./lexer-ast";
+import {Location} from "./types";
+
+// export type Location = {
+//     path: number[];
+//     start: number;
+//     end: number;
+// };
 
 export const location = (
     path: number[],
@@ -45,50 +48,35 @@ type Prod = {kind: "prod"};
 type Lim = {kind: "lim"};
 type EOL = {kind: "eol"};
 
-export const atom = (
-    token: Token,
-    loc: Location,
-): Editor.Atom<Token, {loc: Location}> => ({
+export const atom = (token: Token, loc: Location): Atom => ({
     type: "atom",
     value: token,
     loc,
 });
 
-export const identifier = (
-    name: string,
-    loc: Location,
-): Editor.Atom<Token, {loc: Location}> => atom({kind: "identifier", name}, loc);
+export const identifier = (name: string, loc: Location): Atom =>
+    atom({kind: "identifier", name}, loc);
 
-export const number = (
-    value: string,
-    loc: Location,
-): Editor.Atom<Token, {loc: Location}> => {
+export const number = (value: string, loc: Location): Atom => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
     return atom({kind: "number", value}, loc);
 };
 
-export const plus = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "plus"}, loc);
+export const plus = (loc: Location): Atom => atom({kind: "plus"}, loc);
 
-export const minus = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "minus"}, loc);
+export const minus = (loc: Location): Atom => atom({kind: "minus"}, loc);
 
-export const times = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "times"}, loc);
+export const times = (loc: Location): Atom => atom({kind: "times"}, loc);
 
-export const lparens = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "lparens"}, loc);
+export const lparens = (loc: Location): Atom => atom({kind: "lparens"}, loc);
 
-export const rparens = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "rparens"}, loc);
+export const rparens = (loc: Location): Atom => atom({kind: "rparens"}, loc);
 
-export const ellipsis = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "ellipsis"}, loc);
+export const ellipsis = (loc: Location): Atom => atom({kind: "ellipsis"}, loc);
 
-export const eq = (loc: Location): Editor.Atom<Token, {loc: Location}> =>
-    atom({kind: "eq"}, loc);
+export const eq = (loc: Location): Atom => atom({kind: "eq"}, loc);
 
 export type Token =
     | Ident
@@ -113,8 +101,8 @@ const processGlyphs = (
     glyphs: Editor.Glyph[],
     path: number[],
     offset: number,
-): Editor.Atom<Token, {loc: Location}>[] => {
-    const tokens: Editor.Atom<Token, {loc: Location}>[] = [];
+): Atom[] => {
+    const tokens: Atom[] = [];
     if (glyphs.length > 0) {
         const str = glyphs.map((glyph) => glyph.char).join("");
         const matches = str.matchAll(TOKEN_REGEX);
@@ -185,10 +173,12 @@ const processGlyphs = (
 };
 
 const lexChildren = (
-    nodes: Editor.Node<Editor.Glyph, {id: number}>[],
+    nodes: OneOrMore<Editor.Node>,
     path: number[],
-): Editor.Node<Token, {loc: Location}>[] => {
-    const tokens: Editor.Node<Token, {loc: Location}>[] = [];
+): OneOrMore<Node> => {
+    // TODO: assert that nodes.length > 0
+
+    const tokens: Node[] = [];
 
     let glyphs: Editor.Glyph[] = [];
 
@@ -207,31 +197,33 @@ const lexChildren = (
     const offset = nodes.length - glyphs.length;
     tokens.push(...processGlyphs(glyphs, path, offset));
 
-    return tokens;
+    return tokens as OneOrMore<Node>;
 };
 
-export const lexRow = (
-    row: Editor.Row<Editor.Glyph, {id: number}>,
-    path: number[] = [],
-): Editor.Row<Token, {loc: Location}> => {
+function assertOneOrMore<T>(
+    array: T[],
+    msg: string,
+): asserts array is OneOrMore<T> {
+    if (array.length === 0) {
+        throw new Error(msg);
+    }
+}
+
+export const lexRow = (row: Editor.Row, path: number[] = []): Row => {
+    assertOneOrMore(row.children, "rows cannot be empty");
     return {
         type: "row",
         children: lexChildren(row.children, path),
-        loc: location(path, -1, -1),
+        loc: location(path, 0, row.children.length),
     };
 };
 
-// TODO: the entry point should be lexRow since the root node of the
-// editor is a row.
-export const lex = (
-    node: Editor.Node<Editor.Glyph, {id: number}>,
-    path: number[],
-    offset: number,
-): Editor.Node<Token, {loc: Location}> => {
+const lex = (node: Editor.Node, path: number[], offset: number): Node => {
     switch (node.type) {
         case "row":
             // This never gets called because rows must be children of
             // either: subsup, frac, or root.
+            assertOneOrMore(node.children, "rows cannot be empty");
             return {
                 type: "row",
                 children: lexChildren(node.children, path),
@@ -253,7 +245,7 @@ export const lex = (
             const [lower, upper] = node.children;
             const loc = location(path, offset, offset + 1);
 
-            let inner: Editor.Node<Token, {loc: Location}>;
+            let inner: Node;
             if (
                 node.inner.type === "atom" &&
                 node.inner.value.char === "\u03a3"
@@ -273,7 +265,6 @@ export const lex = (
 
             return {
                 type: "limits",
-                // TODO: use null-coalescing
                 children: [
                     lexRow(lower, [...path, offset, 0]),
                     upper ? lexRow(upper, [...path, offset, 1]) : null,

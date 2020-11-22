@@ -34,12 +34,8 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
     throw new Error("Unexpected result");
 };
 
-type ID = {
-    id: number;
-};
-
 const myParse = (text: string): Semantic.Expression => {
-    const node = Editor.print(parse(text)) as Editor.Row<Editor.Glyph, ID>;
+    const node = Editor.print(parse(text)) as Editor.Row;
     return _parse(node);
 };
 

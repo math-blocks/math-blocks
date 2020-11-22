@@ -2,18 +2,11 @@ import reducer, {State} from "../../row-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
 import {SUB} from "../../constants";
+import {toEqualMath} from "../../test-util";
 
 const {row, glyph} = Editor;
 
-expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
-});
+expect.extend({toEqualMath});
 
 describe("underscore", () => {
     it("'_' should insert a new sub at the end", () => {

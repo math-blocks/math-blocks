@@ -6,19 +6,13 @@ import {MistakeId} from "@math-blocks/step-checker";
 import {StepType, StepState} from "./types";
 import {HStack, VStack} from "./containers";
 
-type ID = {
-    id: number;
-};
-
-type EditorNode = Editor.Row<Editor.Glyph, ID>;
-
 type Props = {
     focus: boolean;
     readonly: boolean;
     step: StepType;
 
     onSubmit: () => unknown;
-    onChange: (value: EditorNode) => unknown;
+    onChange: (value: Editor.Row) => unknown;
 };
 
 const MistakeMessages: Record<MistakeId, string> = {

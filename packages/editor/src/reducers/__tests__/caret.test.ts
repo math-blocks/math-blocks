@@ -2,18 +2,11 @@ import reducer, {State} from "../../row-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
 import {SUB, SUP} from "../../constants";
+import {toEqualMath} from "../../test-util";
 
 const {row, glyph} = Editor;
 
-expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
-});
+expect.extend({toEqualMath});
 
 describe("caret", () => {
     it("'^' should insert a new sup at the end", () => {

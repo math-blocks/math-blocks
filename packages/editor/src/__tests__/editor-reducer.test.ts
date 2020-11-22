@@ -2,24 +2,17 @@ import reducer, {State} from "../row-reducer";
 import * as Editor from "../editor-ast";
 import * as Util from "../util";
 import {SUB, SUP, DENOMINATOR, RADICAND, NUMERATOR} from "../constants";
+import {toEqualMath} from "../test-util";
 
 const {row, glyph} = Editor;
 
-expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
-});
+expect.extend({toEqualMath});
 
 declare global {
     /* eslint-disable */
     namespace jest {
         interface Matchers<R, T> {
-            toEqualMath(actual: Editor.Node<Editor.Glyph, Util.ID>): R;
+            toEqualMath(actual: Editor.Node): R;
         }
     }
     /* eslint-enable */

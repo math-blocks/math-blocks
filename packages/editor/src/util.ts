@@ -1,10 +1,7 @@
 import * as Editor from "./editor-ast";
 import {State} from "./row-reducer";
 
-export const isEqual = (
-    a: Editor.Node<Editor.Glyph>,
-    b: Editor.Node<Editor.Glyph>,
-): boolean => {
+export const isEqual = (a: Editor.Node, b: Editor.Node): boolean => {
     if (a.type !== b.type) {
         return false;
     } else if (a.type === "atom" && b.type === "atom") {
@@ -65,7 +62,7 @@ export type ID = {
     id: number;
 };
 
-export const row = (str: string): Editor.Row<Editor.Glyph, ID> =>
+export const row = (str: string): Editor.Row =>
     Editor.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
@@ -75,43 +72,37 @@ export const row = (str: string): Editor.Row<Editor.Glyph, ID> =>
         }),
     );
 
-export const frac = (num: string, den: string): Editor.Frac<Editor.Glyph, ID> =>
+export const frac = (num: string, den: string): Editor.Frac =>
     Editor.frac(
         num.split("").map((glyph) => Editor.glyph(glyph)),
         den.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
-export const sqrt = (radicand: string): Editor.Root<Editor.Glyph, ID> =>
+export const sqrt = (radicand: string): Editor.Root =>
     Editor.root(
         radicand.split("").map((glyph) => Editor.glyph(glyph)),
         null,
     );
 
-export const root = (
-    radicand: string,
-    index: string,
-): Editor.Root<Editor.Glyph, ID> =>
+export const root = (radicand: string, index: string): Editor.Root =>
     Editor.root(
         radicand.split("").map((glyph) => Editor.glyph(glyph)),
         index.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
-export const sup = (sup: string): Editor.SubSup<Editor.Glyph, ID> =>
+export const sup = (sup: string): Editor.SubSup =>
     Editor.subsup(
         undefined,
         sup.split("").map((glyph) => Editor.glyph(glyph)),
     );
 
-export const sub = (sub: string): Editor.SubSup<Editor.Glyph, ID> =>
+export const sub = (sub: string): Editor.SubSup =>
     Editor.subsup(
         sub.split("").map((glyph) => Editor.glyph(glyph)),
         undefined,
     );
 
-export const subsup = (
-    sub: string,
-    sup: string,
-): Editor.SubSup<Editor.Glyph, ID> =>
+export const subsup = (sub: string, sup: string): Editor.SubSup =>
     Editor.subsup(
         sub.split("").map((glyph) => Editor.glyph(glyph)),
         sup.split("").map((glyph) => Editor.glyph(glyph)),
@@ -124,10 +115,10 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
-export function nodeAtPath<T, U>(
-    root: Editor.Node<T, U>,
+export function nodeAtPath(
+    root: Editor.Node,
     path: ReadonlyArray<number>,
-): Editor.Node<T, U> {
+): Editor.Node {
     if (path.length === 0) {
         return root;
     } else {
@@ -175,9 +166,9 @@ export function nodeAtPath<T, U>(
     }
 }
 
-export function pathForNode<T, U>(
-    root: Editor.Node<T, U>,
-    node: Editor.Node<T, U>,
+export function pathForNode(
+    root: Editor.Node,
+    node: Editor.Node,
     path: ReadonlyArray<number> = [],
 ): ReadonlyArray<number> | null {
     if (node === root) {
@@ -297,23 +288,21 @@ export const layoutCursorFromState = (state: State): LayoutCursor => {
 
 export type Identifiable = {readonly id: number};
 
-export type HasChildren = Editor.Row<Editor.Glyph, ID>;
+export type HasChildren = Editor.Row;
 
-export const hasChildren = (
-    node: Editor.Node<Editor.Glyph, ID>,
-): node is HasChildren => {
+export const hasChildren = (node: Editor.Node): node is HasChildren => {
     return node.type === "row";
 };
 
-export type HasGrandchildren<T, U> =
-    | Editor.Frac<T, U>
-    | Editor.Root<T, U>
-    | Editor.SubSup<T, U>
-    | Editor.Limits<T, U>;
+export type HasGrandchildren =
+    | Editor.Frac
+    | Editor.Root
+    | Editor.SubSup
+    | Editor.Limits;
 
 export const hasGrandchildren = (
-    node: Editor.Node<Editor.Glyph, ID>,
-): node is HasGrandchildren<Editor.Glyph, ID> => {
+    node: Editor.Node,
+): node is HasGrandchildren => {
     return (
         node.type === "frac" ||
         node.type === "root" ||
@@ -322,20 +311,17 @@ export const hasGrandchildren = (
     );
 };
 
-export const isGlyph = (
-    node: Editor.Node<Editor.Glyph, ID>,
-    char: string,
-): node is Editor.Atom<Editor.Glyph, ID> =>
+export const isGlyph = (node: Editor.Node, char: string): node is Editor.Atom =>
     node.type === "atom" && node.value.char == char;
 
 export const matchesGlyphs = (
-    node: Editor.Node<Editor.Glyph, ID>,
+    node: Editor.Node,
     chars: string[],
-): node is Editor.Atom<Editor.Glyph, ID> =>
+): node is Editor.Atom =>
     node.type === "atom" && chars.includes(node.value.char);
 
 export const nextIndex = (
-    children: Editor.Node<Editor.Glyph, ID>[],
+    children: Editor.Node[],
     childIndex: number,
 ): number => {
     if (childIndex === -Infinity) {
@@ -348,7 +334,7 @@ export const nextIndex = (
 };
 
 export const prevIndex = (
-    children: Editor.Node<Editor.Glyph, ID>[],
+    children: Editor.Node[],
     childIndex: number,
 ): number => {
     if (childIndex === Infinity) {
@@ -416,9 +402,9 @@ export const selectionSplit = (
     cursor: Editor.Cursor,
     selectionStart: Editor.Cursor,
 ): {
-    head: Editor.Node<Editor.Glyph, ID>[];
-    body: Editor.Node<Editor.Glyph, ID>[];
-    tail: Editor.Node<Editor.Glyph, ID>[];
+    head: Editor.Node[];
+    body: Editor.Node[];
+    tail: Editor.Node[];
 } => {
     const {prev, next} = getSelectionBounds(cursor, selectionStart);
 
@@ -484,20 +470,17 @@ export const selectionParens = (
     draft.selectionStart = undefined;
 };
 
-type Row = Editor.Row<Editor.Glyph, ID>;
-type Node = Editor.Node<Editor.Glyph, ID>;
-
 type Column = {
-    nodes: Node[];
+    nodes: Editor.Node[];
 };
 
 // invariants:
 // - always return at least one column
 // - return n+1 columns where n is the number of colsep chars in the row
-export const rowToColumns = (row: Row): Column[] => {
+export const rowToColumns = (row: Editor.Row): Column[] => {
     const result: Column[] = [];
 
-    let column: Node[] = [];
+    let column: Editor.Node[] = [];
     let i = 0;
 
     while (i < row.children.length) {
@@ -525,12 +508,12 @@ export const rowToColumns = (row: Row): Column[] => {
     return result;
 };
 
-export const columnsToRow = (cols: Column[]): Row => {
+export const columnsToRow = (cols: Column[]): Editor.Row => {
     if (cols.length === 0) {
         throw new Error("expected at least one column");
     }
 
-    const children: Node[] = [];
+    const children: Editor.Node[] = [];
     for (let i = 0; i < cols.length; i++) {
         if (i > 0) {
             children.push(Editor.glyph("\u0008"));

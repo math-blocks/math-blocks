@@ -1,24 +1,28 @@
-import * as Editor from "@math-blocks/editor";
-import {Node, SubSup, Frac, Row, Atom, Root} from "@math-blocks/editor";
-
 import {Token} from "./editor-lexer";
-import {Location} from "./editor-lexer";
+import {locFromRange} from "./util";
+import {Location} from "./types";
+import {Node, Row, SubSup, Frac, Root, Atom} from "./lexer-ast";
 
-export function row(
-    children: Node<Token, {loc: Location}>[],
-): Row<Token, {loc: Location}> {
+export function row(children: OneOrMore<Node>): Row {
+    // What should the location be for an empty row?
+    const loc =
+        children.length > 0
+            ? locFromRange(children[0].loc, children[children.length - 1].loc)
+            : undefined;
+
     return {
         type: "row",
         children,
-        loc: {path: [], start: -1, end: -1},
+        // TODO: fix the path
+        loc: loc || {path: [], start: -1, end: -1},
     };
 }
 
 export function subsup(
-    sub: Node<Token, {loc: Location}>[] | void,
-    sup: Node<Token, {loc: Location}>[] | void,
+    sub: OneOrMore<Node> | void,
+    sup: OneOrMore<Node> | void,
     loc: Location,
-): SubSup<Token, {loc: Location}> {
+): SubSup {
     return {
         type: "subsup",
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
@@ -27,10 +31,10 @@ export function subsup(
 }
 
 export function frac(
-    numerator: Node<Token, {loc: Location}>[],
-    denominator: Node<Token, {loc: Location}>[],
+    numerator: OneOrMore<Node>,
+    denominator: OneOrMore<Node>,
     loc: Location,
-): Frac<Token, {loc: Location}> {
+): Frac {
     return {
         type: "frac",
         children: [row(numerator), row(denominator)],
@@ -41,10 +45,10 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    arg: Node<Token, {loc: Location}>[],
-    index: Node<Token, {loc: Location}>[] | null,
+    arg: OneOrMore<Node>,
+    index: OneOrMore<Node> | null,
     loc: Location,
-): Root<Token, {loc: Location}> {
+): Root {
     return {
         type: "root",
         children: [row(arg), index ? row(index) : null],
@@ -52,10 +56,7 @@ export function root(
     };
 }
 
-export function atom(
-    value: Token,
-    loc: Location,
-): Atom<Token, {loc: Location}> {
+export function atom(value: Token, loc: Location): Atom {
     return {
         type: "atom",
         value,
@@ -64,8 +65,8 @@ export function atom(
 }
 
 const print = (
-    ast: Editor.Node<Token, {loc: Location}>,
-    serialize: (ast: Editor.Node<Token>) => string,
+    ast: Node,
+    serialize: (ast: Node) => string,
     indent: (str: string) => string,
 ): string => {
     const {loc} = ast;
@@ -132,5 +133,5 @@ const print = (
 
 export const serializer = {
     print: print,
-    test: (ast: Editor.Node<Token>) => !!ast.type,
+    test: (ast: Node) => !!ast.type,
 };

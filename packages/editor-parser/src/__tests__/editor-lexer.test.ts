@@ -269,5 +269,12 @@ describe("Lexer", () => {
                     (num@[0,0]:3:4 0)) _))
             `);
         });
+
+        it("should throw on empty row", () => {
+            const glyphTree = row([]);
+            expect(() => {
+                Lexer.lexRow(glyphTree);
+            }).toThrowErrorMatchingInlineSnapshot(`"rows cannot be empty"`);
+        });
     });
 });

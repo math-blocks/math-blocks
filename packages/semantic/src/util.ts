@@ -2,143 +2,171 @@
  * Builder functions and helper methods for working
  * with semantic nodes.
  */
-import * as Semantic from "./semantic";
 import {getId} from "@math-blocks/core";
 
-export const identifier = (name: string): Semantic.Ident => ({
+import * as Semantic from "./semantic";
+import {Location} from "./types";
+import {Expression} from "./semantic";
+
+export const identifier = (name: string, loc?: Location): Semantic.Ident => ({
     type: "identifier",
     id: getId(),
     name,
+    loc,
 });
 
-export const number = <T extends string>(value: T): Semantic.Num<T> => ({
+export const number = <T extends string>(
+    value: T,
+    loc?: Location,
+): Semantic.Num<T> => ({
     type: "number",
     id: getId(),
     // @ts-ignore: $FIXME
     value: value.replace(/-/g, "\u2212"),
+    loc,
 });
 
-export const ellipsis = (): Semantic.Ellipsis => ({
+export const ellipsis = (loc?: Location): Semantic.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
+    loc,
 });
 
-export const add = (args: TwoOrMore<Semantic.Expression>): Semantic.Add => ({
+export const add = (
+    args: TwoOrMore<Expression>,
+    loc?: Location,
+): Semantic.Add => ({
     type: "add",
     id: getId(),
     args,
+    loc,
 });
 
 export const mul = (
-    args: TwoOrMore<Semantic.Expression>,
+    args: TwoOrMore<Expression>,
     implicit = false,
+    loc?: Location,
 ): Semantic.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
     args,
+    loc,
 });
 
-export const eq = (args: TwoOrMore<Semantic.Expression>): Semantic.Eq => ({
+export const eq = (
+    args: TwoOrMore<Expression>,
+    loc?: Location,
+): Semantic.Eq => ({
     type: "eq",
     id: getId(),
     args,
+    loc,
 });
 
 export const neg = (
-    arg: Semantic.Expression,
+    arg: Expression,
     subtraction = false,
+    loc?: Location,
 ): Semantic.Neg => ({
     type: "neg",
     id: getId(),
     arg,
     subtraction,
+    loc,
 });
 
 export const div = (
-    num: Semantic.Expression,
-    den: Semantic.Expression,
+    num: Expression,
+    den: Expression,
+    loc?: Location,
 ): Semantic.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
+    loc,
 });
 
 export const exp = (
-    base: Semantic.Expression,
-    exp: Semantic.Expression,
+    base: Expression,
+    exp: Expression,
+    loc?: Location,
 ): Semantic.Exp => ({
     type: "exp",
     id: getId(),
     base,
     exp,
+    loc,
 });
 
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: Semantic.Expression,
-    index?: Semantic.Expression,
+    radicand: Expression,
+    index?: Expression,
+    loc?: Location,
 ): Semantic.Root => ({
     type: "root",
     id: getId(),
     radicand,
     index: index || number("2"),
+    loc,
 });
 
-export const isSubtraction = (
-    node: Semantic.Expression,
-): node is Semantic.Neg => node.type === "neg" && node.subtraction;
+export const isSubtraction = (node: Expression): node is Semantic.Neg =>
+    node.type === "neg" && node.subtraction;
 
-export const isNegative = (node: Semantic.Expression): node is Semantic.Neg =>
+export const isNegative = (node: Expression): node is Semantic.Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (
-    node: Semantic.Expression,
-): OneOrMore<Semantic.Expression> => (node.type === "mul" ? node.args : [node]);
+export const getFactors = (node: Expression): OneOrMore<Expression> =>
+    node.type === "mul" ? node.args : [node];
 
-export const getTerms = (
-    node: Semantic.Expression,
-): OneOrMore<Semantic.Expression> => (node.type === "add" ? node.args : [node]);
+export const getTerms = (node: Expression): OneOrMore<Expression> =>
+    node.type === "add" ? node.args : [node];
 
 export const mulFactors = (
-    factors: Semantic.Expression[],
+    factors: Expression[],
     implicit = false,
+    loc?: Location,
 ): Semantic.Expression => {
     switch (factors.length) {
         case 0:
-            return number("1");
+            return number("1", loc);
         case 1:
-            return factors[0];
+            return factors[0]; // TODO: figure out if we should give this node a location
         default:
             return {
                 type: "mul",
                 id: getId(),
                 implicit,
                 args: factors as TwoOrMore<Semantic.Expression>,
+                loc,
             };
     }
 };
 
 export const addTerms = (
-    terms: Array<Semantic.Expression>,
+    terms: Array<Expression>,
+    loc?: Location,
 ): Semantic.Expression => {
     switch (terms.length) {
         case 0:
-            return number("0");
+            return number("0", loc);
         case 1:
-            return terms[0];
+            return terms[0]; // TODO: figure out if we should give this node a location
         default:
             return {
                 type: "add",
                 id: getId(),
-                args: terms as TwoOrMore<Semantic.Expression>,
+                args: terms as TwoOrMore<Expression>,
+                loc,
             };
     }
 };
 
 // TODO: create a function to check if an answer is simplified or not
-export const isNumber = (node: Semantic.Expression): boolean => {
+export const isNumber = (node: Expression): boolean => {
     if (node.type === "number") {
         return true;
     } else if (node.type === "neg") {

@@ -1,10 +1,8 @@
-import * as Editor from "@math-blocks/editor";
-
 import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
 import * as LexUtil from "../test-util";
 
-type LexNode = Editor.Node<Lexer.Token, {loc: Lexer.Location}>;
+import {Node as LexNode} from "../lexer-ast";
 
 const {location} = Lexer;
 
@@ -28,6 +26,24 @@ describe("EditorParser", () => {
               (mul.imp 2 x)
               10)
         `);
+
+        expect(ast.loc).toEqual({
+            start: 0,
+            end: 5,
+            path: [],
+        });
+        if (ast.type === "eq") {
+            expect(ast.args[0].loc).toEqual({
+                start: 0,
+                end: 2,
+                path: [],
+            });
+            expect(ast.args[1].loc).toEqual({
+                start: 3,
+                end: 5,
+                path: [],
+            });
+        }
     });
 
     it("should handle n-ary equality", () => {
@@ -116,7 +132,7 @@ describe("EditorParser", () => {
         `);
     });
 
-    it("should parse nexplicit multiplication", () => {
+    it("should parse explicit multiplication", () => {
         const tokens = [
             Lexer.number("1", location([], 0, 1)),
             Lexer.times(location([], 1, 2)),
@@ -172,6 +188,32 @@ describe("EditorParser", () => {
               1
               (div 1 x))
         `);
+        expect(parseTree.loc).toEqual({
+            start: 0,
+            end: 3,
+            path: [],
+        });
+        if (parseTree.type === "add") {
+            expect(parseTree.args[1].loc).toEqual({
+                start: 2,
+                end: 3,
+                path: [],
+            });
+            if (parseTree.args[1].type === "div") {
+                // numerator
+                expect(parseTree.args[1].args[0].loc).toEqual({
+                    start: 0,
+                    end: 1,
+                    path: [2, 0],
+                });
+                // denominator
+                expect(parseTree.args[1].args[1].loc).toEqual({
+                    start: 0,
+                    end: 1,
+                    path: [2, 1],
+                });
+            }
+        }
     });
 
     it("should handle exponents", () => {
@@ -187,6 +229,18 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(tokens);
 
         expect(parseTree).toMatchInlineSnapshot(`(exp :base x :exp 2)`);
+        expect(parseTree.loc).toEqual({
+            start: 0,
+            end: 2,
+            path: [],
+        });
+        if (parseTree.type === "exp") {
+            expect(parseTree.exp.loc).toEqual({
+                start: 0,
+                end: 1,
+                path: [1, 1],
+            });
+        }
     });
 
     it("should handle nested exponents", () => {
@@ -232,6 +286,21 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(tokens);
 
         expect(parseTree).toMatchInlineSnapshot(`(ident a (add n 1))`);
+
+        expect(parseTree.loc).toEqual({
+            start: 0,
+            end: 1,
+            path: [],
+        });
+        if (parseTree.type === "identifier") {
+            if (parseTree.subscript) {
+                expect(parseTree.subscript.loc).toEqual({
+                    start: 0,
+                    end: 3, // n + 1
+                    path: [1, 0],
+                });
+            }
+        }
     });
 
     it("should handle subscripts and superscripts identifiers", () => {
@@ -311,6 +380,12 @@ describe("EditorParser", () => {
               ...
               n)
         `);
+
+        expect(ast.loc).toEqual({
+            path: [],
+            start: 0,
+            end: 7,
+        });
     });
 
     it("should handle adding with parens", () => {
@@ -529,6 +604,36 @@ describe("EditorParser", () => {
               a
               (root :radicand b :index 2))
         `);
+
+        expect(ast.loc).toEqual({
+            start: 0,
+            end: 2,
+            path: [],
+        });
+        if (ast.type === "mul") {
+            expect(ast.args[0].loc).toEqual({
+                start: 0,
+                end: 1,
+                path: [],
+            });
+            expect(ast.args[1].loc).toEqual({
+                start: 1,
+                end: 2,
+                path: [],
+            });
+            if (ast.args[1].type === "root") {
+                expect(ast.args[1].radicand.loc).toEqual({
+                    start: 0,
+                    end: 1,
+                    path: [1, 0],
+                });
+                expect(ast.args[1].index.loc).toEqual({
+                    start: 0,
+                    end: 1,
+                    path: [1, 1],
+                });
+            }
+        }
     });
 
     it("should handle implicit multiplication with multiple roots", () => {

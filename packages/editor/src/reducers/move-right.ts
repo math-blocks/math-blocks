@@ -12,13 +12,9 @@ import {
 } from "../util";
 import {SUB, SUP, NUMERATOR, DENOMINATOR, RADICAND} from "../constants";
 
-type ID = {
-    id: number;
-};
-
 const enterFromLeft = (
     cursor: Editor.Cursor,
-    row: Editor.Row<Editor.Glyph, ID>,
+    row: Editor.Row,
     index: number,
 ): Editor.Cursor => {
     return {
@@ -30,7 +26,7 @@ const enterFromLeft = (
 
 const exitToRight = (
     cursor: Editor.Cursor,
-    grandparentRow: Editor.Row<Editor.Glyph, ID>,
+    grandparentRow: Editor.Row,
 ): Editor.Cursor => {
     const index = cursor.path[cursor.path.length - 2];
 
@@ -44,7 +40,7 @@ const exitToRight = (
 // move to next parent's sibling
 const moveToNextPibling = (
     cursor: Editor.Cursor,
-    row: Editor.Row<Editor.Glyph, ID>,
+    row: Editor.Row,
     index: number,
 ): Editor.Cursor => {
     return {
@@ -55,7 +51,7 @@ const moveToNextPibling = (
 };
 
 export const moveRight = (
-    currentNode: Editor.Row<Editor.Glyph, ID>,
+    currentNode: Editor.Row,
     draft: State,
     selecting?: boolean,
 ): Editor.Cursor => {
