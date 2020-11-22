@@ -1,7 +1,8 @@
 import * as Editor from "@math-blocks/editor";
-import * as Layout from "./layout";
-import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "@math-blocks/core";
+
+import * as Layout from "./layout";
+import {Context} from "./types";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -16,14 +17,6 @@ type ID = {
 
 type Row = Editor.Row<Editor.Glyph, ID>;
 type Node = Editor.Node<Editor.Glyph, ID>;
-
-type Context = {
-    fontMetrics: FontMetrics;
-    baseFontSize: number;
-    multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
-    cramped: boolean;
-    colorMap?: Map<number, string>;
-};
 
 // Adds appropriate padding around operators where appropriate
 const typesetChildren = (
@@ -68,6 +61,17 @@ const typesetChildren = (
             return typeset(child, context);
         }
     });
+};
+
+const typesetRow = (row: Row, context: Context): Layout.Box => {
+    const box = Layout.hpackNat(
+        typesetChildren(row.children, context),
+        context.multiplier,
+    );
+    box.id = row.id;
+    box.color = context?.colorMap?.get(row.id);
+
+    return box;
 };
 
 const typesetColumn = (
@@ -335,9 +339,6 @@ export const typesetWithWork = (
         );
     }
 
-    // console.log("outputRows[0]:", outputRows[0]);
-    // console.log("outputRows[1]:", outputRows[1]);
-
     let width = -Infinity;
     for (let i = 0; i < outputRows.length; i++) {
         width = Math.max(width, Layout.getWidth(outputRows[i]));
@@ -367,44 +368,34 @@ export const typesetWithWork = (
 const typeset = (
     node: Editor.Node<Editor.Glyph, ID>,
     context: Context,
-    column = false, // isSingleChildColumn?
-    below = false,
 ): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const fontSize = multiplier * baseFontSize;
-    const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
-    // console.log(node.id);
-
     switch (node.type) {
         case "row": {
-            const row = Layout.hpackNat(
-                typesetChildren(node.children, context, column),
-                multiplier,
-            );
+            const row = typesetRow(node, context);
             row.height = Math.max(row.height, 0.85 * baseFontSize * multiplier);
             row.depth = Math.max(row.depth, 0.15 * baseFontSize * multiplier);
-            row.id = node.id;
-            row.color = context?.colorMap?.get(node.id);
+
             return row;
         }
         case "subsup": {
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
-            let subBox: Layout.Box | undefined;
+            const childContext = {
+                ...context,
+                multiplier: newMultiplier,
+                cramped: true,
+            };
+
             const [sub, sup] = node.children;
+
+            let subBox: Layout.Box | undefined;
             // TODO: document this better so I know what's going on here.
             if (sub) {
-                subBox = Layout.hpackNat(
-                    typesetChildren(sub.children, {
-                        ...context,
-                        multiplier: newMultiplier,
-                        cramped: true,
-                    }),
-                    newMultiplier,
-                );
-                subBox.id = sub.id;
+                subBox = typesetRow(sub, childContext);
+
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
                     const jDepth =
@@ -423,18 +414,12 @@ const typeset = (
                     subBox.height = Math.max(subBox.height, EHeight);
                 }
             }
+
             let supBox: Layout.Box | undefined;
             // TODO: document this better so I know what's going on here.
             if (sup) {
-                supBox = Layout.hpackNat(
-                    typesetChildren(sup.children, {
-                        ...context,
-                        multiplier: newMultiplier,
-                        cramped: true,
-                    }),
-                    newMultiplier,
-                );
-                supBox.id = sup.id;
+                supBox = typesetRow(sup, childContext);
+
                 // TODO: try to reuse getCharDepth
                 if (jmetrics) {
                     const jDepth =
@@ -453,37 +438,25 @@ const typeset = (
                     supBox.height = Math.max(supBox.height, EHeight);
                 }
             }
+
             const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
             parentBox.id = node.id;
+
             return parentBox;
         }
         case "limits": {
             const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const [lower, upper] = node.children;
+            const childContext = {
+                ...context,
+                multiplier: newMultiplier,
+                cramped: true,
+            };
 
-            const lowerBox = Layout.hpackNat(
-                typesetChildren(lower.children, {
-                    ...context,
-                    multiplier: newMultiplier,
-                    cramped: true,
-                }),
-                newMultiplier,
-            );
-            lowerBox.id = lower.id;
-            const inner = typeset(node.inner, context);
-
-            let upperBox: Layout.Box | undefined;
-            if (upper) {
-                upperBox = Layout.hpackNat(
-                    typesetChildren(upper.children, {
-                        ...context,
-                        multiplier: newMultiplier,
-                        cramped: true,
-                    }),
-                    newMultiplier,
-                );
-                upperBox.id = upper.id;
-            }
+            const lowerBox = typesetRow(lower, childContext);
+            const upperBox = upper
+                ? typesetRow(upper, childContext)
+                : undefined;
 
             // TODO: try to reuse getCharDepth
             if (jmetrics) {
@@ -508,6 +481,10 @@ const typeset = (
                     upperBox.height = Math.max(upperBox.height, EHeight);
                 }
             }
+
+            const inner = typeset(node.inner, context);
+            inner.id = node.inner.id;
+            inner.color = context?.colorMap?.get(inner.id);
 
             const innerWidth = Layout.getWidth(inner);
             const width = Math.max(
@@ -542,24 +519,19 @@ const typeset = (
                 multiplier,
             );
             limits.id = node.id;
+            limits.color = context?.colorMap?.get(limits.id);
+
             return limits;
         }
         case "frac": {
             const newMultiplier = cramped ? 0.5 : 1.0;
-            const numerator = Layout.hpackNat(
-                typesetChildren(node.children[0].children, {
-                    ...context,
-                    multiplier: newMultiplier,
-                }),
-                newMultiplier,
-            );
-            const denominator = Layout.hpackNat(
-                typesetChildren(node.children[1].children, {
-                    ...context,
-                    multiplier: newMultiplier,
-                }),
-                newMultiplier,
-            );
+            const childContext = {
+                ...context,
+                multiplier: newMultiplier,
+            };
+
+            const numerator = typesetRow(node.children[0], childContext);
+            const denominator = typesetRow(node.children[1], childContext);
 
             // TODO: try to reuse getCharDepth
             if (jmetrics) {
@@ -581,10 +553,6 @@ const typeset = (
                 denominator.height = Math.max(denominator.height, EHeight);
             }
 
-            // How do we deal with the 0 and 1 indices disappearing here?
-            numerator.id = node.children[0].id;
-            denominator.id = node.children[1].id;
-
             const frac = Layout.makeFract(
                 multiplier,
                 5,
@@ -592,18 +560,22 @@ const typeset = (
                 denominator,
             );
             frac.id = node.id;
+            frac.color = context?.colorMap?.get(node.id);
+
             return frac;
         }
         case "root": {
-            const radicand = Layout.hpackNat(
-                typesetChildren(node.children[0].children, context), // radicand
-                multiplier,
-            );
-            radicand.id = node.children[0].id;
+            const radicand = typesetRow(node.children[0], context);
             const Eheight = 50;
             radicand.width = Math.max(radicand.width, 30 * multiplier);
             radicand.height = Math.max(radicand.height, Eheight * multiplier);
             radicand.depth = Math.max(radicand.depth, 0);
+
+            // TODO: make the surd stretchy
+            const surd = Layout.hpackNat(
+                [Layout.makeGlyph("\u221A", context)],
+                multiplier,
+            );
             const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
             const vbox = Layout.makeVBox(
                 radicand.width,
@@ -612,19 +584,20 @@ const typeset = (
                 [],
                 multiplier,
             );
-            // TODO: make the surd stretchy
-            const surd = Layout.hpackNat([_makeGlyph("\u221A")], multiplier);
             surd.shift = surd.height - vbox.height;
+
             const root = Layout.hpackNat(
                 [surd, Layout.makeKern(-10), vbox],
                 multiplier,
             );
             root.id = node.id;
+            root.color = context?.colorMap?.get(root.id);
+
             return root;
         }
         case "atom": {
             const {value} = node;
-            const glyph = _makeGlyph(value.char);
+            const glyph = Layout.makeGlyph(value.char, context);
             glyph.id = node.id;
             glyph.color = context.colorMap?.get(node.id);
             return glyph;

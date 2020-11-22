@@ -4,9 +4,7 @@ import * as Editor from "@math-blocks/editor";
 import {MathRenderer} from "@math-blocks/react";
 import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
 
-import fontMetrics from "../packages/metrics/src/index";
-
-console.log(fontMetrics);
+import fontMetrics from "@math-blocks/metrics";
 
 const {row, glyph, frac, limits, root} = Editor;
 
@@ -42,18 +40,18 @@ export const Small: React.SFC<{}> = () => {
     return <MathRenderer box={box} />;
 };
 
-export const Large: React.SFC<{}> = () => {
+export const Equation: React.SFC<{}> = () => {
     // TODO: how to convert
     const math: Editor.Row<Editor.Glyph, ID> = row([
         glyph("2"),
         glyph("x"),
-        glyph("-"),
+        glyph("+"),
         glyph("5"),
         glyph("="),
         glyph("1"),
-        glyph("5"),
+        glyph("0"),
     ]);
-    const fontSize = 50;
+    const fontSize = 60;
     const context = {
         fontMetrics,
         baseFontSize: fontSize,
@@ -79,6 +77,28 @@ const rowsToState = (
         })),
         rowIndex: 0,
     };
+};
+
+export const ShowingWork: React.FunctionComponent<{}> = () => {
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+    };
+
+    const work = typesetWithWork(
+        rowsToState([
+            Editor.Util.row(
+                "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
+            ),
+            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+        ]),
+        context,
+    );
+
+    return <MathRenderer box={work} />;
 };
 
 export const LinearEquations: React.SFC<{}> = () => {
@@ -281,6 +301,31 @@ export const Summation: React.SFC<{}> = () => {
         ]),
         context,
     ) as Layout.Box;
+
+    return <MathRenderer box={sum} />;
+};
+
+export const ColorizedFraction: React.SFC<{}> = () => {
+    const fontSize = 60;
+    const colorMap = new Map<number, string>();
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+        colorMap: colorMap,
+    };
+
+    const fracNode = frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]);
+
+    colorMap.set(fracNode.id, "darkcyan");
+    colorMap.set(fracNode.children[1].id, "orange");
+    const subsup = fracNode.children[1].children[1];
+    if (subsup.type === "subsup" && subsup.children[1]) {
+        colorMap.set(subsup.children[1].id, "pink");
+    }
+
+    const sum = typeset(fracNode, context) as Layout.Box;
 
     return <MathRenderer box={sum} />;
 };

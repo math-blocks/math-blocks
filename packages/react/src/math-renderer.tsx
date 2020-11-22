@@ -33,8 +33,9 @@ const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
             y={y}
             fontFamily="comic sans ms"
             fontSize={glyph.size}
-            fill={glyph.color || (glyph.pending ? "#CCC" : "black")}
+            fill={glyph.color || "currentcolor"}
             id={id}
+            style={{opacity: glyph.pending ? 0.5 : 1.0}}
         >
             {glyph.char}
         </text>
@@ -45,12 +46,7 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, layers, color, id}) => {
     const _id = typeof id !== undefined ? String(id) : undefined;
 
     return (
-        <g
-            transform={`translate(${x},${y})`}
-            fill={color}
-            stroke={color}
-            id={_id}
-        >
+        <g transform={`translate(${x},${y})`} style={{color: color}} id={_id}>
             {layers.flatMap((layer, i) =>
                 layer.map((child, j) => {
                     const key = `${i}-${j}`;
