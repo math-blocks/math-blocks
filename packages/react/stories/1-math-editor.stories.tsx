@@ -11,13 +11,9 @@ export default {
     component: MathEditor,
 };
 
-type ID = {
-    id: number;
-};
-
 export const Editable: React.SFC<{}> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
-    const math: Editor.Row<Editor.Glyph, ID> = row([
+    const math = row([
         glyph("2"),
         glyph("x"),
         glyph("+"),
@@ -40,7 +36,7 @@ export const Editable: React.SFC<{}> = () => {
 
 export const Readonly: React.SFC<{}> = () => {
     // TODO: how to convert
-    const math: Editor.Row<Editor.Glyph, ID> = row([
+    const math = row([
         glyph("2"),
         glyph("x"),
         glyph("+"),

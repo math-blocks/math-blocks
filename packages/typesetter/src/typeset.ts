@@ -5,22 +5,12 @@ import * as Layout from "./layout";
 import {Context} from "./types";
 
 // Dedupe this with editor/src/util.ts
-export const isGlyph = (
-    node: Editor.Node<Editor.Glyph, ID>,
-    char: string,
-): node is Editor.Atom<Editor.Glyph, ID> =>
+export const isGlyph = (node: Editor.Node, char: string): node is Editor.Atom =>
     node.type === "atom" && node.value.char == char;
-
-type ID = {
-    id: number;
-};
-
-type Row = Editor.Row<Editor.Glyph, ID>;
-type Node = Editor.Node<Editor.Glyph, ID>;
 
 // Adds appropriate padding around operators where appropriate
 const typesetChildren = (
-    children: Editor.Node<Editor.Glyph, ID>[],
+    children: Editor.Node[],
     context: Context,
     column = false, // isSingleChildColumn?
 ): Layout.Node[] => {
@@ -63,7 +53,7 @@ const typesetChildren = (
     });
 };
 
-const typesetRow = (row: Row, context: Context): Layout.Box => {
+const typesetRow = (row: Editor.Row, context: Context): Layout.Box => {
     const box = Layout.hpackNat(
         typesetChildren(row.children, context),
         context.multiplier,
@@ -127,17 +117,17 @@ const typesetColumn = (
 };
 
 type Column = {
-    nodes: Node[];
+    nodes: Editor.Node[];
     // TODO: change this to first and last
     start: number;
     end: number; // bounds are inclusive
 };
 
 // TODO: add columns before first separator and after last separator
-export const splitRow = (row: Row): Column[] => {
+export const splitRow = (row: Editor.Row): Column[] => {
     const result: Column[] = [];
 
-    let column: Node[] = [];
+    let column: Editor.Node[] = [];
     let start = -Infinity;
     let i = 0;
 
@@ -172,7 +162,7 @@ export const splitRow = (row: Row): Column[] => {
 };
 
 const colToLayout = (
-    row: Editor.Row<Editor.Glyph, ID>,
+    row: Editor.Row,
     columns: Column[],
     columnLayouts: Layout.Node[][],
     columnWidths: number[],
@@ -365,10 +355,7 @@ export const typesetWithWork = (
     return verticalLayout;
 };
 
-const typeset = (
-    node: Editor.Node<Editor.Glyph, ID>,
-    context: Context,
-): Layout.Node => {
+const typeset = (node: Editor.Node, context: Context): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];

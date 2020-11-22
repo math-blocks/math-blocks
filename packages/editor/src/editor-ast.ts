@@ -1,56 +1,57 @@
 import {getId} from "@math-blocks/core";
 
-// param types:
-// AT: Atom Type
-// EP: Extra Properties
-export type Row<AT, EP> = {
+export type Glyph = {
+    kind: "glyph";
+    char: string;
+    pending?: boolean;
+};
+
+export type Row = {
     type: "row";
-    children: Node<AT, EP>[];
-} & EP;
+    children: Node[];
+    id: number;
+};
 
 // TODO: collapse SubSup, Frac, and Root since they're very similar
-export type SubSup<AT, EP> = {
+export type SubSup = {
     type: "subsup";
-    children: [Row<AT, EP> | null, Row<AT, EP> | null]; // sub, sup
-} & EP;
+    children: [Row | null, Row | null]; // sub, sup
+    id: number;
+};
 
-export type Limits<AT, EP> = {
+export type Limits = {
     type: "limits";
-    inner: Node<AT, EP>;
-    children: [Row<AT, EP>, Row<AT, EP> | null];
-} & EP;
+    inner: Node;
+    children: [Row, Row | null];
+    id: number;
+};
 
-export type Frac<AT, EP> = {
+export type Frac = {
     type: "frac";
-    children: [Row<AT, EP>, Row<AT, EP>]; // numerator, denominator
-} & EP;
+    children: [Row, Row]; // numerator, denominator
+    id: number;
+};
 
-export type Root<AT, EP> = {
+export type Root = {
     type: "root";
-    children: [Row<AT, EP>, Row<AT, EP> | null]; // radicand, index
-} & EP;
+    children: [Row, Row | null]; // radicand, index
+    id: number;
+};
 
-export type Atom<AT, EP> = {
+export type Atom = {
     type: "atom";
-    value: AT;
-} & EP;
+    value: Glyph;
+    id: number;
+};
 
-export type Node<AT, EP = {}> =
-    | Row<AT, EP>
-    | SubSup<AT, EP>
-    | Limits<AT, EP>
-    | Frac<AT, EP>
-    | Root<AT, EP>
-    | Atom<AT, EP>;
+export type Node = Row | SubSup | Limits | Frac | Root | Atom;
 
 // The editor nodes need IDs so we can position the cursor relative to
 // layout nodes which get their ID from the editor nodes.
 
-export type HasChildren<T, U> = Row<T, U>;
+export type HasChildren = Row;
 
-export function row<T>(
-    children: Node<T, {id: number}>[],
-): Row<T, {id: number}> {
+export function row(children: Node[]): Row {
     return {
         id: getId(),
         type: "row",
@@ -58,10 +59,7 @@ export function row<T>(
     };
 }
 
-export function subsup<T>(
-    sub?: Node<T, {id: number}>[],
-    sup?: Node<T, {id: number}>[],
-): SubSup<T, {id: number}> {
+export function subsup(sub?: Node[], sup?: Node[]): SubSup {
     return {
         id: getId(),
         type: "subsup",
@@ -69,11 +67,7 @@ export function subsup<T>(
     };
 }
 
-export function limits<T>(
-    inner: Node<T, {id: number}>,
-    lower: Node<T, {id: number}>[],
-    upper?: Node<T, {id: number}>[],
-): Limits<T, {id: number}> {
+export function limits(inner: Node, lower: Node[], upper?: Node[]): Limits {
     return {
         id: getId(),
         type: "limits",
@@ -82,10 +76,7 @@ export function limits<T>(
     };
 }
 
-export function frac<T>(
-    numerator: Node<T, {id: number}>[],
-    denominator: Node<T, {id: number}>[],
-): Frac<T, {id: number}> {
+export function frac(numerator: Node[], denominator: Node[]): Frac {
     return {
         id: getId(),
         type: "frac",
@@ -95,10 +86,7 @@ export function frac<T>(
 
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
-export function root<T>(
-    arg: Node<T, {id: number}>[],
-    index: Node<T, {id: number}>[] | null,
-): Root<T, {id: number}> {
+export function root(arg: Node[], index: Node[] | null): Root {
     return {
         id: getId(),
         type: "root",
@@ -106,7 +94,7 @@ export function root<T>(
     };
 }
 
-export function atom<T>(value: T): Atom<T, {id: number}> {
+export function atom(value: Glyph): Atom {
     return {
         id: getId(),
         type: "atom",
@@ -114,112 +102,8 @@ export function atom<T>(value: T): Atom<T, {id: number}> {
     };
 }
 
-export type Glyph = {
-    kind: "glyph";
-    char: string;
-    pending?: boolean;
-};
-
-export const glyph = (
-    char: string,
-    pending?: boolean,
-): Atom<Glyph, {id: number}> => atom({kind: "glyph", char, pending});
-
-export function stripIDs<T>(root: Node<T, {id: number}>): Node<T> {
-    switch (root.type) {
-        case "frac": {
-            return {
-                type: "frac",
-                children: [
-                    {
-                        type: "row",
-                        children: root.children[0].children.map<Node<T>>(
-                            stripIDs,
-                        ),
-                    },
-                    {
-                        type: "row",
-                        children: root.children[1].children.map<Node<T>>(
-                            stripIDs,
-                        ),
-                    },
-                ],
-            };
-        }
-        case "subsup": {
-            const [sub, sup] = root.children;
-            return {
-                type: "subsup",
-                children: [
-                    sub
-                        ? {
-                              type: "row",
-                              children: sub.children.map(stripIDs),
-                          }
-                        : null,
-                    sup
-                        ? {
-                              type: "row",
-                              children: sup.children.map(stripIDs),
-                          }
-                        : sup,
-                ],
-            };
-        }
-        case "limits": {
-            const [lower, upper] = root.children;
-            return {
-                type: "limits",
-                inner: stripIDs(root.inner),
-                children: [
-                    {
-                        type: "row",
-                        children: lower.children.map(stripIDs),
-                    },
-                    upper
-                        ? {
-                              type: "row",
-                              children: upper.children.map(stripIDs),
-                          }
-                        : upper,
-                ],
-            };
-        }
-        case "row": {
-            return {
-                type: "row" as const,
-                children: root.children.map(stripIDs),
-            };
-        }
-        case "atom": {
-            return {
-                type: "atom" as const,
-                value: root.value,
-            };
-        }
-        case "root": {
-            return {
-                type: "root" as const,
-                children: [
-                    {
-                        type: "row",
-                        children: root.children[0].children.map(stripIDs),
-                    },
-                    root.children[1]
-                        ? {
-                              type: "row",
-                              children: root.children[1].children.map(stripIDs),
-                          }
-                        : null,
-                ],
-            };
-        }
-        default:
-            throw new Error("foo");
-
-        // (root: empty);
-    }
-}
+export const glyph = (char: string, pending?: boolean): Atom =>
+    atom({kind: "glyph", char, pending});
 
 export type Cursor = {
     path: number[];

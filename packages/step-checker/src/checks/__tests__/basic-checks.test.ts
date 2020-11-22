@@ -8,12 +8,8 @@ import {hasArgs} from "../util";
 
 import {checkArgs} from "../basic-checks";
 
-type ID = {
-    id: number;
-};
-
 const myParse = (text: string): Semantic.Expression => {
-    const node = Editor.print(parse(text)) as Editor.Row<Editor.Glyph, ID>;
+    const node = Editor.print(parse(text)) as Editor.Row;
     return _parse(node);
 };
 

@@ -2,17 +2,12 @@ import reducer, {State} from "../../row-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
 import {SUB, SUP, NUMERATOR, DENOMINATOR, RADICAND} from "../../constants";
+import {toEqualMath} from "../../test-util";
 
 const {row, glyph, subsup} = Editor;
 
 expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
+    toEqualMath,
 });
 
 describe("backspace", () => {
@@ -107,11 +102,7 @@ describe("backspace", () => {
         });
 
         it("should delete the sup after if there are no children", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                subsup([], undefined),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), subsup([], undefined), glyph("g")]);
             const cursor = {
                 path: [1, 0],
                 prev: -Infinity,
@@ -131,11 +122,7 @@ describe("backspace", () => {
         });
 
         it("should delete the sub after if there are no children", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                subsup(undefined, []),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), subsup(undefined, []), glyph("g")]);
             const cursor = {
                 path: [1, 1],
                 prev: -Infinity,
@@ -155,11 +142,7 @@ describe("backspace", () => {
         });
 
         it("should move into the sub from the right", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.sub("x+y"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.sub("x+y"), glyph("g")]);
             const cursor = {
                 path: [],
                 prev: 1,
@@ -179,11 +162,7 @@ describe("backspace", () => {
         });
 
         it("should move into the sup from the right", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.sup("x+y"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.sup("x+y"), glyph("g")]);
             const cursor = {
                 path: [],
                 prev: 1,
@@ -203,7 +182,7 @@ describe("backspace", () => {
         });
 
         it("should move into the subsup from the right", () => {
-            const math = row<Editor.Glyph>([
+            const math = row([
                 glyph("e"),
                 Util.subsup("x+y", "a+b"),
                 glyph("g"),
@@ -227,11 +206,7 @@ describe("backspace", () => {
         });
 
         it("should move the sub into the parent when deleting from the front", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.sub("x+y"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.sub("x+y"), glyph("g")]);
             const cursor = {
                 path: [1, SUB],
                 prev: -Infinity,
@@ -251,11 +226,7 @@ describe("backspace", () => {
         });
 
         it("should move the sup into the parent when deleting from the front", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.sup("x+y"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.sup("x+y"), glyph("g")]);
             const cursor = {
                 path: [1, SUP],
                 prev: -Infinity,
@@ -275,11 +246,7 @@ describe("backspace", () => {
         });
 
         it("should move the sub into the parent when deleting from the front of the sub", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.subsup("a", "b"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
             const cursor = {
                 path: [1, SUB],
                 prev: -Infinity,
@@ -301,11 +268,7 @@ describe("backspace", () => {
         });
 
         it("should move the sup into the parent when deleting from the front of the sup", () => {
-            const math = row<Editor.Glyph>([
-                glyph("e"),
-                Util.subsup("a", "b"),
-                glyph("g"),
-            ]);
+            const math = row([glyph("e"), Util.subsup("a", "b"), glyph("g")]);
             const cursor = {
                 path: [1, SUP],
                 prev: -Infinity,

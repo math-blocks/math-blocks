@@ -1,4 +1,4 @@
-import {Location} from "./editor-lexer";
+import {Location} from "./types";
 
 export const locFromRange = (
     start?: Location,

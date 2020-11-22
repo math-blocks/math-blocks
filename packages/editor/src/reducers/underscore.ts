@@ -5,10 +5,6 @@ import {State} from "../row-reducer";
 import {HasChildren, selectionSplit, insertBeforeChildWithIndex} from "../util";
 import {SUB} from "../constants";
 
-type ID = {
-    id: number;
-};
-
 export const underscore = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
 
@@ -54,12 +50,12 @@ export const underscore = (currentNode: HasChildren, draft: State): void => {
         };
         return;
     }
-    const sub: Editor.Row<Editor.Glyph, ID> = {
+    const sub: Editor.Row = {
         id: getId(),
         type: "row",
         children: [],
     };
-    const newNode: Editor.SubSup<Editor.Glyph, ID> = {
+    const newNode: Editor.SubSup = {
         id: getId(),
         type: "subsup",
         children: [sub, null],

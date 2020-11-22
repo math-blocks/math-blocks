@@ -13,13 +13,9 @@ export default {
     component: MathRenderer,
 };
 
-type ID = {
-    id: number;
-};
-
 export const Small: React.SFC<{}> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
-    const math: Editor.Row<Editor.Glyph, ID> = row([
+    const math = row([
         glyph("2"),
         glyph("x"),
         glyph("+"),
@@ -42,7 +38,7 @@ export const Small: React.SFC<{}> = () => {
 
 export const Equation: React.SFC<{}> = () => {
     // TODO: how to convert
-    const math: Editor.Row<Editor.Glyph, ID> = row([
+    const math = row([
         glyph("2"),
         glyph("x"),
         glyph("+"),
@@ -63,9 +59,7 @@ export const Equation: React.SFC<{}> = () => {
     return <MathRenderer box={box} />;
 };
 
-const rowsToState = (
-    rows: Editor.Row<Editor.Glyph, {id: number}>[],
-): Editor.State => {
+const rowsToState = (rows: Editor.Row[]): Editor.State => {
     return {
         rows: rows.map((row) => ({
             math: row,

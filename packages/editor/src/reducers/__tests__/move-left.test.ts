@@ -2,18 +2,11 @@ import reducer, {State} from "../../row-reducer";
 import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
 import {SUB, SUP, NUMERATOR, DENOMINATOR, RADICAND} from "../../constants";
+import {toEqualMath} from "../../test-util";
 
 const {row, glyph, limits} = Editor;
 
-expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
-});
+expect.extend({toEqualMath});
 
 describe("moveLeft", () => {
     const action = {type: "ArrowLeft"};

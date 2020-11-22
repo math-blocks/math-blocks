@@ -5,7 +5,7 @@ type ID = {
     id: number;
 };
 
-type EditorNode = Editor.Row<Editor.Glyph, ID>;
+type EditorNode = Editor.Row;
 
 export enum StepState {
     Correct,

@@ -12,11 +12,7 @@ import * as Semantic from "@math-blocks/semantic";
 import Step from "./step";
 import {StepType, StepState} from "./types";
 
-type ID = {
-    id: number;
-};
-
-const question: Editor.Row<Editor.Glyph, ID> = Editor.Util.row("2x+5=10");
+const question: Editor.Row = Editor.Util.row("2x+5=10");
 
 enum ProblemState {
     InProgress,
@@ -44,10 +40,7 @@ export const App: React.SFC<{}> = () => {
         },
     ]);
 
-    const handleCheckStep = (
-        prev: Editor.Row<Editor.Glyph, ID>,
-        next: Editor.Row<Editor.Glyph, ID>,
-    ): boolean => {
+    const handleCheckStep = (prev: Editor.Row, next: Editor.Row): boolean => {
         const parsedPrev = parse(prev);
         const parsedNext = parse(next);
 
@@ -107,7 +100,7 @@ export const App: React.SFC<{}> = () => {
                     stepChecker={true}
                     focus={mode === "edit"}
                     style={{marginTop: 8}}
-                    onChange={(value: Editor.Row<Editor.Glyph, ID>) => {
+                    onChange={(value: Editor.Row) => {
                         setSteps([
                             {
                                 state: StepState.Correct,
@@ -135,7 +128,7 @@ export const App: React.SFC<{}> = () => {
                                     steps[index + 1].value,
                                 );
                             }}
-                            onChange={(value: Editor.Row<Editor.Glyph, ID>) => {
+                            onChange={(value: Editor.Row) => {
                                 const state = Editor.isEqual(
                                     steps[index].value,
                                     value,

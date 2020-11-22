@@ -5,10 +5,6 @@ import {State} from "../row-reducer";
 import {HasChildren, selectionSplit, insertBeforeChildWithIndex} from "../util";
 import {RADICAND} from "../constants";
 
-type ID = {
-    id: number;
-};
-
 export const root = (currentNode: HasChildren, draft: State): void => {
     const {cursor, selectionStart} = draft;
 
@@ -32,12 +28,12 @@ export const root = (currentNode: HasChildren, draft: State): void => {
 
     const {next} = cursor;
 
-    const radicand: Editor.Row<Editor.Glyph, ID> = {
+    const radicand: Editor.Row = {
         id: getId(),
         type: "row",
         children: [],
     };
-    const newNode: Editor.Root<Editor.Glyph, ID> = {
+    const newNode: Editor.Root = {
         id: getId(),
         type: "root",
         children: [radicand, null /* index */],

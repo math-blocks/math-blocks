@@ -1,16 +1,8 @@
 import reducer, {State} from "../../row-reducer";
-import * as Editor from "../../editor-ast";
 import * as Util from "../../util";
+import {toEqualMath} from "../../test-util";
 
-expect.extend({
-    toEqualMath(received, actual) {
-        expect(Editor.stripIDs(received)).toEqual(Editor.stripIDs(actual));
-        return {
-            pass: true,
-            message: () => "hello, world!",
-        };
-    },
-});
+expect.extend({toEqualMath});
 
 describe("insertChar", () => {
     describe("a regular character", () => {

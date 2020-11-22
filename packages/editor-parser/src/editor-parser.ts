@@ -4,10 +4,10 @@ import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser";
 
 import * as Lexer from "./editor-lexer";
-import {Location} from "./editor-lexer";
 import {locFromRange} from "./util";
+import {Node} from "./lexer-ast";
 
-type Token = Editor.Node<Lexer.Token, {loc: Location}>;
+type Token = Node;
 
 // TODO: include source node ids in each parse node
 
@@ -374,9 +374,7 @@ const editorParser = Parser.parserFactory<Token, Expression, Operator>(
     EOL,
 );
 
-export const parse = (
-    input: Editor.Row<Editor.Glyph, {id: number}>,
-): Expression => {
+export const parse = (input: Editor.Row): Expression => {
     const tokenRow = Lexer.lexRow(input);
     return editorParser.parse(tokenRow.children);
 };

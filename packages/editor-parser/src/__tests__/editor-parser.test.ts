@@ -1,10 +1,8 @@
-import * as Editor from "@math-blocks/editor";
-
 import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
 import * as LexUtil from "../test-util";
 
-type LexNode = Editor.Node<Lexer.Token, {loc: Lexer.Location}>;
+import {Node as LexNode} from "../lexer-ast";
 
 const {location} = Lexer;
 

@@ -7,7 +7,7 @@ import * as Reducers from "./reducers";
 import {LayoutCursor} from "./util";
 
 export type State = {
-    math: Editor.Row<Editor.Glyph, {id: number}>;
+    math: Editor.Row;
     hrule?: boolean;
     cursor: Editor.Cursor;
     selectionStart?: Editor.Cursor;
