@@ -1,7 +1,8 @@
 import * as Editor from "@math-blocks/editor";
-import * as Layout from "./layout";
-import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "@math-blocks/core";
+
+import * as Layout from "./layout";
+import {Context} from "./types";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -16,14 +17,6 @@ type ID = {
 
 type Row = Editor.Row<Editor.Glyph, ID>;
 type Node = Editor.Node<Editor.Glyph, ID>;
-
-type Context = {
-    fontMetrics: FontMetrics;
-    baseFontSize: number;
-    multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
-    cramped: boolean;
-    colorMap?: Map<number, string>;
-};
 
 // Adds appropriate padding around operators where appropriate
 const typesetChildren = (
@@ -377,8 +370,6 @@ const typeset = (
     context: Context,
 ): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const fontSize = multiplier * baseFontSize;
-    const _makeGlyph = Layout.makeGlyph(fontMetrics)(fontSize);
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
 
@@ -581,7 +572,10 @@ const typeset = (
             radicand.depth = Math.max(radicand.depth, 0);
 
             // TODO: make the surd stretchy
-            const surd = Layout.hpackNat([_makeGlyph("\u221A")], multiplier);
+            const surd = Layout.hpackNat(
+                [Layout.makeGlyph("\u221A", context)],
+                multiplier,
+            );
             const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
             const vbox = Layout.makeVBox(
                 radicand.width,
@@ -603,7 +597,7 @@ const typeset = (
         }
         case "atom": {
             const {value} = node;
-            const glyph = _makeGlyph(value.char);
+            const glyph = Layout.makeGlyph(value.char, context);
             glyph.id = node.id;
             glyph.color = context.colorMap?.get(node.id);
             return glyph;

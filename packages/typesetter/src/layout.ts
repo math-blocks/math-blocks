@@ -1,5 +1,7 @@
-import {FontMetrics} from "./metrics";
 import {UnreachableCaseError} from "@math-blocks/core";
+
+import {FontMetrics} from "./metrics";
+import {Context} from "./types";
 
 type Dist = number;
 
@@ -71,9 +73,10 @@ export const makeHRule = (thickness: number, width: number): HRule => ({
     width,
 });
 
-export const makeGlyph = (fontMetrics: FontMetrics) => (fontSize: number) => (
-    char: string,
-): Glyph => {
+export const makeGlyph = (char: string, context: Context): Glyph => {
+    const {fontMetrics, baseFontSize, multiplier} = context;
+    const fontSize = multiplier * baseFontSize;
+
     return {
         type: "Glyph",
         char,
