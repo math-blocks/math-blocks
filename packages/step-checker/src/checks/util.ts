@@ -64,6 +64,9 @@ export const findNodeById = (
         return root;
     }
     for (const val of Object.values(root)) {
+        if (!val) {
+            continue;
+        }
         if (isNode(val)) {
             const result = findNodeById(val, id);
             if (result) {
@@ -89,6 +92,9 @@ export const replaceNodeWithId = (
     replacement: Semantic.Expression,
 ): void => {
     for (const [key, val] of Object.entries(root)) {
+        if (key === "loc") {
+            continue;
+        }
         if (isNode(val)) {
             if (val.id === id) {
                 // @ts-ignore
@@ -137,8 +143,12 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
             a.every((val, index) => deepEquals(val, b[index]))
         );
     } else if (isObject(a) && isObject(b)) {
-        const aKeys = Object.keys(a).filter((key) => key !== "id");
-        const bKeys = Object.keys(b).filter((key) => key !== "id");
+        const aKeys = Object.keys(a).filter(
+            (key) => key !== "id" && key !== "loc",
+        );
+        const bKeys = Object.keys(b).filter(
+            (key) => key !== "id" && key !== "loc",
+        );
         if (aKeys.length !== bKeys.length) {
             return false;
         }

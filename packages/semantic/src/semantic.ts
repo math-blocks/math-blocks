@@ -1,7 +1,11 @@
 /**
  * AST describing semantic expression of mathematic expressions.
  */
-type Node = {id: number};
+import {Location} from "./types";
+
+// This uses a generic parameter so that we can enforce that all of the nodes
+// in the tree returned by editor-parser.ts contain location data.
+type Node = {id: number; loc?: Location};
 
 export type Num<Value extends string = string> = Node & {
     type: "number";
