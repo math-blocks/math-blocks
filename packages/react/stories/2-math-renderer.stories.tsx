@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor";
+import {parse} from "@math-blocks/editor-parser";
 import {MathRenderer} from "@math-blocks/react";
 import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
 
@@ -322,4 +323,73 @@ export const ColorizedFraction: React.SFC<{}> = () => {
     const sum = typeset(fracNode, context) as Layout.Box;
 
     return <MathRenderer box={sum} />;
+};
+
+export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
+    const editNode = Editor.Util.row("(11+x)(12-y)");
+
+    const semNode = parse(editNode);
+
+    // @ts-ignore
+    const num12 = semNode.args[1].args[0];
+    // @ts-ignore
+    const sum0 = semNode.args[0];
+
+    const colorMap = new Map<number, string>();
+    for (let i = num12.loc.start; i < num12.loc.end; i++) {
+        colorMap.set(editNode.children[i].id, "darkCyan");
+    }
+    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
+        colorMap.set(editNode.children[i].id, "orange");
+    }
+
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+        colorMap: colorMap,
+    };
+    const prod = typeset(editNode, context) as Layout.Box;
+
+    return <MathRenderer box={prod} />;
+};
+
+export const NestedSemanticColoring: React.FunctionComponent<{}> = () => {
+    const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
+
+    const semNode = parse(editNode);
+
+    // @ts-ignore
+    const num12 = semNode.args[1].args[0];
+    // @ts-ignore
+    const sum0 = semNode.args[0];
+
+    const colorMap = new Map<number, string>();
+    let node;
+    node = Editor.Util.nodeAtPath(editNode, num12.loc.path);
+    for (let i = num12.loc.start; i < num12.loc.end; i++) {
+        if (Editor.Util.hasChildren(node)) {
+            colorMap.set(node.children[i].id, "darkCyan");
+        }
+    }
+    node = Editor.Util.nodeAtPath(editNode, sum0.loc.path);
+    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
+        if (Editor.Util.hasChildren(node)) {
+            colorMap.set(node.children[i].id, "orange");
+        }
+    }
+
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+        colorMap: colorMap,
+    };
+    const prod = typeset(editNode, context) as Layout.Box;
+
+    return <MathRenderer box={prod} />;
 };

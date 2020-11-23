@@ -5,7 +5,7 @@ import * as Parser from "@math-blocks/parser";
 
 import * as Lexer from "./editor-lexer";
 import {locFromRange} from "./util";
-import {Node} from "./lexer-ast";
+import {Node} from "./types";
 
 type Token = Node;
 
@@ -64,6 +64,10 @@ const getPrefixParselet = (
                                 nextToken.type === "atom" &&
                                 nextToken.value.kind === "rparens"
                             ) {
+                                result.loc = locFromRange(
+                                    token.loc,
+                                    nextToken.loc,
+                                );
                                 return result;
                             }
                             throw new Error("unmatched left paren");

@@ -54,7 +54,29 @@ const Step: React.SFC<Props> = (props) => {
     if (step.state === StepState.Incorrect) {
         for (const mistake of step.mistakes) {
             for (const node of mistake.nodes) {
-                colorMap.set(node.id, "pink");
+                if (node.loc) {
+                    const editNode = Editor.Util.nodeAtPath(
+                        step.value,
+                        node.loc.path,
+                    );
+                    if (editNode && Editor.Util.hasChildren(editNode)) {
+                        for (let i = node.loc.start; i < node.loc.end; i++) {
+                            try {
+                                colorMap.set(
+                                    editNode.children[i].id,
+                                    "darkCyan",
+                                );
+                            } catch (e) {
+                                // TODO: handle mistakes where the nodes are from the
+                                // previous step.
+                                // 2x + 5     = 10
+                                // 2x + 5 - 5 = 10 - 5
+                                // 2x         = 3
+                                console.log(e);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

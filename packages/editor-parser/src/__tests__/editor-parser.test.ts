@@ -2,7 +2,7 @@ import parser from "../editor-parser";
 import * as Lexer from "../editor-lexer";
 import * as LexUtil from "../test-util";
 
-import {Node as LexNode} from "../lexer-ast";
+import {Node} from "../types";
 
 const {location} = Lexer;
 
@@ -159,7 +159,7 @@ describe("EditorParser", () => {
     });
 
     it("should parse implicit multiplication", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.identifier("a", location([], 0, 1)),
             Lexer.identifier("b", location([], 1, 2)),
             Lexer.identifier("c", location([], 2, 3)),
@@ -171,7 +171,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle fractions", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.number("1", location([], 0, 1)),
             Lexer.plus(location([], 1, 2)),
             LexUtil.frac(
@@ -217,7 +217,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle exponents", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.identifier("x", location([], 0, 1)),
             LexUtil.subsup(
                 undefined,
@@ -244,7 +244,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle nested exponents", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.identifier("x", location([], 0, 1)),
             LexUtil.subsup(
                 undefined,
@@ -270,7 +270,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle subscripts on identifiers", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.identifier("a", location([], 0, 1)),
             LexUtil.subsup(
                 [
@@ -304,7 +304,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle subscripts and superscripts identifiers", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.identifier("a", location([], 0, 1)),
             LexUtil.subsup(
                 [
@@ -325,7 +325,7 @@ describe("EditorParser", () => {
     });
 
     it("should throw when a subscript is being used on a number", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.number("2", location([], 0, 1)),
             LexUtil.subsup(
                 [Lexer.number("0", location([1, 0], 0, 1))],
@@ -340,7 +340,7 @@ describe("EditorParser", () => {
     });
 
     it("should throw when an atom is expected", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.number("2", location([], 0, 1)),
             Lexer.minus(location([], 1, 2)),
         ];
@@ -351,7 +351,7 @@ describe("EditorParser", () => {
     });
 
     it("should throw on a trailing '+'", () => {
-        const tokens: Array<LexNode> = [
+        const tokens: Array<Node> = [
             Lexer.number("2", location([], 0, 1)),
             Lexer.plus(location([], 1, 2)),
             Lexer.number("2", location([], 2, 3)),
