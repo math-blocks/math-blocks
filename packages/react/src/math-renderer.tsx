@@ -20,8 +20,8 @@ const Line: React.SFC<SceneGraph.Line> = ({id, color, ...props}) => {
     );
 };
 
-const Rect: React.SFC<SceneGraph.Rect> = ({color, id, ...props}) => {
-    return <rect {...props} fill={color} />;
+const Rect: React.SFC<SceneGraph.Rect> = ({fill, id, ...props}) => {
+    return <rect {...props} fill={fill} />;
 };
 
 const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {

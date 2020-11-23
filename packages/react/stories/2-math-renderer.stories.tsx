@@ -186,6 +186,89 @@ export const LinearEquations: React.SFC<{}> = () => {
     );
 };
 
+export const Cursor: React.FunctionComponent<{}> = () => {
+    const cursor: Editor.Cursor = {
+        path: [],
+        prev: 0,
+        next: 1,
+    };
+
+    const math = row([
+        glyph("2"),
+        glyph("x"),
+        glyph("+"),
+        glyph("5"),
+        glyph("="),
+        glyph("1"),
+        glyph("0"),
+    ]);
+
+    const layoutCursor = Editor.layoutCursorFromState({
+        math,
+        cursor,
+    });
+
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+    };
+
+    return (
+        <MathRenderer
+            box={typeset(math, context) as Layout.Box}
+            cursor={layoutCursor}
+        />
+    );
+};
+
+export const Selection: React.FunctionComponent<{}> = () => {
+    const cursor: Editor.Cursor = {
+        path: [],
+        prev: 0,
+        next: 1,
+    };
+
+    const selectionStart = {
+        path: [],
+        prev: 4,
+        next: 5,
+    };
+
+    const math = row([
+        glyph("2"),
+        glyph("x"),
+        glyph("+"),
+        glyph("5"),
+        glyph("="),
+        glyph("1"),
+        glyph("0"),
+    ]);
+
+    const layoutCursor = Editor.layoutCursorFromState({
+        math,
+        cursor,
+        selectionStart,
+    });
+
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+    };
+
+    return (
+        <MathRenderer
+            box={typeset(math, context) as Layout.Box}
+            cursor={layoutCursor}
+        />
+    );
+};
+
 export const Pythagoras: React.SFC<{}> = () => {
     const fontSize = 60;
     const context = {
