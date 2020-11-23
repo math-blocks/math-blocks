@@ -9,14 +9,7 @@
 import * as Editor from "@math-blocks/editor";
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Node, Row, Atom} from "./lexer-ast";
-import {Location} from "./types";
-
-// export type Location = {
-//     path: number[];
-//     start: number;
-//     end: number;
-// };
+import {Node, Row, Atom, Location} from "./types";
 
 export const location = (
     path: number[],

@@ -1,7 +1,6 @@
 import {Token} from "./editor-lexer";
 import {locFromRange} from "./util";
-import {Location} from "./types";
-import {Node, Row, SubSup, Frac, Root, Atom} from "./lexer-ast";
+import {Node, Row, SubSup, Frac, Root, Atom, Location} from "./types";
 
 export function row(children: OneOrMore<Node>): Row {
     // What should the location be for an empty row?

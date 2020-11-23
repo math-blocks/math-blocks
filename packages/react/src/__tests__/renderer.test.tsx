@@ -18,6 +18,8 @@ import {
     QuadraticEquation,
     ShowingWork,
     Summation,
+    Cursor,
+    Selection,
 } from "../../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor;
@@ -170,6 +172,18 @@ describe("renderer", () => {
     describe("showing work", () => {
         test("subtracting from both sides", () => {
             expect(<ShowingWork />).toMatchSVGSnapshot();
+        });
+    });
+
+    describe("cursor", () => {
+        test("cursor in the middle", () => {
+            expect(<Cursor />).toMatchSVGSnapshot();
+        });
+    });
+
+    describe("selection", () => {
+        test("selection in the middle", () => {
+            expect(<Selection />).toMatchSVGSnapshot();
         });
     });
 });
