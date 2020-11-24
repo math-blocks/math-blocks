@@ -14,10 +14,7 @@ module.exports = {
             "warn",
             {allowExpressions: true},
         ],
-        "@typescript-eslint/interface-name-prefix": [
-            "error",
-            {prefixWithI: "always"},
-        ],
+        "@typescript-eslint/interface-name-prefix": "off",
         "@typescript-eslint/no-unused-vars": [
             "error",
             // NOTE: args: "after-used" doens't work for some reason

@@ -71,7 +71,11 @@ export default StepChecker;
 
 const checker = new StepChecker();
 
-const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
+const filterMistakes = (
+    mistakes: Mistake[],
+    prev: Expression,
+    next: Expression,
+): Mistake[] => {
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
     for (const mistake of mistakes) {
@@ -109,8 +113,8 @@ const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
 };
 
 export const checkStep = (
-    before: Expression,
-    after: Expression,
+    prev: Expression,
+    next: Expression,
 ): {
     result?: Result;
     successfulChecks: Set<string>;
@@ -125,11 +129,11 @@ export const checkStep = (
         mistakes: [],
     };
 
-    const result = checker.checkStep(before, after, context);
+    const result = checker.checkStep(prev, next, context);
 
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes),
+        mistakes: filterMistakes(context.mistakes, prev, next),
     };
 };

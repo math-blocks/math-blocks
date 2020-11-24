@@ -4,21 +4,29 @@
  */
 import {getId} from "@math-blocks/core";
 
-import * as Semantic from "./semantic";
-import {Location} from "./types";
-import {Expression} from "./semantic";
+import {
+    Location,
+    Expression,
+    Ident,
+    Add,
+    Mul,
+    Num,
+    Ellipsis,
+    Neg,
+    Eq,
+    Div,
+    Root,
+    Exp,
+} from "./types";
 
-export const identifier = (name: string, loc?: Location): Semantic.Ident => ({
+export const identifier = (name: string, loc?: Location): Ident => ({
     type: "identifier",
     id: getId(),
     name,
     loc,
 });
 
-export const number = <T extends string>(
-    value: T,
-    loc?: Location,
-): Semantic.Num<T> => ({
+export const number = <T extends string>(value: T, loc?: Location): Num => ({
     type: "number",
     id: getId(),
     // @ts-ignore: $FIXME
@@ -26,16 +34,13 @@ export const number = <T extends string>(
     loc,
 });
 
-export const ellipsis = (loc?: Location): Semantic.Ellipsis => ({
+export const ellipsis = (loc?: Location): Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
-export const add = (
-    args: TwoOrMore<Expression>,
-    loc?: Location,
-): Semantic.Add => ({
+export const add = (args: TwoOrMore<Expression>, loc?: Location): Add => ({
     type: "add",
     id: getId(),
     args,
@@ -46,7 +51,7 @@ export const mul = (
     args: TwoOrMore<Expression>,
     implicit = false,
     loc?: Location,
-): Semantic.Mul => ({
+): Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -54,10 +59,7 @@ export const mul = (
     loc,
 });
 
-export const eq = (
-    args: TwoOrMore<Expression>,
-    loc?: Location,
-): Semantic.Eq => ({
+export const eq = (args: TwoOrMore<Expression>, loc?: Location): Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -68,7 +70,7 @@ export const neg = (
     arg: Expression,
     subtraction = false,
     loc?: Location,
-): Semantic.Neg => ({
+): Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -76,11 +78,7 @@ export const neg = (
     loc,
 });
 
-export const div = (
-    num: Expression,
-    den: Expression,
-    loc?: Location,
-): Semantic.Div => ({
+export const div = (num: Expression, den: Expression, loc?: Location): Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
@@ -91,7 +89,7 @@ export const exp = (
     base: Expression,
     exp: Expression,
     loc?: Location,
-): Semantic.Exp => ({
+): Exp => ({
     type: "exp",
     id: getId(),
     base,
@@ -105,7 +103,7 @@ export const root = (
     radicand: Expression,
     index?: Expression,
     loc?: Location,
-): Semantic.Root => ({
+): Root => ({
     type: "root",
     id: getId(),
     radicand,
@@ -113,10 +111,10 @@ export const root = (
     loc,
 });
 
-export const isSubtraction = (node: Expression): node is Semantic.Neg =>
+export const isSubtraction = (node: Expression): node is Neg =>
     node.type === "neg" && node.subtraction;
 
-export const isNegative = (node: Expression): node is Semantic.Neg =>
+export const isNegative = (node: Expression): node is Neg =>
     node.type === "neg" && !node.subtraction;
 
 export const getFactors = (node: Expression): OneOrMore<Expression> =>
@@ -129,7 +127,7 @@ export const mulFactors = (
     factors: Expression[],
     implicit = false,
     loc?: Location,
-): Semantic.Expression => {
+): Expression => {
     switch (factors.length) {
         case 0:
             return number("1", loc);
@@ -140,16 +138,13 @@ export const mulFactors = (
                 type: "mul",
                 id: getId(),
                 implicit,
-                args: factors as TwoOrMore<Semantic.Expression>,
+                args: factors as TwoOrMore<Expression>,
                 loc,
             };
     }
 };
 
-export const addTerms = (
-    terms: Array<Expression>,
-    loc?: Location,
-): Semantic.Expression => {
+export const addTerms = (terms: Expression[], loc?: Location): Expression => {
     switch (terms.length) {
         case 0:
             return number("0", loc);

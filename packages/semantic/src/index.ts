@@ -1,5 +1,5 @@
-import serializer from "./semantic-serializer";
+import serializer from "./serializer";
 
 export * from "./util";
-export * from "./semantic";
+export * from "./types";
 export {serializer};

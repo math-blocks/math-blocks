@@ -511,6 +511,42 @@ describe("Equation checks", () => {
             expect(mistakes[1].nodes[0]).toParseLike("2");
         });
 
+        it("2x + 5 - 5 = 10 - 5 -> 2x = 3", () => {
+            const mistakes = checkMistake("2x + 5 - 5 = 10 - 5", "2x = 3");
+
+            // TODO: get the number of mistakes to a more reasonable number
+            // We can start by removing repeats.
+            // Also, we should add a mistake for evaluating 10 - 5 as 3.
+            expect(mistakes).toHaveLength(4);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`5`);
+            expect(mistakes[0].nodes[1]).toMatchInlineSnapshot(`(neg.sub 5)`);
+            // TODO: check that both of these nodes appear in prev or next
+            mistakes[0].nodes[0].id; // ?
+            mistakes[0].nodes[1].id; // ?
+
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(2);
+            expect(mistakes[1].nodes[0]).toMatchInlineSnapshot(`5`);
+            expect(mistakes[1].nodes[1]).toMatchInlineSnapshot(`(neg 5)`);
+            mistakes[1].nodes[0].id; // ?
+            mistakes[1].nodes[1].id; // ?
+
+            expect(mistakes[2].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[2].nodes).toHaveLength(2);
+            expect(mistakes[2].nodes[0]).toMatchInlineSnapshot(`5`);
+            expect(mistakes[2].nodes[1]).toMatchInlineSnapshot(`(neg 5)`);
+            mistakes[2].nodes[0].id; // ?
+            mistakes[2].nodes[1].id; // ?
+
+            expect(mistakes[3].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[3].nodes).toHaveLength(2);
+            expect(mistakes[3].nodes[0]).toMatchInlineSnapshot(`5`);
+            expect(mistakes[3].nodes[1]).toMatchInlineSnapshot(`(neg 5)`);
+        });
+
         // TODO: while we indeed have detected a mistake here, a better
         // explanation for this mistake is that the user didn't multiply both
         // sides by '2' correctly.  The LHS is correct, but in the RHS only the
