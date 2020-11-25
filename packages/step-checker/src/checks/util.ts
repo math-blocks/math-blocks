@@ -100,7 +100,6 @@ export const replaceNodeWithId = (
         }
         if (isNode(val)) {
             if (val.id === id) {
-                // @ts-ignore
                 root[key] = replacement;
             } else {
                 replaceNodeWithId(val, id, replacement);

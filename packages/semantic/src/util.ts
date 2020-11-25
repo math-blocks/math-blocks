@@ -30,7 +30,6 @@ export const identifier = (name: string, loc?: Location): Ident => ({
 export const number = <T extends string>(value: T, loc?: Location): Num => ({
     type: "number",
     id: getId(),
-    // @ts-ignore: $FIXME
     value: value.replace(/-/g, "\u2212"),
     loc,
 });

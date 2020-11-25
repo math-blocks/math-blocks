@@ -22,7 +22,6 @@ export const number = <T extends string>(
 ): ParserTypes.Num => ({
     type: "number",
     id: getId(),
-    // @ts-ignore: $FIXME
     value: value.replace(/-/g, "\u2212"),
     loc,
 });
