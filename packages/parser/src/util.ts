@@ -3,31 +3,22 @@
  * with semantic nodes.
  */
 import {getId} from "@math-blocks/core";
+import {ParsingTypes} from "@math-blocks/semantic";
 
-import {
-    Location,
-    NumericExpression,
-    Expression,
-    Ident,
-    Add,
-    Mul,
-    Num,
-    Ellipsis,
-    Neg,
-    Eq,
-    Div,
-    Root,
-    Exp,
-} from "./validation-types";
-
-export const identifier = (name: string, loc?: Location): Ident => ({
+export const identifier = (
+    name: string,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Ident => ({
     type: "identifier",
     id: getId(),
     name,
     loc,
 });
 
-export const number = <T extends string>(value: T, loc?: Location): Num => ({
+export const number = <T extends string>(
+    value: T,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Num => ({
     type: "number",
     id: getId(),
     // @ts-ignore: $FIXME
@@ -35,16 +26,18 @@ export const number = <T extends string>(value: T, loc?: Location): Num => ({
     loc,
 });
 
-export const ellipsis = (loc?: Location): Ellipsis => ({
+export const ellipsis = (
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
 export const add = (
-    args: TwoOrMore<NumericExpression>,
-    loc?: Location,
-): Add => ({
+    args: TwoOrMore<ParsingTypes.Expression>,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Add => ({
     type: "add",
     id: getId(),
     args,
@@ -52,10 +45,10 @@ export const add = (
 });
 
 export const mul = (
-    args: TwoOrMore<NumericExpression>,
+    args: TwoOrMore<ParsingTypes.Expression>,
     implicit = false,
-    loc?: Location,
-): Mul => ({
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -63,7 +56,10 @@ export const mul = (
     loc,
 });
 
-export const eq = (args: TwoOrMore<Expression>, loc?: Location): Eq => ({
+export const eq = (
+    args: TwoOrMore<ParsingTypes.Expression>,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -71,10 +67,10 @@ export const eq = (args: TwoOrMore<Expression>, loc?: Location): Eq => ({
 });
 
 export const neg = (
-    arg: NumericExpression,
+    arg: ParsingTypes.Expression,
     subtraction = false,
-    loc?: Location,
-): Neg => ({
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -83,10 +79,10 @@ export const neg = (
 });
 
 export const div = (
-    num: NumericExpression,
-    den: NumericExpression,
-    loc?: Location,
-): Div => ({
+    num: ParsingTypes.Expression,
+    den: ParsingTypes.Expression,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
@@ -94,10 +90,10 @@ export const div = (
 });
 
 export const exp = (
-    base: NumericExpression,
-    exp: NumericExpression,
-    loc?: Location,
-): Exp => ({
+    base: ParsingTypes.Expression,
+    exp: ParsingTypes.Expression,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Exp => ({
     type: "exp",
     id: getId(),
     base,
@@ -108,10 +104,10 @@ export const exp = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: NumericExpression,
-    index?: NumericExpression,
-    loc?: Location,
-): Root => ({
+    radicand: ParsingTypes.Expression,
+    index?: ParsingTypes.Expression,
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Root => ({
     type: "root",
     id: getId(),
     radicand,
@@ -119,25 +115,29 @@ export const root = (
     loc,
 });
 
-export const isSubtraction = (node: NumericExpression): node is Neg =>
-    node.type === "neg" && node.subtraction;
+export const isSubtraction = (
+    node: ParsingTypes.Expression,
+): node is ParsingTypes.Neg => node.type === "neg" && node.subtraction;
 
-export const isNegative = (node: NumericExpression): node is Neg =>
-    node.type === "neg" && !node.subtraction;
+export const isNegative = (
+    node: ParsingTypes.Expression,
+): node is ParsingTypes.Neg => node.type === "neg" && !node.subtraction;
 
 export const getFactors = (
-    node: NumericExpression,
-): OneOrMore<NumericExpression> => (node.type === "mul" ? node.args : [node]);
+    node: ParsingTypes.Expression,
+): OneOrMore<ParsingTypes.Expression> =>
+    node.type === "mul" ? node.args : [node];
 
 export const getTerms = (
-    node: NumericExpression,
-): OneOrMore<NumericExpression> => (node.type === "add" ? node.args : [node]);
+    node: ParsingTypes.Expression,
+): OneOrMore<ParsingTypes.Expression> =>
+    node.type === "add" ? node.args : [node];
 
 export const mulFactors = (
-    factors: NumericExpression[],
+    factors: ParsingTypes.Expression[],
     implicit = false,
-    loc?: Location,
-): NumericExpression => {
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Expression => {
     switch (factors.length) {
         case 0:
             return number("1", loc);
@@ -148,16 +148,16 @@ export const mulFactors = (
                 type: "mul",
                 id: getId(),
                 implicit,
-                args: factors as TwoOrMore<NumericExpression>,
+                args: factors as TwoOrMore<ParsingTypes.Expression>,
                 loc,
             };
     }
 };
 
 export const addTerms = (
-    terms: NumericExpression[],
-    loc?: Location,
-): NumericExpression => {
+    terms: ParsingTypes.Expression[],
+    loc?: ParsingTypes.Location,
+): ParsingTypes.Expression => {
     switch (terms.length) {
         case 0:
             return number("0", loc);
@@ -167,14 +167,14 @@ export const addTerms = (
             return {
                 type: "add",
                 id: getId(),
-                args: terms as TwoOrMore<NumericExpression>,
+                args: terms as TwoOrMore<ParsingTypes.Expression>,
                 loc,
             };
     }
 };
 
 // TODO: create a function to check if an answer is simplified or not
-export const isNumber = (node: Expression): boolean => {
+export const isNumber = (node: ParsingTypes.Expression): boolean => {
     if (node.type === "number") {
         return true;
     } else if (node.type === "neg") {
@@ -192,31 +192,4 @@ export const isNumber = (node: Expression): boolean => {
     } else {
         return false;
     }
-};
-
-// TODO: autogenerate this from the validation schema
-export const isNumeric = (node: Expression): node is NumericExpression => {
-    return [
-        "number",
-        "identifier",
-        "pi",
-        "infinity",
-        "ellipsis",
-        "add",
-        "mul",
-        "func",
-        "div",
-        "mod",
-        "root",
-        "exp",
-        "log",
-        "neg",
-        "abs",
-        "sum",
-        "prod",
-        "limit",
-        "diff",
-        "pdiff",
-        "int",
-    ].includes(node.type);
 };

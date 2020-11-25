@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
 import {Status} from "../enums";
@@ -23,6 +23,11 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     if (prev.type !== "div") {
         return;
     }
+
+    if (!Semantic.isNumeric(next)) {
+        return;
+    }
+
     const {checker} = context;
     const [numeratorA, denominatorA] = prev.args;
     // Include ONE as a factor to handle cases where the denominator disappears
@@ -307,7 +312,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<ParsingTypes.Expression>,
+                ] as TwoOrMore<ValidationTypes.NumericExpression>,
                 prev.implicit,
             );
 
@@ -381,17 +386,22 @@ export const mulInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.mulFactors(
             factors
-                .map((term: ParsingTypes.Expression, index: number) => {
-                    if (indicesToRemove.includes(index)) {
-                        if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("1");
+                .map(
+                    (
+                        term: ValidationTypes.NumericExpression,
+                        index: number,
+                    ) => {
+                        if (indicesToRemove.includes(index)) {
+                            if (indicesToRemove.indexOf(index) % 2 === 0) {
+                                return Semantic.number("1");
+                            } else {
+                                return null;
+                            }
                         } else {
-                            return null;
+                            return term;
                         }
-                    } else {
-                        return term;
-                    }
-                })
+                    },
+                )
                 .filter(notNull),
         );
         const result = checker.checkStep(newPrev, next, context);
@@ -438,8 +448,8 @@ export const mulByFrac: Check = (prev, next, context) => {
         }
     }
 
-    const numFactors: ParsingTypes.Expression[] = [];
-    const denFactors: ParsingTypes.Expression[] = [];
+    const numFactors: ValidationTypes.NumericExpression[] = [];
+    const denFactors: ValidationTypes.NumericExpression[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;

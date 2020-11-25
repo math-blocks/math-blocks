@@ -1,8 +1,15 @@
-import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import Ajv from "ajv";
+
+import {
+    ParsingTypes,
+    ValidationTypes,
+    validationSchema,
+} from "@math-blocks/semantic";
 import * as Parser from "@math-blocks/parser";
 
 import {lex, Token} from "./text-lexer";
+
+const Util = Parser.Util;
 
 // TODO: fill out this list
 type Operator =
@@ -37,17 +44,16 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): ParsingTypes.Ident =>
-                    Semantic.identifier(token.name),
+                parse: (): ParsingTypes.Ident => Util.identifier(token.name),
             };
         case "number":
             return {
-                parse: (): ParsingTypes.Num => Semantic.number(token.value),
+                parse: (): ParsingTypes.Num => Util.number(token.value),
             };
         case "minus":
             return {
                 parse: (parser): ParsingTypes.Neg =>
-                    Semantic.neg(parser.parseWithOperator("neg"), false),
+                    Util.neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
@@ -101,7 +107,7 @@ const getInfixParselet = (
                 op: "div",
                 parse: (parser, left): ParsingTypes.Div => {
                     parser.consume();
-                    return Semantic.div(left, parser.parseWithOperator("div"));
+                    return Util.div(left, parser.parseWithOperator("div"));
                 },
             };
         case "caret":
@@ -110,7 +116,7 @@ const getInfixParselet = (
                 parse: (parser, left): ParsingTypes.Exp => {
                     parser.consume();
                     // exponents are right-associative
-                    return Semantic.exp(
+                    return Util.exp(
                         left,
                         parser.parseWithOperator("caret", "right"),
                     );
@@ -125,7 +131,7 @@ const getInfixParselet = (
                 op: "mul.imp",
                 parse: (parser, left): ParsingTypes.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
-                    return Semantic.mul([left, right, ...rest], true);
+                    return Util.mul([left, right, ...rest], true);
                 },
             };
         case "rparen":
@@ -148,13 +154,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return Semantic.add([left, right, ...rest]);
+            return Util.add([left, right, ...rest]);
         case "mul.imp":
-            return Semantic.mul([left, right, ...rest], true);
+            return Util.mul([left, right, ...rest], true);
         case "mul.exp":
-            return Semantic.mul([left, right, ...rest], false);
+            return Util.mul([left, right, ...rest], false);
         case "eq":
-            return Semantic.eq([left, right, ...rest]);
+            return Util.eq([left, right, ...rest]);
     }
 };
 
@@ -173,7 +179,7 @@ const parseNaryArgs = (
     }
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
-        expr = Semantic.neg(expr, true);
+        expr = Util.neg(expr, true);
     }
     const nextToken = parser.peek();
 
@@ -251,4 +257,15 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
     EOL,
 );
 
-export const parse = (input: string): Node => textParser.parse(lex(input));
+const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
+const validate = ajv.compile(validationSchema);
+
+export const parse = (input: string): ValidationTypes.Expression => {
+    const result = textParser.parse(lex(input));
+
+    if (!validate(result)) {
+        throw new Error("Invalid semantic structure");
+    }
+
+    return result as ValidationTypes.Expression;
+};

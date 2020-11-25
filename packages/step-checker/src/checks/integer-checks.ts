@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Result, Check, Step} from "../types";
 import {correctResult} from "./util";
@@ -51,17 +51,22 @@ export const addInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.addTerms(
             terms
-                .map((term: ParsingTypes.Expression, index: number) => {
-                    if (indicesToRemove.includes(index)) {
-                        if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("0");
+                .map(
+                    (
+                        term: ValidationTypes.NumericExpression,
+                        index: number,
+                    ) => {
+                        if (indicesToRemove.includes(index)) {
+                            if (indicesToRemove.indexOf(index) % 2 === 0) {
+                                return Semantic.number("0");
+                            } else {
+                                return null;
+                            }
                         } else {
-                            return null;
+                            return term;
                         }
-                    } else {
-                        return term;
-                    }
-                })
+                    },
+                )
                 .filter(notNull),
         );
         const result = checker.checkStep(newPrev, next, context);
@@ -85,6 +90,10 @@ addInverse.symmetric = true;
 export const doubleNegative: Check = (prev, next, context) => {
     const {checker} = context;
 
+    if (!Semantic.isNumeric(prev)) {
+        return;
+    }
+
     if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
         const newPrev = prev.arg.arg;
         const result = checker.checkStep(newPrev, next, context);
@@ -105,7 +114,7 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
-const subIsNegNodeSet = new WeakSet<ParsingTypes.Expression>();
+const subIsNegNodeSet = new WeakSet<ValidationTypes.Expression>();
 export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -116,7 +125,7 @@ export const subIsNeg: Check = (prev, next, context) => {
     const results: Result[] = [];
 
     if (prev.type === "add") {
-        const subs: ParsingTypes.Neg[] = prev.args.filter(
+        const subs: ValidationTypes.Neg[] = prev.args.filter(
             Semantic.isSubtraction,
         );
 
@@ -166,7 +175,7 @@ export const subIsNeg: Check = (prev, next, context) => {
 subIsNeg.symmetric = true;
 
 // TODO: have different messages based on direction
-const negIsMulNegOneNodeSet = new WeakSet<ParsingTypes.Expression>();
+const negIsMulNegOneNodeSet = new WeakSet<ValidationTypes.Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -212,7 +221,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                     [
                         Semantic.neg(Semantic.number("1")),
                         ...Semantic.getFactors(arg.arg),
-                    ] as TwoOrMore<ParsingTypes.Expression>,
+                    ] as TwoOrMore<ValidationTypes.NumericExpression>,
                     true,
                 );
                 negIsMulNegOneNodeSet.add(newArg);
@@ -220,7 +229,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<ParsingTypes.Expression>;
+        }) as TwoOrMore<ValidationTypes.NumericExpression>;
 
         if (!changed) {
             return;
@@ -251,7 +260,9 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
-        const factors: TwoOrMore<ParsingTypes.Expression> = [...prev.args];
+        const factors: TwoOrMore<ValidationTypes.NumericExpression> = [
+            ...prev.args,
+        ];
 
         const negIndices: number[] = [];
 
@@ -314,7 +325,9 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
-        const factors: TwoOrMore<ParsingTypes.Expression> = [...prev.args];
+        const factors: TwoOrMore<ValidationTypes.NumericExpression> = [
+            ...prev.args,
+        ];
         const index = factors.findIndex((factor) => factor.type === "neg");
         const neg = factors[index];
 
@@ -345,7 +358,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 };
 moveNegToFirstFactor.symmetric = true;
 
-const moveNegInsideMulNodeSet = new WeakSet<ParsingTypes.Expression>();
+const moveNegInsideMulNodeSet = new WeakSet<ValidationTypes.Expression>();
 export const moveNegInsideMul: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -361,7 +374,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
 
         const newPrev = Semantic.mul(
             [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
-                ParsingTypes.Expression
+                ValidationTypes.NumericExpression
             >,
             prev.arg.implicit,
         );
@@ -392,7 +405,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                     [
                         Semantic.neg(mul.args[0]),
                         ...mul.args.slice(1),
-                    ] as TwoOrMore<ParsingTypes.Expression>,
+                    ] as TwoOrMore<ValidationTypes.NumericExpression>,
                     mul.implicit,
                 );
                 moveNegInsideMulNodeSet.add(newArg);
@@ -400,7 +413,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<ParsingTypes.Expression>;
+        }) as TwoOrMore<ValidationTypes.NumericExpression>;
 
         if (!changed) {
             return;

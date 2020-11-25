@@ -1,4 +1,4 @@
-import {Expression} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 type VarDict = {
@@ -13,7 +13,10 @@ const sum = (args: number[]): number => args.reduce(add, zero);
 const prod = (args: number[]): number => args.reduce(mul, one);
 const div = (num: number, den: number): number => num / den;
 
-const evaluate = (expr: Expression, varDict: VarDict): number => {
+const evaluate = (
+    expr: ValidationTypes.Expression,
+    varDict: VarDict,
+): number => {
     switch (expr.type) {
         case "number":
             return parseFloat(expr.value);

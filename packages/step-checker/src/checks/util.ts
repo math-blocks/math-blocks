@@ -1,7 +1,7 @@
 import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Step, HasArgs, Context, Result} from "../types";
@@ -36,31 +36,34 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 };
 
 export const decomposeFactors = (
-    factors: ParsingTypes.Expression[],
-): ParsingTypes.Expression[] => {
-    return factors.reduce((result: ParsingTypes.Expression[], factor) => {
-        // TODO: add decomposition of powers
-        if (factor.type === "number") {
-            return [
-                ...result,
-                ...primeDecomp(parseInt(factor.value)).map((value) =>
-                    Semantic.number(String(value)),
-                ),
-            ];
-        } else {
-            return [...result, factor];
-        }
-    }, []);
+    factors: ValidationTypes.NumericExpression[],
+): ValidationTypes.NumericExpression[] => {
+    return factors.reduce(
+        (result: ValidationTypes.NumericExpression[], factor) => {
+            // TODO: add decomposition of powers
+            if (factor.type === "number") {
+                return [
+                    ...result,
+                    ...primeDecomp(parseInt(factor.value)).map((value) =>
+                        Semantic.number(String(value)),
+                    ),
+                ];
+            } else {
+                return [...result, factor];
+            }
+        },
+        [],
+    );
 };
 
-const isNode = (val: unknown): val is ParsingTypes.Expression => {
+const isNode = (val: unknown): val is ValidationTypes.Expression => {
     return Object.prototype.hasOwnProperty.call(val, "type");
 };
 
 export const findNodeById = (
-    root: ParsingTypes.Expression,
+    root: ValidationTypes.Expression,
     id: number,
-): ParsingTypes.Expression | void => {
+): ValidationTypes.Expression | void => {
     if (root.id === id) {
         return root;
     }
@@ -88,9 +91,9 @@ export const findNodeById = (
 
 // TODO: make this a more general function and then create a wrapper for it
 export const replaceNodeWithId = (
-    root: ParsingTypes.Expression,
+    root: ValidationTypes.Expression,
     id: number,
-    replacement: ParsingTypes.Expression,
+    replacement: ValidationTypes.Expression,
 ): void => {
     for (const [key, val] of Object.entries(root)) {
         if (key === "loc") {
@@ -118,9 +121,9 @@ export const replaceNodeWithId = (
 };
 
 export const applySteps = (
-    root: ParsingTypes.Expression,
+    root: ValidationTypes.Expression,
     steps: Step[],
-): ParsingTypes.Expression => {
+): ValidationTypes.Expression => {
     const nextState = produce(root, (draft) => {
         // We need to apply each step
         for (const step of steps) {
@@ -163,7 +166,7 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     }
 };
 
-export const hasArgs = (a: ParsingTypes.Expression): a is HasArgs =>
+export const hasArgs = (a: ValidationTypes.Expression): a is HasArgs =>
     a.type === "add" ||
     a.type === "mul" ||
     a.type === "eq" ||
@@ -177,11 +180,8 @@ export const hasArgs = (a: ParsingTypes.Expression): a is HasArgs =>
 /**
  * Returns all of the elements that appear in both as and bs.
  */
-export const intersection = (
-    as: ParsingTypes.Expression[],
-    bs: ParsingTypes.Expression[],
-): ParsingTypes.Expression[] => {
-    const result: ParsingTypes.Expression[] = [];
+export const intersection = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent
         // nodes that aren't exactly the same between the as and bs then one of
@@ -198,11 +198,8 @@ export const intersection = (
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
-export const difference = (
-    as: ParsingTypes.Expression[],
-    bs: ParsingTypes.Expression[],
-): ParsingTypes.Expression[] => {
-    const result: ParsingTypes.Expression[] = [];
+export const difference = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent
         // nodes that aren't exactly the same between the as and bs then one of
@@ -222,8 +219,8 @@ export const difference = (
  * and vice versa.
  */
 export const equality = (
-    as: ParsingTypes.Expression[],
-    bs: ParsingTypes.Expression[],
+    as: ValidationTypes.Expression[],
+    bs: ValidationTypes.Expression[],
     context: Context,
 ): boolean => {
     const {checker} = context;
@@ -233,8 +230,8 @@ export const equality = (
 };
 
 export const correctResult = (
-    prev: ParsingTypes.Expression,
-    next: ParsingTypes.Expression,
+    prev: ValidationTypes.Expression,
+    next: ValidationTypes.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],
@@ -288,8 +285,8 @@ export const correctResult = (
 };
 
 export const incorrectResult = (
-    prev: ParsingTypes.Expression,
-    next: ParsingTypes.Expression,
+    prev: ValidationTypes.Expression,
+    next: ValidationTypes.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],

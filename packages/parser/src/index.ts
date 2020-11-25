@@ -6,7 +6,9 @@
  * - N: Node
  * - O: Operator
  */
+import * as Util from "./util";
 
+export {Util};
 export interface IParser<T, N, O> {
     readonly parseWithOperator: (op: O, associativity?: Associativity) => N;
     readonly peek: () => T;

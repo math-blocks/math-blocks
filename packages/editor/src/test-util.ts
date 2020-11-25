@@ -1,4 +1,4 @@
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 const isObject = (val: unknown): val is Record<string, unknown> => {
     return typeof val === "object" && val != null;
@@ -31,8 +31,8 @@ const deepEquals = (a: unknown, b: unknown): boolean => {
 };
 
 export const toEqualMath = (
-    received: ParsingTypes.Expression,
-    actual: ParsingTypes.Expression,
+    received: ValidationTypes.Expression,
+    actual: ValidationTypes.Expression,
 ): {message: () => string; pass: boolean} => {
     const message = "Semantic trees did not match";
     if (deepEquals(received, actual)) {

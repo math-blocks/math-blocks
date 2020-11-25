@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {MistakeId} from "../enums";
@@ -22,6 +22,15 @@ export const checkAddSub: Check = (prev, next, context) => {
 
     const [prevLHS, prevRHS] = prev.args;
     const [nextLHS, nextRHS] = next.args;
+
+    if (
+        !Semantic.isNumeric(prevLHS) ||
+        !Semantic.isNumeric(prevRHS) ||
+        !Semantic.isNumeric(nextLHS) ||
+        !Semantic.isNumeric(nextRHS)
+    ) {
+        return;
+    }
 
     // TODO: take into account LHS and RHS being swapped
     // e.g. y = x -> x + 10 = y + 10
@@ -83,10 +92,10 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         const newPrev = Semantic.eq([
             Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
-                ParsingTypes.Expression
+                ValidationTypes.NumericExpression
             >),
             Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
-                ParsingTypes.Expression
+                ValidationTypes.NumericExpression
             >),
         ]);
 
@@ -128,6 +137,15 @@ export const checkMul: Check = (prev, next, context) => {
     // TODO: take into account LHS and RHS being swapped
     // e.g. y = x -> x * 10 = y * 10
     if (nextLHS.type === "mul" || nextRHS.type === "mul") {
+        if (
+            !Semantic.isNumeric(prevLHS) ||
+            !Semantic.isNumeric(prevRHS) ||
+            !Semantic.isNumeric(nextLHS) ||
+            !Semantic.isNumeric(nextRHS)
+        ) {
+            return;
+        }
+
         const prevFactorsLHS = Semantic.getFactors(prevLHS);
         const prevFactorsRHS = Semantic.getFactors(prevRHS);
         const nextFactorsLHS = Semantic.getFactors(nextLHS);
@@ -181,10 +199,10 @@ export const checkMul: Check = (prev, next, context) => {
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = Semantic.eq([
             Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
-                ParsingTypes.Expression
+                ValidationTypes.NumericExpression
             >),
             Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
-                ParsingTypes.Expression
+                ValidationTypes.NumericExpression
             >),
         ]);
 
@@ -319,6 +337,10 @@ export const checkDiv: Check = (prev, next, context) => {
 
     const [prevLHS, prevRHS] = prev.args;
     const [nextLHS, nextRHS] = next.args;
+
+    if (!Semantic.isNumeric(prevLHS) || !Semantic.isNumeric(prevRHS)) {
+        return;
+    }
 
     if (nextLHS.type === "div" && nextRHS.type === "div") {
         if (

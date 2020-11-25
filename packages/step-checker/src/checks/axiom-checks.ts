@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Result, Step, Check} from "../types";
 import {Status, MistakeId} from "../enums";
@@ -12,13 +12,17 @@ export const addZero: Check = (prev, next, context) => {
         return;
     }
 
+    if (!Semantic.isNumeric(prev)) {
+        return;
+    }
+
     const {checker} = context;
 
     // Check that each new term is equivalent to zero
     const identity = Semantic.number("0");
 
     const identitySteps: Step[] = [];
-    const nonIdentityArgs: ParsingTypes.Expression[] = [];
+    const nonIdentityArgs: ValidationTypes.NumericExpression[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -114,12 +118,16 @@ export const mulOne: Check = (prev, next, context) => {
         return;
     }
 
+    if (!Semantic.isNumeric(prev)) {
+        return;
+    }
+
     const {checker} = context;
 
     const identity = Semantic.number("1");
 
     const identitySteps: Step[] = [];
-    const nonIdentityArgs: ParsingTypes.Expression[] = [];
+    const nonIdentityArgs: ValidationTypes.NumericExpression[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -248,7 +256,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                     ...prev.args.slice(0, i),
                     ...(mul.args[1].args.map((arg) =>
                         Semantic.mul([mul.args[0], arg], mul.implicit),
-                    ) as TwoOrMore<ParsingTypes.Expression>),
+                    ) as TwoOrMore<ValidationTypes.NumericExpression>),
                     ...prev.args.slice(i + 1),
                 ]);
 
@@ -299,7 +307,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 } else {
                     return Semantic.mul([prev.args[0], arg], prev.implicit);
                 }
-            }) as TwoOrMore<ParsingTypes.Expression>,
+            }) as TwoOrMore<ValidationTypes.NumericExpression>,
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
@@ -321,7 +329,7 @@ export const checkDistribution: Check = (prev, next, context) => {
         const newPrev = Semantic.add(
             prev.args[0].args.map((arg) =>
                 Semantic.mul([arg, prev.args[1]]),
-            ) as TwoOrMore<ParsingTypes.Expression>,
+            ) as TwoOrMore<ValidationTypes.NumericExpression>,
         );
 
         const result = context.checker.checkStep(newPrev, next, context);

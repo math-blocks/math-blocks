@@ -1,4 +1,4 @@
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {
     IStepChecker,
@@ -74,8 +74,8 @@ const checker = new StepChecker();
 
 const filterMistakes = (
     mistakes: Mistake[],
-    prev: ParsingTypes.Expression,
-    next: ParsingTypes.Expression,
+    prev: ValidationTypes.Expression,
+    next: ValidationTypes.Expression,
 ): Mistake[] => {
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
@@ -114,8 +114,8 @@ const filterMistakes = (
 };
 
 export const checkStep = (
-    prev: ParsingTypes.Expression,
-    next: ParsingTypes.Expression,
+    prev: ValidationTypes.Expression,
+    next: ValidationTypes.Expression,
 ): {
     result?: Result;
     successfulChecks: Set<string>;

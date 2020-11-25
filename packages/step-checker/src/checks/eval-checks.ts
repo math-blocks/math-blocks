@@ -1,7 +1,7 @@
 import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
-import {ParsingTypes} from "@math-blocks/semantic";
+import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Result, Step, Context, Options, Check} from "../types";
@@ -9,7 +9,7 @@ import {Result, Step, Context, Options, Check} from "../types";
 import {exactMatch} from "./basic-checks";
 
 const parseNode = (
-    node: ParsingTypes.Expression,
+    node: ValidationTypes.Expression,
     options: Options,
 ): Fraction => {
     if (node.type === "number") {
@@ -34,8 +34,8 @@ enum Direction {
 // This handles evaluation and decomposition of addition or multiplication.
 // TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
-    a: ParsingTypes.Expression,
-    b: ParsingTypes.Expression,
+    a: ValidationTypes.NumericExpression,
+    b: ValidationTypes.NumericExpression,
     op: "add" | "mul",
     direction: Direction,
     context: Context,
@@ -124,6 +124,10 @@ function evalDecompNaryOp(
 }
 
 export const evalMul: Check = (prev, next, context) => {
+    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+        return;
+    }
+
     return context.reversed
         ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
@@ -134,6 +138,10 @@ evalMul.symmetric = true;
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
 export const evalAdd: Check = (prev, next, context) => {
+    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+        return;
+    }
+
     return context.reversed
         ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
