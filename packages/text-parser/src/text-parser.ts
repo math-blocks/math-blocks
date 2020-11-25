@@ -1,7 +1,12 @@
-import * as Semantic from "@math-blocks/semantic";
+import Ajv from "ajv";
+
+import {semanticSchema} from "@math-blocks/schema";
 import * as Parser from "@math-blocks/parser";
+import * as Semantic from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";
+
+const Util = Parser.Util;
 
 // TODO: fill out this list
 type Operator =
@@ -17,7 +22,7 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = Semantic.Expression;
+type Node = Parser.Types.Expression;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
@@ -36,20 +41,20 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Semantic.Ident => Semantic.identifier(token.name),
+                parse: (): Parser.Types.Ident => Util.identifier(token.name),
             };
         case "number":
             return {
-                parse: (): Semantic.Num => Semantic.number(token.value),
+                parse: (): Parser.Types.Num => Util.number(token.value),
             };
         case "minus":
             return {
-                parse: (parser): Semantic.Neg =>
-                    Semantic.neg(parser.parseWithOperator("neg"), false),
+                parse: (parser): Parser.Types.Neg =>
+                    Util.neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
-                parse: (parser): Semantic.Expression => {
+                parse: (parser): Parser.Types.Expression => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
@@ -74,7 +79,7 @@ const getPrefixParselet = (
 
 const parseMulByParen = (
     parser: TextParser,
-): OneOrMore<Semantic.Expression> => {
+): OneOrMore<Parser.Types.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -97,18 +102,18 @@ const getInfixParselet = (
         case "slash":
             return {
                 op: "div",
-                parse: (parser, left): Semantic.Div => {
+                parse: (parser, left): Parser.Types.Div => {
                     parser.consume();
-                    return Semantic.div(left, parser.parseWithOperator("div"));
+                    return Util.div(left, parser.parseWithOperator("div"));
                 },
             };
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left): Semantic.Exp => {
+                parse: (parser, left): Parser.Types.Exp => {
                     parser.consume();
                     // exponents are right-associative
-                    return Semantic.exp(
+                    return Util.exp(
                         left,
                         parser.parseWithOperator("caret", "right"),
                     );
@@ -121,15 +126,15 @@ const getInfixParselet = (
         case "lparen":
             return {
                 op: "mul.imp",
-                parse: (parser, left): Semantic.Mul => {
+                parse: (parser, left): Parser.Types.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
-                    return Semantic.mul([left, right, ...rest], true);
+                    return Util.mul([left, right, ...rest], true);
                 },
             };
         case "rparen":
             return {
                 op: "nul",
-                parse: (): Semantic.Expression => {
+                parse: (): Parser.Types.Expression => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -146,13 +151,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return Semantic.add([left, right, ...rest]);
+            return Util.add([left, right, ...rest]);
         case "mul.imp":
-            return Semantic.mul([left, right, ...rest], true);
+            return Util.mul([left, right, ...rest], true);
         case "mul.exp":
-            return Semantic.mul([left, right, ...rest], false);
+            return Util.mul([left, right, ...rest], false);
         case "eq":
-            return Semantic.eq([left, right, ...rest]);
+            return Util.eq([left, right, ...rest]);
     }
 };
 
@@ -171,7 +176,7 @@ const parseNaryArgs = (
     }
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
-        expr = Semantic.neg(expr, true);
+        expr = Util.neg(expr, true);
     }
     const nextToken = parser.peek();
 
@@ -249,4 +254,15 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
     EOL,
 );
 
-export const parse = (input: string): Node => textParser.parse(lex(input));
+const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
+const validate = ajv.compile(semanticSchema);
+
+export const parse = (input: string): Semantic.Types.Expression => {
+    const result = textParser.parse(lex(input));
+
+    if (!validate(result)) {
+        throw new Error("Invalid semantic structure");
+    }
+
+    return result as Semantic.Types.Expression;
+};

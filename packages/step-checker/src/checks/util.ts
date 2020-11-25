@@ -35,31 +35,34 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 };
 
 export const decomposeFactors = (
-    factors: Semantic.Expression[],
-): Semantic.Expression[] => {
-    return factors.reduce((result: Semantic.Expression[], factor) => {
-        // TODO: add decomposition of powers
-        if (factor.type === "number") {
-            return [
-                ...result,
-                ...primeDecomp(parseInt(factor.value)).map((value) =>
-                    Semantic.number(String(value)),
-                ),
-            ];
-        } else {
-            return [...result, factor];
-        }
-    }, []);
+    factors: Semantic.Types.NumericExpression[],
+): Semantic.Types.NumericExpression[] => {
+    return factors.reduce(
+        (result: Semantic.Types.NumericExpression[], factor) => {
+            // TODO: add decomposition of powers
+            if (factor.type === "number") {
+                return [
+                    ...result,
+                    ...primeDecomp(parseInt(factor.value)).map((value) =>
+                        Semantic.number(String(value)),
+                    ),
+                ];
+            } else {
+                return [...result, factor];
+            }
+        },
+        [],
+    );
 };
 
-const isNode = (val: unknown): val is Semantic.Expression => {
+const isNode = (val: unknown): val is Semantic.Types.Expression => {
     return Object.prototype.hasOwnProperty.call(val, "type");
 };
 
 export const findNodeById = (
-    root: Semantic.Expression,
+    root: Semantic.Types.Expression,
     id: number,
-): Semantic.Expression | void => {
+): Semantic.Types.Expression | void => {
     if (root.id === id) {
         return root;
     }
@@ -87,9 +90,9 @@ export const findNodeById = (
 
 // TODO: make this a more general function and then create a wrapper for it
 export const replaceNodeWithId = (
-    root: Semantic.Expression,
+    root: Semantic.Types.Expression,
     id: number,
-    replacement: Semantic.Expression,
+    replacement: Semantic.Types.Expression,
 ): void => {
     for (const [key, val] of Object.entries(root)) {
         if (key === "loc") {
@@ -97,7 +100,6 @@ export const replaceNodeWithId = (
         }
         if (isNode(val)) {
             if (val.id === id) {
-                // @ts-ignore
                 root[key] = replacement;
             } else {
                 replaceNodeWithId(val, id, replacement);
@@ -117,9 +119,9 @@ export const replaceNodeWithId = (
 };
 
 export const applySteps = (
-    root: Semantic.Expression,
+    root: Semantic.Types.Expression,
     steps: Step[],
-): Semantic.Expression => {
+): Semantic.Types.Expression => {
     const nextState = produce(root, (draft) => {
         // We need to apply each step
         for (const step of steps) {
@@ -162,7 +164,7 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     }
 };
 
-export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
+export const hasArgs = (a: Semantic.Types.Expression): a is HasArgs =>
     a.type === "add" ||
     a.type === "mul" ||
     a.type === "eq" ||
@@ -176,11 +178,8 @@ export const hasArgs = (a: Semantic.Expression): a is HasArgs =>
 /**
  * Returns all of the elements that appear in both as and bs.
  */
-export const intersection = (
-    as: Semantic.Expression[],
-    bs: Semantic.Expression[],
-): Semantic.Expression[] => {
-    const result: Semantic.Expression[] = [];
+export const intersection = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent
         // nodes that aren't exactly the same between the as and bs then one of
@@ -197,11 +196,8 @@ export const intersection = (
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
-export const difference = (
-    as: Semantic.Expression[],
-    bs: Semantic.Expression[],
-): Semantic.Expression[] => {
-    const result: Semantic.Expression[] = [];
+export const difference = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent
         // nodes that aren't exactly the same between the as and bs then one of
@@ -221,8 +217,8 @@ export const difference = (
  * and vice versa.
  */
 export const equality = (
-    as: Semantic.Expression[],
-    bs: Semantic.Expression[],
+    as: Semantic.Types.Expression[],
+    bs: Semantic.Types.Expression[],
     context: Context,
 ): boolean => {
     const {checker} = context;
@@ -232,8 +228,8 @@ export const equality = (
 };
 
 export const correctResult = (
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],
@@ -287,8 +283,8 @@ export const correctResult = (
 };
 
 export const incorrectResult = (
-    prev: Semantic.Expression,
-    next: Semantic.Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],

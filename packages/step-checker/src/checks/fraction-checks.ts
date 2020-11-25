@@ -22,6 +22,11 @@ export const checkDivisionCanceling: Check = (prev, next, context) => {
     if (prev.type !== "div") {
         return;
     }
+
+    if (!Semantic.isNumeric(next)) {
+        return;
+    }
+
     const {checker} = context;
     const [numeratorA, denominatorA] = prev.args;
     // Include ONE as a factor to handle cases where the denominator disappears
@@ -306,7 +311,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<Semantic.Expression>,
+                ] as TwoOrMore<Semantic.Types.NumericExpression>,
                 prev.implicit,
             );
 
@@ -380,17 +385,19 @@ export const mulInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.mulFactors(
             factors
-                .map((term: Semantic.Expression, index: number) => {
-                    if (indicesToRemove.includes(index)) {
-                        if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("1");
+                .map(
+                    (term: Semantic.Types.NumericExpression, index: number) => {
+                        if (indicesToRemove.includes(index)) {
+                            if (indicesToRemove.indexOf(index) % 2 === 0) {
+                                return Semantic.number("1");
+                            } else {
+                                return null;
+                            }
                         } else {
-                            return null;
+                            return term;
                         }
-                    } else {
-                        return term;
-                    }
-                })
+                    },
+                )
                 .filter(notNull),
         );
         const result = checker.checkStep(newPrev, next, context);
@@ -437,8 +444,8 @@ export const mulByFrac: Check = (prev, next, context) => {
         }
     }
 
-    const numFactors: Semantic.Expression[] = [];
-    const denFactors: Semantic.Expression[] = [];
+    const numFactors: Semantic.Types.NumericExpression[] = [];
+    const denFactors: Semantic.Types.NumericExpression[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;

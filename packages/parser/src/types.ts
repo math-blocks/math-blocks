@@ -44,7 +44,7 @@ export type Pi = Node & {
 export type Ident = Node & {
     type: "identifier";
     name: string;
-    subscript?: NumericExpression;
+    subscript?: Expression;
     [k: string]: unknown;
 };
 export type Ellipsis = Node & {
@@ -53,99 +53,99 @@ export type Ellipsis = Node & {
 };
 export type Add = Node & {
     type: "add";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Mul = Node & {
     type: "mul";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     implicit: boolean;
     [k: string]: unknown;
 };
 export type Func = Node & {
     type: "func";
-    func: NumericExpression;
-    args: NumericExpression[];
+    func: Expression;
+    args: Expression[];
     [k: string]: unknown;
 };
 export type Div = Node & {
     type: "div";
-    args: [NumericExpression, NumericExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Mod = Node & {
     type: "mod";
-    args: [NumericExpression, NumericExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Root = Node & {
     type: "root";
-    radicand: NumericExpression;
-    index: NumericExpression;
+    radicand: Expression;
+    index: Expression;
     [k: string]: unknown;
 };
 export type Exp = Node & {
     type: "exp";
-    base: NumericExpression;
-    exp: NumericExpression;
+    base: Expression;
+    exp: Expression;
     [k: string]: unknown;
 };
 export type Log = Node & {
     type: "log";
-    base: NumericExpression;
-    arg: NumericExpression;
+    base: Expression;
+    arg: Expression;
     [k: string]: unknown;
 };
 export type Neg = Node & {
     type: "neg";
-    arg: NumericExpression;
+    arg: Expression;
     subtraction: boolean;
     [k: string]: unknown;
 };
 export type Abs = Node & {
     type: "abs";
-    arg: NumericExpression;
+    arg: Expression;
     [k: string]: unknown;
 };
 export type Sum = Node & {
     type: "sum";
-    arg: NumericExpression;
+    arg: Expression;
     bvar: Ident;
     limits: Limits;
     [k: string]: unknown;
 };
 export type Limits = Node & {
     type: "limits";
-    args: [NumericExpression, NumericExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Prod = Node & {
     type: "prod";
-    arg: NumericExpression;
+    arg: Expression;
     bvar: Ident;
     limits: Limits;
     [k: string]: unknown;
 };
 export type Limit = Node & {
     type: "lim";
-    arg: NumericExpression;
+    arg: Expression;
     bvar: Ident;
-    target: NumericExpression;
+    target: Expression;
     [k: string]: unknown;
 };
 export type Diff = Node & {
     type: "diff";
-    arg: NumericExpression;
+    arg: Expression;
     [k: string]: unknown;
 };
 export type PDiff = Node & {
     type: "pdiff";
-    args: [NumericExpression, NumericExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Int = Node & {
     type: "int";
-    arg: NumericExpression;
+    arg: Expression;
     bvar: Ident;
     limits: Ident;
     [k: string]: unknown;
@@ -182,32 +182,32 @@ export type False = Node & {
 };
 export type And = Node & {
     type: "and";
-    args: [LogicExpression, LogicExpression, ...LogicExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Or = Node & {
     type: "or";
-    args: [LogicExpression, LogicExpression, ...LogicExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Not = Node & {
     type: "not";
-    arg: LogicExpression;
+    arg: Expression;
     [k: string]: unknown;
 };
 export type Xor = Node & {
     type: "xor";
-    args: [LogicExpression, LogicExpression, ...LogicExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Implies = Node & {
     type: "implies";
-    args: [LogicExpression, LogicExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Iff = Node & {
     type: "iff";
-    args: [LogicExpression, LogicExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type Eq = Node & {
@@ -222,28 +222,54 @@ export type Neq = Node & {
 };
 export type Lt = Node & {
     type: "lt";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Lte = Node & {
     type: "lte";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Gt = Node & {
     type: "gt";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Gte = Node & {
     type: "gte";
-    args: [NumericExpression, NumericExpression, ...NumericExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type In = Node & {
     type: "in";
     element: Expression;
-    set: SetExpression;
+    set: Expression;
+    [k: string]: unknown;
+};
+export type NotIn = Node & {
+    type: "notin";
+    element: Expression;
+    set: Expression;
+    [k: string]: unknown;
+};
+export type Subset = Node & {
+    type: "subset";
+    args: [Expression, Expression, ...Expression[]];
+    [k: string]: unknown;
+};
+export type ProperSubset = Node & {
+    type: "prsubset";
+    args: [Expression, Expression, ...Expression[]];
+    [k: string]: unknown;
+};
+export type NotSubset = Node & {
+    type: "notsubset";
+    args: [Expression, Expression, ...Expression[]];
+    [k: string]: unknown;
+};
+export type NotProperSubset = Node & {
+    type: "notprsubset";
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type SetExpression =
@@ -270,22 +296,22 @@ export type EmptySet = Node & {
 };
 export type Union = Node & {
     type: "union";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Intersection = Node & {
     type: "intersection";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type SetDiff = Node & {
     type: "setdiff";
-    args: [SetExpression, SetExpression];
+    args: [Expression, Expression];
     [k: string]: unknown;
 };
 export type CartesianProduct = Node & {
     type: "cartesian_product";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
+    args: [Expression, Expression, ...Expression[]];
     [k: string]: unknown;
 };
 export type Naturals = Node & {
@@ -306,32 +332,6 @@ export type Reals = Node & {
 };
 export type Complexes = Node & {
     type: "complexes";
-    [k: string]: unknown;
-};
-export type NotIn = Node & {
-    type: "notin";
-    element: Expression;
-    set: SetExpression;
-    [k: string]: unknown;
-};
-export type Subset = Node & {
-    type: "subset";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
-    [k: string]: unknown;
-};
-export type ProperSubset = Node & {
-    type: "prsubset";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
-    [k: string]: unknown;
-};
-export type NotSubset = Node & {
-    type: "notsubset";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
-    [k: string]: unknown;
-};
-export type NotProperSubset = Node & {
-    type: "notprsubset";
-    args: [SetExpression, SetExpression, ...SetExpression[]];
     [k: string]: unknown;
 };
 

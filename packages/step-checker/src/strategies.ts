@@ -1,4 +1,4 @@
-import {Expression} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Check, Result, Context} from "./types";
 
@@ -60,8 +60,8 @@ function notUndefined<T>(x: T | undefined): x is T {
  */
 const runCheck = (
     check: Check,
-    prev: Expression,
-    next: Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
     context: Context,
 ): Result | undefined => {
     // TODO: create a copy of context before calling 'check' just in case.

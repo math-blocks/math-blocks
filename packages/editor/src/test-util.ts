@@ -1,4 +1,4 @@
-import {Expression} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 const isObject = (val: unknown): val is Record<string, unknown> => {
     return typeof val === "object" && val != null;
@@ -31,8 +31,8 @@ const deepEquals = (a: unknown, b: unknown): boolean => {
 };
 
 export const toEqualMath = (
-    received: Expression,
-    actual: Expression,
+    received: Semantic.Types.Expression,
+    actual: Semantic.Types.Expression,
 ): {message: () => string; pass: boolean} => {
     const message = "Semantic trees did not match";
     if (deepEquals(received, actual)) {

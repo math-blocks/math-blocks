@@ -1,6 +1,7 @@
 module.exports = function (wallaby) {
     return {
         files: [
+            "packages/**/*.js",
             "packages/**/*.ts",
             "packages/**/*.tsx",
             "package.json",
@@ -36,6 +37,6 @@ module.exports = function (wallaby) {
                 .replace(".ts", ".js");
 
             wallaby.testFramework.configure(jestConfig);
-        }
+        },
     };
 };

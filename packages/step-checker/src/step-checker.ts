@@ -1,3 +1,5 @@
+import * as Semantic from "@math-blocks/semantic";
+
 import {
     IStepChecker,
     Options,
@@ -10,7 +12,6 @@ import {
 import {ALL_CHECKS} from "./all-checks";
 import {first} from "./strategies";
 import {evalMul, evalAdd} from "./checks/eval-checks";
-import {Expression} from "../../../out/semantic/src";
 
 const filterChecks = (
     checks: Check[],
@@ -71,7 +72,11 @@ export default StepChecker;
 
 const checker = new StepChecker();
 
-const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
+const filterMistakes = (
+    mistakes: Mistake[],
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
+): Mistake[] => {
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
     for (const mistake of mistakes) {
@@ -109,8 +114,8 @@ const filterMistakes = (mistakes: Mistake[]): Mistake[] => {
 };
 
 export const checkStep = (
-    before: Expression,
-    after: Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
 ): {
     result?: Result;
     successfulChecks: Set<string>;
@@ -125,11 +130,11 @@ export const checkStep = (
         mistakes: [],
     };
 
-    const result = checker.checkStep(before, after, context);
+    const result = checker.checkStep(prev, next, context);
 
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes),
+        mistakes: filterMistakes(context.mistakes, prev, next),
     };
 };

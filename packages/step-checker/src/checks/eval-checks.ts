@@ -7,7 +7,10 @@ import {Result, Step, Context, Options, Check} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
-const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
+const parseNode = (
+    node: Semantic.Types.Expression,
+    options: Options,
+): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
     } else if (node.type === "neg") {
@@ -30,8 +33,8 @@ enum Direction {
 // This handles evaluation and decomposition of addition or multiplication.
 // TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
+    a: Semantic.Types.NumericExpression,
+    b: Semantic.Types.NumericExpression,
     op: "add" | "mul",
     direction: Direction,
     context: Context,
@@ -120,6 +123,10 @@ function evalDecompNaryOp(
 }
 
 export const evalMul: Check = (prev, next, context) => {
+    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+        return;
+    }
+
     return context.reversed
         ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
@@ -130,6 +137,10 @@ evalMul.symmetric = true;
 // This is unidirectional since most of the time we're adding numbers instead
 // of decomposing them.
 export const evalAdd: Check = (prev, next, context) => {
+    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+        return;
+    }
+
     return context.reversed
         ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
         : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);

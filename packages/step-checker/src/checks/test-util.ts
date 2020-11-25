@@ -34,7 +34,7 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
     throw new Error("Unexpected result");
 };
 
-const myParse = (text: string): Semantic.Expression => {
+const myParse = (text: string): Semantic.Types.Expression => {
     const node = Editor.print(parse(text)) as Editor.Row;
     return _parse(node);
 };

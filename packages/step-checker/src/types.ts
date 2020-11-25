@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {MistakeId, Status} from "./enums";
 
-type Expression = Semantic.Expression;
+type Expression = Semantic.Types.Expression;
 
 export type Step = {
     message: string;
@@ -70,12 +70,12 @@ export type Check<
 };
 
 export type HasArgs =
-    | Semantic.Add
-    | Semantic.Mul
-    | Semantic.Eq
-    | Semantic.Neq
-    | Semantic.Lt
-    | Semantic.Lte
-    | Semantic.Gt
-    | Semantic.Gte
-    | Semantic.Div;
+    | Semantic.Types.Add
+    | Semantic.Types.Mul
+    | Semantic.Types.Eq
+    | Semantic.Types.Neq
+    | Semantic.Types.Lt
+    | Semantic.Types.Lte
+    | Semantic.Types.Gt
+    | Semantic.Types.Gte
+    | Semantic.Types.Div;
