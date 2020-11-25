@@ -1,18 +1,13 @@
 import Ajv from "ajv";
 
-import {
-    ParsingTypes,
-    ValidationTypes,
-    validationSchema,
-} from "@math-blocks/semantic";
+import {semanticSchema} from "@math-blocks/schema";
 import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser";
+import * as Semantic from "@math-blocks/semantic";
 
 import * as Lexer from "./editor-lexer";
 import {locFromRange} from "./util";
 import {Node} from "./types";
-
-const Util = Parser.Util;
 
 type Token = Node;
 
@@ -34,32 +29,33 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type EditorParser = Parser.IParser<Token, ParsingTypes.Expression, Operator>;
+type EditorParser = Parser.IParser<Token, Parser.Types.Expression, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, ParsingTypes.Expression, Operator> => {
+): Parser.PrefixParselet<Token, Parser.Types.Expression, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
             switch (atom.kind) {
                 case "identifier":
                     return {
-                        parse: () => Util.identifier(atom.name, token.loc),
+                        parse: () =>
+                            Parser.Util.identifier(atom.name, token.loc),
                     };
                 case "number":
                     return {
-                        parse: () => Util.number(atom.value, token.loc),
+                        parse: () => Parser.Util.number(atom.value, token.loc),
                     };
                 case "minus":
                     return {
                         parse: (parser) => {
                             const neg = parser.parseWithOperator("neg");
                             const loc = locFromRange(token.loc, neg.loc);
-                            return Util.neg(neg, false, loc);
+                            return Parser.Util.neg(neg, false, loc);
                         },
                     };
                 case "lparens":
@@ -82,7 +78,7 @@ const getPrefixParselet = (
                     };
                 case "ellipsis":
                     return {
-                        parse: () => Util.ellipsis(token.loc),
+                        parse: () => Parser.Util.ellipsis(token.loc),
                     };
                 default:
                     throw new Error(`Unexpected '${atom.kind}' atom`);
@@ -92,7 +88,7 @@ const getPrefixParselet = (
             return {
                 parse: () => {
                     const [numerator, denominator] = token.children;
-                    return Util.div(
+                    return Parser.Util.div(
                         editorParser.parse(numerator.children),
                         editorParser.parse(denominator.children),
                         token.loc,
@@ -107,7 +103,7 @@ const getPrefixParselet = (
             return {
                 parse: () => {
                     const [arg, index] = token.children;
-                    return Util.root(
+                    return Parser.Util.root(
                         editorParser.parse(arg.children),
                         index ? editorParser.parse(index.children) : undefined,
                         token.loc,
@@ -134,8 +130,8 @@ const getPrefixParselet = (
 
 const parseNaryInfix = (op: NAryOperator) => (
     parser: EditorParser,
-    left: ParsingTypes.Expression,
-): ParsingTypes.Expression => {
+    left: Parser.Types.Expression,
+): Parser.Types.Expression => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     const loc = locFromRange(
         left.loc,
@@ -145,13 +141,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return Util.add([left, right, ...rest], loc);
+            return Parser.Util.add([left, right, ...rest], loc);
         case "mul.imp":
-            return Util.mul([left, right, ...rest], true, loc);
+            return Parser.Util.mul([left, right, ...rest], true, loc);
         case "mul.exp":
-            return Util.mul([left, right, ...rest], false, loc);
+            return Parser.Util.mul([left, right, ...rest], false, loc);
         case "eq":
-            return Util.eq([left, right, ...rest], loc);
+            return Parser.Util.eq([left, right, ...rest], loc);
     }
 };
 
@@ -164,7 +160,7 @@ const parseNaryInfix = (op: NAryOperator) => (
 const parseNaryArgs = (
     parser: EditorParser,
     op: NAryOperator,
-): OneOrMore<ParsingTypes.Expression> => {
+): OneOrMore<Parser.Types.Expression> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -178,7 +174,7 @@ const parseNaryArgs = (
         let expr = parser.parseWithOperator(op);
         if (op === "sub") {
             const loc = locFromRange(token.loc, expr.loc);
-            expr = Util.neg(expr, true, loc);
+            expr = Parser.Util.neg(expr, true, loc);
         }
         const nextToken = parser.peek();
         if (nextToken.type !== "atom") {
@@ -204,7 +200,7 @@ const parseNaryArgs = (
     } else if (token.type === "root") {
         parser.consume();
         const [arg, index] = token.children;
-        const expr = Util.root(
+        const expr = Parser.Util.root(
             editorParser.parse(arg.children),
             index ? editorParser.parse(index.children) : undefined,
             token.loc,
@@ -218,7 +214,7 @@ const parseNaryArgs = (
     } else if (token.type === "frac") {
         parser.consume();
         const [num, den] = token.children;
-        const expr = Util.div(
+        const expr = Parser.Util.div(
             editorParser.parse(num.children),
             editorParser.parse(den.children),
             token.loc,
@@ -232,7 +228,7 @@ const parseNaryArgs = (
 
 const parseMulByParen = (
     parser: EditorParser,
-): OneOrMore<ParsingTypes.Expression> => {
+): OneOrMore<Parser.Types.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     const nextToken = parser.peek();
     if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
@@ -243,7 +239,7 @@ const parseMulByParen = (
 
 const getInfixParselet = (
     token: Token,
-): Parser.InfixParselet<Token, ParsingTypes.Expression, Operator> | null => {
+): Parser.InfixParselet<Token, Parser.Types.Expression, Operator> | null => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -263,7 +259,7 @@ const getInfixParselet = (
                 case "lparens":
                     return {
                         op: "mul.imp",
-                        parse: (parser, left): ParsingTypes.Mul => {
+                        parse: (parser, left): Parser.Types.Mul => {
                             const [right, ...rest] = parseMulByParen(parser);
                             const loc = locFromRange(
                                 left.loc,
@@ -272,7 +268,7 @@ const getInfixParselet = (
                                     : right.loc,
                             );
 
-                            return Util.mul(
+                            return Parser.Util.mul(
                                 [left, right, ...rest],
                                 true, // implicit
                                 loc,
@@ -282,7 +278,7 @@ const getInfixParselet = (
                 case "rparens":
                     return {
                         op: "nul",
-                        parse: (): ParsingTypes.Expression => {
+                        parse: (): Parser.Types.Expression => {
                             throw new Error("mismatched parens");
                         },
                     };
@@ -300,7 +296,7 @@ const getInfixParselet = (
                 op: "supsub",
                 parse: (
                     parser: EditorParser,
-                    left: ParsingTypes.Expression,
+                    left: Parser.Types.Expression,
                 ) => {
                     parser.consume(); // consume the subsup
                     const [sub, sup] = token.children;
@@ -325,7 +321,7 @@ const getInfixParselet = (
                             loc.end += 1;
                         }
 
-                        return Util.exp(
+                        return Parser.Util.exp(
                             left,
                             editorParser.parse(sup.children),
                             loc,
@@ -342,7 +338,7 @@ const getInfixParselet = (
         case "frac": {
             return {
                 op: "mul.imp",
-                parse: (parser, left): ParsingTypes.Expression => {
+                parse: (parser, left): Parser.Types.Expression => {
                     const parselet = parseNaryInfix("mul.imp");
                     if (left.type === "div") {
                         throw new Error(
@@ -385,14 +381,14 @@ const EOL: Token = Lexer.atom({kind: "eol"}, Lexer.location([], -1, -1));
 
 const editorParser = Parser.parserFactory<
     Token,
-    ParsingTypes.Expression,
+    Parser.Types.Expression,
     Operator
 >(getPrefixParselet, getInfixParselet, getOpPrecedence, EOL);
 
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
-const validate = ajv.compile(validationSchema);
+const validate = ajv.compile(semanticSchema);
 
-export const parse = (input: Editor.Row): ValidationTypes.Expression => {
+export const parse = (input: Editor.Row): Semantic.Types.Expression => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
 
@@ -400,7 +396,7 @@ export const parse = (input: Editor.Row): ValidationTypes.Expression => {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as ValidationTypes.Expression;
+    return result as Semantic.Types.Expression;
 };
 
 export default editorParser;

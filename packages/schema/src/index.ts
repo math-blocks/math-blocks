@@ -1,15 +1,22 @@
-const stringLiteral = (value) => {
+import {JSONSchema7, JSONSchema7Definition} from "json-schema";
+
+const stringLiteral = (value: string): JSONSchema7 => {
     return {
         type: "string",
         enum: [value],
     };
 };
 
-const ref = (name) => ({
+const ref = (name: string): JSONSchema7 => ({
     $ref: `#/definitions/${name}`,
 });
 
-const object = (properties, options) => {
+type Options = {optional?: string[]};
+type Properties = {
+    [key: string]: JSONSchema7Definition;
+};
+
+const object = (properties: Properties, options?: Options): JSONSchema7 => {
     const optional = (options && options.optional) || [];
 
     const required = Object.keys(properties).filter(
@@ -23,7 +30,11 @@ const object = (properties, options) => {
     };
 };
 
-const node = (name, properties = {}, options) => {
+const node = (
+    name: string,
+    properties: object = {},
+    options?: Options,
+): object => {
     return {
         type: "object",
         allOf: [
@@ -39,7 +50,7 @@ const node = (name, properties = {}, options) => {
     };
 };
 
-const nary = (name, argType) =>
+const nary = (name: string, argType: JSONSchema7): object =>
     node(name, {
         args: {
             type: "array",
@@ -48,7 +59,7 @@ const nary = (name, argType) =>
         },
     });
 
-const binary = (name, argType) =>
+const binary = (name: string, argType: JSONSchema7): object =>
     node(name, {
         args: {
             type: "array",
@@ -58,7 +69,7 @@ const binary = (name, argType) =>
         },
     });
 
-const unary = (name, argType) =>
+const unary = (name: string, argType: JSONSchema7): object =>
     node(name, {
         arg: argType,
     });
@@ -76,7 +87,17 @@ const SetExpression = ref("SetExpression");
 // - one that distinguishes between different types of expressions
 // - one that uses Expression for everything to facilitate parsing
 
-const genSchema = ({NumericExpression, LogicExpression, SetExpression}) => {
+type SchemaArg = {
+    NumericExpression: JSONSchema7;
+    LogicExpression: JSONSchema7;
+    SetExpression: JSONSchema7;
+};
+
+const genSchema = ({
+    NumericExpression,
+    LogicExpression,
+    SetExpression,
+}: SchemaArg): JSONSchema7 => {
     return {
         $schema: "http://json-schema.org/draft-07/schema#",
         definitions: {
@@ -390,7 +411,7 @@ const genSchema = ({NumericExpression, LogicExpression, SetExpression}) => {
 //   taught in math education but probably should
 
 // Parsing is easier if all the nodes that the parser produces are the same.
-exports.parsingSchema = genSchema({
+export const parsingSchema = genSchema({
     NumericExpression: Expression,
     LogicExpression: Expression,
     SetExpression: Expression,
@@ -398,7 +419,7 @@ exports.parsingSchema = genSchema({
 
 // After parse we can validate it and the cast the data structure to this the
 // types produced from this schema.
-exports.validationSchema = genSchema({
+export const semanticSchema = genSchema({
     NumericExpression,
     LogicExpression,
     SetExpression,

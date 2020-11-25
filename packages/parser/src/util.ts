@@ -3,12 +3,13 @@
  * with semantic nodes.
  */
 import {getId} from "@math-blocks/core";
-import {ParsingTypes} from "@math-blocks/semantic";
+
+import * as ParserTypes from "./types";
 
 export const identifier = (
     name: string,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Ident => ({
+    loc?: ParserTypes.Location,
+): ParserTypes.Ident => ({
     type: "identifier",
     id: getId(),
     name,
@@ -17,8 +18,8 @@ export const identifier = (
 
 export const number = <T extends string>(
     value: T,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Num => ({
+    loc?: ParserTypes.Location,
+): ParserTypes.Num => ({
     type: "number",
     id: getId(),
     // @ts-ignore: $FIXME
@@ -26,18 +27,16 @@ export const number = <T extends string>(
     loc,
 });
 
-export const ellipsis = (
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Ellipsis => ({
+export const ellipsis = (loc?: ParserTypes.Location): ParserTypes.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
 export const add = (
-    args: TwoOrMore<ParsingTypes.Expression>,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Add => ({
+    args: TwoOrMore<ParserTypes.Expression>,
+    loc?: ParserTypes.Location,
+): ParserTypes.Add => ({
     type: "add",
     id: getId(),
     args,
@@ -45,10 +44,10 @@ export const add = (
 });
 
 export const mul = (
-    args: TwoOrMore<ParsingTypes.Expression>,
+    args: TwoOrMore<ParserTypes.Expression>,
     implicit = false,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Mul => ({
+    loc?: ParserTypes.Location,
+): ParserTypes.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -57,9 +56,9 @@ export const mul = (
 });
 
 export const eq = (
-    args: TwoOrMore<ParsingTypes.Expression>,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Eq => ({
+    args: TwoOrMore<ParserTypes.Expression>,
+    loc?: ParserTypes.Location,
+): ParserTypes.Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -67,10 +66,10 @@ export const eq = (
 });
 
 export const neg = (
-    arg: ParsingTypes.Expression,
+    arg: ParserTypes.Expression,
     subtraction = false,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Neg => ({
+    loc?: ParserTypes.Location,
+): ParserTypes.Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -79,10 +78,10 @@ export const neg = (
 });
 
 export const div = (
-    num: ParsingTypes.Expression,
-    den: ParsingTypes.Expression,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Div => ({
+    num: ParserTypes.Expression,
+    den: ParserTypes.Expression,
+    loc?: ParserTypes.Location,
+): ParserTypes.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
@@ -90,10 +89,10 @@ export const div = (
 });
 
 export const exp = (
-    base: ParsingTypes.Expression,
-    exp: ParsingTypes.Expression,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Exp => ({
+    base: ParserTypes.Expression,
+    exp: ParserTypes.Expression,
+    loc?: ParserTypes.Location,
+): ParserTypes.Exp => ({
     type: "exp",
     id: getId(),
     base,
@@ -104,92 +103,13 @@ export const exp = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: ParsingTypes.Expression,
-    index?: ParsingTypes.Expression,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Root => ({
+    radicand: ParserTypes.Expression,
+    index?: ParserTypes.Expression,
+    loc?: ParserTypes.Location,
+): ParserTypes.Root => ({
     type: "root",
     id: getId(),
     radicand,
     index: index || number("2"),
     loc,
 });
-
-export const isSubtraction = (
-    node: ParsingTypes.Expression,
-): node is ParsingTypes.Neg => node.type === "neg" && node.subtraction;
-
-export const isNegative = (
-    node: ParsingTypes.Expression,
-): node is ParsingTypes.Neg => node.type === "neg" && !node.subtraction;
-
-export const getFactors = (
-    node: ParsingTypes.Expression,
-): OneOrMore<ParsingTypes.Expression> =>
-    node.type === "mul" ? node.args : [node];
-
-export const getTerms = (
-    node: ParsingTypes.Expression,
-): OneOrMore<ParsingTypes.Expression> =>
-    node.type === "add" ? node.args : [node];
-
-export const mulFactors = (
-    factors: ParsingTypes.Expression[],
-    implicit = false,
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Expression => {
-    switch (factors.length) {
-        case 0:
-            return number("1", loc);
-        case 1:
-            return factors[0]; // TODO: figure out if we should give this node a location
-        default:
-            return {
-                type: "mul",
-                id: getId(),
-                implicit,
-                args: factors as TwoOrMore<ParsingTypes.Expression>,
-                loc,
-            };
-    }
-};
-
-export const addTerms = (
-    terms: ParsingTypes.Expression[],
-    loc?: ParsingTypes.Location,
-): ParsingTypes.Expression => {
-    switch (terms.length) {
-        case 0:
-            return number("0", loc);
-        case 1:
-            return terms[0]; // TODO: figure out if we should give this node a location
-        default:
-            return {
-                type: "add",
-                id: getId(),
-                args: terms as TwoOrMore<ParsingTypes.Expression>,
-                loc,
-            };
-    }
-};
-
-// TODO: create a function to check if an answer is simplified or not
-export const isNumber = (node: ParsingTypes.Expression): boolean => {
-    if (node.type === "number") {
-        return true;
-    } else if (node.type === "neg") {
-        return isNumber(node.arg);
-    } else if (node.type === "div") {
-        return node.args.every(isNumber);
-    } else if (node.type === "mul") {
-        return node.args.every(isNumber);
-    } else if (node.type === "add") {
-        return node.args.every(isNumber);
-    } else if (node.type === "root") {
-        return isNumber(node.radicand) && isNumber(node.index);
-    } else if (node.type === "exp") {
-        return isNumber(node.base) && isNumber(node.exp);
-    } else {
-        return false;
-    }
-};

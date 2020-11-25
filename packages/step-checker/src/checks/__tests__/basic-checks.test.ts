@@ -1,16 +1,16 @@
-import {parse} from "@math-blocks/text-parser";
 import * as Editor from "@math-blocks/editor";
-import {parse as _parse} from "@math-blocks/editor-parser";
-import {ValidationTypes} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
+import {parse as parseText} from "@math-blocks/text-parser";
+import {parse as parseEditorNodes} from "@math-blocks/editor-parser";
 
 import StepChecker from "../../step-checker";
 import {hasArgs} from "../util";
 
 import {checkArgs} from "../basic-checks";
 
-const myParse = (text: string): ValidationTypes.Expression => {
-    const node = Editor.print(parse(text)) as Editor.Row;
-    return _parse(node);
+const myParse = (text: string): Semantic.Types.Expression => {
+    const node = Editor.print(parseText(text)) as Editor.Row;
+    return parseEditorNodes(node);
 };
 
 describe("checkArgs", () => {

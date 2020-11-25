@@ -7,8 +7,10 @@
  * - O: Operator
  */
 import * as Util from "./util";
+import * as Types from "./types";
 
-export {Util};
+export {Util, Types};
+
 export interface IParser<T, N, O> {
     readonly parseWithOperator: (op: O, associativity?: Associativity) => N;
     readonly peek: () => T;

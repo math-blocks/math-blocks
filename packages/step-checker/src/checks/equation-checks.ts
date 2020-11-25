@@ -1,5 +1,4 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {MistakeId} from "../enums";
@@ -92,10 +91,10 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         const newPrev = Semantic.eq([
             Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
-                ValidationTypes.NumericExpression
+                Semantic.Types.NumericExpression
             >),
             Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
-                ValidationTypes.NumericExpression
+                Semantic.Types.NumericExpression
             >),
         ]);
 
@@ -199,10 +198,10 @@ export const checkMul: Check = (prev, next, context) => {
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = Semantic.eq([
             Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
-                ValidationTypes.NumericExpression
+                Semantic.Types.NumericExpression
             >),
             Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
-                ValidationTypes.NumericExpression
+                Semantic.Types.NumericExpression
             >),
         ]);
 

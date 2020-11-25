@@ -1,7 +1,6 @@
 import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
-import {ValidationTypes} from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Step, HasArgs, Context, Result} from "../types";
@@ -36,10 +35,10 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 };
 
 export const decomposeFactors = (
-    factors: ValidationTypes.NumericExpression[],
-): ValidationTypes.NumericExpression[] => {
+    factors: Semantic.Types.NumericExpression[],
+): Semantic.Types.NumericExpression[] => {
     return factors.reduce(
-        (result: ValidationTypes.NumericExpression[], factor) => {
+        (result: Semantic.Types.NumericExpression[], factor) => {
             // TODO: add decomposition of powers
             if (factor.type === "number") {
                 return [
@@ -56,14 +55,14 @@ export const decomposeFactors = (
     );
 };
 
-const isNode = (val: unknown): val is ValidationTypes.Expression => {
+const isNode = (val: unknown): val is Semantic.Types.Expression => {
     return Object.prototype.hasOwnProperty.call(val, "type");
 };
 
 export const findNodeById = (
-    root: ValidationTypes.Expression,
+    root: Semantic.Types.Expression,
     id: number,
-): ValidationTypes.Expression | void => {
+): Semantic.Types.Expression | void => {
     if (root.id === id) {
         return root;
     }
@@ -91,9 +90,9 @@ export const findNodeById = (
 
 // TODO: make this a more general function and then create a wrapper for it
 export const replaceNodeWithId = (
-    root: ValidationTypes.Expression,
+    root: Semantic.Types.Expression,
     id: number,
-    replacement: ValidationTypes.Expression,
+    replacement: Semantic.Types.Expression,
 ): void => {
     for (const [key, val] of Object.entries(root)) {
         if (key === "loc") {
@@ -121,9 +120,9 @@ export const replaceNodeWithId = (
 };
 
 export const applySteps = (
-    root: ValidationTypes.Expression,
+    root: Semantic.Types.Expression,
     steps: Step[],
-): ValidationTypes.Expression => {
+): Semantic.Types.Expression => {
     const nextState = produce(root, (draft) => {
         // We need to apply each step
         for (const step of steps) {
@@ -166,7 +165,7 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     }
 };
 
-export const hasArgs = (a: ValidationTypes.Expression): a is HasArgs =>
+export const hasArgs = (a: Semantic.Types.Expression): a is HasArgs =>
     a.type === "add" ||
     a.type === "mul" ||
     a.type === "eq" ||
@@ -219,8 +218,8 @@ export const difference = <T>(as: T[], bs: T[]): T[] => {
  * and vice versa.
  */
 export const equality = (
-    as: ValidationTypes.Expression[],
-    bs: ValidationTypes.Expression[],
+    as: Semantic.Types.Expression[],
+    bs: Semantic.Types.Expression[],
     context: Context,
 ): boolean => {
     const {checker} = context;
@@ -230,8 +229,8 @@ export const equality = (
 };
 
 export const correctResult = (
-    prev: ValidationTypes.Expression,
-    next: ValidationTypes.Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],
@@ -285,8 +284,8 @@ export const correctResult = (
 };
 
 export const incorrectResult = (
-    prev: ValidationTypes.Expression,
-    next: ValidationTypes.Expression,
+    prev: Semantic.Types.Expression,
+    next: Semantic.Types.Expression,
     reversed: boolean,
     beforeSteps: Step[],
     afterSteps: Step[],

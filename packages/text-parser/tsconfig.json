@@ -6,6 +6,7 @@
   },
   "references": [
     {"path": "../parser"},
+    {"path": "../schema"},
     {"path": "../semantic"}
   ]
 }

@@ -1,5 +1,4 @@
 import * as Semantic from "@math-blocks/semantic";
-import {ValidationTypes} from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
 import {Status} from "../enums";
@@ -312,7 +311,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<ValidationTypes.NumericExpression>,
+                ] as TwoOrMore<Semantic.Types.NumericExpression>,
                 prev.implicit,
             );
 
@@ -387,10 +386,7 @@ export const mulInverse: Check = (prev, next, context) => {
         const newPrev = Semantic.mulFactors(
             factors
                 .map(
-                    (
-                        term: ValidationTypes.NumericExpression,
-                        index: number,
-                    ) => {
+                    (term: Semantic.Types.NumericExpression, index: number) => {
                         if (indicesToRemove.includes(index)) {
                             if (indicesToRemove.indexOf(index) % 2 === 0) {
                                 return Semantic.number("1");
@@ -448,8 +444,8 @@ export const mulByFrac: Check = (prev, next, context) => {
         }
     }
 
-    const numFactors: ValidationTypes.NumericExpression[] = [];
-    const denFactors: ValidationTypes.NumericExpression[] = [];
+    const numFactors: Semantic.Types.NumericExpression[] = [];
+    const denFactors: Semantic.Types.NumericExpression[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;

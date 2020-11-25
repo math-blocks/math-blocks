@@ -1,9 +1,6 @@
 import serializer from "./serializer";
-import * as ParsingTypes from "./parsing-types";
-import * as ValidationTypes from "./validation-types";
+import * as Types from "./types";
 
 export * from "./util";
 
-export {parsingSchema, validationSchema} from "./schema";
-
-export {serializer, ParsingTypes, ValidationTypes};
+export {serializer, Types};

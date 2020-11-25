@@ -1,6 +1,6 @@
 import Ajv from "ajv";
 
-import {parsingSchema, validationSchema} from "../schema.js";
+import {parsingSchema, semanticSchema} from "../index";
 
 describe("parsing schema", () => {
     const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
@@ -104,7 +104,7 @@ describe("parsing schema", () => {
 
 describe("validation schema", () => {
     const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
-    const validate = ajv.compile(validationSchema);
+    const validate = ajv.compile(semanticSchema);
 
     it("should pass numbers", () => {
         const data = {

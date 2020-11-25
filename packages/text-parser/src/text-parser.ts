@@ -1,11 +1,8 @@
 import Ajv from "ajv";
 
-import {
-    ParsingTypes,
-    ValidationTypes,
-    validationSchema,
-} from "@math-blocks/semantic";
+import {semanticSchema} from "@math-blocks/schema";
 import * as Parser from "@math-blocks/parser";
+import * as Semantic from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";
 
@@ -25,7 +22,7 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = ParsingTypes.Expression;
+type Node = Parser.Types.Expression;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
@@ -44,20 +41,20 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): ParsingTypes.Ident => Util.identifier(token.name),
+                parse: (): Parser.Types.Ident => Util.identifier(token.name),
             };
         case "number":
             return {
-                parse: (): ParsingTypes.Num => Util.number(token.value),
+                parse: (): Parser.Types.Num => Util.number(token.value),
             };
         case "minus":
             return {
-                parse: (parser): ParsingTypes.Neg =>
+                parse: (parser): Parser.Types.Neg =>
                     Util.neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
-                parse: (parser): ParsingTypes.Expression => {
+                parse: (parser): Parser.Types.Expression => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
@@ -82,7 +79,7 @@ const getPrefixParselet = (
 
 const parseMulByParen = (
     parser: TextParser,
-): OneOrMore<ParsingTypes.Expression> => {
+): OneOrMore<Parser.Types.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -105,7 +102,7 @@ const getInfixParselet = (
         case "slash":
             return {
                 op: "div",
-                parse: (parser, left): ParsingTypes.Div => {
+                parse: (parser, left): Parser.Types.Div => {
                     parser.consume();
                     return Util.div(left, parser.parseWithOperator("div"));
                 },
@@ -113,7 +110,7 @@ const getInfixParselet = (
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left): ParsingTypes.Exp => {
+                parse: (parser, left): Parser.Types.Exp => {
                     parser.consume();
                     // exponents are right-associative
                     return Util.exp(
@@ -129,7 +126,7 @@ const getInfixParselet = (
         case "lparen":
             return {
                 op: "mul.imp",
-                parse: (parser, left): ParsingTypes.Mul => {
+                parse: (parser, left): Parser.Types.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
                     return Util.mul([left, right, ...rest], true);
                 },
@@ -137,7 +134,7 @@ const getInfixParselet = (
         case "rparen":
             return {
                 op: "nul",
-                parse: (): ParsingTypes.Expression => {
+                parse: (): Parser.Types.Expression => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -258,14 +255,14 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
 );
 
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
-const validate = ajv.compile(validationSchema);
+const validate = ajv.compile(semanticSchema);
 
-export const parse = (input: string): ValidationTypes.Expression => {
+export const parse = (input: string): Semantic.Types.Expression => {
     const result = textParser.parse(lex(input));
 
     if (!validate(result)) {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as ValidationTypes.Expression;
+    return result as Semantic.Types.Expression;
 };

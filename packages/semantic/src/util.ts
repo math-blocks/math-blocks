@@ -18,7 +18,7 @@ import {
     Div,
     Root,
     Exp,
-} from "./validation-types";
+} from "./types";
 
 export const identifier = (name: string, loc?: Location): Ident => ({
     type: "identifier",
