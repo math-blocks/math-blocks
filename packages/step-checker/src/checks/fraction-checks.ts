@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
 import {Status} from "../enums";
@@ -306,7 +307,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<Semantic.Expression>,
+                ] as TwoOrMore<ParsingTypes.Expression>,
                 prev.implicit,
             );
 
@@ -380,7 +381,7 @@ export const mulInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.mulFactors(
             factors
-                .map((term: Semantic.Expression, index: number) => {
+                .map((term: ParsingTypes.Expression, index: number) => {
                     if (indicesToRemove.includes(index)) {
                         if (indicesToRemove.indexOf(index) % 2 === 0) {
                             return Semantic.number("1");
@@ -437,8 +438,8 @@ export const mulByFrac: Check = (prev, next, context) => {
         }
     }
 
-    const numFactors: Semantic.Expression[] = [];
-    const denFactors: Semantic.Expression[] = [];
+    const numFactors: ParsingTypes.Expression[] = [];
+    const denFactors: ParsingTypes.Expression[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;

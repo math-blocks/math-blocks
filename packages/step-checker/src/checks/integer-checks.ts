@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 
 import {Result, Check, Step} from "../types";
 import {correctResult} from "./util";
@@ -50,7 +51,7 @@ export const addInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.addTerms(
             terms
-                .map((term: Semantic.Expression, index: number) => {
+                .map((term: ParsingTypes.Expression, index: number) => {
                     if (indicesToRemove.includes(index)) {
                         if (indicesToRemove.indexOf(index) % 2 === 0) {
                             return Semantic.number("0");
@@ -104,7 +105,7 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
-const subIsNegNodeSet = new WeakSet<Semantic.Expression>();
+const subIsNegNodeSet = new WeakSet<ParsingTypes.Expression>();
 export const subIsNeg: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -115,7 +116,9 @@ export const subIsNeg: Check = (prev, next, context) => {
     const results: Result[] = [];
 
     if (prev.type === "add") {
-        const subs: Semantic.Neg[] = prev.args.filter(Semantic.isSubtraction);
+        const subs: ParsingTypes.Neg[] = prev.args.filter(
+            Semantic.isSubtraction,
+        );
 
         // We iterate through all args that are subtraction and compute
         // their result so that we can pick the shortest set of steps below.
@@ -163,7 +166,7 @@ export const subIsNeg: Check = (prev, next, context) => {
 subIsNeg.symmetric = true;
 
 // TODO: have different messages based on direction
-const negIsMulNegOneNodeSet = new WeakSet<Semantic.Expression>();
+const negIsMulNegOneNodeSet = new WeakSet<ParsingTypes.Expression>();
 export const negIsMulNegOne: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -209,7 +212,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                     [
                         Semantic.neg(Semantic.number("1")),
                         ...Semantic.getFactors(arg.arg),
-                    ] as TwoOrMore<Semantic.Expression>,
+                    ] as TwoOrMore<ParsingTypes.Expression>,
                     true,
                 );
                 negIsMulNegOneNodeSet.add(newArg);
@@ -217,7 +220,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Expression>;
+        }) as TwoOrMore<ParsingTypes.Expression>;
 
         if (!changed) {
             return;
@@ -248,7 +251,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
-        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
+        const factors: TwoOrMore<ParsingTypes.Expression> = [...prev.args];
 
         const negIndices: number[] = [];
 
@@ -311,7 +314,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
-        const factors: TwoOrMore<Semantic.Expression> = [...prev.args];
+        const factors: TwoOrMore<ParsingTypes.Expression> = [...prev.args];
         const index = factors.findIndex((factor) => factor.type === "neg");
         const neg = factors[index];
 
@@ -342,7 +345,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 };
 moveNegToFirstFactor.symmetric = true;
 
-const moveNegInsideMulNodeSet = new WeakSet<Semantic.Expression>();
+const moveNegInsideMulNodeSet = new WeakSet<ParsingTypes.Expression>();
 export const moveNegInsideMul: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -358,7 +361,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
 
         const newPrev = Semantic.mul(
             [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
-                Semantic.Expression
+                ParsingTypes.Expression
             >,
             prev.arg.implicit,
         );
@@ -389,7 +392,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                     [
                         Semantic.neg(mul.args[0]),
                         ...mul.args.slice(1),
-                    ] as TwoOrMore<Semantic.Expression>,
+                    ] as TwoOrMore<ParsingTypes.Expression>,
                     mul.implicit,
                 );
                 moveNegInsideMulNodeSet.add(newArg);
@@ -397,7 +400,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Expression>;
+        }) as TwoOrMore<ParsingTypes.Expression>;
 
         if (!changed) {
             return;

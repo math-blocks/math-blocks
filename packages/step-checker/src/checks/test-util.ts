@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import * as Semantic from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 import {parse as _parse} from "@math-blocks/editor-parser";
 import {parse} from "@math-blocks/text-parser";
 
@@ -34,7 +34,7 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
     throw new Error("Unexpected result");
 };
 
-const myParse = (text: string): Semantic.Expression => {
+const myParse = (text: string): ParsingTypes.Expression => {
     const node = Editor.print(parse(text)) as Editor.Row;
     return _parse(node);
 };

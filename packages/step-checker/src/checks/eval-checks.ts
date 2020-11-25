@@ -1,13 +1,17 @@
 import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Result, Step, Context, Options, Check} from "../types";
 
 import {exactMatch} from "./basic-checks";
 
-const parseNode = (node: Semantic.Expression, options: Options): Fraction => {
+const parseNode = (
+    node: ParsingTypes.Expression,
+    options: Options,
+): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
     } else if (node.type === "neg") {
@@ -30,8 +34,8 @@ enum Direction {
 // This handles evaluation and decomposition of addition or multiplication.
 // TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
 function evalDecompNaryOp(
-    a: Semantic.Expression,
-    b: Semantic.Expression,
+    a: ParsingTypes.Expression,
+    b: ParsingTypes.Expression,
     op: "add" | "mul",
     direction: Direction,
     context: Context,

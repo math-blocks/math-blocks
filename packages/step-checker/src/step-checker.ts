@@ -1,3 +1,5 @@
+import {ParsingTypes} from "@math-blocks/semantic";
+
 import {
     IStepChecker,
     Options,
@@ -10,7 +12,6 @@ import {
 import {ALL_CHECKS} from "./all-checks";
 import {first} from "./strategies";
 import {evalMul, evalAdd} from "./checks/eval-checks";
-import {Expression} from "../../../out/semantic/src";
 
 const filterChecks = (
     checks: Check[],
@@ -73,8 +74,8 @@ const checker = new StepChecker();
 
 const filterMistakes = (
     mistakes: Mistake[],
-    prev: Expression,
-    next: Expression,
+    prev: ParsingTypes.Expression,
+    next: ParsingTypes.Expression,
 ): Mistake[] => {
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
@@ -113,8 +114,8 @@ const filterMistakes = (
 };
 
 export const checkStep = (
-    prev: Expression,
-    next: Expression,
+    prev: ParsingTypes.Expression,
+    next: ParsingTypes.Expression,
 ): {
     result?: Result;
     successfulChecks: Set<string>;

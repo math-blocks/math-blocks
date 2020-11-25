@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Expression} from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser";
 
@@ -27,14 +27,14 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type EditorParser = Parser.IParser<Token, Expression, Operator>;
+type EditorParser = Parser.IParser<Token, ParsingTypes.Expression, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Expression, Operator> => {
+): Parser.PrefixParselet<Token, ParsingTypes.Expression, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -127,8 +127,8 @@ const getPrefixParselet = (
 
 const parseNaryInfix = (op: NAryOperator) => (
     parser: EditorParser,
-    left: Expression,
-): Expression => {
+    left: ParsingTypes.Expression,
+): ParsingTypes.Expression => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     const loc = locFromRange(
         left.loc,
@@ -157,7 +157,7 @@ const parseNaryInfix = (op: NAryOperator) => (
 const parseNaryArgs = (
     parser: EditorParser,
     op: NAryOperator,
-): OneOrMore<Expression> => {
+): OneOrMore<ParsingTypes.Expression> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -223,7 +223,9 @@ const parseNaryArgs = (
     }
 };
 
-const parseMulByParen = (parser: EditorParser): OneOrMore<Expression> => {
+const parseMulByParen = (
+    parser: EditorParser,
+): OneOrMore<ParsingTypes.Expression> => {
     const expr = parser.parseWithOperator("mul.imp");
     const nextToken = parser.peek();
     if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
@@ -234,7 +236,7 @@ const parseMulByParen = (parser: EditorParser): OneOrMore<Expression> => {
 
 const getInfixParselet = (
     token: Token,
-): Parser.InfixParselet<Token, Expression, Operator> | null => {
+): Parser.InfixParselet<Token, ParsingTypes.Expression, Operator> | null => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -254,7 +256,7 @@ const getInfixParselet = (
                 case "lparens":
                     return {
                         op: "mul.imp",
-                        parse: (parser, left): Semantic.Mul => {
+                        parse: (parser, left): ParsingTypes.Mul => {
                             const [right, ...rest] = parseMulByParen(parser);
                             const loc = locFromRange(
                                 left.loc,
@@ -273,7 +275,7 @@ const getInfixParselet = (
                 case "rparens":
                     return {
                         op: "nul",
-                        parse: (): Expression => {
+                        parse: (): ParsingTypes.Expression => {
                             throw new Error("mismatched parens");
                         },
                     };
@@ -289,7 +291,10 @@ const getInfixParselet = (
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
-                parse: (parser: EditorParser, left: Expression) => {
+                parse: (
+                    parser: EditorParser,
+                    left: ParsingTypes.Expression,
+                ) => {
                     parser.consume(); // consume the subsup
                     const [sub, sup] = token.children;
 
@@ -330,7 +335,7 @@ const getInfixParselet = (
         case "frac": {
             return {
                 op: "mul.imp",
-                parse: (parser, left): Expression => {
+                parse: (parser, left): ParsingTypes.Expression => {
                     const parselet = parseNaryInfix("mul.imp");
                     if (left.type === "div") {
                         throw new Error(
@@ -371,14 +376,13 @@ const getOpPrecedence = (op: Operator): number => {
 
 const EOL: Token = Lexer.atom({kind: "eol"}, Lexer.location([], -1, -1));
 
-const editorParser = Parser.parserFactory<Token, Expression, Operator>(
-    getPrefixParselet,
-    getInfixParselet,
-    getOpPrecedence,
-    EOL,
-);
+const editorParser = Parser.parserFactory<
+    Token,
+    ParsingTypes.Expression,
+    Operator
+>(getPrefixParselet, getInfixParselet, getOpPrecedence, EOL);
 
-export const parse = (input: Editor.Row): Expression => {
+export const parse = (input: Editor.Row): ParsingTypes.Expression => {
     const tokenRow = Lexer.lexRow(input);
     return editorParser.parse(tokenRow.children);
 };

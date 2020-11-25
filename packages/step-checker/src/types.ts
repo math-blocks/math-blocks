@@ -1,8 +1,8 @@
-import * as Semantic from "@math-blocks/semantic";
+import {ParsingTypes} from "@math-blocks/semantic";
 
 import {MistakeId, Status} from "./enums";
 
-type Expression = Semantic.Expression;
+type Expression = ParsingTypes.Expression;
 
 export type Step = {
     message: string;
@@ -70,12 +70,12 @@ export type Check<
 };
 
 export type HasArgs =
-    | Semantic.Add
-    | Semantic.Mul
-    | Semantic.Eq
-    | Semantic.Neq
-    | Semantic.Lt
-    | Semantic.Lte
-    | Semantic.Gt
-    | Semantic.Gte
-    | Semantic.Div;
+    | ParsingTypes.Add
+    | ParsingTypes.Mul
+    | ParsingTypes.Eq
+    | ParsingTypes.Neq
+    | ParsingTypes.Lt
+    | ParsingTypes.Lte
+    | ParsingTypes.Gt
+    | ParsingTypes.Gte
+    | ParsingTypes.Div;
