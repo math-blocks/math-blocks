@@ -17,7 +17,7 @@ import {
     Div,
     Root,
     Exp,
-} from "./types";
+} from "./parsing-types";
 
 export const identifier = (name: string, loc?: Location): Ident => ({
     type: "identifier",

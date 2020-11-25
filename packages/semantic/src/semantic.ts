@@ -1,7 +1,7 @@
 /**
  * AST describing semantic expression of mathematic expressions.
  */
-import {Location} from "./types";
+import {Location} from "./parsing-types";
 
 // This uses a generic parameter so that we can enforce that all of the nodes
 // in the tree returned by editor-parser.ts contain location data.
