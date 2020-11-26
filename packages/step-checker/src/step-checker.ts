@@ -77,9 +77,24 @@ const filterMistakes = (
     prev: Semantic.Types.Expression,
     next: Semantic.Types.Expression,
 ): Mistake[] => {
+    const prevIds: number[] = [];
+    const nextIds: number[] = [];
+
+    Semantic.traverse(prev, (node) => prevIds.push(node.id));
+    Semantic.traverse(next, (node) => nextIds.push(node.id));
+
+    // For now we only allow mistakes that reference nodes in prev or next.  If
+    // a mistakes references a node in an intermediate step we ignore that for
+    // now.
+    const validMistakes = mistakes.filter((mistake) => {
+        return mistake.nodes.every(
+            (node) => prevIds.includes(node.id) || nextIds.includes(node.id),
+        );
+    });
+
     // Deduplicate mistakes based on the message and matching node ids
     const uniqueMistakes: Mistake[] = [];
-    for (const mistake of mistakes) {
+    for (const mistake of validMistakes) {
         if (
             !uniqueMistakes.find((um) => {
                 if (
@@ -135,6 +150,6 @@ export const checkStep = (
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes, prev, next),
+        mistakes: filterMistakes(context.mistakes ?? [], prev, next),
     };
 };
