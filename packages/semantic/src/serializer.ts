@@ -1,10 +1,8 @@
-import * as Semantic from "./semantic";
-
-type Node = Semantic.Expression;
+import * as Types from "./types";
 
 const print = (
-    ast: Node,
-    serialize: (ast: Node) => string,
+    ast: Types.Expression,
+    serialize: (ast: Types.Expression) => string,
     indent: (str: string) => string,
 ): string => {
     if (ast.type === "number") {
@@ -50,19 +48,24 @@ const print = (
             return "...";
         }
 
+        // TODO: check that ast has children (args) before trying to iterate
+        // over them.
         // @ts-ignore
-        const args: Node[] = ast.args;
+        const args: Types.Expression[] = ast.args;
         const hasGrandchildren = args.some(
-            (arg: Node) => arg.type !== "identifier" && arg.type !== "number",
+            (arg: Types.Expression) =>
+                arg.type !== "identifier" && arg.type !== "number",
         );
 
         if (hasGrandchildren) {
             return `(${type}\n${args
-                .map((arg: Node) => indent(print(arg, serialize, indent)))
+                .map((arg: Types.Expression) =>
+                    indent(print(arg, serialize, indent)),
+                )
                 .join("\n")})`;
         } else {
             return `(${type} ${args
-                .map((arg: Node) => print(arg, serialize, indent))
+                .map((arg: Types.Expression) => print(arg, serialize, indent))
                 .join(" ")})`;
         }
     }
@@ -70,7 +73,7 @@ const print = (
 
 const serializer = {
     print: print,
-    test: (ast: Node) => !!ast.type,
+    test: (ast: Types.Expression) => !!ast.type,
 };
 
 export default serializer;

@@ -1,5 +1,5 @@
 import {Status} from "../enums";
-import {Check, Step} from "../types";
+import {Check, Step, Mistake, Context} from "../types";
 import {deepEquals, hasArgs} from "./util";
 
 export const numberCheck: Check = (prev, next, context) => {
@@ -57,28 +57,34 @@ export const checkArgs: Check = (prev, next, context) => {
 
         let remainingNextArgs = [...next.args];
         let pathExists = true;
+
+        // Start with any mistakes that have already been reported.
+        const realMistakes: Mistake[] = context.mistakes;
+
         for (const prevArg of prev.args) {
+            const mistakes: Mistake[] = [];
+            const newContext: Context = {
+                ...context,
+                mistakes,
+            };
             const index = remainingNextArgs.findIndex((nextArg) => {
-                const result = checker.checkStep(prevArg, nextArg, context);
+                const result = checker.checkStep(prevArg, nextArg, newContext);
                 if (result) {
                     if (result.status === Status.Correct) {
                         steps.push(...result.steps);
                         return result;
-                    } else {
-                        // TODO: how do we bubble up incorrect answers
-                        // throw new Error(
-                        //     "TODO: handle incorrect results in checkArgs",
-                        // );
                     }
                 }
             });
 
             // We continue to check the remaining args even after we find one
             // that doesn't have an equivalent next arg.  This is so that we
-            // can collect all of the mistakes if there happens to be more than
+            // can report all of the mistakes if there happens to be more than
             // one.
             if (index === -1) {
                 pathExists = false;
+                // Only report mistakes when there is no path.
+                realMistakes.push(...mistakes);
             }
 
             // If there's a matching arg, remove it from remainingNextArgs so
@@ -90,6 +96,9 @@ export const checkArgs: Check = (prev, next, context) => {
         }
 
         if (!pathExists) {
+            // Update the context object so that the mistakes get reported back
+            // up the call stack.
+            context.mistakes = realMistakes;
             return;
         }
 
