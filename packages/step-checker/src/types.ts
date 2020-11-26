@@ -39,7 +39,7 @@ export type Context = {
         disallowedChecks?: Set<string>;
     };
 
-    mistakes: Mistake[];
+    mistakes?: Mistake[];
 
     // Used for debugging purposes to see which checks ran successfully as part
     // of the return result.

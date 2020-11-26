@@ -72,6 +72,9 @@ export const checkAddSub: Check = (prev, next, context) => {
         // If what we're adding to both sides isn't equivalent then report that
         // this step was incorrect and include which nodes weren't the same.
         if (!areNewTermsEquivalent) {
+            if (!context.mistakes) {
+                return;
+            }
             context.mistakes.push({
                 id: MistakeId.EQN_ADD_DIFF,
                 // TODO: make structures that are specific to each mistake
@@ -180,6 +183,9 @@ export const checkMul: Check = (prev, next, context) => {
 
         // If what we're multiplying both sides by isn't equivalent then fail
         if (!areNewFactorsEquivalent) {
+            if (!context.mistakes) {
+                return;
+            }
             context.mistakes.push({
                 id: MistakeId.EQN_MUL_DIFF,
                 // TODO: make structures that are specific to each mistake

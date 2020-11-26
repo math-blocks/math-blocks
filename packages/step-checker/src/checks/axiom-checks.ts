@@ -35,7 +35,7 @@ export const addZero: Check = (prev, next, context) => {
             // invovling it, we won't be able to report those back to the user
             // it's not a node that appears in any of the expressions that the
             // user has entered themselves.
-            mistakes: [],
+            mistakes: undefined,
         });
         if (result) {
             identitySteps.push(...result.steps);
@@ -52,6 +52,10 @@ export const addZero: Check = (prev, next, context) => {
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === next.args.length) {
+        if (!context.mistakes) {
+            return;
+        }
+
         const prevTerms = Semantic.getTerms(prev);
         const newNonIdentityTerms = difference(nonIdentityArgs, prevTerms);
         const oldTerms = intersection(prevTerms, next.args);
@@ -140,7 +144,7 @@ export const mulOne: Check = (prev, next, context) => {
             // invovling it, we won't be able to report those back to the user
             // it's not a node that appears in any of the expressions that the
             // user has entered themselves.
-            mistakes: [],
+            mistakes: undefined,
         });
         if (result) {
             identitySteps.push(...result.steps);
@@ -157,6 +161,10 @@ export const mulOne: Check = (prev, next, context) => {
 
     // If we haven't removed any identities then this check has failed
     if (nonIdentityArgs.length === next.args.length) {
+        if (!context.mistakes) {
+            return;
+        }
+
         const prevFactors = Semantic.getFactors(prev);
         const newNonIdentityFactors = difference(next.args, prevFactors);
         const oldFactors = intersection(prevFactors, next.args);
@@ -410,7 +418,7 @@ export const commuteAddition: Check = (prev, next, context) => {
             // are equivalent from the call to checkArgs
             const result = checker.checkStep(first, second, {
                 ...context,
-                mistakes: [],
+                mistakes: undefined,
             });
             return !result;
         });
@@ -468,7 +476,10 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 // It's safe to ignore the steps (and mistakes) from these
                 // checks since we already have the steps from the checkArgs
                 // call.
-                !checker.checkStep(first, second, {...context, mistakes: []}),
+                !checker.checkStep(first, second, {
+                    ...context,
+                    mistakes: undefined,
+                }),
         );
 
         const newPrev = applySteps(prev, result1.steps);
@@ -533,21 +544,19 @@ export const symmetricProperty: Check = (prev, next, context) => {
         // end up making changes to items that are equivalent, e.g.
         // x + 0 = x -> x = x + 0 in which case we wouldn't identify this as
         // the symmetric property of equality.
-        const commutative = pairs.some(
+        const reordered = pairs.some(
             ([first, second]) =>
                 // Ignore any mistakes from this check since this call is only
                 // to determine if the commutative property might be in play.
                 // The call to checkArgs below is where we end up collecting
                 // mistakes from.
-                // TODO: change mistakes to be optional that way we can avoid
-                // having to check for mistakes when we know we're going to throw them away
                 !context.checker.checkStep(first, second, {
                     ...context,
-                    mistakes: [],
+                    mistakes: undefined,
                 }),
         );
 
-        if (commutative) {
+        if (reordered) {
             const result = checkArgs(prev, next, context);
 
             if (result) {

@@ -59,13 +59,15 @@ export const checkArgs: Check = (prev, next, context) => {
         let pathExists = true;
 
         // Start with any mistakes that have already been reported.
-        const realMistakes: Mistake[] = context.mistakes;
+        const realMistakes: Mistake[] = context.mistakes ?? [];
 
         for (const prevArg of prev.args) {
             const mistakes: Mistake[] = [];
             const newContext: Context = {
                 ...context,
-                mistakes,
+                // Continue not reporting mistakes if that's what the caller
+                // of checkArgs wanted us to do.
+                mistakes: context.mistakes ? mistakes : undefined,
             };
             const index = remainingNextArgs.findIndex((nextArg) => {
                 const result = checker.checkStep(prevArg, nextArg, newContext);
@@ -98,7 +100,9 @@ export const checkArgs: Check = (prev, next, context) => {
         if (!pathExists) {
             // Update the context object so that the mistakes get reported back
             // up the call stack.
-            context.mistakes = realMistakes;
+            if (context.mistakes) {
+                context.mistakes = realMistakes;
+            }
             return;
         }
 

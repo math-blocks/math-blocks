@@ -525,20 +525,70 @@ describe("Equation checks", () => {
             const mistakes = checkMistake("y = x + 1", "2y = 2x + 1");
 
             expect(mistakes).toHaveLength(2);
+
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[0].nodes).toHaveLength(1);
             expect(mistakes[0].nodes[0]).toParseLike("2");
 
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("2");
+        });
+
+        // This verifies that these mistakes are detected when the symmetric
+        // property of equality is in play.
+        it("y = x + 1 -> 2x + 1 = 2y", () => {
+            const mistakes = checkMistake("y = x + 1", "2x + 1 = 2y");
+
             expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("2");
+
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
             expect(mistakes[1].nodes).toHaveLength(1);
             expect(mistakes[1].nodes[0]).toParseLike("2");
         });
 
         it("2x -> 2(x + 1)", () => {
+            const mistakes = checkMistake("2x", "2(x + 1)");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("1");
+        });
+
+        it("2x + 3y -> 2(x + 1) + 3(y + 1)", () => {
             const mistakes = checkMistake("2x + 3y", "2(x + 1) + 3(y + 1)");
 
             expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("1");
+
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("1");
+        });
+
+        // This test checks that error reporting works with the commutative
+        // property of addition.
+        it("2x + 3y -> 3(y + 1) + 2(x + 1)", () => {
+            const mistakes = checkMistake("2x + 3y", "3(y + 1) + 2(x + 1)");
+
+            expect(mistakes).toHaveLength(2);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("1");
+
+            expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[1].nodes).toHaveLength(1);
+            expect(mistakes[1].nodes[0]).toParseLike("1");
         });
 
         // While the previous test case detected two mistakes, this test cases

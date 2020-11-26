@@ -150,6 +150,6 @@ export const checkStep = (
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes, prev, next),
+        mistakes: filterMistakes(context.mistakes ?? [], prev, next),
     };
 };
