@@ -2,10 +2,9 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Status} from "../enums";
-import {Result, Step, Context, Options, Check} from "../types";
+import {Options, Check} from "../types";
 
-import {exactMatch} from "./basic-checks";
+import {correctResult} from "./util";
 
 const parseNode = (
     node: Semantic.Types.Expression,
@@ -25,125 +24,131 @@ const parseNode = (
     }
 };
 
-enum Direction {
-    EVAL,
-    DECOMP,
-}
-
-// This handles evaluation and decomposition of addition or multiplication.
-// TODO: handle 1 + 2 + 3 + 4 -> 1 + 6 + 3
-function evalDecompNaryOp(
-    a: Semantic.Types.NumericExpression,
-    b: Semantic.Types.NumericExpression,
-    op: "add" | "mul",
-    direction: Direction,
-    context: Context,
-): Result | undefined {
-    const aTerms = op === "add" ? Semantic.getTerms(a) : Semantic.getFactors(a);
-    const bTerms = op === "add" ? Semantic.getTerms(b) : Semantic.getFactors(b);
-
-    if (a.type !== op && b.type !== op) {
+export const evalAdd: Check = (prev, next, context) => {
+    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
         return;
     }
 
-    const steps: Step[] = [];
-
-    let i = 0;
-    for (let j = 0; j < bTerms.length; j++) {
-        const aTerm = aTerms[i];
-        const bTerm = bTerms[j];
-
-        if (exactMatch(aTerm, bTerm, context)) {
-            i++;
-            continue;
-        }
-
-        try {
-            // Find the first non-exact match between two numbers
-            const aVal = parseNode(aTerm, context.checker.options);
-            const bVal = parseNode(bTerm, context.checker.options);
-
-            // Accumulate a sum of numeric terms from aTerms until
-            // it matches bTerm's value, we run into a non-numeric
-            // term, or we run out of terms
-            let accumulator = aVal;
-            i++;
-            while (i < aTerms.length) {
-                const nextTerm = parseNode(
-                    aTerms[i++],
-                    context.checker.options,
-                );
-                accumulator.toString();
-                switch (op) {
-                    case "add":
-                        accumulator = accumulator.add(nextTerm);
-                        break;
-                    case "mul":
-                        accumulator = accumulator.mul(nextTerm);
-                        break;
-                }
-                accumulator.toString();
-                bVal.toString();
-                if (accumulator.equals(bVal)) {
-                    steps.push({
-                        message:
-                            op === "add"
-                                ? direction === Direction.EVAL
-                                    ? "evaluation of addition"
-                                    : "decompose sum"
-                                : direction === Direction.EVAL
-                                ? "evaluation of multiplication"
-                                : "decompose product",
-                        // We include the whole nodes for now
-                        // TODO: also specify which children we're involved in this step
-                        // TODO: each step should have its own type so that we can include
-                        // step specific data in the steps if necessary.
-                        nodes: direction === Direction.EVAL ? [a, b] : [b, a],
-                    });
-                    break;
-                }
-            }
-        } catch (e) {
-            return;
-        }
-    }
-
-    if (i < aTerms.length) {
+    // If neither are sums then we can stop early
+    if (prev.type !== "add" && next.type !== "add") {
         return;
     }
 
-    if (steps.length > 0) {
-        return {
-            status: Status.Correct,
-            steps,
-        };
+    const prevTerms = Semantic.getTerms(prev);
+    const nextTerms = Semantic.getTerms(next);
+
+    const {checker} = context;
+
+    const prevNonNumTerms: Semantic.Types.NumericExpression[] = [];
+    const prevNumTerms: Semantic.Types.NumericExpression[] = [];
+    let prevSum = new Fraction("0");
+    for (const term of prevTerms) {
+        if (Semantic.isNumber(term)) {
+            prevSum = prevSum.add(parseNode(term, checker.options));
+            prevNumTerms.push(term);
+        } else {
+            prevNonNumTerms.push(term);
+        }
     }
 
-    return;
-}
+    const nextNumTerms: Semantic.Types.NumericExpression[] = [];
+    let nextSum = new Fraction("0");
+    for (const term of nextTerms) {
+        if (Semantic.isNumber(term)) {
+            nextSum = nextSum.add(parseNode(term, checker.options));
+            nextNumTerms.push(term);
+        }
+    }
+
+    // We don't recognize things like 5 + 3 -> 6 + 2 as a valid step, maybe we should
+    if (nextNumTerms.length >= prevNumTerms.length) {
+        return;
+    }
+
+    if (!prevSum.equals(nextSum)) {
+        return;
+    }
+
+    const newPrev = Semantic.addTerms([...prevNonNumTerms, ...nextNumTerms]);
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "evaluation of addition",
+            "decompose sum",
+        );
+    }
+};
+evalAdd.symmetric = true;
 
 export const evalMul: Check = (prev, next, context) => {
     if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
         return;
     }
 
-    return context.reversed
-        ? evalDecompNaryOp(prev, next, "mul", Direction.DECOMP, context)
-        : evalDecompNaryOp(prev, next, "mul", Direction.EVAL, context);
-};
-
-evalMul.symmetric = true;
-
-// This is unidirectional since most of the time we're adding numbers instead
-// of decomposing them.
-export const evalAdd: Check = (prev, next, context) => {
-    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+    // If neither are products then we can stop early
+    if (prev.type !== "mul" && next.type !== "mul") {
         return;
     }
 
-    return context.reversed
-        ? evalDecompNaryOp(prev, next, "add", Direction.DECOMP, context)
-        : evalDecompNaryOp(prev, next, "add", Direction.EVAL, context);
-};
+    const prevFactors = Semantic.getFactors(prev);
+    const nextFactors = Semantic.getFactors(next);
 
-evalAdd.symmetric = true;
+    const {checker} = context;
+
+    const prevNonNumFactors: Semantic.Types.NumericExpression[] = [];
+    const prevNumFactors: Semantic.Types.NumericExpression[] = [];
+    let prevProduct = new Fraction("1");
+    for (const factor of prevFactors) {
+        if (Semantic.isNumber(factor)) {
+            prevProduct = prevProduct.mul(parseNode(factor, checker.options));
+            prevNumFactors.push(factor);
+        } else {
+            prevNonNumFactors.push(factor);
+        }
+    }
+
+    const nextNumFactors: Semantic.Types.NumericExpression[] = [];
+    let nextProduct = new Fraction("1");
+    for (const factor of nextFactors) {
+        if (Semantic.isNumber(factor)) {
+            nextProduct = nextProduct.mul(parseNode(factor, checker.options));
+            nextNumFactors.push(factor);
+        }
+    }
+
+    if (!prevProduct.equals(nextProduct)) {
+        return;
+    }
+
+    // We don't recognize things like 5 * 3 -> 6 * 2 as a valid step, maybe we should
+    if (nextNumFactors.length >= prevNumFactors.length) {
+        return;
+    }
+
+    const newPrev = Semantic.mulFactors([
+        ...prevNonNumFactors,
+        ...nextNumFactors,
+    ]);
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "evaluation of multiplication",
+            "decompose product",
+        );
+    }
+};
+evalMul.symmetric = true;
