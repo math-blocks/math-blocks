@@ -165,6 +165,8 @@ describe("Eval (decomposition) checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
+                // TODO: remove unnecessary "commutative property" steps
+                "commutative property",
             ]);
         });
 
@@ -240,8 +242,6 @@ describe("Eval (decomposition) checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
-                // TODO: avoid unnecesary commutative steps
-                "commutative property",
                 "decompose product",
             ]);
         });

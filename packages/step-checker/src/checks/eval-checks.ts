@@ -19,11 +19,15 @@ const parseNode = (
         return parseNode(node.args[0], options).div(
             parseNode(node.args[1], options),
         );
+        // TODO: handle evaluating "add" and "mul"
+        // TODO: include substeps when that happens
     } else {
         throw new Error(`cannot parse a number from ${node.type} node`);
     }
 };
 
+// TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
+// e.g. "adding inverse" and "addition with identity"
 export const evalAdd: Check = (prev, next, context) => {
     if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
         return;
@@ -44,18 +48,31 @@ export const evalAdd: Check = (prev, next, context) => {
     let prevSum = new Fraction("0");
     for (const term of prevTerms) {
         if (Semantic.isNumber(term)) {
-            prevSum = prevSum.add(parseNode(term, checker.options));
+            try {
+                prevSum = prevSum.add(parseNode(term, checker.options));
+            } catch (e) {
+                return;
+            }
             prevNumTerms.push(term);
         } else {
             prevNonNumTerms.push(term);
         }
     }
 
+    // Prevents infinite recursion
+    if (prevSum.equals(0)) {
+        return;
+    }
+
     const nextNumTerms: Semantic.Types.NumericExpression[] = [];
     let nextSum = new Fraction("0");
     for (const term of nextTerms) {
         if (Semantic.isNumber(term)) {
-            nextSum = nextSum.add(parseNode(term, checker.options));
+            try {
+                nextSum = nextSum.add(parseNode(term, checker.options));
+            } catch (e) {
+                return;
+            }
             nextNumTerms.push(term);
         }
     }
@@ -87,6 +104,8 @@ export const evalAdd: Check = (prev, next, context) => {
 };
 evalAdd.symmetric = true;
 
+// TODO: when evaluating 5 * 1/5 or 5 / 5 then we may want to include substeps,
+// e.g. "multiplying inverse" and "multiplication with identity"
 export const evalMul: Check = (prev, next, context) => {
     if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
         return;
@@ -107,18 +126,35 @@ export const evalMul: Check = (prev, next, context) => {
     let prevProduct = new Fraction("1");
     for (const factor of prevFactors) {
         if (Semantic.isNumber(factor)) {
-            prevProduct = prevProduct.mul(parseNode(factor, checker.options));
+            try {
+                prevProduct = prevProduct.mul(
+                    parseNode(factor, checker.options),
+                );
+            } catch (e) {
+                return;
+            }
             prevNumFactors.push(factor);
         } else {
             prevNonNumFactors.push(factor);
         }
     }
 
+    // Prevents infinite recursion
+    if (prevProduct.equals(1)) {
+        return;
+    }
+
     const nextNumFactors: Semantic.Types.NumericExpression[] = [];
     let nextProduct = new Fraction("1");
     for (const factor of nextFactors) {
         if (Semantic.isNumber(factor)) {
-            nextProduct = nextProduct.mul(parseNode(factor, checker.options));
+            try {
+                nextProduct = nextProduct.mul(
+                    parseNode(factor, checker.options),
+                );
+            } catch (e) {
+                return;
+            }
             nextNumFactors.push(factor);
         }
     }
@@ -133,8 +169,8 @@ export const evalMul: Check = (prev, next, context) => {
     }
 
     const newPrev = Semantic.mulFactors([
-        ...prevNonNumFactors,
         ...nextNumFactors,
+        ...prevNonNumFactors, // it's customary to put variable factors last
     ]);
 
     const result = checker.checkStep(newPrev, next, context);
