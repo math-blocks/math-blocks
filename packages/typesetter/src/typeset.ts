@@ -270,6 +270,9 @@ export const typesetWithWork = (
     // along with a mapping from destination index back to source index
 
     const rowCols = state.rows.map((rowState) => splitRow(rowState.math));
+
+    /* istanbul ignore next */
+
     if (DEBUG) {
         console.log("rowCols[0]: ", rowCols[0]);
         console.log("rowCols[1]: ", rowCols[1]);
@@ -289,6 +292,8 @@ export const typesetWithWork = (
                 typesetColumn(cols, index, context), // , col.nodes.length === 1),
         ),
     );
+
+    /* istanbul ignore next */
 
     if (DEBUG) {
         const currentRow = state.rows[state.rowIndex];
