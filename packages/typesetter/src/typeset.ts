@@ -4,6 +4,8 @@ import {UnreachableCaseError} from "@math-blocks/core";
 import * as Layout from "./layout";
 import {Context} from "./types";
 
+const DEBUG = typeof jest === "undefined";
+
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (node: Editor.Node, char: string): node is Editor.Atom =>
     node.type === "atom" && node.value.char == char;
@@ -268,8 +270,10 @@ export const typesetWithWork = (
     // along with a mapping from destination index back to source index
 
     const rowCols = state.rows.map((rowState) => splitRow(rowState.math));
-    console.log("rowCols[0]: ", rowCols[0]);
-    console.log("rowCols[1]: ", rowCols[1]);
+    if (DEBUG) {
+        console.log("rowCols[0]: ", rowCols[0]);
+        console.log("rowCols[1]: ", rowCols[1]);
+    }
 
     const colCount = rowCols[0].length;
     if (rowCols.some((cols) => cols.length !== colCount)) {
@@ -286,13 +290,15 @@ export const typesetWithWork = (
         ),
     );
 
-    const currentRow = state.rows[state.rowIndex];
-    const currentCols = rowCols[state.rowIndex];
-    const colCursor = Editor.Util.cursorInColumns(
-        currentCols,
-        currentRow.cursor,
-    );
-    console.log(`the cursor is in column ${colCursor.colIndex}`);
+    if (DEBUG) {
+        const currentRow = state.rows[state.rowIndex];
+        const currentCols = rowCols[state.rowIndex];
+        const colCursor = Editor.Util.cursorInColumns(
+            currentCols,
+            currentRow.cursor,
+        );
+        console.log(`the cursor is in column ${colCursor.colIndex}`);
+    }
 
     const columnWidths = [];
 
