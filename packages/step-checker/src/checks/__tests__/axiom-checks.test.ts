@@ -296,9 +296,19 @@ describe("Axiom checks", () => {
 
             expect(mistakes).toHaveLength(1);
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].prevNodes).toHaveLength(0);
             expect(mistakes[0].nextNodes[0]).toParseLike("7");
             expect(mistakes[0].nextNodes).toHaveLength(1);
-            expect(mistakes[0].prevNodes).toHaveLength(0);
+        });
+
+        it("2(a + 7) -> 2a", () => {
+            const mistakes = checkMistake("2(a + 7)", "2a");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
+            expect(mistakes[0].prevNodes[0]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes).toHaveLength(0);
         });
 
         it("2a + 2b -> 2(a + 7) + 2(b + 3)", () => {
@@ -436,8 +446,8 @@ describe("Axiom checks", () => {
             ]);
         });
 
-        it("a * b -> 2 * a * b", () => {
-            const mistakes = checkMistake("a * b", "2 * a * b");
+        it("ab -> 2ab", () => {
+            const mistakes = checkMistake("ab", "2ab");
 
             expect(mistakes).toHaveLength(1);
 
@@ -445,6 +455,17 @@ describe("Axiom checks", () => {
             expect(mistakes[0].prevNodes).toHaveLength(0);
             expect(mistakes[0].nextNodes).toHaveLength(1);
             expect(mistakes[0].nextNodes[0]).toParseLike("2");
+        });
+
+        it("2ab -> ab", () => {
+            const mistakes = checkMistake("2ab", "ab");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
+            expect(mistakes[0].prevNodes).toHaveLength(1);
+            expect(mistakes[0].prevNodes[0]).toParseLike("2");
+            expect(mistakes[0].nextNodes).toHaveLength(0);
         });
 
         it("1 + ab -> 1 + 2ab", () => {
