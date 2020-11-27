@@ -57,7 +57,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "ts-build": "tsc -b -v tsconfig.json",
-    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 95",
+    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 95 --project tsconfig-coverage.json",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
