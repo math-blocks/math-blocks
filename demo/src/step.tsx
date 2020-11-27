@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Editor from "@math-blocks/editor";
 import {Icon, MathEditor} from "@math-blocks/react";
-import {MistakeId} from "@math-blocks/step-checker";
+import {MistakeId, Mistake} from "@math-blocks/step-checker";
 
 import {StepType, StepState} from "./types";
 import {HStack, VStack} from "./containers";
@@ -9,6 +9,8 @@ import {HStack, VStack} from "./containers";
 type Props = {
     focus: boolean;
     readonly: boolean;
+
+    prevStep: StepType;
     step: StepType;
 
     onSubmit: () => unknown;
@@ -60,8 +62,8 @@ const Step: React.SFC<Props> = (props) => {
 
     if (step.state === StepState.Incorrect) {
         for (const mistake of step.mistakes) {
-            console.log(mistake);
-            for (const node of mistake.nodes) {
+            // TODO: also highlight nodes from mistake.prevNodes
+            for (const node of mistake.nextNodes) {
                 if (node.loc) {
                     const editNode = Editor.Util.nodeAtPath(
                         step.value,
@@ -69,6 +71,9 @@ const Step: React.SFC<Props> = (props) => {
                     );
                     if (editNode && Editor.Util.hasChildren(editNode)) {
                         for (let i = node.loc.start; i < node.loc.end; i++) {
+                            // NOTE: we shouldn't need this try-catch anymore
+                            // since we filter out all nodes that aren't in
+                            // next or prev.
                             try {
                                 colorMap.set(
                                     editNode.children[i].id,
@@ -88,6 +93,18 @@ const Step: React.SFC<Props> = (props) => {
             }
         }
     }
+
+    const correctMistake = (mistake: Mistake): void => {
+        console.log("correcting: ", mistake);
+
+        // TODO:
+        // - [x] pass in both prev and next as props
+        // - [ ] refactor state updates to use a reducer + immer
+        // - [ ] move handleCheckStep from StepCheckerPage to Step
+        // - [ ] once we've done a check, we need to save the parsed versions
+        // - [ ] apply the correct to parsedNext
+        // - [ ] covert the corrected parsedNext back into an Editor.Row
+    };
 
     return (
         <VStack>
@@ -131,6 +148,11 @@ const Step: React.SFC<Props> = (props) => {
                             style={{fontFamily: "sans-serif", fontSize: 20}}
                         >
                             {MistakeMessages[mistake.id]}
+                            {mistake.corrections.length > 0 && (
+                                <button onClick={() => correctMistake(mistake)}>
+                                    Correct the mistake for me
+                                </button>
+                            )}
                         </HStack>
                     );
                 })}

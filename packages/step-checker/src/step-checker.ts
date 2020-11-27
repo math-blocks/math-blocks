@@ -72,6 +72,27 @@ export default StepChecker;
 
 const checker = new StepChecker();
 
+const areSetsEqual = <T>(a: Set<T>, b: Set<T>): boolean => {
+    if (a.size === b.size) {
+        return [...a.values()].every((x) => b.has(x));
+    }
+    return false;
+};
+
+const setOfIds = <T extends {id: number}>(array: T[]): Set<number> => {
+    return new Set(array.map((item) => item.id));
+};
+
+const areMistakesEqual = (m1: Mistake, m2: Mistake): boolean => {
+    if (m1.id === m2.id) {
+        return (
+            areSetsEqual(setOfIds(m1.prevNodes), setOfIds(m2.prevNodes)) &&
+            areSetsEqual(setOfIds(m1.nextNodes), setOfIds(m2.nextNodes))
+        );
+    }
+    return false;
+};
+
 const filterMistakes = (
     mistakes: Mistake[],
     prev: Semantic.Types.Expression,
@@ -87,30 +108,18 @@ const filterMistakes = (
     // a mistakes references a node in an intermediate step we ignore that for
     // now.
     const validMistakes = mistakes.filter((mistake) => {
-        // TODO: once we replace 'nodes' with 'prevNodes' and 'nextNodes' we'll
-        // want to do this check so that the ids line up with prevIds and nextIds
-        return mistake.nodes.every(
-            (node) => prevIds.includes(node.id) || nextIds.includes(node.id),
+        return (
+            mistake.prevNodes.every((node) => prevIds.includes(node.id)) &&
+            mistake.nextNodes.every((node) => nextIds.includes(node.id))
         );
     });
 
     // Deduplicate mistakes based on the message and matching node ids
+    // TODO: using immutable.js would make this way easier.
     const uniqueMistakes: Mistake[] = [];
-    for (const mistake of validMistakes) {
-        if (
-            !uniqueMistakes.find((um) => {
-                if (
-                    um.id === mistake.id &&
-                    um.nodes.length === mistake.nodes.length
-                ) {
-                    const umIds = um.nodes.map((node) => node.id);
-                    const mIds = mistake.nodes.map((node) => node.id);
-                    return umIds.every((id, index) => id === mIds[index]);
-                }
-                return false;
-            })
-        ) {
-            uniqueMistakes.push(mistake);
+    for (const vm of validMistakes) {
+        if (!uniqueMistakes.find((um) => areMistakesEqual(um, vm))) {
+            uniqueMistakes.push(vm);
         }
     }
 

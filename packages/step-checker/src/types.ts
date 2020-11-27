@@ -31,9 +31,16 @@ export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
     [MistakeId.DECOMP_MUL]: 1,
 };
 
+export type Correction = {
+    id: number;
+    replacement: Expression;
+};
+
 export type Mistake = {
     id: MistakeId;
-    nodes: Expression[];
+    prevNodes: Expression[];
+    nextNodes: Expression[];
+    corrections: Correction[];
 };
 
 export type Context = {

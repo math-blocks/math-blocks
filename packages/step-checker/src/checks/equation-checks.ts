@@ -78,7 +78,15 @@ export const checkAddSub: Check = (prev, next, context) => {
             context.mistakes.push({
                 id: MistakeId.EQN_ADD_DIFF,
                 // TODO: make structures that are specific to each mistake
-                nodes: [...newTermsLHS, ...newTermsRHS],
+                // In this case we might like to differentiate between new terms
+                // on the LHS from those on the RHS.
+                prevNodes: context.reversed
+                    ? [...newTermsLHS, ...newTermsRHS]
+                    : [],
+                nextNodes: context.reversed
+                    ? []
+                    : [...newTermsLHS, ...newTermsRHS],
+                corrections: [],
             });
             return;
         }
@@ -189,7 +197,15 @@ export const checkMul: Check = (prev, next, context) => {
             context.mistakes.push({
                 id: MistakeId.EQN_MUL_DIFF,
                 // TODO: make structures that are specific to each mistake
-                nodes: [...newFactorsLHS, ...newFactorsRHS],
+                // In this case we might like to differentiate between new factors
+                // on the LHS from those on the RHS.
+                prevNodes: context.reversed
+                    ? [...newFactorsLHS, ...newFactorsRHS]
+                    : [],
+                nextNodes: context.reversed
+                    ? []
+                    : [...newFactorsLHS, ...newFactorsRHS],
+                corrections: [],
             });
             return;
         }

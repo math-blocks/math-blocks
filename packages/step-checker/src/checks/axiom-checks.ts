@@ -67,7 +67,9 @@ export const addZero: Check = (prev, next, context) => {
         ) {
             context.mistakes.push({
                 id: MistakeId.EXPR_ADD_NON_IDENTITY,
-                nodes: newNonIdentityTerms,
+                prevNodes: context.reversed ? newNonIdentityTerms : [],
+                nextNodes: context.reversed ? [] : newNonIdentityTerms,
+                corrections: [],
             });
         }
         return;
@@ -175,7 +177,9 @@ export const mulOne: Check = (prev, next, context) => {
         ) {
             context.mistakes.push({
                 id: MistakeId.EXPR_MUL_NON_IDENTITY,
-                nodes: newNonIdentityFactors,
+                prevNodes: context.reversed ? newNonIdentityFactors : [],
+                nextNodes: context.reversed ? [] : newNonIdentityFactors,
+                corrections: [],
             });
         }
         return;
