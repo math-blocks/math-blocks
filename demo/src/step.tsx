@@ -22,6 +22,13 @@ const MistakeMessages: Record<MistakeId, string> = {
         "adding a non-identity valid is not allowed",
     [MistakeId.EXPR_MUL_NON_IDENTITY]:
         "multiplying a non-identity valid is not allowed",
+
+    // TODO: handle subtraction
+    [MistakeId.EVAL_ADD]: "addition is incorrect",
+    // TODO: handle division
+    [MistakeId.EVAL_MUL]: "multiplication is incorrect",
+    [MistakeId.DECOMP_ADD]: "decomposition of addition is incorrect",
+    [MistakeId.DECOMP_MUL]: "decomposition of multiplication is incorrect",
 };
 
 const Step: React.SFC<Props> = (props) => {
@@ -53,6 +60,7 @@ const Step: React.SFC<Props> = (props) => {
 
     if (step.state === StepState.Incorrect) {
         for (const mistake of step.mistakes) {
+            console.log(mistake);
             for (const node of mistake.nodes) {
                 if (node.loc) {
                     const editNode = Editor.Util.nodeAtPath(

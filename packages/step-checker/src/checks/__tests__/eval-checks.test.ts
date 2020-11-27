@@ -1,4 +1,7 @@
-import {checkStep} from "../test-util";
+import {MistakeId} from "../../enums";
+import {checkStep, checkMistake, toParseLike} from "../test-util";
+
+expect.extend({toParseLike});
 
 describe("Eval (decomposition) checks", () => {
     describe("evalAdd", () => {
@@ -304,6 +307,46 @@ describe("Eval (decomposition) checks", () => {
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "decompose sum",
             ]);
+        });
+    });
+
+    describe("mistakes", () => {
+        it("5 + 8 -> 11 (should be 13)", () => {
+            const mistakes = checkMistake("5 + 8", "11");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EVAL_ADD);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("11");
+        });
+
+        it("11 -> 5 + 8 (decomp adds to 13)", () => {
+            const mistakes = checkMistake("11", "5 + 8");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.DECOMP_ADD);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("5");
+            expect(mistakes[0].nodes[1]).toParseLike("8");
+        });
+
+        it("6 * 8 = 42 (should be 48)", () => {
+            const mistakes = checkMistake("6 * 8", "42");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EVAL_MUL);
+            expect(mistakes[0].nodes).toHaveLength(1);
+            expect(mistakes[0].nodes[0]).toParseLike("42");
+        });
+
+        it("42 = 6 * 8 (decomp multiplies to 48)", () => {
+            const mistakes = checkMistake("42", "6 * 8");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.DECOMP_MUL);
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("6");
+            expect(mistakes[0].nodes[1]).toParseLike("8");
         });
     });
 });

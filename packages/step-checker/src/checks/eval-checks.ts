@@ -3,6 +3,7 @@ import Fraction from "fraction.js";
 import * as Semantic from "@math-blocks/semantic";
 
 import {Options, Check} from "../types";
+import {MistakeId} from "../enums";
 
 import {correctResult} from "./util";
 
@@ -82,7 +83,27 @@ export const evalAdd: Check = (prev, next, context) => {
         return;
     }
 
+    // Prevents reporting unhelpful mistakes
+    if (nextSum.equals(0)) {
+        return;
+    }
+
     if (!prevSum.equals(nextSum)) {
+        if (context.mistakes) {
+            context.mistakes.push({
+                // TODO: add an optional 'correction' field to Mistake type
+                // The corrections should be mappings between incorrect nodes
+                // and their corrections.
+                // NOTE: corrections only make sense for EVAL_ADD since in the
+                // decomposition case there are multiple correct decompositions.
+                id: context.reversed
+                    ? MistakeId.DECOMP_ADD
+                    : MistakeId.EVAL_ADD,
+                // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
+                nodes: context.reversed ? prevNumTerms : nextNumTerms,
+            });
+        }
+
         return;
     }
 
@@ -159,12 +180,32 @@ export const evalMul: Check = (prev, next, context) => {
         }
     }
 
-    if (!prevProduct.equals(nextProduct)) {
+    // We don't recognize things like 5 * 3 -> 6 * 2 as a valid step, maybe we should
+    if (nextNumFactors.length >= prevNumFactors.length) {
         return;
     }
 
-    // We don't recognize things like 5 * 3 -> 6 * 2 as a valid step, maybe we should
-    if (nextNumFactors.length >= prevNumFactors.length) {
+    // Prevents reporting unhelpful mistakes
+    if (nextProduct.equals(1)) {
+        return;
+    }
+
+    if (!prevProduct.equals(nextProduct)) {
+        if (context.mistakes) {
+            context.mistakes.push({
+                // TODO: add an optional 'correction' field to Mistake type
+                // The corrections should be mappings between incorrect nodes
+                // and their corrections.
+                // NOTE: corrections only make sense for EVAL_MUL since in the
+                // decomposition case there are multiple correct decompositions.
+                id: context.reversed
+                    ? MistakeId.DECOMP_MUL
+                    : MistakeId.EVAL_MUL,
+                // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
+                nodes: context.reversed ? prevNumFactors : nextNumFactors,
+            });
+        }
+
         return;
     }
 

@@ -87,6 +87,8 @@ const filterMistakes = (
     // a mistakes references a node in an intermediate step we ignore that for
     // now.
     const validMistakes = mistakes.filter((mistake) => {
+        // TODO: once we replace 'nodes' with 'prevNodes' and 'nextNodes' we'll
+        // want to do this check so that the ids line up with prevIds and nextIds
         return mistake.nodes.every(
             (node) => prevIds.includes(node.id) || nextIds.includes(node.id),
         );

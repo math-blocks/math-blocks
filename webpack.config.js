@@ -43,6 +43,10 @@ module.exports = {
                 "./packages/metrics/src",
             ),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
+            "@math-blocks/schema": path.join(
+                __dirname,
+                "./packages/schema/src",
+            ),
             "@math-blocks/semantic": path.join(
                 __dirname,
                 "./packages/semantic/src",
