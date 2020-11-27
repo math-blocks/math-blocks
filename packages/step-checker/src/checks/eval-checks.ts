@@ -99,8 +99,8 @@ export const evalAdd: Check = (prev, next, context) => {
                 id: context.reversed
                     ? MistakeId.DECOMP_ADD
                     : MistakeId.EVAL_ADD,
-                // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
-                nodes: context.reversed ? prevNumTerms : nextNumTerms,
+                prevNodes: context.reversed ? nextNumTerms : prevNumTerms,
+                nextNodes: context.reversed ? prevNumTerms : nextNumTerms,
             });
         }
 
@@ -201,8 +201,8 @@ export const evalMul: Check = (prev, next, context) => {
                 id: context.reversed
                     ? MistakeId.DECOMP_MUL
                     : MistakeId.EVAL_MUL,
-                // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
-                nodes: context.reversed ? prevNumFactors : nextNumFactors,
+                prevNodes: context.reversed ? nextNumFactors : prevNumFactors,
+                nextNodes: context.reversed ? prevNumFactors : nextNumFactors,
             });
         }
 

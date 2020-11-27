@@ -161,9 +161,9 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(2);
-            expect(mistakes[0].nodes[0]).toParseLike("3");
-            expect(mistakes[0].nodes[1]).toParseLike("7");
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toParseLike("3");
+            expect(mistakes[0].nextNodes[1]).toParseLike("7");
         });
 
         it("x = y -> x = y + 7", () => {
@@ -172,8 +172,8 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("7");
         });
 
         it("x + y = x + y -> x + y = x + y + 7", () => {
@@ -182,8 +182,9 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("7");
         });
 
         it("2x + 5 = 10 -> 2x + 5 - 5 = 10 [incorrect]", () => {
@@ -192,13 +193,16 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toMatchInlineSnapshot(
+                `(neg.sub 5)`,
+            );
         });
 
         // TODO: make this work
-        // The issue here is that we're swapping x and y before multiplying
-        // factors on each side.
+        // The issue here is that we're swapping x and y before adding terms
+        // on each side.
         it.skip("y = x -> x + 10 = y + 10", () => {
             const result = checkStep("y = x", "x + 10 = y + 10");
 
@@ -265,9 +269,14 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(2);
-            expect(mistakes[0].nodes[0]).toMatchInlineSnapshot(`(neg.sub 5)`);
-            expect(mistakes[0].nodes[1]).toMatchInlineSnapshot(`(neg.sub 10)`);
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toMatchInlineSnapshot(
+                `(neg.sub 5)`,
+            );
+            expect(mistakes[0].nextNodes[1]).toMatchInlineSnapshot(
+                `(neg.sub 10)`,
+            );
         });
 
         it("2x + 5 - 5 = 10 - 5 -> 2x + 5 - 5 = 5", () => {
@@ -384,8 +393,9 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("7");
         });
 
         it("xa = yb -> xa = 7yb", () => {
@@ -394,8 +404,9 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("7");
         });
 
         it("x = y -> 3x = 7y", () => {
@@ -404,9 +415,10 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(2);
-            expect(mistakes[0].nodes[0]).toParseLike("3");
-            expect(mistakes[0].nodes[1]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toParseLike("3");
+            expect(mistakes[0].nextNodes[1]).toParseLike("7");
         });
 
         it("xa = yb -> 3xa = 7yb", () => {
@@ -415,9 +427,10 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
-            expect(mistakes[0].nodes).toHaveLength(2);
-            expect(mistakes[0].nodes[0]).toParseLike("3");
-            expect(mistakes[0].nodes[1]).toParseLike("7");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toParseLike("3");
+            expect(mistakes[0].nextNodes[1]).toParseLike("7");
         });
 
         // TODO: return an incorrect result for this test case
@@ -505,12 +518,12 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(2);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("1");
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("1");
 
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
-            expect(mistakes[1].nodes).toHaveLength(1);
-            expect(mistakes[1].nodes[0]).toParseLike("2");
+            expect(mistakes[1].nextNodes).toHaveLength(1);
+            expect(mistakes[1].nextNodes[0]).toParseLike("2");
         });
 
         it("2x + 5 - 5 = 10 - 5 -> 2x = 3", () => {
@@ -529,12 +542,14 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(2);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("2");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("2");
 
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
-            expect(mistakes[1].nodes).toHaveLength(1);
-            expect(mistakes[1].nodes[0]).toParseLike("2");
+            expect(mistakes[1].prevNodes).toHaveLength(0);
+            expect(mistakes[1].nextNodes).toHaveLength(1);
+            expect(mistakes[1].nextNodes[0]).toParseLike("2");
         });
 
         // This verifies that these mistakes are detected when the symmetric
@@ -545,12 +560,14 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(2);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("2");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("2");
 
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_MUL_NON_IDENTITY);
-            expect(mistakes[1].nodes).toHaveLength(1);
-            expect(mistakes[1].nodes[0]).toParseLike("2");
+            expect(mistakes[1].prevNodes).toHaveLength(0);
+            expect(mistakes[1].nextNodes).toHaveLength(1);
+            expect(mistakes[1].nextNodes[0]).toParseLike("2");
         });
 
         it("2x -> 2(x + 1)", () => {
@@ -559,8 +576,9 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("1");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("1");
         });
 
         it("2x + 3y -> 2(x + 1) + 3(y + 1)", () => {
@@ -569,12 +587,14 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(2);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("1");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("1");
 
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[1].nodes).toHaveLength(1);
-            expect(mistakes[1].nodes[0]).toParseLike("1");
+            expect(mistakes[1].prevNodes).toHaveLength(0);
+            expect(mistakes[1].nextNodes).toHaveLength(1);
+            expect(mistakes[1].nextNodes[0]).toParseLike("1");
         });
 
         // This test checks that error reporting works with the commutative
@@ -585,12 +605,14 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(2);
 
             expect(mistakes[0].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("1");
+            expect(mistakes[0].prevNodes).toHaveLength(0);
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("1");
 
             expect(mistakes[1].id).toEqual(MistakeId.EXPR_ADD_NON_IDENTITY);
-            expect(mistakes[1].nodes).toHaveLength(1);
-            expect(mistakes[1].nodes[0]).toParseLike("1");
+            expect(mistakes[1].prevNodes).toHaveLength(0);
+            expect(mistakes[1].nextNodes).toHaveLength(1);
+            expect(mistakes[1].nextNodes[0]).toParseLike("1");
         });
 
         // While the previous test case detected two mistakes, this test cases

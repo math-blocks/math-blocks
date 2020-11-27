@@ -33,7 +33,9 @@ export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
 
 export type Mistake = {
     id: MistakeId;
-    nodes: Expression[];
+    prevNodes: Expression[];
+    nextNodes: Expression[];
+    corrections?: [number, Expression][]; // [id, replacement][]
 };
 
 export type Context = {
