@@ -46,7 +46,7 @@
     "react-is": "^17.0.1",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
-    "type-coverage": "^2.3.1",
+    "type-coverage": "^2.14.5",
     "typecov": "^0.2.1",
     "typescript": "3.9.x",
     "webpack": "^4.43.0",
@@ -57,7 +57,7 @@
   "scripts": {
     "codechecks": "codechecks",
     "ts-build": "tsc -b -v tsconfig.json",
-    "type-coverage": "type-coverage --ignore-catch --strict --detail --at-least 95 --project tsconfig-coverage.json",
+    "type-coverage": "type-coverage",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "webpack-dev-server --open",
@@ -93,5 +93,12 @@
       "eslint --config .eslintrc.js",
       "pretty-quick"
     ]
+  },
+  "typeCoverage": {
+    "atLeast": 95,
+    "detail": true,
+    "ignoreCatch": true,
+    "project": "tsconfig-coverage.json",
+    "strict": true
   }
 }
