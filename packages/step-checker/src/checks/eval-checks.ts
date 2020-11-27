@@ -100,7 +100,7 @@ export const evalAdd: Check = (prev, next, context) => {
                     ? MistakeId.DECOMP_ADD
                     : MistakeId.EVAL_ADD,
                 // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
-                nodes: nextNumTerms,
+                nodes: context.reversed ? prevNumTerms : nextNumTerms,
             });
         }
 
@@ -202,7 +202,7 @@ export const evalMul: Check = (prev, next, context) => {
                     ? MistakeId.DECOMP_MUL
                     : MistakeId.EVAL_MUL,
                 // TODO: replace 'nodes' with 'prevNodes' and 'nextNodes'
-                nodes: nextNumFactors,
+                nodes: context.reversed ? prevNumFactors : nextNumFactors,
             });
         }
 

@@ -60,6 +60,7 @@ const Step: React.SFC<Props> = (props) => {
 
     if (step.state === StepState.Incorrect) {
         for (const mistake of step.mistakes) {
+            console.log(mistake);
             for (const node of mistake.nodes) {
                 if (node.loc) {
                     const editNode = Editor.Util.nodeAtPath(

@@ -325,8 +325,9 @@ describe("Eval (decomposition) checks", () => {
 
             expect(mistakes).toHaveLength(1);
             expect(mistakes[0].id).toEqual(MistakeId.DECOMP_ADD);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("11");
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("5");
+            expect(mistakes[0].nodes[1]).toParseLike("8");
         });
 
         it("6 * 8 = 42 (should be 48)", () => {
@@ -343,8 +344,9 @@ describe("Eval (decomposition) checks", () => {
 
             expect(mistakes).toHaveLength(1);
             expect(mistakes[0].id).toEqual(MistakeId.DECOMP_MUL);
-            expect(mistakes[0].nodes).toHaveLength(1);
-            expect(mistakes[0].nodes[0]).toParseLike("42");
+            expect(mistakes[0].nodes).toHaveLength(2);
+            expect(mistakes[0].nodes[0]).toParseLike("6");
+            expect(mistakes[0].nodes[1]).toParseLike("8");
         });
     });
 });
