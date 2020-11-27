@@ -60,8 +60,8 @@ const Step: React.SFC<Props> = (props) => {
 
     if (step.state === StepState.Incorrect) {
         for (const mistake of step.mistakes) {
-            console.log(mistake);
-            for (const node of mistake.nodes) {
+            // TODO: also highlight nodes from mistake.prevNodes
+            for (const node of mistake.nextNodes) {
                 if (node.loc) {
                     const editNode = Editor.Util.nodeAtPath(
                         step.value,
@@ -69,6 +69,9 @@ const Step: React.SFC<Props> = (props) => {
                     );
                     if (editNode && Editor.Util.hasChildren(editNode)) {
                         for (let i = node.loc.start; i < node.loc.end; i++) {
+                            // NOTE: we shouldn't need this try-catch anymore
+                            // since we filter out all nodes that aren't in
+                            // next or prev.
                             try {
                                 colorMap.set(
                                     editNode.children[i].id,
