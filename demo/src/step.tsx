@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Editor from "@math-blocks/editor";
 import {Icon, MathEditor} from "@math-blocks/react";
-import {MistakeId} from "@math-blocks/step-checker";
+import {MistakeId, Mistake} from "@math-blocks/step-checker";
 
 import {StepType, StepState} from "./types";
 import {HStack, VStack} from "./containers";
@@ -9,6 +9,8 @@ import {HStack, VStack} from "./containers";
 type Props = {
     focus: boolean;
     readonly: boolean;
+
+    prevStep: StepType;
     step: StepType;
 
     onSubmit: () => unknown;
@@ -92,6 +94,18 @@ const Step: React.SFC<Props> = (props) => {
         }
     }
 
+    const correctMistake = (mistake: Mistake): void => {
+        console.log("correcting: ", mistake);
+
+        // TODO:
+        // - [x] pass in both prev and next as props
+        // - [ ] refactor state updates to use a reducer + immer
+        // - [ ] move handleCheckStep from StepCheckerPage to Step
+        // - [ ] once we've done a check, we need to save the parsed versions
+        // - [ ] apply the correct to parsedNext
+        // - [ ] covert the corrected parsedNext back into an Editor.Row
+    };
+
     return (
         <VStack>
             <HStack
@@ -134,6 +148,11 @@ const Step: React.SFC<Props> = (props) => {
                             style={{fontFamily: "sans-serif", fontSize: 20}}
                         >
                             {MistakeMessages[mistake.id]}
+                            {mistake.corrections.length > 0 && (
+                                <button onClick={() => correctMistake(mistake)}>
+                                    Correct the mistake for me
+                                </button>
+                            )}
                         </HStack>
                     );
                 })}

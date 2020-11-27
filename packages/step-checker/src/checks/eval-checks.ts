@@ -2,7 +2,7 @@ import Fraction from "fraction.js";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Options, Check} from "../types";
+import {Options, Check, Correction} from "../types";
 import {MistakeId} from "../enums";
 
 import {correctResult} from "./util";
@@ -90,17 +90,25 @@ export const evalAdd: Check = (prev, next, context) => {
 
     if (!prevSum.equals(nextSum)) {
         if (context.mistakes) {
+            // Corrections only make sense for EVAL_ADD since with decomposition
+            // there are multiple correct decompositions.  Also, we currently
+            // only handle the situation there's only one number in 'next'.
+            // TODO: make this less restrictive by removing common number from
+            // prev and next.
+            const corrections: Correction[] = [];
+            if (!context.reversed && nextNumTerms.length === 1) {
+                corrections.push({
+                    id: nextNumTerms[0].id,
+                    replacement: Semantic.number(prevSum.toString()),
+                });
+            }
             context.mistakes.push({
-                // TODO: add an optional 'correction' field to Mistake type
-                // The corrections should be mappings between incorrect nodes
-                // and their corrections.
-                // NOTE: corrections only make sense for EVAL_ADD since in the
-                // decomposition case there are multiple correct decompositions.
                 id: context.reversed
                     ? MistakeId.DECOMP_ADD
                     : MistakeId.EVAL_ADD,
                 prevNodes: context.reversed ? nextNumTerms : prevNumTerms,
                 nextNodes: context.reversed ? prevNumTerms : nextNumTerms,
+                corrections: corrections,
             });
         }
 
@@ -192,6 +200,18 @@ export const evalMul: Check = (prev, next, context) => {
 
     if (!prevProduct.equals(nextProduct)) {
         if (context.mistakes) {
+            // Corrections only make sense for EVAL_MUL since with decomposition
+            // there are multiple correct decompositions.  Also, we currently
+            // only handle the situation there's only one number in 'next'.
+            // TODO: make this less restrictive by removing common number from
+            // prev and next.
+            const corrections: Correction[] = [];
+            if (!context.reversed && nextNumFactors.length === 1) {
+                corrections.push({
+                    id: nextNumFactors[0].id,
+                    replacement: Semantic.number(prevProduct.toString()),
+                });
+            }
             context.mistakes.push({
                 // TODO: add an optional 'correction' field to Mistake type
                 // The corrections should be mappings between incorrect nodes
@@ -203,6 +223,7 @@ export const evalMul: Check = (prev, next, context) => {
                     : MistakeId.EVAL_MUL,
                 prevNodes: context.reversed ? nextNumFactors : prevNumFactors,
                 nextNodes: context.reversed ? prevNumFactors : nextNumFactors,
+                corrections: corrections,
             });
         }
 

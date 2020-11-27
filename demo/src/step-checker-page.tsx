@@ -11,6 +11,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import Step from "./step";
 import {StepType, StepState} from "./types";
+import {getPairs} from "./util";
 
 const question: Editor.Row = Editor.Util.row("2x+5=10");
 
@@ -63,10 +64,12 @@ export const App: React.SFC<{}> = () => {
             } else {
                 setSteps([
                     ...steps.slice(0, -1),
+                    // Set the last step to be "Correct"
                     {
                         ...steps[steps.length - 1],
                         state: StepState.Correct,
                     },
+                    // Add a new step that "Duplicate"s the last
                     {
                         ...steps[steps.length - 1],
                         state: StepState.Duplicate,
@@ -89,6 +92,7 @@ export const App: React.SFC<{}> = () => {
     };
 
     const isComplete = problemState === ProblemState.Complete;
+    const pairs = getPairs(steps);
 
     return (
         <div style={{width: 800, margin: "auto"}}>
@@ -113,14 +117,15 @@ export const App: React.SFC<{}> = () => {
                         ]);
                     }}
                 />
-                {steps.slice(1).flatMap((step, index) => {
-                    const isLast = index === steps.length - 2;
+                {pairs.map(([prevStep, step], index) => {
+                    const isLast = index === pairs.length - 1;
 
                     return (
                         <Step
                             key={`step-${index}`}
                             focus={isLast && mode === "solve"}
                             readonly={!isLast || isComplete}
+                            prevStep={prevStep}
                             step={step}
                             onSubmit={() => {
                                 return handleCheckStep(

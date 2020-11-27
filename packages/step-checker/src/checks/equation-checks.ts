@@ -86,6 +86,7 @@ export const checkAddSub: Check = (prev, next, context) => {
                 nextNodes: context.reversed
                     ? []
                     : [...newTermsLHS, ...newTermsRHS],
+                corrections: [],
             });
             return;
         }
@@ -204,6 +205,7 @@ export const checkMul: Check = (prev, next, context) => {
                 nextNodes: context.reversed
                     ? []
                     : [...newFactorsLHS, ...newFactorsRHS],
+                corrections: [],
             });
             return;
         }
