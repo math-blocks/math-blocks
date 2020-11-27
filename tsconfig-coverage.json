@@ -1,0 +1,15 @@
+{
+  "references": [
+    {"path": "./demo"},
+    {"path": "./stories"},
+    {"path": "./packages/core"},
+    {"path": "./packages/editor"},
+    {"path": "./packages/editor-parser"},
+    {"path": "./packages/metrics"},
+    {"path": "./packages/parser"},
+    {"path": "./packages/react"},
+    {"path": "./packages/semantic"},
+    {"path": "./packages/text-parser"},
+    {"path": "./packages/typesetter"},
+  ]
+}
