@@ -161,9 +161,22 @@ describe("Equation checks", () => {
             expect(mistakes).toHaveLength(1);
 
             expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].prevNodes).toHaveLength(0);
             expect(mistakes[0].nextNodes).toHaveLength(2);
             expect(mistakes[0].nextNodes[0]).toParseLike("3");
             expect(mistakes[0].nextNodes[1]).toParseLike("7");
+        });
+
+        it("x + 3 = y + 7 -> x = y", () => {
+            const mistakes = checkMistake("x + 3 = y + 7", "x = y");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(mistakes[0].prevNodes).toHaveLength(2);
+            expect(mistakes[0].prevNodes[0]).toParseLike("3");
+            expect(mistakes[0].prevNodes[1]).toParseLike("7");
+            expect(mistakes[0].nextNodes).toHaveLength(0);
         });
 
         it("x = y -> x = y + 7", () => {
@@ -419,6 +432,18 @@ describe("Equation checks", () => {
             expect(mistakes[0].nextNodes).toHaveLength(2);
             expect(mistakes[0].nextNodes[0]).toParseLike("3");
             expect(mistakes[0].nextNodes[1]).toParseLike("7");
+        });
+
+        it("3x = 7y -> x = y", () => {
+            const mistakes = checkMistake("3x = 7y", "x = y");
+
+            expect(mistakes).toHaveLength(1);
+
+            expect(mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(mistakes[0].prevNodes).toHaveLength(2);
+            expect(mistakes[0].prevNodes[0]).toParseLike("3");
+            expect(mistakes[0].prevNodes[1]).toParseLike("7");
+            expect(mistakes[0].nextNodes).toHaveLength(0);
         });
 
         it("xa = yb -> 3xa = 7yb", () => {
