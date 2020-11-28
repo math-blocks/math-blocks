@@ -106,6 +106,7 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "update": {
+            console.log(action);
             return {
                 ...state,
                 steps: [

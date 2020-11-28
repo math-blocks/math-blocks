@@ -3,10 +3,7 @@ import * as React from "react";
 import {useSelector, useDispatch} from "react-redux";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
-import {parse} from "@math-blocks/editor-parser";
 import * as Editor from "@math-blocks/editor";
-import {checkStep} from "@math-blocks/step-checker";
-import * as Semantic from "@math-blocks/semantic";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
@@ -27,32 +24,6 @@ export const App: React.SFC<{}> = () => {
 
     const state = useSelector<State, State>((state) => state);
     const dispatch: Dispatch = useDispatch();
-
-    const handleCheckStep = (prev: Editor.Row, next: Editor.Row): boolean => {
-        const parsedPrev = parse(prev);
-        const parsedNext = parse(next);
-
-        const {result, mistakes} = checkStep(parsedPrev, parsedNext);
-
-        if (result) {
-            if (
-                parsedNext.type === "eq" &&
-                parsedNext.args[0].type === "identifier" &&
-                Semantic.isNumber(parsedNext.args[1])
-            ) {
-                dispatch({type: "right"});
-                dispatch({type: "complete"});
-            } else {
-                dispatch({type: "right"});
-                dispatch({type: "duplicate"});
-            }
-            return true;
-        } else {
-            dispatch({type: "wrong", mistakes});
-        }
-
-        return false;
-    };
 
     const isComplete = state.status === ProblemStatus.Complete;
     const pairs = getPairs(state.steps);
@@ -89,12 +60,6 @@ export const App: React.SFC<{}> = () => {
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}
-                            onSubmit={() => {
-                                return handleCheckStep(
-                                    state.steps[index].value,
-                                    state.steps[index + 1].value,
-                                );
-                            }}
                             onChange={(value: Editor.Row) => {
                                 dispatch({type: "update", value});
                             }}

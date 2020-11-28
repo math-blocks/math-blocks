@@ -1,10 +1,20 @@
 import * as React from "react";
+import {useDispatch} from "react-redux";
+
 import * as Editor from "@math-blocks/editor";
+import {parse} from "@math-blocks/editor-parser";
 import {Icon, MathEditor} from "@math-blocks/react";
-import {MistakeId, Mistake} from "@math-blocks/step-checker";
+import {
+    MistakeId,
+    Mistake,
+    checkStep,
+    replaceNodeWithId,
+} from "@math-blocks/step-checker";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./containers";
+import {Dispatch} from "./store";
 
 type Props = {
     focus: boolean;
@@ -13,7 +23,6 @@ type Props = {
     prevStep: _Step;
     step: _Step;
 
-    onSubmit: () => unknown;
     onChange: (value: Editor.Row) => unknown;
 };
 
@@ -34,7 +43,41 @@ const MistakeMessages: Record<MistakeId, string> = {
 };
 
 const Step: React.SFC<Props> = (props) => {
-    const {focus, readonly, step, onSubmit, onChange} = props;
+    const {focus, readonly, prevStep, step, onChange} = props;
+
+    const dispatch: Dispatch = useDispatch();
+    const parsedNextRef = React.useRef<Semantic.Types.Expression | null>(null);
+
+    const handleCheckStep = (): boolean => {
+        const prev = prevStep.value;
+        const next = step.value;
+
+        const parsedPrev = parse(prev);
+        const parsedNext = parse(next);
+
+        parsedNextRef.current = parsedNext;
+
+        const {result, mistakes} = checkStep(parsedPrev, parsedNext);
+
+        if (result) {
+            if (
+                parsedNext.type === "eq" &&
+                parsedNext.args[0].type === "identifier" &&
+                Semantic.isNumber(parsedNext.args[1])
+            ) {
+                dispatch({type: "right"});
+                dispatch({type: "complete"});
+            } else {
+                dispatch({type: "right"});
+                dispatch({type: "duplicate"});
+            }
+            return true;
+        } else {
+            dispatch({type: "wrong", mistakes});
+        }
+
+        return false;
+    };
 
     let buttonOrIcon = (
         <button
@@ -42,7 +85,7 @@ const Step: React.SFC<Props> = (props) => {
                 fontSize: 30,
                 borderRadius: 4,
             }}
-            onClick={onSubmit}
+            onClick={handleCheckStep}
             onMouseDown={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -95,15 +138,24 @@ const Step: React.SFC<Props> = (props) => {
     }
 
     const correctMistake = (mistake: Mistake): void => {
-        console.log("correcting: ", mistake);
-
-        // TODO:
-        // - [x] pass in both prev and next as props
-        // - [ ] refactor state updates to use a reducer + immer
-        // - [ ] move handleCheckStep from StepCheckerPage to Step
-        // - [ ] once we've done a check, we need to save the parsed versions
-        // - [ ] apply the correct to parsedNext
-        // - [ ] covert the corrected parsedNext back into an Editor.Row
+        if (parsedNextRef.current) {
+            for (const correction of mistake.corrections) {
+                // TODO: return a new tree instead of mutating in place.
+                // This currently isn't an issue since parsedNextRef.current
+                // will be replaced with a newly parsed object next time we
+                // press submit.
+                replaceNodeWithId(
+                    parsedNextRef.current,
+                    correction.id,
+                    correction.replacement,
+                );
+                const corrected = Editor.print(parsedNextRef.current);
+                dispatch({
+                    type: "update",
+                    value: corrected,
+                });
+            }
+        }
     };
 
     return (
@@ -115,11 +167,15 @@ const Step: React.SFC<Props> = (props) => {
                 }}
             >
                 <MathEditor
+                    // HACK: whenever we apply a correction to a step, the value
+                    // gets a new id.  Using that id as a the `key` will trigger
+                    // a re-render.
+                    key={step.value.id}
                     readonly={readonly}
                     rows={[step.value]}
                     stepChecker={true}
                     focus={focus}
-                    onSubmit={onSubmit}
+                    onSubmit={handleCheckStep}
                     onChange={onChange}
                     style={{flexGrow: 1}}
                     colorMap={colorMap}
