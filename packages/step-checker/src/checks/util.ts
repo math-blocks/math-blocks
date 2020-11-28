@@ -89,6 +89,8 @@ export const findNodeById = (
 };
 
 // TODO: make this a more general function and then create a wrapper for it
+// TODO: create a version of this that doesn't mutate things for when we're not
+// using immer
 export const replaceNodeWithId = (
     root: Semantic.Types.Expression,
     id: number,

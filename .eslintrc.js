@@ -1,6 +1,6 @@
 module.exports = {
-    extends: ["typescript", "typescript/react"],
-    plugins: ["flowtype", "jest", "react"],
+    extends: ["typescript", "typescript/react", "plugin:import/typescript"],
+    plugins: ["flowtype", "import", "jest", "react"],
     overrides: [
         {
             files: ["**/*.ts", "**/*.tsx"],
@@ -23,6 +23,8 @@ module.exports = {
     rules: {
         "comma-dangle": ["error", "always-multiline"],
         "no-prototype-builtins": "off",
+        // TODO: add 'main' fields to all package.json files before re-enabling
+        // "import/no-unused-modules": ["error", {"unusedExports": true}],
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",
         "react/jsx-uses-react": "error",
