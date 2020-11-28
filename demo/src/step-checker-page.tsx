@@ -1,7 +1,6 @@
 import {hot} from "react-hot-loader/root";
 import * as React from "react";
-
-const {useState} = React;
+import {useSelector, useDispatch} from "react-redux";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import {parse} from "@math-blocks/editor-parser";
@@ -12,9 +11,10 @@ import * as Semantic from "@math-blocks/semantic";
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
 import {getPairs} from "./util";
-import {State, ProblemStatus, StepStatus, reducer} from "./reducer";
+import {State, ProblemStatus, StepStatus} from "./reducer";
+import {Dispatch} from "./store";
 
-const question: Editor.Row = Editor.Util.row("2x+5=10");
+const {useState} = React;
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -24,19 +24,9 @@ const question: Editor.Row = Editor.Util.row("2x+5=10");
 //   until the user submits their answer.
 export const App: React.SFC<{}> = () => {
     const [mode, setMode] = useState<"edit" | "solve">("solve");
-    const [state, setState] = useState<State>({
-        steps: [
-            {
-                status: StepStatus.Correct,
-                value: question,
-            },
-            {
-                status: StepStatus.Duplicate,
-                value: JSON.parse(JSON.stringify(question)),
-            },
-        ],
-        status: ProblemStatus.Incomplete,
-    });
+
+    const state = useSelector<State, State>((state) => state);
+    const dispatch: Dispatch = useDispatch();
 
     const handleCheckStep = (prev: Editor.Row, next: Editor.Row): boolean => {
         const parsedPrev = parse(prev);
@@ -50,23 +40,15 @@ export const App: React.SFC<{}> = () => {
                 parsedNext.args[0].type === "identifier" &&
                 Semantic.isNumber(parsedNext.args[1])
             ) {
-                // mark the last item right and the problem as complete
-                setState(
-                    reducer(reducer(state, {type: "right"}), {
-                        type: "complete",
-                    }),
-                );
+                dispatch({type: "right"});
+                dispatch({type: "complete"});
             } else {
-                // mark the last item right and duplicate it
-                setState(
-                    reducer(reducer(state, {type: "right"}), {
-                        type: "duplicate",
-                    }),
-                );
+                dispatch({type: "right"});
+                dispatch({type: "duplicate"});
             }
             return true;
         } else {
-            setState(reducer(state, {type: "wrong", mistakes}));
+            dispatch({type: "wrong", mistakes});
         }
 
         return false;
@@ -86,17 +68,15 @@ export const App: React.SFC<{}> = () => {
                     focus={mode === "edit"}
                     style={{marginTop: 8}}
                     onChange={(value: Editor.Row) => {
-                        setState(
-                            reducer(state, {
-                                type: "set",
-                                steps: [
-                                    {
-                                        status: StepStatus.Correct,
-                                        value: value,
-                                    },
-                                ],
-                            }),
-                        );
+                        dispatch({
+                            type: "set",
+                            steps: [
+                                {
+                                    status: StepStatus.Correct,
+                                    value: value,
+                                },
+                            ],
+                        });
                     }}
                 />
                 {pairs.map(([prevStep, step], index) => {
@@ -116,9 +96,7 @@ export const App: React.SFC<{}> = () => {
                                 );
                             }}
                             onChange={(value: Editor.Row) => {
-                                setState(
-                                    reducer(state, {type: "update", value}),
-                                );
+                                dispatch({type: "update", value});
                             }}
                         />
                     );
@@ -141,12 +119,10 @@ export const App: React.SFC<{}> = () => {
                         style={{height: 48, fontSize: 24}}
                         onClick={() => {
                             setMode("edit");
-                            setState(
-                                reducer(state, {
-                                    type: "set",
-                                    steps: [state.steps[0]],
-                                }),
-                            );
+                            dispatch({
+                                type: "set",
+                                steps: [state.steps[0]],
+                            });
                         }}
                     >
                         Edit Question
@@ -158,7 +134,7 @@ export const App: React.SFC<{}> = () => {
                         onClick={() => {
                             setMode("solve");
                             // get the ball rolling
-                            setState(reducer(state, {type: "duplicate"}));
+                            dispatch({type: "duplicate"});
                         }}
                     >
                         Solve Question

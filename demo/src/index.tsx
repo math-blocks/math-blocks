@@ -1,10 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
+import {Provider} from "react-redux";
 
 import StepCheckerPage from "./step-checker-page";
 import EditorPage from "./editor-page";
 import HandwritingPage from "./handwriting-page";
+import {store} from "./store";
 
 const container = document.createElement("div");
 
@@ -12,11 +14,16 @@ if (document.body) {
     document.body.appendChild(container);
 }
 
+console.log(store);
+console.log(store.getState());
+
 ReactDOM.render(
     <Router>
         <Switch>
             <Route path="/step-checker">
-                <StepCheckerPage />
+                <Provider store={store}>
+                    <StepCheckerPage />
+                </Provider>
             </Route>
             <Route path="/editor">
                 <EditorPage />
