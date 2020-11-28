@@ -3,15 +3,15 @@ import * as Editor from "@math-blocks/editor";
 import {Icon, MathEditor} from "@math-blocks/react";
 import {MistakeId, Mistake} from "@math-blocks/step-checker";
 
-import {StepType, StepState} from "./types";
+import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./containers";
 
 type Props = {
     focus: boolean;
     readonly: boolean;
 
-    prevStep: StepType;
-    step: StepType;
+    prevStep: _Step;
+    step: _Step;
 
     onSubmit: () => unknown;
     onChange: (value: Editor.Row) => unknown;
@@ -47,20 +47,20 @@ const Step: React.SFC<Props> = (props) => {
                 e.preventDefault();
                 e.stopPropagation();
             }}
-            disabled={step.state !== StepState.Pending}
+            disabled={step.status !== StepStatus.Pending}
         >
             Check
         </button>
     );
-    if (step.state === StepState.Incorrect) {
+    if (step.status === StepStatus.Incorrect) {
         buttonOrIcon = <Icon name="incorrect" size={48} />;
-    } else if (step.state === StepState.Correct) {
+    } else if (step.status === StepStatus.Correct) {
         buttonOrIcon = <Icon name="correct" size={48} />;
     }
 
     const colorMap = new Map<number, string>();
 
-    if (step.state === StepState.Incorrect) {
+    if (step.status === StepStatus.Incorrect) {
         for (const mistake of step.mistakes) {
             // TODO: also highlight nodes from mistake.prevNodes
             for (const node of mistake.nextNodes) {
@@ -140,7 +140,7 @@ const Step: React.SFC<Props> = (props) => {
                     </div>
                 </VStack>
             </HStack>
-            {step.state === StepState.Incorrect &&
+            {step.status === StepStatus.Incorrect &&
                 step.mistakes.map((mistake, index) => {
                     return (
                         <HStack

@@ -9,16 +9,12 @@ import * as Editor from "@math-blocks/editor";
 import {checkStep} from "@math-blocks/step-checker";
 import * as Semantic from "@math-blocks/semantic";
 
+// TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
-import {StepType, StepState} from "./types";
 import {getPairs} from "./util";
+import {State, ProblemStatus, StepStatus, reducer} from "./reducer";
 
 const question: Editor.Row = Editor.Util.row("2x+5=10");
-
-enum ProblemState {
-    InProgress,
-    Complete,
-}
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -28,18 +24,19 @@ enum ProblemState {
 //   until the user submits their answer.
 export const App: React.SFC<{}> = () => {
     const [mode, setMode] = useState<"edit" | "solve">("solve");
-    const [problemState, setProblemState] = useState(ProblemState.InProgress);
-
-    const [steps, setSteps] = useState<StepType[]>([
-        {
-            state: StepState.Correct,
-            value: question,
-        },
-        {
-            state: StepState.Duplicate,
-            value: JSON.parse(JSON.stringify(question)),
-        },
-    ]);
+    const [state, setState] = useState<State>({
+        steps: [
+            {
+                status: StepStatus.Correct,
+                value: question,
+            },
+            {
+                status: StepStatus.Duplicate,
+                value: JSON.parse(JSON.stringify(question)),
+            },
+        ],
+        status: ProblemStatus.Incomplete,
+    });
 
     const handleCheckStep = (prev: Editor.Row, next: Editor.Row): boolean => {
         const parsedPrev = parse(prev);
@@ -53,46 +50,30 @@ export const App: React.SFC<{}> = () => {
                 parsedNext.args[0].type === "identifier" &&
                 Semantic.isNumber(parsedNext.args[1])
             ) {
-                setSteps([
-                    ...steps.slice(0, -1),
-                    {
-                        ...steps[steps.length - 1],
-                        state: StepState.Correct,
-                    },
-                ]);
-                setProblemState(ProblemState.Complete);
+                // mark the last item right and the problem as complete
+                setState(
+                    reducer(reducer(state, {type: "right"}), {
+                        type: "complete",
+                    }),
+                );
             } else {
-                setSteps([
-                    ...steps.slice(0, -1),
-                    // Set the last step to be "Correct"
-                    {
-                        ...steps[steps.length - 1],
-                        state: StepState.Correct,
-                    },
-                    // Add a new step that "Duplicate"s the last
-                    {
-                        ...steps[steps.length - 1],
-                        state: StepState.Duplicate,
-                    },
-                ]);
+                // mark the last item right and duplicate it
+                setState(
+                    reducer(reducer(state, {type: "right"}), {
+                        type: "duplicate",
+                    }),
+                );
             }
             return true;
         } else {
-            setSteps([
-                ...steps.slice(0, -1),
-                {
-                    ...steps[steps.length - 1],
-                    state: StepState.Incorrect,
-                    mistakes: mistakes,
-                },
-            ]);
+            setState(reducer(state, {type: "wrong", mistakes}));
         }
 
         return false;
     };
 
-    const isComplete = problemState === ProblemState.Complete;
-    const pairs = getPairs(steps);
+    const isComplete = state.status === ProblemStatus.Complete;
+    const pairs = getPairs(state.steps);
 
     return (
         <div style={{width: 800, margin: "auto"}}>
@@ -100,21 +81,22 @@ export const App: React.SFC<{}> = () => {
                 <MathEditor
                     key={`question`}
                     readonly={false}
-                    rows={[steps[0].value]}
+                    rows={[state.steps[0].value]}
                     stepChecker={true}
                     focus={mode === "edit"}
                     style={{marginTop: 8}}
                     onChange={(value: Editor.Row) => {
-                        setSteps([
-                            {
-                                state: StepState.Correct,
-                                value: value,
-                            },
-                            // {
-                            //     state: StepState.Duplicate,
-                            //     value: JSON.parse(JSON.stringify(value)),
-                            // },
-                        ]);
+                        setState(
+                            reducer(state, {
+                                type: "set",
+                                steps: [
+                                    {
+                                        status: StepStatus.Correct,
+                                        value: value,
+                                    },
+                                ],
+                            }),
+                        );
                     }}
                 />
                 {pairs.map(([prevStep, step], index) => {
@@ -129,24 +111,14 @@ export const App: React.SFC<{}> = () => {
                             step={step}
                             onSubmit={() => {
                                 return handleCheckStep(
-                                    steps[index].value,
-                                    steps[index + 1].value,
+                                    state.steps[index].value,
+                                    state.steps[index + 1].value,
                                 );
                             }}
                             onChange={(value: Editor.Row) => {
-                                const state = Editor.isEqual(
-                                    steps[index].value,
-                                    value,
-                                )
-                                    ? StepState.Duplicate
-                                    : StepState.Pending;
-                                setSteps([
-                                    ...steps.slice(0, -1),
-                                    {
-                                        state,
-                                        value,
-                                    },
-                                ]);
+                                setState(
+                                    reducer(state, {type: "update", value}),
+                                );
                             }}
                         />
                     );
@@ -169,7 +141,12 @@ export const App: React.SFC<{}> = () => {
                         style={{height: 48, fontSize: 24}}
                         onClick={() => {
                             setMode("edit");
-                            setSteps([steps[0]]);
+                            setState(
+                                reducer(state, {
+                                    type: "set",
+                                    steps: [state.steps[0]],
+                                }),
+                            );
                         }}
                     >
                         Edit Question
@@ -180,13 +157,8 @@ export const App: React.SFC<{}> = () => {
                         style={{height: 48, fontSize: 24}}
                         onClick={() => {
                             setMode("solve");
-                            setSteps([
-                                steps[0],
-                                {
-                                    ...steps[0],
-                                    state: StepState.Duplicate,
-                                },
-                            ]);
+                            // get the ball rolling
+                            setState(reducer(state, {type: "duplicate"}));
                         }}
                     >
                         Solve Question
