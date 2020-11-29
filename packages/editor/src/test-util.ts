@@ -31,8 +31,8 @@ const deepEquals = (a: unknown, b: unknown): boolean => {
 };
 
 export const toEqualMath = (
-    received: Semantic.Types.Expression,
-    actual: Semantic.Types.Expression,
+    received: Semantic.Types.Node,
+    actual: Semantic.Types.Node,
 ): {message: () => string; pass: boolean} => {
     const message = "Semantic trees did not match";
     if (deepEquals(received, actual)) {

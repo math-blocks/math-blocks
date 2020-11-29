@@ -95,8 +95,8 @@ const areMistakesEqual = (m1: Mistake, m2: Mistake): boolean => {
 
 const filterMistakes = (
     mistakes: Mistake[],
-    prev: Semantic.Types.Expression,
-    next: Semantic.Types.Expression,
+    prev: Semantic.Types.Node,
+    next: Semantic.Types.Node,
 ): Mistake[] => {
     const prevIds: number[] = [];
     const nextIds: number[] = [];
@@ -140,8 +140,8 @@ const filterMistakes = (
 };
 
 export const checkStep = (
-    prev: Semantic.Types.Expression,
-    next: Semantic.Types.Expression,
+    prev: Semantic.Types.Node,
+    next: Semantic.Types.Node,
 ): {
     result?: Result;
     successfulChecks: Set<string>;

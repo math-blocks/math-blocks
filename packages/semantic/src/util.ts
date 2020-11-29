@@ -6,8 +6,8 @@ import {getId} from "@math-blocks/core";
 
 import {
     Location,
-    NumericExpression,
-    Expression,
+    NumericNode,
+    Node,
     Ident,
     Add,
     Mul,
@@ -40,10 +40,7 @@ export const ellipsis = (loc?: Location): Ellipsis => ({
     loc,
 });
 
-export const add = (
-    args: TwoOrMore<NumericExpression>,
-    loc?: Location,
-): Add => ({
+export const add = (args: TwoOrMore<NumericNode>, loc?: Location): Add => ({
     type: "add",
     id: getId(),
     args,
@@ -51,7 +48,7 @@ export const add = (
 });
 
 export const mul = (
-    args: TwoOrMore<NumericExpression>,
+    args: TwoOrMore<NumericNode>,
     implicit = false,
     loc?: Location,
 ): Mul => ({
@@ -62,7 +59,7 @@ export const mul = (
     loc,
 });
 
-export const eq = (args: TwoOrMore<Expression>, loc?: Location): Eq => ({
+export const eq = (args: TwoOrMore<Node>, loc?: Location): Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -70,7 +67,7 @@ export const eq = (args: TwoOrMore<Expression>, loc?: Location): Eq => ({
 });
 
 export const neg = (
-    arg: NumericExpression,
+    arg: NumericNode,
     subtraction = false,
     loc?: Location,
 ): Neg => ({
@@ -82,8 +79,8 @@ export const neg = (
 });
 
 export const div = (
-    num: NumericExpression,
-    den: NumericExpression,
+    num: NumericNode,
+    den: NumericNode,
     loc?: Location,
 ): Div => ({
     type: "div",
@@ -93,8 +90,8 @@ export const div = (
 });
 
 export const exp = (
-    base: NumericExpression,
-    exp: NumericExpression,
+    base: NumericNode,
+    exp: NumericNode,
     loc?: Location,
 ): Exp => ({
     type: "exp",
@@ -107,8 +104,8 @@ export const exp = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: NumericExpression,
-    index?: NumericExpression,
+    radicand: NumericNode,
+    index?: NumericNode,
     loc?: Location,
 ): Root => ({
     type: "root",
@@ -118,25 +115,23 @@ export const root = (
     loc,
 });
 
-export const isSubtraction = (node: NumericExpression): node is Neg =>
+export const isSubtraction = (node: NumericNode): node is Neg =>
     node.type === "neg" && node.subtraction;
 
-export const isNegative = (node: NumericExpression): node is Neg =>
+export const isNegative = (node: NumericNode): node is Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (
-    node: NumericExpression,
-): OneOrMore<NumericExpression> => (node.type === "mul" ? node.args : [node]);
+export const getFactors = (node: NumericNode): OneOrMore<NumericNode> =>
+    node.type === "mul" ? node.args : [node];
 
-export const getTerms = (
-    node: NumericExpression,
-): OneOrMore<NumericExpression> => (node.type === "add" ? node.args : [node]);
+export const getTerms = (node: NumericNode): OneOrMore<NumericNode> =>
+    node.type === "add" ? node.args : [node];
 
 export const mulFactors = (
-    factors: NumericExpression[],
+    factors: NumericNode[],
     implicit = false,
     loc?: Location,
-): NumericExpression => {
+): NumericNode => {
     switch (factors.length) {
         case 0:
             return number("1", loc);
@@ -147,16 +142,13 @@ export const mulFactors = (
                 type: "mul",
                 id: getId(),
                 implicit,
-                args: factors as TwoOrMore<NumericExpression>,
+                args: factors as TwoOrMore<NumericNode>,
                 loc,
             };
     }
 };
 
-export const addTerms = (
-    terms: NumericExpression[],
-    loc?: Location,
-): NumericExpression => {
+export const addTerms = (terms: NumericNode[], loc?: Location): NumericNode => {
     switch (terms.length) {
         case 0:
             return number("0", loc);
@@ -166,14 +158,14 @@ export const addTerms = (
             return {
                 type: "add",
                 id: getId(),
-                args: terms as TwoOrMore<NumericExpression>,
+                args: terms as TwoOrMore<NumericNode>,
                 loc,
             };
     }
 };
 
 // TODO: create a function to check if an answer is simplified or not
-export const isNumber = (node: Expression): boolean => {
+export const isNumber = (node: Node): boolean => {
     if (node.type === "number") {
         return true;
     } else if (node.type === "neg") {
@@ -194,7 +186,7 @@ export const isNumber = (node: Expression): boolean => {
 };
 
 // TODO: autogenerate this from the validation schema
-export const isNumeric = (node: Expression): node is NumericExpression => {
+export const isNumeric = (node: Node): node is NumericNode => {
     return [
         "number",
         "identifier",

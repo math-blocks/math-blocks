@@ -12,7 +12,7 @@ if (!fs.existsSync(path.join(__dirname, "../out/schema/src/index.js"))) {
 
 const {parsingSchema, semanticSchema} = require("../out/schema/src/index.js");
 
-compile(parsingSchema, "Expression", {style: {tabWidth: 4}}).then((ts) => {
+compile(parsingSchema, "Node", {style: {tabWidth: 4}}).then((ts) => {
     fs.writeFileSync(
         path.join(__dirname, "..", "packages", "parser", "src", "types.ts"),
         ts,
@@ -20,7 +20,7 @@ compile(parsingSchema, "Expression", {style: {tabWidth: 4}}).then((ts) => {
     );
 });
 
-compile(semanticSchema, "Expression", {style: {tabWidth: 4}}).then((ts) => {
+compile(semanticSchema, "Node", {style: {tabWidth: 4}}).then((ts) => {
     fs.writeFileSync(
         path.join(__dirname, "..", "packages", "semantic", "src", "types.ts"),
         ts,

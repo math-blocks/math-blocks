@@ -4,12 +4,12 @@
  */
 import {getId} from "@math-blocks/core";
 
-import * as ParserTypes from "./types";
+import * as Types from "./types";
 
 export const identifier = (
     name: string,
-    loc?: ParserTypes.Location,
-): ParserTypes.Ident => ({
+    loc?: Types.Location,
+): Types.Ident => ({
     type: "identifier",
     id: getId(),
     name,
@@ -18,24 +18,24 @@ export const identifier = (
 
 export const number = <T extends string>(
     value: T,
-    loc?: ParserTypes.Location,
-): ParserTypes.Num => ({
+    loc?: Types.Location,
+): Types.Num => ({
     type: "number",
     id: getId(),
     value: value.replace(/-/g, "\u2212"),
     loc,
 });
 
-export const ellipsis = (loc?: ParserTypes.Location): ParserTypes.Ellipsis => ({
+export const ellipsis = (loc?: Types.Location): Types.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
 export const add = (
-    args: TwoOrMore<ParserTypes.Expression>,
-    loc?: ParserTypes.Location,
-): ParserTypes.Add => ({
+    args: TwoOrMore<Types.Node>,
+    loc?: Types.Location,
+): Types.Add => ({
     type: "add",
     id: getId(),
     args,
@@ -43,10 +43,10 @@ export const add = (
 });
 
 export const mul = (
-    args: TwoOrMore<ParserTypes.Expression>,
+    args: TwoOrMore<Types.Node>,
     implicit = false,
-    loc?: ParserTypes.Location,
-): ParserTypes.Mul => ({
+    loc?: Types.Location,
+): Types.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -55,9 +55,9 @@ export const mul = (
 });
 
 export const eq = (
-    args: TwoOrMore<ParserTypes.Expression>,
-    loc?: ParserTypes.Location,
-): ParserTypes.Eq => ({
+    args: TwoOrMore<Types.Node>,
+    loc?: Types.Location,
+): Types.Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -65,10 +65,10 @@ export const eq = (
 });
 
 export const neg = (
-    arg: ParserTypes.Expression,
+    arg: Types.Node,
     subtraction = false,
-    loc?: ParserTypes.Location,
-): ParserTypes.Neg => ({
+    loc?: Types.Location,
+): Types.Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -77,10 +77,10 @@ export const neg = (
 });
 
 export const div = (
-    num: ParserTypes.Expression,
-    den: ParserTypes.Expression,
-    loc?: ParserTypes.Location,
-): ParserTypes.Div => ({
+    num: Types.Node,
+    den: Types.Node,
+    loc?: Types.Location,
+): Types.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
@@ -88,10 +88,10 @@ export const div = (
 });
 
 export const exp = (
-    base: ParserTypes.Expression,
-    exp: ParserTypes.Expression,
-    loc?: ParserTypes.Location,
-): ParserTypes.Exp => ({
+    base: Types.Node,
+    exp: Types.Node,
+    loc?: Types.Location,
+): Types.Exp => ({
     type: "exp",
     id: getId(),
     base,
@@ -102,10 +102,10 @@ export const exp = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: ParserTypes.Expression,
-    index?: ParserTypes.Expression,
-    loc?: ParserTypes.Location,
-): ParserTypes.Root => ({
+    radicand: Types.Node,
+    index?: Types.Node,
+    loc?: Types.Location,
+): Types.Root => ({
     type: "root",
     id: getId(),
     radicand,

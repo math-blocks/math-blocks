@@ -311,7 +311,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
                     ...prev.args.slice(0, divIndex),
                     ...newFactor.args,
                     ...prev.args.slice(divIndex + 1),
-                ] as TwoOrMore<Semantic.Types.NumericExpression>,
+                ] as TwoOrMore<Semantic.Types.NumericNode>,
                 prev.implicit,
             );
 
@@ -385,19 +385,17 @@ export const mulInverse: Check = (prev, next, context) => {
     if (indicesToRemove.length > 0) {
         const newPrev = Semantic.mulFactors(
             factors
-                .map(
-                    (term: Semantic.Types.NumericExpression, index: number) => {
-                        if (indicesToRemove.includes(index)) {
-                            if (indicesToRemove.indexOf(index) % 2 === 0) {
-                                return Semantic.number("1");
-                            } else {
-                                return null;
-                            }
+                .map((term: Semantic.Types.NumericNode, index: number) => {
+                    if (indicesToRemove.includes(index)) {
+                        if (indicesToRemove.indexOf(index) % 2 === 0) {
+                            return Semantic.number("1");
                         } else {
-                            return term;
+                            return null;
                         }
-                    },
-                )
+                    } else {
+                        return term;
+                    }
+                })
                 .filter(notNull),
         );
         const result = checker.checkStep(newPrev, next, context);
@@ -444,8 +442,8 @@ export const mulByFrac: Check = (prev, next, context) => {
         }
     }
 
-    const numFactors: Semantic.Types.NumericExpression[] = [];
-    const denFactors: Semantic.Types.NumericExpression[] = [];
+    const numFactors: Semantic.Types.NumericNode[] = [];
+    const denFactors: Semantic.Types.NumericNode[] = [];
     for (const arg of prev.args) {
         if (arg.type === "div") {
             const [numerator, denominator] = arg.args;

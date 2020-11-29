@@ -60,8 +60,8 @@ function notUndefined<T>(x: T | undefined): x is T {
  */
 const runCheck = (
     check: Check,
-    prev: Semantic.Types.Expression,
-    next: Semantic.Types.Expression,
+    prev: Semantic.Types.Node,
+    next: Semantic.Types.Node,
     context: Context,
 ): Result | undefined => {
     // TODO: create a copy of context before calling 'check' just in case.

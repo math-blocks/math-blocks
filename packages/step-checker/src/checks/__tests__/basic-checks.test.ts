@@ -8,7 +8,7 @@ import {hasArgs} from "../util";
 
 import {checkArgs} from "../basic-checks";
 
-const myParse = (text: string): Semantic.Types.Expression => {
+const myParse = (text: string): Semantic.Types.Node => {
     const node = Editor.print(parseText(text)) as Editor.Row;
     return parseEditorNodes(node);
 };

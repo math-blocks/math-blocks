@@ -10,7 +10,7 @@ import * as Editor from "./editor-ast";
 // is the case with most operators
 
 // TODO: write more tests for this
-const print = (expr: Semantic.Types.Expression): Editor.Node => {
+const print = (expr: Semantic.Types.Node): Editor.Node => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -154,7 +154,7 @@ const print = (expr: Semantic.Types.Expression): Editor.Node => {
     }
 };
 
-export default (expr: Semantic.Types.Expression): Editor.Row => {
+export default (expr: Semantic.Types.Node): Editor.Row => {
     const node = print(expr);
     if (node.type === "row") {
         return node;

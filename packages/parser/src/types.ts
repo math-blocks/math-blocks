@@ -5,8 +5,8 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Expression = NumericExpression | LogicExpression | SetExpression;
-export type NumericExpression =
+export type Node = NumericNode | LogicNode | SetNode;
+export type NumericNode =
     | Num
     | Infinity
     | Pi
@@ -28,129 +28,129 @@ export type NumericExpression =
     | Diff
     | PDiff
     | Int;
-export type Num = Node & {
+export type Num = Common & {
     type: "number";
     value: string;
     [k: string]: unknown;
 };
-export type Infinity = Node & {
+export type Infinity = Common & {
     type: "infinity";
     [k: string]: unknown;
 };
-export type Pi = Node & {
+export type Pi = Common & {
     type: "pi";
     [k: string]: unknown;
 };
-export type Ident = Node & {
+export type Ident = Common & {
     type: "identifier";
     name: string;
-    subscript?: Expression;
+    subscript?: Node;
     [k: string]: unknown;
 };
-export type Ellipsis = Node & {
+export type Ellipsis = Common & {
     type: "ellipsis";
     [k: string]: unknown;
 };
-export type Add = Node & {
+export type Add = Common & {
     type: "add";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Mul = Node & {
+export type Mul = Common & {
     type: "mul";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     implicit: boolean;
     [k: string]: unknown;
 };
-export type Func = Node & {
+export type Func = Common & {
     type: "func";
-    func: Expression;
-    args: Expression[];
+    func: Node;
+    args: Node[];
     [k: string]: unknown;
 };
-export type Div = Node & {
+export type Div = Common & {
     type: "div";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Mod = Node & {
+export type Mod = Common & {
     type: "mod";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Root = Node & {
+export type Root = Common & {
     type: "root";
-    radicand: Expression;
-    index: Expression;
+    radicand: Node;
+    index: Node;
     [k: string]: unknown;
 };
-export type Exp = Node & {
+export type Exp = Common & {
     type: "exp";
-    base: Expression;
-    exp: Expression;
+    base: Node;
+    exp: Node;
     [k: string]: unknown;
 };
-export type Log = Node & {
+export type Log = Common & {
     type: "log";
-    base: Expression;
-    arg: Expression;
+    base: Node;
+    arg: Node;
     [k: string]: unknown;
 };
-export type Neg = Node & {
+export type Neg = Common & {
     type: "neg";
-    arg: Expression;
+    arg: Node;
     subtraction: boolean;
     [k: string]: unknown;
 };
-export type Abs = Node & {
+export type Abs = Common & {
     type: "abs";
-    arg: Expression;
+    arg: Node;
     [k: string]: unknown;
 };
-export type Sum = Node & {
+export type Sum = Common & {
     type: "sum";
-    arg: Expression;
+    arg: Node;
     bvar: Ident;
     limits: Limits;
     [k: string]: unknown;
 };
-export type Limits = Node & {
+export type Limits = Common & {
     type: "limits";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Prod = Node & {
+export type Prod = Common & {
     type: "prod";
-    arg: Expression;
+    arg: Node;
     bvar: Ident;
     limits: Limits;
     [k: string]: unknown;
 };
-export type Limit = Node & {
+export type Limit = Common & {
     type: "lim";
-    arg: Expression;
+    arg: Node;
     bvar: Ident;
-    target: Expression;
+    target: Node;
     [k: string]: unknown;
 };
-export type Diff = Node & {
+export type Diff = Common & {
     type: "diff";
-    arg: Expression;
+    arg: Node;
     [k: string]: unknown;
 };
-export type PDiff = Node & {
+export type PDiff = Common & {
     type: "pdiff";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Int = Node & {
+export type Int = Common & {
     type: "int";
-    arg: Expression;
+    arg: Node;
     bvar: Ident;
     limits: Ident;
     [k: string]: unknown;
 };
-export type LogicExpression =
+export type LogicNode =
     | Ident
     | True
     | False
@@ -172,107 +172,107 @@ export type LogicExpression =
     | ProperSubset
     | NotSubset
     | NotProperSubset;
-export type True = Node & {
+export type True = Common & {
     type: "true";
     [k: string]: unknown;
 };
-export type False = Node & {
+export type False = Common & {
     type: "false";
     [k: string]: unknown;
 };
-export type And = Node & {
+export type And = Common & {
     type: "and";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Or = Node & {
+export type Or = Common & {
     type: "or";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Not = Node & {
+export type Not = Common & {
     type: "not";
-    arg: Expression;
+    arg: Node;
     [k: string]: unknown;
 };
-export type Xor = Node & {
+export type Xor = Common & {
     type: "xor";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Implies = Node & {
+export type Implies = Common & {
     type: "implies";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Iff = Node & {
+export type Iff = Common & {
     type: "iff";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type Eq = Node & {
+export type Eq = Common & {
     type: "eq";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Neq = Node & {
+export type Neq = Common & {
     type: "neq";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Lt = Node & {
+export type Lt = Common & {
     type: "lt";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Lte = Node & {
+export type Lte = Common & {
     type: "lte";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Gt = Node & {
+export type Gt = Common & {
     type: "gt";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Gte = Node & {
+export type Gte = Common & {
     type: "gte";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type In = Node & {
+export type In = Common & {
     type: "in";
-    element: Expression;
-    set: Expression;
+    element: Node;
+    set: Node;
     [k: string]: unknown;
 };
-export type NotIn = Node & {
+export type NotIn = Common & {
     type: "notin";
-    element: Expression;
-    set: Expression;
+    element: Node;
+    set: Node;
     [k: string]: unknown;
 };
-export type Subset = Node & {
+export type Subset = Common & {
     type: "subset";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type ProperSubset = Node & {
+export type ProperSubset = Common & {
     type: "prsubset";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type NotSubset = Node & {
+export type NotSubset = Common & {
     type: "notsubset";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type NotProperSubset = Node & {
+export type NotProperSubset = Common & {
     type: "notprsubset";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type SetExpression =
+export type SetNode =
     | Ident
     | Set
     | EmptySet
@@ -285,57 +285,57 @@ export type SetExpression =
     | Rationals
     | Reals
     | Complexes;
-export type Set = Node & {
+export type Set = Common & {
     type: "set";
-    args: Expression[];
+    args: Node[];
     [k: string]: unknown;
 };
-export type EmptySet = Node & {
+export type EmptySet = Common & {
     type: "empty";
     [k: string]: unknown;
 };
-export type Union = Node & {
+export type Union = Common & {
     type: "union";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Intersection = Node & {
+export type Intersection = Common & {
     type: "intersection";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type SetDiff = Node & {
+export type SetDiff = Common & {
     type: "setdiff";
-    args: [Expression, Expression];
+    args: [Node, Node];
     [k: string]: unknown;
 };
-export type CartesianProduct = Node & {
+export type CartesianProduct = Common & {
     type: "cartesian_product";
-    args: [Expression, Expression, ...Expression[]];
+    args: [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
-export type Naturals = Node & {
+export type Naturals = Common & {
     type: "naturals";
     [k: string]: unknown;
 };
-export type Integers = Node & {
+export type Integers = Common & {
     type: "integers";
     [k: string]: unknown;
 };
-export type Rationals = Node & {
+export type Rationals = Common & {
     type: "rationals";
     [k: string]: unknown;
 };
-export type Reals = Node & {
+export type Reals = Common & {
     type: "reals";
     [k: string]: unknown;
 };
-export type Complexes = Node & {
+export type Complexes = Common & {
     type: "complexes";
     [k: string]: unknown;
 };
 
-export interface Node {
+export interface Common {
     id: number;
     loc?: Location;
     [k: string]: unknown;
