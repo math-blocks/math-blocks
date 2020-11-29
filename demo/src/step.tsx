@@ -42,6 +42,122 @@ const MistakeMessages: Record<MistakeId, string> = {
     [MistakeId.DECOMP_MUL]: "decomposition of multiplication is incorrect",
 };
 
+// TODO: dedupe with Location in editor-parser
+type Location = {
+    path: number[];
+    start: number;
+    end: number;
+};
+
+// TODO: dedupe with locFromRange in editor-parser
+const mergeLocation = (start: Location, end: Location): Location => {
+    // TODO: assert start.path === end.path
+    return {
+        path: start.path,
+        start: start.start,
+        end: end.end,
+    };
+};
+
+const findParent = (
+    root: Semantic.Types.Expression,
+    node: Semantic.Types.Expression,
+): Semantic.Types.Expression | undefined => {
+    const stack: Semantic.Types.Expression[] = [];
+    let result: Semantic.Types.Expression | undefined = undefined;
+
+    // traverse needs enter and exit semantics so that we can push/pop items
+    // from the stack.
+    Semantic.traverse(
+        root,
+        (n) => {
+            if (n === node) {
+                result = stack[stack.length - 1];
+            }
+            stack.push(n);
+        },
+        (n) => {
+            stack.pop();
+        },
+    );
+
+    return result;
+};
+
+const colorLocation = (
+    editorRoot: Editor.Row,
+    loc: Location,
+    colorMap: Map<number, string>,
+): void => {
+    const editNode = Editor.Util.nodeAtPath(editorRoot, loc.path);
+    if (editNode && Editor.Util.hasChildren(editNode)) {
+        for (let i = loc.start; i < loc.end; i++) {
+            colorMap.set(editNode.children[i].id, "darkCyan");
+        }
+    }
+};
+
+const highlightMistake = (
+    editorRoot: Editor.Row,
+    semanticRoot: Semantic.Types.Expression,
+    mistake: Mistake,
+    colorMap: Map<number, string>,
+): void => {
+    // It's possible that nodes for given mistake may have different parent
+    // nodes.  This map is used only for nodes that are children of 'add' or
+    // 'mul'.
+    const entriesByParentId = new Map<number, [number, Location][]>();
+
+    for (const node of mistake.nextNodes) {
+        // There's no gaurantee that the nodes come in ascending order so let's
+        // order them first
+        if (node.loc) {
+            const parentNode = findParent(semanticRoot, node);
+            if (
+                parentNode &&
+                (parentNode.type === "add" || parentNode.type === "mul")
+            ) {
+                const index = parentNode.args.indexOf(
+                    node as Semantic.Types.NumericExpression,
+                );
+                if (parentNode) {
+                    if (entriesByParentId.has(parentNode.id)) {
+                        entriesByParentId
+                            .get(parentNode.id)
+                            ?.push([index, node.loc]);
+                    } else {
+                        entriesByParentId.set(parentNode.id, [
+                            [index, node.loc],
+                        ]);
+                    }
+                }
+            } else {
+                // If the parent isn't an 'add' or 'mul' we color it immediately
+                colorLocation(editorRoot, node.loc, colorMap);
+            }
+        }
+    }
+
+    for (const childEntries of entriesByParentId.values()) {
+        const sortedEntries = childEntries.sort((a, b) => a[0] - b[0]);
+        let prevIndex = sortedEntries[0][0];
+        let loc = sortedEntries[0][1];
+
+        for (let i = 1; i < sortedEntries.length; i++) {
+            const index = sortedEntries[i][0];
+            if (index > prevIndex + 1) {
+                colorLocation(editorRoot, loc, colorMap);
+                loc = sortedEntries[i][1];
+            } else {
+                loc = mergeLocation(loc, sortedEntries[i][1]);
+            }
+            prevIndex = index;
+        }
+
+        colorLocation(editorRoot, loc, colorMap);
+    }
+};
+
 const Step: React.SFC<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
@@ -103,37 +219,14 @@ const Step: React.SFC<Props> = (props) => {
 
     const colorMap = new Map<number, string>();
 
-    if (step.status === StepStatus.Incorrect) {
+    if (step.status === StepStatus.Incorrect && parsedNextRef.current) {
         for (const mistake of step.mistakes) {
-            // TODO: also highlight nodes from mistake.prevNodes
-            for (const node of mistake.nextNodes) {
-                if (node.loc) {
-                    const editNode = Editor.Util.nodeAtPath(
-                        step.value,
-                        node.loc.path,
-                    );
-                    if (editNode && Editor.Util.hasChildren(editNode)) {
-                        for (let i = node.loc.start; i < node.loc.end; i++) {
-                            // NOTE: we shouldn't need this try-catch anymore
-                            // since we filter out all nodes that aren't in
-                            // next or prev.
-                            try {
-                                colorMap.set(
-                                    editNode.children[i].id,
-                                    "darkCyan",
-                                );
-                            } catch (e) {
-                                // TODO: handle mistakes where the nodes are from the
-                                // previous step.
-                                // 2x + 5     = 10
-                                // 2x + 5 - 5 = 10 - 5
-                                // 2x         = 3
-                                console.log(e);
-                            }
-                        }
-                    }
-                }
-            }
+            highlightMistake(
+                step.value,
+                parsedNextRef.current,
+                mistake,
+                colorMap,
+            );
         }
     }
 

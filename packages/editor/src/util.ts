@@ -115,6 +115,7 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
+// Maybe we should return undefined if there isn't a node at the given path.
 export function nodeAtPath(
     root: Editor.Node,
     path: ReadonlyArray<number>,

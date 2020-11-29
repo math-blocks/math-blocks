@@ -2,18 +2,21 @@ import {traverse} from "../traverse";
 import * as Types from "../types";
 
 describe("traverse", () => {
-    it("call cb once for a single node", () => {
+    it("call enter and exit once for a single node", () => {
         const num: Types.Num = {
             id: 0,
             type: "number",
             value: "123",
         };
-        const cb = jest.fn();
+        const enter = jest.fn();
+        const exit = jest.fn();
 
-        traverse(num, cb);
+        traverse(num, enter, exit);
 
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(num);
+        expect(enter).toHaveBeenCalledTimes(1);
+        expect(enter).toHaveBeenCalledWith(num);
+        expect(exit).toHaveBeenCalledTimes(1);
+        expect(exit).toHaveBeenCalledWith(num);
     });
 
     it("should traverse arrays", () => {
