@@ -1,9 +1,9 @@
 import * as Types from "./types";
 
 export const traverse = (
-    node: Types.Expression,
-    enter: (node: Types.Expression) => void,
-    exit?: (node: Types.Expression) => void,
+    node: Types.Node,
+    enter: (node: Types.Node) => void,
+    exit?: (node: Types.Node) => void,
 ): void => {
     enter(node);
     for (const value of Object.values(node)) {
@@ -17,7 +17,7 @@ export const traverse = (
             value != null &&
             value.hasOwnProperty("type")
         ) {
-            traverse(value as Types.Expression, enter, exit);
+            traverse(value as Types.Node, enter, exit);
         }
     }
     if (exit) {

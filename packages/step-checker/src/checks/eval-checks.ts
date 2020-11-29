@@ -7,10 +7,7 @@ import {MistakeId} from "../enums";
 
 import {correctResult, intersection, difference} from "./util";
 
-const evalNode = (
-    node: Semantic.Types.Expression,
-    options: Options,
-): Fraction => {
+const evalNode = (node: Semantic.Types.Node, options: Options): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
     } else if (node.type === "neg") {
@@ -52,8 +49,8 @@ export const evalAdd: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const prevNonNumTerms: Semantic.Types.NumericExpression[] = [];
-    const prevNumTerms: Semantic.Types.NumericExpression[] = [];
+    const prevNonNumTerms: Semantic.Types.NumericNode[] = [];
+    const prevNumTerms: Semantic.Types.NumericNode[] = [];
     for (const term of prevTerms) {
         if (Semantic.isNumber(term)) {
             try {
@@ -67,7 +64,7 @@ export const evalAdd: Check = (prev, next, context) => {
         }
     }
 
-    const nextNumTerms: Semantic.Types.NumericExpression[] = [];
+    const nextNumTerms: Semantic.Types.NumericNode[] = [];
     for (const term of nextTerms) {
         if (Semantic.isNumber(term)) {
             try {
@@ -181,8 +178,8 @@ export const evalMul: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const prevNonNumFactors: Semantic.Types.NumericExpression[] = [];
-    const prevNumFactors: Semantic.Types.NumericExpression[] = [];
+    const prevNonNumFactors: Semantic.Types.NumericNode[] = [];
+    const prevNumFactors: Semantic.Types.NumericNode[] = [];
     for (const factor of prevFactors) {
         if (Semantic.isNumber(factor)) {
             try {
@@ -196,7 +193,7 @@ export const evalMul: Check = (prev, next, context) => {
         }
     }
 
-    const nextNumFactors: Semantic.Types.NumericExpression[] = [];
+    const nextNumFactors: Semantic.Types.NumericNode[] = [];
     for (const factor of nextFactors) {
         if (Semantic.isNumber(factor)) {
             try {

@@ -102,10 +102,10 @@ export const checkAddSub: Check = (prev, next, context) => {
 
         const newPrev = Semantic.eq([
             Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
-                Semantic.Types.NumericExpression
+                Semantic.Types.NumericNode
             >),
             Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
-                Semantic.Types.NumericExpression
+                Semantic.Types.NumericNode
             >),
         ]);
 
@@ -220,10 +220,10 @@ export const checkMul: Check = (prev, next, context) => {
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = Semantic.eq([
             Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
-                Semantic.Types.NumericExpression
+                Semantic.Types.NumericNode
             >),
             Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
-                Semantic.Types.NumericExpression
+                Semantic.Types.NumericNode
             >),
         ]);
 

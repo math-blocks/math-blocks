@@ -2,11 +2,9 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {MistakeId, Status} from "./enums";
 
-type Expression = Semantic.Types.Expression;
-
 export type Step = {
     message: string;
-    nodes: Expression[];
+    nodes: Semantic.Types.Node[];
 };
 
 export type Result = {
@@ -33,13 +31,13 @@ export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
 
 export type Correction = {
     id: number;
-    replacement: Expression;
+    replacement: Semantic.Types.Node;
 };
 
 export type Mistake = {
     id: MistakeId;
-    prevNodes: Expression[];
-    nextNodes: Expression[];
+    prevNodes: Semantic.Types.Node[];
+    nextNodes: Semantic.Types.Node[];
     corrections: Correction[];
 };
 
@@ -74,8 +72,8 @@ export type Options = {
 };
 
 export type Check<
-    Prev extends Expression = Expression,
-    Next extends Expression = Expression
+    Prev extends Semantic.Types.Node = Semantic.Types.Node,
+    Next extends Semantic.Types.Node = Semantic.Types.Node
 > = {
     (prev: Prev, next: Next, context: Context): Result | undefined;
 

@@ -29,14 +29,14 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type EditorParser = Parser.IParser<Token, Parser.Types.Expression, Operator>;
+type EditorParser = Parser.IParser<Token, Parser.Types.Node, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
 
 const getPrefixParselet = (
     token: Token,
-): Parser.PrefixParselet<Token, Parser.Types.Expression, Operator> => {
+): Parser.PrefixParselet<Token, Parser.Types.Node, Operator> => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -130,8 +130,8 @@ const getPrefixParselet = (
 
 const parseNaryInfix = (op: NAryOperator) => (
     parser: EditorParser,
-    left: Parser.Types.Expression,
-): Parser.Types.Expression => {
+    left: Parser.Types.Node,
+): Parser.Types.Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     const loc = locFromRange(
         left.loc,
@@ -160,7 +160,7 @@ const parseNaryInfix = (op: NAryOperator) => (
 const parseNaryArgs = (
     parser: EditorParser,
     op: NAryOperator,
-): OneOrMore<Parser.Types.Expression> => {
+): OneOrMore<Parser.Types.Node> => {
     // TODO: handle implicit multiplication
     const token = parser.peek();
     if (token.type === "atom") {
@@ -228,7 +228,7 @@ const parseNaryArgs = (
 
 const parseMulByParen = (
     parser: EditorParser,
-): OneOrMore<Parser.Types.Expression> => {
+): OneOrMore<Parser.Types.Node> => {
     const expr = parser.parseWithOperator("mul.imp");
     const nextToken = parser.peek();
     if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
@@ -239,7 +239,7 @@ const parseMulByParen = (
 
 const getInfixParselet = (
     token: Token,
-): Parser.InfixParselet<Token, Parser.Types.Expression, Operator> | null => {
+): Parser.InfixParselet<Token, Parser.Types.Node, Operator> | null => {
     switch (token.type) {
         case "atom": {
             const atom = token.value;
@@ -278,7 +278,7 @@ const getInfixParselet = (
                 case "rparens":
                     return {
                         op: "nul",
-                        parse: (): Parser.Types.Expression => {
+                        parse: (): Parser.Types.Node => {
                             throw new Error("mismatched parens");
                         },
                     };
@@ -294,10 +294,7 @@ const getInfixParselet = (
             // TODO: determine the "op" based on what left is, but we can't currently do that
             return {
                 op: "supsub",
-                parse: (
-                    parser: EditorParser,
-                    left: Parser.Types.Expression,
-                ) => {
+                parse: (parser: EditorParser, left: Parser.Types.Node) => {
                     parser.consume(); // consume the subsup
                     const [sub, sup] = token.children;
 
@@ -338,7 +335,7 @@ const getInfixParselet = (
         case "frac": {
             return {
                 op: "mul.imp",
-                parse: (parser, left): Parser.Types.Expression => {
+                parse: (parser, left): Parser.Types.Node => {
                     const parselet = parseNaryInfix("mul.imp");
                     if (left.type === "div") {
                         throw new Error(
@@ -379,16 +376,17 @@ const getOpPrecedence = (op: Operator): number => {
 
 const EOL: Token = Lexer.atom({kind: "eol"}, Lexer.location([], -1, -1));
 
-const editorParser = Parser.parserFactory<
-    Token,
-    Parser.Types.Expression,
-    Operator
->(getPrefixParselet, getInfixParselet, getOpPrecedence, EOL);
+const editorParser = Parser.parserFactory<Token, Parser.Types.Node, Operator>(
+    getPrefixParselet,
+    getInfixParselet,
+    getOpPrecedence,
+    EOL,
+);
 
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
 const validate = ajv.compile(semanticSchema);
 
-export const parse = (input: Editor.Row): Semantic.Types.Expression => {
+export const parse = (input: Editor.Row): Semantic.Types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
 
@@ -396,7 +394,7 @@ export const parse = (input: Editor.Row): Semantic.Types.Expression => {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as Semantic.Types.Expression;
+    return result as Semantic.Types.Node;
 };
 
 export default editorParser;

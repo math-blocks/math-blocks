@@ -1,8 +1,8 @@
 import * as Types from "./types";
 
 const print = (
-    ast: Types.Expression,
-    serialize: (ast: Types.Expression) => string,
+    ast: Types.Node,
+    serialize: (ast: Types.Node) => string,
     indent: (str: string) => string,
 ): string => {
     if (ast.type === "number") {
@@ -51,21 +51,19 @@ const print = (
         // TODO: check that ast has children (args) before trying to iterate
         // over them.
         // @ts-ignore
-        const args: Types.Expression[] = ast.args;
+        const args: Types.Node[] = ast.args;
         const hasGrandchildren = args.some(
-            (arg: Types.Expression) =>
+            (arg: Types.Node) =>
                 arg.type !== "identifier" && arg.type !== "number",
         );
 
         if (hasGrandchildren) {
             return `(${type}\n${args
-                .map((arg: Types.Expression) =>
-                    indent(print(arg, serialize, indent)),
-                )
+                .map((arg: Types.Node) => indent(print(arg, serialize, indent)))
                 .join("\n")})`;
         } else {
             return `(${type} ${args
-                .map((arg: Types.Expression) => print(arg, serialize, indent))
+                .map((arg: Types.Node) => print(arg, serialize, indent))
                 .join(" ")})`;
         }
     }
@@ -73,7 +71,7 @@ const print = (
 
 const serializer = {
     print: print,
-    test: (ast: Types.Expression) => !!ast.type,
+    test: (ast: Types.Node) => !!ast.type,
 };
 
 export default serializer;

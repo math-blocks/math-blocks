@@ -38,7 +38,7 @@ const node = (
     return {
         type: "object",
         allOf: [
-            ref("Node"),
+            ref("Common"),
             object(
                 {
                     type: stringLiteral(name),
@@ -77,26 +77,26 @@ const unary = (name: string, argType: JSONSchema7): object =>
 // json-schema-to-typescript doesn't support using refs at the top level so
 // we instead make a ref that points to the top-level and use it everywhere
 // we need to.
-const Expression = {$ref: "#"};
+const Node = {$ref: "#"};
 
-const NumericExpression = ref("NumericExpression");
-const LogicExpression = ref("LogicExpression");
-const SetExpression = ref("SetExpression");
+const NumericNode = ref("NumericNode");
+const LogicNode = ref("LogicNode");
+const SetNode = ref("SetNode");
 
 // TODO: create a schema generator so that we can produce two schemas:
 // - one that distinguishes between different types of expressions
-// - one that uses Expression for everything to facilitate parsing
+// - one that uses Node for everything to facilitate parsing
 
 type SchemaArg = {
-    NumericExpression: JSONSchema7;
-    LogicExpression: JSONSchema7;
-    SetExpression: JSONSchema7;
+    NumericNode: JSONSchema7;
+    LogicNode: JSONSchema7;
+    SetNode: JSONSchema7;
 };
 
 const genSchema = ({
-    NumericExpression,
-    LogicExpression,
-    SetExpression,
+    NumericNode,
+    LogicNode,
+    SetNode,
 }: SchemaArg): JSONSchema7 => {
     return {
         $schema: "http://json-schema.org/draft-07/schema#",
@@ -111,7 +111,7 @@ const genSchema = ({
                 end: {type: "number"},
             }),
 
-            Node: object(
+            Common: object(
                 {
                     id: {type: "number"},
                     loc: ref("Location"),
@@ -124,7 +124,7 @@ const genSchema = ({
                 {
                     // TODO: use a regex to restrict this to valid identifiers
                     name: {type: "string"},
-                    subscript: NumericExpression,
+                    subscript: NumericNode,
                     // TODO: units
                     // It's possible that variables could have units associated
                     // with them as well it seems like a bit of an edge case
@@ -142,11 +142,11 @@ const genSchema = ({
             Infinity: node("infinity"),
             Pi: node("pi"),
             Ellipsis: node("ellipsis"),
-            Add: nary("add", NumericExpression),
+            Add: nary("add", NumericNode),
             Mul: node("mul", {
                 args: {
                     type: "array",
-                    items: NumericExpression,
+                    items: NumericNode,
                     minItems: 2,
                 },
                 implicit: {type: "boolean"},
@@ -154,12 +154,12 @@ const genSchema = ({
             Func: node("func", {
                 // We want to limit this to identifiers and expression of identifiers
                 // e.g. h(x) = (f + g)(x) = f(x) + g(x) = ...
-                func: NumericExpression,
+                func: NumericNode,
                 // There's a special case when each of the args is a variable then it
                 // could be a variable definition
                 args: {
                     type: "array",
-                    items: NumericExpression,
+                    items: NumericNode,
                 },
             }),
 
@@ -168,9 +168,9 @@ const genSchema = ({
             // constants, and other things that can be defined include functions
             // type FuncDef = {
             //     type: "funcdef",
-            //     func: Expression | Expression,
+            //     func: Node | Node,
             //     bvars: Identifier[],
-            //     value: Expression,
+            //     value: Node,
             // }
 
             // f(x, y) = 2x + y
@@ -182,43 +182,43 @@ const genSchema = ({
             // given a statement like this we can derive a deeper semantic meaning
             // from the separate parts
 
-            Div: binary("div", NumericExpression),
-            Mod: binary("mod", NumericExpression),
+            Div: binary("div", NumericNode),
+            Mod: binary("mod", NumericNode),
             Root: node("root", {
-                radicand: NumericExpression,
-                index: NumericExpression,
+                radicand: NumericNode,
+                index: NumericNode,
             }),
-            Exp: node("exp", {base: NumericExpression, exp: NumericExpression}),
-            Log: node("log", {base: NumericExpression, arg: NumericExpression}),
+            Exp: node("exp", {base: NumericNode, exp: NumericNode}),
+            Log: node("log", {base: NumericNode, arg: NumericNode}),
             Neg: node("neg", {
-                arg: NumericExpression,
+                arg: NumericNode,
                 subtraction: {type: "boolean"},
             }),
-            Abs: unary("abs", NumericExpression),
+            Abs: unary("abs", NumericNode),
             // TODO: think about how to define other types of bounds, e.g. sets
-            Limits: binary("limits", NumericExpression), // [lower, upper] bounds
+            Limits: binary("limits", NumericNode), // [lower, upper] bounds
             Sum: node("sum", {
-                arg: NumericExpression,
+                arg: NumericNode,
                 bvar: ref("Ident"),
                 limits: ref("Limits"),
             }),
             Prod: node("prod", {
-                arg: NumericExpression,
+                arg: NumericNode,
                 bvar: ref("Ident"),
                 limits: ref("Limits"),
             }),
             Limit: node("lim", {
-                arg: NumericExpression,
+                arg: NumericNode,
                 bvar: ref("Ident"),
-                target: NumericExpression,
+                target: NumericNode,
             }),
             // TODO: figure out how to handle degress
-            Diff: unary("diff", NumericExpression),
+            Diff: unary("diff", NumericNode),
             // TODO: add an 'arg' to PDiff
-            PDiff: binary("pdiff", NumericExpression), // [numerator, denominator]
+            PDiff: binary("pdiff", NumericNode), // [numerator, denominator]
             // TODO: think about multiple integrals
             Int: node("int", {
-                arg: NumericExpression,
+                arg: NumericNode,
                 bvar: ref("Ident"),
                 limits: ref("Ident"),
             }),
@@ -227,7 +227,7 @@ const genSchema = ({
             // - Complex numbers
             // - Round, Ceil, Floor, etc.
 
-            NumericExpression: {
+            NumericNode: {
                 oneOf: [
                     ref("Num"),
                     ref("Infinity"),
@@ -259,28 +259,28 @@ const genSchema = ({
                 ],
             },
 
-            Eq: nary("eq", Expression),
-            Neq: nary("neq", Expression),
-            Lt: nary("lt", NumericExpression),
-            Lte: nary("lte", NumericExpression),
-            Gt: nary("gt", NumericExpression),
-            Gte: nary("gte", NumericExpression),
-            And: nary("and", LogicExpression),
-            Or: nary("or", LogicExpression),
-            Xor: nary("xor", LogicExpression),
-            Not: unary("not", LogicExpression),
-            Implies: binary("implies", LogicExpression),
-            Iff: binary("iff", LogicExpression),
+            Eq: nary("eq", Node),
+            Neq: nary("neq", Node),
+            Lt: nary("lt", NumericNode),
+            Lte: nary("lte", NumericNode),
+            Gt: nary("gt", NumericNode),
+            Gte: nary("gte", NumericNode),
+            And: nary("and", LogicNode),
+            Or: nary("or", LogicNode),
+            Xor: nary("xor", LogicNode),
+            Not: unary("not", LogicNode),
+            Implies: binary("implies", LogicNode),
+            Iff: binary("iff", LogicNode),
             True: node("true"),
             False: node("false"),
-            Subset: nary("subset", SetExpression),
-            ProperSubset: nary("prsubset", SetExpression),
-            NotSubset: nary("notsubset", SetExpression),
-            NotProperSubset: nary("notprsubset", SetExpression),
-            In: node("in", {element: Expression, set: SetExpression}),
-            NotIn: node("notin", {element: Expression, set: SetExpression}),
+            Subset: nary("subset", SetNode),
+            ProperSubset: nary("prsubset", SetNode),
+            NotSubset: nary("notsubset", SetNode),
+            NotProperSubset: nary("notprsubset", SetNode),
+            In: node("in", {element: Node, set: SetNode}),
+            NotIn: node("notin", {element: Node, set: SetNode}),
 
-            LogicExpression: {
+            LogicNode: {
                 oneOf: [
                     ref("Ident"),
 
@@ -319,13 +319,13 @@ const genSchema = ({
             // type Universal = {
             //     type: "univ",
             //     bvar: Identifier,
-            //     arg: Expression,
+            //     arg: Node,
             // };
 
             // type Existential = {
             //     type: "exist",
             //     bvar: Identifier,
-            //     arg: Expression,
+            //     arg: Node,
             // };
 
             // type Predicate = {
@@ -335,15 +335,15 @@ const genSchema = ({
             Set: node("set", {
                 args: {
                     type: "array",
-                    items: Expression, // could also include shapes, strings, images, etc.
+                    items: Node, // could also include shapes, strings, images, etc.
                 },
             }),
 
             EmptySet: node("empty"),
-            Union: nary("union", SetExpression),
-            Intersection: nary("intersection", SetExpression),
-            SetDiff: binary("setdiff", SetExpression),
-            CartesianProduct: nary("cartesian_product", SetExpression),
+            Union: nary("union", SetNode),
+            Intersection: nary("intersection", SetNode),
+            SetDiff: binary("setdiff", SetNode),
+            CartesianProduct: nary("cartesian_product", SetNode),
 
             Naturals: node("naturals"),
             Integers: node("integers"),
@@ -351,7 +351,7 @@ const genSchema = ({
             Reals: node("reals"),
             Complexes: node("complexes"),
 
-            SetExpression: {
+            SetNode: {
                 oneOf: [
                     ref("Ident"),
                     ref("Set"),
@@ -392,11 +392,7 @@ const genSchema = ({
 
         // We use anyOf here to support Ident appear in each of the expression
         // types below.
-        anyOf: [
-            ref("NumericExpression"),
-            ref("LogicExpression"),
-            ref("SetExpression"),
-        ],
+        anyOf: [ref("NumericNode"), ref("LogicNode"), ref("SetNode")],
     };
 };
 
@@ -412,15 +408,15 @@ const genSchema = ({
 
 // Parsing is easier if all the nodes that the parser produces are the same.
 export const parsingSchema = genSchema({
-    NumericExpression: Expression,
-    LogicExpression: Expression,
-    SetExpression: Expression,
+    NumericNode: Node,
+    LogicNode: Node,
+    SetNode: Node,
 });
 
 // After parse we can validate it and the cast the data structure to this the
 // types produced from this schema.
 export const semanticSchema = genSchema({
-    NumericExpression,
-    LogicExpression,
-    SetExpression,
+    NumericNode,
+    LogicNode,
+    SetNode,
 });

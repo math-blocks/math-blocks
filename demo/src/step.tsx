@@ -60,11 +60,11 @@ const mergeLocation = (start: Location, end: Location): Location => {
 };
 
 const findParent = (
-    root: Semantic.Types.Expression,
-    node: Semantic.Types.Expression,
-): Semantic.Types.Expression | undefined => {
-    const stack: Semantic.Types.Expression[] = [];
-    let result: Semantic.Types.Expression | undefined = undefined;
+    root: Semantic.Types.Node,
+    node: Semantic.Types.Node,
+): Semantic.Types.Node | undefined => {
+    const stack: Semantic.Types.Node[] = [];
+    let result: Semantic.Types.Node | undefined = undefined;
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
@@ -99,7 +99,7 @@ const colorLocation = (
 
 const highlightMistake = (
     editorRoot: Editor.Row,
-    semanticRoot: Semantic.Types.Expression,
+    semanticRoot: Semantic.Types.Node,
     mistake: Mistake,
     colorMap: Map<number, string>,
 ): void => {
@@ -118,7 +118,7 @@ const highlightMistake = (
                 (parentNode.type === "add" || parentNode.type === "mul")
             ) {
                 const index = parentNode.args.indexOf(
-                    node as Semantic.Types.NumericExpression,
+                    node as Semantic.Types.NumericNode,
                 );
                 if (parentNode) {
                     if (entriesByParentId.has(parentNode.id)) {
@@ -162,7 +162,7 @@ const Step: React.SFC<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();
-    const parsedNextRef = React.useRef<Semantic.Types.Expression | null>(null);
+    const parsedNextRef = React.useRef<Semantic.Types.Node | null>(null);
 
     const handleCheckStep = (): boolean => {
         const prev = prevStep.value;

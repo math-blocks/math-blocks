@@ -22,7 +22,7 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = Parser.Types.Expression;
+type Node = Parser.Types.Node;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
@@ -54,7 +54,7 @@ const getPrefixParselet = (
             };
         case "lparen":
             return {
-                parse: (parser): Parser.Types.Expression => {
+                parse: (parser): Parser.Types.Node => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
@@ -77,9 +77,7 @@ const getPrefixParselet = (
 //   };
 // };
 
-const parseMulByParen = (
-    parser: TextParser,
-): OneOrMore<Parser.Types.Expression> => {
+const parseMulByParen = (parser: TextParser): OneOrMore<Parser.Types.Node> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -134,7 +132,7 @@ const getInfixParselet = (
         case "rparen":
             return {
                 op: "nul",
-                parse: (): Parser.Types.Expression => {
+                parse: (): Parser.Types.Node => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -257,12 +255,12 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
 const validate = ajv.compile(semanticSchema);
 
-export const parse = (input: string): Semantic.Types.Expression => {
+export const parse = (input: string): Semantic.Types.Node => {
     const result = textParser.parse(lex(input));
 
     if (!validate(result)) {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as Semantic.Types.Expression;
+    return result as Semantic.Types.Node;
 };
