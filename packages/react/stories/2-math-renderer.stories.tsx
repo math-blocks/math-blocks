@@ -408,6 +408,41 @@ export const ColorizedFraction: React.SFC<{}> = () => {
     return <MathRenderer box={sum} />;
 };
 
+export const ColorizedSum: React.SFC<{}> = () => {
+    const editNode = Editor.Util.row("8+10+12+14");
+
+    const semNode = parse(editNode);
+
+    // @ts-ignore
+    const num10 = semNode.args[1];
+    // @ts-ignore
+    const num12 = semNode.args[2];
+
+    // Only do this if the indicies of the args differ by one
+    const loc = {
+        ...num10.loc,
+        start: num10.loc.start,
+        end: num12.loc.end,
+    };
+
+    const colorMap = new Map<number, string>();
+    for (let i = loc.start; i < loc.end; i++) {
+        colorMap.set(editNode.children[i].id, "darkCyan");
+    }
+
+    const fontSize = 60;
+    const context = {
+        fontMetrics: fontMetrics,
+        baseFontSize: fontSize,
+        multiplier: 1.0,
+        cramped: false,
+        colorMap: colorMap,
+    };
+    const prod = typeset(editNode, context) as Layout.Box;
+
+    return <MathRenderer box={prod} />;
+};
+
 export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
     const editNode = Editor.Util.row("(11+x)(12-y)");
 
