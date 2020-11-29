@@ -1,4 +1,8 @@
+import {parse} from "@math-blocks/text-parser";
+
+import StepChecker from "../../step-checker";
 import {MistakeId} from "../../enums";
+
 import {checkStep, checkMistake, toParseLike} from "../test-util";
 
 expect.extend({toParseLike});
@@ -140,6 +144,35 @@ describe("Eval (decomposition) checks", () => {
                 "evaluation of addition",
             ]);
         });
+
+        it("5 + -5 -> 0", () => {
+            const result = checkStep("5 + -5", "0");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding inverse",
+            ]);
+        });
+
+        it("1 + 5 + -5 -> 1", () => {
+            const result = checkStep("1 + 5 + -5", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding inverse",
+                "addition with identity",
+            ]);
+        });
+
+        it("1 + a + -a -> 1", () => {
+            const result = checkStep("1 + a + -a", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "adding inverse",
+                "addition with identity",
+            ]);
+        });
     });
 
     describe("evalMul", () => {
@@ -216,6 +249,56 @@ describe("Eval (decomposition) checks", () => {
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "evaluation of multiplication",
+            ]);
+        });
+
+        it("5 * 1/5 -> 1", () => {
+            const result = checkStep("5 * 1/5", "1");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplying the inverse",
+            ]);
+        });
+
+        it("2 * 5 * 1/5 -> 2", () => {
+            const result = checkStep("2 * 5 * 1/5", "2");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplying fractions",
+                "fraction is the same as multiplying by one over",
+                "evaluation of multiplication",
+            ]);
+        });
+
+        it("2 * 5 * 1/5 -> 2 (don't eval factions)", () => {
+            const checker = new StepChecker({evalFractions: false});
+            const result = checker.checkStep(parse("2 * 5 * 1/5"), parse("2"), {
+                checker,
+                steps: [],
+                successfulChecks: new Set(),
+                reversed: false,
+                mistakes: [],
+            });
+
+            expect(result).toBeTruthy();
+            if (!result) {
+                throw new Error("result is undefind");
+            }
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplying the inverse",
+                "multiplication with identity",
+            ]);
+        });
+
+        it("2 * a * 1/a -> 2", () => {
+            const result = checkStep("2 * a * 1/a", "2");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "multiplying the inverse",
+                "multiplication with identity",
             ]);
         });
     });
@@ -326,6 +409,22 @@ describe("Eval (decomposition) checks", () => {
             expect(mistakes[0].corrections[0].replacement).toParseLike("13");
         });
 
+        // This test checks that we ignore other numeric terms
+        it("1 + 5 + 8 -> 1 + 11 (should be 13)", () => {
+            // TODO: include prev, next in the result of checkMistake
+            const mistakes = checkMistake("1 + 5 + 8", "1 + 11");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EVAL_ADD);
+            expect(mistakes[0].prevNodes).toHaveLength(2);
+            expect(mistakes[0].prevNodes[0]).toParseLike("5");
+            expect(mistakes[0].prevNodes[1]).toParseLike("8");
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("11");
+            expect(mistakes[0].corrections).toHaveLength(1);
+            expect(mistakes[0].corrections[0].replacement).toParseLike("13");
+        });
+
         it("11 -> 5 + 8 (decomp adds to 13)", () => {
             const mistakes = checkMistake("11", "5 + 8");
 
@@ -339,8 +438,35 @@ describe("Eval (decomposition) checks", () => {
             expect(mistakes[0].corrections).toHaveLength(0);
         });
 
-        it("6 * 8 = 42 (should be 48)", () => {
+        it("11 + 1 -> 5 + 8 + 1 (decomp adds to 13)", () => {
+            const mistakes = checkMistake("11 + 1", "5 + 8 + 1");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.DECOMP_ADD);
+            expect(mistakes[0].prevNodes).toHaveLength(1);
+            expect(mistakes[0].prevNodes[0]).toParseLike("11");
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toParseLike("5");
+            expect(mistakes[0].nextNodes[1]).toParseLike("8");
+            expect(mistakes[0].corrections).toHaveLength(0);
+        });
+
+        it("6 * 8 -> 42 (should be 48)", () => {
             const mistakes = checkMistake("6 * 8", "42");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.EVAL_MUL);
+            expect(mistakes[0].prevNodes).toHaveLength(2);
+            expect(mistakes[0].prevNodes[0]).toParseLike("6");
+            expect(mistakes[0].prevNodes[1]).toParseLike("8");
+            expect(mistakes[0].nextNodes).toHaveLength(1);
+            expect(mistakes[0].nextNodes[0]).toParseLike("42");
+            expect(mistakes[0].corrections).toHaveLength(1);
+            expect(mistakes[0].corrections[0].replacement).toParseLike("48");
+        });
+
+        it("2 * 6 * 8 -> 2 * 42 (should be 2 * 48)", () => {
+            const mistakes = checkMistake("2 * 6 * 8", "2 * 42");
 
             expect(mistakes).toHaveLength(1);
             expect(mistakes[0].id).toEqual(MistakeId.EVAL_MUL);
@@ -355,6 +481,19 @@ describe("Eval (decomposition) checks", () => {
 
         it("42 = 6 * 8 (decomp multiplies to 48)", () => {
             const mistakes = checkMistake("42", "6 * 8");
+
+            expect(mistakes).toHaveLength(1);
+            expect(mistakes[0].id).toEqual(MistakeId.DECOMP_MUL);
+            expect(mistakes[0].prevNodes).toHaveLength(1);
+            expect(mistakes[0].prevNodes[0]).toParseLike("42");
+            expect(mistakes[0].nextNodes).toHaveLength(2);
+            expect(mistakes[0].nextNodes[0]).toParseLike("6");
+            expect(mistakes[0].nextNodes[1]).toParseLike("8");
+            expect(mistakes[0].corrections).toHaveLength(0);
+        });
+
+        it("2 * 42 = 2 * 6 * 8 (decomp multiplies to 2 * 48)", () => {
+            const mistakes = checkMistake("2 * 42", "2 * 6 * 8");
 
             expect(mistakes).toHaveLength(1);
             expect(mistakes[0].id).toEqual(MistakeId.DECOMP_MUL);
