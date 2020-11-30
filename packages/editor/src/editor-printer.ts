@@ -148,6 +148,26 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
 
             return Editor.row(children);
         }
+        case "exp": {
+            const children: Editor.Node[] = [];
+
+            const base = print(expr.base);
+            if (base.type === "row") {
+                children.push(...base.children);
+            } else {
+                children.push(base);
+            }
+
+            const exp = print(expr.exp);
+            children.push(
+                Editor.subsup(
+                    undefined,
+                    exp.type === "row" ? exp.children : [exp],
+                ),
+            );
+
+            return Editor.row(children);
+        }
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);
         }

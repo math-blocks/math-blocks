@@ -115,6 +115,20 @@ export const checkArgs: Check = (prev, next, context) => {
         if (result && prev.subtraction === next.subtraction) {
             return result;
         }
+    } else if (prev.type === "exp" && next.type === "exp") {
+        const baseResult = checker.checkStep(prev.base, next.base, context);
+        const expResult = checker.checkStep(prev.exp, next.exp, context);
+
+        // TODO: report mistakes
+
+        if (baseResult && expResult) {
+            // TODO: file a ticket about where errors are reported for returns
+            // that don't match the expected type.
+            return {
+                status: Status.Correct,
+                steps: [...baseResult.steps, ...expResult.steps],
+            };
+        }
     }
 
     return;
