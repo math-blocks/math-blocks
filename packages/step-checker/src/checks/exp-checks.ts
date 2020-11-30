@@ -40,6 +40,12 @@ export const expDef: Check = (prev, next, context) => {
 
         const base = expsWithNumberExp[0].base;
 
+        // This should never happen since if all the factors are the same,
+        // checkArgs would've returned a successful result before we get here.
+        if (uniquePrevFactors.length === 0) {
+            return;
+        }
+
         // NOTE: we use deepEquals instead of using checkStep to see if things
         // are equivalent.  We should probably do this elsewhere and rely more
         // on a fallback.  It's unlikely that a human would jump from something
@@ -48,6 +54,12 @@ export const expDef: Check = (prev, next, context) => {
             (count, f) => (deepEquals(f, base) ? count + 1 : count),
             0,
         );
+
+        // This can happen when there are no previous factors that equal
+        // the base we're looking for
+        if (count === 0) {
+            return;
+        }
 
         const nonBaseUniquePrevFactors = uniquePrevFactors.filter(
             (f) => !deepEquals(f, base),
@@ -134,12 +146,7 @@ export const expMul: Check = (prev, next, context) => {
                     ...remainingNextFactors,
                 ]);
 
-                const result = checker.checkStep(newPrev, next, {
-                    ...context,
-                    filters: {
-                        disallowedChecks: new Set([expDef.name]),
-                    },
-                });
+                const result = checker.checkStep(newPrev, next, context);
 
                 if (result) {
                     return correctResult(
@@ -157,6 +164,7 @@ export const expMul: Check = (prev, next, context) => {
 
     return undefined;
 };
+expMul.symmetric = true;
 
 // (a^n)/(a^m) -> a^(n-m)
 export const expDiv: Check = (prev, next, context) => {

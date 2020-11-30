@@ -145,10 +145,10 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
         );
     } else if (isObject(a) && isObject(b)) {
         const aKeys = Object.keys(a).filter(
-            (key) => key !== "id" && key !== "loc",
+            (key) => key !== "id" && key !== "loc" && key !== "source",
         );
         const bKeys = Object.keys(b).filter(
-            (key) => key !== "id" && key !== "loc",
+            (key) => key !== "id" && key !== "loc" && key !== "source",
         );
         if (aKeys.length !== bKeys.length) {
             return false;
