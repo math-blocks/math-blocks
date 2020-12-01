@@ -168,7 +168,114 @@ expMul.symmetric = true;
 
 // (a^n)/(a^m) -> a^(n-m)
 export const expDiv: Check = (prev, next, context) => {
-    // TODO: implement this
+    if (prev.type !== "div") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const [numerator, denominator] = prev.args;
+
+    if (
+        isExponent(numerator) &&
+        isExponent(denominator) &&
+        deepEquals(numerator.base, denominator.base)
+    ) {
+        // TODO: It would be sweet if we had a way to template expressions so
+        // that we could do: `${base}^(${numerator.exp}-${denominator.exp})`
+        const newPrev = Semantic.exp(
+            numerator.base,
+            Semantic.add([numerator.exp, Semantic.neg(denominator.exp, true)]),
+        );
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "dividing powers subtracts their exponents",
+            );
+        }
+    }
 
     return undefined;
 };
+expDiv.symmetric = true;
+
+// a^(-n) -> 1 / a^n
+export const powNegExp: Check = (prev, next, context) => {
+    if (!isExponent(prev)) {
+        return;
+    }
+
+    if (!Semantic.isNegative(prev.exp)) {
+        return;
+    }
+
+    const {checker} = context;
+
+    const newPrev = Semantic.div(
+        Semantic.number("1"),
+        Semantic.exp(prev.base, prev.exp.arg),
+    );
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            // TODO: Create enums for all of the reasons so that it's easy to change the message later
+            "A power with a negative exponent is the same as one over the power with the positive exponent",
+        );
+    }
+
+    return undefined;
+};
+powNegExp.symmetric = true;
+
+// (a^n)^m -> a^(n*m)
+export const powOfPow: Check = (prev, next, context) => {
+    if (!isExponent(prev)) {
+        return;
+    }
+
+    if (!isExponent(prev.base)) {
+        return;
+    }
+
+    const {checker} = context;
+    const newPrev = Semantic.exp(
+        prev.base.base,
+        Semantic.mul([
+            // handle situations like (x^(ab))^(cd)
+            ...Semantic.getFactors(prev.base.exp),
+            ...Semantic.getFactors(prev.exp),
+        ] as TwoOrMore<Semantic.Types.NumericNode>),
+    );
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "raising a power to another exponent is the same raising the power once an multiplying the exponents",
+        );
+    }
+
+    return undefined;
+};
+powOfPow.symmetric = true;
+
+// TODO: include roots in this file as well

@@ -172,6 +172,15 @@ export const divByFrac: Check = (prev, next, context) => {
 
     const [numerator, denominator] = prev.args;
 
+    // TODO: figure out to determine if something is equivalent to a fraction
+    // In the case of 1 / a^(-2) the denominator is equivalent to 1 / a^2.
+    // If we had a list of which checks produced fractions then we could run
+    // that sub-set of checks to see if any of them produced a fraction.
+    // We'd have to separate the computing of `newPrev` from the running of
+    // checkStep(newPrev, next, context).  Also, if there were more than one
+    // check that produced a fraction we'd want to check if each of those
+    // fractions.
+
     if (denominator.type === "div") {
         const reciprocal = Semantic.div(
             denominator.args[1],
