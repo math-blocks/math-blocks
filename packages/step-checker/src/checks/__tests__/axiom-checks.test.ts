@@ -541,6 +541,19 @@ describe("Axiom checks", () => {
             ]);
         });
 
+        it("2(x + y) + 3(a + b) -> 2x + 2y + 3a + 3b", () => {
+            const result = checkStep(
+                "2(x + y) + 3(a + b)",
+                "2x + 2y + 3a + 3b",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "distribution",
+            ]);
+        });
+
         it("1 - 2(x + y) -> 1 - 2x - 2y", () => {
             const result = checkStep("1 - 2(x + y)", "1 - 2x - 2y");
 

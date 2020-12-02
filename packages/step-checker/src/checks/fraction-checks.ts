@@ -12,6 +12,7 @@ import {
     correctResult,
 } from "./util";
 import {exactMatch} from "./basic-checks";
+import {convertNegExpToDiv} from "./exp-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
@@ -191,6 +192,18 @@ export const divByFrac: Check = (prev, next, context) => {
             );
         }
     }
+
+    // If the denominator wasn't a fraction, try to convert it to a fraction.
+    // TODO: find any other checks where prev is not a fraction but newPrev is.
+    // Run those checks here as well if convertNegExpToDiv fails.
+    // TODO: extract conversion functions from each check so it's easier to see
+    // what conversions are available.
+    const newDenominator = convertNegExpToDiv(denominator);
+    if (!newDenominator) {
+        return;
+    }
+
+    return divByFrac(Semantic.div(numerator, newDenominator), next, context);
 };
 divByFrac.symmetric = true;
 
