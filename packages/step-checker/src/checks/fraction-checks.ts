@@ -12,6 +12,7 @@ import {
     correctResult,
 } from "./util";
 import {exactMatch} from "./basic-checks";
+import {convertNegExpToDiv} from "./exp-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:
@@ -172,15 +173,6 @@ export const divByFrac: Check = (prev, next, context) => {
 
     const [numerator, denominator] = prev.args;
 
-    // TODO: figure out to determine if something is equivalent to a fraction
-    // In the case of 1 / a^(-2) the denominator is equivalent to 1 / a^2.
-    // If we had a list of which checks produced fractions then we could run
-    // that sub-set of checks to see if any of them produced a fraction.
-    // We'd have to separate the computing of `newPrev` from the running of
-    // checkStep(newPrev, next, context).  Also, if there were more than one
-    // check that produced a fraction we'd want to check if each of those
-    // fractions.
-
     if (denominator.type === "div") {
         const reciprocal = Semantic.div(
             denominator.args[1],
@@ -200,6 +192,18 @@ export const divByFrac: Check = (prev, next, context) => {
             );
         }
     }
+
+    // If the denominator wasn't a fraction, try to convert it to a fraction.
+    // TODO: find any other checks where prev is not a fraction but newPrev is.
+    // Run those checks here as well if convertNegExpToDiv fails.
+    // TODO: extract conversion functions from each check so it's easier to see
+    // what conversions are available.
+    const newDenominator = convertNegExpToDiv(denominator);
+    if (!newDenominator) {
+        return;
+    }
+
+    return divByFrac(Semantic.div(numerator, newDenominator), next, context);
 };
 divByFrac.symmetric = true;
 

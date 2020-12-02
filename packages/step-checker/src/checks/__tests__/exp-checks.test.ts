@@ -244,11 +244,7 @@ describe("Exponent checks", () => {
             ]);
         });
 
-        // See TODO in divByFrac.
-        // The problem is that while the a^(-2) -> 1 / a^2 we never apply that
-        // step to the original expression and so there's no way to get from
-        // 1 / a^(-2) -> a^2.
-        it.skip("1 / a^(-2) -> a^2", () => {
+        it("1 / a^(-2) -> a^2", () => {
             const result = checkStep("1 / a^(-2)", "a^2");
 
             expect(result).toBeTruthy();

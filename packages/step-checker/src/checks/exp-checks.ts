@@ -207,22 +207,41 @@ export const expDiv: Check = (prev, next, context) => {
 expDiv.symmetric = true;
 
 // a^(-n) -> 1 / a^n
-export const powNegExp: Check = (prev, next, context) => {
-    if (!isExponent(prev)) {
+/**
+ * Try to convert a exponent to a fraction.  If that isn't possible return
+ * undefined.
+ */
+export const convertNegExpToDiv = (
+    prev: Semantic.Types.NumericNode,
+): Semantic.Types.NumericNode | undefined => {
+    if (!isExponent(prev) || !Semantic.isNegative(prev.exp)) {
         return;
     }
 
-    if (!Semantic.isNegative(prev.exp)) {
+    return Semantic.div(
+        Semantic.number("1"),
+        Semantic.exp(prev.base, prev.exp.arg),
+    );
+};
+
+/**
+ * If prev is an exponent, try to convert it to a fraction.  If that conversion
+ * is successful, check if that fraction is equivalent to next.
+ */
+export const powNegExp: Check = (prev, next, context) => {
+    // TODO: make Check generic so that we only have to check call isNumeric()
+    // once in checkStep().
+    if (!Semantic.isNumeric(prev)) {
+        return;
+    }
+
+    const newPrev = convertNegExpToDiv(prev);
+
+    if (!newPrev) {
         return;
     }
 
     const {checker} = context;
-
-    const newPrev = Semantic.div(
-        Semantic.number("1"),
-        Semantic.exp(prev.base, prev.exp.arg),
-    );
-
     const result = checker.checkStep(newPrev, next, context);
 
     if (result) {
