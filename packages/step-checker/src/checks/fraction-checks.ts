@@ -203,7 +203,27 @@ export const divByFrac: Check = (prev, next, context) => {
         return;
     }
 
-    return divByFrac(Semantic.div(numerator, newDenominator), next, context);
+    // We need a helper like correctResult but one that appends to the result.
+    const newPrev = Semantic.div(numerator, newDenominator);
+    const result = divByFrac(newPrev, next, context);
+
+    if (result) {
+        if (context.reversed) {
+            result.steps.push({
+                message:
+                    "A power with a negative exponent is the same as one over the power with the positive exponent",
+                nodes: [newDenominator, denominator],
+            });
+        } else {
+            result.steps.unshift({
+                message:
+                    "A power with a negative exponent is the same as one over the power with the positive exponent",
+                nodes: [denominator, newDenominator],
+            });
+        }
+
+        return result;
+    }
 };
 divByFrac.symmetric = true;
 

@@ -248,6 +248,48 @@ describe("Exponent checks", () => {
             const result = checkStep("1 / a^(-2)", "a^2");
 
             expect(result).toBeTruthy();
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "A power with a negative exponent is the same as one over the power with the positive exponent",
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+                "multiplication with identity",
+                "division by one",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a^(-2)");
+            expect(result.steps[0].nodes[1]).toParseLike("1 / a^2");
+
+            expect(result.steps[1].nodes[0]).toParseLike("1 / (1 / a^2)");
+            expect(result.steps[1].nodes[1]).toParseLike("1 * a^2 / 1");
+
+            expect(result.steps[2].nodes[0]).toParseLike("1 * a^2 / 1");
+            expect(result.steps[2].nodes[1]).toParseLike("a^2 / 1");
+
+            expect(result.steps[3].nodes[0]).toParseLike("a^2 / 1");
+            expect(result.steps[3].nodes[1]).toParseLike("a^2");
+        });
+
+        it("a^2 -> 1 / a^(-2)", () => {
+            const result = checkStep("a^2", "1 / a^(-2)");
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((step) => step.message)).toEqual([
+                "division by one",
+                "multiplication with identity",
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+                "A power with a negative exponent is the same as one over the power with the positive exponent",
+            ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("a^2");
+            expect(result.steps[0].nodes[1]).toParseLike("a^2 / 1");
+
+            expect(result.steps[1].nodes[0]).toParseLike("a^2 / 1");
+            expect(result.steps[1].nodes[1]).toParseLike("1 * a^2 / 1");
+
+            expect(result.steps[2].nodes[0]).toParseLike("1 * a^2 / 1");
+            expect(result.steps[2].nodes[1]).toParseLike("1 / (1 / a^2)");
+
+            expect(result.steps[3].nodes[0]).toParseLike("1 / a^2");
+            expect(result.steps[3].nodes[1]).toParseLike("a^(-2)");
         });
     });
 
