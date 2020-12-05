@@ -58,7 +58,7 @@ describe("findNodeById", () => {
     test("finds a node in named property", () => {
         const x = Semantic.number("x");
         const two = Semantic.number("2");
-        const root = Semantic.exp(x, two);
+        const root = Semantic.pow(x, two);
 
         const node = findNodeById(root, two.id);
 
@@ -89,12 +89,12 @@ describe("replaceNode", () => {
     test("finds a node in named property", () => {
         const x = Semantic.number("x");
         const two = Semantic.number("2");
-        const root = Semantic.exp(x, two);
+        const root = Semantic.pow(x, two);
         const three = Semantic.number("3");
 
         replaceNodeWithId(root, two.id, three);
 
-        expect(root).toMatchInlineSnapshot(`(exp :base x :exp 3)`);
+        expect(root).toMatchInlineSnapshot(`(pow :base x :exp 3)`);
     });
 });
 

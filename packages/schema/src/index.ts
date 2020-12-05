@@ -188,7 +188,7 @@ const genSchema = ({
                 radicand: NumericNode,
                 index: NumericNode,
             }),
-            Exp: node("exp", {base: NumericNode, exp: NumericNode}),
+            Pow: node("pow", {base: NumericNode, exp: NumericNode}),
             Log: node("log", {base: NumericNode, arg: NumericNode}),
             Neg: node("neg", {
                 arg: NumericNode,
@@ -244,7 +244,7 @@ const genSchema = ({
                     ref("Div"),
                     ref("Mod"),
                     ref("Root"),
-                    ref("Exp"),
+                    ref("Pow"),
                     ref("Log"),
 
                     // unary

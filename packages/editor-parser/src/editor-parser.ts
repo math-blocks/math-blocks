@@ -318,7 +318,7 @@ const getInfixParselet = (
                             loc.end += 1;
                         }
 
-                        return Parser.Util.exp(
+                        return Parser.Util.pow(
                             left,
                             editorParser.parse(sup.children),
                             loc,

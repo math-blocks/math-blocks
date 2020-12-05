@@ -35,7 +35,13 @@ import {
     divIsMulByOneOver,
     checkDivisionCanceling,
 } from "./checks/fraction-checks";
-import {expDef, expMul, expDiv, powNegExp, powOfPow} from "./checks/exp-checks";
+import {
+    powDef,
+    powMul,
+    powDiv,
+    powNegExp,
+    powOfPow,
+} from "./checks/power-checks";
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true
@@ -87,12 +93,12 @@ export const ALL_CHECKS = [
     negIsMulNegOne,
     moveNegToFirstFactor,
 
-    // exponent checks
-    expMul,
-    expDiv,
+    // power checks
+    powMul,
+    powDiv,
     powNegExp,
     powOfPow,
-    expDef, // it's important that this comes after the other exponent rules.
+    powDef, // it's important that this comes after the other exponent rules.
     // this is because the other rules can be expressed in terms of
     // this rule which means that this rule would be matched first.
 

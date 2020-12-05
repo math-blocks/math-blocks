@@ -4,43 +4,38 @@
  */
 import {getId} from "@math-blocks/core";
 
-import {
-    Location,
-    NumericNode,
-    Node,
-    Ident,
-    Add,
-    Mul,
-    Num,
-    Ellipsis,
-    Neg,
-    Eq,
-    Div,
-    Root,
-    Exp,
-} from "./types";
+import * as Types from "./types";
 
-export const identifier = (name: string, loc?: Location): Ident => ({
+export const identifier = (
+    name: string,
+    loc?: Types.Location,
+): Types.Ident => ({
     type: "identifier",
     id: getId(),
     name,
     loc,
 });
 
-export const number = <T extends string>(value: T, loc?: Location): Num => ({
+export const number = <T extends string>(
+    value: T,
+    loc?: Types.Location,
+): Types.Num => ({
     type: "number",
     id: getId(),
     value: value.replace(/-/g, "\u2212"),
     loc,
 });
 
-export const ellipsis = (loc?: Location): Ellipsis => ({
+export const ellipsis = (loc?: Types.Location): Types.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
-export const add = (args: TwoOrMore<NumericNode>, loc?: Location): Add => ({
+export const add = (
+    args: TwoOrMore<Types.NumericNode>,
+    loc?: Types.Location,
+): Types.Add => ({
     type: "add",
     id: getId(),
     args,
@@ -48,10 +43,10 @@ export const add = (args: TwoOrMore<NumericNode>, loc?: Location): Add => ({
 });
 
 export const mul = (
-    args: TwoOrMore<NumericNode>,
+    args: TwoOrMore<Types.NumericNode>,
     implicit = false,
-    loc?: Location,
-): Mul => ({
+    loc?: Types.Location,
+): Types.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -59,7 +54,10 @@ export const mul = (
     loc,
 });
 
-export const eq = (args: TwoOrMore<Node>, loc?: Location): Eq => ({
+export const eq = (
+    args: TwoOrMore<Types.Node>,
+    loc?: Types.Location,
+): Types.Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -67,10 +65,10 @@ export const eq = (args: TwoOrMore<Node>, loc?: Location): Eq => ({
 });
 
 export const neg = (
-    arg: NumericNode,
+    arg: Types.NumericNode,
     subtraction = false,
-    loc?: Location,
-): Neg => ({
+    loc?: Types.Location,
+): Types.Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -79,22 +77,22 @@ export const neg = (
 });
 
 export const div = (
-    num: NumericNode,
-    den: NumericNode,
-    loc?: Location,
-): Div => ({
+    num: Types.NumericNode,
+    den: Types.NumericNode,
+    loc?: Types.Location,
+): Types.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
     loc,
 });
 
-export const exp = (
-    base: NumericNode,
-    exp: NumericNode,
-    loc?: Location,
-): Exp => ({
-    type: "exp",
+export const pow = (
+    base: Types.NumericNode,
+    exp: Types.NumericNode,
+    loc?: Types.Location,
+): Types.Pow => ({
+    type: "pow",
     id: getId(),
     base,
     exp,
@@ -104,10 +102,10 @@ export const exp = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: NumericNode,
-    index?: NumericNode,
-    loc?: Location,
-): Root => ({
+    radicand: Types.NumericNode,
+    index?: Types.NumericNode,
+    loc?: Types.Location,
+): Types.Root => ({
     type: "root",
     id: getId(),
     radicand,
@@ -115,23 +113,25 @@ export const root = (
     loc,
 });
 
-export const isSubtraction = (node: NumericNode): node is Neg =>
+export const isSubtraction = (node: Types.NumericNode): node is Types.Neg =>
     node.type === "neg" && node.subtraction;
 
-export const isNegative = (node: NumericNode): node is Neg =>
+export const isNegative = (node: Types.NumericNode): node is Types.Neg =>
     node.type === "neg" && !node.subtraction;
 
-export const getFactors = (node: NumericNode): OneOrMore<NumericNode> =>
-    node.type === "mul" ? node.args : [node];
+export const getFactors = (
+    node: Types.NumericNode,
+): OneOrMore<Types.NumericNode> => (node.type === "mul" ? node.args : [node]);
 
-export const getTerms = (node: NumericNode): OneOrMore<NumericNode> =>
-    node.type === "add" ? node.args : [node];
+export const getTerms = (
+    node: Types.NumericNode,
+): OneOrMore<Types.NumericNode> => (node.type === "add" ? node.args : [node]);
 
 export const mulFactors = (
-    factors: NumericNode[],
+    factors: Types.NumericNode[],
     implicit = false,
-    loc?: Location,
-): NumericNode => {
+    loc?: Types.Location,
+): Types.NumericNode => {
     switch (factors.length) {
         case 0:
             return number("1", loc);
@@ -142,13 +142,16 @@ export const mulFactors = (
                 type: "mul",
                 id: getId(),
                 implicit,
-                args: factors as TwoOrMore<NumericNode>,
+                args: factors as TwoOrMore<Types.NumericNode>,
                 loc,
             };
     }
 };
 
-export const addTerms = (terms: NumericNode[], loc?: Location): NumericNode => {
+export const addTerms = (
+    terms: Types.NumericNode[],
+    loc?: Types.Location,
+): Types.NumericNode => {
     switch (terms.length) {
         case 0:
             return number("0", loc);
@@ -158,14 +161,14 @@ export const addTerms = (terms: NumericNode[], loc?: Location): NumericNode => {
             return {
                 type: "add",
                 id: getId(),
-                args: terms as TwoOrMore<NumericNode>,
+                args: terms as TwoOrMore<Types.NumericNode>,
                 loc,
             };
     }
 };
 
 // TODO: create a function to check if an answer is simplified or not
-export const isNumber = (node: Node): boolean => {
+export const isNumber = (node: Types.Node): boolean => {
     if (node.type === "number") {
         return true;
     } else if (node.type === "neg") {
@@ -178,7 +181,7 @@ export const isNumber = (node: Node): boolean => {
         return node.args.every(isNumber);
     } else if (node.type === "root") {
         return isNumber(node.radicand) && isNumber(node.index);
-    } else if (node.type === "exp") {
+    } else if (node.type === "pow") {
         return isNumber(node.base) && isNumber(node.exp);
     } else {
         return false;
@@ -186,7 +189,7 @@ export const isNumber = (node: Node): boolean => {
 };
 
 // TODO: autogenerate this from the validation schema
-export const isNumeric = (node: Node): node is NumericNode => {
+export const isNumeric = (node: Types.Node): node is Types.NumericNode => {
     return [
         "number",
         "identifier",
@@ -199,7 +202,7 @@ export const isNumeric = (node: Node): node is NumericNode => {
         "div",
         "mod",
         "root",
-        "exp",
+        "pow",
         "log",
         "neg",
         "abs",

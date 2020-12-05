@@ -228,13 +228,13 @@ describe("EditorParser", () => {
 
         const parseTree = parser.parse(tokens);
 
-        expect(parseTree).toMatchInlineSnapshot(`(exp :base x :exp 2)`);
+        expect(parseTree).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
         expect(parseTree.loc).toEqual({
             start: 0,
             end: 2,
             path: [],
         });
-        if (parseTree.type === "exp") {
+        if (parseTree.type === "pow") {
             expect(parseTree.exp.loc).toEqual({
                 start: 0,
                 end: 1,
@@ -263,9 +263,9 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(tokens);
 
         expect(parseTree).toMatchInlineSnapshot(`
-            (exp
+            (pow
               :base x
-              :exp (exp :base y :exp 2))
+              :exp (pow :base y :exp 2))
         `);
     });
 
@@ -320,7 +320,7 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(tokens);
 
         expect(parseTree).toMatchInlineSnapshot(
-            `(exp :base (ident a (add n 1)) :exp 2)`,
+            `(pow :base (ident a (add n 1)) :exp 2)`,
         );
     });
 

@@ -108,10 +108,10 @@ const getInfixParselet = (
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left): Parser.Types.Exp => {
+                parse: (parser, left): Parser.Types.Pow => {
                     parser.consume();
                     // exponents are right-associative
-                    return Util.exp(
+                    return Util.pow(
                         left,
                         parser.parseWithOperator("caret", "right"),
                     );

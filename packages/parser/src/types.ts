@@ -18,7 +18,7 @@ export type NumericNode =
     | Div
     | Mod
     | Root
-    | Exp
+    | Pow
     | Log
     | Neg
     | Abs
@@ -84,8 +84,8 @@ export type Root = Common & {
     index: Node;
     [k: string]: unknown;
 };
-export type Exp = Common & {
-    type: "exp";
+export type Pow = Common & {
+    type: "pow";
     base: Node;
     exp: Node;
     [k: string]: unknown;
