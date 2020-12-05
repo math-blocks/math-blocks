@@ -47,9 +47,9 @@ describe("traverse", () => {
     });
 
     it("call traverse properties", () => {
-        const power: Types.Exp = {
+        const power: Types.Pow = {
             id: 0,
-            type: "exp",
+            type: "pow",
             base: {
                 id: 1,
                 type: "identifier",

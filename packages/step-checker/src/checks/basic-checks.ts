@@ -115,7 +115,7 @@ export const checkArgs: Check = (prev, next, context) => {
         if (result && prev.subtraction === next.subtraction) {
             return result;
         }
-    } else if (prev.type === "exp" && next.type === "exp") {
+    } else if (prev.type === "pow" && next.type === "pow") {
         const baseResult = checker.checkStep(prev.base, next.base, context);
         const expResult = checker.checkStep(prev.exp, next.exp, context);
 

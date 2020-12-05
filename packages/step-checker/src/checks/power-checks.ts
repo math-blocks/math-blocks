@@ -3,8 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {Check} from "../types";
 import {correctResult, difference, intersection, deepEquals} from "./util";
 
-const isExponent = (node: Semantic.Types.Node): node is Semantic.Types.Exp => {
-    return node.type === "exp";
+const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
+    return node.type === "pow";
 };
 
 // a*a*...*a -> a^n
@@ -28,7 +28,7 @@ export const expDef: Check = (prev, next, context) => {
         const uniquePrevFactors = difference(prevFactors, commonFactors);
         const uniqueNextFactors = difference(nextFactors, commonFactors);
 
-        const exps = uniqueNextFactors.filter(isExponent);
+        const exps = uniqueNextFactors.filter(isPower);
 
         const expsWithNumberExp = exps.filter(
             (exp) => exp.exp.type === "number",
@@ -69,7 +69,7 @@ export const expDef: Check = (prev, next, context) => {
         // with the same base in next.
         const newPrev = Semantic.mulFactors([
             ...commonFactors,
-            Semantic.exp(base, Semantic.number(String(count))),
+            Semantic.pow(base, Semantic.number(String(count))),
             ...nonBaseUniquePrevFactors,
         ]);
         const result = checker.checkStep(newPrev, next, context);
@@ -110,12 +110,12 @@ export const expMul: Check = (prev, next, context) => {
         const uniquePrevFactors = difference(prevFactors, commonFactors);
         const uniqueNextFactors = difference(nextFactors, commonFactors);
 
-        const prevExps = uniquePrevFactors.filter(isExponent);
-        const nextExps = uniqueNextFactors.filter(isExponent);
+        const prevExps = uniquePrevFactors.filter(isPower);
+        const nextExps = uniqueNextFactors.filter(isPower);
 
         for (let i = 0; i < nextExps.length; i++) {
             const nextExp = nextExps[i];
-            const prevExpsWithSameBase: Semantic.Types.Exp[] = [];
+            const prevExpsWithSameBase: Semantic.Types.Pow[] = [];
             for (let j = 0; j < prevExps.length; j++) {
                 const prevExp = prevExps[j];
                 if (deepEquals(prevExp.base, nextExp.base)) {
@@ -125,7 +125,7 @@ export const expMul: Check = (prev, next, context) => {
 
             if (prevExpsWithSameBase.length > 1) {
                 const base = prevExpsWithSameBase[0].base;
-                const newExp = Semantic.exp(
+                const newExp = Semantic.pow(
                     base,
                     Semantic.add(
                         prevExpsWithSameBase.map((exp) => exp.exp) as TwoOrMore<
@@ -177,13 +177,13 @@ export const expDiv: Check = (prev, next, context) => {
     const [numerator, denominator] = prev.args;
 
     if (
-        isExponent(numerator) &&
-        isExponent(denominator) &&
+        isPower(numerator) &&
+        isPower(denominator) &&
         deepEquals(numerator.base, denominator.base)
     ) {
         // TODO: It would be sweet if we had a way to template expressions so
         // that we could do: `${base}^(${numerator.exp}-${denominator.exp})`
-        const newPrev = Semantic.exp(
+        const newPrev = Semantic.pow(
             numerator.base,
             Semantic.add([numerator.exp, Semantic.neg(denominator.exp, true)]),
         );
@@ -214,13 +214,13 @@ expDiv.symmetric = true;
 export const convertNegExpToDiv = (
     prev: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode | undefined => {
-    if (!isExponent(prev) || !Semantic.isNegative(prev.exp)) {
+    if (!isPower(prev) || !Semantic.isNegative(prev.exp)) {
         return;
     }
 
     return Semantic.div(
         Semantic.number("1"),
-        Semantic.exp(prev.base, prev.exp.arg),
+        Semantic.pow(prev.base, prev.exp.arg),
     );
 };
 
@@ -262,16 +262,16 @@ powNegExp.symmetric = true;
 
 // (a^n)^m -> a^(n*m)
 export const powOfPow: Check = (prev, next, context) => {
-    if (!isExponent(prev)) {
+    if (!isPower(prev)) {
         return;
     }
 
-    if (!isExponent(prev.base)) {
+    if (!isPower(prev.base)) {
         return;
     }
 
     const {checker} = context;
-    const newPrev = Semantic.exp(
+    const newPrev = Semantic.pow(
         prev.base.base,
         Semantic.mul([
             // handle situations like (x^(ab))^(cd)

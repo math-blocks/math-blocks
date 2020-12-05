@@ -48,7 +48,7 @@ describe("util", () => {
         });
 
         test("powers with a base and an exponent that are numbers are numbers", () => {
-            const ast = S.exp(S.number("2"), S.number("3"));
+            const ast = S.pow(S.number("2"), S.number("3"));
             expect(S.isNumber(ast)).toBeTruthy();
         });
 
@@ -88,12 +88,12 @@ describe("util", () => {
         });
 
         test("a power with an identifier as a base is not number", () => {
-            const ast = S.exp(S.identifier("a"), S.number("3"));
+            const ast = S.pow(S.identifier("a"), S.number("3"));
             expect(S.isNumber(ast)).toBeFalsy();
         });
 
         test("a power with an identifier as an exponent is not number", () => {
-            const ast = S.exp(S.number("2"), S.identifier("x"));
+            const ast = S.pow(S.number("2"), S.identifier("x"));
             expect(S.isNumber(ast)).toBeFalsy();
         });
     });

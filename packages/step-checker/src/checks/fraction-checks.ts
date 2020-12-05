@@ -12,7 +12,7 @@ import {
     correctResult,
 } from "./util";
 import {exactMatch} from "./basic-checks";
-import {convertNegExpToDiv} from "./exp-checks";
+import {convertNegExpToDiv} from "./power-checks";
 
 // TODO: Consider simplifying substeps for dividing integers.  Right now
 // we do the following:

@@ -31,7 +31,7 @@ const print = (
             const index = print(ast.index, serialize, indent);
             return `(${ast.type} :radicand ${radicand} :index ${index})`;
         }
-        if (ast.type === "exp") {
+        if (ast.type === "pow") {
             const hasGrandchildren =
                 (ast.base.type !== "identifier" &&
                     ast.base.type !== "number") ||

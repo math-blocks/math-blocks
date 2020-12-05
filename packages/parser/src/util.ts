@@ -87,12 +87,12 @@ export const div = (
     loc,
 });
 
-export const exp = (
+export const pow = (
     base: Types.Node,
     exp: Types.Node,
     loc?: Types.Location,
-): Types.Exp => ({
-    type: "exp",
+): Types.Pow => ({
+    type: "pow",
     id: getId(),
     base,
     exp,

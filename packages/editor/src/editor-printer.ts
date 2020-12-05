@@ -148,12 +148,14 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
 
             return Editor.row(children);
         }
-        case "exp": {
+        case "pow": {
             const children: Editor.Node[] = [];
 
             const base = print(expr.base);
             if (base.type === "row") {
+                children.push(Editor.glyph("("));
                 children.push(...base.children);
+                children.push(Editor.glyph(")"));
             } else {
                 children.push(base);
             }

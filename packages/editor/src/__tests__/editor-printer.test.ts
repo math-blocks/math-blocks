@@ -274,4 +274,50 @@ describe("print", () => {
 
         expect(node).toEqualMath(Util.row("y=x+1"));
     });
+
+    test("x^2", () => {
+        const ast = Semantic.pow(
+            Semantic.identifier("x"),
+            Semantic.number("2"),
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([Editor.glyph("x"), Util.sup("2")]),
+        );
+    });
+
+    test("e^(x+y)", () => {
+        const ast = Semantic.pow(
+            Semantic.identifier("e"),
+            Semantic.add([Semantic.identifier("x"), Semantic.identifier("y")]),
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([Editor.glyph("e"), Util.sup("x+y")]),
+        );
+    });
+
+    test("(x+1)^2", () => {
+        const ast = Semantic.pow(
+            Semantic.add([Semantic.identifier("x"), Semantic.number("1")]),
+            Semantic.number("2"),
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([
+                Editor.glyph("("),
+                Editor.glyph("x"),
+                Editor.glyph("+"),
+                Editor.glyph("1"),
+                Editor.glyph(")"),
+                Util.sup("2"),
+            ]),
+        );
+    });
 });

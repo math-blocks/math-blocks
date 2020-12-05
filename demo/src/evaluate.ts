@@ -39,7 +39,7 @@ const evaluate = (expr: Semantic.Types.Node, varDict: VarDict): number => {
             const [dividend, divisor] = expr.args;
             return evaluate(dividend, varDict) % evaluate(divisor, varDict);
         }
-        case "exp": {
+        case "pow": {
             const {base, exp} = expr;
             return Math.pow(evaluate(base, varDict), evaluate(exp, varDict));
         }

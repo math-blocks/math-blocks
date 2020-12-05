@@ -35,7 +35,13 @@ import {
     divIsMulByOneOver,
     checkDivisionCanceling,
 } from "./checks/fraction-checks";
-import {expDef, expMul, expDiv, powNegExp, powOfPow} from "./checks/exp-checks";
+import {
+    expDef,
+    expMul,
+    expDiv,
+    powNegExp,
+    powOfPow,
+} from "./checks/power-checks";
 
 // TODO: write a function to determine if an equation is true or not
 // e.g. 2 = 5 -> false, 5 = 5 -> true

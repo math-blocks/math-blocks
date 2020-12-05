@@ -252,16 +252,16 @@ describe("TextParser", () => {
     it("parses exponents", () => {
         const ast = parse("x^2");
 
-        expect(ast).toMatchInlineSnapshot(`(exp :base x :exp 2)`);
+        expect(ast).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
     });
 
     it("parses nested exponents", () => {
         const ast = parse("2^3^4");
 
         expect(ast).toMatchInlineSnapshot(`
-            (exp
+            (pow
               :base 2
-              :exp (exp :base 3 :exp 4))
+              :exp (pow :base 3 :exp 4))
         `);
     });
 
