@@ -10,6 +10,8 @@ import {
     symmetricProperty,
     commuteAddition,
     commuteMultiplication,
+    associativeMul,
+    associativeAdd,
     addZero,
     mulOne,
     checkDistribution,
@@ -124,4 +126,8 @@ export const ALL_CHECKS = [
     // divBySame is equivalent to [divIsMulByOneOver, mulInverse]
     // TODO: nest steps in a hierarchy
     mulInverse,
+
+    // associtivity checks
+    associativeMul,
+    associativeAdd,
 ];

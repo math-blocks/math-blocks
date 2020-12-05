@@ -751,15 +751,32 @@ describe("Axiom checks", () => {
         });
 
         // TODO: make this test pass
-        it.skip("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
+        it("2a * (b + c) -> 2a * b + 2a * c", () => {
             const result = checkStep(
-                "2 * a * (b + c)",
-                "2 * a * b + 2 * a * c",
+                "2a * (b + c)",
+                "2a * b + 2a * c",
             );
 
             expect(result).toBeTruthy();
             expect(result.steps.map((reason) => reason.message)).toEqual([
                 "distribution",
+            ]);
+        });
+
+        // TODO: update checkDistribution to make this pass
+        it.todo("2 * a * (b + c) -> 2ab + 2ac");
+
+        it("2a(b + c) -> 2ab + 2ac", () => {
+            const result = checkStep(
+                "2a(b + c)",
+                "2ab + 2ac",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "distribution",
+                "asssociative property of multiplication",
+                "asssociative property of multiplication",
             ]);
         });
 
@@ -1014,6 +1031,146 @@ describe("Axiom checks", () => {
                 "adding inverse",
                 "multiplication by zero",
                 "addition with identity",
+            ]);
+        });
+    });
+
+    describe("associativeMul", () => {
+        it("a(bc) -> (ab)c", () => {
+            const result = checkStep(
+                "a(bc)",
+                "(ab)c",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+                "asssociative property of multiplication",
+            ]);
+        });
+
+        it("abcd -> (ab)(cd)", () => {
+            const result = checkStep(
+                "abcd",
+                "(ab)(cd)",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+            ]);
+        });
+
+        it("(ab)(cd) -> abcd", () => {
+            const result = checkStep(
+                "(ab)(cd)",
+                "abcd",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+            ]);
+        });
+
+        it("a(cd) -> abcd", () => {
+            const result = checkStep(
+                "a(cd)",
+                "acd",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+            ]);
+        });
+
+        it("(a)(b)(cd) -> abcd", () => {
+            const result = checkStep(
+                "(a)(b)(cd)",
+                "abcd",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+            ]);
+        });
+
+        it("a(b(cd)) -> abcd", () => {
+            const result = checkStep(
+                "a(b(cd))",
+                "abcd",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map((reason) => reason.message)).toEqual([
+                "asssociative property of multiplication",
+                "asssociative property of multiplication",
+            ]);
+        });
+    });
+
+    describe("associativeAdd", () => {
+        it("a + (b + c) -> (a + b) + c", () => {
+            const result = checkStep(
+                "a + (b + c)",
+                "(a + b) + c",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map(step => step.message)).toEqual([
+                "asssociative property of addition",
+                "asssociative property of addition",
+            ]);
+        });
+
+        it("(a + b) + (c + d) -> a + b + c + d", () => {
+            const result = checkStep(
+                "(a + b) + (c + d)",
+                "a + b + c + d",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map(step => step.message)).toEqual([
+                "asssociative property of addition",
+            ]);
+        });
+
+        it("a + b + c + d -> (a + b) + (c + d)", () => {
+            const result = checkStep(
+                "a + b + c + d",
+                "(a + b) + (c + d)",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map(step => step.message)).toEqual([
+                "asssociative property of addition",
+            ]);
+        });
+
+        it("a + b + (c + d) -> a + b + c + d", () => {
+            const result = checkStep(
+                "a + b + (c + d)",
+                "a + b + c + d",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map(step => step.message)).toEqual([
+                "asssociative property of addition",
+            ]);
+        });
+
+        it("a + (b + (c + d)) -> a + b + c + d", () => {
+            const result = checkStep(
+                "a + (b + (c + d))",
+                "a + b + c + d",
+            );
+
+            expect(result).toBeTruthy();
+            expect(result.steps.map(step => step.message)).toEqual([
+                "asssociative property of addition",
+                "asssociative property of addition",
             ]);
         });
     });

@@ -295,7 +295,8 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
     if (
         prev.type === "div" &&
-        !exactMatch(prev.args[0], Semantic.number("1"), context)
+        !exactMatch(prev.args[0], Semantic.number("1"), context) &&
+        prev.source !== "mulByFrac"
     ) {
         const [numerator, denominator] = prev.args;
         // What if numerator is a mul itself?  Should we have a step that
@@ -307,6 +308,8 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         const newDiv = Semantic.div(Semantic.number("1"), denominator);
         const newPrev = Semantic.mul([numerator, newDiv]);
 
+        // console.log(JSON.stringify(prev, null, 4));
+        // console.log(JSON.stringify(newPrev, null, 4));
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -447,6 +450,7 @@ export const mulInverse: Check = (prev, next, context) => {
 };
 mulInverse.symmetric = true;
 
+// a * b/c -> (a * b) / c
 export const mulByFrac: Check = (prev, next, context) => {
     const {checker} = context;
     // We need a multiplication node containing a fraction
@@ -491,6 +495,9 @@ export const mulByFrac: Check = (prev, next, context) => {
         Semantic.mulFactors(numFactors, true),
         Semantic.mulFactors(denFactors, true), // denFactors = [] -> 1
     );
+    newPrev.source = "mulByFrac";
+    // console.log(JSON.stringify(prev, null, 4));
+    // console.log(JSON.stringify(newPrev, null, 4));
     const result = checker.checkStep(newPrev, next, context);
 
     if (result) {

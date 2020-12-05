@@ -296,10 +296,16 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 * a * 1/a", "2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result.steps.map(step => step.message)).toEqual([
                 "multiplying the inverse",
                 "multiplication with identity",
             ]);
+
+            expect(result.steps[0].nodes[0]).toParseLike("2 * a * 1/a");
+            expect(result.steps[0].nodes[1]).toParseLike("2 * 1");
+            
+            expect(result.steps[1].nodes[0]).toParseLike("2 * 1");
+            expect(result.steps[1].nodes[1]).toParseLike("2");
         });
     });
 
