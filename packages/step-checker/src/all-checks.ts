@@ -36,9 +36,9 @@ import {
     checkDivisionCanceling,
 } from "./checks/fraction-checks";
 import {
-    expDef,
-    expMul,
-    expDiv,
+    powDef,
+    powMul,
+    powDiv,
     powNegExp,
     powOfPow,
 } from "./checks/power-checks";
@@ -93,12 +93,12 @@ export const ALL_CHECKS = [
     negIsMulNegOne,
     moveNegToFirstFactor,
 
-    // exponent checks
-    expMul,
-    expDiv,
+    // power checks
+    powMul,
+    powDiv,
     powNegExp,
     powOfPow,
-    expDef, // it's important that this comes after the other exponent rules.
+    powDef, // it's important that this comes after the other exponent rules.
     // this is because the other rules can be expressed in terms of
     // this rule which means that this rule would be matched first.
 

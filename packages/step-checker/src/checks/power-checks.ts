@@ -9,7 +9,7 @@ const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
 
 // a*a*...*a -> a^n
 // TODO: make check generic and then have runChecks do some preliminary checking.
-export const expDef: Check = (prev, next, context) => {
+export const powDef: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (!Semantic.isNumeric(next)) {
@@ -88,10 +88,10 @@ export const expDef: Check = (prev, next, context) => {
 
     return undefined;
 };
-expDef.symmetric = true;
+powDef.symmetric = true;
 
 // (a^n)(a^m) -> a^(n+m)
-export const expMul: Check = (prev, next, context) => {
+export const powMul: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (!Semantic.isNumeric(next)) {
@@ -164,10 +164,10 @@ export const expMul: Check = (prev, next, context) => {
 
     return undefined;
 };
-expMul.symmetric = true;
+powMul.symmetric = true;
 
 // (a^n)/(a^m) -> a^(n-m)
-export const expDiv: Check = (prev, next, context) => {
+export const powDiv: Check = (prev, next, context) => {
     if (prev.type !== "div") {
         return;
     }
@@ -204,14 +204,14 @@ export const expDiv: Check = (prev, next, context) => {
 
     return undefined;
 };
-expDiv.symmetric = true;
+powDiv.symmetric = true;
 
 // a^(-n) -> 1 / a^n
 /**
  * Try to convert a exponent to a fraction.  If that isn't possible return
  * undefined.
  */
-export const convertNegExpToDiv = (
+export const convertPowNegExpToDiv = (
     prev: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode | undefined => {
     if (!isPower(prev) || !Semantic.isNegative(prev.exp)) {
@@ -235,7 +235,7 @@ export const powNegExp: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev = convertNegExpToDiv(prev);
+    const newPrev = convertPowNegExpToDiv(prev);
 
     if (!newPrev) {
         return;
