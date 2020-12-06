@@ -589,10 +589,6 @@ export const associativeMul: Check = (prev, next, context) => {
         return;
     }
 
-    if (!Semantic.isNumeric(next)) {
-        return;
-    }
-
     const {checker} = context;
 
     if (prev.args.some((arg) => arg.type === "mul")) {
@@ -629,10 +625,6 @@ associativeMul.symmetric = true;
 // a parent "add" node.
 export const associativeAdd: Check = (prev, next, context) => {
     if (prev.type !== "add") {
-        return;
-    }
-
-    if (!Semantic.isNumeric(next)) {
         return;
     }
 
