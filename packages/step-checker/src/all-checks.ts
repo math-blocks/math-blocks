@@ -1,5 +1,3 @@
-import {shortest} from "./strategies";
-
 import {
     numberCheck,
     identifierCheck,
@@ -10,6 +8,8 @@ import {
     symmetricProperty,
     commuteAddition,
     commuteMultiplication,
+    associativeMul,
+    associativeAdd,
     addZero,
     mulOne,
     checkDistribution,
@@ -27,14 +27,12 @@ import {
     moveNegInsideMul,
 } from "./checks/integer-checks";
 import {
-    divByFrac,
-    divByOne,
-    divBySame,
-    mulByFrac,
-    mulInverse,
+    mulFrac,
     divIsMulByOneOver,
-    checkDivisionCanceling,
-} from "./checks/fraction-checks";
+    cancelFrac,
+    divByOne,
+    divByFrac,
+} from "./checks/new-fraction-checks";
 import {
     powDef,
     powMul,
@@ -106,22 +104,15 @@ export const ALL_CHECKS = [
     // we could avoid having to order thing carefully bu running everything
     // in parallel and picking the shortest path, but this would be very expensive
 
-    // fraction checks
-    // NOTE: these must appear after eval checks
-    // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
+    // new fraction checks
     divByFrac,
-    // NOTE: checks that are equivalent to an array of checks should appear
-    // above those checks in this list.
-    divByOne, // equivalent to [divIsMulByOneOver, divBySame, mulOne]
-    divBySame, // equivalent to [divIsMulByOneOver, mulInverse]
+    mulFrac,
+    cancelFrac,
+    divByOne,
 
-    // NOTE: When checking certain steps, both of these will return a
-    // valid path with one usually being much shorter than the other.
-    // We use 'fastest' to evaluate both paths and pick the shortest.
-    shortest([mulByFrac, divIsMulByOneOver]), // TODO: make this work with filters
-    checkDivisionCanceling,
+    divIsMulByOneOver, // dual of mulFrac
+    // this is the last fraction check so that don't expand a * b/c -> a * (b * 1/c)
 
-    // divBySame is equivalent to [divIsMulByOneOver, mulInverse]
-    // TODO: nest steps in a hierarchy
-    mulInverse,
+    associativeMul,
+    associativeAdd,
 ];

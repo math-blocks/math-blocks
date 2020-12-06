@@ -580,3 +580,75 @@ export const symmetricProperty: Check = (prev, next, context) => {
 };
 
 symmetricProperty.symmetric = true;
+
+// NOTE: This check doesn't strictly check the associative property of
+// multiplication, but rather can "mul" nodes that are args of a parent "mul"
+// node be removed (or added).
+export const associativeMul: Check = (prev, next, context) => {
+    if (prev.type !== "mul") {
+        return;
+    }
+
+    const {checker} = context;
+
+    if (prev.args.some((arg) => arg.type === "mul")) {
+        // for (const arg of prev.args) {
+        //     console.log(arg);
+        // }
+        // console.log(JSON.stringify(prev, null, 4));
+        // throw new Error("foo");
+        const factors: Semantic.Types.NumericNode[] = [];
+        for (const arg of prev.args) {
+            factors.push(...Semantic.getFactors(arg));
+        }
+        const newPrev = Semantic.mulFactors(factors);
+        newPrev.source = "associativeMul";
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "associative property of multiplication",
+            );
+        }
+    }
+};
+associativeMul.symmetric = true;
+
+// NOTE: This check doesn't strictly check the associative property of addition,
+// but rather can parens be removed (or added) for "add" nodes that are args of
+// a parent "add" node.
+export const associativeAdd: Check = (prev, next, context) => {
+    if (prev.type !== "add") {
+        return;
+    }
+
+    const {checker} = context;
+
+    if (prev.args.some((arg) => arg.type === "add")) {
+        const terms: Semantic.Types.NumericNode[] = [];
+        for (const arg of prev.args) {
+            terms.push(...Semantic.getTerms(arg));
+        }
+        const newPrev = Semantic.addTerms(terms);
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "associative property of addition",
+            );
+        }
+    }
+};
+associativeAdd.symmetric = true;
