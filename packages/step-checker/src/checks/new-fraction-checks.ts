@@ -29,10 +29,6 @@ export const mulFrac: Check = (prev, next, context) => {
         return;
     }
 
-    if (!Semantic.isNumeric(next)) {
-        return;
-    }
-
     // If none of the args are 'div' nodes then there are no fractions to
     // multiply by.
     if (!prev.args.find((arg) => arg.type === "div")) {
@@ -93,10 +89,6 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
     }
 
     if (prev.type !== "div") {
-        return;
-    }
-
-    if (!Semantic.isNumeric(next)) {
         return;
     }
 
@@ -206,10 +198,6 @@ divByFrac.symmetric = true;
 // ab / abc -> 1 / c
 export const cancelFrac: Check = (prev, next, context) => {
     if (prev.type !== "div") {
-        return;
-    }
-
-    if (!Semantic.isNumeric(next)) {
         return;
     }
 
