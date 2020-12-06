@@ -17,7 +17,7 @@ import {
 expect.addSnapshotSerializer(serializer);
 expect.extend({toHaveMessages, toHaveStepsLike});
 
-describe("Fraction checks", () => {
+describe.skip("Fraction checks", () => {
     it("a * 1/b -> a / b", () => {
         const result = checkStep("a * 1/b", "a / b");
 
