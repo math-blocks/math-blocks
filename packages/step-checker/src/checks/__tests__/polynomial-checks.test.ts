@@ -1,11 +1,13 @@
-import {checkStep} from "../test-util";
+import {checkStep, toHaveMessages} from "../test-util";
+
+expect.extend({toHaveMessages});
 
 describe.skip("polynomial checks", () => {
     it("2x + 3x -> 5x", () => {
         const result = checkStep("2x + 3x", "5x");
 
         expect(result).toBeTruthy();
-        expect(result.steps.map((step) => step.message)).toEqual([
+        expect(result).toHaveMessages([
             "factoring",
             "evaluation of addition",
             "commutative property",
@@ -16,7 +18,7 @@ describe.skip("polynomial checks", () => {
         const result = checkStep("1 + 2x + 3x", "1 + 5x");
 
         expect(result).toBeTruthy();
-        expect(result.steps.map((step) => step.message)).toEqual([
+        expect(result).toHaveMessages([
             "factoring",
             "evaluation of addition",
             "commutative property",
@@ -27,7 +29,7 @@ describe.skip("polynomial checks", () => {
         const result = checkStep("x + 3x", "4x");
 
         expect(result).toBeTruthy();
-        expect(result.steps.map((step) => step.message)).toEqual([
+        expect(result).toHaveMessages([
             "factoring",
             "evaluation of addition",
             "commutative property",
@@ -38,7 +40,7 @@ describe.skip("polynomial checks", () => {
         const result = checkStep("x^2 + 3x^2", "4x^2");
 
         expect(result).toBeTruthy();
-        expect(result.steps.map((step) => step.message)).toEqual([
+        expect(result).toHaveMessages([
             "factoring",
             "evaluation of addition",
             "commutative property",
@@ -49,7 +51,7 @@ describe.skip("polynomial checks", () => {
         const result = checkStep("xy + 3xy", "4xy");
 
         expect(result).toBeTruthy();
-        expect(result.steps.map((step) => step.message)).toEqual([
+        expect(result).toHaveMessages([
             "factoring",
             "evaluation of addition",
             "commutative property",

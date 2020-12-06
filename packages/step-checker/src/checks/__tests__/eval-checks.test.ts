@@ -3,9 +3,14 @@ import {parse} from "@math-blocks/text-parser";
 import StepChecker from "../../step-checker";
 import {MistakeId} from "../../enums";
 
-import {checkStep, checkMistake, toParseLike} from "../test-util";
+import {
+    checkStep,
+    checkMistake,
+    toParseLike,
+    toHaveMessages,
+} from "../test-util";
 
-expect.extend({toParseLike});
+expect.extend({toParseLike, toHaveMessages});
 
 describe("Eval (decomposition) checks", () => {
     describe("evalAdd", () => {
@@ -13,16 +18,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 + 3", "5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("5 - 2 -> 3", () => {
             const result = checkStep("5 - 2", "3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 // TODO: have an interim step showing 5 - 2 -> 5 + -2
                 "evaluation of addition",
             ]);
@@ -32,7 +35,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 + 3", "5 + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of addition",
                 "addition with identity",
             ]);
@@ -42,16 +45,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("a + 2 + 3", "a + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("a + 2 + 3 -> 5 + a", () => {
             const result = checkStep("a + 2 + 3", "5 + a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of addition",
                 "commutative property",
             ]);
@@ -61,9 +62,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("1 + 2 + 3", "1 + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         // Currently we're thinking about this in the following way:
@@ -74,9 +73,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("1 + 2 + 3 + 4", "3 + 7");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         // TODO: make this pass
@@ -84,9 +81,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("1 + 2 + 3 + 4", "1 + 6 + 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         // TODO: the reason should be "evaluation of subtraction"
@@ -97,9 +92,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep(before, after);
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         // TODO: the reason should be "evaluation of subtraction"
@@ -110,9 +103,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep(before, after);
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("5 - 5/2 -> 5/2", () => {
@@ -122,43 +113,35 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep(before, after);
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("10 - 5 + 2 -> 7", () => {
             const result = checkStep("10 - 5 + 2", "7");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("10 - 5 + 2 -> 5 + 2", () => {
             const result = checkStep("10 - 5 + 2", "5 + 2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
 
         it("5 + -5 -> 0", () => {
             const result = checkStep("5 + -5", "0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "adding inverse",
-            ]);
+            expect(result).toHaveMessages(["adding inverse"]);
         });
 
         it("1 + 5 + -5 -> 1", () => {
             const result = checkStep("1 + 5 + -5", "1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding inverse",
                 "addition with identity",
             ]);
@@ -168,7 +151,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("1 + a + -a", "1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding inverse",
                 "addition with identity",
             ]);
@@ -180,16 +163,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 * 3", "6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         it("2 * 3 -> 6 * 1", () => {
             const result = checkStep("2 * 3", "6 * 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of multiplication",
                 "multiplication with identity",
             ]);
@@ -199,7 +180,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("a * 2 * 3", "a * 6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of multiplication",
                 // TODO: remove unnecessary "commutative property" steps
                 "commutative property",
@@ -210,36 +191,28 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 * 3 * 4", "6 * 4");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         it("1/2 * 1/3 -> 1/6", () => {
             const result = checkStep("1/2 * 1/3", "1/6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         it("2 * 1/3 -> 2/3", () => {
             const result = checkStep("2 * 1/3", "2/3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         it("2/3 * 3/4 -> 6/12", () => {
             const result = checkStep("2/3 * 3/4", "6/12");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         // TODO: provide a separate step simplifying the fraction
@@ -247,25 +220,21 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2/3 * 3/4", "1/2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of multiplication",
-            ]);
+            expect(result).toHaveMessages(["evaluation of multiplication"]);
         });
 
         it("5 * 1/5 -> 1", () => {
             const result = checkStep("5 * 1/5", "1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplying the inverse",
-            ]);
+            expect(result).toHaveMessages(["multiplying the inverse"]);
         });
 
         it("2 * 5 * 1/5 -> 2", () => {
             const result = checkStep("2 * 5 * 1/5", "2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying fractions",
                 "fraction is the same as multiplying by one over",
                 "evaluation of multiplication",
@@ -286,7 +255,7 @@ describe("Eval (decomposition) checks", () => {
             if (!result) {
                 throw new Error("result is undefind");
             }
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying the inverse",
                 "multiplication with identity",
             ]);
@@ -296,7 +265,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("2 * a * 1/a", "2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying the inverse",
                 "multiplication with identity",
             ]);
@@ -308,16 +277,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("6", "2 * 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose product",
-            ]);
+            expect(result).toHaveMessages(["decompose product"]);
         });
 
         it("6 * 1 -> 2 * 3", () => {
             const result = checkStep("6 * 1", "2 * 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplication with identity",
                 "decompose product",
             ]);
@@ -327,18 +294,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("6a", "2 * 3 * a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose product",
-            ]);
+            expect(result).toHaveMessages(["decompose product"]);
         });
 
         it("4 * 6 -> 2 * 2 * 2 * 3", () => {
             const result = checkStep("4 * 6", "2 * 2 * 2 * 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose product",
-            ]);
+            expect(result).toHaveMessages(["decompose product"]);
         });
     });
 
@@ -347,16 +310,14 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("5", "2 + 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose sum",
-            ]);
+            expect(result).toHaveMessages(["decompose sum"]);
         });
 
         it("0 + 5 -> 2 + 3", () => {
             const result = checkStep("0 + 5", "2 + 3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "addition with identity",
                 "decompose sum",
             ]);
@@ -366,7 +327,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("5 + a", "2 + 3 + a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 // TODO: avoid unnecessary commutative property
                 "commutative property",
                 "decompose sum",
@@ -377,9 +338,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("5 + 10", "2 + 3 + 4 + 6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose sum",
-            ]);
+            expect(result).toHaveMessages(["decompose sum"]);
         });
 
         // This test checks that numbers can be ordered in any fashion
@@ -387,9 +346,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("10 + 5", "2 + 3 + 4 + 6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "decompose sum",
-            ]);
+            expect(result).toHaveMessages(["decompose sum"]);
         });
     });
 

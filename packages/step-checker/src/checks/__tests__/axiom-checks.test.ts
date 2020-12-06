@@ -2,11 +2,17 @@ import {serializer} from "@math-blocks/semantic";
 
 import {MistakeId} from "../../enums";
 
-import {checkStep, checkMistake, toParseLike} from "../test-util";
+import {
+    checkStep,
+    checkMistake,
+    toParseLike,
+    toHaveStepsLike,
+    toHaveMessages,
+} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
 
-expect.extend({toParseLike});
+expect.extend({toParseLike, toHaveStepsLike, toHaveMessages});
 
 describe("Axiom checks", () => {
     describe("symmetricProperty", () => {
@@ -14,45 +20,38 @@ describe("Axiom checks", () => {
             const result = checkStep("a = 3", "3 = a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "symmetric property",
-            ]);
+            expect(result).toHaveMessages(["symmetric property"]);
         });
 
         it("a = b = c -> b = c = a", () => {
             const result = checkStep("a = b = c", "b = c = a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "symmetric property",
-            ]);
+            expect(result).toHaveMessages(["symmetric property"]);
         });
 
         it("a = b + 0 = c + 0 -> b = c = a", () => {
             const result = checkStep("a = b + 0 = c + 0", "b = c = a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "addition with identity",
                 "addition with identity",
                 "symmetric property",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("b + 0");
-            expect(result.steps[0].nodes[1]).toParseLike("b");
-
-            expect(result.steps[1].nodes[0]).toParseLike("c + 0");
-            expect(result.steps[1].nodes[1]).toParseLike("c");
-
-            expect(result.steps[2].nodes[0]).toParseLike("a = b = c");
-            expect(result.steps[2].nodes[1]).toParseLike("b = c = a");
+            expect(result).toHaveStepsLike([
+                ["b + 0", "b"],
+                ["c + 0", "c"],
+                ["a = b = c", "b = c = a"],
+            ]);
         });
 
         it("a = 1 + 2 -> 3 = a", () => {
             const result = checkStep("a = 1 + 2", "3 = a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of addition",
                 "symmetric property",
             ]);
@@ -62,16 +61,14 @@ describe("Axiom checks", () => {
             const result = checkStep("x = x + 0", "x + 0 = x");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "symmetric property",
-            ]);
+            expect(result).toHaveMessages(["symmetric property"]);
         });
 
         it("x = y + 0 -> y = x * 1", () => {
             const result = checkStep("x = y + 0", "y = x * 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "addition with identity",
                 "multiplication with identity",
                 "symmetric property",
@@ -84,30 +81,25 @@ describe("Axiom checks", () => {
             const result = checkStep("1 + 2", "2 + 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("(2 - 1) + (1 + 1) -> 2 + 1", () => {
             const result = checkStep("(2 - 1) + (1 + 1)", "2 + 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 // TODO: change the message to "evaluation of subtraction"
                 "evaluation of addition",
                 "evaluation of addition",
                 "commutative property",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("2 - 1");
-            expect(result.steps[0].nodes[1]).toParseLike("1");
-
-            expect(result.steps[1].nodes[0]).toParseLike("1 + 1");
-            expect(result.steps[1].nodes[1]).toParseLike("2");
-
-            expect(result.steps[2].nodes[0]).toParseLike("1 + 2");
-            expect(result.steps[2].nodes[1]).toParseLike("2 + 1");
+            expect(result).toHaveStepsLike([
+                ["2 - 1", "1"],
+                ["1 + 1", "2"],
+                ["1 + 2", "2 + 1"],
+            ]);
         });
 
         // nested commutative property
@@ -115,7 +107,7 @@ describe("Axiom checks", () => {
             const result = checkStep("(1 + 2) + (a + b)", "(b + a) + (2 + 1)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "commutative property",
                 "commutative property",
                 "commutative property",
@@ -131,39 +123,28 @@ describe("Axiom checks", () => {
             const result = checkStep("2 + 0", "0 + 2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("x + (a + 2) -> x + (2 + a)", () => {
-            const before = "x + (a + 2)";
-            const after = "x + (2 + a)";
-
-            const result = checkStep(before, after);
+            const result = checkStep("x + (a + 2)", "x + (2 + a)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("x + a + 2 -> x + 2 + a", () => {
             const result = checkStep("x + a + 2", "x + 2 + a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("x + a + 2 -> a + x + 2", () => {
             const result = checkStep("x + a + 2", "a + x + 2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("x + a + 2 -> x + 2 + b [incorrect step]", () => {
@@ -177,58 +158,48 @@ describe("Axiom checks", () => {
             const result = checkStep("1 * 2", "2 * 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("2 * 3 -> 3 * 2", () => {
             const result = checkStep("2 * 3", "3 * 2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "commutative property",
-            ]);
+            expect(result).toHaveMessages(["commutative property"]);
         });
 
         it("(1 + 1) * (1 + 2) -> 3 * 2", () => {
             const result = checkStep("(1 + 1) * (1 + 2)", "3 * 2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "evaluation of addition",
                 "evaluation of addition",
                 "commutative property",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("1 + 1");
-            expect(result.steps[0].nodes[1]).toParseLike("2");
-
-            expect(result.steps[1].nodes[0]).toParseLike("1 + 2");
-            expect(result.steps[1].nodes[1]).toParseLike("3");
-
-            expect(result.steps[2].nodes[0]).toParseLike("2 * 3");
-            expect(result.steps[2].nodes[1]).toParseLike("3 * 2");
+            expect(result).toHaveStepsLike([
+                ["1 + 1", "2"],
+                ["1 + 2", "3"],
+                ["2 * 3", "3 * 2"],
+            ]);
         });
 
         it("3 * 2 -> (1 + 1) * (1 + 2)", () => {
             const result = checkStep("3 * 2", "(1 + 1) * (1 + 2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "decompose sum",
                 "decompose sum",
                 "commutative property",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("3");
-            expect(result.steps[0].nodes[1]).toParseLike("1 + 2");
-
-            expect(result.steps[1].nodes[0]).toParseLike("2");
-            expect(result.steps[1].nodes[1]).toParseLike("1 + 1");
-
-            expect(result.steps[2].nodes[0]).toParseLike("(1 + 2) * (1 + 1)");
-            expect(result.steps[2].nodes[1]).toParseLike("(1 + 1) * (1 + 2)");
+            expect(result).toHaveStepsLike([
+                ["3", "1 + 2"],
+                ["2", "1 + 1"],
+                ["(1 + 2) * (1 + 1)", "(1 + 1) * (1 + 2)"],
+            ]);
         });
     });
 
@@ -237,27 +208,21 @@ describe("Axiom checks", () => {
             const result = checkStep("a + 0", "a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         it("2(a + 0) -> 2a", () => {
             const result = checkStep("2(a + 0)", "2a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         it("a -> a + 0", () => {
             const result = checkStep("a", "a + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         // nesting
@@ -265,7 +230,7 @@ describe("Axiom checks", () => {
             const result = checkStep("(a + b + 0) + c + 0", "(a + b) + c");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "addition with identity",
                 "addition with identity",
             ]);
@@ -276,7 +241,7 @@ describe("Axiom checks", () => {
             const result = checkStep("(a + b) + c", "(a + b + 0) + c + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "addition with identity",
                 "addition with identity",
             ]);
@@ -286,9 +251,7 @@ describe("Axiom checks", () => {
             const result = checkStep("2a", "2(a + 0)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         it("2a -> 2(a + 7)", () => {
@@ -331,44 +294,37 @@ describe("Axiom checks", () => {
             const result = checkStep("a + b", "a + b + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         it("a + b -> a + 0 + b", () => {
             const result = checkStep("a + b", "a + 0 + b");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         it("a + b -> b + a + 0 -> b + 0 + a", () => {
             const result = checkStep("a + b", "b + 0 + a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "commutative property",
                 "addition with identity",
                 // TODO: we're missing another "commutative property" step here
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("a + b");
-            expect(result.steps[0].nodes[1]).toParseLike("b + a");
-
-            expect(result.steps[1].nodes[0]).toParseLike("b + a");
-            expect(result.steps[1].nodes[1]).toParseLike("b + 0 + a");
+            expect(result).toHaveStepsLike([
+                ["a + b", "b + a"],
+                ["b + a", "b + 0 + a"],
+            ]);
         });
 
         it("a + b -> a + 0 + b + 0", () => {
             const result = checkStep("a + b", "a + 0 + b + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
 
         // TODO: re-enable this once we're accumulating mistakes in the context
@@ -376,7 +332,7 @@ describe("Axiom checks", () => {
             const result = checkStep("a + b", "a + b + 7");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding a non-zero valid is not allowed",
             ]);
         });
@@ -387,9 +343,7 @@ describe("Axiom checks", () => {
             const result = checkStep("0 + (a + b)", "a + b");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
         });
     });
 
@@ -398,52 +352,43 @@ describe("Axiom checks", () => {
             const result = checkStep("1 * a", "a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication with identity",
-            ]);
+            expect(result).toHaveMessages(["multiplication with identity"]);
         });
 
         it("a -> a * 1", () => {
             const result = checkStep("a", "a * 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication with identity",
-            ]);
+            expect(result).toHaveMessages(["multiplication with identity"]);
         });
 
         it("1 * (a * b) -> a * b", () => {
             const result = checkStep("1 * (a * b)", "a * b");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication with identity",
-            ]);
+            expect(result).toHaveMessages(["multiplication with identity"]);
         });
 
         it("a * b -> b * a * 1 -> b * 1 * a", () => {
             const result = checkStep("a * b", "b * 1 * a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "commutative property",
                 "multiplication with identity",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("a * b");
-            expect(result.steps[0].nodes[1]).toParseLike("b * a");
-
-            expect(result.steps[1].nodes[0]).toParseLike("b * a");
-            expect(result.steps[1].nodes[1]).toParseLike("b * 1 * a");
+            expect(result).toHaveStepsLike([
+                ["a * b", "b * a"],
+                ["b * a", "b * 1 * a"],
+            ]);
         });
 
         it("a * b -> a * 1 * b * 1", () => {
             const result = checkStep("a * b", "a * 1 * b * 1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication with identity",
-            ]);
+            expect(result).toHaveMessages(["multiplication with identity"]);
         });
 
         it("ab -> 2ab", () => {
@@ -485,18 +430,14 @@ describe("Axiom checks", () => {
             const result = checkStep("a * (b + c)", "a * b + a * c");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("(b + c) * a -> b * a + c * a", () => {
             const result = checkStep("(b + c) * a", "b * a + c * a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("a * (b + c) -> a * b + c [incorrect]", () => {
@@ -507,38 +448,31 @@ describe("Axiom checks", () => {
             const result = checkStep("2(x + y)", "2x + 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("-2(x + y) -> -2x - 2y", () => {
             const result = checkStep("-2(x + y)", "-2x - 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "distribution",
                 "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("-2(x + y)");
-            expect(result.steps[0].nodes[1]).toParseLike("-2x + -2y");
-
-            expect(result.steps[1].nodes[0]).toParseLike("-2x + -2y");
-            expect(result.steps[1].nodes[1]).toParseLike("-2x + -(2y)");
-
-            expect(result.steps[2].nodes[0]).toParseLike("-2x + -(2y)");
-            expect(result.steps[2].nodes[1]).toParseLike("-2x - 2y");
+            expect(result).toHaveStepsLike([
+                ["-2(x + y)", "-2x + -2y"],
+                ["-2x + -2y", "-2x + -(2y)"],
+                ["-2x + -(2y)", "-2x - 2y"],
+            ]);
         });
 
         it("1 + 2(x + y) -> 1 + 2x + 2y", () => {
             const result = checkStep("1 + 2(x + y)", "1 + 2x + 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("2(x + y) + 3(a + b) -> 2x + 2y + 3a + 3b", () => {
@@ -548,17 +482,14 @@ describe("Axiom checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution", "distribution"]);
         });
 
         it("1 - 2(x + y) -> 1 - 2x - 2y", () => {
             const result = checkStep("1 - 2(x + y)", "1 - 2x - 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
                 "distribution",
@@ -572,28 +503,26 @@ describe("Axiom checks", () => {
             const result = checkStep("1 - 2(x + y)", "1 + -2(x + y)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("1 - 2(x + y)");
-            expect(result.steps[0].nodes[1]).toParseLike("1 + -(2(x + y))");
-
-            expect(result.steps[1].nodes[0]).toParseLike("-(2(x + y))");
-            expect(result.steps[1].nodes[1]).toParseLike("-2(x + y)");
+            expect(result).toHaveStepsLike([
+                ["1 - 2(x + y)", "1 + -(2(x + y))"],
+                ["-(2(x + y))", "-2(x +y)"],
+            ]);
         });
 
         it("1 + (-2)(x + y) -> 1 + -2x + -2y", () => {
             const result = checkStep("1 + -2(x + y)", "1 + -2x + -2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("1 + -2(x + y)");
-            expect(result.steps[0].nodes[1]).toParseLike("1 + -2x + -2y");
+            expect(result).toHaveStepsLike([
+                ["1 + -2(x + y)", "1 + -2x + -2y"],
+            ]);
         });
 
         it("1 + -2(x + y) -> 1 + -2x + -2y", () => {
@@ -601,16 +530,14 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
 
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("1 - (x + y) -> 1 - x - y", () => {
             const result = checkStep("1 - (x + y)", "1 - x - y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "negation is the same as multipling by negative one",
                 "distribution",
@@ -624,7 +551,7 @@ describe("Axiom checks", () => {
             const result = checkStep("2(x - y)", "2(x + -y)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
             ]);
         });
@@ -633,7 +560,7 @@ describe("Axiom checks", () => {
             const result = checkStep("2(x - y)", "2x - 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "distribution",
                 "move negative to first factor",
                 "move negation out of multiplication",
@@ -645,7 +572,7 @@ describe("Axiom checks", () => {
             const result = checkStep("2x + 2(-y)", "2x - 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "move negative to first factor",
                 "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
@@ -656,7 +583,7 @@ describe("Axiom checks", () => {
             const result = checkStep("-2(x - y)", "-2x + 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "distribution",
                 "multiplying two negatives is a positive",
             ]);
@@ -666,7 +593,7 @@ describe("Axiom checks", () => {
             const result = checkStep("1 - 2(x - y)", "1 - 2x + 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
                 "distribution",
@@ -680,7 +607,7 @@ describe("Axiom checks", () => {
             const result = checkStep("1 - 2(x - y)", "1 - 2x + 2y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
                 "distribution",
@@ -698,7 +625,7 @@ describe("Axiom checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "subtracting is the same as adding the inverse",
                 "negation is the same as multipling by negative one",
@@ -758,9 +685,7 @@ describe("Axiom checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("(a + b) * (x + y) -> (a + b) * x + (a + b) * y", () => {
@@ -770,9 +695,7 @@ describe("Axiom checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("(a + b) * (x + y) -> a * (x + y) + b * (x + y)", () => {
@@ -782,9 +705,7 @@ describe("Axiom checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("a * (x + y) + b * (x + y) -> ax + ay + b * (x + y)", () => {
@@ -795,9 +716,7 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             // TODO: make distribution parallel and pick the shortest path
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "distribution",
-            ]);
+            expect(result).toHaveMessages(["distribution"]);
         });
 
         it("(a + b) * (x + y) -> ax + ay + bx + by", () => {
@@ -856,7 +775,7 @@ describe("Axiom checks", () => {
             `);
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "distribution",
                 "distribution",
                 "distribution",
@@ -869,16 +788,14 @@ describe("Axiom checks", () => {
             const result = checkStep("a * b + a * c", "a * (b + c)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "factoring",
-            ]);
+            expect(result).toHaveMessages(["factoring"]);
         });
 
         it("ab + a -> a(b + 1)", () => {
             const result = checkStep("ab + a", "a(b + 1)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplication with identity", // a -> (a)(1)
                 "factoring",
             ]);
@@ -888,7 +805,7 @@ describe("Axiom checks", () => {
             const result = checkStep("a - ab", "(a)(1) + (-a)(b)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "multiplication with identity",
                 "move negation inside multiplication",
@@ -899,7 +816,7 @@ describe("Axiom checks", () => {
             const result = checkStep("a - ab", "a(1 - b)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
                 "multiplication with identity",
@@ -912,66 +829,52 @@ describe("Axiom checks", () => {
             const result = checkStep("-a - ab", "-a(1 + b)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "move negation inside multiplication",
                 "multiplication with identity",
                 "factoring",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("-a - ab");
-            expect(result.steps[0].nodes[1]).toParseLike("-a + -(ab)");
-
-            expect(result.steps[1].nodes[0]).toParseLike("-a + -(ab)");
-            expect(result.steps[1].nodes[1]).toParseLike("-a + (-a)(b)");
-
-            expect(result.steps[2].nodes[0]).toParseLike("-a");
-            expect(result.steps[2].nodes[1]).toParseLike("(-a)(1)");
-
-            expect(result.steps[3].nodes[0]).toParseLike("(-a)(1) + (-a)(b)");
-            expect(result.steps[3].nodes[1]).toParseLike("-a(1 + b)");
+            expect(result).toHaveStepsLike([
+                ["-a - ab", "-a + -(ab)"],
+                ["-a + -(ab)", "-a + (-a)(b)"],
+                ["-a", "(-a)(1)"],
+                ["(-a)(1) + (-a)(b)", "-a(1 + b)"],
+            ]);
         });
 
         it("-a(1 + b) -> -a - ab", () => {
             const result = checkStep("-a(1 + b)", "-a - ab");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "distribution",
                 "multiplication with identity",
                 "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("-a(1 + b)");
-            expect(result.steps[0].nodes[1]).toParseLike("(-a)(1) + (-a)(b)");
-
-            expect(result.steps[1].nodes[0]).toParseLike("(-a)(1)");
-            expect(result.steps[1].nodes[1]).toParseLike("-a");
-
-            expect(result.steps[2].nodes[0]).toParseLike("-a + (-a)(b)");
-            expect(result.steps[2].nodes[1]).toParseLike("-a + -(ab)");
-
-            expect(result.steps[3].nodes[0]).toParseLike("-a + -(ab)");
-            expect(result.steps[3].nodes[1]).toParseLike("-a - ab");
+            expect(result).toHaveStepsLike([
+                ["-a(1 + b)", "(-a)(1) + (-a)(b)"],
+                ["(-a)(1)", "-a"],
+                ["-a + (-a)(b)", "-a + -(ab)"],
+                ["-a + -(ab)", "-a - ab"],
+            ]);
         });
 
         it("2x + 3x -> (2 + 3)x", () => {
             const result = checkStep("2x + 3x", "(2 + 3)x");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "factoring",
-            ]);
+            expect(result).toHaveMessages(["factoring"]);
         });
 
         it("(2 + 3)x -> 5x", () => {
             const result = checkStep("(2 + 3)x", "5x");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
     });
 
@@ -980,25 +883,21 @@ describe("Axiom checks", () => {
             const result = checkStep("0", "0 * a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication by zero",
-            ]);
+            expect(result).toHaveMessages(["multiplication by zero"]);
         });
 
         it("a * 0 * b -> 0", () => {
             const result = checkStep("a * 0 * b", "0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "multiplication by zero",
-            ]);
+            expect(result).toHaveMessages(["multiplication by zero"]);
         });
 
         it("1 + 0a + 0b -> 1", () => {
             const result = checkStep("1 + 0a + 0b", "1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplication by zero",
                 "multiplication by zero",
                 "addition with identity",
@@ -1009,7 +908,7 @@ describe("Axiom checks", () => {
             const result = checkStep("1 + (a - a)b", "1");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "adding inverse",
                 "multiplication by zero",

@@ -2,10 +2,16 @@ import {serializer} from "@math-blocks/semantic";
 
 import {Status, MistakeId} from "../../enums";
 
-import {checkStep, checkMistake, toParseLike} from "../test-util";
+import {
+    checkStep,
+    checkMistake,
+    toParseLike,
+    toHaveMessages,
+    toHaveStepsLike,
+} from "../test-util";
 
 expect.addSnapshotSerializer(serializer);
-expect.extend({toParseLike});
+expect.extend({toParseLike, toHaveMessages, toHaveStepsLike});
 
 describe("Equation checks", () => {
     describe("adding the same value to both sides", () => {
@@ -13,7 +19,7 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x + 5 = y + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
             ]);
         });
@@ -22,7 +28,7 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x + 5 + 10 = y + 5 + 10");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
             ]);
         });
@@ -31,16 +37,15 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x + 5 + 10 = y + 15");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "decompose sum",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("x + 15 = y + 15");
-
-            expect(result.steps[1].nodes[0]).toParseLike("x + 15");
-            expect(result.steps[1].nodes[1]).toParseLike("x + 5 + 10");
+            expect(result).toHaveStepsLike([
+                ["x = y", "x + 15 = y + 15"],
+                ["x + 15", "x + 5 + 10"],
+            ]);
         });
 
         it("x + 5 = y + 5 -> x = y", () => {
@@ -48,33 +53,29 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
 
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "removing adding the same value to both sides",
             ]);
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
-                (eq
-                  (add x 5)
-                  (add y 5))
-            `);
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(eq x y)`);
+            expect(result).toHaveStepsLike([["x + 5 = y + 5", "x = y"]]);
         });
 
         it("x + 5 = y + 5 + 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 = y + 5 + 5", "x = y + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "removing adding the same value to both sides",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x + 5 = y + 5 + 5");
-            expect(result.steps[0].nodes[1]).toParseLike("x = y + 5");
+            expect(result).toHaveStepsLike([
+                ["x + 5 = y + 5 + 5", "x = y + 5"],
+            ]);
         });
 
         it("x + 5 - 5 = y + 5 + 5 - 5 -> x = y + 5", () => {
             const result = checkStep("x + 5 - 5 = y + 5 + 5 - 5", "x = y + 5");
 
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
                 "adding inverse",
                 "addition with identity",
@@ -110,16 +111,15 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "5 + x = y + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "commutative property",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("x + 5 = y + 5");
-
-            expect(result.steps[1].nodes[0]).toParseLike("x + 5");
-            expect(result.steps[1].nodes[1]).toParseLike("5 + x");
+            expect(result).toHaveStepsLike([
+                ["x = y", "x + 5 = y + 5"],
+                ["x + 5", "5 + x"],
+            ]);
         });
 
         it("x + 10 = y + 15 -> x + 10 + 5 = y + 15 + 5", () => {
@@ -129,7 +129,7 @@ describe("Equation checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
             ]);
         });
@@ -138,7 +138,7 @@ describe("Equation checks", () => {
             const result = checkStep("x + a = y + b", "a + x + 5 = b + y + 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "commutative property",
                 "commutative property",
@@ -149,12 +149,9 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x = y + 0");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "addition with identity",
-            ]);
+            expect(result).toHaveMessages(["addition with identity"]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("y");
-            expect(result.steps[0].nodes[1]).toParseLike("y + 0");
+            expect(result).toHaveStepsLike([["y", "y + 0"]]);
         });
 
         it("x = y -> x + 3 = y + 7", () => {
@@ -223,7 +220,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.status).toEqual(Status.Correct);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "decompose product",
             ]);
@@ -236,7 +233,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             // TODO: customize this message for subtraction
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
             ]);
         });
@@ -246,20 +243,11 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             // TODO: customize this to add the same value to both sides
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "removing adding the same value to both sides",
             ]);
 
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
-                (eq
-                  (add
-                    x
-                    (neg.sub 5))
-                  (add
-                    y
-                    (neg.sub 5)))
-            `);
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`(eq x y)`);
+            expect(result).toHaveStepsLike([["x - 5 = y - 5", "x = y"]]);
         });
 
         it("x + 10 = y + 15 -> x + 10 - 5 -> y + 15 - 5", () => {
@@ -270,7 +258,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             // TODO: customize this to add the same value to both sides
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "adding the same value to both sides",
             ]);
         });
@@ -298,9 +286,7 @@ describe("Equation checks", () => {
             const result = checkStep("2x + 5 - 5 = 10 - 5", "2x + 5 - 5 = 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
-                "evaluation of addition",
-            ]);
+            expect(result).toHaveMessages(["evaluation of addition"]);
         });
     });
 
@@ -309,7 +295,7 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "5x = 5y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
             ]);
         });
@@ -321,16 +307,15 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x * 5 * 2 = y * 10");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "decompose product",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("x * 10 = y * 10");
-
-            expect(result.steps[1].nodes[0]).toParseLike("x * 10");
-            expect(result.steps[1].nodes[1]).toParseLike("x * 5 * 2");
+            expect(result).toHaveStepsLike([
+                ["x = y", "x * 10 = y * 10"],
+                ["x * 10", "x * 5 * 2"],
+            ]);
         });
 
         // It's okay to multiply by different expressions as long as the expressions
@@ -339,16 +324,15 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "5 * 2 * x = 10 * y");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "decompose product",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("10 * x = 10 * y");
-
-            expect(result.steps[1].nodes[0]).toParseLike("10 * x");
-            expect(result.steps[1].nodes[1]).toParseLike("5 * 2 * x");
+            expect(result).toHaveStepsLike([
+                ["x = y", "10 * x = 10 * y"],
+                ["10 * x", "5 * 2 * x"],
+            ]);
         });
 
         it("5 * 2 * x = 10 * y -> x * 5 * 2 = y * 10", () => {
@@ -358,7 +342,7 @@ describe("Equation checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "commutative property",
                 "commutative property",
             ]);
@@ -372,7 +356,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.status).toEqual(Status.Correct);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "decompose product",
             ]);
@@ -385,7 +369,7 @@ describe("Equation checks", () => {
             );
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
             ]);
         });
@@ -395,7 +379,7 @@ describe("Equation checks", () => {
 
             expect(result).toBeTruthy();
             expect(result.status).toEqual(Status.Correct);
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "commutative property",
                 "commutative property",
@@ -476,21 +460,17 @@ describe("Equation checks", () => {
             const result = checkStep("2(x + 2.5) = (5)2", "x + 2.5 = 5");
 
             expect(result).toBeTruthy();
-
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "commutative property",
                 "remove multiplication from both sides",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("(5)(2)");
-            expect(result.steps[0].nodes[1]).toParseLike("2 * 5");
-
-            // TODO: how can we make there be preference for having the '2' at
-            // the start of the product?
-            expect(result.steps[1].nodes[0]).toParseLike(
-                "2 * (x + 2.5) = 2 * 5",
-            );
-            expect(result.steps[1].nodes[1]).toParseLike("x + 2.5 = 5");
+            expect(result).toHaveStepsLike([
+                ["(5)(2)", "2 * 5"],
+                // TODO: how can we make there be preference for having the '2' at
+                // the start of the product?
+                ["2 * (x + 2.5) = 2 * 5", "x + 2.5 = 5"],
+            ]);
         });
     });
 
@@ -499,7 +479,7 @@ describe("Equation checks", () => {
             const result = checkStep("x = y", "x / 5 = y / 5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "divide both sides by the same value",
             ]);
         });
@@ -508,29 +488,25 @@ describe("Equation checks", () => {
             const result = checkStep("x / 5 = y / 5", "x = y");
 
             expect(result).toBeTruthy();
-            expect(result.steps).toHaveLength(1);
-
-            expect(result.steps[0].message).toEqual(
+            expect(result).toHaveMessages([
                 "remove division by the same amount",
-            );
-            expect(result.steps[0].nodes[0]).toParseLike("x / 5 = y / 5");
-            expect(result.steps[0].nodes[1]).toParseLike("x = y");
+            ]);
+            expect(result).toHaveStepsLike([["x / 5 = y / 5", "x = y"]]);
         });
 
         it("x = y -> x / (5 + 10) = y / 15", () => {
             const result = checkStep("x = y", "x / (5 + 10) = y / 15");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "divide both sides by the same value",
                 "decompose sum",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("x = y");
-            expect(result.steps[0].nodes[1]).toParseLike("x / 15 = y / 15");
-
-            expect(result.steps[1].nodes[0]).toParseLike("15");
-            expect(result.steps[1].nodes[1]).toParseLike("5 + 10");
+            expect(result).toHaveStepsLike([
+                ["x = y", "x / 15 = y / 15"],
+                ["15", "5 + 10"],
+            ]);
         });
 
         it("x = y -> x / 5 = y / 10 [incorrect step]", () => {
