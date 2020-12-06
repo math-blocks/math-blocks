@@ -1,6 +1,11 @@
-import {checkStep, toParseLike, checkMistake} from "../test-util";
+import {
+    checkStep,
+    checkMistake,
+    toHaveMessages,
+    toHaveStepsLike,
+} from "../test-util";
 
-expect.extend({toParseLike});
+expect.extend({toHaveMessages, toHaveStepsLike});
 
 describe("Exponent checks", () => {
     // TODO: automatically generate tests for testing 'symmetric = true'
@@ -9,7 +14,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*a*a", "a^3");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
             ]);
         });
@@ -18,7 +23,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a^3", "a*a*a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
             ]);
         });
@@ -27,7 +32,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*a*a", "a * a^2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
             ]);
         });
@@ -36,7 +41,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*a*a*a", "a * a^2 * a");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "commutative property",
             ]);
@@ -46,7 +51,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*a*a*b*b", "(a^3)(b^2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "multiplying a factor n-times is an exponent",
             ]);
@@ -56,7 +61,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^3)(b^2)", "a*a*a*b*b");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "multiplying a factor n-times is an exponent",
             ]);
@@ -68,7 +73,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*b*a*b*a", "(a^3)(b^2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "multiplying a factor n-times is an exponent",
             ]);
@@ -80,7 +85,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a*b*a*b*a", "(a^2)(b^2)(a)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "multiplying a factor n-times is an exponent",
                 "commutative property",
@@ -93,7 +98,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)(a^m)", "a^(n+m)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
             ]);
         });
@@ -102,7 +107,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)(a^m)", "a^(m+n)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
                 "commutative property",
             ]);
@@ -112,7 +117,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)(a^m)(b^x)(b^y)", "a^(n+m)b^(x+y)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
             ]);
         });
@@ -121,7 +126,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^2)(a^3)", "a^5");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
                 "evaluation of addition",
             ]);
@@ -131,7 +136,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a^5", "(a^2)(a^3)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "decompose sum",
                 "multiplying powers adds their exponents",
             ]);
@@ -141,7 +146,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^2)(a^3)(a^4)", "(a^5)(a^4)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
                 "evaluation of addition",
                 "commutative property",
@@ -152,7 +157,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^2)(a^3)(a^4)", "(a^2)(a^7)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying powers adds their exponents",
                 "evaluation of addition",
             ]);
@@ -164,7 +169,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^5)/(a^3)", "a^(5-3)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "dividing powers subtracts their exponents",
             ]);
         });
@@ -173,7 +178,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^m)/(a^n)", "a^(m-n)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "dividing powers subtracts their exponents",
             ]);
         });
@@ -182,7 +187,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^5)/(a^3)", "a^2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "dividing powers subtracts their exponents",
                 "evaluation of addition",
             ]);
@@ -192,7 +197,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a^(m-n)", "(a^m)/(a^n)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "dividing powers subtracts their exponents",
             ]);
         });
@@ -209,7 +214,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a^(-2)", "1 / a^2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "A power with a negative exponent is the same as one over the power with the positive exponent",
             ]);
         });
@@ -218,7 +223,7 @@ describe("Exponent checks", () => {
             const result = checkStep("1 / a^2", "a^(-2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "A power with a negative exponent is the same as one over the power with the positive exponent",
             ]);
         });
@@ -239,7 +244,7 @@ describe("Exponent checks", () => {
             const result = checkStep("1 / a^(-2)", "1 / (1 / a^2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "A power with a negative exponent is the same as one over the power with the positive exponent",
             ]);
         });
@@ -248,48 +253,38 @@ describe("Exponent checks", () => {
             const result = checkStep("1 / a^(-2)", "a^2");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "A power with a negative exponent is the same as one over the power with the positive exponent",
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "multiplication with identity",
                 "division by one",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("a^(-2)");
-            expect(result.steps[0].nodes[1]).toParseLike("1 / a^2");
-
-            expect(result.steps[1].nodes[0]).toParseLike("1 / (1 / a^2)");
-            expect(result.steps[1].nodes[1]).toParseLike("1 * a^2 / 1");
-
-            expect(result.steps[2].nodes[0]).toParseLike("1 * a^2 / 1");
-            expect(result.steps[2].nodes[1]).toParseLike("a^2 / 1");
-
-            expect(result.steps[3].nodes[0]).toParseLike("a^2 / 1");
-            expect(result.steps[3].nodes[1]).toParseLike("a^2");
+            expect(result).toHaveStepsLike([
+                ["a^(-2)", "1 / a^2"],
+                ["1 / (1 / a^2)", "1 * a^2 / 1"],
+                ["1 * a^2 / 1", "a^2 / 1"],
+                ["a^2 / 1", "a^2"],
+            ]);
         });
 
         it("a^2 -> 1 / a^(-2)", () => {
             const result = checkStep("a^2", "1 / a^(-2)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "division by one",
                 "multiplication with identity",
                 "dividing by a fraction is the same as multiplying by the reciprocal",
                 "A power with a negative exponent is the same as one over the power with the positive exponent",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("a^2");
-            expect(result.steps[0].nodes[1]).toParseLike("a^2 / 1");
-
-            expect(result.steps[1].nodes[0]).toParseLike("a^2 / 1");
-            expect(result.steps[1].nodes[1]).toParseLike("1 * a^2 / 1");
-
-            expect(result.steps[2].nodes[0]).toParseLike("1 * a^2 / 1");
-            expect(result.steps[2].nodes[1]).toParseLike("1 / (1 / a^2)");
-
-            expect(result.steps[3].nodes[0]).toParseLike("1 / a^2");
-            expect(result.steps[3].nodes[1]).toParseLike("a^(-2)");
+            expect(result).toHaveStepsLike([
+                ["a^2", "a^2 / 1"],
+                ["a^2 / 1", "1 * a^2 / 1"],
+                ["1 * a^2 / 1", "1 / (1 / a^2)"],
+                ["1 / a^2", "a^(-2)"],
+            ]);
         });
     });
 
@@ -298,7 +293,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)^m", "a^(nm)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
             ]);
         });
@@ -307,7 +302,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)^m", "(a^m)^n");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "commutative property",
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
@@ -318,7 +313,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^n)^m", "a^(mn)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "commutative property",
             ]);
@@ -328,7 +323,7 @@ describe("Exponent checks", () => {
             const result = checkStep("a^(nm)", "(a^n)^m");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
             ]);
         });
@@ -337,7 +332,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^2)^3", "a^(2*3)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
             ]);
         });
@@ -346,7 +341,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(a^2)^3", "a^6");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "evaluation of multiplication",
             ]);
@@ -356,7 +351,7 @@ describe("Exponent checks", () => {
             const result = checkStep("(x^(ab))^(cd)", "x^(abcd)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
             ]);
         });
@@ -365,7 +360,7 @@ describe("Exponent checks", () => {
             const result = checkStep("((a^x)^y)^z", "a^(xyz)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
             ]);
@@ -375,7 +370,7 @@ describe("Exponent checks", () => {
             const result = checkStep("((a^x)^y)^z", "a^(zyx)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((step) => step.message)).toEqual([
+            expect(result).toHaveMessages([
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "raising a power to another exponent is the same raising the power once an multiplying the exponents",
                 "commutative property",
@@ -388,20 +383,17 @@ describe("Exponent checks", () => {
             const result = checkStep("a*a*a*a*a", "(a^2)(a^3)");
 
             expect(result).toBeTruthy();
-            expect(result.steps.map((reason) => reason.message)).toEqual([
+            expect(result).toHaveMessages([
                 "multiplying a factor n-times is an exponent",
                 "decompose sum",
                 "multiplying powers adds their exponents",
             ]);
 
-            expect(result.steps[0].nodes[0]).toParseLike("a*a*a*a*a");
-            expect(result.steps[0].nodes[1]).toParseLike("a^5");
-
-            expect(result.steps[1].nodes[0]).toParseLike("5");
-            expect(result.steps[1].nodes[1]).toParseLike("2+3");
-
-            expect(result.steps[2].nodes[0]).toParseLike("a^(2+3)");
-            expect(result.steps[2].nodes[1]).toParseLike("(a^2)(a^3)");
+            expect(result).toHaveStepsLike([
+                ["a*a*a*a*a", "a^5"],
+                ["5", "2 + 3"],
+                ["a^(2+3)", "a^2a^3"],
+            ]);
         });
     });
 
