@@ -26,15 +26,6 @@ import {
     moveNegToFirstFactor,
     moveNegInsideMul,
 } from "./checks/integer-checks";
-// import {
-//     divByFrac,
-//     divByOne,
-//     divBySame,
-//     mulByFrac,
-//     mulInverse,
-//     divIsMulByOneOver,
-//     checkDivisionCanceling,
-// } from "./checks/fraction-checks";
 import {
     mulFrac,
     divIsMulByOneOver,
@@ -119,27 +110,8 @@ export const ALL_CHECKS = [
     cancelFrac,
     divByOne,
 
-    divIsMulByOneOver, // dual of mulFrac, this is the last fraction check so that
-    // don't expand a * b/c -> a * (b * 1/c)
-
-    // fraction checks
-    // NOTE: these must appear after eval checks
-    // TODO: add checks to avoid infinite loops so that we don't have to worry about ordering
-    // divByFrac,
-    // // NOTE: checks that are equivalent to an array of checks should appear
-    // // above those checks in this list.
-    // divByOne, // equivalent to [divIsMulByOneOver, divBySame, mulOne]
-    // divBySame, // equivalent to [divIsMulByOneOver, mulInverse]
-
-    // // NOTE: When checking certain steps, both of these will return a
-    // // valid path with one usually being much shorter than the other.
-    // // We use 'fastest' to evaluate both paths and pick the shortest.
-    // shortest([mulByFrac, divIsMulByOneOver]), // TODO: make this work with filters
-    // checkDivisionCanceling,
-
-    // // divBySame is equivalent to [divIsMulByOneOver, mulInverse]
-    // // TODO: nest steps in a hierarchy
-    // mulInverse,
+    divIsMulByOneOver, // dual of mulFrac
+    // this is the last fraction check so that don't expand a * b/c -> a * (b * 1/c)
 
     associativeMul,
     associativeAdd,

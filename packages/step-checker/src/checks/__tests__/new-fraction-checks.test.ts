@@ -92,7 +92,7 @@ describe("new fraction checks", () => {
             expect(result).toHaveMessages(["fraction decomposition"]);
         });
 
-        it("1/a * 1/b -> 1/a * 1/b", () => {
+        it("1/a * 1/b -> 1 / ab", () => {
             const result = checkStep("1/a * 1/b", "1/ab");
 
             expect(result).toBeTruthy();
@@ -188,6 +188,23 @@ describe("new fraction checks", () => {
             expect(result).toHaveMessages(["cancelling in fractions"]);
         });
 
+        it("1 -> a/a", () => {
+            const result = checkStep("1", "a/a");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["cancelling in fractions"]);
+        });
+
+        it("a/a -> b/b", () => {
+            const result = checkStep("a/a", "b/b");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "cancelling in fractions",
+                "cancelling in fractions",
+            ]);
+        });
+
         it("abc / bcd -> a/d", () => {
             const result = checkStep("abc / bcd", "a/d");
 
@@ -207,6 +224,61 @@ describe("new fraction checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages(["cancelling in fractions"]);
+        });
+
+        it("24ab / 6a -> 4b", () => {
+            const result = checkStep("24ab / 6a", "4b");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "cancelling in fractions",
+                "division is multiplication by a fraction",
+                "associative property of multiplication",
+                "evaluation of multiplication",
+            ]);
+        });
+
+        it("(2)(2)(2)(3) / (2)(3) -> (2)(2)(2) / (2)", () => {
+            const result = checkStep("(2)(2)(2)(3) / (2)(3)", "(2)(2)(2) / 2");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "cancelling in fractions",
+                "evaluation of multiplication",
+            ]);
+        });
+
+        it("a/b * b/a -> ab/ba -> ab/ab -> 1", () => {
+            const result = checkStep("a/b * b/a", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplication of fractions",
+                "cancelling in fractions",
+            ]);
+
+            // TODO: use implicit multiplication where appropriate
+            expect(result).toHaveStepsLike([
+                ["a/b * b/a", "(a*b) / (b*a)"],
+                ["(a*b) / (b*a)", "1"],
+            ]);
+        });
+
+        it("2a/a -> 2", () => {
+            const result = checkStep("2a/a", "2");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["cancelling in fractions"]);
+        });
+
+        it("a * b/b -> a * 1 -> a", () => {
+            const result = checkStep("a * b/b", "a");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "cancelling in fractions",
+                "multiplication with identity",
+            ]);
         });
     });
 
@@ -352,6 +424,21 @@ describe("new fraction checks", () => {
                 ["a^2/1", "1 * a^2/1"],
                 ["1 * a^2/1", "1 / (1/a^2)"],
                 ["1 / a^2", "a^(-2)"],
+            ]);
+        });
+
+        it("a / (1/b) -> a * b/1 -> ab", () => {
+            const result = checkStep("a / (1/b)", "ab");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+                "division by one",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["a / (1/b)", "a * b/1"],
+                ["b/1", "b"],
             ]);
         });
     });

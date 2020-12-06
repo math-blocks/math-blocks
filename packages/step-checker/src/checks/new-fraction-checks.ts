@@ -7,12 +7,17 @@ import {correctResult, difference} from "./util";
 import {exactMatch} from "./basic-checks";
 import {convertPowNegExpToDiv} from "./power-checks";
 
+// TODOs:
+// - Many of these checks use exactMatch (aka deepEquals) which may exclude
+//   certain valid paths.  Try to come up with some test cases where we'd need
+//   to use exactMatch.
+
 // a * b/c -> ab / c
 // NOTE: This step multiplies all fractions in a 'mul' node and doesn't handle
 // situations where a student might multiply two of the factors in one step and
 // more of the factors in the next step.
 export const mulFrac: Check = (prev, next, context) => {
-    // Avoid infinite loops
+    // Avoid infinite loops with divIsMulByOneOver
     if (
         prev.source === "divIsMulByOneOver" ||
         next.source === "divIsMulByOneOver"
@@ -82,7 +87,7 @@ mulFrac.symmetric = true;
 // handle things like 'a * b/c * c/d -> abc / cd' (and its reverse) whereas this
 // check can only go from 'abc / cd -> abc * 1/cd'.
 export const divIsMulByOneOver: Check = (prev, next, context) => {
-    // Avoid infinite loops
+    // Avoid infinite loops with mulFrac
     if (prev.source === "mulFrac" || next.source === "mulFrac") {
         return;
     }
@@ -122,6 +127,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
     }
 };
 
+// a / b/c -> a * c/b
 export const divByFrac: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -195,6 +201,9 @@ divByFrac.symmetric = true;
 // NOTE: This check currently cancels everything and doens't handle situations
 // where a student might cancel some things in one step and more things in the
 // next step.
+// ab / bc -> a / c
+// ab / b -> a
+// ab / abc -> 1 / c
 export const cancelFrac: Check = (prev, next, context) => {
     if (prev.type !== "div") {
         return;
