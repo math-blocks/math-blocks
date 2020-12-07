@@ -67,7 +67,10 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
                 if (arg.type === "number") {
                     return true;
                 }
-                if (arg.type === "neg" && arg.arg.type === "number") {
+                if (arg.type === "neg") {
+                    return true;
+                }
+                if (arg.type === "div") {
                     return true;
                 }
                 return false;

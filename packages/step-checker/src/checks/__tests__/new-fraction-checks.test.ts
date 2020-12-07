@@ -170,15 +170,9 @@ describe("new fraction checks", () => {
             const result = checkStep("a * 1/a", "1");
 
             expect(result).toBeTruthy();
-            expect(result).toHaveMessages([
-                "multiplication of fractions",
-                "cancelling in fractions",
-            ]);
+            expect(result).toHaveMessages(["multiplying the inverse"]);
 
-            expect(result).toHaveStepsLike([
-                ["a * 1/a", "a/a"],
-                ["a/a", "1"],
-            ]);
+            expect(result).toHaveStepsLike([["a * 1/a", "1"]]);
         });
 
         it("a/a -> 1", () => {
@@ -439,6 +433,81 @@ describe("new fraction checks", () => {
             expect(result).toHaveStepsLike([
                 ["a / (1/b)", "a * b/1"],
                 ["b/1", "b"],
+            ]);
+        });
+    });
+
+    describe("mulInverse", () => {
+        it("a * b * 1/b * c -> a * 1 * c", () => {
+            const result = checkStep("a * b * 1/b * c", "a * 1 * c");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["multiplying the inverse"]);
+
+            expect(result).toHaveStepsLike([["a * b * 1/b * c", "a * 1 * c"]]);
+        });
+
+        it("a * b * 1/b * c -> a * c", () => {
+            const result = checkStep("a * b * 1/b * c", "a * c");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplying the inverse",
+                "multiplication with identity",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["a * b * 1/b * c", "a * 1 * c"],
+                ["a * 1 * c", "a * c"],
+            ]);
+        });
+
+        it("(a)(b)(1/b)(c) -> ac", () => {
+            const result = checkStep("(a)(b)(1/b)(c)", "ac");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplying the inverse",
+                "multiplication with identity",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["(a)(b)(1/b)(c)", "(a)(1)(c)"],
+                ["(a)(1)(c)", "ac"],
+            ]);
+        });
+
+        it("a * 1/a * b * 1/b -> 1", () => {
+            const result = checkStep("a * 1/a * b * 1/b", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplying the inverse",
+                "multiplying the inverse",
+                "multiplication with identity",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["a * 1/a * b * 1/b", "1 * b * 1/b"],
+                ["1 * b * 1/b", "1 * 1"],
+                ["1 * 1", "1"],
+            ]);
+        });
+
+        it("a * 1/a * a * 1/a -> 1", () => {
+            const result = checkStep("a * 1/a * a * 1/a", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplying the inverse",
+                "multiplying the inverse",
+                "multiplication with identity",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["a * 1/a * a * 1/a", "1 * a * 1/a"],
+                ["1 * a * 1/a", "1 * 1"],
+                ["1 * 1", "1"],
             ]);
         });
     });
