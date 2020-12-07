@@ -137,4 +137,15 @@ describe("polynomial checks", () => {
             "evaluation of addition",
         ]);
     });
+
+    // TODO: get this test case passing
+    it.skip("x/3 + x/4 -> 7x/12", () => {
+        const result = checkStep("x/3 + x/4", "7x/12");
+
+        expect(result).toBeTruthy();
+        expect(result).toHaveMessages([
+            "collect like terms",
+            "evaluation of addition",
+        ]);
+    });
 });
