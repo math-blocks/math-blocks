@@ -306,8 +306,36 @@ export const mulInverse: Check = (prev, next, context) => {
 
     for (let i = 0; i < prev.args.length - 1; i++) {
         const pair = pairs[i];
+        // a * 1/a -> 1
         if (pair[0].type !== "div" && pair[1].type === "div") {
             if (exactMatch(pair[0], pair[1].args[1], context)) {
+                const newPrev = Semantic.mulFactors(
+                    [
+                        ...prev.args.slice(0, i),
+                        Semantic.number("1"),
+                        ...prev.args.slice(i + 2),
+                    ],
+                    prev.implicit,
+                );
+
+                const result = checker.checkStep(newPrev, next, context);
+
+                if (result) {
+                    return correctResult(
+                        prev,
+                        newPrev,
+                        context.reversed,
+                        [],
+                        result.steps,
+                        "multiplying the inverse",
+                    );
+                }
+            }
+        }
+
+        // 1/a * a -> 1
+        if (pair[0].type === "div" && pair[1].type !== "div") {
+            if (exactMatch(pair[1], pair[0].args[1], context)) {
                 const newPrev = Semantic.mulFactors(
                     [
                         ...prev.args.slice(0, i),

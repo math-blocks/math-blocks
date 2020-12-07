@@ -164,17 +164,6 @@ describe("new fraction checks", () => {
     });
 
     describe("cancelFrac", () => {
-        // TODO: it would be nice to handle this as a special case to reflect
-        // that we're multiplying by the inverse here.
-        it("a * 1/a -> 1", () => {
-            const result = checkStep("a * 1/a", "1");
-
-            expect(result).toBeTruthy();
-            expect(result).toHaveMessages(["multiplying the inverse"]);
-
-            expect(result).toHaveStepsLike([["a * 1/a", "1"]]);
-        });
-
         it("a/a -> 1", () => {
             const result = checkStep("a/a", "1");
 
@@ -438,6 +427,24 @@ describe("new fraction checks", () => {
     });
 
     describe("mulInverse", () => {
+        it("a * 1/a -> 1", () => {
+            const result = checkStep("a * 1/a", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["multiplying the inverse"]);
+
+            expect(result).toHaveStepsLike([["a * 1/a", "1"]]);
+        });
+
+        it("1/a * a -> 1", () => {
+            const result = checkStep("1/a * a", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["multiplying the inverse"]);
+
+            expect(result).toHaveStepsLike([["1/a * a", "1"]]);
+        });
+
         it("a * b * 1/b * c -> a * 1 * c", () => {
             const result = checkStep("a * b * 1/b * c", "a * 1 * c");
 
