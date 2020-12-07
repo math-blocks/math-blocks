@@ -32,6 +32,7 @@ import {
     cancelFrac,
     divByOne,
     divByFrac,
+    mulInverse,
 } from "./checks/new-fraction-checks";
 import {
     powDef,
@@ -69,6 +70,8 @@ export const ALL_CHECKS = [
     // checks first otherwise checkArgs would always find a solution first.
     checkArgs,
 
+    mulInverse,
+
     addZero,
     mulOne,
     mulByZero,
@@ -105,6 +108,7 @@ export const ALL_CHECKS = [
     // in parallel and picking the shortest path, but this would be very expensive
 
     // new fraction checks
+
     divByFrac,
     mulFrac,
     cancelFrac,

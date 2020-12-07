@@ -134,6 +134,49 @@ describe("print", () => {
         expect(node).toEqualMath(Util.row("(1)(2)(3)"));
     });
 
+    test("(-a)(-b)", () => {
+        const ast = Semantic.mul(
+            [
+                Semantic.neg(Semantic.identifier("a")),
+                Semantic.neg(Semantic.identifier("b")),
+            ],
+            true,
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("(-a)(-b)"));
+    });
+
+    test("(a/b)(c/d)", () => {
+        const ast = Semantic.mul(
+            [
+                Semantic.div(
+                    Semantic.identifier("a"),
+                    Semantic.identifier("b"),
+                ),
+                Semantic.div(
+                    Semantic.identifier("c"),
+                    Semantic.identifier("d"),
+                ),
+            ],
+            true,
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([
+                Editor.glyph("("),
+                Util.frac("a", "b"),
+                Editor.glyph(")"),
+                Editor.glyph("("),
+                Util.frac("c", "d"),
+                Editor.glyph(")"),
+            ]),
+        );
+    });
+
     test("-1.2", () => {
         const ast = Semantic.number("-1.2");
 

@@ -227,10 +227,7 @@ describe("Eval (decomposition) checks", () => {
             const result = checkStep("5 * 1/5", "1");
 
             expect(result).toBeTruthy();
-            expect(result).toHaveMessages([
-                "multiplication of fractions",
-                "cancelling in fractions",
-            ]);
+            expect(result).toHaveMessages(["multiplying the inverse"]);
         });
 
         it("2 * 5 * 1/5 -> 2", () => {
@@ -238,8 +235,8 @@ describe("Eval (decomposition) checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
-                "multiplication of fractions",
-                "cancelling in fractions",
+                "multiplying the inverse",
+                "multiplication with identity",
             ]);
         });
 
@@ -258,8 +255,8 @@ describe("Eval (decomposition) checks", () => {
                 throw new Error("result is undefind");
             }
             expect(result).toHaveMessages([
-                "multiplication of fractions",
-                "cancelling in fractions",
+                "multiplying the inverse",
+                "multiplication with identity",
             ]);
         });
 
@@ -268,8 +265,8 @@ describe("Eval (decomposition) checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
-                "multiplication of fractions",
-                "cancelling in fractions",
+                "multiplying the inverse",
+                "multiplication with identity",
             ]);
         });
     });
