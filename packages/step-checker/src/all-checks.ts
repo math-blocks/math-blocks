@@ -34,13 +34,7 @@ import {
     divByFrac,
     mulInverse,
 } from "./checks/new-fraction-checks";
-import {
-    powDef,
-    powMul,
-    powDiv,
-    powNegExp,
-    powOfPow,
-} from "./checks/power-checks";
+import * as PowerChecks from "./checks/power-checks";
 import {collectLikeTerms} from "./checks/polynomial-checks";
 
 // TODO: write a function to determine if an equation is true or not
@@ -96,11 +90,18 @@ export const ALL_CHECKS = [
     moveNegToFirstFactor,
 
     // power checks
-    powMul,
-    powDiv,
-    powNegExp,
-    powOfPow,
-    powDef, // it's important that this comes after the other exponent rules.
+    PowerChecks.powMul, // TODO: rename to mulPow, it will indicate the type of prev
+    PowerChecks.powDiv, // TODO: rename to divPow, it will indicate the type of prev
+
+    PowerChecks.powToZero, // we want this check to have precedence over other power checks
+    PowerChecks.powOfZero, // this must come after powToZero since 0^0 -> 1
+    PowerChecks.powOfOne,
+    PowerChecks.powNegExp,
+    PowerChecks.powOfPow,
+    PowerChecks.powOfDiv,
+    PowerChecks.powOfMul,
+
+    PowerChecks.powDef, // it's important that this comes after the other exponent rules.
     // this is because the other rules can be expressed in terms of
     // this rule which means that this rule would be matched first.
 

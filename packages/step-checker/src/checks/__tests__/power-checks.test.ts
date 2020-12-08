@@ -19,6 +19,15 @@ describe("Exponent checks", () => {
             ]);
         });
 
+        it("(x)(x) -> x^2", () => {
+            const result = checkStep("(x)(x)", "x^2");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplying a factor n-times is an exponent",
+            ]);
+        });
+
         it("a^3 -> a*a*a", () => {
             const result = checkStep("a^3", "a*a*a");
 
@@ -378,6 +387,178 @@ describe("Exponent checks", () => {
         });
     });
 
+    describe("powOfMul", () => {
+        const POW_OF_MUL =
+            "A product raised to a exponent is the same as raising each factor to that exponent";
+
+        it("(xy)^n -> (x^n)(y^n)", () => {
+            const result = checkStep("(xy)^n", "(x^n)(y^n)");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([POW_OF_MUL]);
+        });
+
+        it("(xyz)^n -> (x^n)(y^n)(z^n)", () => {
+            const result = checkStep("(xyz)^n", "(x^n)(y^n)(z^n)");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([POW_OF_MUL]);
+        });
+    });
+
+    describe("powOfDiv", () => {
+        const POW_OF_DIV =
+            "A fraction raised to a exponent is the same a fraction with the numerator and denominator each raised to that exponent";
+        const POW_OF_MUL =
+            "A product raised to a exponent is the same as raising each factor to that exponent";
+
+        it("(x/y)^n -> x^n / y^n", () => {
+            const result = checkStep("(x/y)^n", "x^n / y^n");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([POW_OF_DIV]);
+        });
+
+        it("(x/y)^n -> (x^n)(y^(-n))", () => {
+            const result = checkStep("(x/y)^n", "(x^n)(y^(-n))");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                POW_OF_DIV,
+                "division is multiplication by a fraction",
+                "A power with a negative exponent is the same as one over the power with the positive exponent",
+            ]);
+        });
+
+        it("(x^n)(y^(-n)) -> (x/y)^n", () => {
+            const result = checkStep("(x^n)(y^(-n))", "(x/y)^n");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "A power with a negative exponent is the same as one over the power with the positive exponent",
+                "division is multiplication by a fraction",
+                POW_OF_DIV,
+            ]);
+        });
+
+        it("(1/y)^n -> 1 / y^n", () => {
+            const result = checkStep("(1/y)^n", "1 / y^n");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                POW_OF_DIV,
+                "1 raised to any power is equal to 1",
+            ]);
+        });
+
+        it("(ab / cd)^n -> (a^n)(b^n) / (c^n)(d^n)", () => {
+            const result = checkStep("(ab / cd)^n", "(a^n)(b^n) / (c^n)(d^n)");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([POW_OF_DIV, POW_OF_MUL, POW_OF_MUL]);
+        });
+    });
+
+    describe("powToZero", () => {
+        it("x^0 -> 1", () => {
+            const result = checkStep("x^0", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "anything raised to 0 is equal to 1",
+            ]);
+            expect(result).toHaveStepsLike([["x^0", "1"]]);
+        });
+
+        it("x^(a + -a) -> 1", () => {
+            const result = checkStep("x^(a + -a)", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "adding inverse",
+                "anything raised to 0 is equal to 1",
+            ]);
+            expect(result).toHaveStepsLike([
+                ["a + -a", "0"],
+                ["x^0", "1"],
+            ]);
+        });
+
+        // This isn't a very common thing for people to do.  Maybe this check
+        // shouldn't be symmetric.
+        it("1 -> x^0", () => {
+            const result = checkStep("1", "x^0");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "anything raised to 0 is equal to 1",
+            ]);
+            expect(result).toHaveStepsLike([["1", "x^0"]]);
+        });
+
+        it("(x^n)^0 -> 1", () => {
+            const result = checkStep("(x^n)^0", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "anything raised to 0 is equal to 1",
+            ]);
+            expect(result).toHaveStepsLike([["(x^n)^0", "1"]]);
+        });
+
+        it("(x^0)^n -> 1", () => {
+            const result = checkStep("(x^0)^n", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "anything raised to 0 is equal to 1",
+                "1 raised to any power is equal to 1",
+            ]);
+            expect(result).toHaveStepsLike([
+                ["x^0", "1"],
+                ["1^n", "1"],
+            ]);
+        });
+    });
+
+    describe("powerOfZero", () => {
+        it("0^n -> 0", () => {
+            const result = checkStep("0^n", "0");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "0 raised to any power (except for 0) is 0",
+            ]);
+            expect(result).toHaveStepsLike([["0^n", "0"]]);
+        });
+
+        it("(a * 0)^n -> 0", () => {
+            const result = checkStep("(a * 0)^n", "0");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "multiplication by zero",
+                "0 raised to any power (except for 0) is 0",
+            ]);
+            expect(result).toHaveStepsLike([
+                ["a * 0", "0"],
+                ["0^n", "0"],
+            ]);
+        });
+
+        // This isn't a very common thing for people to do.  Maybe this check
+        // shouldn't be symmetric.
+        it("0 -> 0^n", () => {
+            const result = checkStep("0", "0^n");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "0 raised to any power (except for 0) is 0",
+            ]);
+            expect(result).toHaveStepsLike([["0", "0^n"]]);
+        });
+    });
+
     describe("integration tests", () => {
         it("a*a*a*a*a -> (a^2)(a^3)", () => {
             const result = checkStep("a*a*a*a*a", "(a^2)(a^3)");
@@ -394,6 +575,41 @@ describe("Exponent checks", () => {
                 ["5", "2 + 3"],
                 ["a^(2+3)", "a^2a^3"],
             ]);
+        });
+
+        it("(x + 1)^2 -> (x + 1)(x + 1)", () => {
+            const result = checkStep("(x + 1)^2", "(x + 1)(x + 1)");
+
+            expect(result).toBeTruthy();
+        });
+
+        it("(x + 1)(x + 1) -> x*x + x*1 + x*1 + 1*1", () => {
+            const result = checkStep("(x + 1)(x + 1)", "x*x + x*1 + x*1 + 1*1");
+
+            expect(result).toBeTruthy();
+        });
+
+        it("x*x + x*1 + x*1 + 1*1 -> x^2 + x + x + 1", () => {
+            const result = checkStep(
+                "x*x + x*1 + x*1 + 1*1",
+                "x^2 + x + x + 1",
+            );
+
+            expect(result).toBeTruthy();
+        });
+
+        // TODO: make this test pass (dedupe with polynomial-checks.test.ts)
+        it.skip("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
+            const result = checkStep("x^2 + x + x + 1", "x^2 + 2x + 1");
+
+            expect(result).toBeTruthy();
+        });
+
+        // TODO: make this test pass
+        it.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
+            const result = checkStep("(x + 1)^2", "x^2 + 2x + 1");
+
+            expect(result).toBeTruthy();
         });
     });
 

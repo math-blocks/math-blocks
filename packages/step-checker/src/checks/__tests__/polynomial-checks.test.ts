@@ -127,6 +127,13 @@ describe("polynomial checks", () => {
         ]);
     });
 
+    // TODO: make this test pass
+    it.skip("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
+        const result = checkStep("x^2 + x + x + 1", "x^2 + 2x + 1");
+
+        expect(result).toBeTruthy();
+    });
+
     // TODO: get this test case passing
     it.skip("3/x + 4/x -> 7/x", () => {
         const result = checkStep("3/x + 4/x", "7/x");

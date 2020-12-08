@@ -297,4 +297,152 @@ export const powOfPow: Check = (prev, next, context) => {
 };
 powOfPow.symmetric = true;
 
+// (xy)^n -> (x^n)(y^n)
+export const powOfMul: Check = (prev, next, context) => {
+    if (!(prev.type === "pow" && prev.base.type === "mul")) {
+        return;
+    }
+
+    const factors = Semantic.getFactors(prev.base);
+
+    const newPrev = Semantic.mulFactors(
+        factors.map((factor) => Semantic.pow(factor, prev.exp)),
+    );
+
+    const {checker} = context;
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "A product raised to a exponent is the same as raising each factor to that exponent",
+        );
+    }
+};
+powOfMul.symmetric = true;
+// TODO: mulOfPows - dual of powOfMul
+// We also want to support only multiplying two adjacent factors when there are
+// more than two.
+
+// (x/y)^n -> x^n / y^n
+export const powOfDiv: Check = (prev, next, context) => {
+    if (!(prev.type === "pow" && prev.base.type === "div")) {
+        return;
+    }
+
+    const [numerator, denominator] = prev.base.args;
+
+    const newPrev = Semantic.div(
+        Semantic.pow(numerator, prev.exp),
+        Semantic.pow(denominator, prev.exp),
+    );
+
+    const {checker} = context;
+
+    const result = checker.checkStep(newPrev, next, context);
+
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "A fraction raised to a exponent is the same a fraction with the numerator and denominator each raised to that exponent",
+        );
+    }
+};
+powOfDiv.symmetric = true;
+// TODO: divOfPows - dual of powOfDiv
+
+// x^0 -> 1
+// NOTE: 0^0 is defined as 1 for convenience
+export const powToZero: Check = (prev, next, context) => {
+    if (prev.type !== "pow") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const result1 = checker.checkStep(prev.exp, Semantic.number("0"), context);
+    if (result1) {
+        const newPrev = Semantic.number("1");
+        const result2 = checker.checkStep(newPrev, next, context);
+        if (result2) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "anything raised to 0 is equal to 1",
+            );
+        }
+    }
+};
+powToZero.symmetric = true;
+
+// 1^x -> 1
+export const powOfOne: Check = (prev, next, context) => {
+    if (prev.type !== "pow") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const result1 = checker.checkStep(prev.base, Semantic.number("1"), context);
+    if (result1) {
+        const newPrev = Semantic.number("1");
+        const result2 = checker.checkStep(newPrev, next, context);
+        if (result2) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "1 raised to any power is equal to 1",
+            );
+        }
+    }
+};
+powOfOne.symmetric = true;
+
+// 0^x -> 0
+export const powOfZero: Check = (prev, next, context) => {
+    if (prev.type !== "pow") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const result1 = checker.checkStep(prev.base, Semantic.number("0"), context);
+    if (result1) {
+        const newPrev = Semantic.number("0");
+        const result2 = checker.checkStep(newPrev, next, context);
+        if (result2) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "0 raised to any power (except for 0) is 0",
+            );
+        }
+    }
+};
+powOfZero.symmetric = true;
+
+// TODO: we'll have to do something similar to divByFrac's call to convertPowNegExpToDiv
+// (-1)^(2n) -> 1, (-1)^(2n + 1) -> 1, where 'n' is an integer
+
 // TODO: include roots in this file as well
+// TODO: figure out a text representation for roots
+// \root[n](x) -> x^(1/n)
+// \root[n](x^m) -> x^(m/n) or (\root[n](x))^m -> x^(m/n)
