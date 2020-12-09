@@ -9,7 +9,7 @@ expect.extend({toHaveMessages, toHaveStepsLike});
 
 describe("Exponent checks", () => {
     // TODO: automatically generate tests for testing 'symmetric = true'
-    describe("expDef", () => {
+    describe("powDef", () => {
         it("a*a*a -> a^3", () => {
             const result = checkStep("a*a*a", "a^3");
 
@@ -102,7 +102,7 @@ describe("Exponent checks", () => {
         });
     });
 
-    describe("expMul", () => {
+    describe("mulPowsSameBase", () => {
         it("(a^n)(a^m) -> a^(n+m)", () => {
             const result = checkStep("(a^n)(a^m)", "a^(n+m)");
 
@@ -173,7 +173,7 @@ describe("Exponent checks", () => {
         });
     });
 
-    describe("expDiv", () => {
+    describe("divPowsSameBase", () => {
         it("(a^5)/(a^3) -> a^(5-3)", () => {
             const result = checkStep("(a^5)/(a^3)", "a^(5-3)");
 
@@ -258,25 +258,6 @@ describe("Exponent checks", () => {
             ]);
         });
 
-        it("1 / a^(-2) -> a^2", () => {
-            const result = checkStep("1 / a^(-2)", "a^2");
-
-            expect(result).toBeTruthy();
-            expect(result).toHaveMessages([
-                "A power with a negative exponent is the same as one over the power with the positive exponent",
-                "dividing by a fraction is the same as multiplying by the reciprocal",
-                "multiplication with identity",
-                "division by one",
-            ]);
-
-            expect(result).toHaveStepsLike([
-                ["a^(-2)", "1 / a^2"],
-                ["1 / (1 / a^2)", "1 * a^2 / 1"],
-                ["1 * a^2 / 1", "a^2 / 1"],
-                ["a^2 / 1", "a^2"],
-            ]);
-        });
-
         it("a^2 -> 1 / a^(-2)", () => {
             const result = checkStep("a^2", "1 / a^(-2)");
 
@@ -293,6 +274,23 @@ describe("Exponent checks", () => {
                 ["a^2 / 1", "1 * a^2 / 1"],
                 ["1 * a^2 / 1", "1 / (1 / a^2)"],
                 ["1 / a^2", "a^(-2)"],
+            ]);
+        });
+    });
+
+    describe("oneOverPowToNegPow", () => {
+        it("1 / a^(-2) -> a^2", () => {
+            const result = checkStep("1 / a^(-2)", "a^2");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "One over the power is the same a power with same base but the negative of the same exponent",
+                "negative of a negative is positive",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["1 / a^(-2)", "a^(-(-2))"],
+                ["--2", "2"],
             ]);
         });
     });
@@ -406,6 +404,19 @@ describe("Exponent checks", () => {
         });
     });
 
+    describe("mulPowsSameExp", () => {
+        it("((1/2)^n)(2^n) -> 1", () => {
+            const result = checkStep("((1/2)^n)(2^n)", "1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "A product of powers raised to the same exponent are equal to the product of bases raised to that exponent",
+                "multiplying the inverse",
+                "1 raised to any power is equal to 1",
+            ]);
+        });
+    });
+
     describe("powOfDiv", () => {
         const POW_OF_DIV =
             "A fraction raised to a exponent is the same a fraction with the numerator and denominator each raised to that exponent";
@@ -456,6 +467,19 @@ describe("Exponent checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([POW_OF_DIV, POW_OF_MUL, POW_OF_MUL]);
+        });
+    });
+
+    describe("divOfPowsSameExp", () => {
+        it("(2^n)/((1/2)^n) -> 4^n", () => {
+            const result = checkStep("(2^n)/((1/2)^n)", "4^n");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "A quotient of powers raised to the same exponent are equal to the quotient of bases raised to that exponent",
+                "dividing by a fraction is the same as multiplying by the reciprocal",
+                "evaluation of multiplication",
+            ]);
         });
     });
 

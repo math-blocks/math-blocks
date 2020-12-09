@@ -90,16 +90,22 @@ export const ALL_CHECKS = [
     moveNegToFirstFactor,
 
     // power checks
-    PowerChecks.powMul, // TODO: rename to mulPow, it will indicate the type of prev
-    PowerChecks.powDiv, // TODO: rename to divPow, it will indicate the type of prev
-
+    PowerChecks.mulPowsSameBase,
+    PowerChecks.divPowsSameBase,
     PowerChecks.powToZero, // we want this check to have precedence over other power checks
     PowerChecks.powOfZero, // this must come after powToZero since 0^0 -> 1
     PowerChecks.powOfOne,
-    PowerChecks.powNegExp,
+
+    PowerChecks.powNegExp, // dual of oneOverPowToNegPow
+    PowerChecks.oneOverPowToNegPow, // dual of powNegExp
+
     PowerChecks.powOfPow,
-    PowerChecks.powOfDiv,
-    PowerChecks.powOfMul,
+
+    PowerChecks.powOfDiv, // dual of divOfPowsSameExp
+    PowerChecks.divOfPowsSameExp, // dual powOfDiv
+
+    PowerChecks.powOfMul, // dual of mulPowsSameExp
+    PowerChecks.mulPowsSameExp, // dual of powOfMul
 
     PowerChecks.powDef, // it's important that this comes after the other exponent rules.
     // this is because the other rules can be expressed in terms of
