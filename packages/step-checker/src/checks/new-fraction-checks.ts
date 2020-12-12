@@ -13,6 +13,7 @@ import {convertPowNegExpToDiv} from "./power-checks";
 //   to use exactMatch.
 
 // a * b/c -> ab / c
+// a/b * c/d * e -> ace / bd
 // NOTE: This step multiplies all fractions in a 'mul' node and doesn't handle
 // situations where a student might multiply two of the factors in one step and
 // more of the factors in the next step.

@@ -19,12 +19,18 @@ export const identifier = (
 export const number = <T extends string>(
     value: T,
     loc?: Types.Location,
-): Types.Num => ({
-    type: "number",
-    id: getId(),
-    value: value.replace(/-/g, "\u2212"),
-    loc,
-});
+): Types.Num | Types.Neg => {
+    if (value.startsWith("-")) {
+        // TODO: handle location data correctly
+        return neg(number(value.slice(1)));
+    }
+    return {
+        type: "number",
+        id: getId(),
+        value: value.replace(/-/g, "\u2212"),
+        loc,
+    };
+};
 
 export const ellipsis = (loc?: Types.Location): Types.Ellipsis => ({
     type: "ellipsis",
@@ -168,6 +174,7 @@ export const addTerms = (
 };
 
 // TODO: create a function to check if an answer is simplified or not
+// TODO: rename this to canBeEvaluated()
 export const isNumber = (node: Types.Node): boolean => {
     if (node.type === "number") {
         return true;

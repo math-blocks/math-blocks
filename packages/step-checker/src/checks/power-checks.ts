@@ -1,7 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "../types";
-import {correctResult, difference, intersection, deepEquals} from "./util";
+import {Check, Step} from "../types";
+import {
+    correctResult,
+    difference,
+    intersection,
+    deepEquals,
+    evalNode,
+} from "./util";
 import {exactMatch} from "./basic-checks";
 
 const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
@@ -91,77 +97,174 @@ export const powDef: Check = (prev, next, context) => {
 };
 powDef.symmetric = true;
 
-// (a^n)(a^m) -> a^(n+m)
-// TODO: (x^a)(x^b)(x^c)(x^d) -> (x^a)(x^(b+c))(x^d)
 export const mulPowsSameBase: Check = (prev, next, context) => {
     const {checker} = context;
 
-    if (!Semantic.isNumeric(next)) {
+    if (prev.type !== "mul") {
         return;
     }
 
-    if (prev.type === "mul") {
-        // TODO: memoize helpers like getFactors, getTerms, difference, intersection, etc.
-        const prevFactors = Semantic.getFactors(prev);
-        const nextFactors = Semantic.getFactors(next);
+    const factors = Semantic.getFactors(prev);
 
-        const commonFactors = intersection(prevFactors, nextFactors);
+    // We don't actually need everything ƒactor to be a power, just as long as
+    // there are some factors that powers
 
-        // TODO: also make helpers for getting unique factors/terms since we do this
-        // in a number of places.
-        const uniquePrevFactors = difference(prevFactors, commonFactors);
-        const uniqueNextFactors = difference(nextFactors, commonFactors);
+    // TODO: create a util function that can be used here and in collectLikeTerms
+    const map = new Map<
+        Semantic.Types.NumericNode,
+        OneOrMore<{
+            exp: Semantic.Types.NumericNode;
+            factor: Semantic.Types.NumericNode;
+        }>
+    >();
 
-        const prevExps = uniquePrevFactors.filter(isPower);
-        const nextExps = uniqueNextFactors.filter(isPower);
+    for (const factor of factors) {
+        // TODO: should we clone base and exp?
+        const {base, exp} =
+            factor.type === "pow"
+                ? factor
+                : // TODO: track when we add "1" as an exponent so that we don't add
+                  // it below when it wasn't par of the original expression.
+                  {base: factor, exp: Semantic.number("1")};
 
-        for (let i = 0; i < nextExps.length; i++) {
-            const nextExp = nextExps[i];
-            const prevExpsWithSameBase: Semantic.Types.Pow[] = [];
-            for (let j = 0; j < prevExps.length; j++) {
-                const prevExp = prevExps[j];
-                if (deepEquals(prevExp.base, nextExp.base)) {
-                    prevExpsWithSameBase.push(prevExp);
-                }
+        let key: Semantic.Types.NumericNode | undefined;
+        for (const k of map.keys()) {
+            // TODO: add an option to ignore mul.implicit
+            if (exactMatch(k, base, context)) {
+                key = k;
             }
+        }
+        if (!key) {
+            map.set(base, [{exp, factor}]);
+        } else {
+            map.get(key)?.push({exp, factor});
+        }
+    }
 
-            if (prevExpsWithSameBase.length > 1) {
-                const base = prevExpsWithSameBase[0].base;
-                const newExp = Semantic.pow(
-                    base,
-                    Semantic.add(
-                        prevExpsWithSameBase.map((exp) => exp.exp) as TwoOrMore<
-                            Semantic.Types.NumericNode
-                        >,
+    const newFactors: Semantic.Types.NumericNode[] = [];
+
+    let changed = false;
+    for (const [k, values] of map.entries()) {
+        if (values.length > 1) {
+            if (
+                values.some(
+                    (value) =>
+                        !exactMatch(value.exp, Semantic.number("1"), context),
+                )
+            ) {
+                newFactors.push(
+                    Semantic.pow(
+                        k,
+                        Semantic.add(
+                            values.map(({exp}) => exp) as TwoOrMore<
+                                Semantic.Types.NumericNode
+                            >,
+                        ),
                     ),
                 );
+                changed = true;
+                continue;
+            }
+        }
+        // Avoid changing x -> x^1
+        newFactors.push(Semantic.pow(k, values[0].factor));
+    }
 
-                // remove nextExp
-                const remainingNextFactors = [
-                    ...nextExps.slice(0, i),
-                    ...nextExps.slice(i + 1),
-                ];
+    if (!changed) {
+        return;
+    }
 
-                const newPrev = Semantic.mulFactors([
-                    ...commonFactors,
-                    newExp,
-                    ...remainingNextFactors,
-                ]);
+    const newPrev = Semantic.mulFactors(newFactors);
 
-                const result = checker.checkStep(newPrev, next, context);
+    const result = checker.checkStep(newPrev, next, context);
 
-                if (result) {
-                    return correctResult(
-                        prev,
-                        newPrev,
-                        context.reversed,
-                        [],
-                        result.steps,
-                        "multiplying powers adds their exponents",
+    if (result) {
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "multiplying powers adds their exponents",
+        );
+    }
+
+    const newFactors2: Semantic.Types.NumericNode[] = [];
+
+    let changed2 = false;
+    const evaluatedNodes: [
+        Semantic.Types.NumericNode,
+        Semantic.Types.NumericNode,
+    ][] = [];
+    for (const [k, values] of map.entries()) {
+        if (values.length > 1) {
+            if (
+                values.some(
+                    (value) =>
+                        !exactMatch(value.exp, Semantic.number("1"), context),
+                )
+            ) {
+                const exp: Semantic.Types.NumericNode = Semantic.add(
+                    values.map(({exp}) => exp) as TwoOrMore<
+                        Semantic.Types.NumericNode
+                    >,
+                );
+                if (Semantic.isNumber(exp)) {
+                    const evalExp = Semantic.number(
+                        evalNode(exp, checker.options).toString(),
                     );
+                    // TODO: dedupe with logic in correctResult
+                    if (context.reversed) {
+                        evaluatedNodes.push([evalExp, exp]);
+                    } else {
+                        evaluatedNodes.push([exp, evalExp]);
+                    }
+                    newFactors2.push(Semantic.pow(k, evalExp));
+                    changed2 = true;
+                    continue;
                 }
             }
         }
+        // Avoid changing x -> x^1
+        newFactors2.push(Semantic.pow(k, values[0].factor));
+    }
+
+    if (!changed2) {
+        return;
+    }
+
+    const newPrev2 = Semantic.mulFactors(newFactors2);
+
+    const result2 = checker.checkStep(newPrev2, next, context);
+
+    if (result2) {
+        // TODO: dedupe with logic in correctResult
+        const steps: Step[] = context.reversed
+            ? [
+                  ...result2.steps,
+                  ...evaluatedNodes.map<Step>((nodes) => ({
+                      message: "decompose sum",
+                      nodes,
+                  })),
+              ]
+            : [
+                  ...evaluatedNodes.map<Step>((nodes) => ({
+                      message: "evaluate sum",
+                      nodes,
+                  })),
+                  ...result2.steps,
+              ];
+
+        return correctResult(
+            prev,
+            // NOTE: we don't use newPrev2 here because we're manually appending
+            // to results2.step.
+            newPrev,
+            context.reversed,
+            [],
+            steps,
+            "multiplying powers adds their exponents",
+        );
     }
 
     return undefined;
@@ -204,6 +307,45 @@ export const divPowsSameBase: Check = (prev, next, context) => {
                 result.steps,
                 "dividing powers subtracts their exponents",
             );
+        }
+
+        if (Semantic.isNumber(newPrev.exp)) {
+            const exp = Semantic.number(
+                evalNode(newPrev.exp, checker.options).toString(),
+            );
+            const newPrev2 = Semantic.pow(newPrev.base, exp);
+
+            const result2 = checker.checkStep(newPrev2, next, context);
+
+            if (result2) {
+                // TODO: dedupe with logic in correctResult
+                const steps: Step[] = context.reversed
+                    ? [
+                          ...result2.steps,
+                          {
+                              message: "decompose sum",
+                              nodes: [newPrev.exp, exp],
+                          },
+                      ]
+                    : [
+                          {
+                              message: "evaluate sum",
+                              nodes: [newPrev.exp, exp],
+                          },
+                          ...result2.steps,
+                      ];
+
+                return correctResult(
+                    prev,
+                    // NOTE: we don't use newPrev2 here because we're manually
+                    // appending to results2.step.
+                    newPrev,
+                    context.reversed,
+                    [],
+                    steps,
+                    "dividing powers subtracts their exponents",
+                );
+            }
         }
     }
 
@@ -547,6 +689,34 @@ export const powToZero: Check = (prev, next, context) => {
     }
 };
 powToZero.symmetric = true;
+
+// x^1 -> x
+export const powToOne: Check = (prev, next, context) => {
+    if (prev.type !== "pow") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const result1 = checker.checkStep(prev.exp, Semantic.number("1"), context);
+    if (result1) {
+        // TODO: clone prev.base?
+        const newPrev = prev.base;
+        const result2 = checker.checkStep(newPrev, next, context);
+
+        if (result2) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                result1.steps,
+                result2.steps,
+                "raising something to the 1st power is a no-op",
+            );
+        }
+    }
+};
+powToOne.symmetric = true;
 
 // 1^x -> 1
 export const powOfOne: Check = (prev, next, context) => {

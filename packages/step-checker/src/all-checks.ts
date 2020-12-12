@@ -94,7 +94,8 @@ export const ALL_CHECKS = [
     PowerChecks.divPowsSameBase,
     PowerChecks.powToZero, // we want this check to have precedence over other power checks
     PowerChecks.powOfZero, // this must come after powToZero since 0^0 -> 1
-    PowerChecks.powOfOne,
+    PowerChecks.powToOne, // x^1 -> x
+    PowerChecks.powOfOne, // 1^n -> 1
 
     PowerChecks.powNegExp, // dual of oneOverPowToNegPow
     PowerChecks.oneOverPowToNegPow, // dual of powNegExp

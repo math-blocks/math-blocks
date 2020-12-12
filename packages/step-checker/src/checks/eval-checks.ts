@@ -1,36 +1,9 @@
-import Fraction from "fraction.js";
-
 import * as Semantic from "@math-blocks/semantic";
 
-import {Options, Check, Correction} from "../types";
+import {Check, Correction} from "../types";
 import {MistakeId} from "../enums";
 
-import {correctResult, intersection, difference} from "./util";
-
-const evalNode = (node: Semantic.Types.Node, options: Options): Fraction => {
-    if (node.type === "number") {
-        return new Fraction(node.value);
-    } else if (node.type === "neg") {
-        return evalNode(node.arg, options).mul(new Fraction("-1"));
-    } else if (node.type === "div" && options.evalFractions) {
-        // TODO: add a recursive option as well
-        return evalNode(node.args[0], options).div(
-            evalNode(node.args[1], options),
-        );
-    } else if (node.type === "add") {
-        return node.args.reduce(
-            (sum, term) => sum.add(evalNode(term, options)),
-            new Fraction("0"),
-        );
-    } else if (node.type === "mul") {
-        return node.args.reduce(
-            (sum, factor) => sum.mul(evalNode(factor, options)),
-            new Fraction("1"),
-        );
-    } else {
-        throw new Error(`cannot parse a number from ${node.type} node`);
-    }
-};
+import {correctResult, intersection, difference, evalNode} from "./util";
 
 // TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
 // e.g. "adding inverse" and "addition with identity"
