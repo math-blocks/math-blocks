@@ -45,6 +45,39 @@ describe("polynomial checks", () => {
         ]);
     });
 
+    it("(x)(5) + 3x -> 8x", () => {
+        const result = checkStep("(x)(5) + 3x", "8x");
+
+        expect(result).toBeTruthy();
+        expect(result).toHaveMessages([
+            "collect like terms",
+            "evaluation of addition",
+        ]);
+    });
+
+    it("(x)(2)(-3) + 5x -> 11x", () => {
+        const result = checkStep("(x)(2)(-3) + 5x", "-x");
+
+        expect(result).toBeTruthy();
+        expect(result).toHaveMessages([
+            "evaluate multiplication",
+            "collect like terms",
+            "evaluation of addition",
+            "negation is the same as multipling by negative one",
+        ]);
+    });
+
+    it("(2 + 3)(x) + 3x -> 8x", () => {
+        const result = checkStep("(2 + 3)(x) + 3x", "8x");
+
+        expect(result).toBeTruthy();
+        expect(result).toHaveMessages([
+            "evaluate coefficient",
+            "collect like terms",
+            "evaluation of addition",
+        ]);
+    });
+
     it("2x + 3x + 4y + 5y -> 5x + 9y", () => {
         const result = checkStep("2x + 3x + 4y + 5y", "5x + 9y");
 
@@ -127,9 +160,14 @@ describe("polynomial checks", () => {
         ]);
     });
 
-    // TODO: make this test pass
-    it.skip("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
+    it("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
         const result = checkStep("x^2 + x + x + 1", "x^2 + 2x + 1");
+
+        expect(result).toBeTruthy();
+    });
+
+    it("x*x + x*1 + 1*x + 1*1 -> x^2 + 2x + 1", () => {
+        const result = checkStep("x*x + x*1 + 1*x + 1*1", "x^2 + 2x + 1");
 
         expect(result).toBeTruthy();
     });

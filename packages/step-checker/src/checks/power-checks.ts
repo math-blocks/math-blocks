@@ -19,6 +19,11 @@ const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
 export const powDef: Check = (prev, next, context) => {
     const {checker} = context;
 
+    // Avoid infinite recursion
+    if (prev.source === "powDefReverse" || next.source === "powDefReverse") {
+        return;
+    }
+
     if (!Semantic.isNumeric(next)) {
         return;
     }
@@ -79,6 +84,7 @@ export const powDef: Check = (prev, next, context) => {
             Semantic.pow(base, Semantic.number(String(count))),
             ...nonBaseUniquePrevFactors,
         ]);
+        newPrev.source = "powDef";
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -96,6 +102,57 @@ export const powDef: Check = (prev, next, context) => {
     return undefined;
 };
 powDef.symmetric = true;
+
+// a^n -> a*a*...*a
+export const powDefReverse: Check = (prev, next, context) => {
+    if (prev.type !== "pow") {
+        return undefined;
+    }
+
+    // Avoid infinite recursion
+    if (prev.source === "powDef" || next.source === "powDef") {
+        return;
+    }
+
+    // Avoid recursion with self
+    if (prev.source === "powDefReverse" || next.source === "powDefReverse") {
+        return;
+    }
+
+    const {exp, base} = prev;
+    const {checker} = context;
+
+    // TODO: evaluate the exponent if necessary
+    if (exp.type === "number") {
+        const factors: Semantic.Types.NumericNode[] = [];
+        const count = Number.parseInt(exp.value);
+        if (count <= 1) {
+            return undefined;
+        }
+        for (let i = 0; i < count; i++) {
+            // TODO: clone base each time
+            factors.push(base);
+        }
+        const newPrev = Semantic.mulFactors(factors);
+        newPrev.source = "powDefReverse";
+
+        const result = checker.checkStep(newPrev, next, context);
+
+        if (result) {
+            return correctResult(
+                prev,
+                newPrev,
+                context.reversed,
+                [],
+                result.steps,
+                "a power is the same as multiplying the base n times",
+            );
+        }
+    }
+
+    return undefined;
+};
+powDefReverse.symmetric = true;
 
 export const mulPowsSameBase: Check = (prev, next, context) => {
     const {checker} = context;

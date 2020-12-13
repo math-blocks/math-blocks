@@ -698,12 +698,6 @@ describe("Exponent checks", () => {
             expect(result).toBeTruthy();
         });
 
-        it("(x + 1)(x + 1) -> x*x + x*1 + x*1 + 1*1", () => {
-            const result = checkStep("(x + 1)(x + 1)", "x*x + x*1 + x*1 + 1*1");
-
-            expect(result).toBeTruthy();
-        });
-
         it("x*x + x*1 + x*1 + 1*1 -> x^2 + x + x + 1", () => {
             const result = checkStep(
                 "x*x + x*1 + x*1 + 1*1",
@@ -713,16 +707,8 @@ describe("Exponent checks", () => {
             expect(result).toBeTruthy();
         });
 
-        // TODO: make this test pass (dedupe with polynomial-checks.test.ts)
-        it.skip("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
+        it("x^2 + x + x + 1 -> x^2 + 2x + 1", () => {
             const result = checkStep("x^2 + x + x + 1", "x^2 + 2x + 1");
-
-            expect(result).toBeTruthy();
-        });
-
-        // TODO: make this test pass
-        it.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
-            const result = checkStep("(x + 1)^2", "x^2 + 2x + 1");
 
             expect(result).toBeTruthy();
         });

@@ -339,6 +339,8 @@ export const incorrectResult = (
     };
 };
 
+// TODO: create a wrapper around this that returns a Semantic.Types.NumericNode
+// Right now we don't handle returning fractions in a lot of places.
 export const evalNode = (
     node: Semantic.Types.Node,
     options: Options,
