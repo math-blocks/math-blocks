@@ -102,6 +102,7 @@ export const print = (expr: Semantic.Types.Node): string => {
             if (
                 expr.arg.type === "number" ||
                 expr.arg.type === "identifier" ||
+                (expr.arg.type === "neg" && !expr.arg.subtraction) ||
                 expr.arg.type === "pow" // pow has a higher precedence
             ) {
                 return `-${node}`;

@@ -19,12 +19,28 @@ describe("printer", () => {
             expect(result).toEqual("1 + -x");
         });
 
+        test("1 + --x", () => {
+            const ast = parse("1 + --x");
+
+            const result = print(ast);
+
+            expect(result).toEqual("1 + --x");
+        });
+
         test("1 - -x", () => {
             const ast = parse("1 - -x");
 
             const result = print(ast);
 
             expect(result).toEqual("1 - -x");
+        });
+
+        test("1 - --x", () => {
+            const ast = parse("1 - --x");
+
+            const result = print(ast);
+
+            expect(result).toEqual("1 - --x");
         });
 
         test("1 - -2", () => {
@@ -182,6 +198,32 @@ describe("printer", () => {
             const result = print(ast);
 
             expect(result).toEqual("(x + y) / (a + b)");
+        });
+    });
+
+    describe("neg", () => {
+        test("-a", () => {
+            const ast = parse("-a");
+
+            const result = print(ast);
+
+            expect(result).toEqual("-a");
+        });
+
+        test("--a", () => {
+            const ast = parse("--a");
+
+            const result = print(ast);
+
+            expect(result).toEqual("--a");
+        });
+
+        test("----a", () => {
+            const ast = parse("----a");
+
+            const result = print(ast);
+
+            expect(result).toEqual("----a");
         });
     });
 

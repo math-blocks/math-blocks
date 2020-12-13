@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
 import {parse as _parse} from "@math-blocks/editor-parser";
-import {parse} from "@math-blocks/testing";
+import {parse, print} from "@math-blocks/testing";
 
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";
@@ -116,11 +116,9 @@ export const toHaveStepsLike = (
             message: () =>
                 failures
                     .map(({step, node, received, expected}) => {
-                        return `step ${step}, node ${node}: expected ${JSON.stringify(
+                        return `step ${step}, node ${node}: expected ${print(
                             expected,
-                            null,
-                            2,
-                        )} but received ${JSON.stringify(received, null, 2)}`;
+                        )} but received ${print(received)}`;
                     })
                     .join("\n"),
             pass: false,
