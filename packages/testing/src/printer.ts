@@ -84,8 +84,10 @@ export const print = (expr: Semantic.Types.Node): string => {
                     result += " * ";
                 }
 
-                // TODO: we probably also want to wrap things like (a * b)(x * y)
-                const wrap = (wrapAll && expr.implicit) || arg.type === "add";
+                const wrap =
+                    (wrapAll && expr.implicit) ||
+                    arg.type === "add" ||
+                    (arg.type === "mul" && !arg.implicit);
                 const node = print(arg);
 
                 if (wrap) {

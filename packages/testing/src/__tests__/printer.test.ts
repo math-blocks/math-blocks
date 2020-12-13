@@ -149,6 +149,30 @@ describe("printer", () => {
             expect(result).toEqual("(x + y)(a + b)");
         });
 
+        test("(a * b)(c * d)", () => {
+            const ast = parse("(a * b)(c * d)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("(a * b)(c * d)");
+        });
+
+        test("(a * b) * (c * d)", () => {
+            const ast = parse("(a * b) * (c * d)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("(a * b) * (c * d)");
+        });
+
+        test("ab * cd", () => {
+            const ast = parse("ab * cd");
+
+            const result = print(ast);
+
+            expect(result).toEqual("ab * cd");
+        });
+
         test("1 * 2 * 3", () => {
             const ast = parse("1 * 2 * 3");
 
