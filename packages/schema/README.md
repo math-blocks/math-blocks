@@ -23,5 +23,5 @@ const invalidTree = {
 };
 ```
 
-Upon initial parsing @math-blocks/editor-parser will produce an AST conforming
-to `parsingSchema` which is then validated against `semanticSchema`.
+`parsingSchema` is used to generated `@math-blocks/editor-parser/src/types.ts`
+and `semanticSchema` is used to generate `@math-blocks/semantic/src/types.ts`.
