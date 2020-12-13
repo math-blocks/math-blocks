@@ -33,44 +33,19 @@ module.exports = {
         extensions: [".js", ".json", ".ts", ".tsx"],
         alias: {
             "react-dom": "@hot-loader/react-dom",
+            // TODO: replace these aliases with NormalModuleReplacementPlugin
             "@math-blocks/core": path.join(__dirname, "./packages/core/src"),
-            "@math-blocks/editor": path.join(
-                __dirname,
-                "./packages/editor/src",
-            ),
-            "@math-blocks/metrics": path.join(
-                __dirname,
-                "./packages/metrics/src",
-            ),
+            "@math-blocks/editor-parser": path.join(__dirname, "./packages/editor-parser/src"),
+            "@math-blocks/editor": path.join(__dirname, "./packages/editor/src"),
+            "@math-blocks/grader": path.join(__dirname, "./packages/grader/src"),
+            "@math-blocks/metrics": path.join(__dirname, "./packages/metrics/src"),
+            "@math-blocks/parser": path.join(__dirname, "./packages/parser/src"),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
-            "@math-blocks/schema": path.join(
-                __dirname,
-                "./packages/schema/src",
-            ),
-            "@math-blocks/semantic": path.join(
-                __dirname,
-                "./packages/semantic/src",
-            ),
-            "@math-blocks/grader": path.join(
-                __dirname,
-                "./packages/grader/src",
-            ),
-            "@math-blocks/parser": path.join(
-                __dirname,
-                "./packages/parser/src",
-            ),
-            "@math-blocks/editor-parser": path.join(
-                __dirname,
-                "./packages/editor-parser/src",
-            ),
-            "@math-blocks/testing": path.join(
-                __dirname,
-                "./packages/testing/src",
-            ),
-            "@math-blocks/typesetter": path.join(
-                __dirname,
-                "./packages/typesetter/src",
-            ),
+            "@math-blocks/schema": path.join(__dirname, "./packages/schema/src"),
+            "@math-blocks/semantic": path.join(__dirname, "./packages/semantic/src"),
+            "@math-blocks/solver": path.join(__dirname, "./packages/solver/src"),
+            "@math-blocks/testing": path.join(__dirname, "./packages/testing/src"),
+            "@math-blocks/typesetter": path.join(__dirname, "./packages/typesetter/src"),
         },
     },
     devtool: "source-map",
