@@ -1,6 +1,6 @@
 import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
-import {parse as parseText} from "@math-blocks/text-parser";
+import {parse as parseText} from "@math-blocks/testing";
 import {parse as parseEditorNodes} from "@math-blocks/editor-parser";
 
 import StepChecker from "../../step-checker";

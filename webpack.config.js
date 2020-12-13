@@ -51,9 +51,9 @@ module.exports = {
                 __dirname,
                 "./packages/semantic/src",
             ),
-            "@math-blocks/step-checker": path.join(
+            "@math-blocks/grader": path.join(
                 __dirname,
-                "./packages/step-checker/src",
+                "./packages/grader/src",
             ),
             "@math-blocks/parser": path.join(
                 __dirname,
@@ -63,9 +63,9 @@ module.exports = {
                 __dirname,
                 "./packages/editor-parser/src",
             ),
-            "@math-blocks/text-parser": path.join(
+            "@math-blocks/testing": path.join(
                 __dirname,
-                "./packages/text-parser/src",
+                "./packages/testing/src",
             ),
             "@math-blocks/typesetter": path.join(
                 __dirname,

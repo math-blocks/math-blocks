@@ -9,7 +9,7 @@ import {
     Mistake,
     checkStep,
     replaceNodeWithId,
-} from "@math-blocks/step-checker";
+} from "@math-blocks/grader";
 import * as Semantic from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";

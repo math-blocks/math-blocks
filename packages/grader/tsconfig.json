@@ -1,12 +1,12 @@
 {
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "../../out/step-checker",
+    "outDir": "../../out/grader",
     "rootDir": "."
   },
   "references": [
     {"path": "../semantic"},
-    {"path": "../text-parser"},
+    {"path": "../testing"},
     {"path": "../editor"},
     {"path": "../editor-parser"},
   ]

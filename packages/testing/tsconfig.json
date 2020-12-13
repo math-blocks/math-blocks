@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "../../out/test-parser",
+    "outDir": "../../out/testing",
     "rootDir": "."
   },
   "references": [

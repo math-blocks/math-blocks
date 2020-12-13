@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import {Mistake} from "@math-blocks/step-checker";
+import {Mistake} from "@math-blocks/grader";
 
 export enum StepStatus {
     Correct,

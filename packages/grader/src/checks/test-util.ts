@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
 import {parse as _parse} from "@math-blocks/editor-parser";
-import {parse} from "@math-blocks/text-parser";
+import {parse} from "@math-blocks/testing";
 
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";

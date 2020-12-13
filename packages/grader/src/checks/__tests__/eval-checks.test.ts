@@ -1,4 +1,4 @@
-import {parse} from "@math-blocks/text-parser";
+import {parse} from "@math-blocks/testing";
 
 import StepChecker from "../../step-checker";
 import {MistakeId} from "../../enums";
