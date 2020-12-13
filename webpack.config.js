@@ -51,9 +51,9 @@ module.exports = {
                 __dirname,
                 "./packages/metrics/src",
             ),
-            "@math-blocks/parser": path.join(
+            "@math-blocks/parser-factory": path.join(
                 __dirname,
-                "./packages/parser/src",
+                "./packages/parser-factory/src",
             ),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
             "@math-blocks/schema": path.join(

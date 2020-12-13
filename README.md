@@ -20,7 +20,7 @@ A set of tools, components, and libraries for building interactive math applicat
 
 - [@math-blocks/core](package/core/README.md)
 - [@math-blocks/metrics](packages/metrics/README.md)
-- [@math-blocks/parser](packages/parser/README.md)
+- [@math-blocks/parser-factory](packages/parser-factory/README.md)
 - [@math-blocks/schema](packages/schema/README.md)
 - [@math-blocks/semantic](packages/semantic/README.md)
 - [@math-blocks/testing](packages/typesetter/README.md)

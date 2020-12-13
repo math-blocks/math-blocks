@@ -5,7 +5,7 @@
     "rootDir": "."
   },
   "references": [
-    {"path": "../parser"},
+    {"path": "../parser-factory"},
     {"path": "../schema"},
     {"path": "../semantic"}
   ]

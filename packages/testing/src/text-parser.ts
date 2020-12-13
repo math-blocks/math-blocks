@@ -1,7 +1,7 @@
 import Ajv from "ajv";
 
 import {semanticSchema} from "@math-blocks/schema";
-import * as Parser from "@math-blocks/parser";
+import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";

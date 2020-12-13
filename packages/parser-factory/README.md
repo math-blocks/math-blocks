@@ -1,9 +1,4 @@
-# @math-blocks/parser
-
-This module should probably be called `@math-blocks/parser-factory` since its
-main export is `parserFactory` and a bunch of related types.
-
-## parserFactory
+# @math-blocks/parser-factory
 
 `parserFactory` can be used to generate TDOP/Pratt parsers.  The reason for using
 this style of parsing is that it's much easier to change the precedence and add
