@@ -237,22 +237,6 @@ export const checkDistribution: Check = (prev, next, context) => {
     if (prev.type === "add" && next.type === "add") {
         const results: Result[] = [];
 
-        // Only allow the following checks in subsequent calls to checkStep.
-        const filters = {
-            allowedChecks: new Set([
-                // NOTE: If more checks use filters then we may have to
-                // uncomment this line.
-                // ...(context?.filters?.allowedChecks || []),
-                "checkDistribution",
-                "negIsMulNegOne",
-                "subIsNeg",
-                "mulTwoNegsIsPos",
-                "moveNegInsideMul",
-                "moveNegToFirstFactor",
-            ]),
-            disallowedChecks: context.filters?.disallowedChecks,
-        };
-
         // Find all 'mul' nodes and then try generating a newPrev node from
         // each of them.
         for (let i = 0; i < prev.args.length; i++) {
@@ -271,10 +255,11 @@ export const checkDistribution: Check = (prev, next, context) => {
                     ...prev.args.slice(i + 1),
                 ]);
 
-                const result = context.checker.checkStep(newPrev, next, {
-                    ...context,
-                    filters,
-                });
+                const result = context.checker.checkStep(
+                    newPrev,
+                    next,
+                    context,
+                );
                 if (result) {
                     results.push(
                         correctResult(

@@ -111,6 +111,7 @@ export const ALL_CHECKS = [
     PowerChecks.powDef, // it's important that this comes after the other exponent rules.
     // this is because the other rules can be expressed in terms of
     // this rule which means that this rule would be matched first.
+    PowerChecks.powDefReverse,
 
     checkDistribution, // we put this to ensure simpler checks run first
     // we could avoid having to order thing carefully bu running everything

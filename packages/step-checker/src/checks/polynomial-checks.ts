@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "../types";
+import {Check, Step} from "../types";
 
-import {correctResult} from "./util";
+import {correctResult, evalNode} from "./util";
 import {exactMatch} from "./basic-checks";
 
 // 2x + 3x -> 5x
@@ -14,11 +14,18 @@ export const collectLikeTerms: Check = (prev, next, context) => {
     // Map from variable part to an array of coefficients.
     const map = new Map<
         Semantic.Types.NumericNode,
-        Semantic.Types.NumericNode[]
+        {
+            coeff: Semantic.Types.NumericNode;
+            term: Semantic.Types.NumericNode;
+        }[]
     >();
+
+    const {checker} = context;
 
     const newTerms: Semantic.Types.NumericNode[] = [];
     const numberTerms: Semantic.Types.NumericNode[] = [];
+
+    const beforeSteps: Step[] = [];
 
     for (const arg of prev.args) {
         const factors = Semantic.getFactors(arg);
@@ -31,9 +38,23 @@ export const collectLikeTerms: Check = (prev, next, context) => {
         let coeff: Semantic.Types.NumericNode;
         let varPart: Semantic.Types.NumericNode;
 
-        if (Semantic.isNumber(factors[0])) {
-            coeff = factors[0];
-            varPart = Semantic.mulFactors(factors.slice(1), true);
+        const numericFactors = factors.filter(Semantic.isNumber);
+        const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
+
+        if (numericFactors.length > 0) {
+            if (numericFactors.length === 1) {
+                coeff = numericFactors[0];
+            } else {
+                const mul = Semantic.mulFactors(numericFactors);
+                coeff = Semantic.number(
+                    evalNode(mul, checker.options).toString(),
+                );
+                beforeSteps.push({
+                    message: "evaluate multiplication",
+                    nodes: [mul, coeff],
+                });
+            }
+            varPart = Semantic.mulFactors(nonNumericFactors, true);
         } else {
             coeff = Semantic.number("1");
             varPart = arg;
@@ -47,20 +68,24 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             }
         }
         if (!key) {
-            map.set(varPart, [coeff]);
+            map.set(varPart, [{coeff, term: arg}]);
         } else {
-            map.get(key)?.push(coeff);
+            map.get(key)?.push({coeff, term: arg});
         }
     }
 
     for (const [k, v] of map.entries()) {
         if (v.length > 1) {
+            // Collect common terms
             newTerms.push(
                 Semantic.mulFactors([
-                    Semantic.addTerms(v),
+                    Semantic.addTerms(v.map(({coeff}) => coeff)),
                     ...Semantic.getFactors(k),
                 ]),
             );
+        } else {
+            // Pass through unique terms
+            newTerms.push(v[0].term);
         }
     }
 
@@ -72,8 +97,6 @@ export const collectLikeTerms: Check = (prev, next, context) => {
         return;
     }
 
-    const {checker} = context;
-
     // Place numbers at the end which is a comment convention.
     const newPrev = Semantic.addTerms([...newTerms, ...numberTerms]);
     const result = checker.checkStep(newPrev, next, context);
@@ -83,7 +106,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             prev,
             newPrev,
             context.reversed,
-            [],
+            beforeSteps,
             result.steps,
             "collect like terms",
         );

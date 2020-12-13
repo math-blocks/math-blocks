@@ -781,6 +781,54 @@ describe("Axiom checks", () => {
                 "distribution",
             ]);
         });
+
+        it("(x + 1)(x + 1) -> x*x + x*1 + 1*x + 1*1", () => {
+            const result = checkStep("(x + 1)(x + 1)", "x*x + x*1 + 1*x + 1*1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "distribution",
+                "distribution",
+                "distribution",
+            ]);
+
+            expect(result).toHaveStepsLike([
+                ["(x + 1)(x + 1)", "(x)*(x + 1) + (1)*(x + 1)"],
+                ["(x)*(x + 1) + (1)*(x + 1)", "x*x + x*1 + (1)*(x + 1)"],
+                ["x*x + x*1 + (1)*(x + 1)", "x*x + x*1 + 1*x + 1*1"],
+            ]);
+        });
+
+        it("(x + 1)(x + 1) -> x^2 + 2x + 1", () => {
+            const result = checkStep("(x + 1)(x + 1)", "x^2 + x + x + 1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "distribution",
+                "distribution",
+                "distribution",
+                "multiplying a factor n-times is an exponent", // x*x -> x^2
+                "multiplication with identity",
+                "multiplication with identity",
+                "multiplication with identity",
+            ]);
+        });
+
+        it("(x + 1)^2 -> x^2 + 2x + 1", () => {
+            const result = checkStep("(x + 1)^2", "x^2 + 2x + 1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "a power is the same as multiplying the base n times",
+                "distribution",
+                "distribution",
+                "distribution",
+                "collect like terms",
+                "multiplying a factor n-times is an exponent",
+                "evaluation of addition",
+                "multiplication with identity",
+            ]);
+        });
     });
 
     describe("checkFactoring", () => {
