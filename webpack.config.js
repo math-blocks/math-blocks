@@ -33,14 +33,27 @@ module.exports = {
         extensions: [".js", ".json", ".ts", ".tsx"],
         alias: {
             "react-dom": "@hot-loader/react-dom",
+            // TODO: replace these aliases with NormalModuleReplacementPlugin
             "@math-blocks/core": path.join(__dirname, "./packages/core/src"),
+            "@math-blocks/editor-parser": path.join(
+                __dirname,
+                "./packages/editor-parser/src",
+            ),
             "@math-blocks/editor": path.join(
                 __dirname,
                 "./packages/editor/src",
             ),
+            "@math-blocks/grader": path.join(
+                __dirname,
+                "./packages/grader/src",
+            ),
             "@math-blocks/metrics": path.join(
                 __dirname,
                 "./packages/metrics/src",
+            ),
+            "@math-blocks/parser": path.join(
+                __dirname,
+                "./packages/parser/src",
             ),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
             "@math-blocks/schema": path.join(
@@ -51,17 +64,9 @@ module.exports = {
                 __dirname,
                 "./packages/semantic/src",
             ),
-            "@math-blocks/grader": path.join(
+            "@math-blocks/solver": path.join(
                 __dirname,
-                "./packages/grader/src",
-            ),
-            "@math-blocks/parser": path.join(
-                __dirname,
-                "./packages/parser/src",
-            ),
-            "@math-blocks/editor-parser": path.join(
-                __dirname,
-                "./packages/editor-parser/src",
+                "./packages/solver/src",
             ),
             "@math-blocks/testing": path.join(
                 __dirname,

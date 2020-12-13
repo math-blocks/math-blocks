@@ -9,10 +9,19 @@
 
 A set of tools, components, and libraries for building interactive math applications.
 
-## Packages
+## Main Packages
 
 - [@math-blocks/editor](packages/editor/README.md)
+- [@math-blocks/grader](packages/grader/README.md)
 - [@math-blocks/react](packages/react/README.md)
+- [@math-blocks/solver](packages/solver/README.md)
+
+## Supporting Packages
+
+- [@math-blocks/core](package/core/README.md)
+- [@math-blocks/metrics](packages/metrics/README.md)
+- [@math-blocks/parser](packages/parser/README.md)
+- [@math-blocks/schema](packages/schema/README.md)
 - [@math-blocks/semantic](packages/semantic/README.md)
-- [@math-blocks/step-checker](packages/step-checker/README.md)
+- [@math-blocks/testing](packages/typesetter/README.md)
 - [@math-blocks/typesetter](packages/typesetter/README.md)
