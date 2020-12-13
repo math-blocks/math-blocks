@@ -49,11 +49,6 @@ export type Context = {
     // step-checker.ts for details.
     reversed: boolean;
 
-    filters?: {
-        allowedChecks?: Set<string>;
-        disallowedChecks?: Set<string>;
-    };
-
     mistakes?: Mistake[];
 
     // Used for debugging purposes to see which checks ran successfully as part

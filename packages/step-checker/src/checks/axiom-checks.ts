@@ -84,12 +84,7 @@ export const addZero: Check = (prev, next, context) => {
     // TODO: If a mistake is reported involving 'identity' then we'll need to
     // filter it out of the 'mistakes' array.  We should try to come up with a
     // scenario where this will matter.
-    const result2 = context.checker.checkStep(newNext, next, {
-        ...context,
-        filters: {
-            disallowedChecks: new Set(["addZero"]),
-        },
-    });
+    const result2 = context.checker.checkStep(newNext, next, context);
 
     if (result1 && result2) {
         // TODO: figure out how to incorporate steps from result2.
@@ -202,12 +197,7 @@ export const mulOne: Check = (prev, next, context) => {
     // TODO: instead of trying to filter mistakes out at each point, we can
     // wait until the end and cross check the ids against those in the original
     // expressions.
-    const result2 = context.checker.checkStep(newNext, next, {
-        ...context,
-        filters: {
-            disallowedChecks: new Set(["mulOne"]),
-        },
-    });
+    const result2 = context.checker.checkStep(newNext, next, context);
 
     if (result1 && result2) {
         // TODO: figure out how to incorporate steps from result2.

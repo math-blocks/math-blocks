@@ -11,31 +11,6 @@ import {
 } from "./types";
 import {ALL_CHECKS} from "./all-checks";
 import {first} from "./strategies";
-import {evalMul, evalAdd} from "./checks/eval-checks";
-
-const filterChecks = (
-    checks: Check[],
-    context: Context,
-    options: Options,
-): Check[] => {
-    const filters = context.filters;
-    return checks.filter((check) => {
-        if (check.unfilterable) {
-            return true;
-        }
-        let result = true;
-        if (filters && filters.allowedChecks) {
-            result = result && filters.allowedChecks.has(check.name);
-        }
-        if (filters && filters.disallowedChecks) {
-            result = result && !filters.disallowedChecks.has(check.name);
-        }
-        if (options.skipEvalChecker) {
-            result = result && ![evalAdd, evalMul].includes(check);
-        }
-        return result;
-    });
-};
 
 const defaultOptions: Options = {
     skipEvalChecker: false,
@@ -55,14 +30,10 @@ class StepChecker implements IStepChecker {
     }
 
     checkStep: Check = (prev, next, context) => {
-        const filteredChecks = filterChecks(this.checks, context, this.options);
-
         // We return the first successful check.  This is necessary to reduce
         // computation to a manageable amount, but it means that the order of
-        // the checks is important.  In some cases we have to apply filters,
-        // defined by some of the checks, to reduce the number of search paths
-        // and avoid infinite loops.
-        const check = first(filteredChecks);
+        // the checks is important.
+        const check = first(this.checks);
 
         return check(prev, next, context);
     };
