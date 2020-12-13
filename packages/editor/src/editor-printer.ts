@@ -78,6 +78,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
 
             for (const arg of expr.args) {
                 const node = print(arg);
+                // TODO: we probably also want to wrap things like (a * b)(x * y)
                 const wrap = (wrapAll && expr.implicit) || arg.type === "add";
 
                 if (wrap) {
