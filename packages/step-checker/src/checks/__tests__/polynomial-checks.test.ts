@@ -67,6 +67,17 @@ describe("polynomial checks", () => {
         ]);
     });
 
+    it("(2 + 3)(x) + 3x -> 8x", () => {
+        const result = checkStep("(2 + 3)(x) + 3x", "8x");
+
+        expect(result).toBeTruthy();
+        expect(result).toHaveMessages([
+            "evaluate coefficient",
+            "collect like terms",
+            "evaluation of addition",
+        ]);
+    });
+
     it("2x + 3x + 4y + 5y -> 5x + 9y", () => {
         const result = checkStep("2x + 3x + 4y + 5y", "5x + 9y");
 

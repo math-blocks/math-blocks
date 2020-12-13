@@ -42,9 +42,22 @@ export const collectLikeTerms: Check = (prev, next, context) => {
         const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
 
         if (numericFactors.length > 0) {
+            // If there's a single number factor then it's the coefficient
             if (numericFactors.length === 1) {
                 coeff = numericFactors[0];
+                if (coeff.type === "add" || coeff.type === "mul") {
+                    const originalCoeff = coeff;
+                    coeff = Semantic.number(
+                        evalNode(coeff, checker.options).toString(),
+                    );
+                    beforeSteps.push({
+                        message: "evaluate coefficient",
+                        nodes: [originalCoeff, coeff],
+                    });
+                }
             } else {
+                // If there a multiple factors that are numbers, multiply them
+                // together and evaluate them.
                 const mul = Semantic.mulFactors(numericFactors);
                 coeff = Semantic.number(
                     evalNode(mul, checker.options).toString(),
