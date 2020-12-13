@@ -2,7 +2,7 @@ import Ajv from "ajv";
 
 import {semanticSchema} from "@math-blocks/schema";
 import * as Editor from "@math-blocks/editor";
-import * as Parser from "@math-blocks/parser";
+import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
 import * as Lexer from "./editor-lexer";
