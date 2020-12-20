@@ -44,12 +44,12 @@ describe("serializer", () => {
         `);
     });
 
-    test("abs", () => {
+    test("not", () => {
         const ast = {
-            type: "abs",
-            arg: Util.number("-12"),
+            type: "not",
+            arg: Util.identifier("A"),
         };
-        expect(ast).toMatchInlineSnapshot(`(abs (neg 12))`);
+        expect(ast).toMatchInlineSnapshot(`(not A)`);
     });
 
     test("mul (explicit)", () => {
@@ -92,14 +92,9 @@ describe("serializer", () => {
         `);
     });
 
-    test("true", () => {
-        const ast = {type: "true"};
-        expect(ast).toMatchInlineSnapshot(`T`);
-    });
-
-    test("false", () => {
-        const ast = {type: "false"};
-        expect(ast).toMatchInlineSnapshot(`F`);
+    test("infinity", () => {
+        const ast = {type: "infinity"};
+        expect(ast).toMatchInlineSnapshot(`\u221e`);
     });
 
     test("unhandled node", () => {
