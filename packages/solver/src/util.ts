@@ -6,7 +6,7 @@ const isObject = (val: unknown): val is Record<string, unknown> => {
     return typeof val === "object" && val != null;
 };
 
-// dedupe with grader
+// TODO: dedup with grader
 export const deepEquals = (a: unknown, b: unknown): boolean => {
     if (Array.isArray(a) && Array.isArray(b)) {
         return (
@@ -33,7 +33,7 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     }
 };
 
-// TODO: dedupe with grader
+// TODO: dedup with grader
 export const evalNode = (node: Semantic.Types.Node): Fraction => {
     if (node.type === "number") {
         return new Fraction(node.value);
@@ -54,4 +54,43 @@ export const evalNode = (node: Semantic.Types.Node): Fraction => {
     } else {
         throw new Error(`cannot parse a number from ${node.type} node`);
     }
+};
+
+// TODO: dedupe with grader
+/**
+ * Returns all of the elements that appear in both as and bs.
+ */
+export const intersection = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
+    for (const a of as) {
+        // We use deepEquals here as an optimization.  If there are equivalent
+        // nodes that aren't exactly the same between the as and bs then one of
+        // out other checks will find it.
+        const index = bs.findIndex((b) => deepEquals(a, b));
+        if (index !== -1) {
+            result.push(a);
+            bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+        }
+    }
+    return result;
+};
+
+// TODO: dedupe with grader
+/**
+ * Returns all of the elements that appear in as but not in bs.
+ */
+export const difference = <T>(as: T[], bs: T[]): T[] => {
+    const result: T[] = [];
+    for (const a of as) {
+        // We use deepEquals here as an optimization.  If there are equivalent
+        // nodes that aren't exactly the same between the as and bs then one of
+        // out other checks will find it.
+        const index = bs.findIndex((b) => deepEquals(a, b));
+        if (index !== -1) {
+            bs = [...bs.slice(0, index), ...bs.slice(index + 1)];
+        } else {
+            result.push(a);
+        }
+    }
+    return result;
 };

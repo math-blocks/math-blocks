@@ -6,6 +6,8 @@ import {
     distribute,
     addNegToSub,
     evalMul,
+    evalAdd,
+    simplifyFraction,
     mulToPower,
 } from "./transforms";
 
@@ -21,6 +23,8 @@ export const simplify = (node: Semantic.Types.Node): Semantic.Types.Node => {
         dropParens,
 
         evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
+        evalAdd,
+        simplifyFraction,
         mulToPower,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)

@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {deepEquals, evalNode} from "./util";
+import {deepEquals, evalNode, intersection, difference} from "./util";
 import {Step} from "./types";
 
 type Transform = (
@@ -252,6 +252,43 @@ export const evalMul: Transform = (node) => {
     }
 
     return undefined;
+};
+
+export const evalAdd: Transform = (node) => {
+    const terms = Semantic.getTerms(node);
+
+    const numericTerms = terms.filter(Semantic.isNumber);
+    const nonNumericTerms = terms.filter((f) => !Semantic.isNumber(f));
+
+    if (numericTerms.length > 1) {
+        const sum = Semantic.number(
+            evalNode(Semantic.addTerms(numericTerms)).toString(),
+        );
+
+        return Semantic.mulFactors([...nonNumericTerms, sum], true);
+    }
+
+    return undefined;
+};
+
+export const simplifyFraction: Transform = (node) => {
+    if (node.type !== "div") {
+        return undefined;
+    }
+
+    const numFactors = Semantic.getFactors(node.args[0]);
+    const denFactors = Semantic.getFactors(node.args[1]);
+
+    const commonFactors = intersection(numFactors, denFactors);
+
+    const num = Semantic.mulFactors(difference(numFactors, commonFactors));
+    const den = Semantic.mulFactors(difference(denFactors, commonFactors));
+
+    if (deepEquals(den, Semantic.number("1"))) {
+        return num;
+    } else {
+        return Semantic.div(num, den);
+    }
 };
 
 export const mulToPower: Transform = (node) => {
