@@ -42,21 +42,16 @@ export const collectLikeTerms = (
             ? Semantic.getFactors(arg.arg)
             : Semantic.getFactors(arg);
 
+        // TODO: maybe restrict ourselves to nodes of type "number" or "neg"?
         const numericFactors = factors.filter(Semantic.isNumber);
         const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
 
         if (numericFactors.length > 0) {
             // If there's a single number factor then it's the coefficient
             if (numericFactors.length === 1) {
+                // We don't have to worry about evaluating this since it should
+                // be pre-evaluated by evalMul or one of the other transforms
                 coeff = numericFactors[0];
-                if (coeff.type === "add" || coeff.type === "mul") {
-                    const originalCoeff = coeff;
-                    coeff = Semantic.number(evalNode(coeff).toString());
-                    beforeSteps.push({
-                        message: "evaluate coefficient",
-                        nodes: [originalCoeff, coeff],
-                    });
-                }
             } else {
                 // If there a multiple factors that are numbers, multiply them
                 // together and evaluate them.

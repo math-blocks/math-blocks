@@ -64,6 +64,22 @@ describe("simplify", () => {
             expect(print(result)).toEqual("3x + 3");
         });
 
+        test("(1 + 2)(x + 1) -> 3x + 3", () => {
+            const ast = parse("(1 + 2)(x + 1)");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("3x + 3");
+        });
+
+        test("(6 * 1/2)(x + 1) -> 3x + 3", () => {
+            const ast = parse("(6 * 1/2)(x + 1)");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("3x + 3");
+        });
+
         test("3 - (x + 1) -> x + 2", () => {
             const ast = parse("3 - (x + 1)");
 
