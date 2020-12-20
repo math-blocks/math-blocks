@@ -68,18 +68,17 @@ const findParent = (
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    Semantic.traverse(
-        root,
-        (n) => {
+    Semantic.traverse(root, {
+        enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];
             }
             stack.push(n);
         },
-        (n) => {
+        exit: (n) => {
             stack.pop();
         },
-    );
+    });
 
     return result;
 };
