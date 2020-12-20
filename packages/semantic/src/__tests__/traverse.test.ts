@@ -11,7 +11,7 @@ describe("traverse", () => {
         const enter = jest.fn();
         const exit = jest.fn();
 
-        traverse(num, enter, exit);
+        traverse(num, {enter, exit});
 
         expect(enter).toHaveBeenCalledTimes(1);
         expect(enter).toHaveBeenCalledWith(num);
@@ -36,14 +36,14 @@ describe("traverse", () => {
                 },
             ],
         };
-        const cb = jest.fn();
+        const enter = jest.fn();
 
-        traverse(add, cb);
+        traverse(add, {enter});
 
-        expect(cb).toHaveBeenCalledTimes(3);
-        expect(cb).toHaveBeenCalledWith(add);
-        expect(cb).toHaveBeenCalledWith(add.args[0]);
-        expect(cb).toHaveBeenCalledWith(add.args[1]);
+        expect(enter).toHaveBeenCalledTimes(3);
+        expect(enter).toHaveBeenCalledWith(add);
+        expect(enter).toHaveBeenCalledWith(add.args[0]);
+        expect(enter).toHaveBeenCalledWith(add.args[1]);
     });
 
     it("call traverse properties", () => {
@@ -61,14 +61,14 @@ describe("traverse", () => {
                 value: "3",
             },
         };
-        const cb = jest.fn();
+        const enter = jest.fn();
 
-        traverse(power, cb);
+        traverse(power, {enter});
 
-        expect(cb).toHaveBeenCalledTimes(3);
-        expect(cb).toHaveBeenCalledWith(power);
-        expect(cb).toHaveBeenCalledWith(power.base);
-        expect(cb).toHaveBeenCalledWith(power.exp);
+        expect(enter).toHaveBeenCalledTimes(3);
+        expect(enter).toHaveBeenCalledWith(power);
+        expect(enter).toHaveBeenCalledWith(power.base);
+        expect(enter).toHaveBeenCalledWith(power.exp);
     });
 
     it("should not call cb on location", () => {
@@ -82,11 +82,101 @@ describe("traverse", () => {
                 next: 2,
             },
         };
-        const cb = jest.fn();
+        const enter = jest.fn();
 
-        traverse(num, cb);
+        traverse(num, {enter});
 
-        expect(cb).toHaveBeenCalledTimes(1);
-        expect(cb).toHaveBeenCalledWith(num);
+        expect(enter).toHaveBeenCalledTimes(1);
+        expect(enter).toHaveBeenCalledWith(num);
+    });
+
+    it("supports making changes to a node on exit", () => {
+        const power: Types.Pow = {
+            id: 0,
+            type: "pow",
+            base: {
+                id: 1,
+                type: "identifier",
+                name: "x",
+            },
+            exp: {
+                id: 2,
+                type: "number",
+                value: "3",
+            },
+        };
+
+        traverse(power, {
+            exit: (node) => {
+                if (node.type === "identifier" && node.name === "x") {
+                    return {
+                        ...node,
+                        name: "y",
+                    };
+                }
+            },
+        });
+
+        expect(power).toEqual({
+            id: 0,
+            type: "pow",
+            base: {
+                id: 1,
+                type: "identifier",
+                name: "y",
+            },
+            exp: {
+                id: 2,
+                type: "number",
+                value: "3",
+            },
+        });
+    });
+
+    it("supports making changes to an element in an array on exit", () => {
+        const sum: Types.Add = {
+            id: 0,
+            type: "add",
+            args: [
+                {
+                    id: 1,
+                    type: "identifier",
+                    name: "x",
+                },
+                {
+                    id: 2,
+                    type: "number",
+                    value: "3",
+                },
+            ],
+        };
+
+        traverse(sum, {
+            exit: (node) => {
+                if (node.type === "identifier" && node.name === "x") {
+                    return {
+                        ...node,
+                        name: "y",
+                    };
+                }
+            },
+        });
+
+        expect(sum).toEqual({
+            id: 0,
+            type: "add",
+            args: [
+                {
+                    id: 1,
+                    type: "identifier",
+                    name: "y",
+                },
+                {
+                    id: 2,
+                    type: "number",
+                    value: "3",
+                },
+            ],
+        });
     });
 });

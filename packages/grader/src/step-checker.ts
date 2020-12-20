@@ -72,8 +72,8 @@ const filterMistakes = (
     const prevIds: number[] = [];
     const nextIds: number[] = [];
 
-    Semantic.traverse(prev, (node) => prevIds.push(node.id));
-    Semantic.traverse(next, (node) => nextIds.push(node.id));
+    Semantic.traverse(prev, {enter: (node) => prevIds.push(node.id)});
+    Semantic.traverse(next, {enter: (node) => nextIds.push(node.id)});
 
     // For now we only allow mistakes that reference nodes in prev or next.  If
     // a mistakes references a node in an intermediate step we ignore that for
