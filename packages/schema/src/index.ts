@@ -220,7 +220,7 @@ const genSchema = ({
             Int: node("int", {
                 arg: NumericNode,
                 bvar: ref("Ident"),
-                limits: ref("Ident"),
+                limits: ref("Ident"), // TODO: change this to ref("Limits")
             }),
 
             // TODO
