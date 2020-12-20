@@ -112,5 +112,60 @@ describe("simplify", () => {
 
             expect(print(result)).toEqual("x - 2");
         });
+
+        test("(x + 1)(x + 3) -> x^2 + 4x + 3", () => {
+            const ast = parse("(x + 1)(x + 3)");
+
+            // Ideally I'd like to show the steps as:
+            // - (x + 1)(x + 3)
+            // - (x + 1)(x) + (x + 1)(3)
+            // - (x)(x) + (1)(x) + (x)(3) + (1)(3) ... this currently missing
+            // - x^2 + x + 3x + 3
+            // - x^2 + 4x + 3
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("x^2 + 4x + 3");
+        });
+
+        test.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
+            const ast = parse("(x + 1)^2");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("x^2 + 2x + 1");
+        });
+
+        test("(x)(x) -> x^2", () => {
+            const ast = parse("(x)(x)");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("x^2");
+        });
+
+        test("(3)(3) -> 9", () => {
+            const ast = parse("(3)(3)");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("9");
+        });
+
+        test("banana -> ba^3n^2", () => {
+            const ast = parse("banana");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("ba^3n^2");
+        });
+
+        test.skip("(a^2)(a^3) -> a^5", () => {
+            const ast = parse("(a^2)(a^3)");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("a^5");
+        });
     });
 });

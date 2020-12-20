@@ -164,21 +164,42 @@ export const distribute = (
     let changed = false;
     const newNodes = nodes.flatMap((node) => {
         if (node.type === "mul") {
-            if (node.args.length === 2 && node.args[1].type === "add") {
-                const add = node.args[1];
-                const terms = add.args.map((term) => {
-                    let newTerm: Semantic.Types.NumericNode = Semantic.mul(
-                        [node.args[0], ...Semantic.getFactors(term)],
-                        node.implicit,
-                    );
-                    if (Semantic.isNumber(newTerm)) {
-                        // TODO: report this as a substep
-                        newTerm = Semantic.number(evalNode(newTerm).toString());
-                    }
-                    return newTerm;
-                }) as TwoOrMore<Semantic.Types.NumericNode>;
-                changed = true;
-                return terms;
+            if (node.args.length === 2) {
+                if (node.args[1].type === "add") {
+                    const add = node.args[1];
+                    const terms = add.args.map((term) => {
+                        let newTerm = Semantic.mulFactors(
+                            [node.args[0], ...Semantic.getFactors(term)],
+                            node.implicit,
+                        );
+                        if (Semantic.isNumber(newTerm)) {
+                            // TODO: report this as a substep
+                            newTerm = Semantic.number(
+                                evalNode(newTerm).toString(),
+                            );
+                        }
+                        return newTerm;
+                    }) as TwoOrMore<Semantic.Types.NumericNode>;
+                    changed = true;
+                    return terms;
+                } else if (node.args[0].type === "add") {
+                    const add = node.args[0];
+                    const terms = add.args.map((term) => {
+                        let newTerm = Semantic.mulFactors(
+                            [...Semantic.getFactors(term), node.args[1]],
+                            node.implicit,
+                        );
+                        if (Semantic.isNumber(newTerm)) {
+                            // TODO: report this as a substep
+                            newTerm = Semantic.number(
+                                evalNode(newTerm).toString(),
+                            );
+                        }
+                        return newTerm;
+                    }) as TwoOrMore<Semantic.Types.NumericNode>;
+                    changed = true;
+                    return terms;
+                }
             }
         } else if (node.type === "neg" && node.arg.type === "add") {
             const add = node.arg;
@@ -236,4 +257,49 @@ export const evalMul: Transform = (node) => {
     }
 
     return undefined;
+};
+
+export const mulToPower: Transform = (node) => {
+    const factors = Semantic.getFactors(node);
+
+    if (factors.length < 2) {
+        return undefined;
+    }
+
+    // map from factor to factor count
+    const map = new Map<Semantic.Types.NumericNode, number>();
+
+    for (const factor of factors) {
+        let key: Semantic.Types.NumericNode | undefined;
+        for (const k of map.keys()) {
+            // TODO: add an option to ignore mul.implicit
+            if (deepEquals(k, factor)) {
+                key = k;
+            }
+        }
+        if (!key) {
+            map.set(factor, 1);
+        } else {
+            const val = map.get(key) as number;
+            map.set(key, val + 1);
+        }
+    }
+
+    if ([...map.values()].every((exp) => exp === 1)) {
+        return undefined;
+    }
+
+    const newFactors: Semantic.Types.NumericNode[] = [];
+    for (const [key, val] of map.entries()) {
+        if (val === 1) {
+            newFactors.push(key);
+        } else {
+            // Clone the key to prevent issues when modifying the AST
+            const base = JSON.parse(JSON.stringify(key));
+            newFactors.push(Semantic.pow(base, Semantic.number(String(val))));
+        }
+    }
+
+    // TODO: mimic the implicitness of the incoming node.
+    return Semantic.mulFactors(newFactors, true);
 };

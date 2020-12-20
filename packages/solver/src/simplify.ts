@@ -6,6 +6,7 @@ import {
     distribute,
     addNegToSub,
     evalMul,
+    mulToPower,
 } from "./transforms";
 
 type Transform = (
@@ -19,7 +20,8 @@ export const simplify = (node: Semantic.Types.Node): Semantic.Types.Node => {
         collectLikeTerms,
         dropParens,
 
-        evalMul,
+        evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
+        mulToPower,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
         // before distributing.
