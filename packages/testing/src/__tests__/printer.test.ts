@@ -180,6 +180,14 @@ describe("printer", () => {
 
             expect(result).toEqual("1 * 2 * 3");
         });
+
+        test("a(b(c + d))", () => {
+            const ast = parse("a(b(c + d))");
+
+            const result = print(ast);
+
+            expect(result).toEqual("a(b(c + d))");
+        });
     });
 
     describe("div", () => {
