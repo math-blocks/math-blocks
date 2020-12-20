@@ -95,12 +95,8 @@ export const checkAddSub: Check = (prev, next, context) => {
             newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
         const newPrev = Semantic.eq([
-            Semantic.add([...prevTermsLHS, ...newTerms] as TwoOrMore<
-                Semantic.Types.NumericNode
-            >),
-            Semantic.add([...prevTermsRHS, ...newTerms] as TwoOrMore<
-                Semantic.Types.NumericNode
-            >),
+            Semantic.addTerms([...prevTermsLHS, ...newTerms]),
+            Semantic.addTerms([...prevTermsRHS, ...newTerms]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -207,12 +203,8 @@ export const checkMul: Check = (prev, next, context) => {
         // We place the new factors at the start since it is common to go
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = Semantic.eq([
-            Semantic.mul([...newFactors, ...prevFactorsLHS] as TwoOrMore<
-                Semantic.Types.NumericNode
-            >),
-            Semantic.mul([...newFactors, ...prevFactorsRHS] as TwoOrMore<
-                Semantic.Types.NumericNode
-            >),
+            Semantic.mulFactors([...newFactors, ...prevFactorsLHS]),
+            Semantic.mulFactors([...newFactors, ...prevFactorsRHS]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't

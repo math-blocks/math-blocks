@@ -212,11 +212,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                 newFactors.push(
                     Semantic.pow(
                         k,
-                        Semantic.add(
-                            values.map(({exp}) => exp) as TwoOrMore<
-                                Semantic.Types.NumericNode
-                            >,
-                        ),
+                        Semantic.addTerms(values.map(({exp}) => exp)),
                     ),
                 );
                 changed = true;
@@ -261,10 +257,8 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                         !exactMatch(value.exp, Semantic.number("1"), context),
                 )
             ) {
-                const exp: Semantic.Types.NumericNode = Semantic.add(
-                    values.map(({exp}) => exp) as TwoOrMore<
-                        Semantic.Types.NumericNode
-                    >,
+                const exp: Semantic.Types.NumericNode = Semantic.addTerms(
+                    values.map(({exp}) => exp),
                 );
                 if (Semantic.isNumber(exp)) {
                     const evalExp = Semantic.number(
@@ -530,11 +524,11 @@ export const powOfPow: Check = (prev, next, context) => {
     const {checker} = context;
     const newPrev = Semantic.pow(
         prev.base.base,
-        Semantic.mul([
+        Semantic.mulFactors([
             // handle situations like (x^(ab))^(cd)
             ...Semantic.getFactors(prev.base.exp),
             ...Semantic.getFactors(prev.exp),
-        ] as TwoOrMore<Semantic.Types.NumericNode>),
+        ]),
     );
 
     const result = checker.checkStep(newPrev, next, context);

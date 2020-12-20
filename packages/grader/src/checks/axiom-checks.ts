@@ -239,9 +239,9 @@ export const checkDistribution: Check = (prev, next, context) => {
             ) {
                 const newPrev = Semantic.addTerms([
                     ...prev.args.slice(0, i),
-                    ...(mul.args[1].args.map((arg) =>
+                    ...mul.args[1].args.map((arg) =>
                         Semantic.mul([mul.args[0], arg], mul.implicit),
-                    ) as TwoOrMore<Semantic.Types.NumericNode>),
+                    ),
                     ...prev.args.slice(i + 1),
                 ]);
 
@@ -285,7 +285,7 @@ export const checkDistribution: Check = (prev, next, context) => {
 
     // If the second factor is an add, e.g. a(b + c) -> ...
     if (prev.args[1].type === "add") {
-        const newPrev = Semantic.add(
+        const newPrev = Semantic.addTerms(
             prev.args[1].args.map((arg) => {
                 if (arg.type === "neg") {
                     // Set 'subtraction' prop to false
@@ -293,7 +293,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 } else {
                     return Semantic.mul([prev.args[0], arg], prev.implicit);
                 }
-            }) as TwoOrMore<Semantic.Types.NumericNode>,
+            }),
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
@@ -312,10 +312,8 @@ export const checkDistribution: Check = (prev, next, context) => {
 
     // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
-        const newPrev = Semantic.add(
-            prev.args[0].args.map((arg) =>
-                Semantic.mul([arg, prev.args[1]]),
-            ) as TwoOrMore<Semantic.Types.NumericNode>,
+        const newPrev = Semantic.addTerms(
+            prev.args[0].args.map((arg) => Semantic.mul([arg, prev.args[1]])),
         );
 
         const result = context.checker.checkStep(newPrev, next, context);

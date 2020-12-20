@@ -205,11 +205,11 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 // exclude -1 to avoid an infinite expansion
                 !(arg.arg.type == "number" && arg.arg.value == "1")
             ) {
-                const newArg = Semantic.mul(
+                const newArg = Semantic.mulFactors(
                     [
                         Semantic.neg(Semantic.number("1")),
                         ...Semantic.getFactors(arg.arg),
-                    ] as TwoOrMore<Semantic.Types.NumericNode>,
+                    ],
                     true,
                 );
                 newArg.source = "negIsMulNegOne";
@@ -217,13 +217,13 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Types.NumericNode>;
+        });
 
         if (!changed) {
             return;
         }
 
-        const newPrev = Semantic.add(newArgs);
+        const newPrev = Semantic.addTerms(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -348,10 +348,8 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
     if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
         const mul = prev.arg;
 
-        const newPrev = Semantic.mul(
-            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)] as TwoOrMore<
-                Semantic.Types.NumericNode
-            >,
+        const newPrev = Semantic.mulFactors(
+            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)],
             prev.arg.implicit,
         );
 
@@ -377,24 +375,21 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 arg.arg.type === "mul"
             ) {
                 const mul = arg.arg;
-                const newArg = Semantic.mul(
-                    [
-                        Semantic.neg(mul.args[0]),
-                        ...mul.args.slice(1),
-                    ] as TwoOrMore<Semantic.Types.NumericNode>,
+                const newArg = Semantic.mulFactors(
+                    [Semantic.neg(mul.args[0]), ...mul.args.slice(1)],
                     mul.implicit,
                 );
                 changed = true;
                 return newArg;
             }
             return arg;
-        }) as TwoOrMore<Semantic.Types.NumericNode>;
+        });
 
         if (!changed) {
             return;
         }
 
-        const newPrev = Semantic.add(newArgs);
+        const newPrev = Semantic.addTerms(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 

@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor";
+import * as Semantic from "@math-blocks/semantic";
 import {parse} from "@math-blocks/editor-parser";
 import {MathRenderer} from "@math-blocks/react";
 import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
@@ -411,23 +412,23 @@ export const ColorizedFraction: React.SFC<{}> = () => {
 export const ColorizedSum: React.SFC<{}> = () => {
     const editNode = Editor.Util.row("8+10+12+14");
 
-    const semNode = parse(editNode);
+    const semNode = parse(editNode) as Semantic.Types.Add;
 
-    // @ts-ignore
     const num10 = semNode.args[1];
-    // @ts-ignore
     const num12 = semNode.args[2];
 
-    // Only do this if the indicies of the args differ by one
-    const loc = {
-        ...num10.loc,
-        start: num10.loc.start,
-        end: num12.loc.end,
-    };
-
     const colorMap = new Map<number, string>();
-    for (let i = loc.start; i < loc.end; i++) {
-        colorMap.set(editNode.children[i].id, "darkCyan");
+    if (num10.loc && num12.loc) {
+        // Only do this if the indicies of the args differ by one
+        const loc = {
+            ...num10.loc,
+            start: num10.loc.start,
+            end: num12.loc.end,
+        };
+
+        for (let i = loc.start; i < loc.end; i++) {
+            colorMap.set(editNode.children[i].id, "darkCyan");
+        }
     }
 
     const fontSize = 60;
@@ -446,19 +447,23 @@ export const ColorizedSum: React.SFC<{}> = () => {
 export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
     const editNode = Editor.Util.row("(11+x)(12-y)");
 
-    const semNode = parse(editNode);
+    const semNode = parse(editNode) as Semantic.Types.Mul;
 
-    // @ts-ignore
-    const num12 = semNode.args[1].args[0];
-    // @ts-ignore
+    const secondTerm = semNode.args[1] as Semantic.Types.Add;
+
+    const num12 = secondTerm.args[0];
     const sum0 = semNode.args[0];
 
     const colorMap = new Map<number, string>();
-    for (let i = num12.loc.start; i < num12.loc.end; i++) {
-        colorMap.set(editNode.children[i].id, "darkCyan");
+    if (num12.loc) {
+        for (let i = num12.loc.start; i < num12.loc.end; i++) {
+            colorMap.set(editNode.children[i].id, "darkCyan");
+        }
     }
-    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-        colorMap.set(editNode.children[i].id, "orange");
+    if (sum0.loc) {
+        for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
+            colorMap.set(editNode.children[i].id, "orange");
+        }
     }
 
     const fontSize = 60;
@@ -477,25 +482,28 @@ export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
 export const NestedSemanticColoring: React.FunctionComponent<{}> = () => {
     const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
 
-    const semNode = parse(editNode);
+    const semNode = parse(editNode) as Semantic.Types.Div;
+    const denominator = semNode.args[1] as Semantic.Types.Add;
 
-    // @ts-ignore
-    const num12 = semNode.args[1].args[0];
-    // @ts-ignore
+    const num12 = denominator.args[0];
     const sum0 = semNode.args[0];
 
     const colorMap = new Map<number, string>();
     let node;
-    node = Editor.Util.nodeAtPath(editNode, num12.loc.path);
-    for (let i = num12.loc.start; i < num12.loc.end; i++) {
-        if (Editor.Util.hasChildren(node)) {
-            colorMap.set(node.children[i].id, "darkCyan");
+    if (num12.loc) {
+        node = Editor.Util.nodeAtPath(editNode, num12.loc.path);
+        for (let i = num12.loc.start; i < num12.loc.end; i++) {
+            if (Editor.Util.hasChildren(node)) {
+                colorMap.set(node.children[i].id, "darkCyan");
+            }
         }
     }
-    node = Editor.Util.nodeAtPath(editNode, sum0.loc.path);
-    for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-        if (Editor.Util.hasChildren(node)) {
-            colorMap.set(node.children[i].id, "orange");
+    if (sum0.loc) {
+        node = Editor.Util.nodeAtPath(editNode, sum0.loc.path);
+        for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
+            if (Editor.Util.hasChildren(node)) {
+                colorMap.set(node.children[i].id, "orange");
+            }
         }
     }
 
