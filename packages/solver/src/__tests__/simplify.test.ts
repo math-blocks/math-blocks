@@ -73,17 +73,20 @@ describe("simplify", () => {
             expect(print(result)).toEqual("-1x + 2");
         });
 
-        test.skip("3(x + 2(x - 1)) -> 3(3x - 2) -> 9x - 6", () => {
+        test("3(x + 2(x - 1)) -> 3(3x - 2) -> 9x - 6", () => {
             const ast = parse("3(x + 2(x - 1))");
 
             const result = simplify(ast);
 
-            // TODO: handle nesting
-            // right now this transforms to 3x + (3)(2)(x - 1)
-            // we could add a transform to handle this but we probably want to
-            // traverse the tree structure and apply rules from the innermost
-            // expression outwards
-            expect(print(result)).toEqual("3x + 7");
+            expect(print(result)).toEqual("9x - 6");
+        });
+
+        test("(3)(3)(x) - 6 -> 9x - 6", () => {
+            const ast = parse("(3)(3)(x) - 6");
+
+            const result = simplify(ast);
+
+            expect(print(result)).toEqual("9x - 6");
         });
 
         test("3(x + 1) + 4(x - 1) -> 7x - 1", () => {
@@ -107,8 +110,6 @@ describe("simplify", () => {
 
             const result = simplify(ast);
 
-            // We consider subtraction simpler than adding the inverse
-            // TODO: add a transform from a + -b -> a - b
             expect(print(result)).toEqual("x - 2");
         });
     });

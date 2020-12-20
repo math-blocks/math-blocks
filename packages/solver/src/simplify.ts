@@ -5,52 +5,71 @@ import {
     dropParens,
     distribute,
     addNegToSub,
+    evalMul,
 } from "./transforms";
-
-// There are two things going on:
-// - outer loop: simplify each side of the equation until we reach a steady state
-//   - how do we determine if a change has occurred?
-// - inner loop: traverse the AST and simplify sub-expressions
 
 type Transform = (
     node: Semantic.Types.NumericNode,
 ) => Semantic.Types.NumericNode | undefined;
 
-// TODO: instead of just returning the new node, we should provide an array of
-// steps that describe how the solution was arrived at
+// TODO: collect all of the steps and sub-steps
 export const simplify = (node: Semantic.Types.Node): Semantic.Types.Node => {
     const tranforms: Transform[] = [
         distribute,
         collectLikeTerms,
         dropParens,
 
+        evalMul,
+
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
         // before distributing.
         addNegToSub,
     ];
 
-    if (Semantic.isNumeric(node)) {
-        let current: Semantic.Types.NumericNode = node;
+    let changed;
 
-        let count = 0;
-
-        while (count < 10) {
-            let next: Semantic.Types.NumericNode | undefined;
-            for (const transform of tranforms) {
-                next = transform(current);
-                if (next) {
-                    break;
+    // The inner loop attempts to apply one or more transforms to nodes in the
+    // AST from the inside out.
+    const exit = (
+        node: Semantic.Types.Node,
+    ): Semantic.Types.Node | undefined => {
+        // TODO: get rid of this check so that we can simplify other types of
+        // expressions, e.g. logic expressions.
+        if (Semantic.isNumeric(node)) {
+            let current = node;
+            for (let i = 0; i < 10; i++) {
+                let next: Semantic.Types.NumericNode | undefined;
+                for (const transform of tranforms) {
+                    next = transform(current);
+                    // Multiple transforms can be applied to the current node.
+                    if (next) {
+                        changed = true;
+                        break;
+                    }
                 }
-            }
-            if (next) {
+
+                // None of the transforms suceeded
+                if (!next) {
+                    return current;
+                }
+
+                // Update the current node so that we can attemp to transform
+                // it again.
                 current = next;
-                count++;
-            } else {
-                return current;
             }
+        }
+    };
+
+    // The outer loop traverses the tree multiple times until the inner loop
+    // is no longer making any changes to the AST.
+    let current = node;
+    for (let i = 0; i < 10; i++) {
+        changed = false;
+        current = Semantic.traverse(current, {exit});
+        if (!changed) {
+            return current;
         }
     }
 
-    // If we don't know how to simplify it we return the original node
-    return node;
+    return current;
 };

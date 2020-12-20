@@ -221,3 +221,19 @@ export const addNegToSub: Transform = (node) => {
     }
     return Semantic.addTerms(newTerms);
 };
+
+export const evalMul: Transform = (node) => {
+    const factors = Semantic.getFactors(node);
+
+    const numericFactors = factors.filter(Semantic.isNumber);
+    const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
+
+    if (numericFactors.length > 1) {
+        const mul = Semantic.mulFactors(numericFactors);
+        const coeff = Semantic.number(evalNode(mul).toString());
+
+        return Semantic.mulFactors([coeff, ...nonNumericFactors], true);
+    }
+
+    return undefined;
+};
