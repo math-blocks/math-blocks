@@ -3,5 +3,9 @@
     "compilerOptions": {
       "outDir": "../../out/solver",
       "rootDir": "."
-    }
+    },
+    "references": [
+      {"path": "../semantic"},
+      {"path": "../testing"}
+    ]
   }

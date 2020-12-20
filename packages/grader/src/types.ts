@@ -75,8 +75,6 @@ export type Check<
     // Whether or not the check should be run by reversing the prev, next params.
     // Most checks are symmetric.
     symmetric?: boolean;
-
-    unfilterable?: boolean;
 };
 
 export type HasArgs =

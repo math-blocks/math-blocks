@@ -87,7 +87,8 @@ export const print = (expr: Semantic.Types.Node): string => {
                 const wrap =
                     (wrapAll && expr.implicit) ||
                     arg.type === "add" ||
-                    (arg.type === "mul" && !arg.implicit);
+                    (arg.type === "mul" && !arg.implicit) ||
+                    (expr.implicit && arg.type === "mul" && arg.implicit);
                 const node = print(arg);
 
                 if (wrap) {
