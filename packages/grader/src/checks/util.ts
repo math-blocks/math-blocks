@@ -1,10 +1,9 @@
-import Fraction from "fraction.js";
 import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
 import {Status} from "../enums";
-import {Step, Context, Options, Result} from "../types";
+import {Step, Context, Result} from "../types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
@@ -259,34 +258,4 @@ export const incorrectResult = (
                   ...afterSteps,
               ],
     };
-};
-
-// TODO: create a wrapper around this that returns a Semantic.Types.NumericNode
-// Right now we don't handle returning fractions in a lot of places.
-export const evalNode = (
-    node: Semantic.Types.Node,
-    options: Options,
-): Fraction => {
-    if (node.type === "number") {
-        return new Fraction(node.value);
-    } else if (node.type === "neg") {
-        return evalNode(node.arg, options).mul(new Fraction("-1"));
-    } else if (node.type === "div" && options.evalFractions) {
-        // TODO: add a recursive option as well
-        return evalNode(node.args[0], options).div(
-            evalNode(node.args[1], options),
-        );
-    } else if (node.type === "add") {
-        return node.args.reduce(
-            (sum, term) => sum.add(evalNode(term, options)),
-            new Fraction("0"),
-        );
-    } else if (node.type === "mul") {
-        return node.args.reduce(
-            (sum, factor) => sum.mul(evalNode(factor, options)),
-            new Fraction("1"),
-        );
-    } else {
-        throw new Error(`cannot parse a number from ${node.type} node`);
-    }
 };

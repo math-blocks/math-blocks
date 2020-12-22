@@ -3,9 +3,9 @@ import * as Semantic from "@math-blocks/semantic";
 import {Check, Correction} from "../types";
 import {MistakeId} from "../enums";
 
-import {correctResult, evalNode} from "./util";
+import {correctResult} from "./util";
 
-const {intersection, difference} = Semantic;
+const {intersection, difference, evalNode} = Semantic;
 
 // TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
 // e.g. "adding inverse" and "addition with identity"

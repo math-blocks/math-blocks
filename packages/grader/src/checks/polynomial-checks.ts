@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
 
-import {correctResult, evalNode} from "./util";
+import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 
 // 2x + 3x -> 5x
@@ -48,7 +48,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                 if (coeff.type === "add" || coeff.type === "mul") {
                     const originalCoeff = coeff;
                     coeff = Semantic.number(
-                        evalNode(coeff, checker.options).toString(),
+                        Semantic.evalNode(coeff, checker.options).toString(),
                     );
                     beforeSteps.push({
                         message: "evaluate coefficient",
@@ -60,7 +60,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                 // together and evaluate them.
                 const mul = Semantic.mulFactors(numericFactors);
                 coeff = Semantic.number(
-                    evalNode(mul, checker.options).toString(),
+                    Semantic.evalNode(mul, checker.options).toString(),
                 );
                 beforeSteps.push({
                     message: "evaluate multiplication",

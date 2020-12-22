@@ -2,6 +2,8 @@
  * Builder functions and helper methods for working
  * with semantic nodes.
  */
+import Fraction from "fraction.js";
+
 import {getId} from "@math-blocks/core";
 
 import * as Types from "./types";
@@ -310,3 +312,41 @@ export const hasArgs = (a: Types.Node): a is HasArgs =>
     a.type === "gt" ||
     a.type === "gte" ||
     a.type === "div";
+
+// TODO: dedup with grader package
+type Options = {
+    skipEvalChecker?: boolean;
+    evalFractions?: boolean;
+};
+
+// TODO: create a wrapper around this that returns a Semantic.Types.NumericNode
+// Right now we don't handle returning fractions in a lot of places.
+export const evalNode = (
+    node: Types.Node,
+    options: Options = {
+        evalFractions: true,
+    },
+): Fraction => {
+    if (node.type === "number") {
+        return new Fraction(node.value);
+    } else if (node.type === "neg") {
+        return evalNode(node.arg, options).mul(new Fraction("-1"));
+    } else if (node.type === "div" && options.evalFractions) {
+        // TODO: add a recursive option as well
+        return evalNode(node.args[0], options).div(
+            evalNode(node.args[1], options),
+        );
+    } else if (node.type === "add") {
+        return node.args.reduce(
+            (sum, term) => sum.add(evalNode(term, options)),
+            new Fraction("0"),
+        );
+    } else if (node.type === "mul") {
+        return node.args.reduce(
+            (sum, factor) => sum.mul(evalNode(factor, options)),
+            new Fraction("1"),
+        );
+    } else {
+        throw new Error(`cannot parse a number from ${node.type} node`);
+    }
+};
