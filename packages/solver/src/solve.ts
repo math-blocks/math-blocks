@@ -15,15 +15,12 @@
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {simplify} from "./simplify";
-import {deepEquals} from "./util";
-
-const getCoeff = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode => {
-    const factors = Semantic.getFactors(node);
-    return Semantic.isNumber(factors[0]) ? factors[0] : Semantic.number("1");
-};
+import {
+    divBothSides,
+    moveVariablesToOneSide,
+    simplifyBothSides,
+    Transform,
+} from "./solve-transforms";
 
 export const solve = (
     node: Semantic.Types.Node,
@@ -33,63 +30,33 @@ export const solve = (
         return node;
     }
 
-    let newNode = Semantic.eq(
-        node.args.map(simplify) as TwoOrMore<Semantic.Types.Node>,
-    );
+    const transforms: Transform[] = [
+        simplifyBothSides,
+        moveVariablesToOneSide,
+        divBothSides,
+    ];
 
-    const [left, right] = newNode.args as Semantic.Types.NumericNode[];
-
-    const leftTerms = Semantic.getTerms(left);
-    const rightTerms = Semantic.getTerms(right);
-
-    const leftIdentTerm = leftTerms.find((term) => {
-        // TODO: extract a function that finds all terms with a certain variable
-        // type.
-        if (deepEquals(ident, term)) {
-            return term;
-        } else if (term.type === "mul" && term.args.length === 2) {
-            const [coeff, varFact] = term.args;
-            if (Semantic.isNumber(coeff) && deepEquals(ident, varFact)) {
-                return term;
-            }
-        }
-    });
-
-    const rightIdentTerm = rightTerms.find((term) => {
-        // TODO: extract a function that finds all terms with a certain variable
-        // type.
-        if (deepEquals(ident, term)) {
-            return term;
-        } else if (term.type === "mul" && term.args.length === 2) {
-            const [coeff, varFact] = term.args;
-            if (Semantic.isNumber(coeff) && deepEquals(ident, varFact)) {
-                return term;
-            }
-        }
-    });
-
-    if (leftIdentTerm && leftTerms.length === 1 && !rightIdentTerm) {
-        const coeff = getCoeff(leftIdentTerm);
-
-        if (deepEquals(coeff, Semantic.number("1"))) {
-            return newNode;
-        } else {
-            newNode = Semantic.eq(
-                newNode.args.map((arg) =>
-                    Semantic.div(arg as Semantic.Types.NumericNode, coeff),
-                ) as TwoOrMore<Semantic.Types.NumericNode>,
-            );
-
-            // After each operation we do to the equation, we should re-run
-            // `simplify` on each side.
-
-            newNode = Semantic.eq(
-                newNode.args.map(simplify) as TwoOrMore<Semantic.Types.Node>,
-            );
-
-            return newNode;
+    let current = node as Semantic.Types.Node;
+    for (const transform of transforms) {
+        const next = transform(current, ident);
+        if (next) {
+            current = next;
         }
     }
 
-    return newNode;
+    for (const transform of transforms) {
+        const next = transform(current, ident);
+        if (next) {
+            current = next;
+        }
+    }
+
+    for (const transform of transforms) {
+        const next = transform(current, ident);
+        if (next) {
+            current = next;
+        }
+    }
+
+    return current;
 };

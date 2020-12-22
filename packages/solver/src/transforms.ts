@@ -8,6 +8,7 @@ type Transform = (
 ) => Semantic.Types.NumericNode | undefined;
 
 // TODO: dedupe with polynomial-checks.ts in grader
+// TODO: handle terms like `-x`
 export const collectLikeTerms = (
     node: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode | undefined => {
@@ -64,8 +65,13 @@ export const collectLikeTerms = (
             }
             varPart = Semantic.mulFactors(nonNumericFactors, true);
         } else {
-            coeff = Semantic.number("1");
-            varPart = arg;
+            if (arg.type === "neg") {
+                coeff = Semantic.neg(Semantic.number("1"));
+                varPart = arg.arg;
+            } else {
+                coeff = Semantic.number("1");
+                varPart = arg;
+            }
         }
 
         if (Semantic.isSubtraction(arg)) {
@@ -96,17 +102,40 @@ export const collectLikeTerms = (
                 ).toString(),
             );
             const implicit = true;
-            if (newCoeff.value === "1") {
-                newTerms.push(
-                    Semantic.mulFactors(Semantic.getFactors(k), implicit),
-                );
+            if (newCoeff.type === "neg") {
+                if (
+                    newCoeff.arg.type === "number" &&
+                    newCoeff.arg.value === "1"
+                ) {
+                    newTerms.push(
+                        Semantic.neg(
+                            Semantic.mulFactors(
+                                Semantic.getFactors(k),
+                                implicit,
+                            ),
+                        ),
+                    );
+                } else {
+                    newTerms.push(
+                        Semantic.mulFactors(
+                            [newCoeff, ...Semantic.getFactors(k)],
+                            implicit,
+                        ),
+                    );
+                }
             } else {
-                newTerms.push(
-                    Semantic.mulFactors(
-                        [newCoeff, ...Semantic.getFactors(k)],
-                        implicit,
-                    ),
-                );
+                if (newCoeff.value === "1") {
+                    newTerms.push(
+                        Semantic.mulFactors(Semantic.getFactors(k), implicit),
+                    );
+                } else {
+                    newTerms.push(
+                        Semantic.mulFactors(
+                            [newCoeff, ...Semantic.getFactors(k)],
+                            implicit,
+                        ),
+                    );
+                }
             }
         } else {
             // Pass through unique terms
@@ -132,7 +161,24 @@ export const collectLikeTerms = (
     }
 
     // Place numbers at the end which is a comment convention.
-    return Semantic.addTerms([...newTerms, ...numbers]);
+    return Semantic.addTerms([
+        ...newTerms.map((term, index) => {
+            if (
+                index > 0 &&
+                term.type === "mul" &&
+                term.args[0].type === "neg"
+            ) {
+                // Convert the additive inverse to subtraction if it's not the first
+                // term.
+                // TODO: make this a substep
+                term.args[0] = term.args[0].arg;
+                return Semantic.neg(term);
+            } else {
+                return term;
+            }
+        }),
+        ...numbers,
+    ]);
 };
 
 export const dropParens: Transform = (node) => {
@@ -271,6 +317,39 @@ export const evalAdd: Transform = (node) => {
     return undefined;
 };
 
+export const evalDiv: Transform = (node) => {
+    if (node.type !== "div") {
+        return;
+    }
+
+    if (!Semantic.isNumber(node)) {
+        return;
+    }
+
+    const result = evalNode(node);
+    if (result.d === 1) {
+        if (result.s === 1) {
+            return Semantic.number(result.n.toString());
+        } else {
+            return Semantic.neg(Semantic.number(result.n.toString()));
+        }
+    } else {
+        if (result.s === 1) {
+            return Semantic.div(
+                Semantic.number(result.n.toString()),
+                Semantic.number(result.d.toString()),
+            );
+        } else {
+            return Semantic.neg(
+                Semantic.div(
+                    Semantic.number(result.n.toString()),
+                    Semantic.number(result.d.toString()),
+                ),
+            );
+        }
+    }
+};
+
 export const simplifyFraction: Transform = (node) => {
     if (node.type !== "div") {
         return undefined;
@@ -286,6 +365,11 @@ export const simplifyFraction: Transform = (node) => {
 
     if (deepEquals(den, Semantic.number("1"))) {
         return num;
+    } else if (
+        deepEquals(den, Semantic.neg(Semantic.number("1"))) &&
+        Semantic.isNegative(num)
+    ) {
+        return num.arg;
     } else {
         return Semantic.div(num, den);
     }

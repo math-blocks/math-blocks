@@ -7,15 +7,66 @@ describe("simplify", () => {
         test("3x + 4x -> 7x", () => {
             const ast = parse("3x + 4x");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("7x");
+        });
+
+        test("x + 3x -> 4x", () => {
+            const ast = parse("x + 3x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("4x");
+        });
+
+        test("-x + 3x -> 2x", () => {
+            const ast = parse("-x + 3x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("2x");
+        });
+
+        // Shows that we drop the `1` in `-1x`
+        test("x - 2x -> -x", () => {
+            const ast = parse("x - 2x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("-x");
+        });
+
+        // Shows that we convert additive inverse to subtraction where possible
+        test("a + x - 2x -> a - x", () => {
+            const ast = parse("a + x - 2x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("a - x");
+        });
+
+        // Shows that we convert additive inverse to subtraction where possible
+        test("a + 2x - 5x -> a - 3x", () => {
+            const ast = parse("a + 2x - 5x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("a - 3x");
+        });
+
+        test("2x - -3x -> 5x", () => {
+            const ast = parse("2x - -3x");
+
+            const result = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("5x");
         });
 
         test("4x + -3x - 1 -> 7x - 1", () => {
             const ast = parse("4x + -3x - 1");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x - 1");
         });
@@ -23,7 +74,7 @@ describe("simplify", () => {
         test("4x - 3x - 1 -> 7x - 1", () => {
             const ast = parse("4x - 3x - 1");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x - 1");
         });
@@ -31,7 +82,7 @@ describe("simplify", () => {
         test("x + 1 + 4 -> x + 5", () => {
             const ast = parse("x + 1 + 4");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x + 5");
         });
@@ -40,7 +91,7 @@ describe("simplify", () => {
         test("(x + 1) + 4 -> x + 5", () => {
             const ast = parse("(x + 1) + 4");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x + 5");
         });
@@ -51,7 +102,7 @@ describe("simplify", () => {
         test("3(x + 1) + 4 -> 3x + 7", () => {
             const ast = parse("3(x + 1) + 4");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("3x + 7");
         });
@@ -59,7 +110,7 @@ describe("simplify", () => {
         test("3(x + 1) -> 3x + 3", () => {
             const ast = parse("3(x + 1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("3x + 3");
         });
@@ -67,7 +118,7 @@ describe("simplify", () => {
         test("(1 + 2)(x + 1) -> 3x + 3", () => {
             const ast = parse("(1 + 2)(x + 1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("3x + 3");
         });
@@ -75,7 +126,7 @@ describe("simplify", () => {
         test("(6 * 1/2)(x + 1) -> 3x + 3", () => {
             const ast = parse("(6 * 1/2)(x + 1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("3x + 3");
         });
@@ -83,7 +134,7 @@ describe("simplify", () => {
         test("3 - (x + 1) -> x + 2", () => {
             const ast = parse("3 - (x + 1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             // TODO: add a transform that does -1x -> x and 1x -> x
             expect(print(result)).toEqual("-1x + 2");
@@ -92,7 +143,7 @@ describe("simplify", () => {
         test("3(x + 2(x - 1)) -> 3(3x - 2) -> 9x - 6", () => {
             const ast = parse("3(x + 2(x - 1))");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("9x - 6");
         });
@@ -100,7 +151,7 @@ describe("simplify", () => {
         test("(3)(3)(x) - 6 -> 9x - 6", () => {
             const ast = parse("(3)(3)(x) - 6");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("9x - 6");
         });
@@ -108,7 +159,7 @@ describe("simplify", () => {
         test("3(x + 1) + 4(x - 1) -> 7x - 1", () => {
             const ast = parse("3(x + 1) + 4(x - 1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("7x - 1");
         });
@@ -116,7 +167,7 @@ describe("simplify", () => {
         test("3x + (3)(1) + 4x + (4)(-1)", () => {
             const ast = parse("3x + (3)(1) + 4x + (4)(-1)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("7x - 1");
         });
@@ -124,7 +175,7 @@ describe("simplify", () => {
         test("3(x + 1) - (2x + 5) -> x - 2", () => {
             const ast = parse("3(x + 1) - (2x + 5)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x - 2");
         });
@@ -139,7 +190,7 @@ describe("simplify", () => {
             // - x^2 + x + 3x + 3
             // - x^2 + 4x + 3
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x^2 + 4x + 3");
         });
@@ -147,7 +198,7 @@ describe("simplify", () => {
         test.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
             const ast = parse("(x + 1)^2");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x^2 + 2x + 1");
         });
@@ -155,7 +206,7 @@ describe("simplify", () => {
         test("(x)(x) -> x^2", () => {
             const ast = parse("(x)(x)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("x^2");
         });
@@ -163,7 +214,7 @@ describe("simplify", () => {
         test("(3)(3) -> 9", () => {
             const ast = parse("(3)(3)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("9");
         });
@@ -171,7 +222,7 @@ describe("simplify", () => {
         test("banana -> ba^3n^2", () => {
             const ast = parse("banana");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("ba^3n^2");
         });
@@ -179,7 +230,7 @@ describe("simplify", () => {
         test.skip("(a^2)(a^3) -> a^5", () => {
             const ast = parse("(a^2)(a^3)");
 
-            const result = simplify(ast);
+            const result = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("a^5");
         });
