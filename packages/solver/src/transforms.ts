@@ -7,8 +7,18 @@ type Transform = (
     node: Semantic.Types.NumericNode,
 ) => Semantic.Types.NumericNode | undefined;
 
+// TODO: dedupe with Semantic.getFactors
+export const getFactors = (
+    node: Semantic.Types.NumericNode,
+): OneOrMore<Semantic.Types.NumericNode> => {
+    if (node.type === "neg") {
+        return [Semantic.number("-1"), ...getFactors(node.arg)];
+    } else {
+        return node.type === "mul" ? node.args : [node];
+    }
+};
+
 // TODO: dedupe with polynomial-checks.ts in grader
-// TODO: handle terms like `-x`
 export const collectLikeTerms = (
     node: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode | undefined => {
@@ -40,8 +50,8 @@ export const collectLikeTerms = (
         let varPart: Semantic.Types.NumericNode;
 
         const factors = Semantic.isSubtraction(arg)
-            ? Semantic.getFactors(arg.arg)
-            : Semantic.getFactors(arg);
+            ? getFactors(arg.arg)
+            : getFactors(arg);
 
         // TODO: maybe restrict ourselves to nodes of type "number" or "neg"?
         const numericFactors = factors.filter(Semantic.isNumber);
@@ -109,29 +119,24 @@ export const collectLikeTerms = (
                 ) {
                     newTerms.push(
                         Semantic.neg(
-                            Semantic.mulFactors(
-                                Semantic.getFactors(k),
-                                implicit,
-                            ),
+                            Semantic.mulFactors(getFactors(k), implicit),
                         ),
                     );
                 } else {
                     newTerms.push(
                         Semantic.mulFactors(
-                            [newCoeff, ...Semantic.getFactors(k)],
+                            [newCoeff, ...getFactors(k)],
                             implicit,
                         ),
                     );
                 }
             } else {
                 if (newCoeff.value === "1") {
-                    newTerms.push(
-                        Semantic.mulFactors(Semantic.getFactors(k), implicit),
-                    );
+                    newTerms.push(Semantic.mulFactors(getFactors(k), implicit));
                 } else {
                     newTerms.push(
                         Semantic.mulFactors(
-                            [newCoeff, ...Semantic.getFactors(k)],
+                            [newCoeff, ...getFactors(k)],
                             implicit,
                         ),
                     );
@@ -284,6 +289,10 @@ export const addNegToSub: Transform = (node) => {
     return Semantic.addTerms(newTerms);
 };
 
+// This function will evaluate the multiple any factors that are numbers in node
+// but won't touch any non-number terms, e.g.
+// (2)(x)(3)(y) -> 6xy
+// TODO: figure out why using our local version of getFactors breaks things.
 export const evalMul: Transform = (node) => {
     const factors = Semantic.getFactors(node);
 

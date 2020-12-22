@@ -363,11 +363,11 @@ const getOpPrecedence = (op: Operator): number => {
             return 3;
         case "mul.exp":
             return 5;
-        case "div":
+        case "div": // this is to encourage wrapping fractions in parens before a negative
             return 6;
-        case "mul.imp":
-            return 7;
         case "neg":
+            return 7;
+        case "mul.imp":
             return 8;
         case "supsub":
             return 10;

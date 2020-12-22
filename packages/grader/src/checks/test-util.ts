@@ -35,7 +35,7 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
 };
 
 const myParse = (text: string): Semantic.Types.Node => {
-    const node = Editor.print(parse(text)) as Editor.Row;
+    const node = Editor.print(parse(text), true) as Editor.Row;
     return _parse(node);
 };
 
@@ -118,7 +118,8 @@ export const toHaveStepsLike = (
                     .map(({step, node, received, expected}) => {
                         return `step ${step}, node ${node}: expected ${print(
                             expected,
-                        )} but received ${print(received)}`;
+                            true,
+                        )} but received ${print(received, true)}`;
                     })
                     .join("\n"),
             pass: false,
