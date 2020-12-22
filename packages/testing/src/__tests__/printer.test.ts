@@ -109,12 +109,56 @@ describe("printer", () => {
             expect(result).toEqual("(x)(2)(y)");
         });
 
+        // This and the next test both have the same result intentionally.  It
+        // is common for the result to be interpreted in both ways.  It doesn't
+        // make sense to produce multiple parse trees for this form.  Instead
+        // we interpret either in the same way when printing in order to provide
+        // users with a representation they're familiar with.
+        // (neg (mul 2 x y)) -> -2xy
         test("-2xy", () => {
             const ast = parse("-2xy");
 
             const result = print(ast);
 
             expect(result).toEqual("-2xy");
+        });
+
+        // TODO: figure out how to store (-2)(x)(y) when that's what someone has
+        // actually typed in.
+        // STOPSHIP: have an option we can pass to the print to produce the same
+        // output as the input and use it in the matcher so that we aren't
+        // confused when writing/debugging tests.
+        // (mul (neg 2) x y) -> -2xy
+        test("(-2)(x)(y)", () => {
+            const ast = parse("(-2)(x)(y)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("-2xy");
+        });
+
+        test("(-2)(x)(y), oneToOne = true", () => {
+            const ast = parse("(-2)(x)(y)");
+
+            const result = print(ast, true);
+
+            expect(result).toEqual("(-2)(x)(y)");
+        });
+
+        test("(-1)(a + b) w/ oneToOne true", () => {
+            const ast = parse("(-1)(a + b)");
+
+            const result = print(ast, true);
+
+            expect(result).toEqual("(-1)(a + b)");
+        });
+
+        test("(-1)(a + b) w/ oneToOne false", () => {
+            const ast = parse("(-1)(a + b)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("-1(a + b)");
         });
 
         test("(x)(-2)(y)", () => {
@@ -230,6 +274,14 @@ describe("printer", () => {
             const result = print(ast);
 
             expect(result).toEqual("(x + y) / (a + b)");
+        });
+
+        test("-a / b", () => {
+            const ast = parse("-(a / b)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("-(a / b)");
         });
     });
 

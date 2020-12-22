@@ -408,7 +408,7 @@ describe("EditorParser", () => {
         `);
     });
 
-    it("negation is higher precedence than implicit multiplication", () => {
+    it("negation is lower precedence than implicit multiplication", () => {
         // -ab
         const tokens = [
             Lexer.minus(location([], 0, 1)),
@@ -418,11 +418,7 @@ describe("EditorParser", () => {
 
         const ast = parser.parse(tokens);
 
-        expect(ast).toMatchInlineSnapshot(`
-            (mul.imp
-              (neg a)
-              b)
-        `);
+        expect(ast).toMatchInlineSnapshot(`(neg (mul.imp a b))`);
     });
 
     it("negation can be on individual factors when wrapped in parens", () => {
@@ -780,6 +776,48 @@ describe("EditorParser", () => {
             (mul.imp
               (root :radicand 2 :index 2)
               a)
+        `);
+    });
+
+    it("-1(a + b)", () => {
+        const tokens = [
+            Lexer.minus(location([], 0, 1)),
+            Lexer.number("1", location([], 1, 2)),
+            Lexer.lparens(location([], 2, 3)),
+            Lexer.identifier("a", location([], 3, 4)),
+            Lexer.plus(location([], 4, 5)),
+            Lexer.identifier("b", location([], 5, 6)),
+            Lexer.rparens(location([], 6, 7)),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (neg (mul.imp
+              1
+              (add a b)))
+        `);
+    });
+
+    it("(-1)(a + b)", () => {
+        const tokens = [
+            Lexer.lparens(location([], 0, 1)),
+            Lexer.minus(location([], 1, 2)),
+            Lexer.number("1", location([], 2, 3)),
+            Lexer.rparens(location([], 3, 4)),
+            Lexer.lparens(location([], 4, 5)),
+            Lexer.identifier("a", location([], 5, 6)),
+            Lexer.plus(location([], 6, 7)),
+            Lexer.identifier("b", location([], 7, 8)),
+            Lexer.rparens(location([], 8, 9)),
+        ];
+
+        const ast = parser.parse(tokens);
+
+        expect(ast).toMatchInlineSnapshot(`
+            (mul.imp
+              (neg 1)
+              (add a b))
         `);
     });
 });

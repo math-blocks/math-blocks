@@ -10,7 +10,7 @@ import * as Editor from "./editor-ast";
 // is the case with most operators
 
 // TODO: write more tests for this
-const print = (expr: Semantic.Types.Node): Editor.Node => {
+const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -38,7 +38,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
 
                 // number is returned as a row so if we do this check, every
                 // number will be encapsulated in parens.
-                const node = print(arg);
+                const node = print(arg, oneToOne);
                 if (node.type === "row") {
                     if (arg.type === "add") {
                         children.push(Editor.glyph("("));
@@ -63,11 +63,11 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
         case "mul": {
             const children: Editor.Node[] = [];
 
-            const wrapAll = expr.args.slice(1).some((arg) => {
+            const wrapAll = expr.args.some((arg, index) => {
                 if (arg.type === "number") {
                     return true;
                 }
-                if (arg.type === "neg") {
+                if (arg.type === "neg" && (index > 0 || oneToOne)) {
                     return true;
                 }
                 if (arg.type === "div") {
@@ -77,7 +77,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
             });
 
             for (const arg of expr.args) {
-                const node = print(arg);
+                const node = print(arg, oneToOne);
                 // TODO: we probably also want to wrap things like (a * b)(x * y)
                 const wrap = (wrapAll && expr.implicit) || arg.type === "add";
 
@@ -107,7 +107,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
             return Editor.row(children);
         }
         case "neg": {
-            const node = print(expr.arg);
+            const node = print(expr.arg, oneToOne);
             if (
                 node.type === "row" &&
                 expr.arg.type !== "number" &&
@@ -126,8 +126,8 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
             }
         }
         case "div": {
-            const numerator = print(expr.args[0]);
-            const denominator = print(expr.args[1]);
+            const numerator = print(expr.args[0], oneToOne);
+            const denominator = print(expr.args[1], oneToOne);
             return Editor.frac(
                 numerator.type === "row" ? numerator.children : [numerator],
                 denominator.type === "row"
@@ -139,7 +139,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
             const children: Editor.Node[] = [];
 
             for (const arg of expr.args) {
-                const node = print(arg);
+                const node = print(arg, oneToOne);
                 if (node.type === "row") {
                     children.push(...node.children);
                 } else {
@@ -155,7 +155,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
         case "pow": {
             const children: Editor.Node[] = [];
 
-            const base = print(expr.base);
+            const base = print(expr.base, oneToOne);
             if (base.type === "row") {
                 children.push(Editor.glyph("("));
                 children.push(...base.children);
@@ -164,7 +164,7 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
                 children.push(base);
             }
 
-            const exp = print(expr.exp);
+            const exp = print(expr.exp, oneToOne);
             children.push(
                 Editor.subsup(
                     undefined,
@@ -180,8 +180,8 @@ const print = (expr: Semantic.Types.Node): Editor.Node => {
     }
 };
 
-export default (expr: Semantic.Types.Node): Editor.Row => {
-    const node = print(expr);
+export default (expr: Semantic.Types.Node, oneToOne = false): Editor.Row => {
+    const node = print(expr, oneToOne);
     if (node.type === "row") {
         return node;
     }

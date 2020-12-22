@@ -28,6 +28,7 @@ describe("polynomial checks", () => {
 
         expect(result).toBeTruthy();
         expect(result).toHaveMessages([
+            "move negation inside multiplication",
             "collect like terms",
             "evaluation of addition",
         ]);

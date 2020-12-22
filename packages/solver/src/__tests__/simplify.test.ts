@@ -58,12 +58,33 @@ describe("simplify", () => {
             expect(print(result)).toEqual("a - 3x");
         });
 
-        test("2x - -3x -> 5x", () => {
-            const ast = parse("2x - -3x");
+        // TODO: add transform that converts (neg (mul 2 x)) to (mul (neg 2 x))
+        // or update how deal directly with the first and then add a transform that
+        // converts (mul (neg 2) x) to (neg (mul 2 x)).  The second option seems easier.
+        test("2x - (-3)(x) -> 5x", () => {
+            const ast = parse("2x - (-3)(x)");
 
             const result: Node = simplify(ast) ?? ast;
 
             expect(print(result)).toEqual("5x");
+        });
+
+        test("2x - -3x -> 5x", () => {
+            const ast = parse("2x - -3x");
+            console.log(JSON.stringify(ast, null, 4));
+
+            const result: Node = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("5x");
+        });
+
+        test("5x + -3x -> 2x", () => {
+            const ast = parse("5x + -3x");
+            console.log(JSON.stringify(ast, null, 4));
+
+            const result: Node = simplify(ast) ?? ast;
+
+            expect(print(result)).toEqual("2x");
         });
 
         test("4x + -3x - 1 -> 7x - 1", () => {

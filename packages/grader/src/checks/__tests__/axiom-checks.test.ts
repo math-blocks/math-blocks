@@ -456,15 +456,17 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
+                "move negation inside multiplication",
                 "distribution",
                 "move negation out of multiplication",
                 "subtracting is the same as adding the inverse",
             ]);
 
             expect(result).toHaveStepsLike([
-                ["-2(x + y)", "-2x + -2y"],
-                ["-2x + -2y", "-2x + -(2y)"],
-                ["-2x + -(2y)", "-2x - 2y"],
+                ["-2(x + y)", "(-2)(x + y)"],
+                ["(-2)(x + y)", "(-2)(x) + (-2)(y)"],
+                ["(-2)(x) + (-2)(y)", "-2x + -2y"],
+                ["-2x + -2y", "-2x - 2y"],
             ]);
         });
 
@@ -505,23 +507,25 @@ describe("Axiom checks", () => {
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
                 "subtracting is the same as adding the inverse",
-                "move negation inside multiplication",
             ]);
 
-            expect(result).toHaveStepsLike([
-                ["1 - 2(x + y)", "1 + -(2(x + y))"],
-                ["-(2(x + y))", "-2(x +y)"],
-            ]);
+            expect(result).toHaveStepsLike([["1 - 2(x + y)", "1 + -2(x + y)"]]);
         });
 
         it("1 + (-2)(x + y) -> 1 + -2x + -2y", () => {
             const result = checkStep("1 + -2(x + y)", "1 + -2x + -2y");
 
             expect(result).toBeTruthy();
-            expect(result).toHaveMessages(["distribution"]);
+            expect(result).toHaveMessages([
+                "move negation inside multiplication",
+                "distribution",
+                "move negation out of multiplication",
+            ]);
 
             expect(result).toHaveStepsLike([
-                ["1 + -2(x + y)", "1 + -2x + -2y"],
+                ["1 + -2(x + y)", "1 + (-2)(x + y)"],
+                ["1 + (-2)(x + y)", "1 + (-2)(x) + (-2)(y)"],
+                ["1 + (-2)(x) + (-2)(y)", "1 + -2x + -2y"],
             ]);
         });
 
@@ -530,7 +534,11 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
 
-            expect(result).toHaveMessages(["distribution"]);
+            expect(result).toHaveMessages([
+                "move negation inside multiplication",
+                "distribution",
+                "move negation out of multiplication",
+            ]);
         });
 
         it("1 - (x + y) -> 1 - x - y", () => {
@@ -584,8 +592,10 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
+                "move negation inside multiplication",
                 "distribution",
                 "multiplying two negatives is a positive",
+                "move negation out of multiplication",
             ]);
         });
 
@@ -657,21 +667,21 @@ describe("Axiom checks", () => {
                 "1 + -(x + y) + -(a + b)",
             );
             expect(result.steps[2].nodes[1]).toParseLike(
-                "1 + -1(x + y) + -1(a + b)",
+                "1 + (-1)(x + y) + (-1)(a + b)",
             );
 
             expect(result.steps[3].nodes[0]).toParseLike(
-                "1 + -1(x + y) + -1(a + b)",
+                "1 + (-1)(x + y) + (-1)(a + b)",
             );
             expect(result.steps[3].nodes[1]).toParseLike(
-                "1 + -1x + -1y + -1(a + b)",
+                "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
 
             expect(result.steps[4].nodes[0]).toParseLike(
-                "1 + -1x + -1y + -1(a + b)",
+                "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
             expect(result.steps[4].nodes[1]).toParseLike(
-                "1 + -1x + -1y + -1a + -1b",
+                "1 + (-1)(x) + (-1)(y) + (-1)(a) + (-1)(b)",
             );
 
             // TODO: finish writing this test
@@ -882,13 +892,15 @@ describe("Axiom checks", () => {
                 "move negation inside multiplication",
                 "multiplication with identity",
                 "factoring",
+                "move negation out of multiplication",
             ]);
 
             expect(result).toHaveStepsLike([
                 ["-a - ab", "-a + -(ab)"],
                 ["-a + -(ab)", "-a + (-a)(b)"],
                 ["-a", "(-a)(1)"],
-                ["(-a)(1) + (-a)(b)", "-a(1 + b)"],
+                ["(-a)(1) + (-a)(b)", "(-a)(1 + b)"],
+                ["(-a)(1 + b)", "-a(1 + b)"],
             ]);
         });
 
@@ -897,6 +909,7 @@ describe("Axiom checks", () => {
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
+                "move negation inside multiplication",
                 "distribution",
                 "multiplication with identity",
                 "move negation out of multiplication",
@@ -904,7 +917,8 @@ describe("Axiom checks", () => {
             ]);
 
             expect(result).toHaveStepsLike([
-                ["-a(1 + b)", "(-a)(1) + (-a)(b)"],
+                ["-a(1 + b)", "(-a)(1 + b)"],
+                ["(-a)(1 + b)", "(-a)(1) + (-a)(b)"],
                 ["(-a)(1)", "-a"],
                 ["-a + (-a)(b)", "-a + -(ab)"],
                 ["-a + -(ab)", "-a - ab"],

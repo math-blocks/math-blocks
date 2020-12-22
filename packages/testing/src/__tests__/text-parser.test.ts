@@ -87,14 +87,26 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`(mul.imp a b)`);
     });
 
-    it("negation is higher precedence than implicit multplication", () => {
+    it("negation is lower precedence than implicit multplication", () => {
         const ast = parse("-ab");
 
+        expect(ast).toMatchInlineSnapshot(`(neg (mul.imp a b))`);
+    });
+
+    it("negation is higher precedence than division", () => {
+        const ast = parse("-a / b");
+
         expect(ast).toMatchInlineSnapshot(`
-            (mul.imp
+            (div
               (neg a)
               b)
         `);
+    });
+
+    it("negation is higher precedence than division (w/ parens)", () => {
+        const ast = parse("-(a / b)");
+
+        expect(ast).toMatchInlineSnapshot(`(neg (div a b))`);
     });
 
     // TODO: document this in the semantic README.md
@@ -115,9 +127,7 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (add
               (mul.imp 7 x)
-              (mul.imp
-                (neg 5)
-                x))
+              (neg (mul.imp 5 x)))
         `);
     });
 

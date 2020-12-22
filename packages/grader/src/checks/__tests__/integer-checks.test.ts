@@ -104,13 +104,9 @@ describe("Integer checks", () => {
         expect(result).toBeTruthy();
         expect(result).toHaveMessages([
             "subtracting is the same as adding the inverse",
-            "move negation inside multiplication",
         ]);
 
-        expect(result).toHaveStepsLike([
-            ["a - bc", "a + -(bc)"],
-            ["-(bc)", "-bc"],
-        ]);
+        expect(result).toHaveStepsLike([["a - bc", "a + -(bc)"]]);
     });
 
     it("a + -b -> a - b", () => {
@@ -278,21 +274,20 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
         expect(result).toHaveMessages([
-            "move negation out of multiplication",
             "subtracting is the same as adding the inverse",
         ]);
 
-        expect(result).toHaveStepsLike([
-            ["-xy", "-(xy)"],
-            ["1 + -(xy)", "1 - xy"],
-        ]);
+        expect(result).toHaveStepsLike([["1 + -(xy)", "1 - xy"]]);
     });
 
     it("(x)(y)(-z) -> -xyz", () => {
         const result = checkStep("(x)(y)(-z)", "-xyz");
 
         expect(result).toBeTruthy();
-        expect(result).toHaveMessages(["move negative to first factor"]);
+        expect(result).toHaveMessages([
+            "move negative to first factor",
+            "move negation out of multiplication",
+        ]);
     });
 
     it("(x)(-y)(-z) -> xyz", () => {
@@ -359,9 +354,9 @@ describe("Integer checks", () => {
         ]);
 
         expect(result).toHaveStepsLike([
-            ["-(a + b)", "-1(a + b)"],
-            ["-1(a + b)", "-1a + -1b"],
-            ["-1a + -1b", "-a + -b"],
+            ["-(a + b)", "(-1)(a + b)"],
+            ["(-1)(a + b)", "(-1)(a) + (-1)(b)"],
+            ["(-1)(a) + (-1)(b)", "-a + -b"],
         ]);
     });
 
@@ -377,9 +372,9 @@ describe("Integer checks", () => {
         ]);
 
         expect(result).toHaveStepsLike([
-            ["-a + -b", "-1a + -1b"],
-            ["-1a + -1b", "-1(a + b)"],
-            ["-1(a + b)", "-(a + b)"],
+            ["-a + -b", "(-1)(a) + (-1)(b)"],
+            ["(-1)(a) + (-1)(b)", "(-1)(a + b)"],
+            ["(-1)(a + b)", "-(a + b)"],
         ]);
     });
 });
