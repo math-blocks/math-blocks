@@ -3,9 +3,11 @@ import {getId} from "@math-blocks/core";
 
 import {Check} from "../types";
 
-import {correctResult, difference} from "./util";
+import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 import {convertPowNegExpToDiv} from "./power-checks";
+
+const {difference} = Semantic;
 
 // TODOs:
 // - Many of these checks use exactMatch (aka deepEquals) which may exclude

@@ -6,7 +6,7 @@ import {parse, print} from "@math-blocks/testing";
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";
 
-import {deepEquals} from "./util";
+const {deepEquals} = Semantic;
 
 export const checkStep = (
     prev: string,

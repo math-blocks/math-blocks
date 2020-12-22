@@ -1,7 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {simplify} from "./simplify";
-import {deepEquals} from "./util";
+
+const {deepEquals} = Semantic;
 
 export type Transform = (
     node: Semantic.Types.Node,

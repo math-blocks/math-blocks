@@ -1,7 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {deepEquals, evalNode, intersection, difference} from "./util";
 import {Step} from "./types";
+
+const {deepEquals, intersection, difference, evalNode} = Semantic;
 
 type Transform = (
     node: Semantic.Types.NumericNode,
