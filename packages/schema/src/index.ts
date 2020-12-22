@@ -195,6 +195,7 @@ const genSchema = ({
                 subtraction: {type: "boolean"},
             }),
             Abs: unary("abs", NumericNode),
+            Parens: unary("parens", NumericNode),
             // TODO: think about how to define other types of bounds, e.g. sets
             Limits: binary("limits", NumericNode), // [lower, upper] bounds
             Sum: node("sum", {
@@ -250,6 +251,7 @@ const genSchema = ({
                     // unary
                     ref("Neg"),
                     ref("Abs"),
+                    ref("Parens"),
                     ref("Sum"),
                     ref("Prod"),
                     ref("Limit"),
@@ -295,6 +297,7 @@ const genSchema = ({
                     ref("Xor"),
                     ref("Implies"),
                     ref("Iff"),
+                    ref("Parens"),
 
                     // numeric relations
                     ref("Eq"),
@@ -362,6 +365,7 @@ const genSchema = ({
                     ref("Intersection"),
                     ref("SetDiff"),
                     ref("CartesianProduct"),
+                    ref("Parens"),
 
                     // number sets
                     ref("Naturals"),

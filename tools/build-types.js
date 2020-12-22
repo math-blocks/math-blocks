@@ -14,7 +14,7 @@ const {parsingSchema, semanticSchema} = require("../out/schema/src/index.js");
 
 compile(parsingSchema, "Node", {style: {tabWidth: 4}}).then((ts) => {
     fs.writeFileSync(
-        path.join(__dirname, "..", "packages", "parser", "src", "types.ts"),
+        path.join(__dirname, "..", "packages", "parser-factory", "src", "types.ts"),
         ts,
         {encoding: "utf-8"},
     );
