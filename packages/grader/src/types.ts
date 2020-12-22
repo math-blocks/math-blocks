@@ -76,14 +76,3 @@ export type Check<
     // Most checks are symmetric.
     symmetric?: boolean;
 };
-
-export type HasArgs =
-    | Semantic.Types.Add
-    | Semantic.Types.Mul
-    | Semantic.Types.Eq
-    | Semantic.Types.Neq
-    | Semantic.Types.Lt
-    | Semantic.Types.Lte
-    | Semantic.Types.Gt
-    | Semantic.Types.Gte
-    | Semantic.Types.Div;

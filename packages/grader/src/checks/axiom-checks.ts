@@ -4,7 +4,9 @@ import {Result, Step, Check} from "../types";
 import {Status, MistakeId} from "../enums";
 
 import {exactMatch, checkArgs} from "./basic-checks";
-import {zip, applySteps, correctResult, difference, intersection} from "./util";
+import {zip, applySteps, correctResult} from "./util";
+
+const {difference, intersection} = Semantic;
 
 export const addZero: Check = (prev, next, context) => {
     if (next.type !== "add") {

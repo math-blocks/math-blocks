@@ -1,14 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
-import {
-    correctResult,
-    difference,
-    intersection,
-    deepEquals,
-    evalNode,
-} from "./util";
+import {correctResult, evalNode} from "./util";
 import {exactMatch} from "./basic-checks";
+
+const {difference, intersection, deepEquals} = Semantic;
 
 const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
     return node.type === "pow";

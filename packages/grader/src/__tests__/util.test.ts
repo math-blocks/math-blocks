@@ -1,12 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {
-    primeDecomp,
-    findNodeById,
-    replaceNodeWithId,
-    deepEquals,
-    difference,
-} from "../checks/util";
+import {primeDecomp, findNodeById, replaceNodeWithId} from "../checks/util";
+
+const {deepEquals, difference} = Semantic;
 
 expect.addSnapshotSerializer(Semantic.serializer);
 

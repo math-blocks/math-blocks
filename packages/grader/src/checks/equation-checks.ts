@@ -2,7 +2,9 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {MistakeId} from "../enums";
-import {difference, correctResult, intersection} from "./util";
+import {correctResult} from "./util";
+
+const {difference, intersection} = Semantic;
 
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason

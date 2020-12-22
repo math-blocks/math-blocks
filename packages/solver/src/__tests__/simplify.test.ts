@@ -71,7 +71,6 @@ describe("simplify", () => {
 
         test("2x - -3x -> 5x", () => {
             const ast = parse("2x - -3x");
-            console.log(JSON.stringify(ast, null, 4));
 
             const result: Node = simplify(ast) ?? ast;
 
@@ -80,7 +79,6 @@ describe("simplify", () => {
 
         test("5x + -3x -> 2x", () => {
             const ast = parse("5x + -3x");
-            console.log(JSON.stringify(ast, null, 4));
 
             const result: Node = simplify(ast) ?? ast;
 

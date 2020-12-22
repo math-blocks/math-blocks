@@ -1,6 +1,7 @@
+import {deepEquals, hasArgs} from "@math-blocks/semantic";
+
 import {Status} from "../enums";
 import {Check, Step, Mistake, Context} from "../types";
-import {deepEquals, hasArgs} from "./util";
 
 export const numberCheck: Check = (prev, next, context) => {
     if (
