@@ -6,6 +6,9 @@ import {
     distribute,
     addNegToSub,
     evalMul,
+    evalAdd,
+    evalDiv,
+    simplifyFraction,
     mulToPower,
 } from "./transforms";
 
@@ -14,13 +17,18 @@ type Transform = (
 ) => Semantic.Types.NumericNode | undefined;
 
 // TODO: collect all of the steps and sub-steps
-export const simplify = (node: Semantic.Types.Node): Semantic.Types.Node => {
+export const simplify = (
+    node: Semantic.Types.Node,
+): Semantic.Types.Node | undefined => {
     const tranforms: Transform[] = [
         distribute,
         collectLikeTerms,
         dropParens,
 
         evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
+        evalAdd,
+        evalDiv,
+        simplifyFraction,
         mulToPower,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
@@ -73,5 +81,5 @@ export const simplify = (node: Semantic.Types.Node): Semantic.Types.Node => {
         }
     }
 
-    return current;
+    return undefined;
 };

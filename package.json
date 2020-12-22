@@ -99,7 +99,7 @@
     ]
   },
   "typeCoverage": {
-    "atLeast": 98,
+    "atLeast": 95,
     "detail": true,
     "ignoreCatch": true,
     "project": "tsconfig-coverage.json",

@@ -97,6 +97,30 @@ describe("TextParser", () => {
         `);
     });
 
+    // TODO: document this in the semantic README.md
+    it("polynomial with subtraction", () => {
+        const ast = parse("7x - 5x");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (add
+              (mul.imp 7 x)
+              (neg.sub (mul.imp 5 x)))
+        `);
+    });
+
+    // TODO: document this in the semantic README.md
+    it("polynomial with additive inverse", () => {
+        const ast = parse("7x + -5x");
+
+        expect(ast).toMatchInlineSnapshot(`
+            (add
+              (mul.imp 7 x)
+              (mul.imp
+                (neg 5)
+                x))
+        `);
+    });
+
     it("negation is higher precedence than explicit multplication", () => {
         const ast = parse("-a * b");
 
