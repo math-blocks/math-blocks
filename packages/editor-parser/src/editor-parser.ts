@@ -73,6 +73,7 @@ const getPrefixParselet = (
                                 );
                                 return result;
                             }
+                            // STOPSHIP: return a "parens" node
                             throw new Error("unmatched left paren");
                         },
                     };
@@ -386,6 +387,7 @@ const editorParser = Parser.parserFactory<Token, Parser.Types.Node, Operator>(
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
 const validate = ajv.compile(semanticSchema);
 
+// STOPSHIP:
 export const parse = (input: Editor.Row): Semantic.Types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);

@@ -174,6 +174,7 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
 
             return Editor.row(children);
         }
+        // STOPSHIP: handle "parens" nodes
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);
         }

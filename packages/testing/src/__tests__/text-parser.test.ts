@@ -210,7 +210,7 @@ describe("TextParser", () => {
     it("parses parenthesis", () => {
         const ast = parse("(x + y)");
 
-        expect(ast).toMatchInlineSnapshot(`(add x y)`);
+        expect(ast).toMatchInlineSnapshot(`(parens (add x y))`);
     });
 
     it("throws if lparen is missing", () => {
@@ -319,5 +319,111 @@ describe("TextParser", () => {
         const ast = parse("(5)2");
 
         expect(ast).toMatchInlineSnapshot(`(mul.imp 5 2)`);
+    });
+
+    describe("excess parentheses", () => {
+        it("excess parens 1", () => {
+            const ast = parse("(x + y)");
+
+            expect(ast).toMatchInlineSnapshot(`(parens (add x y))`);
+        });
+
+        it("excess parens 2", () => {
+            const ast = parse("(x) + (y)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  (parens x)
+                  (parens y))
+            `);
+        });
+
+        it("excess parens 3", () => {
+            const ast = parse("(a * b) + (c * d)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  (parens (mul.exp a b))
+                  (parens (mul.exp c d)))
+            `);
+        });
+
+        it("excess parens 4", () => {
+            const ast = parse("((a + b))((c))");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (mul.imp
+                  (parens (add a b))
+                  (parens c))
+            `);
+        });
+
+        // If we want to always wrap negative numbers in parentheses, we can do
+        // that in the printing and make it configurable.
+        it("excess parens 5", () => {
+            const ast = parse("a + (-b)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  a
+                  (parens (neg b)))
+            `);
+        });
+
+        it("fractions 1", () => {
+            const ast = parse("(a) / (b)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (div
+                  (parens a)
+                  (parens b))
+            `);
+        });
+
+        it("fractions 2", () => {
+            const ast = parse("(a/b)");
+
+            expect(ast).toMatchInlineSnapshot(`(parens (div a b))`);
+        });
+
+        it("fractions 3", () => {
+            const ast = parse("(1/a)(1/b)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (mul.imp
+                  (div 1 a)
+                  (div 1 b))
+            `);
+        });
+
+        it("exponent 1", () => {
+            const ast = parse("a^(2)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (pow
+                  :base a
+                  :exp (parens 2))
+            `);
+        });
+
+        it("exponent 2", () => {
+            const ast = parse("e^(x + y)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (pow
+                  :base e
+                  :exp (add x y))
+            `);
+        });
+
+        it("not excess parens", () => {
+            const ast = parse("1 + (x + y)");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  1
+                  (add x y))
+            `);
+        });
     });
 });

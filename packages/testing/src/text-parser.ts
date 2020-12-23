@@ -1,6 +1,7 @@
 import Ajv from "ajv";
 
 import {semanticSchema} from "@math-blocks/schema";
+import {getId} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
@@ -60,7 +61,11 @@ const getPrefixParselet = (
                     if (nextToken.type !== "rparen") {
                         throw new Error("unmatched left paren");
                     }
-                    return result;
+                    return {
+                        id: getId(),
+                        type: "parens",
+                        arg: result,
+                    };
                 },
             };
         default:
@@ -255,6 +260,46 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
 const validate = ajv.compile(semanticSchema);
 
+// WARNING: This function mutates `node`.
+const removeExcessParens = (node: Semantic.Types.Node): Semantic.Types.Node => {
+    const path: Semantic.Types.Node[] = [];
+
+    return Semantic.traverse(node, {
+        enter: (node) => {
+            path.push(node);
+        },
+        exit: (node) => {
+            path.pop();
+            const parent = path[path.length - 1];
+            if (!parent) {
+                return;
+            }
+
+            // TODO: use the precedence of the operators to determine whether
+            // the parens are necessary or not.
+            if (node.type === "parens") {
+                const {arg} = node;
+                if (parent.type === "parens") {
+                    return;
+                }
+                if (parent.type === "mul" && parent.implicit) {
+                    return arg;
+                }
+                if (arg.type === "identifier" || arg.type === "number") {
+                    return;
+                }
+                if (arg.type === "mul" && parent.type === "add") {
+                    return;
+                }
+                if (arg.type === "neg") {
+                    return;
+                }
+                return arg;
+            }
+        },
+    });
+};
+
 export const parse = (input: string): Semantic.Types.Node => {
     const result = textParser.parse(lex(input));
 
@@ -262,5 +307,5 @@ export const parse = (input: string): Semantic.Types.Node => {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as Semantic.Types.Node;
+    return removeExcessParens(result as Semantic.Types.Node);
 };
