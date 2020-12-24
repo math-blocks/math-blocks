@@ -9,6 +9,22 @@ import * as Editor from "./editor-ast";
 // the original nodes, even if they don't appear in the semantic tree as
 // is the case with most operators
 
+const getChildren = (
+    expr: Semantic.Types.Node,
+    oneToOne: boolean,
+): Editor.Node[] => {
+    const children: Editor.Node[] = [];
+
+    const node = print(expr, oneToOne);
+    if (node.type === "row") {
+        children.push(...node.children);
+    } else {
+        children.push(node);
+    }
+
+    return children;
+};
+
 // TODO: write more tests for this
 const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
     switch (expr.type) {
@@ -109,20 +125,36 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
         case "neg": {
             const node = print(expr.arg, oneToOne);
             if (
-                node.type === "row" &&
-                expr.arg.type !== "number" &&
-                expr.arg.type !== "identifier"
+                expr.arg.type === "number" ||
+                expr.arg.type === "identifier" ||
+                (expr.arg.type === "neg" && !expr.arg.subtraction) ||
+                (expr.arg.type === "mul" && expr.arg.implicit) ||
+                expr.arg.type === "pow" // pow has a higher precedence
             ) {
-                return Editor.row([
-                    Editor.glyph("\u2212"),
-                    Editor.glyph("("),
-                    ...node.children,
-                    Editor.glyph(")"),
-                ]);
-            } else if (node.type === "row") {
-                return Editor.row([Editor.glyph("\u2212"), ...node.children]);
+                if (node.type === "row") {
+                    return Editor.row([
+                        Editor.glyph("\u2212"),
+                        ...node.children,
+                    ]);
+                } else {
+                    return Editor.row([Editor.glyph("\u2212"), node]);
+                }
             } else {
-                return Editor.row([Editor.glyph("\u2212"), node]);
+                if (node.type === "row") {
+                    return Editor.row([
+                        Editor.glyph("\u2212"),
+                        Editor.glyph("("),
+                        ...node.children,
+                        Editor.glyph(")"),
+                    ]);
+                } else {
+                    return Editor.row([
+                        Editor.glyph("\u2212"),
+                        Editor.glyph("("),
+                        node,
+                        Editor.glyph(")"),
+                    ]);
+                }
             }
         }
         case "div": {
@@ -153,28 +185,31 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
             return Editor.row(children);
         }
         case "pow": {
-            const children: Editor.Node[] = [];
+            const {base, exp} = expr;
 
-            const base = print(expr.base, oneToOne);
-            if (base.type === "row") {
-                children.push(Editor.glyph("("));
-                children.push(...base.children);
-                children.push(Editor.glyph(")"));
+            if (base.type === "identifier" || base.type === "number") {
+                return Editor.row([
+                    ...getChildren(base, oneToOne),
+                    Editor.subsup(undefined, getChildren(exp, oneToOne)),
+                ]);
             } else {
-                children.push(base);
+                return Editor.row([
+                    Editor.glyph("("),
+                    ...getChildren(base, oneToOne),
+                    Editor.glyph(")"),
+                    Editor.subsup(undefined, getChildren(exp, oneToOne)),
+                ]);
             }
-
-            const exp = print(expr.exp, oneToOne);
-            children.push(
-                Editor.subsup(
-                    undefined,
-                    exp.type === "row" ? exp.children : [exp],
-                ),
-            );
+        }
+        case "parens": {
+            const children: Editor.Node[] = [
+                Editor.glyph("("),
+                ...getChildren(expr.arg, oneToOne),
+                Editor.glyph(")"),
+            ];
 
             return Editor.row(children);
         }
-        // STOPSHIP: handle "parens" nodes
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);
         }

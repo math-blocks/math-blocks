@@ -416,6 +416,18 @@ describe("TextParser", () => {
             `);
         });
 
+        it("negative 1", () => {
+            const ast = parse("-a");
+
+            expect(ast).toMatchInlineSnapshot(`(neg a)`);
+        });
+
+        it("negative 2", () => {
+            const ast = parse("--a");
+
+            expect(ast).toMatchInlineSnapshot(`(neg (neg a))`);
+        });
+
         it("not excess parens", () => {
             const ast = parse("1 + (x + y)");
 

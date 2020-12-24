@@ -112,3 +112,13 @@ export const root = (
     index: index || number("2"),
     loc,
 });
+
+export const parens = (
+    arg: Types.Node,
+    loc?: Types.Location,
+): Types.Parens => ({
+    type: "parens",
+    id: getId(),
+    arg,
+    loc,
+});

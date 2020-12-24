@@ -1,7 +1,6 @@
 import Ajv from "ajv";
 
 import {semanticSchema} from "@math-blocks/schema";
-import {getId} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
@@ -61,11 +60,7 @@ const getPrefixParselet = (
                     if (nextToken.type !== "rparen") {
                         throw new Error("unmatched left paren");
                     }
-                    return {
-                        id: getId(),
-                        type: "parens",
-                        arg: result,
-                    };
+                    return Parser.Util.parens(result);
                 },
             };
         default:
@@ -291,7 +286,7 @@ const removeExcessParens = (node: Semantic.Types.Node): Semantic.Types.Node => {
                 if (arg.type === "mul" && parent.type === "add") {
                     return;
                 }
-                if (arg.type === "neg") {
+                if (arg.type === "neg" && parent.type !== "pow") {
                     return;
                 }
                 return arg;
