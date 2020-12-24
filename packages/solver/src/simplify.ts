@@ -14,6 +14,7 @@ import {
 
 type Transform = (
     node: Semantic.Types.NumericNode,
+    path: Semantic.Types.Node[],
 ) => Semantic.Types.NumericNode | undefined;
 
 // TODO: collect all of the steps and sub-steps
@@ -38,11 +39,17 @@ export const simplify = (
 
     let changed;
 
+    const path: Semantic.Types.Node[] = [];
+    const enter = (node: Semantic.Types.Node): void => {
+        path.push(node);
+    };
+
     // The inner loop attempts to apply one or more transforms to nodes in the
     // AST from the inside out.
     const exit = (
         node: Semantic.Types.Node,
     ): Semantic.Types.Node | undefined => {
+        path.pop();
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
         if (Semantic.isNumeric(node)) {
@@ -50,7 +57,7 @@ export const simplify = (
             for (let i = 0; i < 10; i++) {
                 let next: Semantic.Types.NumericNode | undefined;
                 for (const transform of tranforms) {
-                    next = transform(current);
+                    next = transform(current, path);
                     // Multiple transforms can be applied to the current node.
                     if (next) {
                         changed = true;
@@ -75,7 +82,7 @@ export const simplify = (
     let current = node;
     for (let i = 0; i < 10; i++) {
         changed = false;
-        current = Semantic.traverse(current, {exit});
+        current = Semantic.traverse(current, {enter, exit});
         if (!changed) {
             return current;
         }
