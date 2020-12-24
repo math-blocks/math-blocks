@@ -64,6 +64,7 @@
     "start": "webpack-dev-server --open",
     "prettier": "pretty-quick --stage",
     "test": "jest",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "coverage": "jest --coverage",
     "lint": "eslint 'packages/**/*.{ts,tsx}' 'demo/src/*.{ts,tsx}'",
     "start-storybook": "start-storybook -p 6006",

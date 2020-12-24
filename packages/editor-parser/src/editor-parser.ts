@@ -1,6 +1,3 @@
-import Ajv from "ajv";
-
-import {semanticSchema} from "@math-blocks/schema";
 import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
@@ -379,9 +376,6 @@ const editorParser = Parser.parserFactory<Token, Parser.Types.Node, Operator>(
     EOL,
 );
 
-const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
-const validate = ajv.compile(semanticSchema);
-
 // WARNING: This function mutates `node`.
 const removeExcessParens = (node: Semantic.Types.Node): Semantic.Types.Node => {
     const path: Semantic.Types.Node[] = [];
@@ -425,10 +419,6 @@ const removeExcessParens = (node: Semantic.Types.Node): Semantic.Types.Node => {
 export const parse = (input: Editor.Row): Semantic.Types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
-
-    if (!validate(result)) {
-        throw new Error("Invalid semantic structure");
-    }
 
     return removeExcessParens(result as Semantic.Types.Node);
 };

@@ -6,6 +6,7 @@ const {deepEquals, intersection, difference, evalNode} = Semantic;
 
 type Transform = (
     node: Semantic.Types.NumericNode,
+    path: Semantic.Types.Node[],
 ) => Semantic.Types.NumericNode | undefined;
 
 // TODO: dedupe with Semantic.getFactors
@@ -204,9 +205,15 @@ export const dropParens: Transform = (node) => {
     return Semantic.addTerms(newTerms);
 };
 
-export const distribute = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode | undefined => {
+export const distribute: Transform = (node, path) => {
+    const parent = path[path.length - 1];
+    if (node.type === "mul" && parent && parent.type === "add") {
+        // The parent handles the distribution in this cases to ensure that
+        // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
+        // would eliminate the parentheses but it's not normally how a human
+        // would show their work.
+        return undefined;
+    }
     const nodes = Semantic.getTerms(node);
     let changed = false;
     const newNodes = nodes.flatMap((node) => {
