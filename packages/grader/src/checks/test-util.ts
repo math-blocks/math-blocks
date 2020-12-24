@@ -94,9 +94,6 @@ export const toHaveStepsLike = (
     }[] = [];
     for (let i = 0; i < expected.length; i++) {
         if (!deepEquals(received.steps[i].nodes[0], myParse(expected[i][0]))) {
-            parse(expected[i][0]); // ?
-            Editor.print(parse(expected[i][0]), true); // ?
-            console.log(myParse(expected[i][0]));
             failures.push({
                 step: i,
                 node: 0,

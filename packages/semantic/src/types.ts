@@ -110,7 +110,7 @@ export type Abs = Common & {
 };
 export type Parens = Common & {
     type: "parens";
-    arg: NumericNode;
+    arg: Node;
     [k: string]: unknown;
 };
 export type Sum = Common & {

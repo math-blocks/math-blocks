@@ -387,4 +387,12 @@ describe("print", () => {
             ]),
         );
     });
+
+    test("(x)", () => {
+        const ast = Semantic.parens(Semantic.identifier("x"));
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("(x)"));
+    });
 });

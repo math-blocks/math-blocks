@@ -195,7 +195,10 @@ const genSchema = ({
                 subtraction: {type: "boolean"},
             }),
             Abs: unary("abs", NumericNode),
-            Parens: unary("parens", NumericNode),
+            // TODO: it would be nice to produce a parameterized version of Parens
+            // for numeric, logic, and set subtrees.  I don't believe that JSON
+            // schema provides a way to describe this.
+            Parens: unary("parens", Node),
             // TODO: think about how to define other types of bounds, e.g. sets
             Limits: binary("limits", NumericNode), // [lower, upper] bounds
             Sum: node("sum", {

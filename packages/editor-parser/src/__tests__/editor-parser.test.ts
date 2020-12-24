@@ -545,4 +545,70 @@ describe("EditorParser", () => {
               (add a b))
         `);
     });
+
+    describe("excess parens", () => {
+        it("(x)", () => {
+            const input = Editor.Util.row("(x)");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`(parens x)`);
+        });
+
+        it("((x))", () => {
+            const input = Editor.Util.row("((x))");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`(parens (parens x))`);
+        });
+
+        it("1 + (x)", () => {
+            const input = Editor.Util.row("1 + (x)");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  1
+                  (parens x))
+            `);
+        });
+
+        it("2((x + y))", () => {
+            const input = Editor.Util.row("2((x + y))");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (mul.imp
+                  2
+                  (parens (add x y)))
+            `);
+        });
+
+        it("(xy)", () => {
+            const input = Editor.Util.row("1 + (xy)");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  1
+                  (parens (mul.imp x y)))
+            `);
+        });
+
+        it("a + (-b)", () => {
+            const input = Editor.Util.row("a + (-b)");
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  a
+                  (parens (neg b)))
+            `);
+        });
+    });
 });
