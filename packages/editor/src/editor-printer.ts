@@ -93,7 +93,6 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
             });
 
             for (const arg of expr.args) {
-                const node = print(arg, oneToOne);
                 // TODO: we probably also want to wrap things like (a * b)(x * y)
                 const wrap = (wrapAll && expr.implicit) || arg.type === "add";
 
@@ -101,11 +100,7 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
                     children.push(Editor.glyph("("));
                 }
 
-                if (node.type === "row") {
-                    children.push(...node.children);
-                } else {
-                    children.push(node);
-                }
+                children.push(...getChildren(arg, oneToOne));
 
                 if (wrap) {
                     children.push(Editor.glyph(")"));
@@ -123,7 +118,6 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
             return Editor.row(children);
         }
         case "neg": {
-            const node = print(expr.arg, oneToOne);
             if (
                 expr.arg.type === "number" ||
                 expr.arg.type === "identifier" ||
@@ -131,30 +125,17 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
                 (expr.arg.type === "mul" && expr.arg.implicit) ||
                 expr.arg.type === "pow" // pow has a higher precedence
             ) {
-                if (node.type === "row") {
-                    return Editor.row([
-                        Editor.glyph("\u2212"),
-                        ...node.children,
-                    ]);
-                } else {
-                    return Editor.row([Editor.glyph("\u2212"), node]);
-                }
+                return Editor.row([
+                    Editor.glyph("\u2212"),
+                    ...getChildren(expr.arg, oneToOne),
+                ]);
             } else {
-                if (node.type === "row") {
-                    return Editor.row([
-                        Editor.glyph("\u2212"),
-                        Editor.glyph("("),
-                        ...node.children,
-                        Editor.glyph(")"),
-                    ]);
-                } else {
-                    return Editor.row([
-                        Editor.glyph("\u2212"),
-                        Editor.glyph("("),
-                        node,
-                        Editor.glyph(")"),
-                    ]);
-                }
+                return Editor.row([
+                    Editor.glyph("\u2212"),
+                    Editor.glyph("("),
+                    ...getChildren(expr.arg, oneToOne),
+                    Editor.glyph(")"),
+                ]);
             }
         }
         case "div": {
@@ -171,12 +152,7 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
             const children: Editor.Node[] = [];
 
             for (const arg of expr.args) {
-                const node = print(arg, oneToOne);
-                if (node.type === "row") {
-                    children.push(...node.children);
-                } else {
-                    children.push(node);
-                }
+                children.push(...getChildren(arg, oneToOne));
                 children.push(Editor.glyph("="));
             }
 
