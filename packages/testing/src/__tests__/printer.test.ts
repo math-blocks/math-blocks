@@ -402,4 +402,14 @@ describe("printer", () => {
             expect(result).toEqual("x + y = z - 5");
         });
     });
+
+    describe("parens", () => {
+        test("(x)", () => {
+            const ast = parse("(x)");
+
+            const result = print(ast);
+
+            expect(result).toEqual("(x)");
+        });
+    });
 });
