@@ -7,7 +7,7 @@ import {
 
 expect.extend({toHaveMessages, toHaveStepsLike});
 
-describe("Exponent checks", () => {
+describe("Power checks", () => {
     // TODO: automatically generate tests for testing 'symmetric = true'
     describe("powDef", () => {
         it("a*a*a -> a^3", () => {
@@ -380,7 +380,7 @@ describe("Exponent checks", () => {
             ]);
 
             expect(result).toHaveStepsLike([
-                ["1 / a^(-2)", "a^(-(-2))"],
+                ["1 / a^(-2)", "a^(--2)"],
                 ["--2", "2"],
             ]);
         });

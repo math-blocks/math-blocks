@@ -8,6 +8,7 @@ import {getId} from "@math-blocks/core";
 
 import * as Types from "./types";
 
+// TODO: create a separate file for builders
 export const identifier = (
     name: string,
     loc?: Types.Location,
@@ -118,6 +119,16 @@ export const root = (
     id: getId(),
     radicand,
     index: index || number("2"),
+    loc,
+});
+
+export const parens = (
+    arg: Types.Node,
+    loc?: Types.Location,
+): Types.Parens => ({
+    type: "parens",
+    id: getId(),
+    arg,
     loc,
 });
 

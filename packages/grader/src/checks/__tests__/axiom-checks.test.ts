@@ -14,6 +14,7 @@ expect.addSnapshotSerializer(serializer);
 
 expect.extend({toParseLike, toHaveStepsLike, toHaveMessages});
 
+// TODO: split this in separate files so that it parallelizes better
 describe("Axiom checks", () => {
     describe("symmetricProperty", () => {
         it("a = 3 -> 3 = a", () => {
@@ -803,9 +804,9 @@ describe("Axiom checks", () => {
             ]);
 
             expect(result).toHaveStepsLike([
-                ["(x + 1)(x + 1)", "(x)*(x + 1) + (1)*(x + 1)"],
-                ["(x)*(x + 1) + (1)*(x + 1)", "x*x + x*1 + (1)*(x + 1)"],
-                ["x*x + x*1 + (1)*(x + 1)", "x*x + x*1 + 1*x + 1*1"],
+                ["(x + 1)(x + 1)", "x*(x + 1) + 1*(x + 1)"],
+                ["x*(x + 1) + 1*(x + 1)", "x*x + x*1 + 1*(x + 1)"],
+                ["x*x + x*1 + 1*(x + 1)", "x*x + x*1 + 1*x + 1*1"],
             ]);
         });
 

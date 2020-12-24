@@ -155,6 +155,9 @@ export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
                 }
             }
         }
+        case "parens": {
+            return `(${print(expr.arg)})`;
+        }
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);
         }

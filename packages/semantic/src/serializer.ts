@@ -65,6 +65,7 @@ const print = (
         }
         case "not":
         case "abs":
+        case "parens":
             return `(${ast.type} ${print(ast.arg, serialize, indent)})`;
         case "mul": {
             const type = ast.implicit ? "mul.imp" : "mul.exp";

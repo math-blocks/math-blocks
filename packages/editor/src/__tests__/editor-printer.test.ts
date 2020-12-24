@@ -260,6 +260,17 @@ describe("print", () => {
         expect(node).toEqualMath(Util.row("a+-a"));
     });
 
+    test("a + --b", () => {
+        const ast = Semantic.add([
+            Semantic.identifier("a"),
+            Semantic.neg(Semantic.neg(Semantic.identifier("b"), false), false),
+        ]);
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("a+--b"));
+    });
+
     test("-1(a + b)", () => {
         const ast = Semantic.mul(
             [
@@ -331,6 +342,19 @@ describe("print", () => {
         );
     });
 
+    test("1^n", () => {
+        const ast = Semantic.pow(
+            Semantic.number("1"),
+            Semantic.identifier("n"),
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([Editor.glyph("1"), Util.sup("n")]),
+        );
+    });
+
     test("e^(x+y)", () => {
         const ast = Semantic.pow(
             Semantic.identifier("e"),
@@ -362,5 +386,13 @@ describe("print", () => {
                 Util.sup("2"),
             ]),
         );
+    });
+
+    test("(x)", () => {
+        const ast = Semantic.parens(Semantic.identifier("x"));
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("(x)"));
     });
 });

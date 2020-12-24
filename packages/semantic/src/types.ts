@@ -22,6 +22,7 @@ export type NumericNode =
     | Log
     | Neg
     | Abs
+    | Parens
     | Sum
     | Prod
     | Limit
@@ -107,6 +108,11 @@ export type Abs = Common & {
     arg: NumericNode;
     [k: string]: unknown;
 };
+export type Parens = Common & {
+    type: "parens";
+    arg: Node;
+    [k: string]: unknown;
+};
 export type Sum = Common & {
     type: "sum";
     arg: NumericNode;
@@ -160,6 +166,7 @@ export type LogicNode =
     | Xor
     | Implies
     | Iff
+    | Parens
     | Eq
     | Neq
     | Lt
@@ -254,6 +261,7 @@ export type SetNode =
     | Intersection
     | SetDiff
     | CartesianProduct
+    | Parens
     | Naturals
     | Integers
     | Rationals

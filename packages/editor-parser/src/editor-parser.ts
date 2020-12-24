@@ -11,10 +11,6 @@ import {Node} from "./types";
 
 type Token = Node;
 
-// TODO: include source node ids in each parse node
-
-// TODO: parse -7x as (neg (mul 7 x))
-
 // TODO: fill out this list
 type Operator =
     | "add"
@@ -67,11 +63,11 @@ const getPrefixParselet = (
                                 nextToken.type === "atom" &&
                                 nextToken.value.kind === "rparens"
                             ) {
-                                result.loc = locFromRange(
+                                const loc = locFromRange(
                                     token.loc,
                                     nextToken.loc,
                                 );
-                                return result;
+                                return Parser.Util.parens(result, loc);
                             }
                             throw new Error("unmatched left paren");
                         },
@@ -386,6 +382,46 @@ const editorParser = Parser.parserFactory<Token, Parser.Types.Node, Operator>(
 const ajv = new Ajv({allErrors: true, verbose: true}); // options can be passed, e.g. {allErrors: true}
 const validate = ajv.compile(semanticSchema);
 
+// WARNING: This function mutates `node`.
+const removeExcessParens = (node: Semantic.Types.Node): Semantic.Types.Node => {
+    const path: Semantic.Types.Node[] = [];
+
+    return Semantic.traverse(node, {
+        enter: (node) => {
+            path.push(node);
+        },
+        exit: (node) => {
+            path.pop();
+            const parent = path[path.length - 1];
+            if (!parent) {
+                return;
+            }
+
+            // TODO: use the precedence of the operators to determine whether
+            // the parens are necessary or not.
+            if (node.type === "parens") {
+                const {arg} = node;
+                if (parent.type === "parens") {
+                    return;
+                }
+                if (parent.type === "mul" && parent.implicit) {
+                    return arg;
+                }
+                if (arg.type === "identifier" || arg.type === "number") {
+                    return;
+                }
+                if (arg.type === "mul" && parent.type === "add") {
+                    return;
+                }
+                if (arg.type === "neg" && parent.type !== "pow") {
+                    return;
+                }
+                return arg;
+            }
+        },
+    });
+};
+
 export const parse = (input: Editor.Row): Semantic.Types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
@@ -394,7 +430,5 @@ export const parse = (input: Editor.Row): Semantic.Types.Node => {
         throw new Error("Invalid semantic structure");
     }
 
-    return result as Semantic.Types.Node;
+    return removeExcessParens(result as Semantic.Types.Node);
 };
-
-export default editorParser;
