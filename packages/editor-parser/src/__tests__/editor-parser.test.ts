@@ -546,6 +546,24 @@ describe("EditorParser", () => {
         `);
     });
 
+    describe("unmatched paren", () => {
+        it("(a+b", () => {
+            const input = Editor.Util.row("(a+b");
+
+            expect(() =>
+                parser.parse(input),
+            ).toThrowErrorMatchingInlineSnapshot(`"unmatched left paren"`);
+        });
+
+        it("a+b)", () => {
+            const input = Editor.Util.row("a+b)");
+
+            expect(() =>
+                parser.parse(input),
+            ).toThrowErrorMatchingInlineSnapshot(`"unexpected token"`);
+        });
+    });
+
     describe("excess parens", () => {
         it("(x)", () => {
             const input = Editor.Util.row("(x)");
