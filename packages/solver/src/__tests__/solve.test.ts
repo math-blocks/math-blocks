@@ -92,7 +92,7 @@ describe("solve", () => {
 
             const result: Node = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 3 / -2");
+            expect(print(result)).toEqual("x = -(3 / 2)");
         });
 
         test("2 - x = 5 - 3x", () => {

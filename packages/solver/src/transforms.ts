@@ -284,7 +284,6 @@ export const distribute: Transform = (node, path) => {
                 return newTerm;
             }) as TwoOrMore<Semantic.Types.NumericNode>;
             changed = true;
-            console.log(JSON.stringify(terms[0], null, 4));
             return terms;
         }
 
