@@ -163,24 +163,20 @@ export const collectLikeTerms: Transform = (node) => {
     }
 
     // Place numbers at the end which is a comment convention.
-    const after = Semantic.addTerms([
-        ...newTerms.map((term, index) => {
-            if (
-                index > 0 &&
-                term.type === "mul" &&
-                term.args[0].type === "neg"
-            ) {
-                // Convert the additive inverse to subtraction if it's not the first
-                // term.
+    const after = Semantic.addTerms(
+        [...newTerms, ...numbers].map((term, index) => {
+            if (term.type === "mul" && term.args[0].type === "neg") {
                 // TODO: make this a substep
                 term.args[0] = term.args[0].arg;
-                return Semantic.neg(term);
+                return Semantic.neg(term, index > 0);
+            } else if (term.type === "neg") {
+                // TODO: make this a substep if subtraction is changing
+                return Semantic.neg(term.arg, index > 0);
             } else {
                 return term;
             }
         }),
-        ...numbers,
-    ]);
+    );
     return {
         message: "collect like terms",
         before: node,
@@ -190,6 +186,9 @@ export const collectLikeTerms: Transform = (node) => {
 };
 
 export const dropParens: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
     let changed = false;
     const newTerms = terms.flatMap((term) => {
@@ -212,8 +211,18 @@ export const dropParens: Transform = (node) => {
 };
 
 export const distribute: Transform = (node, path) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const parent = path[path.length - 1];
     if (node.type === "mul" && parent && parent.type === "add") {
+        // The parent handles the distribution in this cases to ensure that
+        // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
+        // would eliminate the parentheses but it's not normally how a human
+        // would show their work.
+        return undefined;
+    }
+    if (node.type === "neg" && parent && parent.type === "add") {
         // The parent handles the distribution in this cases to ensure that
         // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
         // would eliminate the parentheses but it's not normally how a human
@@ -275,6 +284,7 @@ export const distribute: Transform = (node, path) => {
                 return newTerm;
             }) as TwoOrMore<Semantic.Types.NumericNode>;
             changed = true;
+            console.log(JSON.stringify(terms[0], null, 4));
             return terms;
         }
 
@@ -286,12 +296,34 @@ export const distribute: Transform = (node, path) => {
     return {
         message: "distribute",
         before: node,
-        after: Semantic.addTerms(newNodes),
+        after: Semantic.addTerms(
+            newNodes.map((term, index) => {
+                if (term.type === "mul" && term.args[0].type === "neg") {
+                    // TODO: make this a substep
+                    term.args[0] = term.args[0].arg;
+                    term; // ?
+                    index > 0; // ?
+                    return Semantic.neg(term, index > 0);
+                } else if (
+                    term.type === "neg" &&
+                    !term.subtraction &&
+                    index > 0
+                ) {
+                    // TODO: make this a substep
+                    return Semantic.neg(term.arg, true);
+                } else {
+                    return term;
+                }
+            }),
+        ),
         substeps: [],
     };
 };
 
 export const addNegToSub: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
     let changed = false;
     const newTerms = terms.map((term, index) => {
@@ -318,6 +350,9 @@ export const addNegToSub: Transform = (node) => {
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
 export const evalMul: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const factors = Semantic.getFactors(node);
 
     const numericFactors = factors.filter(Semantic.isNumber);
@@ -339,6 +374,9 @@ export const evalMul: Transform = (node) => {
 };
 
 export const evalAdd: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
 
     const numericTerms = terms.filter(Semantic.isNumber);
@@ -366,6 +404,10 @@ export const evalDiv: Transform = (node) => {
     }
 
     if (!Semantic.isNumber(node)) {
+        return;
+    }
+
+    if (deepEquals(node.args[0], Semantic.number("1"))) {
         return;
     }
 
@@ -405,6 +447,10 @@ export const simplifyFraction: Transform = (node) => {
         return undefined;
     }
 
+    if (deepEquals(node.args[0], Semantic.number("1"))) {
+        return;
+    }
+
     const numFactors = Semantic.getFactors(node.args[0]);
     const denFactors = Semantic.getFactors(node.args[1]);
 
@@ -433,6 +479,9 @@ export const simplifyFraction: Transform = (node) => {
 };
 
 export const mulToPower: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const factors = Semantic.getFactors(node);
 
     if (factors.length < 2) {

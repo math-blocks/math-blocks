@@ -82,8 +82,6 @@ describe("simplify", () => {
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("a - x");
         });
@@ -101,8 +99,6 @@ describe("simplify", () => {
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("a - 3x");
         });
@@ -170,8 +166,6 @@ describe("simplify", () => {
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("x - 1");
         });
@@ -188,8 +182,6 @@ describe("simplify", () => {
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("x - 1");
         });
@@ -292,24 +284,13 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                // TODO: fix these steps
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
-                "evaluate division",
                 "evaluate multiplication",
                 "distribute",
             ]);
             expect(print(step.after)).toEqual("3x + 3");
         });
 
-        test("3 - (x + 1) -> x + 2", () => {
+        test("3 - (x + 1) -> -x + 2", () => {
             const ast = parse("3 - (x + 1)");
 
             const step = simplify(ast, []);
@@ -320,13 +301,28 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                // TODO: investigate these sub-steps, they feel off
-                "distribute", // the negative
-                "adding the inverse is the same as subtraction",
-                "drop parentheses",
+                "distribute",
                 "collect like terms",
             ]);
+
             // TODO: add a transform that does -1x -> x and 1x -> x
+            expect(print(step.after)).toEqual("-1x + 2");
+        });
+
+        test("3 - 1x - 1 -> -x + 2", () => {
+            const ast = parse("3 - 1x - 1");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+            ]);
+
             expect(print(step.after)).toEqual("-1x + 2");
         });
 
@@ -343,11 +339,7 @@ describe("simplify", () => {
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "distribute",
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
                 "distribute",
-                // TODO: make this a sub-step of "distribute"
-                "adding the inverse is the same as subtraction",
                 "evaluate multiplication",
             ]);
             expect(print(step.after)).toEqual("9x - 6");
@@ -382,8 +374,6 @@ describe("simplify", () => {
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "distribute",
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("7x - 1");
         });
@@ -402,8 +392,6 @@ describe("simplify", () => {
                 "evaluate multiplication",
                 "evaluate multiplication",
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("7x - 1");
         });
@@ -419,14 +407,8 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                "distribute",
-                // TODO: make this a sub-step of "distribute"
-                "adding the inverse is the same as subtraction",
-                "distribute",
-                "drop parentheses",
+                "distribute", // This covers both 3(x + 1) and - (2x + 5)
                 "collect like terms",
-                // TODO: make this a sub-step of "collect like terms"
-                "adding the inverse is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("x - 2");
         });
