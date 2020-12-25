@@ -1,13 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step} from "./types";
+import {Step, Transform} from "./types";
 
 const {deepEquals, intersection, difference, evalNode} = Semantic;
-
-type Transform = (
-    node: Semantic.Types.NumericNode,
-    path: Semantic.Types.Node[],
-) => Semantic.Types.NumericNode | undefined;
 
 // TODO: dedupe with Semantic.getFactors
 export const getFactors = (
@@ -21,9 +16,7 @@ export const getFactors = (
 };
 
 // TODO: dedupe with polynomial-checks.ts in grader
-export const collectLikeTerms = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode | undefined => {
+export const collectLikeTerms: Transform = (node) => {
     if (node.type !== "add") {
         return;
     }
@@ -72,7 +65,9 @@ export const collectLikeTerms = (
                 coeff = Semantic.number(evalNode(mul).toString());
                 beforeSteps.push({
                     message: "evaluate multiplication",
-                    nodes: [mul, coeff],
+                    before: mul,
+                    after: coeff,
+                    substeps: [],
                 });
             }
             varPart = Semantic.mulFactors(nonNumericFactors, true);
@@ -168,7 +163,7 @@ export const collectLikeTerms = (
     }
 
     // Place numbers at the end which is a comment convention.
-    return Semantic.addTerms([
+    const after = Semantic.addTerms([
         ...newTerms.map((term, index) => {
             if (
                 index > 0 &&
@@ -186,6 +181,12 @@ export const collectLikeTerms = (
         }),
         ...numbers,
     ]);
+    return {
+        message: "collect like terms",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const dropParens: Transform = (node) => {
@@ -202,7 +203,12 @@ export const dropParens: Transform = (node) => {
     if (!changed) {
         return;
     }
-    return Semantic.addTerms(newTerms);
+    return {
+        message: "drop parentheses",
+        before: node,
+        after: Semantic.addTerms(newTerms),
+        substeps: [],
+    };
 };
 
 export const distribute: Transform = (node, path) => {
@@ -277,7 +283,12 @@ export const distribute: Transform = (node, path) => {
     if (!changed) {
         return undefined;
     }
-    return Semantic.addTerms(newNodes);
+    return {
+        message: "distribute",
+        before: node,
+        after: Semantic.addTerms(newNodes),
+        substeps: [],
+    };
 };
 
 export const addNegToSub: Transform = (node) => {
@@ -294,7 +305,12 @@ export const addNegToSub: Transform = (node) => {
     if (!changed) {
         return undefined;
     }
-    return Semantic.addTerms(newTerms);
+    return {
+        message: "adding the inverse is the same as subtraction",
+        before: node,
+        after: Semantic.addTerms(newTerms),
+        substeps: [],
+    };
 };
 
 // This function will evaluate the multiple any factors that are numbers in node
@@ -311,7 +327,12 @@ export const evalMul: Transform = (node) => {
         const mul = Semantic.mulFactors(numericFactors);
         const coeff = Semantic.number(evalNode(mul).toString());
 
-        return Semantic.mulFactors([coeff, ...nonNumericFactors], true);
+        return {
+            message: "evaluate multiplication",
+            before: node,
+            after: Semantic.mulFactors([coeff, ...nonNumericFactors], true),
+            substeps: [],
+        };
     }
 
     return undefined;
@@ -328,7 +349,12 @@ export const evalAdd: Transform = (node) => {
             evalNode(Semantic.addTerms(numericTerms)).toString(),
         );
 
-        return Semantic.mulFactors([...nonNumericTerms, sum], true);
+        return {
+            message: "evaluate addition",
+            before: node,
+            after: Semantic.mulFactors([...nonNumericTerms, sum], true),
+            substeps: [],
+        };
     }
 
     return undefined;
@@ -344,20 +370,21 @@ export const evalDiv: Transform = (node) => {
     }
 
     const result = evalNode(node);
+    let after: Semantic.Types.NumericNode;
     if (result.d === 1) {
         if (result.s === 1) {
-            return Semantic.number(result.n.toString());
+            after = Semantic.number(result.n.toString());
         } else {
-            return Semantic.neg(Semantic.number(result.n.toString()));
+            after = Semantic.neg(Semantic.number(result.n.toString()));
         }
     } else {
         if (result.s === 1) {
-            return Semantic.div(
+            after = Semantic.div(
                 Semantic.number(result.n.toString()),
                 Semantic.number(result.d.toString()),
             );
         } else {
-            return Semantic.neg(
+            after = Semantic.neg(
                 Semantic.div(
                     Semantic.number(result.n.toString()),
                     Semantic.number(result.d.toString()),
@@ -365,6 +392,12 @@ export const evalDiv: Transform = (node) => {
             );
         }
     }
+    return {
+        message: "evaluate division",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const simplifyFraction: Transform = (node) => {
@@ -380,16 +413,23 @@ export const simplifyFraction: Transform = (node) => {
     const num = Semantic.mulFactors(difference(numFactors, commonFactors));
     const den = Semantic.mulFactors(difference(denFactors, commonFactors));
 
+    let after: Semantic.Types.NumericNode;
     if (deepEquals(den, Semantic.number("1"))) {
-        return num;
+        after = num;
     } else if (
         deepEquals(den, Semantic.neg(Semantic.number("1"))) &&
         Semantic.isNegative(num)
     ) {
-        return num.arg;
+        after = num.arg;
     } else {
-        return Semantic.div(num, den);
+        after = Semantic.div(num, den);
     }
+    return {
+        message: "simplify fraction",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const mulToPower: Transform = (node) => {
@@ -434,5 +474,10 @@ export const mulToPower: Transform = (node) => {
     }
 
     // TODO: mimic the implicitness of the incoming node.
-    return Semantic.mulFactors(newFactors, true);
+    return {
+        message: "repeated multiplication can be written as a power",
+        before: node,
+        after: Semantic.mulFactors(newFactors, true),
+        substeps: [],
+    };
 };

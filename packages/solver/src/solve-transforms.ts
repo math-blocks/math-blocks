@@ -206,20 +206,20 @@ export const simplifyBothSides: Transform = (node, ident) => {
         return undefined;
     }
 
-    const left = simplify(node.args[0]);
+    const left = simplify(node.args[0], []);
     if (node.args[1] === undefined) {
         console.log(node);
     }
-    const right = simplify(node.args[1]);
+    const right = simplify(node.args[1], []);
 
     if (left && right) {
-        return Semantic.eq([left, right]);
+        return Semantic.eq([left.after, right.after]);
     }
     if (left) {
-        return Semantic.eq([left, node.args[1]]);
+        return Semantic.eq([left.after, node.args[1]]);
     }
     if (right) {
-        return Semantic.eq([node.args[0], right]);
+        return Semantic.eq([node.args[0], right.after]);
     }
 
     return undefined;

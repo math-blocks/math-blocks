@@ -11,16 +11,10 @@ import {
     simplifyFraction,
     mulToPower,
 } from "./transforms";
-
-type Transform = (
-    node: Semantic.Types.NumericNode,
-    path: Semantic.Types.Node[],
-) => Semantic.Types.NumericNode | undefined;
+import {Step, Transform} from "./types";
 
 // TODO: collect all of the steps and sub-steps
-export const simplify = (
-    node: Semantic.Types.Node,
-): Semantic.Types.Node | undefined => {
+export const simplify: Transform = (node) => {
     const tranforms: Transform[] = [
         distribute,
         collectLikeTerms,
@@ -39,6 +33,8 @@ export const simplify = (
 
     let changed;
 
+    const substeps: Step[] = [];
+
     const path: Semantic.Types.Node[] = [];
     const enter = (node: Semantic.Types.Node): void => {
         path.push(node);
@@ -53,26 +49,27 @@ export const simplify = (
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
         if (Semantic.isNumeric(node)) {
-            let current = node;
+            let current: Semantic.Types.Node = node;
             for (let i = 0; i < 10; i++) {
-                let next: Semantic.Types.NumericNode | undefined;
+                let step: Step | undefined;
                 for (const transform of tranforms) {
-                    next = transform(current, path);
+                    step = transform(current, path);
                     // Multiple transforms can be applied to the current node.
-                    if (next) {
+                    if (step) {
                         changed = true;
                         break;
                     }
                 }
 
                 // None of the transforms suceeded
-                if (!next) {
+                if (!step) {
                     return current;
                 }
 
                 // Update the current node so that we can attemp to transform
                 // it again.
-                current = next;
+                current = step.after;
+                substeps.push(step);
             }
         }
     };
@@ -84,7 +81,12 @@ export const simplify = (
         changed = false;
         current = Semantic.traverse(current, {enter, exit});
         if (!changed) {
-            return current;
+            return {
+                message: "simplify expression",
+                before: node,
+                after: current,
+                substeps,
+            };
         }
     }
 
