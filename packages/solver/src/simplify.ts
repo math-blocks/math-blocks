@@ -22,16 +22,14 @@ export const simplify: Transform = (node) => {
 
         evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
         evalAdd,
-        evalDiv,
         simplifyFraction,
+        evalDiv,
         mulToPower,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
         // before distributing.
         addNegToSub,
     ];
-
-    let changed;
 
     const substeps: Step[] = [];
 
@@ -56,7 +54,6 @@ export const simplify: Transform = (node) => {
                     step = transform(current, path);
                     // Multiple transforms can be applied to the current node.
                     if (step) {
-                        changed = true;
                         break;
                     }
                 }
@@ -78,16 +75,16 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        changed = false;
         current = Semantic.traverse(current, {enter, exit});
-        if (!changed) {
-            return {
-                message: "simplify expression",
-                before: node,
-                after: current,
-                substeps,
-            };
-        }
+    }
+
+    if (substeps.length > 0) {
+        return {
+            message: "simplify expression",
+            before: node,
+            after: current,
+            substeps,
+        };
     }
 
     return undefined;

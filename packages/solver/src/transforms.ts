@@ -398,6 +398,8 @@ export const evalAdd: Transform = (node) => {
     return undefined;
 };
 
+// TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
+// process it.
 export const evalDiv: Transform = (node) => {
     if (node.type !== "div") {
         return;
@@ -407,7 +409,9 @@ export const evalDiv: Transform = (node) => {
         return;
     }
 
-    if (deepEquals(node.args[0], Semantic.number("1"))) {
+    const [numerator, denominator] = node.args;
+
+    if (deepEquals(numerator, Semantic.number("1"))) {
         return;
     }
 
@@ -434,6 +438,15 @@ export const evalDiv: Transform = (node) => {
             );
         }
     }
+
+    // TODO: handle negative fractions
+    if (
+        deepEquals(numerator, Semantic.number(String(result.n))) &&
+        deepEquals(denominator, Semantic.number(String(result.d)))
+    ) {
+        return;
+    }
+
     return {
         message: "evaluate division",
         before: node,
@@ -461,13 +474,21 @@ export const simplifyFraction: Transform = (node) => {
 
     let after: Semantic.Types.NumericNode;
     if (deepEquals(den, Semantic.number("1"))) {
+        // a / 1
         after = num;
     } else if (
         deepEquals(den, Semantic.neg(Semantic.number("1"))) &&
         Semantic.isNegative(num)
     ) {
+        // -a / -1
         after = num.arg;
     } else {
+        // TODO: handle -a / 1 -> -a and a / -1 -> -a
+        // TODO: handle -a / a -> -1 and a / -a -> -1
+        // a / b
+        if (commonFactors.length === 0) {
+            return;
+        }
         after = Semantic.div(num, den);
     }
     return {

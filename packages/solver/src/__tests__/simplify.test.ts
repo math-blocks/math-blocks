@@ -521,4 +521,183 @@ describe("simplify", () => {
             expect(print(step.after)).toEqual("a^5");
         });
     });
+
+    describe("simplify fraction", () => {
+        test("4/6 -> 2/3", () => {
+            const ast = parse("4 / 6");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "evaluate division",
+            ]);
+            expect(print(step.after)).toEqual("2 / 3");
+        });
+
+        test("-(4/6) -> -(2/3)", () => {
+            const ast = parse("-(4/6)");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "evaluate division",
+            ]);
+            expect(print(step.after)).toEqual("-(2 / 3)");
+        });
+
+        test.skip("-4/6 -> -2/3", () => {
+            const ast = parse("-4/6");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "evaluate division",
+            ]);
+            // TODO: if the numerator or denominator was signed to begin with
+            // keep it that way instead of making the entire fraction signed.
+            expect(print(step.after)).toEqual("-2 / 3");
+        });
+
+        test("2/3 cannot be simplified", () => {
+            const ast = parse("2 / 3");
+
+            const step = simplify(ast, []);
+
+            expect(step).toBeUndefined();
+        });
+
+        test("abc / bc -> a", () => {
+            const ast = parse("abc / bc");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("a");
+        });
+
+        test("ab / abc -> 1/c", () => {
+            const ast = parse("ab / abc");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("1 / c");
+        });
+
+        test("abc / bcd -> a/d", () => {
+            const ast = parse("abc / bcd");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("a / d");
+        });
+
+        test("abc / abc -> 1", () => {
+            const ast = parse("abc / abc");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("1");
+        });
+
+        test("-a / -1", () => {
+            const ast = parse("-a / -1");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("a");
+        });
+
+        // TODO: test the following cases:
+        // - -a / 1 -> -a
+        // - a / -1 -> -a
+        // - -a / a -> -1
+        // - a / -a -> -1
+        test.skip("-a / a", () => {
+            const ast = parse("-a / a");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify fraction",
+            ]);
+            expect(print(step.after)).toEqual("a");
+        });
+    });
+
+    describe("addition of negative is subtraction", () => {
+        test("a + -b", () => {
+            const ast = parse("a + -b");
+
+            const step = simplify(ast, []);
+
+            if (!step) {
+                throw new Error("no step return");
+            }
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "adding the inverse is the same as subtraction",
+            ]);
+            expect(print(step.after)).toEqual("a - b");
+        });
+    });
 });
