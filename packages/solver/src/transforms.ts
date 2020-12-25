@@ -1,13 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Step} from "./types";
+import {Step, Transform} from "./types";
 
 const {deepEquals, intersection, difference, evalNode} = Semantic;
-
-type Transform = (
-    node: Semantic.Types.NumericNode,
-    path: Semantic.Types.Node[],
-) => Semantic.Types.NumericNode | undefined;
 
 // TODO: dedupe with Semantic.getFactors
 export const getFactors = (
@@ -21,9 +16,7 @@ export const getFactors = (
 };
 
 // TODO: dedupe with polynomial-checks.ts in grader
-export const collectLikeTerms = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode | undefined => {
+export const collectLikeTerms: Transform = (node) => {
     if (node.type !== "add") {
         return;
     }
@@ -72,7 +65,9 @@ export const collectLikeTerms = (
                 coeff = Semantic.number(evalNode(mul).toString());
                 beforeSteps.push({
                     message: "evaluate multiplication",
-                    nodes: [mul, coeff],
+                    before: mul,
+                    after: coeff,
+                    substeps: [],
                 });
             }
             varPart = Semantic.mulFactors(nonNumericFactors, true);
@@ -168,27 +163,32 @@ export const collectLikeTerms = (
     }
 
     // Place numbers at the end which is a comment convention.
-    return Semantic.addTerms([
-        ...newTerms.map((term, index) => {
-            if (
-                index > 0 &&
-                term.type === "mul" &&
-                term.args[0].type === "neg"
-            ) {
-                // Convert the additive inverse to subtraction if it's not the first
-                // term.
+    const after = Semantic.addTerms(
+        [...newTerms, ...numbers].map((term, index) => {
+            if (term.type === "mul" && term.args[0].type === "neg") {
                 // TODO: make this a substep
                 term.args[0] = term.args[0].arg;
-                return Semantic.neg(term);
+                return Semantic.neg(term, index > 0);
+            } else if (term.type === "neg") {
+                // TODO: make this a substep if subtraction is changing
+                return Semantic.neg(term.arg, index > 0);
             } else {
                 return term;
             }
         }),
-        ...numbers,
-    ]);
+    );
+    return {
+        message: "collect like terms",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const dropParens: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
     let changed = false;
     const newTerms = terms.flatMap((term) => {
@@ -202,12 +202,27 @@ export const dropParens: Transform = (node) => {
     if (!changed) {
         return;
     }
-    return Semantic.addTerms(newTerms);
+    return {
+        message: "drop parentheses",
+        before: node,
+        after: Semantic.addTerms(newTerms),
+        substeps: [],
+    };
 };
 
 export const distribute: Transform = (node, path) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const parent = path[path.length - 1];
     if (node.type === "mul" && parent && parent.type === "add") {
+        // The parent handles the distribution in this cases to ensure that
+        // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
+        // would eliminate the parentheses but it's not normally how a human
+        // would show their work.
+        return undefined;
+    }
+    if (node.type === "neg" && parent && parent.type === "add") {
         // The parent handles the distribution in this cases to ensure that
         // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
         // would eliminate the parentheses but it's not normally how a human
@@ -277,10 +292,37 @@ export const distribute: Transform = (node, path) => {
     if (!changed) {
         return undefined;
     }
-    return Semantic.addTerms(newNodes);
+    return {
+        message: "distribute",
+        before: node,
+        after: Semantic.addTerms(
+            newNodes.map((term, index) => {
+                if (term.type === "mul" && term.args[0].type === "neg") {
+                    // TODO: make this a substep
+                    term.args[0] = term.args[0].arg;
+                    term; // ?
+                    index > 0; // ?
+                    return Semantic.neg(term, index > 0);
+                } else if (
+                    term.type === "neg" &&
+                    !term.subtraction &&
+                    index > 0
+                ) {
+                    // TODO: make this a substep
+                    return Semantic.neg(term.arg, true);
+                } else {
+                    return term;
+                }
+            }),
+        ),
+        substeps: [],
+    };
 };
 
 export const addNegToSub: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
     let changed = false;
     const newTerms = terms.map((term, index) => {
@@ -294,7 +336,12 @@ export const addNegToSub: Transform = (node) => {
     if (!changed) {
         return undefined;
     }
-    return Semantic.addTerms(newTerms);
+    return {
+        message: "adding the inverse is the same as subtraction",
+        before: node,
+        after: Semantic.addTerms(newTerms),
+        substeps: [],
+    };
 };
 
 // This function will evaluate the multiple any factors that are numbers in node
@@ -302,6 +349,9 @@ export const addNegToSub: Transform = (node) => {
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
 export const evalMul: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const factors = Semantic.getFactors(node);
 
     const numericFactors = factors.filter(Semantic.isNumber);
@@ -311,13 +361,21 @@ export const evalMul: Transform = (node) => {
         const mul = Semantic.mulFactors(numericFactors);
         const coeff = Semantic.number(evalNode(mul).toString());
 
-        return Semantic.mulFactors([coeff, ...nonNumericFactors], true);
+        return {
+            message: "evaluate multiplication",
+            before: node,
+            after: Semantic.mulFactors([coeff, ...nonNumericFactors], true),
+            substeps: [],
+        };
     }
 
     return undefined;
 };
 
 export const evalAdd: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const terms = Semantic.getTerms(node);
 
     const numericTerms = terms.filter(Semantic.isNumber);
@@ -328,12 +386,19 @@ export const evalAdd: Transform = (node) => {
             evalNode(Semantic.addTerms(numericTerms)).toString(),
         );
 
-        return Semantic.mulFactors([...nonNumericTerms, sum], true);
+        return {
+            message: "evaluate addition",
+            before: node,
+            after: Semantic.mulFactors([...nonNumericTerms, sum], true),
+            substeps: [],
+        };
     }
 
     return undefined;
 };
 
+// TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
+// process it.
 export const evalDiv: Transform = (node) => {
     if (node.type !== "div") {
         return;
@@ -343,21 +408,28 @@ export const evalDiv: Transform = (node) => {
         return;
     }
 
+    const [numerator, denominator] = node.args;
+
+    if (deepEquals(numerator, Semantic.number("1"))) {
+        return;
+    }
+
     const result = evalNode(node);
+    let after: Semantic.Types.NumericNode;
     if (result.d === 1) {
         if (result.s === 1) {
-            return Semantic.number(result.n.toString());
+            after = Semantic.number(result.n.toString());
         } else {
-            return Semantic.neg(Semantic.number(result.n.toString()));
+            after = Semantic.neg(Semantic.number(result.n.toString()));
         }
     } else {
         if (result.s === 1) {
-            return Semantic.div(
+            after = Semantic.div(
                 Semantic.number(result.n.toString()),
                 Semantic.number(result.d.toString()),
             );
         } else {
-            return Semantic.neg(
+            after = Semantic.neg(
                 Semantic.div(
                     Semantic.number(result.n.toString()),
                     Semantic.number(result.d.toString()),
@@ -365,11 +437,30 @@ export const evalDiv: Transform = (node) => {
             );
         }
     }
+
+    // TODO: handle negative fractions
+    if (
+        deepEquals(numerator, Semantic.number(String(result.n))) &&
+        deepEquals(denominator, Semantic.number(String(result.d)))
+    ) {
+        return;
+    }
+
+    return {
+        message: "evaluate division",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const simplifyFraction: Transform = (node) => {
     if (node.type !== "div") {
         return undefined;
+    }
+
+    if (deepEquals(node.args[0], Semantic.number("1"))) {
+        return;
     }
 
     const numFactors = Semantic.getFactors(node.args[0]);
@@ -380,19 +471,37 @@ export const simplifyFraction: Transform = (node) => {
     const num = Semantic.mulFactors(difference(numFactors, commonFactors));
     const den = Semantic.mulFactors(difference(denFactors, commonFactors));
 
+    let after: Semantic.Types.NumericNode;
     if (deepEquals(den, Semantic.number("1"))) {
-        return num;
+        // a / 1
+        after = num;
     } else if (
         deepEquals(den, Semantic.neg(Semantic.number("1"))) &&
         Semantic.isNegative(num)
     ) {
-        return num.arg;
+        // -a / -1
+        after = num.arg;
     } else {
-        return Semantic.div(num, den);
+        // TODO: handle -a / 1 -> -a and a / -1 -> -a
+        // TODO: handle -a / a -> -1 and a / -a -> -1
+        // a / b
+        if (commonFactors.length === 0) {
+            return;
+        }
+        after = Semantic.div(num, den);
     }
+    return {
+        message: "simplify fraction",
+        before: node,
+        after,
+        substeps: [],
+    };
 };
 
 export const mulToPower: Transform = (node) => {
+    if (!Semantic.isNumeric(node)) {
+        return;
+    }
     const factors = Semantic.getFactors(node);
 
     if (factors.length < 2) {
@@ -434,5 +543,10 @@ export const mulToPower: Transform = (node) => {
     }
 
     // TODO: mimic the implicitness of the incoming node.
-    return Semantic.mulFactors(newFactors, true);
+    return {
+        message: "repeated multiplication can be written as a power",
+        before: node,
+        after: Semantic.mulFactors(newFactors, true),
+        substeps: [],
+    };
 };

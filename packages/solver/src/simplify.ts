@@ -11,16 +11,10 @@ import {
     simplifyFraction,
     mulToPower,
 } from "./transforms";
-
-type Transform = (
-    node: Semantic.Types.NumericNode,
-    path: Semantic.Types.Node[],
-) => Semantic.Types.NumericNode | undefined;
+import {Step, Transform} from "./types";
 
 // TODO: collect all of the steps and sub-steps
-export const simplify = (
-    node: Semantic.Types.Node,
-): Semantic.Types.Node | undefined => {
+export const simplify: Transform = (node) => {
     const tranforms: Transform[] = [
         distribute,
         collectLikeTerms,
@@ -28,8 +22,8 @@ export const simplify = (
 
         evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
         evalAdd,
-        evalDiv,
         simplifyFraction,
+        evalDiv,
         mulToPower,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
@@ -37,7 +31,7 @@ export const simplify = (
         addNegToSub,
     ];
 
-    let changed;
+    const substeps: Step[] = [];
 
     const path: Semantic.Types.Node[] = [];
     const enter = (node: Semantic.Types.Node): void => {
@@ -53,26 +47,26 @@ export const simplify = (
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
         if (Semantic.isNumeric(node)) {
-            let current = node;
+            let current: Semantic.Types.Node = node;
             for (let i = 0; i < 10; i++) {
-                let next: Semantic.Types.NumericNode | undefined;
+                let step: Step | undefined;
                 for (const transform of tranforms) {
-                    next = transform(current, path);
+                    step = transform(current, path);
                     // Multiple transforms can be applied to the current node.
-                    if (next) {
-                        changed = true;
+                    if (step) {
                         break;
                     }
                 }
 
                 // None of the transforms suceeded
-                if (!next) {
+                if (!step) {
                     return current;
                 }
 
                 // Update the current node so that we can attemp to transform
                 // it again.
-                current = next;
+                current = step.after;
+                substeps.push(step);
             }
         }
     };
@@ -81,11 +75,16 @@ export const simplify = (
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        changed = false;
         current = Semantic.traverse(current, {enter, exit});
-        if (!changed) {
-            return current;
-        }
+    }
+
+    if (substeps.length > 0) {
+        return {
+            message: "simplify expression",
+            before: node,
+            after: current,
+            substeps,
+        };
     }
 
     return undefined;

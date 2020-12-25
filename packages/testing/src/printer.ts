@@ -6,6 +6,8 @@ import * as Semantic from "@math-blocks/semantic";
 // TODO: Use the operator precedence numbers from text-parser to determine when
 // to add parens (or not).
 
+// TODO: handle the case when there's a neg.sub node at the start of an expression
+
 export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
     switch (expr.type) {
         case "identifier": {
