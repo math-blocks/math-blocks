@@ -15,6 +15,35 @@ export const getFactors = (
     }
 };
 
+// TODO: update this report substeps
+// Instead of having the caller call `getFactors` which introduces unnecessary
+// "-1"s, we should probably pass the things we're trying to multiply directly.
+export const mulFactors = (
+    nodes: Semantic.Types.NumericNode[],
+    implicit: boolean,
+): Semantic.Types.NumericNode => {
+    const numberNodes = nodes.filter(Semantic.isNumber);
+    const nonNumberNodes = nodes.filter((node) => !Semantic.isNumber(node));
+
+    if (numberNodes.length === 1) {
+        if (deepEquals(numberNodes[0], Semantic.number("1"))) {
+            // TODO: report a substep for this
+            return Semantic.mulFactors(nonNumberNodes, implicit);
+        } else if (deepEquals(numberNodes[0], Semantic.number("-1"))) {
+            // TODO: report a substep for this
+            return Semantic.neg(Semantic.mulFactors(nonNumberNodes, implicit));
+        }
+    }
+    if (numberNodes.length > 1) {
+        // TODO: report a substep for this
+        const prod = evalNode(Semantic.mulFactors(numberNodes));
+        if (prod.equals(1)) {
+            return Semantic.mulFactors(nonNumberNodes, implicit);
+        }
+    }
+    return Semantic.mulFactors([...numberNodes, ...nonNumberNodes], implicit);
+};
+
 // TODO: dedupe with polynomial-checks.ts in grader
 export const collectLikeTerms: Transform = (node) => {
     if (node.type !== "add") {
@@ -229,6 +258,7 @@ export const distribute: Transform = (node, path) => {
         // would show their work.
         return undefined;
     }
+    const substeps: Step[] = [];
     const nodes = Semantic.getTerms(node);
     let changed = false;
     const newNodes = nodes.flatMap((node) => {
@@ -236,16 +266,23 @@ export const distribute: Transform = (node, path) => {
             if (node.args.length === 2) {
                 if (node.args[1].type === "add") {
                     const add = node.args[1];
+                    node.args[0]; // ?
                     const terms = add.args.map((term) => {
-                        let newTerm = Semantic.mulFactors(
-                            [node.args[0], ...Semantic.getFactors(term)],
+                        let newTerm = mulFactors(
+                            [...getFactors(node.args[0]), ...getFactors(term)],
                             node.implicit,
                         );
+                        newTerm.args; // ?
                         if (Semantic.isNumber(newTerm)) {
-                            // TODO: report this as a substep
                             newTerm = Semantic.number(
                                 evalNode(newTerm).toString(),
                             );
+                            substeps.push({
+                                message: "evaluate multiplication",
+                                before: term,
+                                after: newTerm,
+                                substeps: [],
+                            });
                         }
                         return newTerm;
                     }) as TwoOrMore<Semantic.Types.NumericNode>;
@@ -259,10 +296,15 @@ export const distribute: Transform = (node, path) => {
                             node.implicit,
                         );
                         if (Semantic.isNumber(newTerm)) {
-                            // TODO: report this as a substep
                             newTerm = Semantic.number(
                                 evalNode(newTerm).toString(),
                             );
+                            substeps.push({
+                                message: "evaluate multiplication",
+                                before: term,
+                                after: newTerm,
+                                substeps: [],
+                            });
                         }
                         return newTerm;
                     }) as TwoOrMore<Semantic.Types.NumericNode>;
@@ -272,16 +314,29 @@ export const distribute: Transform = (node, path) => {
             }
         } else if (node.type === "neg" && node.arg.type === "add") {
             const add = node.arg;
+            const mulNegOne = Semantic.mul([Semantic.number("-1"), add], true);
+            substeps.push({
+                message: "negation is the same as multipyling by one",
+                before: node,
+                after: mulNegOne,
+                substeps: [],
+            });
             const terms = add.args.map((term) => {
-                let newTerm: Semantic.Types.NumericNode = Semantic.mul(
+                const mul: Semantic.Types.NumericNode = Semantic.mul(
                     [Semantic.number("-1"), ...Semantic.getFactors(term)],
                     true,
                 );
-                if (Semantic.isNumber(newTerm)) {
-                    // TODO: report this as a substep
-                    newTerm = Semantic.number(evalNode(newTerm).toString());
+                if (Semantic.isNumber(mul)) {
+                    const newTerm = Semantic.number(evalNode(mul).toString());
+                    substeps.push({
+                        message: "evaluate multiplication",
+                        before: mul,
+                        after: newTerm,
+                        substeps: [],
+                    });
+                    return newTerm;
                 }
-                return newTerm;
+                return mul;
             }) as TwoOrMore<Semantic.Types.NumericNode>;
             changed = true;
             return terms;
@@ -292,30 +347,57 @@ export const distribute: Transform = (node, path) => {
     if (!changed) {
         return undefined;
     }
+    // TODO: handle distribution involving multiple factors, e.g.
+    // (ab)(xy - yz) or something like that
+    const after = Semantic.addTerms(
+        newNodes.map((term, index) => {
+            if (term.type === "mul" && term.args[0].type === "neg") {
+                // TODO: handle multiplication of two negatives, e.g.
+                // (-2)(x - 3) or something like that
+                if (deepEquals(term.args[0], Semantic.number("-1"))) {
+                    const newTerm = Semantic.neg(
+                        Semantic.mulFactors(term.args.slice(1), term.implicit),
+                        index > 0,
+                    );
+                    substeps.push({
+                        message:
+                            "multiplication by -1 is the same as being negative",
+                        before: term,
+                        after: newTerm,
+                        substeps: [],
+                    });
+                    return newTerm;
+                } else {
+                    const newTerm = Semantic.neg(
+                        Semantic.mulFactors(
+                            [term.args[0].arg, ...term.args.slice(1)],
+                            term.implicit,
+                        ),
+                        index > 0,
+                    );
+                    substeps.push({
+                        message:
+                            "multiplication by a negative factor is the same as the entire term being negative",
+                        before: term,
+                        after: newTerm,
+                        substeps: [],
+                    });
+                    return newTerm;
+                }
+            } else if (term.type === "neg" && !term.subtraction && index > 0) {
+                // TODO: make this a substep
+                const newTerm = Semantic.neg(term.arg, true);
+                return newTerm;
+            } else {
+                return term;
+            }
+        }),
+    );
     return {
         message: "distribute",
         before: node,
-        after: Semantic.addTerms(
-            newNodes.map((term, index) => {
-                if (term.type === "mul" && term.args[0].type === "neg") {
-                    // TODO: make this a substep
-                    term.args[0] = term.args[0].arg;
-                    term; // ?
-                    index > 0; // ?
-                    return Semantic.neg(term, index > 0);
-                } else if (
-                    term.type === "neg" &&
-                    !term.subtraction &&
-                    index > 0
-                ) {
-                    // TODO: make this a substep
-                    return Semantic.neg(term.arg, true);
-                } else {
-                    return term;
-                }
-            }),
-        ),
-        substeps: [],
+        after,
+        substeps,
     };
 };
 
