@@ -3,7 +3,6 @@ import * as Semantic from "@math-blocks/semantic";
 import {
     collectLikeTerms,
     dropParens,
-    distribute,
     addNegToSub,
     evalMul,
     evalAdd,
@@ -11,6 +10,7 @@ import {
     simplifyFraction,
     mulToPower,
 } from "./transforms";
+import {distribute} from "./transforms/distribute";
 import {Step, Transform} from "./types";
 
 // TODO: collect all of the steps and sub-steps
