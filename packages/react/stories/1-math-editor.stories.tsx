@@ -11,7 +11,9 @@ export default {
     component: MathEditor,
 };
 
-export const Editable: React.SFC<{}> = () => {
+type EmptyProps = Record<string, never>;
+
+export const Editable: React.FunctionComponent<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
         glyph("2"),
@@ -34,7 +36,7 @@ export const Editable: React.SFC<{}> = () => {
     );
 };
 
-export const Readonly: React.SFC<{}> = () => {
+export const Readonly: React.FunctionComponent<EmptyProps> = () => {
     // TODO: how to convert
     const math = row([
         glyph("2"),

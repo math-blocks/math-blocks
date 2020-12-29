@@ -13,13 +13,15 @@ import {Dispatch} from "./store";
 
 const {useState} = React;
 
+type EmptyProps = Record<string, never>;
+
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
 //   incorrect when the user submits it and will force the user to
 //   correct the issue before proceeding.
 // - Delayed feedback will conceal the correctness of each step
 //   until the user submits their answer.
-export const App: React.SFC<{}> = () => {
+export const App: React.FunctionComponent<EmptyProps> = () => {
     const [mode, setMode] = useState<"edit" | "solve">("solve");
 
     const state = useSelector<State, State>((state) => state);

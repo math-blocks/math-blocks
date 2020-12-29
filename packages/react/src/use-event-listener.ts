@@ -20,7 +20,7 @@ export default function useEventListener(
         () => {
             // Make sure element supports addEventListener
             // On
-            const isSupported = element && element.addEventListener;
+            const isSupported = element?.addEventListener;
             if (!isSupported) return;
 
             // Create event listener that calls handler function stored in ref

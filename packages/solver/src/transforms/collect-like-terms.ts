@@ -2,7 +2,6 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
-import {NumericNode} from "../../../../out/semantic/src/types";
 
 const {deepEquals, evalNode} = Semantic;
 

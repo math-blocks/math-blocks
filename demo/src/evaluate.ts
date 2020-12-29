@@ -84,7 +84,7 @@ const evaluate = (expr: Semantic.Types.Node, varDict: VarDict): number => {
             throw new Error("can't evaluate func nodes");
 
         default:
-            // @ts-ignore
+            // @ts-expect-error: there are still some cases we need to handle
             throw new UnreachableCaseError(expr);
     }
 };
