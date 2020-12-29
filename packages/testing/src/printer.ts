@@ -33,6 +33,11 @@ export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
                     } else {
                         result += " + ";
                     }
+                } else if (Semantic.isSubtraction(arg)) {
+                    console.warn(
+                        "leading subtraction term should be simple negation",
+                    );
+                    result += "-";
                 }
 
                 if (
