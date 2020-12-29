@@ -140,11 +140,13 @@ export const isNegative = (node: Types.NumericNode): node is Types.Neg =>
 
 export const getFactors = (
     node: Types.NumericNode,
-): OneOrMore<Types.NumericNode> => (node.type === "mul" ? node.args : [node]);
+): readonly [Types.NumericNode, ...Types.NumericNode[]] =>
+    node.type === "mul" ? node.args : [node];
 
 export const getTerms = (
     node: Types.NumericNode,
-): OneOrMore<Types.NumericNode> => (node.type === "add" ? node.args : [node]);
+): readonly [Types.NumericNode, ...Types.NumericNode[]] =>
+    node.type === "add" ? node.args : [node];
 
 export const mulFactors = (
     factors: Types.NumericNode[],
