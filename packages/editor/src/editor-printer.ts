@@ -45,11 +45,21 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
         case "add": {
             const children: Editor.Node[] = [];
 
-            for (const arg of expr.args) {
-                if (arg.type === "neg" && arg.subtraction) {
-                    children.push(Editor.glyph("\u2212"));
+            for (let i = 0; i < expr.args.length; i++) {
+                const arg = expr.args[i];
+                if (i > 0) {
+                    if (arg.type === "neg" && arg.subtraction) {
+                        children.push(Editor.glyph("\u2212"));
+                    } else {
+                        children.push(Editor.glyph("+"));
+                    }
                 } else {
-                    children.push(Editor.glyph("+"));
+                    if (arg.type === "neg" && arg.subtraction) {
+                        console.warn(
+                            "leading subtraction term should be simple negation",
+                        );
+                        children.push(Editor.glyph("\u2212"));
+                    }
                 }
 
                 // number is returned as a row so if we do this check, every
@@ -72,7 +82,6 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
                     children.push(node);
                 }
             }
-            children.shift(); // remove extra "+"
 
             return Editor.row(children);
         }
