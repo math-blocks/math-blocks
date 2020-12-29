@@ -132,5 +132,5 @@ const print = (
 
 export const serializer = {
     print: print,
-    test: (ast: Node) => !!ast.type,
+    test: (ast: Node): boolean => !!ast.type,
 };

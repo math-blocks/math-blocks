@@ -25,7 +25,9 @@ const buttons: Button[] = [
     {name: "partial", char: "\u2202"},
 ];
 
-const MathKeypad: React.SFC<{}> = () => {
+type EmptyProps = Record<string, never>;
+
+const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
     const handleClick = (button: Button): void => {
         if (document.activeElement) {
             const event = new KeyboardEvent("keydown", {

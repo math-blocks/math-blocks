@@ -5,7 +5,7 @@ module.exports = {
         {
             files: ["**/*.ts", "**/*.tsx"],
             rules: {
-                "@typescript-eslint/ban-ts-ignore": "warn",
+                "@typescript-eslint/prefer-ts-expect-error": "warn",
                 "@typescript-eslint/no-use-before-define": "off",
                 "@typescript-eslint/explicit-function-return-type": [
                     "warn",

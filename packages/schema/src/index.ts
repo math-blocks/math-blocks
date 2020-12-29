@@ -32,9 +32,9 @@ const object = (properties: Properties, options?: Options): JSONSchema7 => {
 
 const node = (
     name: string,
-    properties: object = {},
+    properties: Record<string, unknown> = {},
     options?: Options,
-): object => {
+): Record<string, unknown> => {
     return {
         type: "object",
         allOf: [
@@ -50,7 +50,7 @@ const node = (
     };
 };
 
-const nary = (name: string, argType: JSONSchema7): object =>
+const nary = (name: string, argType: JSONSchema7): Record<string, unknown> =>
     node(name, {
         args: {
             type: "array",
@@ -59,7 +59,7 @@ const nary = (name: string, argType: JSONSchema7): object =>
         },
     });
 
-const binary = (name: string, argType: JSONSchema7): object =>
+const binary = (name: string, argType: JSONSchema7): Record<string, unknown> =>
     node(name, {
         args: {
             type: "array",
@@ -69,7 +69,7 @@ const binary = (name: string, argType: JSONSchema7): object =>
         },
     });
 
-const unary = (name: string, argType: JSONSchema7): object =>
+const unary = (name: string, argType: JSONSchema7): Record<string, unknown> =>
     node(name, {
         arg: argType,
     });

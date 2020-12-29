@@ -11,14 +11,15 @@ import "./handwriting-element";
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JSX {
-        // eslint-disable-next-line @typescript-eslint/interface-name-prefix
         interface IntrinsicElements {
             "x-handwriting": any;
         }
     }
 }
 
-const HandwritingPage: React.SFC<{}> = () => {
+type EmptyProps = Record<string, never>;
+
+const HandwritingPage: React.FunctionComponent<EmptyProps> = () => {
     return (
         <div
             style={{

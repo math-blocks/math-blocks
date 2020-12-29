@@ -15,7 +15,9 @@ export default {
     component: MathRenderer,
 };
 
-export const Small: React.SFC<{}> = () => {
+type EmptyProps = Record<string, never>;
+
+export const Small: React.FunctionComponent<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
         glyph("2"),
@@ -38,7 +40,7 @@ export const Small: React.SFC<{}> = () => {
     return <MathRenderer box={box} />;
 };
 
-export const Equation: React.SFC<{}> = () => {
+export const Equation: React.FunctionComponent<EmptyProps> = () => {
     // TODO: how to convert
     const math = row([
         glyph("2"),
@@ -75,7 +77,7 @@ const rowsToState = (rows: Editor.Row[]): Editor.State => {
     };
 };
 
-export const ShowingWork: React.FunctionComponent<{}> = () => {
+export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -97,7 +99,7 @@ export const ShowingWork: React.FunctionComponent<{}> = () => {
     return <MathRenderer box={work} />;
 };
 
-export const LinearEquations: React.SFC<{}> = () => {
+export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -187,7 +189,7 @@ export const LinearEquations: React.SFC<{}> = () => {
     );
 };
 
-export const Cursor: React.FunctionComponent<{}> = () => {
+export const Cursor: React.FunctionComponent<EmptyProps> = () => {
     const cursor: Editor.Cursor = {
         path: [],
         prev: 0,
@@ -225,7 +227,7 @@ export const Cursor: React.FunctionComponent<{}> = () => {
     );
 };
 
-export const Selection: React.FunctionComponent<{}> = () => {
+export const Selection: React.FunctionComponent<EmptyProps> = () => {
     const cursor: Editor.Cursor = {
         path: [],
         prev: 0,
@@ -270,7 +272,7 @@ export const Selection: React.FunctionComponent<{}> = () => {
     );
 };
 
-export const Pythagoras: React.SFC<{}> = () => {
+export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -296,7 +298,7 @@ export const Pythagoras: React.SFC<{}> = () => {
     return <MathRenderer box={pythagoras} />;
 };
 
-export const QuadraticEquation: React.SFC<{}> = () => {
+export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -335,7 +337,7 @@ export const QuadraticEquation: React.SFC<{}> = () => {
     return <MathRenderer box={quadraticEquation} />;
 };
 
-export const Limit: React.SFC<{}> = () => {
+export const Limit: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -360,7 +362,7 @@ export const Limit: React.SFC<{}> = () => {
     return <MathRenderer box={lim} />;
 };
 
-export const Summation: React.SFC<{}> = () => {
+export const Summation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -384,7 +386,7 @@ export const Summation: React.SFC<{}> = () => {
     return <MathRenderer box={sum} />;
 };
 
-export const ColorizedFraction: React.SFC<{}> = () => {
+export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
     const context = {
@@ -409,7 +411,7 @@ export const ColorizedFraction: React.SFC<{}> = () => {
     return <MathRenderer box={sum} />;
 };
 
-export const ColorizedSum: React.SFC<{}> = () => {
+export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.Util.row("8+10+12+14");
 
     const semNode = parse(editNode) as Semantic.Types.Add;
@@ -444,7 +446,7 @@ export const ColorizedSum: React.SFC<{}> = () => {
     return <MathRenderer box={prod} />;
 };
 
-export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
+export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.Util.row("(11+x)(12-y)");
 
     const semNode = parse(editNode) as Semantic.Types.Mul;
@@ -479,7 +481,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<{}> = () => {
     return <MathRenderer box={prod} />;
 };
 
-export const NestedSemanticColoring: React.FunctionComponent<{}> = () => {
+export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
 
     const semNode = parse(editNode) as Semantic.Types.Div;

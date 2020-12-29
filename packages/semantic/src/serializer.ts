@@ -136,7 +136,7 @@ const print = (
 
 const serializer = {
     print: print,
-    test: (ast: Types.Node) => !!ast.type,
+    test: (ast: Types.Node): boolean => !!ast.type,
 };
 
 export default serializer;
