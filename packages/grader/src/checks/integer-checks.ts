@@ -259,21 +259,22 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
             }
         }
 
-        if (negIndices.length >= 2) {
-            // remove each pair of negatives
-            for (let i = 0; i < negIndices.length; i += 2) {
-                const neg1 = factors[negIndices[i]];
-                const neg2 = factors[negIndices[i + 1]];
-                if (neg1.type === "neg" && neg2.type === "neg") {
-                    factors[negIndices[i]] = neg1.arg;
-                    factors[negIndices[i + 1]] = neg2.arg;
-                }
-            }
-        } else {
+        if (negIndices.length < 2) {
             return;
         }
 
-        const newPrev = Semantic.mul(factors);
+        // If we have an odd number of negative indices remove the last one.
+        if (negIndices.length % 2 === 1) {
+            negIndices.pop();
+        }
+
+        const newFactors = (factors.map((factor, index) => {
+            return negIndices.includes(index) && factor.type === "neg"
+                ? factor.arg
+                : factor;
+        }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>;
+
+        const newPrev = Semantic.mul(newFactors);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -313,17 +314,23 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
         const factors: TwoOrMore<Semantic.Types.NumericNode> = [...prev.args];
         const index = factors.findIndex((factor) => factor.type === "neg");
-        const neg = factors[index];
 
-        if (index !== -1 && neg.type === "neg") {
-            factors[0] = Semantic.neg(factors[0]);
-            factors[index] = neg.arg;
-        } else {
-            // If there are no negatives then we can't transfer a negative
+        // If there are no negatives then we can't transfer a negative
+        if (index === -1) {
             return;
         }
 
-        const newPrev = Semantic.mul(factors);
+        const newFactors = (factors.map((f, i) => {
+            if (i === 0) {
+                return Semantic.neg(f);
+            } else if (i === index && f.type === "neg") {
+                return f.arg;
+            } else {
+                return f;
+            }
+        }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>;
+
+        const newPrev = Semantic.mul(newFactors);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {

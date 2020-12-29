@@ -26,7 +26,7 @@ export const divBothSides: Transform = (node, ident) => {
         return;
     }
 
-    const [left, right] = node.args as Semantic.Types.NumericNode[];
+    const [left, right] = node.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
     const rightTerms = Semantic.getTerms(right);
@@ -53,9 +53,9 @@ export const divBothSides: Transform = (node, ident) => {
         }
 
         return Semantic.eq(
-            node.args.map((arg) =>
+            (node.args.map((arg) =>
                 Semantic.div(arg as Semantic.Types.NumericNode, coeff),
-            ) as TwoOrMore<Semantic.Types.NumericNode>,
+            ) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
         );
     }
 
@@ -67,9 +67,9 @@ export const divBothSides: Transform = (node, ident) => {
         }
 
         return Semantic.eq(
-            node.args.map((arg) =>
+            (node.args.map((arg) =>
                 Semantic.div(arg as Semantic.Types.NumericNode, coeff),
-            ) as TwoOrMore<Semantic.Types.NumericNode>,
+            ) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
         );
     }
 
@@ -123,7 +123,7 @@ export const moveVariablesToOneSide: Transform = (node, ident) => {
         return;
     }
 
-    const [left, right] = node.args as Semantic.Types.NumericNode[];
+    const [left, right] = node.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
     const rightTerms = Semantic.getTerms(right);
@@ -151,13 +151,17 @@ export const moveVariablesToOneSide: Transform = (node, ident) => {
         // There's a term with the identifier we're trying to solve for on both sides
 
         // Move identifiers to the left
-        const left = Semantic.addTerms([
-            ...leftIdentTerms,
-            ...rightIdentTerms.map(flipSign),
-        ]);
-        if (left.type === "add" && left.args[0].type === "neg") {
-            left.args[0] = convertSubTermToNeg(left.args[0]);
-        }
+        const left =
+            leftIdentTerms[0].type === "neg"
+                ? Semantic.addTerms([
+                      convertSubTermToNeg(leftIdentTerms[0]),
+                      ...leftIdentTerms.slice(1),
+                      ...rightIdentTerms.map(flipSign),
+                  ])
+                : Semantic.addTerms([
+                      ...leftIdentTerms,
+                      ...rightIdentTerms.map(flipSign),
+                  ]);
 
         // Move non-identifiers to the right
         const right = Semantic.addTerms([

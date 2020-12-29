@@ -26,7 +26,10 @@ export const primeDecomp = (n: number): number[] => {
     return factors;
 };
 
-export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
+export const zip = <A, B>(
+    a: readonly A[],
+    b: readonly B[],
+): readonly [A, B][] => {
     const result: [A, B][] = [];
     for (let i = 0; i < Math.min(a.length, b.length); i++) {
         result.push([a[i], b[i]]);
@@ -35,8 +38,8 @@ export const zip = <A, B>(a: A[], b: B[]): [A, B][] => {
 };
 
 export const decomposeFactors = (
-    factors: Semantic.Types.NumericNode[],
-): Semantic.Types.NumericNode[] => {
+    factors: readonly Semantic.Types.NumericNode[],
+): readonly Semantic.Types.NumericNode[] => {
     return factors.reduce((result: Semantic.Types.NumericNode[], factor) => {
         // TODO: add decomposition of powers
         if (factor.type === "number") {
@@ -119,7 +122,7 @@ export const replaceNodeWithId = (
 
 export const applySteps = (
     root: Semantic.Types.Node,
-    steps: Step[],
+    steps: readonly Step[],
 ): Semantic.Types.Node => {
     const nextState = produce(root, (draft) => {
         // We need to apply each step
@@ -138,8 +141,8 @@ export const applySteps = (
  * and vice versa.
  */
 export const equality = (
-    as: Semantic.Types.Node[],
-    bs: Semantic.Types.Node[],
+    as: readonly Semantic.Types.Node[],
+    bs: readonly Semantic.Types.Node[],
     context: Context,
 ): boolean => {
     const {checker} = context;
@@ -152,8 +155,8 @@ export const correctResult = (
     prev: Semantic.Types.Node,
     next: Semantic.Types.Node,
     reversed: boolean,
-    beforeSteps: Step[],
-    afterSteps: Step[],
+    beforeSteps: readonly Step[],
+    afterSteps: readonly Step[],
     forwardMessage: string,
     reverseMessage: string = forwardMessage,
 ): Result => {
@@ -209,8 +212,8 @@ export const incorrectResult = (
     prev: Semantic.Types.Node,
     next: Semantic.Types.Node,
     reversed: boolean,
-    beforeSteps: Step[],
-    afterSteps: Step[],
+    beforeSteps: readonly Step[],
+    afterSteps: readonly Step[],
     forwardMessage: string,
     reverseMessage: string = forwardMessage,
 ): Result => {

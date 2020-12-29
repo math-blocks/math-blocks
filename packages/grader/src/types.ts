@@ -4,12 +4,12 @@ import {MistakeId, Status} from "./enums";
 
 export type Step = {
     message: string;
-    nodes: [Semantic.Types.Node, Semantic.Types.Node];
+    nodes: readonly [Semantic.Types.Node, Semantic.Types.Node];
 };
 
 export type Result = {
     status: Status;
-    steps: Step[];
+    steps: readonly Step[];
 };
 
 export const MISTAKE_PRIORITIES: Record<MistakeId, number> = {
@@ -36,19 +36,21 @@ export type Correction = {
 
 export type Mistake = {
     id: MistakeId;
-    prevNodes: Semantic.Types.Node[];
-    nextNodes: Semantic.Types.Node[];
-    corrections: Correction[];
+    prevNodes: readonly Semantic.Types.Node[];
+    nextNodes: readonly Semantic.Types.Node[];
+    corrections: readonly Correction[];
 };
 
 export type Context = {
-    steps: Step[];
+    steps: readonly Step[];
     checker: IStepChecker;
 
     // Tracks whether we're currently reversed or not, see `runChecks` in
     // step-checker.ts for details.
     reversed: boolean;
 
+    // This array is mutable so that Mistakes can be added to the context object
+    // as the prev/next trees are traversed.
     mistakes?: Mistake[];
 
     // Used for debugging purposes to see which checks ran successfully as part

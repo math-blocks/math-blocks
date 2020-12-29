@@ -44,7 +44,7 @@ const MistakeMessages: Record<MistakeId, string> = {
 
 // TODO: dedupe with Location in editor-parser
 type Location = {
-    path: number[];
+    path: readonly number[];
     start: number;
     end: number;
 };

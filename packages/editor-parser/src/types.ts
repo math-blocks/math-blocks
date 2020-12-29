@@ -1,5 +1,5 @@
 export type Location = {
-    path: number[];
+    path: readonly number[];
     start: number;
     end: number;
 };
@@ -27,26 +27,26 @@ export type Row = {
 
 export type SubSup = {
     type: "subsup";
-    children: [Row | null, Row | null]; // sub, sup
+    children: readonly [Row | null, Row | null]; // sub, sup
     loc: Location;
 };
 
 export type Limits = {
     type: "limits";
     inner: Node;
-    children: [Row, Row | null];
+    children: readonly [Row, Row | null];
     loc: Location;
 };
 
 export type Frac = {
     type: "frac";
-    children: [Row, Row]; // numerator, denominator
+    children: readonly [Row, Row]; // numerator, denominator
     loc: Location;
 };
 
 export type Root = {
     type: "root";
-    children: [Row, Row | null];
+    children: readonly [Row, Row | null];
     loc: Location;
 };
 

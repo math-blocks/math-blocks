@@ -162,10 +162,12 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
     // We don't actually need everything ƒactor to be a power, just as long as
     // there are some factors that powers
 
+    type MutableOneOrMore<T> = [T, ...T[]];
+
     // TODO: create a util function that can be used here and in collectLikeTerms
     const map = new Map<
         Semantic.Types.NumericNode,
-        OneOrMore<{
+        MutableOneOrMore<{
             exp: Semantic.Types.NumericNode;
             factor: Semantic.Types.NumericNode;
         }>
@@ -596,7 +598,7 @@ export const mulPowsSameExp: Check = (prev, next, context) => {
         return;
     }
 
-    const pows = prev.args as Semantic.Types.Pow[];
+    const pows = prev.args as readonly Semantic.Types.Pow[];
     const exps = pows.map((pow) => pow.exp);
     const firstExp = exps[0]; // TODO: clone this?
 
@@ -681,7 +683,7 @@ export const divOfPowsSameExp: Check = (prev, next, context) => {
         return;
     }
 
-    const pows = prev.args as Semantic.Types.Pow[];
+    const pows = prev.args as readonly Semantic.Types.Pow[];
     const exps = [pows[0].exp, pows[1].exp];
     if (!exactMatch(exps[0], exps[1], context)) {
         return undefined;

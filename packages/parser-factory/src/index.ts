@@ -25,9 +25,9 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
     getInfixParselet: (token: T) => InfixParselet<T, N, O> | null,
     getOpPrecedence: (arg0: O) => number,
     EOL: T,
-): {parse: (arg0: Array<T>) => N} {
+): {parse: (arg0: readonly T[]) => N} {
     // rewrite this as a class.
-    const parse = (tokens: Array<T>): N => {
+    const parse = (tokens: readonly T[]): N => {
         let index = 0;
 
         // returns the next token but does not consume

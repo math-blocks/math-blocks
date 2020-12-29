@@ -2,6 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
+import {NumericNode} from "../../../../out/semantic/src/types";
 
 const {deepEquals, evalNode} = Semantic;
 
@@ -139,8 +140,15 @@ export const collectLikeTerms: Transform = (node) => {
         [...newTerms, ...numbers].map((term, index) => {
             if (term.type === "mul" && term.args[0].type === "neg") {
                 // TODO: make this a substep
-                term.args[0] = term.args[0].arg;
-                return Semantic.neg(term, index > 0);
+                // TODO: give this a new id
+                const newTerm = {
+                    ...term,
+                    args: ([
+                        term.args[0].arg,
+                        ...term.args.slice(1),
+                    ] as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
+                };
+                return Semantic.neg(newTerm, index > 0);
             } else if (term.type === "neg") {
                 // TODO: make this a substep if subtraction is changing
                 return Semantic.neg(term.arg, index > 0);

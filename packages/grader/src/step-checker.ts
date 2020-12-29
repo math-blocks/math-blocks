@@ -50,7 +50,7 @@ const areSetsEqual = <T>(a: Set<T>, b: Set<T>): boolean => {
     return false;
 };
 
-const setOfIds = <T extends {id: number}>(array: T[]): Set<number> => {
+const setOfIds = <T extends {id: number}>(array: readonly T[]): Set<number> => {
     return new Set(array.map((item) => item.id));
 };
 

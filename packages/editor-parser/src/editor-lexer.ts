@@ -94,7 +94,7 @@ const processGlyphs = (
     glyphs: Editor.Glyph[],
     path: number[],
     offset: number,
-): Atom[] => {
+): readonly Atom[] => {
     const tokens: Atom[] = [];
     if (glyphs.length > 0) {
         const str = glyphs.map((glyph) => glyph.char).join("");
@@ -190,11 +190,11 @@ const lexChildren = (
     const offset = nodes.length - glyphs.length;
     tokens.push(...processGlyphs(glyphs, path, offset));
 
-    return tokens as OneOrMore<Node>;
+    return (tokens as unknown) as OneOrMore<Node>;
 };
 
 function assertOneOrMore<T>(
-    array: T[],
+    array: readonly T[],
     msg: string,
 ): asserts array is OneOrMore<T> {
     if (array.length === 0) {

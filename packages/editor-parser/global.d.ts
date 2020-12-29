@@ -1,2 +1,2 @@
-type OneOrMore<T> = [T, ...T[]];
-type TwoOrMore<T> = [T, T, ...T[]];
+type OneOrMore<T> = readonly [T, ...T[]];
+type TwoOrMore<T> = readonly [T, T, ...T[]];
