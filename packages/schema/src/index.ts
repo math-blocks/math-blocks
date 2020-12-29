@@ -17,7 +17,7 @@ type Properties = {
 };
 
 const object = (properties: Properties, options?: Options): JSONSchema7 => {
-    const optional = (options && options.optional) || [];
+    const optional = options?.optional || [];
 
     const required = Object.keys(properties).filter(
         (key) => !optional.includes(key),

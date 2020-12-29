@@ -118,7 +118,7 @@ export type LayoutCursor = {
 // Maybe we should return undefined if there isn't a node at the given path.
 export function nodeAtPath(
     root: Editor.Node,
-    path: ReadonlyArray<number>,
+    path: readonly number[],
 ): Editor.Node {
     if (path.length === 0) {
         return root;
@@ -170,8 +170,8 @@ export function nodeAtPath(
 export function pathForNode(
     root: Editor.Node,
     node: Editor.Node,
-    path: ReadonlyArray<number> = [],
-): ReadonlyArray<number> | null {
+    path: readonly number[] = [],
+): readonly number[] | null {
     if (node === root) {
         return path;
     } else {

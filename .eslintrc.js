@@ -5,7 +5,9 @@ module.exports = {
         {
             files: ["**/*.ts", "**/*.tsx"],
             rules: {
+                "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/prefer-ts-expect-error": "warn",
+                "@typescript-eslint/prefer-optional-chain": "error",
                 "@typescript-eslint/no-use-before-define": "off",
                 "@typescript-eslint/explicit-function-return-type": [
                     "warn",
