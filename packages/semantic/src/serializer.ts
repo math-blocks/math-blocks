@@ -4,7 +4,7 @@ import * as Types from "./types";
 
 const printArgs = (
     type: string,
-    args: Types.Node[],
+    args: readonly Types.Node[],
     serialize: (ast: Types.Node) => string,
     indent: (str: string) => string,
 ): string => {

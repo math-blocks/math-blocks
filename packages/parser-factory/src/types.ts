@@ -54,19 +54,19 @@ export type Ellipsis = Common & {
 };
 export type Add = Common & {
     type: "add";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Mul = Common & {
     type: "mul";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     implicit: boolean;
     [k: string]: unknown;
 };
 export type Func = Common & {
     type: "func";
     func: Node;
-    args: Node[];
+    args: readonly Node[];
     [k: string]: unknown;
 };
 export type Div = Common & {
@@ -189,12 +189,12 @@ export type False = Common & {
 };
 export type And = Common & {
     type: "and";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Or = Common & {
     type: "or";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Not = Common & {
@@ -204,7 +204,7 @@ export type Not = Common & {
 };
 export type Xor = Common & {
     type: "xor";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Implies = Common & {
@@ -219,32 +219,32 @@ export type Iff = Common & {
 };
 export type Eq = Common & {
     type: "eq";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Neq = Common & {
     type: "neq";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Lt = Common & {
     type: "lt";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Lte = Common & {
     type: "lte";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Gt = Common & {
     type: "gt";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Gte = Common & {
     type: "gte";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type In = Common & {
@@ -261,22 +261,22 @@ export type NotIn = Common & {
 };
 export type Subset = Common & {
     type: "subset";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type ProperSubset = Common & {
     type: "prsubset";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type NotSubset = Common & {
     type: "notsubset";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type NotProperSubset = Common & {
     type: "notprsubset";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type SetNode =
@@ -295,7 +295,7 @@ export type SetNode =
     | Complexes;
 export type Set = Common & {
     type: "set";
-    args: Node[];
+    args: readonly Node[];
     [k: string]: unknown;
 };
 export type EmptySet = Common & {
@@ -304,12 +304,12 @@ export type EmptySet = Common & {
 };
 export type Union = Common & {
     type: "union";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Intersection = Common & {
     type: "intersection";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type SetDiff = Common & {
@@ -319,7 +319,7 @@ export type SetDiff = Common & {
 };
 export type CartesianProduct = Common & {
     type: "cartesian_product";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Naturals = Common & {
@@ -349,7 +349,7 @@ export interface Common {
     [k: string]: unknown;
 }
 export interface Location {
-    path: number[];
+    path: readonly number[];
     start: number;
     end: number;
     [k: string]: unknown;

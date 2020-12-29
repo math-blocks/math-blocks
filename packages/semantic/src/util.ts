@@ -147,7 +147,7 @@ export const getTerms = (
 ): OneOrMore<Types.NumericNode> => (node.type === "add" ? node.args : [node]);
 
 export const mulFactors = (
-    factors: Types.NumericNode[],
+    factors: readonly Types.NumericNode[],
     implicit = false,
     loc?: Types.Location,
 ): Types.NumericNode => {
@@ -168,7 +168,7 @@ export const mulFactors = (
 };
 
 export const addTerms = (
-    terms: Types.NumericNode[],
+    terms: readonly Types.NumericNode[],
     loc?: Types.Location,
 ): Types.NumericNode => {
     switch (terms.length) {
@@ -268,7 +268,10 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
 /**
  * Returns all of the elements that appear in both as and bs.
  */
-export const intersection = <T>(as: T[], bs: T[]): T[] => {
+export const intersection = <T>(
+    as: readonly T[],
+    bs: readonly T[],
+): readonly T[] => {
     const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent
@@ -286,7 +289,10 @@ export const intersection = <T>(as: T[], bs: T[]): T[] => {
 /**
  * Returns all of the elements that appear in as but not in bs.
  */
-export const difference = <T>(as: T[], bs: T[]): T[] => {
+export const difference = <T>(
+    as: readonly T[],
+    bs: readonly T[],
+): readonly T[] => {
     const result: T[] = [];
     for (const a of as) {
         // We use deepEquals here as an optimization.  If there are equivalent

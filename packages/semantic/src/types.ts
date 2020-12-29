@@ -54,29 +54,29 @@ export type Ellipsis = Common & {
 };
 export type Add = Common & {
     type: "add";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     [k: string]: unknown;
 };
 export type Mul = Common & {
     type: "mul";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     implicit: boolean;
     [k: string]: unknown;
 };
 export type Func = Common & {
     type: "func";
     func: NumericNode;
-    args: NumericNode[];
+    args: readonly NumericNode[];
     [k: string]: unknown;
 };
 export type Div = Common & {
     type: "div";
-    args: [NumericNode, NumericNode];
+    args: readonly [NumericNode, NumericNode];
     [k: string]: unknown;
 };
 export type Mod = Common & {
     type: "mod";
-    args: [NumericNode, NumericNode];
+    args: readonly [NumericNode, NumericNode];
     [k: string]: unknown;
 };
 export type Root = Common & {
@@ -189,12 +189,12 @@ export type False = Common & {
 };
 export type And = Common & {
     type: "and";
-    args: [LogicNode, LogicNode, ...LogicNode[]];
+    args: readonly [LogicNode, LogicNode, ...LogicNode[]];
     [k: string]: unknown;
 };
 export type Or = Common & {
     type: "or";
-    args: [LogicNode, LogicNode, ...LogicNode[]];
+    args: readonly [LogicNode, LogicNode, ...LogicNode[]];
     [k: string]: unknown;
 };
 export type Not = Common & {
@@ -204,47 +204,47 @@ export type Not = Common & {
 };
 export type Xor = Common & {
     type: "xor";
-    args: [LogicNode, LogicNode, ...LogicNode[]];
+    args: readonly [LogicNode, LogicNode, ...LogicNode[]];
     [k: string]: unknown;
 };
 export type Implies = Common & {
     type: "implies";
-    args: [LogicNode, LogicNode];
+    args: readonly [LogicNode, LogicNode];
     [k: string]: unknown;
 };
 export type Iff = Common & {
     type: "iff";
-    args: [LogicNode, LogicNode];
+    args: readonly [LogicNode, LogicNode];
     [k: string]: unknown;
 };
 export type Eq = Common & {
     type: "eq";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Neq = Common & {
     type: "neq";
-    args: [Node, Node, ...Node[]];
+    args: readonly [Node, Node, ...Node[]];
     [k: string]: unknown;
 };
 export type Lt = Common & {
     type: "lt";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     [k: string]: unknown;
 };
 export type Lte = Common & {
     type: "lte";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     [k: string]: unknown;
 };
 export type Gt = Common & {
     type: "gt";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     [k: string]: unknown;
 };
 export type Gte = Common & {
     type: "gte";
-    args: [NumericNode, NumericNode, ...NumericNode[]];
+    args: readonly [NumericNode, NumericNode, ...NumericNode[]];
     [k: string]: unknown;
 };
 export type In = Common & {
@@ -269,7 +269,7 @@ export type SetNode =
     | Complexes;
 export type Set = Common & {
     type: "set";
-    args: Node[];
+    args: readonly Node[];
     [k: string]: unknown;
 };
 export type EmptySet = Common & {
@@ -278,12 +278,12 @@ export type EmptySet = Common & {
 };
 export type Union = Common & {
     type: "union";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type Intersection = Common & {
     type: "intersection";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type SetDiff = Common & {
@@ -293,7 +293,7 @@ export type SetDiff = Common & {
 };
 export type CartesianProduct = Common & {
     type: "cartesian_product";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type Naturals = Common & {
@@ -324,22 +324,22 @@ export type NotIn = Common & {
 };
 export type Subset = Common & {
     type: "subset";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type ProperSubset = Common & {
     type: "prsubset";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type NotSubset = Common & {
     type: "notsubset";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 export type NotProperSubset = Common & {
     type: "notprsubset";
-    args: [SetNode, SetNode, ...SetNode[]];
+    args: readonly [SetNode, SetNode, ...SetNode[]];
     [k: string]: unknown;
 };
 
@@ -349,7 +349,7 @@ export interface Common {
     [k: string]: unknown;
 }
 export interface Location {
-    path: number[];
+    path: readonly number[];
     start: number;
     end: number;
     [k: string]: unknown;

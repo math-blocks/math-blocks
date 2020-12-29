@@ -42,7 +42,7 @@ export const reduceFraction: Transform = (node) => {
 
     let after: Semantic.Types.NumericNode;
     if (deepEquals(den, Semantic.number("1"))) {
-        // a / 1
+        // a / 1 -> a
         after = num;
     } else {
         // If there were no common factors then we weren't able to reduce anything.
@@ -50,20 +50,20 @@ export const reduceFraction: Transform = (node) => {
             return;
         }
         // a / b
-        after = Semantic.div(num, den);
-    }
-
-    if (resultIsNegative) {
-        // Maintain the position of the negative.
-        if (after.type === "div") {
+        if (resultIsNegative) {
+            // Maintain the position of the negative.
             if (isNegative(node.args[0])) {
-                after.args[0] = Semantic.neg(after.args[0]);
+                after = Semantic.div(Semantic.neg(num), den);
             } else {
-                after.args[1] = Semantic.neg(after.args[1]);
+                after = Semantic.div(num, Semantic.neg(den));
             }
         } else {
-            after = Semantic.neg(after);
+            after = Semantic.div(num, den);
         }
+    }
+
+    if (resultIsNegative && after.type !== "div") {
+        after = Semantic.neg(after);
     }
 
     return {
