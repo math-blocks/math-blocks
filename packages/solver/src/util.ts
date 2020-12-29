@@ -7,6 +7,7 @@ import {
     getFactors,
     mulFactors,
 } from "@math-blocks/semantic";
+
 import {Step} from "./types";
 
 // TODO: backport the change to @math-blocks/semantic
@@ -15,7 +16,6 @@ import {Step} from "./types";
 // - is it subtraction
 // - is it negative and not subtraction
 export const isNegative = (node: Semantic.Types.NumericNode): boolean => {
-    node; // ?
     if (node.type === "neg") {
         return !isNegative(node.arg);
     }
@@ -31,88 +31,14 @@ export const isNegative = (node: Semantic.Types.NumericNode): boolean => {
     return false;
 };
 
-const mulNegOneSubstep = (
-    a: Semantic.Types.NumericNode,
-    b: Semantic.Types.NumericNode,
-    substeps?: Step[], // NOTE: this array is modified
-): void => {
-    // -1a -> -a
-    if (
-        deepEquals(a, Semantic.number("-1")) &&
-        !isNegative(b) &&
-        !isNumber(b) // We exclude numbers from this substep since they're handled separately
-    ) {
-        substeps?.push({
-            message: "multiplication by -1 is the same as being negative",
-            // It would be nice if we didn't have to recreate this node here
-            // since doing so complicates reporting
-            before: Semantic.mul([a, b], true),
-            after: Semantic.neg(b),
-            substeps: [],
-        });
-    }
-
-    // (a)(-1) -> -a
-    if (
-        deepEquals(b, Semantic.number("-1")) &&
-        !isNegative(a) &&
-        !isNumber(a) // We exclude numbers from this substep since they're handled separately
-    ) {
-        substeps?.push({
-            message: "multiplication by -1 is the same as being negative",
-            // It would be nice if we didn't have to recreate this node here
-            // since doing so complicates reporting
-            before: Semantic.mul([a, b], true),
-            after: Semantic.neg(a),
-            substeps: [],
-        });
-    }
-};
-
-const mulOneSubstep = (
-    a: Semantic.Types.NumericNode,
-    b: Semantic.Types.NumericNode,
-    substeps?: Step[], // NOTE: this array is modified
-): void => {
-    // 1a -> a
-    if (
-        deepEquals(a, Semantic.number("1")) &&
-        !isNumber(b) // We exclude numbers from this substep since they're handled separately
-    ) {
-        substeps?.push({
-            message: "multiplication by 1 is a no-op",
-            // It would be nice if we didn't have to recreate this node here
-            // since doing so complicates reporting
-            before: Semantic.mul([a, b], true),
-            after: b,
-            substeps: [],
-        });
-    }
-
-    // (a)(1) -> a
-    if (
-        deepEquals(b, Semantic.number("1")) &&
-        !isNumber(a) // We exclude numbers from this substep since they're handled bseparatelylow
-    ) {
-        substeps?.push({
-            message: "multiplication by 1 is a no-op",
-            // It would be nice if we didn't have to recreate this node here
-            // since doing so complicates reporting
-            before: Semantic.mul([a, b], true),
-            after: a,
-            substeps: [],
-        });
-    }
-};
-
 export const mul = (
     a: Semantic.Types.NumericNode,
     b: Semantic.Types.NumericNode,
     substeps?: Step[], // NOTE: this array is modified
 ): Semantic.Types.NumericNode => {
-    const aFactors: Semantic.Types.NumericNode[] =
+    const aFactors: readonly Semantic.Types.NumericNode[] =
         a.type === "neg" ? getFactors(a.arg) : getFactors(a);
-    const bFactors: Semantic.Types.NumericNode[] =
+    const bFactors: readonly Semantic.Types.NumericNode[] =
         b.type === "neg" ? getFactors(b.arg) : getFactors(b);
 
     // It's okay to reuse this since we're only using it for comparison
@@ -122,24 +48,7 @@ export const mul = (
         value: "1",
     };
 
-    // TODO: add substeps for special cases
-    // (-1)(a) -> -a (multiplying by -1 is the same as being negative one)
-    // (1)(1) -> 1 (evaluate multiplication)
-
     const isResultNegative = isNegative(a) !== isNegative(b);
-
-    if (a.type === "neg") {
-        aFactors[0] = Semantic.neg(aFactors[0]);
-    }
-
-    if (b.type === "neg") {
-        bFactors[0] = Semantic.neg(bFactors[0]);
-    }
-
-    if (substeps) {
-        mulNegOneSubstep(a, b, substeps);
-        mulOneSubstep(a, b, substeps);
-    }
 
     const numberFactors = [
         ...aFactors.filter(isNumber),
@@ -151,12 +60,13 @@ export const mul = (
         ...bFactors.filter((f) => !isNumber(f)),
     ];
 
-    let coeff: Semantic.Types.NumericNode;
+    let coeff: Semantic.Types.NumericNode[];
     if (numberFactors.length === 0) {
-        coeff = one;
+        coeff = []; // avoid introducing a coefficient if we don't need to
     } else if (numberFactors.length === 1) {
-        coeff = numberFactors[0];
+        coeff = numberFactors;
     } else {
+        // Multiply all number factors together to determine the new coefficient
         const before = Semantic.mulFactors(numberFactors, true);
         const after = number(evalNode(before).toString());
         substeps?.push({
@@ -165,17 +75,50 @@ export const mul = (
             after,
             substeps: [],
         });
-        coeff = after;
+        coeff = [after];
     }
 
-    let factors =
-        deepEquals(coeff, one) || deepEquals(coeff, Semantic.neg(one))
-            ? nonNumberFactors
-            : [coeff, ...nonNumberFactors];
+    let after: Semantic.Types.NumericNode;
 
-    factors = factors.map((f) => (f.type === "neg" ? f.arg : f));
+    if (isResultNegative) {
+        const before = Semantic.neg(
+            mulFactors([...coeff, ...nonNumberFactors], true),
+        );
+        if (deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
+            after = Semantic.neg(mulFactors(nonNumberFactors, true));
+            substeps?.push({
+                message: "multiplication by -1 is the same as being negative",
+                before,
+                after,
+                substeps: [],
+            });
+        } else {
+            after = before;
+        }
+    } else {
+        const before = mulFactors([...coeff, ...nonNumberFactors], true);
+        if (deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
+            after = mulFactors(nonNumberFactors, true);
+            substeps?.push({
+                message: "multiplication by 1 is a no-op",
+                before,
+                after,
+                substeps: [],
+            });
+        } else {
+            after = before;
+        }
+    }
 
-    return isResultNegative
-        ? Semantic.neg(mulFactors(factors, true))
-        : mulFactors(factors, true);
+    if (isNegative(a) && isNegative(b)) {
+        const before = Semantic.mulFactors(numberFactors, true);
+        substeps?.push({
+            message: "multiplying two negatives is a positive",
+            before,
+            after,
+            substeps: [],
+        });
+    }
+
+    return after;
 };
