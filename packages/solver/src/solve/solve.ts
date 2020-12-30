@@ -23,21 +23,21 @@ export const solve = (
     for (const transform of transforms) {
         const next = transform(current, ident);
         if (next) {
-            current = next;
+            current = next.after;
         }
     }
 
     for (const transform of transforms) {
         const next = transform(current, ident);
         if (next) {
-            current = next;
+            current = next.after;
         }
     }
 
     for (const transform of transforms) {
         const next = transform(current, ident);
         if (next) {
-            current = next;
+            current = next.after;
         }
     }
 

@@ -3,25 +3,43 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {simplify} from "../../simplify/simplify";
 
-export const simplifyBothSides: Transform = (node, ident) => {
-    if (node.type !== "eq") {
+export const simplifyBothSides: Transform = (before, ident) => {
+    if (before.type !== "eq") {
         return undefined;
     }
 
-    const left = simplify(node.args[0], []);
-    if (node.args[1] === undefined) {
-        console.log(node);
+    const left = simplify(before.args[0], []);
+    if (before.args[1] === undefined) {
+        console.log(before);
     }
-    const right = simplify(node.args[1], []);
+    const right = simplify(before.args[1], []);
 
     if (left && right) {
-        return Semantic.eq([left.after, right.after]);
+        const after = Semantic.eq([left.after, right.after]);
+        return {
+            message: "simplify both sides",
+            before,
+            after,
+            substeps: [left, right],
+        };
     }
     if (left) {
-        return Semantic.eq([left.after, node.args[1]]);
+        const after = Semantic.eq([left.after, before.args[1]]);
+        return {
+            message: "simplify the left hand side",
+            before,
+            after,
+            substeps: [left],
+        };
     }
     if (right) {
-        return Semantic.eq([node.args[0], right.after]);
+        const after = Semantic.eq([before.args[0], right.after]);
+        return {
+            message: "simplify the right hand side",
+            before,
+            after,
+            substeps: [right],
+        };
     }
 
     return undefined;
