@@ -6,13 +6,18 @@ import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
 /**
  * Moves all terms matching `ident` to one side and those that don't to the
  * other side.
+ *
+ * TODO:
+ * - customize messages in steps
+ * - add sub-steps for:
+ *   - the addition/subtraction that needs to be done to both sides to
+ *     move something
+ *   - showing the cancelling of terms after the addition/subtraction
+ *   - the case where we're moving both matching and non-matching terms in
+ *     opposite directions
  */
-export const moveTermsToOneSide: Transform = (node, ident) => {
-    if (node.type !== "eq") {
-        return;
-    }
-
-    const [left, right] = node.args as readonly Semantic.Types.NumericNode[];
+export const moveTermsToOneSide: Transform = (before, ident) => {
+    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
     const rightTerms = Semantic.getTerms(right);
@@ -33,12 +38,13 @@ export const moveTermsToOneSide: Transform = (node, ident) => {
 
     if (leftIdentTerms.length > 1 || rightIdentTerms.length > 1) {
         // One (or both) of the sides hasn't been simplified
-        return;
+        return undefined;
     }
 
     if (leftIdentTerms.length === 1 && rightIdentTerms.length === 1) {
         // There's a term with the identifier we're trying to solve for on both sides
 
+        // TODO: create two sub-steps for each of these moves
         // Move identifiers to the left
         const left =
             leftIdentTerms[0].type === "neg"
@@ -58,10 +64,20 @@ export const moveTermsToOneSide: Transform = (node, ident) => {
             ...leftNonIdentTerms.map(flipSign),
         ]);
 
-        return Semantic.eq([left, right]);
+        const after = Semantic.eq([left, right]);
+        return {
+            message: "move terms to one side",
+            before,
+            after,
+            substeps: [],
+        };
     }
 
-    if (leftIdentTerms.length === 1 && rightIdentTerms.length === 0) {
+    if (
+        leftIdentTerms.length === 1 &&
+        rightIdentTerms.length === 0 &&
+        leftNonIdentTerms.length > 0
+    ) {
         let left = leftIdentTerms[0];
         if (left.type === "neg") {
             left = convertSubTermToNeg(left);
@@ -73,10 +89,20 @@ export const moveTermsToOneSide: Transform = (node, ident) => {
             ...leftNonIdentTerms.map(flipSign),
         ]);
 
-        return Semantic.eq([left, right]);
+        const after = Semantic.eq([left, right]);
+        return {
+            message: "move terms to one side",
+            before,
+            after,
+            substeps: [],
+        };
     }
 
-    if (leftIdentTerms.length === 0 && rightIdentTerms.length === 1) {
+    if (
+        leftIdentTerms.length === 0 &&
+        rightIdentTerms.length === 1 &&
+        rightNonIdentTerms.length > 0
+    ) {
         // Move non-identifiers to the left.
         const left = Semantic.addTerms([
             ...leftNonIdentTerms,
@@ -88,7 +114,13 @@ export const moveTermsToOneSide: Transform = (node, ident) => {
             right = convertSubTermToNeg(right);
         }
 
-        return Semantic.eq([left, right]);
+        const after = Semantic.eq([left, right]);
+        return {
+            message: "move terms to one side",
+            before,
+            after,
+            substeps: [],
+        };
     }
 
     return undefined;

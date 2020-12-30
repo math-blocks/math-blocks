@@ -5,12 +5,8 @@ import {getCoeff, isTermOfIdent} from "../util";
 
 // TODO: mulBothSides for situations like x/4 = 5 -> x = 20
 
-export const divBothSides: Transform = (node, ident) => {
-    if (node.type !== "eq") {
-        return;
-    }
-
-    const [left, right] = node.args as readonly Semantic.Types.NumericNode[];
+export const divBothSides: Transform = (before, ident) => {
+    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
     const rightTerms = Semantic.getTerms(right);
@@ -33,28 +29,42 @@ export const divBothSides: Transform = (node, ident) => {
         const coeff = getCoeff(leftIdentTerms[0]);
 
         if (Semantic.deepEquals(coeff, Semantic.number("1"))) {
-            return node;
+            return undefined;
         }
 
-        return Semantic.eq(
-            (node.args.map((arg) =>
+        const after = Semantic.eq(
+            (before.args.map((arg) =>
                 Semantic.div(arg as Semantic.Types.NumericNode, coeff),
             ) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
         );
+
+        return {
+            message: "divide both sides",
+            before,
+            after,
+            substeps: [],
+        };
     }
 
     if (rightIdentTerms.length === 1 && rightNonIdentTerms.length === 0) {
         const coeff = getCoeff(rightIdentTerms[0]);
 
         if (Semantic.deepEquals(coeff, Semantic.number("1"))) {
-            return node;
+            return undefined;
         }
 
-        return Semantic.eq(
-            (node.args.map((arg) =>
+        const after = Semantic.eq(
+            (before.args.map((arg) =>
                 Semantic.div(arg as Semantic.Types.NumericNode, coeff),
             ) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
         );
+
+        return {
+            message: "divide both sides",
+            before,
+            after,
+            substeps: [],
+        };
     }
 
     return undefined;

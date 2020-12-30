@@ -1,122 +1,234 @@
 import * as Semantic from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
-import {solve} from "../solve";
+import {solve as _solve} from "../solve";
+import {Step} from "../types";
 
-type Node = Semantic.Types.Node;
+const solve = (node: Semantic.Types.Eq, ident: Semantic.Types.Ident): Step => {
+    const result = _solve(node, ident);
+    if (!result) {
+        throw new Error("no step returned");
+    }
+    return result;
+};
+
+const parseEq = (input: string): Semantic.Types.Eq => {
+    return parse(input) as Semantic.Types.Eq;
+};
 
 describe("solve", () => {
     describe("linear equations", () => {
         test("2x + 3x = 7 - 4", () => {
-            const ast = parse("2x + 3x = 7 - 4");
+            const ast = parseEq("2x + 3x = 7 - 4");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 3 / 5");
+            expect(print(result.after)).toEqual("x = 3 / 5");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "simplify both sides",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
+            expect(
+                result.substeps[0].substeps.map((step) => step.message),
+            ).toEqual([
+                "simplify the left hand side",
+                "simplify the right hand side",
+            ]);
+            expect(
+                result.substeps[0].substeps[0].substeps.map(
+                    (step) => step.message,
+                ),
+            ).toEqual(["collect like terms"]);
+            expect(
+                result.substeps[0].substeps[1].substeps.map(
+                    (step) => step.message,
+                ),
+            ).toEqual(["evaluate addition"]);
+            expect(
+                result.substeps[2].substeps.map((step) => step.message),
+            ).toEqual(["reduce fraction"]);
         });
 
         test("2x = 7 + 3x", () => {
-            const ast = parse("2x = 7 + 3x");
+            const ast = parseEq("2x = 7 + 3x");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -7");
+            expect(print(result.after)).toEqual("x = -7");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify the left hand side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("-x / -1 = -7", () => {
-            const ast = parse("-x / -1 = -7");
+            const ast = parseEq("-x / -1 = -7");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -7");
+            expect(print(result.after)).toEqual("x = -7");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "simplify the left hand side",
+            ]);
         });
 
         test("7 + 3x = 2x", () => {
-            const ast = parse("7 + 3x = 2x");
+            const ast = parseEq("7 + 3x = 2x");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -7");
+            expect(print(result.after)).toEqual("x = -7");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify the left hand side",
+            ]);
         });
 
         test("2x + 5 = 7 + 3x", () => {
-            const ast = parse("2x + 5 = 7 + 3x");
+            const ast = parseEq("2x + 5 = 7 + 3x");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -2");
+            expect(print(result.after)).toEqual("x = -2");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify both sides",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("2x + 1 = 7", () => {
-            const ast = parse("2x + 1 = 7");
+            const ast = parseEq("2x + 1 = 7");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 3");
+            expect(print(result.after)).toEqual("x = 3");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("7 = 2x + 1", () => {
-            const ast = parse("7 = 2x + 1");
+            const ast = parseEq("7 = 2x + 1");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("3 = x");
+            expect(print(result.after)).toEqual("3 = x");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("x + 1 = -2x + 5", () => {
-            const ast = parse("x + 1 = -2x + 5");
+            const ast = parseEq("x + 1 = -2x + 5");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 4 / 3");
+            expect(print(result.after)).toEqual("x = 4 / 3");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify both sides",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
         });
 
         test("-x + 1 = -2x + 5", () => {
-            const ast = parse("-x + 1 = -2x + 5");
+            const ast = parseEq("-x + 1 = -2x + 5");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 4");
+            expect(print(result.after)).toEqual("x = 4");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify both sides",
+            ]);
         });
 
         test("2 - x = 5", () => {
-            const ast = parse("2 - x = 5");
+            const ast = parseEq("2 - x = 5");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -3");
+            expect(print(result.after)).toEqual("x = -3");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("2 - 2x = 5", () => {
-            const ast = parse("2 - 2x = 5");
+            const ast = parseEq("2 - 2x = 5");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = -(3 / 2)");
+            expect(print(result.after)).toEqual("x = -(3 / 2)");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
         });
 
         test("2 - x = 5 - 3x", () => {
-            const ast = parse("2 - x = 5 - 3x");
+            const ast = parseEq("2 - x = 5 - 3x");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 3 / 2");
+            expect(print(result.after)).toEqual("x = 3 / 2");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify both sides",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
         });
 
         test("-x + 3x = 3", () => {
-            const ast = parse("-x + 3x = 3");
+            const ast = parseEq("-x + 3x = 3");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 3 / 2");
+            expect(print(result.after)).toEqual("x = 3 / 2");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "simplify the left hand side",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
         });
 
         test("2x + 3 = 3", () => {
-            const ast = parse("2x + 3 = 3");
+            const ast = parseEq("2x + 3 = 3");
 
-            const result: Node = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, Semantic.identifier("x"));
 
-            expect(print(result)).toEqual("x = 0");
+            expect(print(result.after)).toEqual("x = 0");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "divide both sides",
+                "simplify both sides",
+            ]);
+        });
+
+        test("3 = 2x", () => {
+            const ast = parseEq("3 = 2x");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            expect(print(result.after)).toEqual("3 / 2 = x");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "divide both sides",
+                "simplify the right hand side",
+            ]);
         });
     });
 });
