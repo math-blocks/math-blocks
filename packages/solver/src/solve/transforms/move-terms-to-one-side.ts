@@ -9,8 +9,12 @@ import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
  *
  * TODO:
  * - customize messages in steps
- * - add sub-steps for the case where we're moving both matching and non-matching
- *   terms in opposite directions
+ * - add sub-steps for:
+ *   - the addition/subtraction that needs to be done to both sides to
+ *     move something
+ *   - showing the cancelling of terms after the addition/subtraction
+ *   - the case where we're moving both matching and non-matching terms in
+ *     opposite directions
  */
 export const moveTermsToOneSide: Transform = (before, ident) => {
     if (before.type !== "eq") {

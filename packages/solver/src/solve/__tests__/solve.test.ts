@@ -28,6 +28,25 @@ describe("solve", () => {
                 "divide both sides",
                 "simplify the left hand side",
             ]);
+            expect(
+                result.substeps[0].substeps.map((step) => step.message),
+            ).toEqual([
+                "simplify the left hand side",
+                "simplify the right hand side",
+            ]);
+            expect(
+                result.substeps[0].substeps[0].substeps.map(
+                    (step) => step.message,
+                ),
+            ).toEqual(["collect like terms"]);
+            expect(
+                result.substeps[0].substeps[1].substeps.map(
+                    (step) => step.message,
+                ),
+            ).toEqual(["evaluate addition"]);
+            expect(
+                result.substeps[2].substeps.map((step) => step.message),
+            ).toEqual(["reduce fraction"]);
         });
 
         test("2x = 7 + 3x", () => {

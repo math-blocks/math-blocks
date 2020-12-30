@@ -20,7 +20,16 @@ export const simplifyBothSides: Transform = (before, ident) => {
             message: "simplify both sides",
             before,
             after,
-            substeps: [left, right],
+            substeps: [
+                {
+                    ...left,
+                    message: "simplify the left hand side",
+                },
+                {
+                    ...right,
+                    message: "simplify the right hand side",
+                },
+            ],
         };
     }
     if (left) {
@@ -29,7 +38,7 @@ export const simplifyBothSides: Transform = (before, ident) => {
             message: "simplify the left hand side",
             before,
             after,
-            substeps: [left],
+            substeps: left.substeps,
         };
     }
     if (right) {
@@ -38,7 +47,7 @@ export const simplifyBothSides: Transform = (before, ident) => {
             message: "simplify the right hand side",
             before,
             after,
-            substeps: [right],
+            substeps: right.substeps,
         };
     }
 
