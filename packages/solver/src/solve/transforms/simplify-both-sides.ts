@@ -4,14 +4,7 @@ import {Transform} from "../types";
 import {simplify} from "../../simplify/simplify";
 
 export const simplifyBothSides: Transform = (before, ident) => {
-    if (before.type !== "eq") {
-        return undefined;
-    }
-
     const left = simplify(before.args[0], []);
-    if (before.args[1] === undefined) {
-        console.log(before);
-    }
     const right = simplify(before.args[1], []);
 
     if (left && right) {

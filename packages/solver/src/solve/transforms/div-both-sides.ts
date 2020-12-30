@@ -6,10 +6,6 @@ import {getCoeff, isTermOfIdent} from "../util";
 // TODO: mulBothSides for situations like x/4 = 5 -> x = 20
 
 export const divBothSides: Transform = (before, ident) => {
-    if (before.type !== "eq") {
-        return;
-    }
-
     const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);

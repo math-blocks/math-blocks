@@ -30,14 +30,14 @@ export const solve: Transform = (node, ident) => {
     ];
 
     const substeps: Step[] = [];
-    let current = node as Semantic.Types.Node;
+    let current = node as Semantic.Types.Eq;
     for (let i = 0; i < 10; i++) {
         let changed = false;
         for (const transform of transforms) {
             const next = transform(current, ident);
             if (next) {
                 changed = true;
-                current = next.after;
+                current = next.after as Semantic.Types.Eq;
                 substeps.push(next);
             }
         }

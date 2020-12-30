@@ -17,10 +17,6 @@ import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
  *     opposite directions
  */
 export const moveTermsToOneSide: Transform = (before, ident) => {
-    if (before.type !== "eq") {
-        return;
-    }
-
     const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
