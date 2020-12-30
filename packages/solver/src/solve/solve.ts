@@ -15,12 +15,10 @@
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {
-    divBothSides,
-    moveVariablesToOneSide,
-    simplifyBothSides,
-    Transform,
-} from "./solve-transforms";
+import {divBothSides} from "./transforms/div-both-sides";
+import {isolateVariable} from "./transforms/isolate-variable";
+import {simplifyBothSides} from "./transforms/simplify-both-sides";
+import {Transform} from "./types";
 
 export const solve = (
     node: Semantic.Types.Node,
@@ -32,7 +30,7 @@ export const solve = (
 
     const transforms: Transform[] = [
         simplifyBothSides,
-        moveVariablesToOneSide,
+        isolateVariable,
         divBothSides,
     ];
 

@@ -1,1 +1,1 @@
-export {simplify} from "./simplify";
+export {simplify} from "./simplify/simplify";

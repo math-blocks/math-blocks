@@ -1,20 +1,16 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {
-    dropParens,
-    addNegToSub,
-    evalMul,
-    evalAdd,
-    evalDiv,
-    mulToPower,
-} from "./transforms";
+import {Step, Transform} from "./types";
+
+import {addNegToSub} from "./transforms/add-neg-to-sub";
+import {dropParens} from "./transforms/drop-parens";
+import {evalMul, evalAdd, evalDiv} from "./transforms/eval";
 import {collectLikeTerms} from "./transforms/collect-like-terms";
 import {distribute} from "./transforms/distribute";
 import {reduceFraction} from "./transforms/reduce-fraction";
+import {mulToPow} from "./transforms/mul-to-pow";
 import {simplifyMul} from "./transforms/simplify-mul";
-import {Step, Transform} from "./types";
 
-// TODO: collect all of the steps and sub-steps
 export const simplify: Transform = (node) => {
     const tranforms: Transform[] = [
         simplifyMul, // We do this first so that we don't repeat what it does in other transforms
@@ -27,7 +23,7 @@ export const simplify: Transform = (node) => {
         evalAdd,
         reduceFraction,
         evalDiv,
-        mulToPower,
+        mulToPow,
 
         // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
         // before distributing.

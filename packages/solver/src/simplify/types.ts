@@ -1,6 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
 
-// TODO: dedupe with grader
 export type Step = {
     message: string;
     before: Semantic.Types.Node;
