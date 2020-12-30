@@ -64,7 +64,7 @@ export const divBothSides: Transform = (before, ident) => {
         );
 
         return {
-            message: "divide both sides by",
+            message: "divide both sides",
             before,
             after,
             substeps: [],

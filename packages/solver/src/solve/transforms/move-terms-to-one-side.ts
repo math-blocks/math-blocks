@@ -73,7 +73,11 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         };
     }
 
-    if (leftIdentTerms.length === 1 && rightIdentTerms.length === 0) {
+    if (
+        leftIdentTerms.length === 1 &&
+        rightIdentTerms.length === 0 &&
+        leftNonIdentTerms.length > 0
+    ) {
         let left = leftIdentTerms[0];
         if (left.type === "neg") {
             left = convertSubTermToNeg(left);
@@ -94,7 +98,11 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         };
     }
 
-    if (leftIdentTerms.length === 0 && rightIdentTerms.length === 1) {
+    if (
+        leftIdentTerms.length === 0 &&
+        rightIdentTerms.length === 1 &&
+        rightNonIdentTerms.length > 0
+    ) {
         // Move non-identifiers to the left.
         const left = Semantic.addTerms([
             ...leftNonIdentTerms,
