@@ -1,22 +1,7 @@
-// OUTLINE:
-// - solve linear equations
-//   - check if each side is linear
-//   - simplify each side
-//   - move the variable being solved for to one side
-//   - move everything else to the other side
-//   - divide both sides by the coefficient of the variable being solved for
-// - solve linear inequalities
-//   - same set of steps, except we flip the direction of the inequality if
-//     the coefficient in the last step is negative
-// - solve quadratic equations
-//   - PRE-REQS: need to add support for plus-minus and comma separate lists
-//   - factoring
-//   - use the quadratic equation
-
 import * as Semantic from "@math-blocks/semantic";
 
 import {divBothSides} from "./transforms/div-both-sides";
-import {isolateVariable} from "./transforms/isolate-variable";
+import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
 import {Transform} from "./types";
 
@@ -30,7 +15,7 @@ export const solve = (
 
     const transforms: Transform[] = [
         simplifyBothSides,
-        isolateVariable,
+        moveTermsToOneSide,
         divBothSides,
     ];
 

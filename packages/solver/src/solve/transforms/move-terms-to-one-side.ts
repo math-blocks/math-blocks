@@ -3,7 +3,11 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
 
-export const isolateVariable: Transform = (node, ident) => {
+/**
+ * Moves all terms matching `ident` to one side and those that don't to the
+ * other side.
+ */
+export const moveTermsToOneSide: Transform = (node, ident) => {
     if (node.type !== "eq") {
         return;
     }
