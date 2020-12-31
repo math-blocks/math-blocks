@@ -3,7 +3,6 @@ import * as Semantic from "@math-blocks/semantic";
 const {deepEquals} = Semantic;
 
 // TODO: handle non-canonicalized terms
-// TODO: handle terms with a number in the denominator
 export const getCoeff = (
     node: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode => {
@@ -18,7 +17,6 @@ export const getCoeff = (
 };
 
 // TODO: handle non-canonicalized terms
-// TODO: handle terms with a number in the denominator
 export const isTermOfIdent = (
     term: Semantic.Types.Node,
     ident: Semantic.Types.Ident,
