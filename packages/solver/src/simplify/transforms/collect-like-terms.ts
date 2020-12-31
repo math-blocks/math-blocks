@@ -5,7 +5,6 @@ import {mul} from "../util";
 
 const {deepEquals, evalNode} = Semantic;
 
-// TODO: dedupe with Semantic.getFactors
 export const getFactors = (
     node: Semantic.Types.NumericNode,
 ): OneOrMore<Semantic.Types.NumericNode> => {
@@ -45,9 +44,28 @@ export const collectLikeTerms: Transform = (node) => {
         let coeff: Semantic.Types.NumericNode;
         let varPart: Semantic.Types.NumericNode;
 
-        const factors = Semantic.isSubtraction(arg)
-            ? getFactors(arg.arg)
-            : getFactors(arg);
+        let factors: readonly Semantic.Types.NumericNode[];
+
+        // TODO: move this logic into `getFactors`.
+        if (arg.type === "div" && Semantic.isNumber(arg.args[1])) {
+            const [num, den] = arg.args;
+            factors = [
+                ...getFactors(num),
+                Semantic.div(Semantic.number("1"), den),
+            ];
+        } else if (Semantic.isSubtraction(arg)) {
+            if (arg.arg.type === "div" && Semantic.isNumber(arg.arg.args[1])) {
+                const [num, den] = arg.arg.args;
+                factors = [
+                    ...getFactors(num),
+                    Semantic.div(Semantic.number("1"), den),
+                ];
+            } else {
+                factors = getFactors(arg.arg);
+            }
+        } else {
+            factors = getFactors(arg);
+        }
 
         // TODO: maybe restrict ourselves to nodes of type "number" or "neg"?
         const numericFactors = factors.filter(Semantic.isNumber);
@@ -104,11 +122,20 @@ export const collectLikeTerms: Transform = (node) => {
         if (v.length > 1) {
             // Collect common terms
             // TODO: make this evaluation be a sub-step
-            const newCoeff = Semantic.number(
-                evalNode(
-                    Semantic.addTerms(v.map(({coeff}) => coeff)),
-                ).toString(),
-            );
+            const sum = Semantic.addTerms(v.map(({coeff}) => coeff));
+            const evaledSum = evalNode(sum);
+
+            let newCoeff =
+                evaledSum.d === 1
+                    ? Semantic.number(evaledSum.n.toString())
+                    : Semantic.div(
+                          Semantic.number(evaledSum.n.toString()),
+                          Semantic.number(evaledSum.d.toString()),
+                      );
+
+            if (evaledSum.s === -1) {
+                newCoeff = Semantic.neg(newCoeff);
+            }
 
             newTerms.push(mul(newCoeff, k));
         } else {
@@ -121,6 +148,8 @@ export const collectLikeTerms: Transform = (node) => {
         numberTerms.length > 0
             ? [
                   Semantic.number(
+                      // TODO: handle adding fractions better, since the result
+                      // may itself be a fraction
                       evalNode(Semantic.addTerms(numberTerms)).toString(),
                   ),
               ]

@@ -153,6 +153,97 @@ describe("simplify", () => {
             expect(print(step.after)).toEqual("x - 1");
         });
 
+        test("x/2 + x/2 -> x", () => {
+            const ast = parse("x/2 + x/2");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+            ]);
+            expect(print(step.after)).toEqual("x");
+        });
+
+        test("x/2 - x/3 -> x / 6", () => {
+            const ast = parse("x/2 - x/3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+                "multiply fraction(s)",
+                "simplify multiplication",
+            ]);
+            expect(print(step.after)).toEqual("x / 6");
+        });
+
+        test("x/2 + x/-3 -> x", () => {
+            const ast = parse("x/2 + x/-3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+                "multiply fraction(s)",
+                "simplify multiplication",
+            ]);
+            expect(print(step.after)).toEqual("x / 6");
+        });
+
+        test("x/-2 + x/3 -> x", () => {
+            const ast = parse("x/-2 + x/3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+                "multiply fraction(s)",
+                "simplify multiplication",
+            ]);
+            expect(print(step.after)).toEqual("-(x / 6)");
+        });
+
+        test("1x -> x", () => {
+            const ast = parse("1x");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify multiplication",
+            ]);
+            expect(print(step.after)).toEqual("x");
+        });
+
+        test("-1x -> -x", () => {
+            const ast = parse("-1x");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify multiplication",
+            ]);
+            expect(print(step.after)).toEqual("-x");
+        });
+
+        test("x/2 + x/3 -> x", () => {
+            const ast = parse("x/2 + x/3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+                "multiply fraction(s)",
+            ]);
+            expect(print(step.after)).toEqual("5x / 6");
+        });
+
         test("x + 1 + 4 -> x + 5", () => {
             const ast = parse("x + 1 + 4");
 
@@ -186,10 +277,11 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify multiplication",
                 "collect like terms",
             ]);
 
-            expect(print(step.after)).toEqual("-1x + 2");
+            expect(print(step.after)).toEqual("-x + 2");
         });
 
         test("1 - (2x + 3x) -> 1 - 5x", () => {
@@ -404,7 +496,7 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                "evaluate multiplication",
+                "simplify multiplication",
                 "simplify multiplication",
                 "collect like terms",
             ]);
@@ -729,6 +821,18 @@ describe("simplify", () => {
             const ast = parse("2 / 3");
 
             expect(() => simplify(ast)).toThrowError();
+        });
+
+        test("2x / 2 -> x", () => {
+            const ast = parse("2x / 2");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "reduce fraction",
+            ]);
+            expect(print(step.after)).toEqual("x");
         });
     });
 

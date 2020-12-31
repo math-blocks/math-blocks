@@ -2,17 +2,23 @@ import * as Semantic from "@math-blocks/semantic";
 
 const {deepEquals} = Semantic;
 
+// TODO: handle non-canonicalized terms
+// TODO: handle terms with a number in the denominator
 export const getCoeff = (
     node: Semantic.Types.NumericNode,
 ): Semantic.Types.NumericNode => {
     if (node.type === "neg") {
         return Semantic.neg(getCoeff(node.arg));
     }
+    if (node.type === "div") {
+        return Semantic.div(getCoeff(node.args[0]), node.args[1]);
+    }
     const factors = Semantic.getFactors(node);
     return Semantic.isNumber(factors[0]) ? factors[0] : Semantic.number("1");
 };
 
-// TODO: curry this
+// TODO: handle non-canonicalized terms
+// TODO: handle terms with a number in the denominator
 export const isTermOfIdent = (
     term: Semantic.Types.Node,
     ident: Semantic.Types.Ident,
@@ -26,6 +32,11 @@ export const isTermOfIdent = (
         }
     } else if (term.type === "neg") {
         return isTermOfIdent(term.arg, ident);
+    } else if (term.type === "div") {
+        const [num, den] = term.args;
+        if (Semantic.isNumber(den)) {
+            return isTermOfIdent(num, ident);
+        }
     }
     return false;
 };
