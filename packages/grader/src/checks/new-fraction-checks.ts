@@ -54,8 +54,8 @@ export const mulFrac: Check = (prev, next, context) => {
     }
 
     const newPrev = builders.div(
-        builders.mulFactors(numerators.filter(isNotOne)),
-        builders.mulFactors(denominators.filter(isNotOne)),
+        builders.mul(numerators.filter(isNotOne)),
+        builders.mul(denominators.filter(isNotOne)),
     );
     newPrev.source = "mulFrac";
 
@@ -142,7 +142,7 @@ export const divByFrac: Check = (prev, next, context) => {
             denominator.args[0],
         );
 
-        const newPrev = builders.mulFactors([numerator, reciprocal]);
+        const newPrev = builders.mul([numerator, reciprocal]);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -239,16 +239,16 @@ export const cancelFrac: Check = (prev, next, context) => {
     ) {
         newPrev = builders.number("1");
     } else if (remainingDenominators.length === 0) {
-        newPrev = builders.mulFactors(remainingNumerators);
+        newPrev = builders.mul(remainingNumerators);
     } else if (remainingNumerators.length === 0) {
         newPrev = builders.div(
             builders.number("1"),
-            builders.mulFactors(remainingDenominators),
+            builders.mul(remainingDenominators),
         );
     } else {
         newPrev = builders.div(
-            builders.mulFactors(remainingNumerators),
-            builders.mulFactors(remainingDenominators),
+            builders.mul(remainingNumerators),
+            builders.mul(remainingDenominators),
         );
     }
 
@@ -317,7 +317,7 @@ export const mulInverse: Check = (prev, next, context) => {
         // a * 1/a -> 1
         if (pair[0].type !== "div" && pair[1].type === "div") {
             if (exactMatch(pair[0], pair[1].args[1], context)) {
-                const newPrev = builders.mulFactors(
+                const newPrev = builders.mul(
                     [
                         ...prev.args.slice(0, i),
                         builders.number("1"),
@@ -344,7 +344,7 @@ export const mulInverse: Check = (prev, next, context) => {
         // 1/a * a -> 1
         if (pair[0].type === "div" && pair[1].type !== "div") {
             if (exactMatch(pair[1], pair[0].args[1], context)) {
-                const newPrev = builders.mulFactors(
+                const newPrev = builders.mul(
                     [
                         ...prev.args.slice(0, i),
                         builders.number("1"),

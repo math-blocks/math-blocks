@@ -48,18 +48,18 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         // Move identifiers to the left
         const left =
             leftIdentTerms[0].type === "neg"
-                ? builders.addTerms([
+                ? builders.add([
                       convertSubTermToNeg(leftIdentTerms[0]),
                       ...leftIdentTerms.slice(1),
                       ...rightIdentTerms.map(flipSign),
                   ])
-                : builders.addTerms([
+                : builders.add([
                       ...leftIdentTerms,
                       ...rightIdentTerms.map(flipSign),
                   ]);
 
         // Move non-identifiers to the right
-        const right = builders.addTerms([
+        const right = builders.add([
             ...rightNonIdentTerms,
             ...leftNonIdentTerms.map(flipSign),
         ]);
@@ -84,7 +84,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         }
 
         // Move non-identifiers to the right.
-        const right = builders.addTerms([
+        const right = builders.add([
             ...rightNonIdentTerms,
             ...leftNonIdentTerms.map(flipSign),
         ]);
@@ -104,7 +104,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         rightNonIdentTerms.length > 0
     ) {
         // Move non-identifiers to the left.
-        const left = builders.addTerms([
+        const left = builders.add([
             ...leftNonIdentTerms,
             ...rightNonIdentTerms.map(flipSign),
         ]);

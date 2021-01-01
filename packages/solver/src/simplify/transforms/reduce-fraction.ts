@@ -29,14 +29,8 @@ export const reduceFraction: Transform = (node) => {
 
     const commonFactors = util.intersection(numFactors, denFactors);
 
-    const num = builders.mulFactors(
-        util.difference(numFactors, commonFactors),
-        true,
-    );
-    const den = builders.mulFactors(
-        util.difference(denFactors, commonFactors),
-        true,
-    );
+    const num = builders.mul(util.difference(numFactors, commonFactors), true);
+    const den = builders.mul(util.difference(denFactors, commonFactors), true);
 
     let after: types.NumericNode;
     if (util.deepEquals(den, builders.number("1"))) {

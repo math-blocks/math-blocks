@@ -63,7 +63,7 @@ export const evalAdd: Check = (prev, next, context) => {
     }
 
     const uniquePrevSum = util.evalNode(
-        builders.addTerms(uniquePrevNumTerms),
+        builders.add(uniquePrevNumTerms),
         checker.options,
     );
 
@@ -73,7 +73,7 @@ export const evalAdd: Check = (prev, next, context) => {
     }
 
     const uniqueNextSum = util.evalNode(
-        builders.addTerms(uniqueNextNumTerms),
+        builders.add(uniqueNextNumTerms),
         checker.options,
     );
 
@@ -116,7 +116,7 @@ export const evalAdd: Check = (prev, next, context) => {
     }
 
     // TODO: check if uniqueNextNumTerms and uniqueNextNumTerms sum to zero
-    const newPrev = builders.addTerms([...prevNonNumTerms, ...nextNumTerms]);
+    const newPrev = builders.add([...prevNonNumTerms, ...nextNumTerms]);
 
     const result = checker.checkStep(newPrev, next, context);
 
@@ -192,7 +192,7 @@ export const evalMul: Check = (prev, next, context) => {
     }
 
     const uniquePrevProduct = util.evalNode(
-        builders.mulFactors(uniquePrevNumFactors),
+        builders.mul(uniquePrevNumFactors),
         checker.options,
     );
 
@@ -202,7 +202,7 @@ export const evalMul: Check = (prev, next, context) => {
     }
 
     const uniqueNextProduct = util.evalNode(
-        builders.mulFactors(uniqueNextNumFactors),
+        builders.mul(uniqueNextNumFactors),
         checker.options,
     );
 
@@ -249,7 +249,7 @@ export const evalMul: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev = builders.mulFactors([
+    const newPrev = builders.mul([
         ...nextNumFactors,
         ...prevNonNumFactors, // it's customary to put variable factors last
     ]);

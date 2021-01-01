@@ -58,7 +58,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             } else {
                 // If there a multiple factors that are numbers, multiply them
                 // together and evaluate them.
-                const mul = builders.mulFactors(numericFactors);
+                const mul = builders.mul(numericFactors);
                 coeff = builders.number(
                     util.evalNode(mul, checker.options).toString(),
                 );
@@ -67,7 +67,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                     nodes: [mul, coeff],
                 });
             }
-            varPart = builders.mulFactors(nonNumericFactors, true);
+            varPart = builders.mul(nonNumericFactors, true);
         } else {
             coeff = builders.number("1");
             varPart = arg;
@@ -91,8 +91,8 @@ export const collectLikeTerms: Check = (prev, next, context) => {
         if (v.length > 1) {
             // Collect common terms
             newTerms.push(
-                builders.mulFactors([
-                    builders.addTerms(v.map(({coeff}) => coeff)),
+                builders.mul([
+                    builders.add(v.map(({coeff}) => coeff)),
                     ...util.getFactors(k),
                 ]),
             );
@@ -111,7 +111,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
     }
 
     // Place numbers at the end which is a comment convention.
-    const newPrev = builders.addTerms([...newTerms, ...numberTerms]);
+    const newPrev = builders.add([...newTerms, ...numberTerms]);
     const result = checker.checkStep(newPrev, next, context);
 
     if (result) {

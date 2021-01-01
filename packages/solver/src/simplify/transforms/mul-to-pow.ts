@@ -50,7 +50,7 @@ export const mulToPow: Transform = (node) => {
     return {
         message: "repeated multiplication can be written as a power",
         before: node,
-        after: builders.mulFactors(newFactors, true),
+        after: builders.mul(newFactors, true),
         substeps: [],
     };
 };

@@ -21,8 +21,8 @@ export const mulFraction: Transform = (before) => {
         }
 
         const after = builders.div(
-            builders.mulFactors(numFactors, true),
-            builders.mulFactors(denFactors, true),
+            builders.mul(numFactors, true),
+            builders.mul(denFactors, true),
         );
 
         return {

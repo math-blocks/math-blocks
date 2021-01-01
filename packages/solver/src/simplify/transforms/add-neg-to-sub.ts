@@ -22,7 +22,7 @@ export const addNegToSub: Transform = (node) => {
     return {
         message: "adding the inverse is the same as subtraction",
         before: node,
-        after: builders.addTerms(newTerms),
+        after: builders.add(newTerms),
         substeps: [],
     };
 };

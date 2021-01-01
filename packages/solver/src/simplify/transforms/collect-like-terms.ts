@@ -78,7 +78,7 @@ export const collectLikeTerms: Transform = (node) => {
             } else {
                 // If there a multiple factors that are numbers, multiply them
                 // together and evaluate them.
-                const mul = builders.mulFactors(numericFactors);
+                const mul = builders.mul(numericFactors);
                 coeff = builders.number(util.evalNode(mul).toString());
                 beforeSteps.push({
                     message: "evaluate multiplication",
@@ -87,7 +87,7 @@ export const collectLikeTerms: Transform = (node) => {
                     substeps: [],
                 });
             }
-            varPart = builders.mulFactors(nonNumericFactors, true);
+            varPart = builders.mul(nonNumericFactors, true);
         } else {
             if (arg.type === "neg") {
                 coeff = builders.neg(builders.number("1"));
@@ -120,7 +120,7 @@ export const collectLikeTerms: Transform = (node) => {
         if (v.length > 1) {
             // Collect common terms
             // TODO: make this evaluation be a sub-step
-            const sum = builders.addTerms(v.map(({coeff}) => coeff));
+            const sum = builders.add(v.map(({coeff}) => coeff));
             const evaledSum = util.evalNode(sum);
 
             let newCoeff =
@@ -148,7 +148,7 @@ export const collectLikeTerms: Transform = (node) => {
                   builders.number(
                       // TODO: handle adding fractions better, since the result
                       // may itself be a fraction
-                      util.evalNode(builders.addTerms(numberTerms)).toString(),
+                      util.evalNode(builders.add(numberTerms)).toString(),
                   ),
               ]
             : [];
@@ -162,7 +162,7 @@ export const collectLikeTerms: Transform = (node) => {
     }
 
     // Place numbers at the end which is a comment convention.
-    const after = builders.addTerms(
+    const after = builders.add(
         [...newTerms, ...numbers].map((term, index) => {
             if (term.type === "mul" && term.args[0].type === "neg") {
                 // TODO: make this a substep
