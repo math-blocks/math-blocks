@@ -10,7 +10,7 @@ import {
     checkStep,
     replaceNodeWithId,
 } from "@math-blocks/grader";
-import {traverse, types, util} from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./containers";
@@ -68,7 +68,7 @@ const findParent = (
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    traverse(root, {
+    util.traverse(root, {
         enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];

@@ -9,5 +9,6 @@
     {"path": "../editor"},
     {"path": "../parser-factory"},
     {"path": "../semantic"},
+    {"path": "../testing"},
   ],
 }

@@ -1,4 +1,4 @@
-import {traverse, types, util} from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "./types";
 
@@ -74,7 +74,7 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        current = traverse(current, {enter, exit});
+        current = util.traverse(current, {enter, exit});
     }
 
     if (substeps.length > 0) {

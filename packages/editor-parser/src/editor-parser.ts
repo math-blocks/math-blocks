@@ -1,7 +1,6 @@
 import * as Editor from "@math-blocks/editor";
 import * as Parser from "@math-blocks/parser-factory";
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import * as Lexer from "./editor-lexer";
 import {locFromRange} from "./util";
@@ -381,7 +380,7 @@ const editorParser = Parser.parserFactory<Token, Parser.Types.Node, Operator>(
 const removeExcessParens = (node: types.Node): types.Node => {
     const path: types.Node[] = [];
 
-    return Semantic.traverse(node, {
+    return util.traverse(node, {
         enter: (node) => {
             path.push(node);
         },

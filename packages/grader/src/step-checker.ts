@@ -1,5 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {
     IStepChecker,
@@ -73,8 +72,8 @@ const filterMistakes = (
     const prevIds: number[] = [];
     const nextIds: number[] = [];
 
-    Semantic.traverse(prev, {enter: (node) => prevIds.push(node.id)});
-    Semantic.traverse(next, {enter: (node) => nextIds.push(node.id)});
+    util.traverse(prev, {enter: (node) => prevIds.push(node.id)});
+    util.traverse(next, {enter: (node) => nextIds.push(node.id)});
 
     // For now we only allow mistakes that reference nodes in prev or next.  If
     // a mistakes references a node in an intermediate step we ignore that for

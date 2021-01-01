@@ -1,6 +1,5 @@
 import * as Parser from "@math-blocks/parser-factory";
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";
 
@@ -254,7 +253,7 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
 const removeExcessParens = (node: types.Node): types.Node => {
     const path: types.Node[] = [];
 
-    return Semantic.traverse(node, {
+    return util.traverse(node, {
         enter: (node) => {
             path.push(node);
         },

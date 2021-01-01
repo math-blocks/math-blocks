@@ -1,4 +1,5 @@
-import {builders, serializer, util} from "@math-blocks/semantic";
+import {builders, util} from "@math-blocks/semantic";
+import {serializer} from "@math-blocks/testing";
 
 import {primeDecomp, findNodeById, replaceNodeWithId} from "../checks/util";
 

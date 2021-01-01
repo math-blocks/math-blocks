@@ -1,6 +1,5 @@
 // import {UnreachableCaseError} from "@math-blocks/core";
-
-import * as types from "./types";
+import {types} from "@math-blocks/semantic";
 
 const printArgs = (
     type: string,
@@ -134,9 +133,7 @@ const print = (
     }
 };
 
-const serializer = {
+export const serializer = {
     print: print,
     test: (ast: types.Node): boolean => !!ast.type,
 };
-
-export default serializer;

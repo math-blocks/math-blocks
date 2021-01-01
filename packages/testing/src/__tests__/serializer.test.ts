@@ -1,6 +1,6 @@
-import serializer from "../serializer";
-import * as builders from "../builders";
-import * as types from "../types";
+import {builders, types} from "@math-blocks/semantic";
+
+import {serializer} from "../serializer";
 
 expect.addSnapshotSerializer(serializer);
 
