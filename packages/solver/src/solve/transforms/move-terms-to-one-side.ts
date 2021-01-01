@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
@@ -17,7 +18,7 @@ import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
  *     opposite directions
  */
 export const moveTermsToOneSide: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
+    const [left, right] = before.args as readonly types.NumericNode[];
 
     const leftTerms = Semantic.getTerms(left);
     const rightTerms = Semantic.getTerms(right);

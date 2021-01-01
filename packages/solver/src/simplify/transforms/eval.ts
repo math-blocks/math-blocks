@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
@@ -75,7 +76,7 @@ export const evalDiv: Transform = (node) => {
     }
 
     const result = evalNode(node);
-    let after: Semantic.Types.NumericNode;
+    let after: types.NumericNode;
     if (result.d === 1) {
         if (result.s === 1) {
             after = Semantic.number(result.n.toString());

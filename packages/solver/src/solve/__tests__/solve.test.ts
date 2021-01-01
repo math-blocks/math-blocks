@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
 import {solve as _solve} from "../solve";
 import {Step} from "../types";
 
-const solve = (node: Semantic.Types.Eq, ident: Semantic.Types.Ident): Step => {
+const solve = (node: types.Eq, ident: types.Ident): Step => {
     const result = _solve(node, ident);
     if (!result) {
         throw new Error("no step returned");
@@ -12,8 +13,8 @@ const solve = (node: Semantic.Types.Eq, ident: Semantic.Types.Ident): Step => {
     return result;
 };
 
-const parseEq = (input: string): Semantic.Types.Eq => {
-    return parse(input) as Semantic.Types.Eq;
+const parseEq = (input: string): types.Eq => {
+    return parse(input) as types.Eq;
 };
 
 describe("solve", () => {

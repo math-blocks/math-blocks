@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {divBothSides} from "./transforms/div-both-sides";
 import {mulBothSides} from "./transforms/mul-both-sides";
@@ -32,14 +32,14 @@ export const solve: Transform = (node, ident) => {
     ];
 
     const substeps: Step[] = [];
-    let current = node as Semantic.Types.Eq;
+    let current = node as types.Eq;
     for (let i = 0; i < 10; i++) {
         let changed = false;
         for (const transform of transforms) {
             const next = transform(current, ident);
             if (next) {
                 changed = true;
-                current = next.after as Semantic.Types.Eq;
+                current = next.after as types.Eq;
                 substeps.push(next);
             }
         }

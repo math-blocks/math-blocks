@@ -1,13 +1,14 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
 
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
-    node: Semantic.Types.Neg,
+    node: types.Neg,
     substeps: Step[],
-): Semantic.Types.NumericNode[] | undefined => {
+): types.NumericNode[] | undefined => {
     const add = node.arg;
     const mulNegOne = Semantic.mul([Semantic.number("-1"), add], true);
     substeps.push({
@@ -21,9 +22,9 @@ const distSub = (
 
 // a - b -> a + -b
 const subToNeg = (
-    before: Semantic.Types.NumericNode,
+    before: types.NumericNode,
     substeps: Step[],
-): Semantic.Types.NumericNode => {
+): types.NumericNode => {
     if (Semantic.isSubtraction(before)) {
         const after = Semantic.neg(before.arg, false);
         substeps.push({
@@ -39,10 +40,10 @@ const subToNeg = (
 
 // a + -b -> a - b
 const negToSub = (
-    before: Semantic.Types.NumericNode,
+    before: types.NumericNode,
     index: number,
     substeps: Step[],
-): Semantic.Types.NumericNode => {
+): types.NumericNode => {
     if (before.type === "neg" && !before.subtraction && index > 0) {
         const after = Semantic.neg(before.arg, true);
         substeps.push({
@@ -58,9 +59,9 @@ const negToSub = (
 
 // a(b + c) -> ab + bc
 const distMul = (
-    node: Semantic.Types.Mul,
+    node: types.Mul,
     substeps: Step[],
-): Semantic.Types.NumericNode[] | undefined => {
+): types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
         if (node.args[1].type === "add") {
@@ -127,7 +128,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
             return [node];
         }
 
-        let newTerms: Semantic.Types.NumericNode[] | undefined;
+        let newTerms: types.NumericNode[] | undefined;
         if (node.type === "neg") {
             newTerms = distSub(node, substeps);
         } else if (node.type === "mul") {

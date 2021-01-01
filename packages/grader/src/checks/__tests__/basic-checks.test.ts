@@ -1,5 +1,6 @@
 import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse as parseText} from "@math-blocks/testing";
 import {parse as parseEditorNodes} from "@math-blocks/editor-parser";
 
@@ -9,7 +10,7 @@ import {checkArgs} from "../basic-checks";
 
 const {hasArgs} = Semantic;
 
-const myParse = (text: string): Semantic.Types.Node => {
+const myParse = (text: string): types.Node => {
     const node = Editor.print(parseText(text)) as Editor.Row;
     return parseEditorNodes(node);
 };

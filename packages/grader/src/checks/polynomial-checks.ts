@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
 
@@ -13,17 +14,17 @@ export const collectLikeTerms: Check = (prev, next, context) => {
 
     // Map from variable part to an array of coefficients.
     const map = new Map<
-        Semantic.Types.NumericNode,
+        types.NumericNode,
         {
-            coeff: Semantic.Types.NumericNode;
-            term: Semantic.Types.NumericNode;
+            coeff: types.NumericNode;
+            term: types.NumericNode;
         }[]
     >();
 
     const {checker} = context;
 
-    const newTerms: Semantic.Types.NumericNode[] = [];
-    const numberTerms: Semantic.Types.NumericNode[] = [];
+    const newTerms: types.NumericNode[] = [];
+    const numberTerms: types.NumericNode[] = [];
 
     const beforeSteps: Step[] = [];
 
@@ -35,8 +36,8 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             continue;
         }
 
-        let coeff: Semantic.Types.NumericNode;
-        let varPart: Semantic.Types.NumericNode;
+        let coeff: types.NumericNode;
+        let varPart: types.NumericNode;
 
         const numericFactors = factors.filter(Semantic.isNumber);
         const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
@@ -73,7 +74,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             varPart = arg;
         }
 
-        let key: Semantic.Types.NumericNode | undefined;
+        let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
             if (exactMatch(k, varPart, context)) {

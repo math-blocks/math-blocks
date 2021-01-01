@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Check, Correction} from "../types";
 import {MistakeId} from "../enums";
@@ -24,8 +25,8 @@ export const evalAdd: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const prevNonNumTerms: Semantic.Types.NumericNode[] = [];
-    const prevNumTerms: Semantic.Types.NumericNode[] = [];
+    const prevNonNumTerms: types.NumericNode[] = [];
+    const prevNumTerms: types.NumericNode[] = [];
     for (const term of prevTerms) {
         if (Semantic.isNumber(term)) {
             try {
@@ -39,7 +40,7 @@ export const evalAdd: Check = (prev, next, context) => {
         }
     }
 
-    const nextNumTerms: Semantic.Types.NumericNode[] = [];
+    const nextNumTerms: types.NumericNode[] = [];
     for (const term of nextTerms) {
         if (Semantic.isNumber(term)) {
             try {
@@ -153,8 +154,8 @@ export const evalMul: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const prevNonNumFactors: Semantic.Types.NumericNode[] = [];
-    const prevNumFactors: Semantic.Types.NumericNode[] = [];
+    const prevNonNumFactors: types.NumericNode[] = [];
+    const prevNumFactors: types.NumericNode[] = [];
     for (const factor of prevFactors) {
         if (Semantic.isNumber(factor)) {
             try {
@@ -168,7 +169,7 @@ export const evalMul: Check = (prev, next, context) => {
         }
     }
 
-    const nextNumFactors: Semantic.Types.NumericNode[] = [];
+    const nextNumFactors: types.NumericNode[] = [];
     for (const factor of nextFactors) {
         if (Semantic.isNumber(factor)) {
             try {

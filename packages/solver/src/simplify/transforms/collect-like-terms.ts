@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
@@ -6,8 +7,8 @@ import {mul} from "../util";
 const {deepEquals, evalNode} = Semantic;
 
 export const getFactors = (
-    node: Semantic.Types.NumericNode,
-): OneOrMore<Semantic.Types.NumericNode> => {
+    node: types.NumericNode,
+): OneOrMore<types.NumericNode> => {
     if (node.type === "neg") {
         return [Semantic.number("-1"), ...getFactors(node.arg)];
     } else {
@@ -23,15 +24,15 @@ export const collectLikeTerms: Transform = (node) => {
 
     // Map from variable part to an array of coefficients.
     const map = new Map<
-        Semantic.Types.NumericNode,
+        types.NumericNode,
         {
-            coeff: Semantic.Types.NumericNode;
-            term: Semantic.Types.NumericNode;
+            coeff: types.NumericNode;
+            term: types.NumericNode;
         }[]
     >();
 
-    const newTerms: Semantic.Types.NumericNode[] = [];
-    const numberTerms: Semantic.Types.NumericNode[] = [];
+    const newTerms: types.NumericNode[] = [];
+    const numberTerms: types.NumericNode[] = [];
 
     const beforeSteps: Step[] = [];
 
@@ -41,10 +42,10 @@ export const collectLikeTerms: Transform = (node) => {
             continue;
         }
 
-        let coeff: Semantic.Types.NumericNode;
-        let varPart: Semantic.Types.NumericNode;
+        let coeff: types.NumericNode;
+        let varPart: types.NumericNode;
 
-        let factors: readonly Semantic.Types.NumericNode[];
+        let factors: readonly types.NumericNode[];
 
         // TODO: move this logic into `getFactors`.
         if (arg.type === "div" && Semantic.isNumber(arg.args[1])) {
@@ -104,7 +105,7 @@ export const collectLikeTerms: Transform = (node) => {
             coeff = Semantic.neg(coeff, true);
         }
 
-        let key: Semantic.Types.NumericNode | undefined;
+        let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
             if (deepEquals(k, varPart)) {
@@ -174,7 +175,7 @@ export const collectLikeTerms: Transform = (node) => {
                     args: ([
                         term.args[0].arg,
                         ...term.args.slice(1),
-                    ] as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
+                    ] as unknown) as TwoOrMore<types.NumericNode>,
                 };
                 return Semantic.neg(newTerm, index > 0);
             } else if (term.type === "neg") {

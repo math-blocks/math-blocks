@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {getCoeff, isTermOfIdent} from "../util";
 
 export const divBothSides: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
+    const [left, right] = before.args as readonly types.NumericNode[];
 
     if (left.source === "mulBothSides" || right.source === "mulBothSides") {
         return undefined;
@@ -39,13 +40,10 @@ export const divBothSides: Transform = (before, ident) => {
 
         const after = Semantic.eq(
             (before.args.map((arg) => {
-                const result = Semantic.div(
-                    arg as Semantic.Types.NumericNode,
-                    coeff,
-                );
+                const result = Semantic.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
+            }) as unknown) as TwoOrMore<types.NumericNode>,
         );
 
         return {
@@ -68,13 +66,10 @@ export const divBothSides: Transform = (before, ident) => {
 
         const after = Semantic.eq(
             (before.args.map((arg) => {
-                const result = Semantic.div(
-                    arg as Semantic.Types.NumericNode,
-                    coeff,
-                );
+                const result = Semantic.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>,
+            }) as unknown) as TwoOrMore<types.NumericNode>,
         );
 
         return {

@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
 import {correctResult} from "./util";
@@ -6,7 +7,7 @@ import {exactMatch} from "./basic-checks";
 
 const {difference, intersection, deepEquals, evalNode} = Semantic;
 
-const isPower = (node: Semantic.Types.Node): node is Semantic.Types.Pow => {
+const isPower = (node: types.Node): node is types.Pow => {
     return node.type === "pow";
 };
 
@@ -120,7 +121,7 @@ export const powDefReverse: Check = (prev, next, context) => {
 
     // TODO: evaluate the exponent if necessary
     if (exp.type === "number") {
-        const factors: Semantic.Types.NumericNode[] = [];
+        const factors: types.NumericNode[] = [];
         const count = Number.parseInt(exp.value);
         if (count <= 1) {
             return undefined;
@@ -166,10 +167,10 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
 
     // TODO: create a util function that can be used here and in collectLikeTerms
     const map = new Map<
-        Semantic.Types.NumericNode,
+        types.NumericNode,
         MutableOneOrMore<{
-            exp: Semantic.Types.NumericNode;
-            factor: Semantic.Types.NumericNode;
+            exp: types.NumericNode;
+            factor: types.NumericNode;
         }>
     >();
 
@@ -182,7 +183,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                   // it below when it wasn't par of the original expression.
                   {base: factor, exp: Semantic.number("1")};
 
-        let key: Semantic.Types.NumericNode | undefined;
+        let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
             if (exactMatch(k, base, context)) {
@@ -196,7 +197,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
         }
     }
 
-    const newFactors: Semantic.Types.NumericNode[] = [];
+    const newFactors: types.NumericNode[] = [];
 
     let changed = false;
     for (const [k, values] of map.entries()) {
@@ -240,13 +241,10 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
         );
     }
 
-    const newFactors2: Semantic.Types.NumericNode[] = [];
+    const newFactors2: types.NumericNode[] = [];
 
     let changed2 = false;
-    const evaluatedNodes: [
-        Semantic.Types.NumericNode,
-        Semantic.Types.NumericNode,
-    ][] = [];
+    const evaluatedNodes: [types.NumericNode, types.NumericNode][] = [];
     for (const [k, values] of map.entries()) {
         if (values.length > 1) {
             if (
@@ -255,7 +253,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                         !exactMatch(value.exp, Semantic.number("1"), context),
                 )
             ) {
-                const exp: Semantic.Types.NumericNode = Semantic.addTerms(
+                const exp: types.NumericNode = Semantic.addTerms(
                     values.map(({exp}) => exp),
                 );
                 if (Semantic.isNumber(exp)) {
@@ -407,8 +405,8 @@ divPowsSameBase.symmetric = true;
 // NOTE: this function was split out of powNegExp so that it could be called
 // from divByFrac.
 export const convertPowNegExpToDiv = (
-    prev: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode | undefined => {
+    prev: types.NumericNode,
+): types.NumericNode | undefined => {
     if (!isPower(prev) || !Semantic.isNegative(prev.exp)) {
         return;
     }
@@ -598,7 +596,7 @@ export const mulPowsSameExp: Check = (prev, next, context) => {
         return;
     }
 
-    const pows = prev.args as readonly Semantic.Types.Pow[];
+    const pows = prev.args as readonly types.Pow[];
     const exps = pows.map((pow) => pow.exp);
     const firstExp = exps[0]; // TODO: clone this?
 
@@ -683,7 +681,7 @@ export const divOfPowsSameExp: Check = (prev, next, context) => {
         return;
     }
 
-    const pows = prev.args as readonly Semantic.Types.Pow[];
+    const pows = prev.args as readonly types.Pow[];
     const exps = [pows[0].exp, pows[1].exp];
     if (!exactMatch(exps[0], exps[1], context)) {
         return undefined;

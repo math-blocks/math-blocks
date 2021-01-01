@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Step} from "../types";
 
 export type Transform = (
-    node: Semantic.Types.Node,
-    path: Semantic.Types.Node[],
+    node: types.Node,
+    path: types.Node[],
 ) => Step | undefined;
 
 export {Step};

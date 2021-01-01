@@ -1,7 +1,7 @@
 /**
  * Converts a Semantic AST to an Editor AST.
  */
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import * as Editor from "./editor-ast";
 
@@ -9,10 +9,7 @@ import * as Editor from "./editor-ast";
 // the original nodes, even if they don't appear in the semantic tree as
 // is the case with most operators
 
-const getChildren = (
-    expr: Semantic.Types.Node,
-    oneToOne: boolean,
-): Editor.Node[] => {
+const getChildren = (expr: types.Node, oneToOne: boolean): Editor.Node[] => {
     const children: Editor.Node[] = [];
 
     const node = print(expr, oneToOne);
@@ -26,7 +23,7 @@ const getChildren = (
 };
 
 // TODO: write more tests for this
-const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
+const print = (expr: types.Node, oneToOne: boolean): Editor.Node => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -201,7 +198,7 @@ const print = (expr: Semantic.Types.Node, oneToOne: boolean): Editor.Node => {
     }
 };
 
-export default (expr: Semantic.Types.Node, oneToOne = false): Editor.Row => {
+export default (expr: types.Node, oneToOne = false): Editor.Row => {
     const node = print(expr, oneToOne);
     if (node.type === "row") {
         return node;

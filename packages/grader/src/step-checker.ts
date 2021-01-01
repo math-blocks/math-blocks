@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {
     IStepChecker,
@@ -66,8 +67,8 @@ const areMistakesEqual = (m1: Mistake, m2: Mistake): boolean => {
 
 const filterMistakes = (
     mistakes: Mistake[],
-    prev: Semantic.Types.Node,
-    next: Semantic.Types.Node,
+    prev: types.Node,
+    next: types.Node,
 ): Mistake[] => {
     const prevIds: number[] = [];
     const nextIds: number[] = [];
@@ -111,8 +112,8 @@ const filterMistakes = (
 };
 
 export const checkStep = (
-    prev: Semantic.Types.Node,
-    next: Semantic.Types.Node,
+    prev: types.Node,
+    next: types.Node,
 ): {
     result?: Result;
     successfulChecks: Set<string>;

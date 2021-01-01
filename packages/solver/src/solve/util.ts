@@ -1,11 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 const {deepEquals} = Semantic;
 
 // TODO: handle non-canonicalized terms
-export const getCoeff = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode => {
+export const getCoeff = (node: types.NumericNode): types.NumericNode => {
     if (node.type === "neg") {
         return Semantic.neg(getCoeff(node.arg));
     }
@@ -18,8 +17,8 @@ export const getCoeff = (
 
 // TODO: handle non-canonicalized terms
 export const isTermOfIdent = (
-    term: Semantic.Types.Node,
-    ident: Semantic.Types.Ident,
+    term: types.Node,
+    ident: types.Ident,
 ): boolean => {
     if (deepEquals(ident, term)) {
         return true;
@@ -39,9 +38,7 @@ export const isTermOfIdent = (
     return false;
 };
 
-export const flipSign = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode => {
+export const flipSign = (node: types.NumericNode): types.NumericNode => {
     if (node.type === "neg") {
         return node.arg;
     } else {
@@ -50,8 +47,8 @@ export const flipSign = (
 };
 
 export const convertSubTermToNeg = (
-    node: Semantic.Types.NumericNode,
-): Semantic.Types.NumericNode => {
+    node: types.NumericNode,
+): types.NumericNode => {
     if (node.type === "neg" && node.subtraction) {
         const factors = Semantic.getFactors(node.arg);
         const numericFactors = factors.filter(Semantic.isNumber);

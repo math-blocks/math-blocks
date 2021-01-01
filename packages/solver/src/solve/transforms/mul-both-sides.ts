@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isTermOfIdent} from "../util";
 
 export const mulBothSides: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
+    const [left, right] = before.args as readonly types.NumericNode[];
 
     if (left.source === "divBothSides" || right.source === "divBothSides") {
         return undefined;

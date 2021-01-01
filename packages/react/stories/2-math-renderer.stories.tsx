@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor";
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/editor-parser";
 import {MathRenderer} from "@math-blocks/react";
 import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
@@ -414,7 +414,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
 export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.Util.row("8+10+12+14");
 
-    const semNode = parse(editNode) as Semantic.Types.Add;
+    const semNode = parse(editNode) as types.Add;
 
     const num10 = semNode.args[1];
     const num12 = semNode.args[2];
@@ -449,9 +449,9 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
 export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.Util.row("(11+x)(12-y)");
 
-    const semNode = parse(editNode) as Semantic.Types.Mul;
+    const semNode = parse(editNode) as types.Mul;
 
-    const secondTerm = semNode.args[1] as Semantic.Types.Add;
+    const secondTerm = semNode.args[1] as types.Add;
 
     const num12 = secondTerm.args[0];
     const sum0 = semNode.args[0];
@@ -484,8 +484,8 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
     const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
 
-    const semNode = parse(editNode) as Semantic.Types.Div;
-    const denominator = semNode.args[1] as Semantic.Types.Add;
+    const semNode = parse(editNode) as types.Div;
+    const denominator = semNode.args[1] as types.Add;
 
     const num12 = denominator.args[0];
     const sum0 = semNode.args[0];

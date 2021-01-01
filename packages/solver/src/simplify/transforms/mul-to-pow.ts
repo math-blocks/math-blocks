@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
@@ -15,10 +16,10 @@ export const mulToPow: Transform = (node) => {
     }
 
     // map from factor to factor count
-    const map = new Map<Semantic.Types.NumericNode, number>();
+    const map = new Map<types.NumericNode, number>();
 
     for (const factor of factors) {
-        let key: Semantic.Types.NumericNode | undefined;
+        let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
             if (deepEquals(k, factor)) {
@@ -37,7 +38,7 @@ export const mulToPow: Transform = (node) => {
         return undefined;
     }
 
-    const newFactors: Semantic.Types.NumericNode[] = [];
+    const newFactors: types.NumericNode[] = [];
     for (const [key, val] of map.entries()) {
         if (val === 1) {
             newFactors.push(key);

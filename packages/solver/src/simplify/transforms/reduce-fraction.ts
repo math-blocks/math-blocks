@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isNegative} from "../util";
@@ -40,7 +41,7 @@ export const reduceFraction: Transform = (node) => {
         true,
     );
 
-    let after: Semantic.Types.NumericNode;
+    let after: types.NumericNode;
     if (deepEquals(den, Semantic.number("1"))) {
         // a / 1 -> a
         after = num;

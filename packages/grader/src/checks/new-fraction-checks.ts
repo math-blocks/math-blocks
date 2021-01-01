@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
 import {Check} from "../types";
@@ -40,11 +41,11 @@ export const mulFrac: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const isNotOne = (node: Semantic.Types.NumericNode): boolean =>
+    const isNotOne = (node: types.NumericNode): boolean =>
         !exactMatch(node, Semantic.number("1"), context);
 
-    const numerators: Semantic.Types.NumericNode[] = [];
-    const denominators: Semantic.Types.NumericNode[] = [];
+    const numerators: types.NumericNode[] = [];
+    const denominators: types.NumericNode[] = [];
 
     for (const arg of prev.args) {
         if (arg.type === "div") {
@@ -216,7 +217,7 @@ export const cancelFrac: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const isNotOne = (node: Semantic.Types.NumericNode): boolean =>
+    const isNotOne = (node: types.NumericNode): boolean =>
         !exactMatch(node, Semantic.number("1"), context);
 
     // Filter out the "1"s
@@ -234,7 +235,7 @@ export const cancelFrac: Check = (prev, next, context) => {
         return;
     }
 
-    let newPrev: Semantic.Types.NumericNode;
+    let newPrev: types.NumericNode;
     if (
         remainingNumerators.length === 0 &&
         remainingDenominators.length === 0
@@ -309,10 +310,7 @@ export const mulInverse: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const pairs: [
-        Semantic.Types.NumericNode,
-        Semantic.Types.NumericNode,
-    ][] = [];
+    const pairs: [types.NumericNode, types.NumericNode][] = [];
     for (let i = 0; i < prev.args.length - 1; i++) {
         pairs.push([prev.args[i], prev.args[i + 1]]);
     }

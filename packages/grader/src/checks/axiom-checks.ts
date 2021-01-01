@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 
 import {Result, Step, Check} from "../types";
 import {Status, MistakeId} from "../enums";
@@ -23,7 +24,7 @@ export const addZero: Check = (prev, next, context) => {
     const identity = Semantic.number("0");
 
     const identitySteps: Step[] = [];
-    const nonIdentityArgs: Semantic.Types.NumericNode[] = [];
+    const nonIdentityArgs: types.NumericNode[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -129,7 +130,7 @@ export const mulOne: Check = (prev, next, context) => {
     const identity = Semantic.number("1");
 
     const identitySteps: Step[] = [];
-    const nonIdentityArgs: Semantic.Types.NumericNode[] = [];
+    const nonIdentityArgs: types.NumericNode[] = [];
 
     const newNextArgs = next.args.map((arg) => {
         // The order of the args passed to checkStep is important.  We want to
@@ -572,7 +573,7 @@ export const associativeMul: Check = (prev, next, context) => {
         // }
         // console.log(JSON.stringify(prev, null, 4));
         // throw new Error("foo");
-        const factors: Semantic.Types.NumericNode[] = [];
+        const factors: types.NumericNode[] = [];
         for (const arg of prev.args) {
             factors.push(...Semantic.getFactors(arg));
         }
@@ -606,7 +607,7 @@ export const associativeAdd: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.args.some((arg) => arg.type === "add")) {
-        const terms: Semantic.Types.NumericNode[] = [];
+        const terms: types.NumericNode[] = [];
         for (const arg of prev.args) {
             terms.push(...Semantic.getTerms(arg));
         }

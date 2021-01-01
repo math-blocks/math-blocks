@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
 import {simplify as _simplify} from "../simplify";
 import {Step} from "../types";
 
-const simplify = (node: Semantic.Types.Node): Step => {
+const simplify = (node: types.Node): Step => {
     const result = _simplify(node, []);
     if (!result) {
         throw new Error("no step returned");

@@ -1,4 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {
     deepEquals,
     evalNode,
@@ -15,7 +16,7 @@ import {Step} from "./types";
 // - is it negative
 // - is it subtraction
 // - is it negative and not subtraction
-export const isNegative = (node: Semantic.Types.NumericNode): boolean => {
+export const isNegative = (node: types.NumericNode): boolean => {
     if (node.type === "neg") {
         return !isNegative(node.arg);
     }
@@ -32,17 +33,17 @@ export const isNegative = (node: Semantic.Types.NumericNode): boolean => {
 };
 
 export const mul = (
-    a: Semantic.Types.NumericNode,
-    b: Semantic.Types.NumericNode,
+    a: types.NumericNode,
+    b: types.NumericNode,
     substeps?: Step[], // NOTE: this array is modified
-): Semantic.Types.NumericNode => {
-    const aFactors: readonly Semantic.Types.NumericNode[] =
+): types.NumericNode => {
+    const aFactors: readonly types.NumericNode[] =
         a.type === "neg" ? getFactors(a.arg) : getFactors(a);
-    const bFactors: readonly Semantic.Types.NumericNode[] =
+    const bFactors: readonly types.NumericNode[] =
         b.type === "neg" ? getFactors(b.arg) : getFactors(b);
 
     // It's okay to reuse this since we're only using it for comparison
-    const one: Semantic.Types.Num = {
+    const one: types.Num = {
         id: -1,
         type: "number",
         value: "1",
@@ -60,7 +61,7 @@ export const mul = (
         ...bFactors.filter((f) => !isNumber(f)),
     ];
 
-    let coeff: Semantic.Types.NumericNode[];
+    let coeff: types.NumericNode[];
     if (numberFactors.length === 0) {
         coeff = []; // avoid introducing a coefficient if we don't need to
     } else if (numberFactors.length === 1) {
@@ -78,7 +79,7 @@ export const mul = (
         coeff = [after];
     }
 
-    let after: Semantic.Types.NumericNode;
+    let after: types.NumericNode;
 
     if (isResultNegative) {
         const before = Semantic.neg(
