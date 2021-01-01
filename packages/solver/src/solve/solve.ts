@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {divBothSides} from "./transforms/div-both-sides";
+import {mulBothSides} from "./transforms/mul-both-sides";
 import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
 import {Step, Transform} from "./types";
@@ -27,6 +28,7 @@ export const solve: Transform = (node, ident) => {
         simplifyBothSides,
         moveTermsToOneSide,
         divBothSides,
+        mulBothSides,
     ];
 
     const substeps: Step[] = [];

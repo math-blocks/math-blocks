@@ -230,5 +230,77 @@ describe("solve", () => {
                 "simplify the right hand side",
             ]);
         });
+
+        test("x / 4 = 1", () => {
+            const ast = parseEq("x / 4 = 1");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            // expect(print(result.after)).toEqual("x = 4");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "multiply both sides",
+                "simplify both sides",
+            ]);
+        });
+
+        test("1 = x / 4", () => {
+            const ast = parseEq("1 = x / 4");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            expect(print(result.after)).toEqual("4 = x");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "multiply both sides",
+                "simplify both sides",
+            ]);
+        });
+
+        test("2x / 3 = 1", () => {
+            const ast = parseEq("2x / 3 = 1");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            expect(print(result.after)).toEqual("x = 3 / 2");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "multiply both sides",
+                "simplify both sides",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
+            expect(print(result.substeps[0].after)).toEqual(
+                "2x / 3 * 3 = 1 * 3",
+            );
+            expect(print(result.substeps[1].after)).toEqual("2x = 3");
+            expect(print(result.substeps[2].after)).toEqual("2x / 2 = 3 / 2");
+            expect(print(result.substeps[3].after)).toEqual("x = 3 / 2");
+        });
+
+        test("x / 2 + 1 = x / 3", () => {
+            const ast = parseEq("x / 2 + 1 = x / 3");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            expect(print(result.after)).toEqual("x = -6");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify the left hand side",
+                "multiply both sides",
+                "simplify both sides",
+            ]);
+        });
+
+        test("x/2 + 1/2 = x/3 + 1/3", () => {
+            const ast = parseEq("x/2 + 1/2 = x/3 + 1/3");
+
+            const result = solve(ast, Semantic.identifier("x"));
+
+            expect(print(result.after)).toEqual("x = -1");
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "move terms to one side",
+                "simplify both sides",
+                "multiply both sides",
+                "simplify both sides",
+            ]);
+        });
     });
 });

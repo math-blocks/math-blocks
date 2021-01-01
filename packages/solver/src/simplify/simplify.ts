@@ -8,6 +8,7 @@ import {evalMul, evalAdd, evalDiv} from "./transforms/eval";
 import {collectLikeTerms} from "./transforms/collect-like-terms";
 import {distribute} from "./transforms/distribute";
 import {reduceFraction} from "./transforms/reduce-fraction";
+import {mulFraction} from "./transforms/mul-fraction";
 import {mulToPow} from "./transforms/mul-to-pow";
 import {simplifyMul} from "./transforms/simplify-mul";
 
@@ -22,6 +23,7 @@ export const simplify: Transform = (node) => {
         evalMul, // we want to eval multiplication before mulToPower to avoid (3)(3) -> 3^2
         evalAdd,
         reduceFraction,
+        mulFraction,
         evalDiv,
         mulToPow,
 
