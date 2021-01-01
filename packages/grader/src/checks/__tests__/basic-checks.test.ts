@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 import {parse as parseText} from "@math-blocks/testing";
 import {parse as parseEditorNodes} from "@math-blocks/editor-parser";
 
@@ -7,9 +7,7 @@ import StepChecker from "../../step-checker";
 
 import {checkArgs} from "../basic-checks";
 
-const {hasArgs} = Semantic;
-
-const myParse = (text: string): Semantic.Types.Node => {
+const myParse = (text: string): types.Node => {
     const node = Editor.print(parseText(text)) as Editor.Row;
     return parseEditorNodes(node);
 };
@@ -24,7 +22,7 @@ describe("checkArgs", () => {
 
         const sum1 = myParse("1 + 2 + 3");
         const sum2 = myParse("1 + 2 + 3 + 4");
-        if (hasArgs(sum1) && hasArgs(sum2)) {
+        if (util.hasArgs(sum1) && util.hasArgs(sum2)) {
             const result = checkArgs(sum1, sum2, {
                 checker,
                 steps: [],

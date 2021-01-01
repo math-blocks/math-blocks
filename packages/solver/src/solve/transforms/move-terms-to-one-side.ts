@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
@@ -17,10 +17,10 @@ import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
  *     opposite directions
  */
 export const moveTermsToOneSide: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
+    const [left, right] = before.args as readonly types.NumericNode[];
 
-    const leftTerms = Semantic.getTerms(left);
-    const rightTerms = Semantic.getTerms(right);
+    const leftTerms = util.getTerms(left);
+    const rightTerms = util.getTerms(right);
 
     const leftIdentTerms = leftTerms.filter((term) =>
         isTermOfIdent(term, ident),
@@ -48,23 +48,23 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         // Move identifiers to the left
         const left =
             leftIdentTerms[0].type === "neg"
-                ? Semantic.addTerms([
+                ? builders.addTerms([
                       convertSubTermToNeg(leftIdentTerms[0]),
                       ...leftIdentTerms.slice(1),
                       ...rightIdentTerms.map(flipSign),
                   ])
-                : Semantic.addTerms([
+                : builders.addTerms([
                       ...leftIdentTerms,
                       ...rightIdentTerms.map(flipSign),
                   ]);
 
         // Move non-identifiers to the right
-        const right = Semantic.addTerms([
+        const right = builders.addTerms([
             ...rightNonIdentTerms,
             ...leftNonIdentTerms.map(flipSign),
         ]);
 
-        const after = Semantic.eq([left, right]);
+        const after = builders.eq([left, right]);
         return {
             message: "move terms to one side",
             before,
@@ -84,12 +84,12 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         }
 
         // Move non-identifiers to the right.
-        const right = Semantic.addTerms([
+        const right = builders.addTerms([
             ...rightNonIdentTerms,
             ...leftNonIdentTerms.map(flipSign),
         ]);
 
-        const after = Semantic.eq([left, right]);
+        const after = builders.eq([left, right]);
         return {
             message: "move terms to one side",
             before,
@@ -104,7 +104,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         rightNonIdentTerms.length > 0
     ) {
         // Move non-identifiers to the left.
-        const left = Semantic.addTerms([
+        const left = builders.addTerms([
             ...leftNonIdentTerms,
             ...rightNonIdentTerms.map(flipSign),
         ]);
@@ -114,7 +114,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
             right = convertSubTermToNeg(right);
         }
 
-        const after = Semantic.eq([left, right]);
+        const after = builders.eq([left, right]);
         return {
             message: "move terms to one side",
             before,

@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
 import {solve as _solve} from "../solve";
 import {Step} from "../types";
 
-const solve = (node: Semantic.Types.Eq, ident: Semantic.Types.Ident): Step => {
+const solve = (node: types.Eq, ident: types.Ident): Step => {
     const result = _solve(node, ident);
     if (!result) {
         throw new Error("no step returned");
@@ -12,8 +12,8 @@ const solve = (node: Semantic.Types.Eq, ident: Semantic.Types.Ident): Step => {
     return result;
 };
 
-const parseEq = (input: string): Semantic.Types.Eq => {
-    return parse(input) as Semantic.Types.Eq;
+const parseEq = (input: string): types.Eq => {
+    return parse(input) as types.Eq;
 };
 
 describe("solve", () => {
@@ -21,7 +21,7 @@ describe("solve", () => {
         test("2x + 3x = 7 - 4", () => {
             const ast = parseEq("2x + 3x = 7 - 4");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 3 / 5");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -53,7 +53,7 @@ describe("solve", () => {
         test("2x = 7 + 3x", () => {
             const ast = parseEq("2x = 7 + 3x");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -7");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -67,7 +67,7 @@ describe("solve", () => {
         test("-x / -1 = -7", () => {
             const ast = parseEq("-x / -1 = -7");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -7");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -78,7 +78,7 @@ describe("solve", () => {
         test("7 + 3x = 2x", () => {
             const ast = parseEq("7 + 3x = 2x");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -7");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -90,7 +90,7 @@ describe("solve", () => {
         test("2x + 5 = 7 + 3x", () => {
             const ast = parseEq("2x + 5 = 7 + 3x");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -2");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -104,7 +104,7 @@ describe("solve", () => {
         test("2x + 1 = 7", () => {
             const ast = parseEq("2x + 1 = 7");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 3");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -117,7 +117,7 @@ describe("solve", () => {
         test("7 = 2x + 1", () => {
             const ast = parseEq("7 = 2x + 1");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("3 = x");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -130,7 +130,7 @@ describe("solve", () => {
         test("x + 1 = -2x + 5", () => {
             const ast = parseEq("x + 1 = -2x + 5");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 4 / 3");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -144,7 +144,7 @@ describe("solve", () => {
         test("-x + 1 = -2x + 5", () => {
             const ast = parseEq("-x + 1 = -2x + 5");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 4");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -156,7 +156,7 @@ describe("solve", () => {
         test("2 - x = 5", () => {
             const ast = parseEq("2 - x = 5");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -3");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -169,7 +169,7 @@ describe("solve", () => {
         test("2 - 2x = 5", () => {
             const ast = parseEq("2 - 2x = 5");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -(3 / 2)");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -182,7 +182,7 @@ describe("solve", () => {
         test("2 - x = 5 - 3x", () => {
             const ast = parseEq("2 - x = 5 - 3x");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 3 / 2");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -196,7 +196,7 @@ describe("solve", () => {
         test("-x + 3x = 3", () => {
             const ast = parseEq("-x + 3x = 3");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 3 / 2");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -209,7 +209,7 @@ describe("solve", () => {
         test("2x + 3 = 3", () => {
             const ast = parseEq("2x + 3 = 3");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 0");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -222,7 +222,7 @@ describe("solve", () => {
         test("3 = 2x", () => {
             const ast = parseEq("3 = 2x");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("3 / 2 = x");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -234,7 +234,7 @@ describe("solve", () => {
         test("x / 4 = 1", () => {
             const ast = parseEq("x / 4 = 1");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             // expect(print(result.after)).toEqual("x = 4");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -246,7 +246,7 @@ describe("solve", () => {
         test("1 = x / 4", () => {
             const ast = parseEq("1 = x / 4");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("4 = x");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -258,7 +258,7 @@ describe("solve", () => {
         test("2x / 3 = 1", () => {
             const ast = parseEq("2x / 3 = 1");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = 3 / 2");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -278,7 +278,7 @@ describe("solve", () => {
         test("x / 2 + 1 = x / 3", () => {
             const ast = parseEq("x / 2 + 1 = x / 3");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -6");
             expect(result.substeps.map((step) => step.message)).toEqual([
@@ -292,7 +292,7 @@ describe("solve", () => {
         test("x/2 + 1/2 = x/3 + 1/3", () => {
             const ast = parseEq("x/2 + 1/2 = x/3 + 1/3");
 
-            const result = solve(ast, Semantic.identifier("x"));
+            const result = solve(ast, builders.identifier("x"));
 
             expect(print(result.after)).toEqual("x = -1");
             expect(result.substeps.map((step) => step.message)).toEqual([

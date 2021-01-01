@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders} from "@math-blocks/semantic";
 
 import * as Editor from "../editor-ast";
 import * as Util from "../util";
@@ -20,7 +20,7 @@ declare global {
 
 describe("print", () => {
     test("123", () => {
-        const ast = Semantic.number("123");
+        const ast = builders.number("123");
 
         const node = print(ast);
 
@@ -28,7 +28,7 @@ describe("print", () => {
     });
 
     test("1", () => {
-        const ast = Semantic.number("1");
+        const ast = builders.number("1");
 
         const node = print(ast);
 
@@ -36,10 +36,10 @@ describe("print", () => {
     });
 
     test("1+2+3", () => {
-        const ast = Semantic.add([
-            Semantic.number("1"),
-            Semantic.number("2"),
-            Semantic.number("3"),
+        const ast = builders.add([
+            builders.number("1"),
+            builders.number("2"),
+            builders.number("3"),
         ]);
 
         const node = print(ast);
@@ -48,9 +48,9 @@ describe("print", () => {
     });
 
     test("12+34", () => {
-        const ast = Semantic.add([
-            Semantic.number("12"),
-            Semantic.number("34"),
+        const ast = builders.add([
+            builders.number("12"),
+            builders.number("34"),
         ]);
 
         const node = print(ast);
@@ -59,11 +59,11 @@ describe("print", () => {
     });
 
     test("a*b*c", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.identifier("c"),
+                builders.identifier("a"),
+                builders.identifier("b"),
+                builders.identifier("c"),
             ],
             false,
         );
@@ -74,11 +74,11 @@ describe("print", () => {
     });
 
     test("abc", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.identifier("c"),
+                builders.identifier("a"),
+                builders.identifier("b"),
+                builders.identifier("c"),
             ],
             true,
         );
@@ -89,16 +89,16 @@ describe("print", () => {
     });
 
     test("abc+123", () => {
-        const ast = Semantic.add([
-            Semantic.mul(
+        const ast = builders.add([
+            builders.mul(
                 [
-                    Semantic.identifier("a"),
-                    Semantic.identifier("b"),
-                    Semantic.identifier("c"),
+                    builders.identifier("a"),
+                    builders.identifier("b"),
+                    builders.identifier("c"),
                 ],
                 true,
             ),
-            Semantic.number("123"),
+            builders.number("123"),
         ]);
 
         const node = print(ast);
@@ -107,12 +107,12 @@ describe("print", () => {
     });
 
     test("a(x+y)", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.identifier("a"),
-                Semantic.add([
-                    Semantic.identifier("x"),
-                    Semantic.identifier("y"),
+                builders.identifier("a"),
+                builders.add([
+                    builders.identifier("x"),
+                    builders.identifier("y"),
                 ]),
             ],
             true,
@@ -124,8 +124,8 @@ describe("print", () => {
     });
 
     test("(1)(2)(3)", () => {
-        const ast = Semantic.mul(
-            [Semantic.number("1"), Semantic.number("2"), Semantic.number("3")],
+        const ast = builders.mul(
+            [builders.number("1"), builders.number("2"), builders.number("3")],
             true,
         );
 
@@ -135,10 +135,10 @@ describe("print", () => {
     });
 
     test("(-a)(-b)", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.neg(Semantic.identifier("a")),
-                Semantic.neg(Semantic.identifier("b")),
+                builders.neg(builders.identifier("a")),
+                builders.neg(builders.identifier("b")),
             ],
             true,
         );
@@ -149,15 +149,15 @@ describe("print", () => {
     });
 
     test("(a/b)(c/d)", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.div(
-                    Semantic.identifier("a"),
-                    Semantic.identifier("b"),
+                builders.div(
+                    builders.identifier("a"),
+                    builders.identifier("b"),
                 ),
-                Semantic.div(
-                    Semantic.identifier("c"),
-                    Semantic.identifier("d"),
+                builders.div(
+                    builders.identifier("c"),
+                    builders.identifier("d"),
                 ),
             ],
             true,
@@ -178,7 +178,7 @@ describe("print", () => {
     });
 
     test("-1.2", () => {
-        const ast = Semantic.number("-1.2");
+        const ast = builders.number("-1.2");
 
         const node = print(ast);
 
@@ -186,10 +186,10 @@ describe("print", () => {
     });
 
     test("x-y", () => {
-        const ast = Semantic.add([
-            Semantic.identifier("x"),
-            Semantic.neg(
-                Semantic.identifier("y"),
+        const ast = builders.add([
+            builders.identifier("x"),
+            builders.neg(
+                builders.identifier("y"),
                 true, // subtraction
             ),
         ]);
@@ -200,9 +200,9 @@ describe("print", () => {
     });
 
     test("a+(b+c)", () => {
-        const ast = Semantic.add([
-            Semantic.identifier("a"),
-            Semantic.add([Semantic.identifier("b"), Semantic.identifier("c")]),
+        const ast = builders.add([
+            builders.identifier("a"),
+            builders.add([builders.identifier("b"), builders.identifier("c")]),
         ]);
 
         const node = print(ast);
@@ -211,12 +211,12 @@ describe("print", () => {
     });
 
     test("a-(b+c)", () => {
-        const ast = Semantic.add([
-            Semantic.identifier("a"),
-            Semantic.neg(
-                Semantic.add([
-                    Semantic.identifier("b"),
-                    Semantic.identifier("c"),
+        const ast = builders.add([
+            builders.identifier("a"),
+            builders.neg(
+                builders.add([
+                    builders.identifier("b"),
+                    builders.identifier("c"),
                 ]),
                 true, // subtraction
             ),
@@ -228,9 +228,9 @@ describe("print", () => {
     });
 
     test("a/b", () => {
-        const ast = Semantic.div(
-            Semantic.identifier("a"),
-            Semantic.identifier("b"),
+        const ast = builders.div(
+            builders.identifier("a"),
+            builders.identifier("b"),
         );
 
         const node = print(ast);
@@ -239,9 +239,9 @@ describe("print", () => {
     });
 
     test("(a+b)/(x+y)", () => {
-        const ast = Semantic.div(
-            Semantic.add([Semantic.identifier("a"), Semantic.identifier("b")]),
-            Semantic.add([Semantic.identifier("x"), Semantic.identifier("y")]),
+        const ast = builders.div(
+            builders.add([builders.identifier("a"), builders.identifier("b")]),
+            builders.add([builders.identifier("x"), builders.identifier("y")]),
         );
 
         const node = print(ast);
@@ -250,9 +250,9 @@ describe("print", () => {
     });
 
     test("a + -a", () => {
-        const ast = Semantic.add([
-            Semantic.identifier("a"),
-            Semantic.neg(Semantic.identifier("a"), false),
+        const ast = builders.add([
+            builders.identifier("a"),
+            builders.neg(builders.identifier("a"), false),
         ]);
 
         const node = print(ast);
@@ -261,9 +261,9 @@ describe("print", () => {
     });
 
     test("a + --b", () => {
-        const ast = Semantic.add([
-            Semantic.identifier("a"),
-            Semantic.neg(Semantic.neg(Semantic.identifier("b"), false), false),
+        const ast = builders.add([
+            builders.identifier("a"),
+            builders.neg(builders.neg(builders.identifier("b"), false), false),
         ]);
 
         const node = print(ast);
@@ -272,12 +272,12 @@ describe("print", () => {
     });
 
     test("-1(a + b)", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.neg(Semantic.number("1")),
-                Semantic.add([
-                    Semantic.identifier("a"),
-                    Semantic.identifier("b"),
+                builders.neg(builders.number("1")),
+                builders.add([
+                    builders.identifier("a"),
+                    builders.identifier("b"),
                 ]),
             ],
             true,
@@ -307,11 +307,11 @@ describe("print", () => {
     });
 
     test("(a)(b)(1)", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.number("1"),
+                builders.identifier("a"),
+                builders.identifier("b"),
+                builders.number("1"),
             ],
             true,
         );
@@ -322,11 +322,11 @@ describe("print", () => {
     });
 
     test("a*b*1", () => {
-        const ast = Semantic.mul(
+        const ast = builders.mul(
             [
-                Semantic.identifier("a"),
-                Semantic.identifier("b"),
-                Semantic.number("1"),
+                builders.identifier("a"),
+                builders.identifier("b"),
+                builders.number("1"),
             ],
             false,
         );
@@ -337,9 +337,9 @@ describe("print", () => {
     });
 
     test("y = x + 1", () => {
-        const ast = Semantic.eq([
-            Semantic.identifier("y"),
-            Semantic.add([Semantic.identifier("x"), Semantic.number("1")]),
+        const ast = builders.eq([
+            builders.identifier("y"),
+            builders.add([builders.identifier("x"), builders.number("1")]),
         ]);
 
         const node = print(ast);
@@ -348,9 +348,9 @@ describe("print", () => {
     });
 
     test("x^2", () => {
-        const ast = Semantic.pow(
-            Semantic.identifier("x"),
-            Semantic.number("2"),
+        const ast = builders.pow(
+            builders.identifier("x"),
+            builders.number("2"),
         );
 
         const node = print(ast);
@@ -361,9 +361,9 @@ describe("print", () => {
     });
 
     test("1^n", () => {
-        const ast = Semantic.pow(
-            Semantic.number("1"),
-            Semantic.identifier("n"),
+        const ast = builders.pow(
+            builders.number("1"),
+            builders.identifier("n"),
         );
 
         const node = print(ast);
@@ -374,9 +374,9 @@ describe("print", () => {
     });
 
     test("e^(x+y)", () => {
-        const ast = Semantic.pow(
-            Semantic.identifier("e"),
-            Semantic.add([Semantic.identifier("x"), Semantic.identifier("y")]),
+        const ast = builders.pow(
+            builders.identifier("e"),
+            builders.add([builders.identifier("x"), builders.identifier("y")]),
         );
 
         const node = print(ast);
@@ -387,9 +387,9 @@ describe("print", () => {
     });
 
     test("(x+1)^2", () => {
-        const ast = Semantic.pow(
-            Semantic.add([Semantic.identifier("x"), Semantic.number("1")]),
-            Semantic.number("2"),
+        const ast = builders.pow(
+            builders.add([builders.identifier("x"), builders.number("1")]),
+            builders.number("2"),
         );
 
         const node = print(ast);
@@ -407,7 +407,7 @@ describe("print", () => {
     });
 
     test("(x)", () => {
-        const ast = Semantic.parens(Semantic.identifier("x"));
+        const ast = builders.parens(builders.identifier("x"));
 
         const node = print(ast);
 

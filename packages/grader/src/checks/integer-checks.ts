@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Result, Check, Step} from "../types";
 import {correctResult} from "./util";
@@ -16,7 +16,7 @@ export const addInverse: Check = (prev, next, context) => {
     }
 
     const indicesToRemove: number[] = [];
-    const terms = Semantic.getTerms(prev);
+    const terms = util.getTerms(prev);
     const beforeSteps: Step[] = [];
 
     // TODO: extract this code into a helper so that we can test it better
@@ -27,7 +27,7 @@ export const addInverse: Check = (prev, next, context) => {
             }
             const a = terms[i];
             const b = terms[j];
-            if (Semantic.isNegative(b)) {
+            if (util.isNegative(b)) {
                 const result = checker.checkStep(a, b.arg, context);
                 if (
                     result &&
@@ -48,12 +48,12 @@ export const addInverse: Check = (prev, next, context) => {
 
     // We convert every even indexed one to zero and remove every odd indexed one.
     if (indicesToRemove.length > 0) {
-        const newPrev = Semantic.addTerms(
+        const newPrev = builders.addTerms(
             terms
-                .map((term: Semantic.Types.NumericNode, index: number) => {
+                .map((term: types.NumericNode, index: number) => {
                     if (indicesToRemove.includes(index)) {
                         if (indicesToRemove.indexOf(index) % 2 === 0) {
-                            return Semantic.number("0");
+                            return builders.number("0");
                         } else {
                             return null;
                         }
@@ -84,11 +84,11 @@ addInverse.symmetric = true;
 export const doubleNegative: Check = (prev, next, context) => {
     const {checker} = context;
 
-    if (!Semantic.isNumeric(prev)) {
+    if (!util.isNumeric(prev)) {
         return;
     }
 
-    if (Semantic.isNegative(prev) && Semantic.isNegative(prev.arg)) {
+    if (util.isNegative(prev) && util.isNegative(prev.arg)) {
         const newPrev = prev.arg.arg;
         const result = checker.checkStep(newPrev, next, context);
         if (result) {
@@ -114,16 +114,14 @@ export const subIsNeg: Check = (prev, next, context) => {
     const results: Result[] = [];
 
     if (prev.type === "add") {
-        const subs: Semantic.Types.Neg[] = prev.args.filter(
-            Semantic.isSubtraction,
-        );
+        const subs: types.Neg[] = prev.args.filter(util.isSubtraction);
 
         // We iterate through all args that are subtraction and compute
         // their result so that we can pick the shortest set of steps below.
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
-            const neg = Semantic.neg(sub.arg);
-            const newPrev = Semantic.addTerms([
+            const neg = builders.neg(sub.arg);
+            const newPrev = builders.addTerms([
                 ...prev.args.slice(0, index),
                 neg,
                 ...prev.args.slice(index + 1),
@@ -177,11 +175,8 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         // exclude -1 to avoid an infinite expansion
         !(prev.arg.type == "number" && prev.arg.value == "1")
     ) {
-        const newPrev = Semantic.mulFactors(
-            [
-                Semantic.neg(Semantic.number("1")),
-                ...Semantic.getFactors(prev.arg),
-            ],
+        const newPrev = builders.mulFactors(
+            [builders.neg(builders.number("1")), ...util.getFactors(prev.arg)],
             true,
         );
 
@@ -205,10 +200,10 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 // exclude -1 to avoid an infinite expansion
                 !(arg.arg.type == "number" && arg.arg.value == "1")
             ) {
-                const newArg = Semantic.mulFactors(
+                const newArg = builders.mulFactors(
                     [
-                        Semantic.neg(Semantic.number("1")),
-                        ...Semantic.getFactors(arg.arg),
+                        builders.neg(builders.number("1")),
+                        ...util.getFactors(arg.arg),
                     ],
                     true,
                 );
@@ -223,7 +218,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
             return;
         }
 
-        const newPrev = Semantic.addTerms(newArgs);
+        const newPrev = builders.addTerms(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -248,7 +243,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
-        const factors: TwoOrMore<Semantic.Types.NumericNode> = [...prev.args];
+        const factors: TwoOrMore<types.NumericNode> = [...prev.args];
 
         const negIndices: number[] = [];
 
@@ -272,9 +267,9 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
             return negIndices.includes(index) && factor.type === "neg"
                 ? factor.arg
                 : factor;
-        }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>;
+        }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = Semantic.mul(newFactors);
+        const newPrev = builders.mul(newFactors);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -312,7 +307,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
-        const factors: TwoOrMore<Semantic.Types.NumericNode> = [...prev.args];
+        const factors: TwoOrMore<types.NumericNode> = [...prev.args];
         const index = factors.findIndex((factor) => factor.type === "neg");
 
         // If there are no negatives then we can't transfer a negative
@@ -322,15 +317,15 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 
         const newFactors = (factors.map((f, i) => {
             if (i === 0) {
-                return Semantic.neg(f);
+                return builders.neg(f);
             } else if (i === index && f.type === "neg") {
                 return f.arg;
             } else {
                 return f;
             }
-        }) as unknown) as TwoOrMore<Semantic.Types.NumericNode>;
+        }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = Semantic.mul(newFactors);
+        const newPrev = builders.mul(newFactors);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -355,8 +350,8 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
     if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
         const mul = prev.arg;
 
-        const newPrev = Semantic.mulFactors(
-            [Semantic.neg(mul.args[0]), ...mul.args.slice(1)],
+        const newPrev = builders.mulFactors(
+            [builders.neg(mul.args[0]), ...mul.args.slice(1)],
             prev.arg.implicit,
         );
 
@@ -382,8 +377,8 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 arg.arg.type === "mul"
             ) {
                 const mul = arg.arg;
-                const newArg = Semantic.mulFactors(
-                    [Semantic.neg(mul.args[0]), ...mul.args.slice(1)],
+                const newArg = builders.mulFactors(
+                    [builders.neg(mul.args[0]), ...mul.args.slice(1)],
                     mul.implicit,
                 );
                 changed = true;
@@ -396,7 +391,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
             return;
         }
 
-        const newPrev = Semantic.addTerms(newArgs);
+        const newPrev = builders.addTerms(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 

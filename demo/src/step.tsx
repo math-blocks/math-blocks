@@ -10,7 +10,7 @@ import {
     checkStep,
     replaceNodeWithId,
 } from "@math-blocks/grader";
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./containers";
@@ -60,15 +60,15 @@ const mergeLocation = (start: Location, end: Location): Location => {
 };
 
 const findParent = (
-    root: Semantic.Types.Node,
-    node: Semantic.Types.Node,
-): Semantic.Types.Node | undefined => {
-    const stack: Semantic.Types.Node[] = [];
-    let result: Semantic.Types.Node | undefined = undefined;
+    root: types.Node,
+    node: types.Node,
+): types.Node | undefined => {
+    const stack: types.Node[] = [];
+    let result: types.Node | undefined = undefined;
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    Semantic.traverse(root, {
+    util.traverse(root, {
         enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];
@@ -98,7 +98,7 @@ const colorLocation = (
 
 const highlightMistake = (
     editorRoot: Editor.Row,
-    semanticRoot: Semantic.Types.Node,
+    semanticRoot: types.Node,
     mistake: Mistake,
     colorMap: Map<number, string>,
 ): void => {
@@ -117,7 +117,7 @@ const highlightMistake = (
                 (parentNode.type === "add" || parentNode.type === "mul")
             ) {
                 const index = parentNode.args.indexOf(
-                    node as Semantic.Types.NumericNode,
+                    node as types.NumericNode,
                 );
                 if (parentNode) {
                     if (entriesByParentId.has(parentNode.id)) {
@@ -161,7 +161,7 @@ const Step: React.SFC<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();
-    const parsedNextRef = React.useRef<Semantic.Types.Node | null>(null);
+    const parsedNextRef = React.useRef<types.Node | null>(null);
 
     const handleCheckStep = (): boolean => {
         const prev = prevStep.value;
@@ -178,7 +178,7 @@ const Step: React.SFC<Props> = (props) => {
             if (
                 parsedNext.type === "eq" &&
                 parsedNext.args[0].type === "identifier" &&
-                Semantic.isNumber(parsedNext.args[1])
+                util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right"});
                 dispatch({type: "complete"});

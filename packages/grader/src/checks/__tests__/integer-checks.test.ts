@@ -1,4 +1,4 @@
-import {serializer} from "@math-blocks/semantic";
+import {serializer} from "@math-blocks/testing";
 
 import {
     checkStep,

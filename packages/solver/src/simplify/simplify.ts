@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "./types";
 
@@ -34,21 +34,19 @@ export const simplify: Transform = (node) => {
 
     const substeps: Step[] = [];
 
-    const path: Semantic.Types.Node[] = [];
-    const enter = (node: Semantic.Types.Node): void => {
+    const path: types.Node[] = [];
+    const enter = (node: types.Node): void => {
         path.push(node);
     };
 
     // The inner loop attempts to apply one or more transforms to nodes in the
     // AST from the inside out.
-    const exit = (
-        node: Semantic.Types.Node,
-    ): Semantic.Types.Node | undefined => {
+    const exit = (node: types.Node): types.Node | undefined => {
         path.pop();
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
-        if (Semantic.isNumeric(node)) {
-            let current: Semantic.Types.Node = node;
+        if (util.isNumeric(node)) {
+            let current: types.Node = node;
             for (let i = 0; i < 10; i++) {
                 let step: Step | undefined;
                 for (const transform of tranforms) {
@@ -76,7 +74,7 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        current = Semantic.traverse(current, {enter, exit});
+        current = util.traverse(current, {enter, exit});
     }
 
     if (substeps.length > 0) {

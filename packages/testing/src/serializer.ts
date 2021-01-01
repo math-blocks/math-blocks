@@ -1,24 +1,23 @@
 // import {UnreachableCaseError} from "@math-blocks/core";
-
-import * as Types from "./types";
+import {types} from "@math-blocks/semantic";
 
 const printArgs = (
     type: string,
-    args: readonly Types.Node[],
-    serialize: (ast: Types.Node) => string,
+    args: readonly types.Node[],
+    serialize: (ast: types.Node) => string,
     indent: (str: string) => string,
 ): string => {
     const hasGrandchildren = args.some(
-        (arg: Types.Node) => arg.type !== "identifier" && arg.type !== "number",
+        (arg: types.Node) => arg.type !== "identifier" && arg.type !== "number",
     );
 
     if (hasGrandchildren) {
         return `(${type}\n${args
-            .map((arg: Types.Node) => indent(print(arg, serialize, indent)))
+            .map((arg: types.Node) => indent(print(arg, serialize, indent)))
             .join("\n")})`;
     } else {
         return `(${type} ${args
-            .map((arg: Types.Node) => print(arg, serialize, indent))
+            .map((arg: types.Node) => print(arg, serialize, indent))
             .join(" ")})`;
     }
 };
@@ -40,8 +39,8 @@ const symbols = {
 // Schema nodes can include additional metadata like which symbol to use for a
 // node.
 const print = (
-    ast: Types.Node,
-    serialize: (ast: Types.Node) => string,
+    ast: types.Node,
+    serialize: (ast: types.Node) => string,
     indent: (str: string) => string,
 ): string => {
     switch (ast.type) {
@@ -134,9 +133,7 @@ const print = (
     }
 };
 
-const serializer = {
+export const serializer = {
     print: print,
-    test: (ast: Types.Node): boolean => !!ast.type,
+    test: (ast: types.Node): boolean => !!ast.type,
 };
-
-export default serializer;

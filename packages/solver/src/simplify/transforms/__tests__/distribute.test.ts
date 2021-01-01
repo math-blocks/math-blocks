@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
 import {distribute as _distribute} from "../distribute";
 import {Step} from "../../types";
 
-const distribute = (node: Semantic.Types.Node): Step => {
+const distribute = (node: types.Node): Step => {
     const result = _distribute(node, []);
     if (!result) {
         throw new Error("no step returned");

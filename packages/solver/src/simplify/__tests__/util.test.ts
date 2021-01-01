@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types} from "@math-blocks/semantic";
 import {parse as _parse, print} from "@math-blocks/testing";
 
 import {mul, isNegative} from "../util";
 
-const parse = (str: string): Semantic.Types.NumericNode =>
-    _parse(str) as Semantic.Types.NumericNode;
+const parse = (str: string): types.NumericNode =>
+    _parse(str) as types.NumericNode;
 
 describe("isNegative", () => {
     test.each`

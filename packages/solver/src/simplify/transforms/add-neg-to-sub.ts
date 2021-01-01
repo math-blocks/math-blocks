@@ -1,17 +1,17 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
 export const addNegToSub: Transform = (node) => {
-    if (!Semantic.isNumeric(node)) {
+    if (!util.isNumeric(node)) {
         return;
     }
-    const terms = Semantic.getTerms(node);
+    const terms = util.getTerms(node);
     let changed = false;
     const newTerms = terms.map((term, index) => {
         if (index > 0 && term.type === "neg" && !term.subtraction) {
             changed = true;
-            return Semantic.neg(term.arg, true);
+            return builders.neg(term.arg, true);
         } else {
             return term;
         }
@@ -22,7 +22,7 @@ export const addNegToSub: Transform = (node) => {
     return {
         message: "adding the inverse is the same as subtraction",
         before: node,
-        after: Semantic.addTerms(newTerms),
+        after: builders.addTerms(newTerms),
         substeps: [],
     };
 };

@@ -1,5 +1,5 @@
 import {parse} from "../text-parser";
-import {serializer} from "@math-blocks/semantic";
+import {serializer} from "@math-blocks/testing";
 
 expect.addSnapshotSerializer(serializer);
 

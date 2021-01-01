@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
 
@@ -13,33 +13,33 @@ export const collectLikeTerms: Check = (prev, next, context) => {
 
     // Map from variable part to an array of coefficients.
     const map = new Map<
-        Semantic.Types.NumericNode,
+        types.NumericNode,
         {
-            coeff: Semantic.Types.NumericNode;
-            term: Semantic.Types.NumericNode;
+            coeff: types.NumericNode;
+            term: types.NumericNode;
         }[]
     >();
 
     const {checker} = context;
 
-    const newTerms: Semantic.Types.NumericNode[] = [];
-    const numberTerms: Semantic.Types.NumericNode[] = [];
+    const newTerms: types.NumericNode[] = [];
+    const numberTerms: types.NumericNode[] = [];
 
     const beforeSteps: Step[] = [];
 
     for (const arg of prev.args) {
-        const factors = Semantic.getFactors(arg);
+        const factors = util.getFactors(arg);
 
-        if (Semantic.isNumber(arg)) {
+        if (util.isNumber(arg)) {
             numberTerms.push(arg);
             continue;
         }
 
-        let coeff: Semantic.Types.NumericNode;
-        let varPart: Semantic.Types.NumericNode;
+        let coeff: types.NumericNode;
+        let varPart: types.NumericNode;
 
-        const numericFactors = factors.filter(Semantic.isNumber);
-        const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
+        const numericFactors = factors.filter(util.isNumber);
+        const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
 
         if (numericFactors.length > 0) {
             // If there's a single number factor then it's the coefficient
@@ -47,8 +47,8 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                 coeff = numericFactors[0];
                 if (coeff.type === "add" || coeff.type === "mul") {
                     const originalCoeff = coeff;
-                    coeff = Semantic.number(
-                        Semantic.evalNode(coeff, checker.options).toString(),
+                    coeff = builders.number(
+                        util.evalNode(coeff, checker.options).toString(),
                     );
                     beforeSteps.push({
                         message: "evaluate coefficient",
@@ -58,22 +58,22 @@ export const collectLikeTerms: Check = (prev, next, context) => {
             } else {
                 // If there a multiple factors that are numbers, multiply them
                 // together and evaluate them.
-                const mul = Semantic.mulFactors(numericFactors);
-                coeff = Semantic.number(
-                    Semantic.evalNode(mul, checker.options).toString(),
+                const mul = builders.mulFactors(numericFactors);
+                coeff = builders.number(
+                    util.evalNode(mul, checker.options).toString(),
                 );
                 beforeSteps.push({
                     message: "evaluate multiplication",
                     nodes: [mul, coeff],
                 });
             }
-            varPart = Semantic.mulFactors(nonNumericFactors, true);
+            varPart = builders.mulFactors(nonNumericFactors, true);
         } else {
-            coeff = Semantic.number("1");
+            coeff = builders.number("1");
             varPart = arg;
         }
 
-        let key: Semantic.Types.NumericNode | undefined;
+        let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
             if (exactMatch(k, varPart, context)) {
@@ -91,9 +91,9 @@ export const collectLikeTerms: Check = (prev, next, context) => {
         if (v.length > 1) {
             // Collect common terms
             newTerms.push(
-                Semantic.mulFactors([
-                    Semantic.addTerms(v.map(({coeff}) => coeff)),
-                    ...Semantic.getFactors(k),
+                builders.mulFactors([
+                    builders.addTerms(v.map(({coeff}) => coeff)),
+                    ...util.getFactors(k),
                 ]),
             );
         } else {
@@ -111,7 +111,7 @@ export const collectLikeTerms: Check = (prev, next, context) => {
     }
 
     // Place numbers at the end which is a comment convention.
-    const newPrev = Semantic.addTerms([...newTerms, ...numberTerms]);
+    const newPrev = builders.addTerms([...newTerms, ...numberTerms]);
     const result = checker.checkStep(newPrev, next, context);
 
     if (result) {

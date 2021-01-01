@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import {serializer} from "@math-blocks/semantic";
+import {serializer} from "@math-blocks/testing";
 
 import * as parser from "../editor-parser";
 

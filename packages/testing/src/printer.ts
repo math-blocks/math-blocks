@@ -1,14 +1,14 @@
 /**
  * Converts a Semantic AST to an Editor AST.
  */
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 // TODO: Use the operator precedence numbers from text-parser to determine when
 // to add parens (or not).
 
 // TODO: handle the case when there's a neg.sub node at the start of an expression
 
-export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
+export const print = (expr: types.Node, oneToOne = false): string => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -28,12 +28,12 @@ export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
             for (let i = 0; i < expr.args.length; i++) {
                 const arg = expr.args[i];
                 if (i > 0) {
-                    if (Semantic.isSubtraction(arg)) {
+                    if (util.isSubtraction(arg)) {
                         result += " - ";
                     } else {
                         result += " + ";
                     }
-                } else if (Semantic.isSubtraction(arg)) {
+                } else if (util.isSubtraction(arg)) {
                     console.warn(
                         "leading subtraction term should be simple negation",
                     );
@@ -49,7 +49,7 @@ export const print = (expr: Semantic.Types.Node, oneToOne = false): string => {
                     (arg.type === "neg" && !arg.subtraction)
                 ) {
                     result += print(arg, oneToOne);
-                } else if (Semantic.isSubtraction(arg)) {
+                } else if (util.isSubtraction(arg)) {
                     if (
                         arg.arg.type === "number" ||
                         arg.arg.type === "identifier" ||

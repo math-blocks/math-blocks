@@ -1,11 +1,11 @@
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 
 export const toEqualMath = (
-    received: Semantic.Types.Node,
-    actual: Semantic.Types.Node,
+    received: types.Node,
+    actual: types.Node,
 ): {message: () => string; pass: boolean} => {
     const message = "Semantic trees did not match";
-    if (Semantic.deepEquals(received, actual)) {
+    if (util.deepEquals(received, actual)) {
         return {
             message: () => message,
             pass: true,

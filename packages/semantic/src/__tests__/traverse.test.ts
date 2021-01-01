@@ -1,9 +1,9 @@
-import {traverse} from "../traverse";
-import * as Types from "../types";
+import {traverse} from "../util";
+import * as types from "../types";
 
 describe("traverse", () => {
     it("call enter and exit once for a single node", () => {
-        const num: Types.Num = {
+        const num: types.Num = {
             id: 0,
             type: "number",
             value: "123",
@@ -20,7 +20,7 @@ describe("traverse", () => {
     });
 
     it("should traverse arrays", () => {
-        const add: Types.Add = {
+        const add: types.Add = {
             id: 0,
             type: "add",
             args: [
@@ -47,7 +47,7 @@ describe("traverse", () => {
     });
 
     it("call traverse properties", () => {
-        const power: Types.Pow = {
+        const power: types.Pow = {
             id: 0,
             type: "pow",
             base: {
@@ -72,7 +72,7 @@ describe("traverse", () => {
     });
 
     it("should not call cb on location", () => {
-        const num: Types.Num = {
+        const num: types.Num = {
             id: 0,
             type: "number",
             value: "123",
@@ -91,7 +91,7 @@ describe("traverse", () => {
     });
 
     it("supports making changes to a node on exit", () => {
-        const power: Types.Pow = {
+        const power: types.Pow = {
             id: 0,
             type: "pow",
             base: {
@@ -134,7 +134,7 @@ describe("traverse", () => {
     });
 
     it("supports making changes to an element in an array on exit", () => {
-        const sum: Types.Add = {
+        const sum: types.Add = {
             id: 0,
             type: "add",
             args: [

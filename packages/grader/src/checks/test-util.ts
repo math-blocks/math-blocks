@@ -1,12 +1,10 @@
 import * as Editor from "@math-blocks/editor";
-import * as Semantic from "@math-blocks/semantic";
+import {types, util} from "@math-blocks/semantic";
 import {parse as _parse} from "@math-blocks/editor-parser";
 import {parse, print} from "@math-blocks/testing";
 
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";
-
-const {deepEquals} = Semantic;
 
 export const checkStep = (
     prev: string,
@@ -34,7 +32,7 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
     throw new Error("Unexpected result");
 };
 
-const myParse = (text: string): Semantic.Types.Node => {
+const myParse = (text: string): types.Node => {
     const node = Editor.print(parse(text), true) as Editor.Row;
     return _parse(node);
 };
@@ -43,7 +41,7 @@ export const toParseLike = (
     received: string,
     expected: string,
 ): {message: () => string; pass: boolean} => {
-    if (deepEquals(received, myParse(expected))) {
+    if (util.deepEquals(received, myParse(expected))) {
         return {
             message: () => `expected steps not to match`,
             pass: true,
@@ -89,11 +87,16 @@ export const toHaveStepsLike = (
     const failures: {
         step: number;
         node: number;
-        received: Semantic.Types.Node;
-        expected: Semantic.Types.Node;
+        received: types.Node;
+        expected: types.Node;
     }[] = [];
     for (let i = 0; i < expected.length; i++) {
-        if (!deepEquals(received.steps[i].nodes[0], myParse(expected[i][0]))) {
+        if (
+            !util.deepEquals(
+                received.steps[i].nodes[0],
+                myParse(expected[i][0]),
+            )
+        ) {
             failures.push({
                 step: i,
                 node: 0,
@@ -101,7 +104,12 @@ export const toHaveStepsLike = (
                 expected: myParse(expected[i][0]),
             });
         }
-        if (!deepEquals(received.steps[i].nodes[1], myParse(expected[i][1]))) {
+        if (
+            !util.deepEquals(
+                received.steps[i].nodes[1],
+                myParse(expected[i][1]),
+            )
+        ) {
             failures.push({
                 step: i,
                 node: 1,

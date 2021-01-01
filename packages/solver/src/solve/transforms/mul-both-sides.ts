@@ -1,27 +1,27 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isTermOfIdent} from "../util";
 
 export const mulBothSides: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly Semantic.Types.NumericNode[];
+    const [left, right] = before.args as readonly types.NumericNode[];
 
     if (left.source === "divBothSides" || right.source === "divBothSides") {
         return undefined;
     }
 
-    const leftTerms = Semantic.getTerms(left);
+    const leftTerms = util.getTerms(left);
 
     if (leftTerms.length === 1 && leftTerms[0].type === "div") {
         const [num, den] = leftTerms[0].args;
-        if (isTermOfIdent(num, ident) && Semantic.isNumber(den)) {
-            const newLeft = Semantic.mul([leftTerms[0], den]);
-            const newRight = Semantic.mul([right, den]);
+        if (isTermOfIdent(num, ident) && util.isNumber(den)) {
+            const newLeft = builders.mul([leftTerms[0], den]);
+            const newRight = builders.mul([right, den]);
 
             newLeft.source = "mulBothSides";
             newRight.source = "mulBothSides";
 
-            const after = Semantic.eq([newLeft, newRight]);
+            const after = builders.eq([newLeft, newRight]);
 
             return {
                 message: "multiply both sides",
@@ -32,18 +32,18 @@ export const mulBothSides: Transform = (before, ident) => {
         }
     }
 
-    const rightTerms = Semantic.getTerms(right);
+    const rightTerms = util.getTerms(right);
 
     if (rightTerms.length === 1 && rightTerms[0].type === "div") {
         const [num, den] = rightTerms[0].args;
-        if (isTermOfIdent(num, ident) && Semantic.isNumber(den)) {
-            const newLeft = Semantic.mul([left, den]);
-            const newRight = Semantic.mul([rightTerms[0], den]);
+        if (isTermOfIdent(num, ident) && util.isNumber(den)) {
+            const newLeft = builders.mul([left, den]);
+            const newRight = builders.mul([rightTerms[0], den]);
 
             newLeft.source = "mulBothSides";
             newRight.source = "mulBothSides";
 
-            const after = Semantic.eq([newLeft, newRight]);
+            const after = builders.eq([newLeft, newRight]);
 
             return {
                 message: "multiply both sides",
