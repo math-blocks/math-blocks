@@ -1,4 +1,4 @@
-import * as Types from "./types";
+import * as types from "./types";
 
 /**
  * Traverse the nodes in a semantic tree.
@@ -8,12 +8,12 @@ import * as Types from "./types";
  * the node that was passed to it.
  */
 export const traverse = (
-    node: Types.Node,
+    node: types.Node,
     callbacks: {
-        enter?: (node: Types.Node) => void;
-        exit?: (node: Types.Node) => Types.Node | void;
+        enter?: (node: types.Node) => void;
+        exit?: (node: types.Node) => types.Node | void;
     },
-): Types.Node => {
+): types.Node => {
     if (callbacks.enter) {
         callbacks.enter(node);
     }
@@ -28,7 +28,7 @@ export const traverse = (
             value != null &&
             value.hasOwnProperty("type")
         ) {
-            node[key] = traverse(value as Types.Node, callbacks);
+            node[key] = traverse(value as types.Node, callbacks);
         }
     }
     if (callbacks.exit) {

@@ -1,5 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
@@ -10,7 +9,7 @@ const distSub = (
     substeps: Step[],
 ): types.NumericNode[] | undefined => {
     const add = node.arg;
-    const mulNegOne = Semantic.mul([Semantic.number("-1"), add], true);
+    const mulNegOne = builders.mul([builders.number("-1"), add], true);
     substeps.push({
         message: "negation is the same as multipyling by one",
         before: node,
@@ -25,8 +24,8 @@ const subToNeg = (
     before: types.NumericNode,
     substeps: Step[],
 ): types.NumericNode => {
-    if (Semantic.isSubtraction(before)) {
-        const after = Semantic.neg(before.arg, false);
+    if (util.isSubtraction(before)) {
+        const after = builders.neg(before.arg, false);
         substeps.push({
             message: "subtraction is the same as adding the negative",
             before,
@@ -45,7 +44,7 @@ const negToSub = (
     substeps: Step[],
 ): types.NumericNode => {
     if (before.type === "neg" && !before.subtraction && index > 0) {
-        const after = Semantic.neg(before.arg, true);
+        const after = builders.neg(before.arg, true);
         substeps.push({
             message: "adding the negative is the same as subtraction",
             before,
@@ -99,7 +98,7 @@ const distMul = (
  * @return {Step | undefined}
  */
 export const distribute: Transform = (node, path): Step | undefined => {
-    if (!Semantic.isNumeric(node)) {
+    if (!util.isNumeric(node)) {
         return;
     }
 
@@ -120,7 +119,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
     }
 
     const substeps: Step[] = [];
-    const nodes = Semantic.getTerms(node);
+    const nodes = util.getTerms(node);
     let changed = false;
     const newNodes = nodes.flatMap((node, outerIndex) => {
         // Only distribute one term at a time.
@@ -150,7 +149,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
         return undefined;
     }
 
-    const after = Semantic.addTerms(newNodes);
+    const after = builders.addTerms(newNodes);
 
     return {
         message: "distribute",

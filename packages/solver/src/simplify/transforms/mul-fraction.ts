@@ -1,5 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
@@ -14,16 +13,16 @@ export const mulFraction: Transform = (before) => {
         for (const factor of before.args) {
             if (factor.type === "div") {
                 const [num, den] = factor.args;
-                numFactors.push(...Semantic.getFactors(num));
-                denFactors.push(...Semantic.getFactors(den));
+                numFactors.push(...util.getFactors(num));
+                denFactors.push(...util.getFactors(den));
             } else {
                 numFactors.push(factor);
             }
         }
 
-        const after = Semantic.div(
-            Semantic.mulFactors(numFactors, true),
-            Semantic.mulFactors(denFactors, true),
+        const after = builders.div(
+            builders.mulFactors(numFactors, true),
+            builders.mulFactors(denFactors, true),
         );
 
         return {

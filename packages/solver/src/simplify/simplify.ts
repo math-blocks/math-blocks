@@ -1,5 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {traverse, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "./types";
 
@@ -46,7 +45,7 @@ export const simplify: Transform = (node) => {
         path.pop();
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
-        if (Semantic.isNumeric(node)) {
+        if (util.isNumeric(node)) {
             let current: types.Node = node;
             for (let i = 0; i < 10; i++) {
                 let step: Step | undefined;
@@ -75,7 +74,7 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        current = Semantic.traverse(current, {enter, exit});
+        current = traverse(current, {enter, exit});
     }
 
     if (substeps.length > 0) {

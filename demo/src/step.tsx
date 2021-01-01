@@ -10,8 +10,7 @@ import {
     checkStep,
     replaceNodeWithId,
 } from "@math-blocks/grader";
-import {types} from "@math-blocks/semantic";
-import * as Semantic from "@math-blocks/semantic";
+import {traverse, types, util} from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./containers";
@@ -69,7 +68,7 @@ const findParent = (
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    Semantic.traverse(root, {
+    traverse(root, {
         enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];
@@ -179,7 +178,7 @@ const Step: React.SFC<Props> = (props) => {
             if (
                 parsedNext.type === "eq" &&
                 parsedNext.args[0].type === "identifier" &&
-                Semantic.isNumber(parsedNext.args[1])
+                util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right"});
                 dispatch({type: "complete"});

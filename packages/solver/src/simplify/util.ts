@@ -1,13 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
-import {
-    deepEquals,
-    evalNode,
-    number,
-    isNumber,
-    getFactors,
-    mulFactors,
-} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step} from "./types";
 
@@ -38,9 +29,9 @@ export const mul = (
     substeps?: Step[], // NOTE: this array is modified
 ): types.NumericNode => {
     const aFactors: readonly types.NumericNode[] =
-        a.type === "neg" ? getFactors(a.arg) : getFactors(a);
+        a.type === "neg" ? util.getFactors(a.arg) : util.getFactors(a);
     const bFactors: readonly types.NumericNode[] =
-        b.type === "neg" ? getFactors(b.arg) : getFactors(b);
+        b.type === "neg" ? util.getFactors(b.arg) : util.getFactors(b);
 
     // It's okay to reuse this since we're only using it for comparison
     const one: types.Num = {
@@ -52,13 +43,13 @@ export const mul = (
     const isResultNegative = isNegative(a) !== isNegative(b);
 
     const numberFactors = [
-        ...aFactors.filter(isNumber),
-        ...bFactors.filter(isNumber),
+        ...aFactors.filter(util.isNumber),
+        ...bFactors.filter(util.isNumber),
     ];
 
     const nonNumberFactors = [
-        ...aFactors.filter((f) => !isNumber(f)),
-        ...bFactors.filter((f) => !isNumber(f)),
+        ...aFactors.filter((f) => !util.isNumber(f)),
+        ...bFactors.filter((f) => !util.isNumber(f)),
     ];
 
     let coeff: types.NumericNode[];
@@ -68,8 +59,8 @@ export const mul = (
         coeff = numberFactors;
     } else {
         // Multiply all number factors together to determine the new coefficient
-        const before = Semantic.mulFactors(numberFactors, true);
-        const after = number(evalNode(before).toString());
+        const before = builders.mulFactors(numberFactors, true);
+        const after = builders.number(util.evalNode(before).toString());
         substeps?.push({
             message: "evaluate multiplication",
             before,
@@ -82,11 +73,11 @@ export const mul = (
     let after: types.NumericNode;
 
     if (isResultNegative) {
-        const before = Semantic.neg(
-            mulFactors([...coeff, ...nonNumberFactors], true),
+        const before = builders.neg(
+            builders.mulFactors([...coeff, ...nonNumberFactors], true),
         );
-        if (deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = Semantic.neg(mulFactors(nonNumberFactors, true));
+        if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
+            after = builders.neg(builders.mulFactors(nonNumberFactors, true));
             substeps?.push({
                 message: "multiplication by -1 is the same as being negative",
                 before,
@@ -97,9 +88,12 @@ export const mul = (
             after = before;
         }
     } else {
-        const before = mulFactors([...coeff, ...nonNumberFactors], true);
-        if (deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = mulFactors(nonNumberFactors, true);
+        const before = builders.mulFactors(
+            [...coeff, ...nonNumberFactors],
+            true,
+        );
+        if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
+            after = builders.mulFactors(nonNumberFactors, true);
             substeps?.push({
                 message: "multiplication by 1 is a no-op",
                 before,
@@ -112,7 +106,7 @@ export const mul = (
     }
 
     if (isNegative(a) && isNegative(b)) {
-        const before = Semantic.mulFactors(numberFactors, true);
+        const before = builders.mulFactors(numberFactors, true);
         substeps?.push({
             message: "multiplying two negatives is a positive",
             before,

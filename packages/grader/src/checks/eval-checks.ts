@@ -1,17 +1,14 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Check, Correction} from "../types";
 import {MistakeId} from "../enums";
 
 import {correctResult} from "./util";
 
-const {intersection, difference, evalNode} = Semantic;
-
 // TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
 // e.g. "adding inverse" and "addition with identity"
 export const evalAdd: Check = (prev, next, context) => {
-    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+    if (!util.isNumeric(prev) || !util.isNumeric(next)) {
         return;
     }
 
@@ -20,17 +17,17 @@ export const evalAdd: Check = (prev, next, context) => {
         return;
     }
 
-    const prevTerms = Semantic.getTerms(prev);
-    const nextTerms = Semantic.getTerms(next);
+    const prevTerms = util.getTerms(prev);
+    const nextTerms = util.getTerms(next);
 
     const {checker} = context;
 
     const prevNonNumTerms: types.NumericNode[] = [];
     const prevNumTerms: types.NumericNode[] = [];
     for (const term of prevTerms) {
-        if (Semantic.isNumber(term)) {
+        if (util.isNumber(term)) {
             try {
-                evalNode(term, checker.options);
+                util.evalNode(term, checker.options);
             } catch (e) {
                 return;
             }
@@ -42,11 +39,11 @@ export const evalAdd: Check = (prev, next, context) => {
 
     const nextNumTerms: types.NumericNode[] = [];
     for (const term of nextTerms) {
-        if (Semantic.isNumber(term)) {
+        if (util.isNumber(term)) {
             try {
                 // TODO: update parseNode to handle all of the cases when
                 // Semantic.isNumber return true.
-                evalNode(term, checker.options);
+                util.evalNode(term, checker.options);
             } catch (e) {
                 return;
             }
@@ -56,17 +53,17 @@ export const evalAdd: Check = (prev, next, context) => {
 
     // Find any exact matches between the numeric terms in prev and next and
     // remove them.
-    const commonTerms = intersection(prevNumTerms, nextNumTerms);
-    const uniquePrevNumTerms = difference(prevNumTerms, commonTerms);
-    const uniqueNextNumTerms = difference(nextNumTerms, commonTerms);
+    const commonTerms = util.intersection(prevNumTerms, nextNumTerms);
+    const uniquePrevNumTerms = util.difference(prevNumTerms, commonTerms);
+    const uniqueNextNumTerms = util.difference(nextNumTerms, commonTerms);
 
     // We don't recognize things like 5 + 3 -> 6 + 2 as a valid step, maybe we should
     if (uniqueNextNumTerms.length >= uniquePrevNumTerms.length) {
         return;
     }
 
-    const uniquePrevSum = evalNode(
-        Semantic.addTerms(uniquePrevNumTerms),
+    const uniquePrevSum = util.evalNode(
+        builders.addTerms(uniquePrevNumTerms),
         checker.options,
     );
 
@@ -75,8 +72,8 @@ export const evalAdd: Check = (prev, next, context) => {
         return;
     }
 
-    const uniqueNextSum = evalNode(
-        Semantic.addTerms(uniqueNextNumTerms),
+    const uniqueNextSum = util.evalNode(
+        builders.addTerms(uniqueNextNumTerms),
         checker.options,
     );
 
@@ -98,7 +95,7 @@ export const evalAdd: Check = (prev, next, context) => {
             if (!context.reversed && uniqueNextNumTerms.length === 1) {
                 corrections.push({
                     id: uniqueNextNumTerms[0].id,
-                    replacement: Semantic.number(uniquePrevSum.toString()),
+                    replacement: builders.number(uniquePrevSum.toString()),
                 });
             }
             context.mistakes.push({
@@ -119,7 +116,7 @@ export const evalAdd: Check = (prev, next, context) => {
     }
 
     // TODO: check if uniqueNextNumTerms and uniqueNextNumTerms sum to zero
-    const newPrev = Semantic.addTerms([...prevNonNumTerms, ...nextNumTerms]);
+    const newPrev = builders.addTerms([...prevNonNumTerms, ...nextNumTerms]);
 
     const result = checker.checkStep(newPrev, next, context);
 
@@ -140,7 +137,7 @@ evalAdd.symmetric = true;
 // TODO: when evaluating 5 * 1/5 or 5 / 5 then we may want to include substeps,
 // e.g. "multiplying inverse" and "multiplication with identity"
 export const evalMul: Check = (prev, next, context) => {
-    if (!Semantic.isNumeric(prev) || !Semantic.isNumeric(next)) {
+    if (!util.isNumeric(prev) || !util.isNumeric(next)) {
         return;
     }
 
@@ -149,17 +146,17 @@ export const evalMul: Check = (prev, next, context) => {
         return;
     }
 
-    const prevFactors = Semantic.getFactors(prev);
-    const nextFactors = Semantic.getFactors(next);
+    const prevFactors = util.getFactors(prev);
+    const nextFactors = util.getFactors(next);
 
     const {checker} = context;
 
     const prevNonNumFactors: types.NumericNode[] = [];
     const prevNumFactors: types.NumericNode[] = [];
     for (const factor of prevFactors) {
-        if (Semantic.isNumber(factor)) {
+        if (util.isNumber(factor)) {
             try {
-                evalNode(factor, checker.options);
+                util.evalNode(factor, checker.options);
             } catch (e) {
                 return;
             }
@@ -171,11 +168,11 @@ export const evalMul: Check = (prev, next, context) => {
 
     const nextNumFactors: types.NumericNode[] = [];
     for (const factor of nextFactors) {
-        if (Semantic.isNumber(factor)) {
+        if (util.isNumber(factor)) {
             try {
                 // TODO: update parseNode to handle all of the cases when
                 // Semantic.isNumber return true.
-                evalNode(factor, checker.options);
+                util.evalNode(factor, checker.options);
             } catch (e) {
                 return;
             }
@@ -185,17 +182,17 @@ export const evalMul: Check = (prev, next, context) => {
 
     // Find any exact matches between the numeric terms in prev and next and
     // remove them.
-    const commonFactors = intersection(prevNumFactors, nextNumFactors);
-    const uniquePrevNumFactors = difference(prevNumFactors, commonFactors);
-    const uniqueNextNumFactors = difference(nextNumFactors, commonFactors);
+    const commonFactors = util.intersection(prevNumFactors, nextNumFactors);
+    const uniquePrevNumFactors = util.difference(prevNumFactors, commonFactors);
+    const uniqueNextNumFactors = util.difference(nextNumFactors, commonFactors);
 
     // We don't recognize things like 5 * 3 -> 6 * 2 as a valid step, maybe we should
     if (uniqueNextNumFactors.length >= uniquePrevNumFactors.length) {
         return;
     }
 
-    const uniquePrevProduct = evalNode(
-        Semantic.mulFactors(uniquePrevNumFactors),
+    const uniquePrevProduct = util.evalNode(
+        builders.mulFactors(uniquePrevNumFactors),
         checker.options,
     );
 
@@ -204,8 +201,8 @@ export const evalMul: Check = (prev, next, context) => {
         return;
     }
 
-    const uniqueNextProduct = evalNode(
-        Semantic.mulFactors(uniqueNextNumFactors),
+    const uniqueNextProduct = util.evalNode(
+        builders.mulFactors(uniqueNextNumFactors),
         checker.options,
     );
 
@@ -227,7 +224,7 @@ export const evalMul: Check = (prev, next, context) => {
             if (!context.reversed && uniqueNextNumFactors.length === 1) {
                 corrections.push({
                     id: uniqueNextNumFactors[0].id,
-                    replacement: Semantic.number(uniquePrevProduct.toString()),
+                    replacement: builders.number(uniquePrevProduct.toString()),
                 });
             }
             context.mistakes.push({
@@ -252,7 +249,7 @@ export const evalMul: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev = Semantic.mulFactors([
+    const newPrev = builders.mulFactors([
         ...nextNumFactors,
         ...prevNonNumFactors, // it's customary to put variable factors last
     ]);

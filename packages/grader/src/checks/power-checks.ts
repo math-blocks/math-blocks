@@ -1,11 +1,8 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Check, Step} from "../types";
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
-
-const {difference, intersection, deepEquals, evalNode} = Semantic;
 
 const isPower = (node: types.Node): node is types.Pow => {
     return node.type === "pow";
@@ -21,21 +18,21 @@ export const powDef: Check = (prev, next, context) => {
         return;
     }
 
-    if (!Semantic.isNumeric(next)) {
+    if (!util.isNumeric(next)) {
         return;
     }
 
     if (prev.type === "mul") {
         // TODO: memoize helpers like getFactors, getTerms, difference, intersection, etc.
-        const prevFactors = Semantic.getFactors(prev);
-        const nextFactors = Semantic.getFactors(next);
+        const prevFactors = util.getFactors(prev);
+        const nextFactors = util.getFactors(next);
 
-        const commonFactors = intersection(prevFactors, nextFactors);
+        const commonFactors = util.intersection(prevFactors, nextFactors);
 
         // TODO: also make helpers for getting unique factors/terms since we do this
         // in a number of places.
-        const uniquePrevFactors = difference(prevFactors, commonFactors);
-        const uniqueNextFactors = difference(nextFactors, commonFactors);
+        const uniquePrevFactors = util.difference(prevFactors, commonFactors);
+        const uniqueNextFactors = util.difference(nextFactors, commonFactors);
 
         const exps = uniqueNextFactors.filter(isPower);
 
@@ -60,7 +57,7 @@ export const powDef: Check = (prev, next, context) => {
         // on a fallback.  It's unlikely that a human would jump from something
         // equivalent to the 'base' to using that 'base' in a exponent node.
         const count = uniquePrevFactors.reduce(
-            (count, f) => (deepEquals(f, base) ? count + 1 : count),
+            (count, f) => (util.deepEquals(f, base) ? count + 1 : count),
             0,
         );
 
@@ -71,14 +68,14 @@ export const powDef: Check = (prev, next, context) => {
         }
 
         const nonBaseUniquePrevFactors = uniquePrevFactors.filter(
-            (f) => !deepEquals(f, base),
+            (f) => !util.deepEquals(f, base),
         );
 
         // We need to do this check since there might be multiple exponents
         // with the same base in next.
-        const newPrev = Semantic.mulFactors([
+        const newPrev = builders.mulFactors([
             ...commonFactors,
-            Semantic.pow(base, Semantic.number(String(count))),
+            builders.pow(base, builders.number(String(count))),
             ...nonBaseUniquePrevFactors,
         ]);
         newPrev.source = "powDef";
@@ -130,7 +127,7 @@ export const powDefReverse: Check = (prev, next, context) => {
             // TODO: clone base each time
             factors.push(base);
         }
-        const newPrev = Semantic.mulFactors(factors);
+        const newPrev = builders.mulFactors(factors);
         newPrev.source = "powDefReverse";
 
         const result = checker.checkStep(newPrev, next, context);
@@ -158,7 +155,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
         return;
     }
 
-    const factors = Semantic.getFactors(prev);
+    const factors = util.getFactors(prev);
 
     // We don't actually need everything ƒactor to be a power, just as long as
     // there are some factors that powers
@@ -181,7 +178,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                 ? factor
                 : // TODO: track when we add "1" as an exponent so that we don't add
                   // it below when it wasn't par of the original expression.
-                  {base: factor, exp: Semantic.number("1")};
+                  {base: factor, exp: builders.number("1")};
 
         let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
@@ -205,13 +202,13 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
             if (
                 values.some(
                     (value) =>
-                        !exactMatch(value.exp, Semantic.number("1"), context),
+                        !exactMatch(value.exp, builders.number("1"), context),
                 )
             ) {
                 newFactors.push(
-                    Semantic.pow(
+                    builders.pow(
                         k,
-                        Semantic.addTerms(values.map(({exp}) => exp)),
+                        builders.addTerms(values.map(({exp}) => exp)),
                     ),
                 );
                 changed = true;
@@ -219,14 +216,14 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
             }
         }
         // Avoid changing x -> x^1
-        newFactors.push(Semantic.pow(k, values[0].factor));
+        newFactors.push(builders.pow(k, values[0].factor));
     }
 
     if (!changed) {
         return;
     }
 
-    const newPrev = Semantic.mulFactors(newFactors);
+    const newPrev = builders.mulFactors(newFactors);
 
     const result = checker.checkStep(newPrev, next, context);
 
@@ -250,15 +247,15 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
             if (
                 values.some(
                     (value) =>
-                        !exactMatch(value.exp, Semantic.number("1"), context),
+                        !exactMatch(value.exp, builders.number("1"), context),
                 )
             ) {
-                const exp: types.NumericNode = Semantic.addTerms(
+                const exp: types.NumericNode = builders.addTerms(
                     values.map(({exp}) => exp),
                 );
-                if (Semantic.isNumber(exp)) {
-                    const evalExp = Semantic.number(
-                        evalNode(exp, checker.options).toString(),
+                if (util.isNumber(exp)) {
+                    const evalExp = builders.number(
+                        util.evalNode(exp, checker.options).toString(),
                     );
                     // TODO: dedupe with logic in correctResult
                     if (context.reversed) {
@@ -266,21 +263,21 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                     } else {
                         evaluatedNodes.push([exp, evalExp]);
                     }
-                    newFactors2.push(Semantic.pow(k, evalExp));
+                    newFactors2.push(builders.pow(k, evalExp));
                     changed2 = true;
                     continue;
                 }
             }
         }
         // Avoid changing x -> x^1
-        newFactors2.push(Semantic.pow(k, values[0].factor));
+        newFactors2.push(builders.pow(k, values[0].factor));
     }
 
     if (!changed2) {
         return;
     }
 
-    const newPrev2 = Semantic.mulFactors(newFactors2);
+    const newPrev2 = builders.mulFactors(newFactors2);
 
     const result2 = checker.checkStep(newPrev2, next, context);
 
@@ -334,13 +331,13 @@ export const divPowsSameBase: Check = (prev, next, context) => {
     if (
         isPower(numerator) &&
         isPower(denominator) &&
-        deepEquals(numerator.base, denominator.base)
+        util.deepEquals(numerator.base, denominator.base)
     ) {
         // TODO: It would be sweet if we had a way to template expressions so
         // that we could do: `${base}^(${numerator.exp}-${denominator.exp})`
-        const newPrev = Semantic.pow(
+        const newPrev = builders.pow(
             numerator.base,
-            Semantic.add([numerator.exp, Semantic.neg(denominator.exp, true)]),
+            builders.add([numerator.exp, builders.neg(denominator.exp, true)]),
         );
 
         const result = checker.checkStep(newPrev, next, context);
@@ -356,11 +353,11 @@ export const divPowsSameBase: Check = (prev, next, context) => {
             );
         }
 
-        if (Semantic.isNumber(newPrev.exp)) {
-            const exp = Semantic.number(
-                evalNode(newPrev.exp, checker.options).toString(),
+        if (util.isNumber(newPrev.exp)) {
+            const exp = builders.number(
+                util.evalNode(newPrev.exp, checker.options).toString(),
             );
-            const newPrev2 = Semantic.pow(newPrev.base, exp);
+            const newPrev2 = builders.pow(newPrev.base, exp);
 
             const result2 = checker.checkStep(newPrev2, next, context);
 
@@ -407,13 +404,13 @@ divPowsSameBase.symmetric = true;
 export const convertPowNegExpToDiv = (
     prev: types.NumericNode,
 ): types.NumericNode | undefined => {
-    if (!isPower(prev) || !Semantic.isNegative(prev.exp)) {
+    if (!isPower(prev) || !util.isNegative(prev.exp)) {
         return;
     }
 
-    return Semantic.div(
-        Semantic.number("1"),
-        Semantic.pow(prev.base, prev.exp.arg),
+    return builders.div(
+        builders.number("1"),
+        builders.pow(prev.base, prev.exp.arg),
     );
 };
 
@@ -421,7 +418,7 @@ export const convertPowNegExpToDiv = (
 export const powNegExp: Check = (prev, next, context) => {
     // TODO: make Check generic so that we only have to check call isNumeric()
     // once in checkStep().
-    if (!Semantic.isNumeric(prev)) {
+    if (!util.isNumeric(prev)) {
         return;
     }
 
@@ -475,7 +472,7 @@ export const oneOverPowToNegPow: Check = (prev, next, context) => {
 
     // We use exactMatch here since it's unlikely that people will combine this
     // step with one that results in the numerator being "1".
-    if (!exactMatch(numerator, Semantic.number("1"), context)) {
+    if (!exactMatch(numerator, builders.number("1"), context)) {
         return undefined;
     }
 
@@ -483,9 +480,9 @@ export const oneOverPowToNegPow: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev = Semantic.pow(
+    const newPrev = builders.pow(
         denominator.base,
-        Semantic.neg(denominator.exp),
+        builders.neg(denominator.exp),
     );
     newPrev.source = "oneOverPowToNegPow";
 
@@ -518,12 +515,12 @@ export const powOfPow: Check = (prev, next, context) => {
     }
 
     const {checker} = context;
-    const newPrev = Semantic.pow(
+    const newPrev = builders.pow(
         prev.base.base,
-        Semantic.mulFactors([
+        builders.mulFactors([
             // handle situations like (x^(ab))^(cd)
-            ...Semantic.getFactors(prev.base.exp),
-            ...Semantic.getFactors(prev.exp),
+            ...util.getFactors(prev.base.exp),
+            ...util.getFactors(prev.exp),
         ]),
     );
 
@@ -555,10 +552,10 @@ export const powOfMul: Check = (prev, next, context) => {
         return;
     }
 
-    const factors = Semantic.getFactors(prev.base);
+    const factors = util.getFactors(prev.base);
 
-    const newPrev = Semantic.mulFactors(
-        factors.map((factor) => Semantic.pow(factor, prev.exp)),
+    const newPrev = builders.mulFactors(
+        factors.map((factor) => builders.pow(factor, prev.exp)),
     );
     newPrev.source = "powOfMul";
 
@@ -606,7 +603,7 @@ export const mulPowsSameExp: Check = (prev, next, context) => {
     }
 
     const bases = pows.map((pow) => pow.base);
-    const newPrev = Semantic.pow(Semantic.mulFactors(bases), firstExp);
+    const newPrev = builders.pow(builders.mulFactors(bases), firstExp);
     newPrev.source = "mulPowsSameExp";
 
     const {checker} = context;
@@ -642,9 +639,9 @@ export const powOfDiv: Check = (prev, next, context) => {
 
     const [numerator, denominator] = prev.base.args;
 
-    const newPrev = Semantic.div(
-        Semantic.pow(numerator, prev.exp),
-        Semantic.pow(denominator, prev.exp),
+    const newPrev = builders.div(
+        builders.pow(numerator, prev.exp),
+        builders.pow(denominator, prev.exp),
     );
 
     newPrev.source = "powOfDiv";
@@ -687,8 +684,8 @@ export const divOfPowsSameExp: Check = (prev, next, context) => {
         return undefined;
     }
 
-    const newPrev = Semantic.pow(
-        Semantic.div(pows[0].base, pows[1].base),
+    const newPrev = builders.pow(
+        builders.div(pows[0].base, pows[1].base),
         exps[0], // TODO: clone this
     );
     newPrev.source = "mulPowsSameExp";
@@ -719,9 +716,9 @@ export const powToZero: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const result1 = checker.checkStep(prev.exp, Semantic.number("0"), context);
+    const result1 = checker.checkStep(prev.exp, builders.number("0"), context);
     if (result1) {
-        const newPrev = Semantic.number("1");
+        const newPrev = builders.number("1");
         const result2 = checker.checkStep(newPrev, next, context);
         if (result2) {
             return correctResult(
@@ -745,7 +742,7 @@ export const powToOne: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const result1 = checker.checkStep(prev.exp, Semantic.number("1"), context);
+    const result1 = checker.checkStep(prev.exp, builders.number("1"), context);
     if (result1) {
         // TODO: clone prev.base?
         const newPrev = prev.base;
@@ -773,9 +770,9 @@ export const powOfOne: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const result1 = checker.checkStep(prev.base, Semantic.number("1"), context);
+    const result1 = checker.checkStep(prev.base, builders.number("1"), context);
     if (result1) {
-        const newPrev = Semantic.number("1");
+        const newPrev = builders.number("1");
         const result2 = checker.checkStep(newPrev, next, context);
         if (result2) {
             return correctResult(
@@ -799,9 +796,9 @@ export const powOfZero: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const result1 = checker.checkStep(prev.base, Semantic.number("0"), context);
+    const result1 = checker.checkStep(prev.base, builders.number("0"), context);
     if (result1) {
-        const newPrev = Semantic.number("0");
+        const newPrev = builders.number("0");
         const result2 = checker.checkStep(newPrev, next, context);
         if (result2) {
             return correctResult(

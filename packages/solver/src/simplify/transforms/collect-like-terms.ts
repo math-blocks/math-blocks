@@ -1,16 +1,13 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {mul} from "../util";
-
-const {deepEquals, evalNode} = Semantic;
 
 export const getFactors = (
     node: types.NumericNode,
 ): OneOrMore<types.NumericNode> => {
     if (node.type === "neg") {
-        return [Semantic.number("-1"), ...getFactors(node.arg)];
+        return [builders.number("-1"), ...getFactors(node.arg)];
     } else {
         return node.type === "mul" ? node.args : [node];
     }
@@ -37,7 +34,7 @@ export const collectLikeTerms: Transform = (node) => {
     const beforeSteps: Step[] = [];
 
     for (const arg of node.args) {
-        if (Semantic.isNumber(arg)) {
+        if (util.isNumber(arg)) {
             numberTerms.push(arg);
             continue;
         }
@@ -48,18 +45,18 @@ export const collectLikeTerms: Transform = (node) => {
         let factors: readonly types.NumericNode[];
 
         // TODO: move this logic into `getFactors`.
-        if (arg.type === "div" && Semantic.isNumber(arg.args[1])) {
+        if (arg.type === "div" && util.isNumber(arg.args[1])) {
             const [num, den] = arg.args;
             factors = [
                 ...getFactors(num),
-                Semantic.div(Semantic.number("1"), den),
+                builders.div(builders.number("1"), den),
             ];
-        } else if (Semantic.isSubtraction(arg)) {
-            if (arg.arg.type === "div" && Semantic.isNumber(arg.arg.args[1])) {
+        } else if (util.isSubtraction(arg)) {
+            if (arg.arg.type === "div" && util.isNumber(arg.arg.args[1])) {
                 const [num, den] = arg.arg.args;
                 factors = [
                     ...getFactors(num),
-                    Semantic.div(Semantic.number("1"), den),
+                    builders.div(builders.number("1"), den),
                 ];
             } else {
                 factors = getFactors(arg.arg);
@@ -69,8 +66,8 @@ export const collectLikeTerms: Transform = (node) => {
         }
 
         // TODO: maybe restrict ourselves to nodes of type "number" or "neg"?
-        const numericFactors = factors.filter(Semantic.isNumber);
-        const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
+        const numericFactors = factors.filter(util.isNumber);
+        const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
 
         if (numericFactors.length > 0) {
             // If there's a single number factor then it's the coefficient
@@ -81,8 +78,8 @@ export const collectLikeTerms: Transform = (node) => {
             } else {
                 // If there a multiple factors that are numbers, multiply them
                 // together and evaluate them.
-                const mul = Semantic.mulFactors(numericFactors);
-                coeff = Semantic.number(evalNode(mul).toString());
+                const mul = builders.mulFactors(numericFactors);
+                coeff = builders.number(util.evalNode(mul).toString());
                 beforeSteps.push({
                     message: "evaluate multiplication",
                     before: mul,
@@ -90,25 +87,25 @@ export const collectLikeTerms: Transform = (node) => {
                     substeps: [],
                 });
             }
-            varPart = Semantic.mulFactors(nonNumericFactors, true);
+            varPart = builders.mulFactors(nonNumericFactors, true);
         } else {
             if (arg.type === "neg") {
-                coeff = Semantic.neg(Semantic.number("1"));
+                coeff = builders.neg(builders.number("1"));
                 varPart = arg.arg;
             } else {
-                coeff = Semantic.number("1");
+                coeff = builders.number("1");
                 varPart = arg;
             }
         }
 
-        if (Semantic.isSubtraction(arg)) {
-            coeff = Semantic.neg(coeff, true);
+        if (util.isSubtraction(arg)) {
+            coeff = builders.neg(coeff, true);
         }
 
         let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
-            if (deepEquals(k, varPart)) {
+            if (util.deepEquals(k, varPart)) {
                 key = k;
             }
         }
@@ -123,19 +120,19 @@ export const collectLikeTerms: Transform = (node) => {
         if (v.length > 1) {
             // Collect common terms
             // TODO: make this evaluation be a sub-step
-            const sum = Semantic.addTerms(v.map(({coeff}) => coeff));
-            const evaledSum = evalNode(sum);
+            const sum = builders.addTerms(v.map(({coeff}) => coeff));
+            const evaledSum = util.evalNode(sum);
 
             let newCoeff =
                 evaledSum.d === 1
-                    ? Semantic.number(evaledSum.n.toString())
-                    : Semantic.div(
-                          Semantic.number(evaledSum.n.toString()),
-                          Semantic.number(evaledSum.d.toString()),
+                    ? builders.number(evaledSum.n.toString())
+                    : builders.div(
+                          builders.number(evaledSum.n.toString()),
+                          builders.number(evaledSum.d.toString()),
                       );
 
             if (evaledSum.s === -1) {
-                newCoeff = Semantic.neg(newCoeff);
+                newCoeff = builders.neg(newCoeff);
             }
 
             newTerms.push(mul(newCoeff, k));
@@ -148,10 +145,10 @@ export const collectLikeTerms: Transform = (node) => {
     const numbers =
         numberTerms.length > 0
             ? [
-                  Semantic.number(
+                  builders.number(
                       // TODO: handle adding fractions better, since the result
                       // may itself be a fraction
-                      evalNode(Semantic.addTerms(numberTerms)).toString(),
+                      util.evalNode(builders.addTerms(numberTerms)).toString(),
                   ),
               ]
             : [];
@@ -165,7 +162,7 @@ export const collectLikeTerms: Transform = (node) => {
     }
 
     // Place numbers at the end which is a comment convention.
-    const after = Semantic.addTerms(
+    const after = builders.addTerms(
         [...newTerms, ...numbers].map((term, index) => {
             if (term.type === "mul" && term.args[0].type === "neg") {
                 // TODO: make this a substep
@@ -177,10 +174,10 @@ export const collectLikeTerms: Transform = (node) => {
                         ...term.args.slice(1),
                     ] as unknown) as TwoOrMore<types.NumericNode>,
                 };
-                return Semantic.neg(newTerm, index > 0);
+                return builders.neg(newTerm, index > 0);
             } else if (term.type === "neg") {
                 // TODO: make this a substep if subtraction is changing
-                return Semantic.neg(term.arg, index > 0);
+                return builders.neg(term.arg, index > 0);
             } else {
                 return term;
             }

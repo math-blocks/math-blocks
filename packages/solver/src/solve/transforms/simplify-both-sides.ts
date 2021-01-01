@@ -1,4 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
+import {builders} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {simplify} from "../../simplify/simplify";
@@ -8,7 +8,7 @@ export const simplifyBothSides: Transform = (before, ident) => {
     const right = simplify(before.args[1], []);
 
     if (left && right) {
-        const after = Semantic.eq([left.after, right.after]);
+        const after = builders.eq([left.after, right.after]);
         return {
             message: "simplify both sides",
             before,
@@ -26,7 +26,7 @@ export const simplifyBothSides: Transform = (before, ident) => {
         };
     }
     if (left) {
-        const after = Semantic.eq([left.after, before.args[1]]);
+        const after = builders.eq([left.after, before.args[1]]);
         return {
             message: "simplify the left hand side",
             before,
@@ -35,7 +35,7 @@ export const simplifyBothSides: Transform = (before, ident) => {
         };
     }
     if (right) {
-        const after = Semantic.eq([before.args[0], right.after]);
+        const after = builders.eq([before.args[0], right.after]);
         return {
             message: "simplify the right hand side",
             before,

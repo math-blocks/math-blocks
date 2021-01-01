@@ -1,7 +1,6 @@
 import produce from "immer";
 
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types} from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Step, Context, Result} from "../types";
@@ -47,7 +46,7 @@ export const decomposeFactors = (
             return [
                 ...result,
                 ...primeDecomp(parseInt(factor.value)).map((value) =>
-                    Semantic.number(String(value)),
+                    builders.number(String(value)),
                 ),
             ];
         } else {

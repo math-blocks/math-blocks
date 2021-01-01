@@ -1,15 +1,12 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
-const {deepEquals} = Semantic;
-
 export const mulToPow: Transform = (node) => {
-    if (!Semantic.isNumeric(node)) {
+    if (!util.isNumeric(node)) {
         return;
     }
-    const factors = Semantic.getFactors(node);
+    const factors = util.getFactors(node);
 
     if (factors.length < 2) {
         return undefined;
@@ -22,7 +19,7 @@ export const mulToPow: Transform = (node) => {
         let key: types.NumericNode | undefined;
         for (const k of map.keys()) {
             // TODO: add an option to ignore mul.implicit
-            if (deepEquals(k, factor)) {
+            if (util.deepEquals(k, factor)) {
                 key = k;
             }
         }
@@ -45,7 +42,7 @@ export const mulToPow: Transform = (node) => {
         } else {
             // Clone the key to prevent issues when modifying the AST
             const base = JSON.parse(JSON.stringify(key));
-            newFactors.push(Semantic.pow(base, Semantic.number(String(val))));
+            newFactors.push(builders.pow(base, builders.number(String(val))));
         }
     }
 
@@ -53,7 +50,7 @@ export const mulToPow: Transform = (node) => {
     return {
         message: "repeated multiplication can be written as a power",
         before: node,
-        after: Semantic.mulFactors(newFactors, true),
+        after: builders.mulFactors(newFactors, true),
         substeps: [],
     };
 };

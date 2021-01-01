@@ -1,5 +1,4 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {getCoeff, isTermOfIdent} from "../util";
@@ -11,8 +10,8 @@ export const divBothSides: Transform = (before, ident) => {
         return undefined;
     }
 
-    const leftTerms = Semantic.getTerms(left);
-    const rightTerms = Semantic.getTerms(right);
+    const leftTerms = util.getTerms(left);
+    const rightTerms = util.getTerms(right);
 
     const leftIdentTerms = leftTerms.filter((term) =>
         isTermOfIdent(term, ident),
@@ -34,13 +33,13 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
-        if (Semantic.deepEquals(coeff, Semantic.number("1"))) {
+        if (util.deepEquals(coeff, builders.number("1"))) {
             return undefined;
         }
 
-        const after = Semantic.eq(
+        const after = builders.eq(
             (before.args.map((arg) => {
-                const result = Semantic.div(arg as types.NumericNode, coeff);
+                const result = builders.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;
             }) as unknown) as TwoOrMore<types.NumericNode>,
@@ -60,13 +59,13 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
-        if (Semantic.deepEquals(coeff, Semantic.number("1"))) {
+        if (util.deepEquals(coeff, builders.number("1"))) {
             return undefined;
         }
 
-        const after = Semantic.eq(
+        const after = builders.eq(
             (before.args.map((arg) => {
-                const result = Semantic.div(arg as types.NumericNode, coeff);
+                const result = builders.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;
             }) as unknown) as TwoOrMore<types.NumericNode>,

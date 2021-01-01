@@ -1,31 +1,28 @@
-import * as Semantic from "@math-blocks/semantic";
-import {types} from "@math-blocks/semantic";
+import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
-
-const {deepEquals, evalNode} = Semantic;
 
 // This function will evaluate the multiple any factors that are numbers in node
 // but won't touch any non-number terms, e.g.
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
 export const evalMul: Transform = (node) => {
-    if (!Semantic.isNumeric(node)) {
+    if (!util.isNumeric(node)) {
         return;
     }
-    const factors = Semantic.getFactors(node);
+    const factors = util.getFactors(node);
 
-    const numericFactors = factors.filter(Semantic.isNumber);
-    const nonNumericFactors = factors.filter((f) => !Semantic.isNumber(f));
+    const numericFactors = factors.filter(util.isNumber);
+    const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
 
     if (numericFactors.length > 1) {
-        const mul = Semantic.mulFactors(numericFactors);
-        const coeff = Semantic.number(evalNode(mul).toString());
+        const mul = builders.mulFactors(numericFactors);
+        const coeff = builders.number(util.evalNode(mul).toString());
 
         return {
             message: "evaluate multiplication",
             before: node,
-            after: Semantic.mulFactors([coeff, ...nonNumericFactors], true),
+            after: builders.mulFactors([coeff, ...nonNumericFactors], true),
             substeps: [],
         };
     }
@@ -34,23 +31,23 @@ export const evalMul: Transform = (node) => {
 };
 
 export const evalAdd: Transform = (node) => {
-    if (!Semantic.isNumeric(node)) {
+    if (!util.isNumeric(node)) {
         return;
     }
-    const terms = Semantic.getTerms(node);
+    const terms = util.getTerms(node);
 
-    const numericTerms = terms.filter(Semantic.isNumber);
-    const nonNumericTerms = terms.filter((f) => !Semantic.isNumber(f));
+    const numericTerms = terms.filter(util.isNumber);
+    const nonNumericTerms = terms.filter((f) => !util.isNumber(f));
 
     if (numericTerms.length > 1) {
-        const sum = Semantic.number(
-            evalNode(Semantic.addTerms(numericTerms)).toString(),
+        const sum = builders.number(
+            util.evalNode(builders.addTerms(numericTerms)).toString(),
         );
 
         return {
             message: "evaluate addition",
             before: node,
-            after: Semantic.mulFactors([...nonNumericTerms, sum], true),
+            after: builders.mulFactors([...nonNumericTerms, sum], true),
             substeps: [],
         };
     }
@@ -65,35 +62,35 @@ export const evalDiv: Transform = (node) => {
         return;
     }
 
-    if (!Semantic.isNumber(node)) {
+    if (!util.isNumber(node)) {
         return;
     }
 
     const [numerator, denominator] = node.args;
 
-    if (deepEquals(numerator, Semantic.number("1"))) {
+    if (util.deepEquals(numerator, builders.number("1"))) {
         return;
     }
 
-    const result = evalNode(node);
+    const result = util.evalNode(node);
     let after: types.NumericNode;
     if (result.d === 1) {
         if (result.s === 1) {
-            after = Semantic.number(result.n.toString());
+            after = builders.number(result.n.toString());
         } else {
-            after = Semantic.neg(Semantic.number(result.n.toString()));
+            after = builders.neg(builders.number(result.n.toString()));
         }
     } else {
         if (result.s === 1) {
-            after = Semantic.div(
-                Semantic.number(result.n.toString()),
-                Semantic.number(result.d.toString()),
+            after = builders.div(
+                builders.number(result.n.toString()),
+                builders.number(result.d.toString()),
             );
         } else {
-            after = Semantic.neg(
-                Semantic.div(
-                    Semantic.number(result.n.toString()),
-                    Semantic.number(result.d.toString()),
+            after = builders.neg(
+                builders.div(
+                    builders.number(result.n.toString()),
+                    builders.number(result.d.toString()),
                 ),
             );
         }
@@ -101,8 +98,8 @@ export const evalDiv: Transform = (node) => {
 
     // TODO: handle negative fractions
     if (
-        deepEquals(numerator, Semantic.number(String(result.n))) &&
-        deepEquals(denominator, Semantic.number(String(result.d)))
+        util.deepEquals(numerator, builders.number(String(result.n))) &&
+        util.deepEquals(denominator, builders.number(String(result.d)))
     ) {
         return;
     }
