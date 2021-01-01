@@ -9,7 +9,10 @@ const distSub = (
     substeps: Step[],
 ): types.NumericNode[] | undefined => {
     const add = node.arg;
-    const mulNegOne = builders.mul([builders.number("-1"), add], true);
+    const mulNegOne = builders.mulFactors(
+        [builders.number("-1"), add],
+        true,
+    ) as types.Mul;
     substeps.push({
         message: "negation is the same as multipyling by one",
         before: node,

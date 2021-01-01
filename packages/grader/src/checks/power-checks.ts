@@ -337,7 +337,10 @@ export const divPowsSameBase: Check = (prev, next, context) => {
         // that we could do: `${base}^(${numerator.exp}-${denominator.exp})`
         const newPrev = builders.pow(
             numerator.base,
-            builders.add([numerator.exp, builders.neg(denominator.exp, true)]),
+            builders.addTerms([
+                numerator.exp,
+                builders.neg(denominator.exp, true),
+            ]),
         );
 
         const result = checker.checkStep(newPrev, next, context);

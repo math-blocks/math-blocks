@@ -44,7 +44,7 @@ describe("util", () => {
         });
 
         test("multiplying two numbers is a number", () => {
-            const ast = builders.mul([
+            const ast = builders.mulFactors([
                 builders.number("2"),
                 builders.number("2"),
             ]);
@@ -52,7 +52,7 @@ describe("util", () => {
         });
 
         test("adding two numbers is a number", () => {
-            const ast = builders.add([
+            const ast = builders.addTerms([
                 builders.number("2"),
                 builders.number("3"),
             ]);
@@ -60,7 +60,7 @@ describe("util", () => {
         });
 
         test("subtracting two numbers is a number", () => {
-            const ast = builders.add([
+            const ast = builders.addTerms([
                 builders.number("2"),
                 builders.neg(builders.number("3"), true),
             ]);

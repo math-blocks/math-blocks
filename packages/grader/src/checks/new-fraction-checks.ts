@@ -100,7 +100,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const newPrev = builders.mul([
+    const newPrev = builders.mulFactors([
         prev.args[0], // should we clone this?
         builders.div(builders.number("1"), prev.args[1]),
     ]);

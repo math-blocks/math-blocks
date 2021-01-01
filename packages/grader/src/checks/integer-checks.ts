@@ -269,7 +269,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
                 : factor;
         }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = builders.mul(newFactors);
+        const newPrev = builders.mulFactors(newFactors);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -325,7 +325,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
             }
         }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = builders.mul(newFactors);
+        const newPrev = builders.mulFactors(newFactors);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {

@@ -36,7 +36,7 @@ describe("print", () => {
     });
 
     test("1+2+3", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.number("1"),
             builders.number("2"),
             builders.number("3"),
@@ -48,7 +48,7 @@ describe("print", () => {
     });
 
     test("12+34", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.number("12"),
             builders.number("34"),
         ]);
@@ -59,7 +59,7 @@ describe("print", () => {
     });
 
     test("a*b*c", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.identifier("a"),
                 builders.identifier("b"),
@@ -74,7 +74,7 @@ describe("print", () => {
     });
 
     test("abc", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.identifier("a"),
                 builders.identifier("b"),
@@ -89,8 +89,8 @@ describe("print", () => {
     });
 
     test("abc+123", () => {
-        const ast = builders.add([
-            builders.mul(
+        const ast = builders.addTerms([
+            builders.mulFactors(
                 [
                     builders.identifier("a"),
                     builders.identifier("b"),
@@ -107,10 +107,10 @@ describe("print", () => {
     });
 
     test("a(x+y)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.identifier("a"),
-                builders.add([
+                builders.addTerms([
                     builders.identifier("x"),
                     builders.identifier("y"),
                 ]),
@@ -124,7 +124,7 @@ describe("print", () => {
     });
 
     test("(1)(2)(3)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [builders.number("1"), builders.number("2"), builders.number("3")],
             true,
         );
@@ -135,7 +135,7 @@ describe("print", () => {
     });
 
     test("(-a)(-b)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.neg(builders.identifier("a")),
                 builders.neg(builders.identifier("b")),
@@ -149,7 +149,7 @@ describe("print", () => {
     });
 
     test("(a/b)(c/d)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.div(
                     builders.identifier("a"),
@@ -186,7 +186,7 @@ describe("print", () => {
     });
 
     test("x-y", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.identifier("x"),
             builders.neg(
                 builders.identifier("y"),
@@ -200,9 +200,12 @@ describe("print", () => {
     });
 
     test("a+(b+c)", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.identifier("a"),
-            builders.add([builders.identifier("b"), builders.identifier("c")]),
+            builders.addTerms([
+                builders.identifier("b"),
+                builders.identifier("c"),
+            ]),
         ]);
 
         const node = print(ast);
@@ -211,10 +214,10 @@ describe("print", () => {
     });
 
     test("a-(b+c)", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.identifier("a"),
             builders.neg(
-                builders.add([
+                builders.addTerms([
                     builders.identifier("b"),
                     builders.identifier("c"),
                 ]),
@@ -240,8 +243,14 @@ describe("print", () => {
 
     test("(a+b)/(x+y)", () => {
         const ast = builders.div(
-            builders.add([builders.identifier("a"), builders.identifier("b")]),
-            builders.add([builders.identifier("x"), builders.identifier("y")]),
+            builders.addTerms([
+                builders.identifier("a"),
+                builders.identifier("b"),
+            ]),
+            builders.addTerms([
+                builders.identifier("x"),
+                builders.identifier("y"),
+            ]),
         );
 
         const node = print(ast);
@@ -250,7 +259,7 @@ describe("print", () => {
     });
 
     test("a + -a", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.identifier("a"),
             builders.neg(builders.identifier("a"), false),
         ]);
@@ -261,7 +270,7 @@ describe("print", () => {
     });
 
     test("a + --b", () => {
-        const ast = builders.add([
+        const ast = builders.addTerms([
             builders.identifier("a"),
             builders.neg(builders.neg(builders.identifier("b"), false), false),
         ]);
@@ -272,10 +281,10 @@ describe("print", () => {
     });
 
     test("-1(a + b)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.neg(builders.number("1")),
-                builders.add([
+                builders.addTerms([
                     builders.identifier("a"),
                     builders.identifier("b"),
                 ]),
@@ -307,7 +316,7 @@ describe("print", () => {
     });
 
     test("(a)(b)(1)", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.identifier("a"),
                 builders.identifier("b"),
@@ -322,7 +331,7 @@ describe("print", () => {
     });
 
     test("a*b*1", () => {
-        const ast = builders.mul(
+        const ast = builders.mulFactors(
             [
                 builders.identifier("a"),
                 builders.identifier("b"),
@@ -339,7 +348,7 @@ describe("print", () => {
     test("y = x + 1", () => {
         const ast = builders.eq([
             builders.identifier("y"),
-            builders.add([builders.identifier("x"), builders.number("1")]),
+            builders.addTerms([builders.identifier("x"), builders.number("1")]),
         ]);
 
         const node = print(ast);
@@ -376,7 +385,10 @@ describe("print", () => {
     test("e^(x+y)", () => {
         const ast = builders.pow(
             builders.identifier("e"),
-            builders.add([builders.identifier("x"), builders.identifier("y")]),
+            builders.addTerms([
+                builders.identifier("x"),
+                builders.identifier("y"),
+            ]),
         );
 
         const node = print(ast);
@@ -388,7 +400,7 @@ describe("print", () => {
 
     test("(x+1)^2", () => {
         const ast = builders.pow(
-            builders.add([builders.identifier("x"), builders.number("1")]),
+            builders.addTerms([builders.identifier("x"), builders.number("1")]),
             builders.number("2"),
         );
 

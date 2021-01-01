@@ -240,7 +240,7 @@ export const checkDistribution: Check = (prev, next, context) => {
                 const newPrev = builders.addTerms([
                     ...prev.args.slice(0, i),
                     ...mul.args[1].args.map((arg) =>
-                        builders.mul([mul.args[0], arg], mul.implicit),
+                        builders.mulFactors([mul.args[0], arg], mul.implicit),
                     ),
                     ...prev.args.slice(i + 1),
                 ]);
@@ -289,9 +289,15 @@ export const checkDistribution: Check = (prev, next, context) => {
             prev.args[1].args.map((arg) => {
                 if (arg.type === "neg") {
                     // Set 'subtraction' prop to false
-                    return builders.mul([prev.args[0], builders.neg(arg.arg)]);
+                    return builders.mulFactors([
+                        prev.args[0],
+                        builders.neg(arg.arg),
+                    ]);
                 } else {
-                    return builders.mul([prev.args[0], arg], prev.implicit);
+                    return builders.mulFactors(
+                        [prev.args[0], arg],
+                        prev.implicit,
+                    );
                 }
             }),
         );
@@ -313,7 +319,9 @@ export const checkDistribution: Check = (prev, next, context) => {
     // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
         const newPrev = builders.addTerms(
-            prev.args[0].args.map((arg) => builders.mul([arg, prev.args[1]])),
+            prev.args[0].args.map((arg) =>
+                builders.mulFactors([arg, prev.args[1]]),
+            ),
         );
 
         const result = context.checker.checkStep(newPrev, next, context);

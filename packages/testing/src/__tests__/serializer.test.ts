@@ -91,7 +91,7 @@ describe("serializer", () => {
 
     test("pow (with grandchildren)", () => {
         const ast = builders.pow(
-            builders.add([builders.identifier("x"), builders.number("1")]),
+            builders.addTerms([builders.identifier("x"), builders.number("1")]),
             builders.number("2"),
         );
         expect(ast).toMatchInlineSnapshot(`
