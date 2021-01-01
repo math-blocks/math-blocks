@@ -73,7 +73,7 @@ export const powDef: Check = (prev, next, context) => {
 
         // We need to do this check since there might be multiple exponents
         // with the same base in next.
-        const newPrev = builders.mulFactors([
+        const newPrev = builders.mul([
             ...commonFactors,
             builders.pow(base, builders.number(String(count))),
             ...nonBaseUniquePrevFactors,
@@ -127,7 +127,7 @@ export const powDefReverse: Check = (prev, next, context) => {
             // TODO: clone base each time
             factors.push(base);
         }
-        const newPrev = builders.mulFactors(factors);
+        const newPrev = builders.mul(factors);
         newPrev.source = "powDefReverse";
 
         const result = checker.checkStep(newPrev, next, context);
@@ -206,10 +206,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                 )
             ) {
                 newFactors.push(
-                    builders.pow(
-                        k,
-                        builders.addTerms(values.map(({exp}) => exp)),
-                    ),
+                    builders.pow(k, builders.add(values.map(({exp}) => exp))),
                 );
                 changed = true;
                 continue;
@@ -223,7 +220,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev = builders.mulFactors(newFactors);
+    const newPrev = builders.mul(newFactors);
 
     const result = checker.checkStep(newPrev, next, context);
 
@@ -250,7 +247,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                         !exactMatch(value.exp, builders.number("1"), context),
                 )
             ) {
-                const exp: types.NumericNode = builders.addTerms(
+                const exp: types.NumericNode = builders.add(
                     values.map(({exp}) => exp),
                 );
                 if (util.isNumber(exp)) {
@@ -277,7 +274,7 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
         return;
     }
 
-    const newPrev2 = builders.mulFactors(newFactors2);
+    const newPrev2 = builders.mul(newFactors2);
 
     const result2 = checker.checkStep(newPrev2, next, context);
 
@@ -337,10 +334,7 @@ export const divPowsSameBase: Check = (prev, next, context) => {
         // that we could do: `${base}^(${numerator.exp}-${denominator.exp})`
         const newPrev = builders.pow(
             numerator.base,
-            builders.addTerms([
-                numerator.exp,
-                builders.neg(denominator.exp, true),
-            ]),
+            builders.add([numerator.exp, builders.neg(denominator.exp, true)]),
         );
 
         const result = checker.checkStep(newPrev, next, context);
@@ -520,7 +514,7 @@ export const powOfPow: Check = (prev, next, context) => {
     const {checker} = context;
     const newPrev = builders.pow(
         prev.base.base,
-        builders.mulFactors([
+        builders.mul([
             // handle situations like (x^(ab))^(cd)
             ...util.getFactors(prev.base.exp),
             ...util.getFactors(prev.exp),
@@ -557,7 +551,7 @@ export const powOfMul: Check = (prev, next, context) => {
 
     const factors = util.getFactors(prev.base);
 
-    const newPrev = builders.mulFactors(
+    const newPrev = builders.mul(
         factors.map((factor) => builders.pow(factor, prev.exp)),
     );
     newPrev.source = "powOfMul";
@@ -606,7 +600,7 @@ export const mulPowsSameExp: Check = (prev, next, context) => {
     }
 
     const bases = pows.map((pow) => pow.base);
-    const newPrev = builders.pow(builders.mulFactors(bases), firstExp);
+    const newPrev = builders.pow(builders.mul(bases), firstExp);
     newPrev.source = "mulPowsSameExp";
 
     const {checker} = context;

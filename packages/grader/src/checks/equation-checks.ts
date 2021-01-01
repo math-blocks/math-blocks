@@ -58,8 +58,8 @@ export const checkAddSub: Check = (prev, next, context) => {
         const newTermsRHS = util.difference(nextTermsRHS, prevTermsRHS);
 
         const areNewTermsEquivalent = checker.checkStep(
-            builders.addTerms(newTermsLHS),
-            builders.addTerms(newTermsRHS),
+            builders.add(newTermsLHS),
+            builders.add(newTermsRHS),
             context,
         );
 
@@ -95,8 +95,8 @@ export const checkAddSub: Check = (prev, next, context) => {
             newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
         const newPrev = builders.eq([
-            builders.addTerms([...prevTermsLHS, ...newTerms]),
-            builders.addTerms([...prevTermsRHS, ...newTerms]),
+            builders.add([...prevTermsLHS, ...newTerms]),
+            builders.add([...prevTermsRHS, ...newTerms]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -168,8 +168,8 @@ export const checkMul: Check = (prev, next, context) => {
         );
 
         const areNewFactorsEquivalent = checker.checkStep(
-            builders.mulFactors(newFactorsLHS),
-            builders.mulFactors(newFactorsRHS),
+            builders.mul(newFactorsLHS),
+            builders.mul(newFactorsRHS),
             context,
         );
 
@@ -203,8 +203,8 @@ export const checkMul: Check = (prev, next, context) => {
         // We place the new factors at the start since it is common to go
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
         const newPrev = builders.eq([
-            builders.mulFactors([...newFactors, ...prevFactorsLHS]),
-            builders.mulFactors([...newFactors, ...prevFactorsRHS]),
+            builders.mul([...newFactors, ...prevFactorsLHS]),
+            builders.mul([...newFactors, ...prevFactorsRHS]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -264,8 +264,8 @@ export const checkDiv: Check = (prev, next, context) => {
                     : denFactorsRHS;
 
             const newPrev = builders.eq([
-                builders.div(prevLHS, builders.mulFactors(denFactors)),
-                builders.div(prevRHS, builders.mulFactors(denFactors)),
+                builders.div(prevLHS, builders.mul(denFactors)),
+                builders.div(prevRHS, builders.mul(denFactors)),
             ]);
 
             const result = checker.checkStep(newPrev, next, context);

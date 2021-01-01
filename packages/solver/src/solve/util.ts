@@ -52,7 +52,7 @@ export const convertSubTermToNeg = (
         const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
         const orderedFactors = [...numericFactors, ...nonNumericFactors];
         orderedFactors[0] = builders.neg(orderedFactors[0]);
-        return builders.mulFactors(orderedFactors);
+        return builders.mul(orderedFactors);
     }
     return node;
 };

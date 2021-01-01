@@ -48,7 +48,7 @@ export const addInverse: Check = (prev, next, context) => {
 
     // We convert every even indexed one to zero and remove every odd indexed one.
     if (indicesToRemove.length > 0) {
-        const newPrev = builders.addTerms(
+        const newPrev = builders.add(
             terms
                 .map((term: types.NumericNode, index: number) => {
                     if (indicesToRemove.includes(index)) {
@@ -121,7 +121,7 @@ export const subIsNeg: Check = (prev, next, context) => {
         for (const sub of subs) {
             const index = prev.args.indexOf(sub);
             const neg = builders.neg(sub.arg);
-            const newPrev = builders.addTerms([
+            const newPrev = builders.add([
                 ...prev.args.slice(0, index),
                 neg,
                 ...prev.args.slice(index + 1),
@@ -175,7 +175,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
         // exclude -1 to avoid an infinite expansion
         !(prev.arg.type == "number" && prev.arg.value == "1")
     ) {
-        const newPrev = builders.mulFactors(
+        const newPrev = builders.mul(
             [builders.neg(builders.number("1")), ...util.getFactors(prev.arg)],
             true,
         );
@@ -200,7 +200,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
                 // exclude -1 to avoid an infinite expansion
                 !(arg.arg.type == "number" && arg.arg.value == "1")
             ) {
-                const newArg = builders.mulFactors(
+                const newArg = builders.mul(
                     [
                         builders.neg(builders.number("1")),
                         ...util.getFactors(arg.arg),
@@ -218,7 +218,7 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
             return;
         }
 
-        const newPrev = builders.addTerms(newArgs);
+        const newPrev = builders.add(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -269,7 +269,7 @@ export const mulTwoNegsIsPos: Check = (prev, next, context) => {
                 : factor;
         }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = builders.mulFactors(newFactors);
+        const newPrev = builders.mul(newFactors);
 
         const result = checker.checkStep(newPrev, next, context);
 
@@ -325,7 +325,7 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
             }
         }) as unknown) as TwoOrMore<types.NumericNode>;
 
-        const newPrev = builders.mulFactors(newFactors);
+        const newPrev = builders.mul(newFactors);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -350,7 +350,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
     if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {
         const mul = prev.arg;
 
-        const newPrev = builders.mulFactors(
+        const newPrev = builders.mul(
             [builders.neg(mul.args[0]), ...mul.args.slice(1)],
             prev.arg.implicit,
         );
@@ -377,7 +377,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
                 arg.arg.type === "mul"
             ) {
                 const mul = arg.arg;
-                const newArg = builders.mulFactors(
+                const newArg = builders.mul(
                     [builders.neg(mul.args[0]), ...mul.args.slice(1)],
                     mul.implicit,
                 );
@@ -391,7 +391,7 @@ export const moveNegInsideMul: Check = (prev, next, context) => {
             return;
         }
 
-        const newPrev = builders.addTerms(newArgs);
+        const newPrev = builders.add(newArgs);
 
         const result = checker.checkStep(newPrev, next, context);
 

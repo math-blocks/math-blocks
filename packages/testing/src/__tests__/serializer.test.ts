@@ -33,7 +33,7 @@ describe("serializer", () => {
     });
 
     test("neg (subtraction)", () => {
-        const ast = builders.addTerms([
+        const ast = builders.add([
             builders.identifier("x"),
             builders.neg(builders.number("5"), true),
         ]);
@@ -53,7 +53,7 @@ describe("serializer", () => {
     });
 
     test("mul (explicit)", () => {
-        const ast = builders.mulFactors([
+        const ast = builders.mul([
             builders.number("2"),
             builders.identifier("x"),
         ]);
@@ -61,7 +61,7 @@ describe("serializer", () => {
     });
 
     test("mul (implicit)", () => {
-        const ast = builders.mulFactors(
+        const ast = builders.mul(
             [builders.number("2"), builders.identifier("x")],
             true,
         );
@@ -69,7 +69,7 @@ describe("serializer", () => {
     });
 
     test("add", () => {
-        const ast = builders.addTerms([
+        const ast = builders.add([
             builders.identifier("x"),
             builders.number("5"),
         ]);
@@ -91,7 +91,7 @@ describe("serializer", () => {
 
     test("pow (with grandchildren)", () => {
         const ast = builders.pow(
-            builders.addTerms([builders.identifier("x"), builders.number("1")]),
+            builders.add([builders.identifier("x"), builders.number("1")]),
             builders.number("2"),
         );
         expect(ast).toMatchInlineSnapshot(`

@@ -22,7 +22,7 @@ export const dropParens: Transform = (node) => {
     return {
         message: "drop parentheses",
         before: node,
-        after: builders.addTerms(newTerms),
+        after: builders.add(newTerms),
         substeps: [],
     };
 };

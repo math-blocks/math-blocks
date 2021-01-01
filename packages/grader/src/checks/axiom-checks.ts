@@ -74,8 +74,8 @@ export const addZero: Check = (prev, next, context) => {
         return;
     }
 
-    const newNext = builders.addTerms(newNextArgs);
-    const newPrev = builders.addTerms(nonIdentityArgs);
+    const newNext = builders.add(newNextArgs);
+    const newPrev = builders.add(nonIdentityArgs);
 
     // This first check is fine since nonIdentityArgs only contains nodes from
     // an expression entered by a user.
@@ -179,13 +179,13 @@ export const mulOne: Check = (prev, next, context) => {
         return;
     }
 
-    const newNext = builders.mulFactors(newNextArgs);
+    const newNext = builders.mul(newNextArgs);
 
     // TODO: provide a way to have different levels of messages, e.g.
     // "multiplying by one doesn't change an expression.
     const reason = "multiplication with identity";
 
-    const newPrev = builders.mulFactors(nonIdentityArgs);
+    const newPrev = builders.mul(nonIdentityArgs);
 
     // This first check is fine since nonIdentityArgs only contains nodes from
     // an expression entered by a user.
@@ -237,10 +237,10 @@ export const checkDistribution: Check = (prev, next, context) => {
                 mul.args.length === 2 &&
                 mul.args[1].type === "add"
             ) {
-                const newPrev = builders.addTerms([
+                const newPrev = builders.add([
                     ...prev.args.slice(0, i),
                     ...mul.args[1].args.map((arg) =>
-                        builders.mulFactors([mul.args[0], arg], mul.implicit),
+                        builders.mul([mul.args[0], arg], mul.implicit),
                     ),
                     ...prev.args.slice(i + 1),
                 ]);
@@ -285,19 +285,13 @@ export const checkDistribution: Check = (prev, next, context) => {
 
     // If the second factor is an add, e.g. a(b + c) -> ...
     if (prev.args[1].type === "add") {
-        const newPrev = builders.addTerms(
+        const newPrev = builders.add(
             prev.args[1].args.map((arg) => {
                 if (arg.type === "neg") {
                     // Set 'subtraction' prop to false
-                    return builders.mulFactors([
-                        prev.args[0],
-                        builders.neg(arg.arg),
-                    ]);
+                    return builders.mul([prev.args[0], builders.neg(arg.arg)]);
                 } else {
-                    return builders.mulFactors(
-                        [prev.args[0], arg],
-                        prev.implicit,
-                    );
+                    return builders.mul([prev.args[0], arg], prev.implicit);
                 }
             }),
         );
@@ -318,10 +312,8 @@ export const checkDistribution: Check = (prev, next, context) => {
 
     // If the first factor is an add, e.g. (b + c)a -> ...
     if (prev.args[0].type === "add") {
-        const newPrev = builders.addTerms(
-            prev.args[0].args.map((arg) =>
-                builders.mulFactors([arg, prev.args[1]]),
-            ),
+        const newPrev = builders.add(
+            prev.args[0].args.map((arg) => builders.mul([arg, prev.args[1]])),
         );
 
         const result = context.checker.checkStep(newPrev, next, context);
@@ -582,7 +574,7 @@ export const associativeMul: Check = (prev, next, context) => {
         for (const arg of prev.args) {
             factors.push(...util.getFactors(arg));
         }
-        const newPrev = builders.mulFactors(factors);
+        const newPrev = builders.mul(factors);
         newPrev.source = "associativeMul";
 
         const result = checker.checkStep(newPrev, next, context);
@@ -616,7 +608,7 @@ export const associativeAdd: Check = (prev, next, context) => {
         for (const arg of prev.args) {
             terms.push(...util.getTerms(arg));
         }
-        const newPrev = builders.addTerms(terms);
+        const newPrev = builders.add(terms);
 
         const result = checker.checkStep(newPrev, next, context);
 

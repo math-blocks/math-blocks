@@ -16,13 +16,13 @@ export const evalMul: Transform = (node) => {
     const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
 
     if (numericFactors.length > 1) {
-        const mul = builders.mulFactors(numericFactors);
+        const mul = builders.mul(numericFactors);
         const coeff = builders.number(util.evalNode(mul).toString());
 
         return {
             message: "evaluate multiplication",
             before: node,
-            after: builders.mulFactors([coeff, ...nonNumericFactors], true),
+            after: builders.mul([coeff, ...nonNumericFactors], true),
             substeps: [],
         };
     }
@@ -41,13 +41,13 @@ export const evalAdd: Transform = (node) => {
 
     if (numericTerms.length > 1) {
         const sum = builders.number(
-            util.evalNode(builders.addTerms(numericTerms)).toString(),
+            util.evalNode(builders.add(numericTerms)).toString(),
         );
 
         return {
             message: "evaluate addition",
             before: node,
-            after: builders.mulFactors([...nonNumericTerms, sum], true),
+            after: builders.mul([...nonNumericTerms, sum], true),
             substeps: [],
         };
     }

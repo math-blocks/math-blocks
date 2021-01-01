@@ -15,8 +15,8 @@ export const mulBothSides: Transform = (before, ident) => {
     if (leftTerms.length === 1 && leftTerms[0].type === "div") {
         const [num, den] = leftTerms[0].args;
         if (isTermOfIdent(num, ident) && util.isNumber(den)) {
-            const newLeft = builders.mulFactors([leftTerms[0], den]);
-            const newRight = builders.mulFactors([right, den]);
+            const newLeft = builders.mul([leftTerms[0], den]);
+            const newRight = builders.mul([right, den]);
 
             newLeft.source = "mulBothSides";
             newRight.source = "mulBothSides";
@@ -37,8 +37,8 @@ export const mulBothSides: Transform = (before, ident) => {
     if (rightTerms.length === 1 && rightTerms[0].type === "div") {
         const [num, den] = rightTerms[0].args;
         if (isTermOfIdent(num, ident) && util.isNumber(den)) {
-            const newLeft = builders.mulFactors([left, den]);
-            const newRight = builders.mulFactors([rightTerms[0], den]);
+            const newLeft = builders.mul([left, den]);
+            const newRight = builders.mul([rightTerms[0], den]);
 
             newLeft.source = "mulBothSides";
             newRight.source = "mulBothSides";

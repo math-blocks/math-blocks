@@ -43,7 +43,7 @@ describe("findNodeById", () => {
     test("finds a node in an array", () => {
         const one = builders.number("1");
         const two = builders.number("2");
-        const root = builders.addTerms([one, two]);
+        const root = builders.add([one, two]);
 
         const node = findNodeById(root, two.id);
 
@@ -73,7 +73,7 @@ describe("replaceNode", () => {
     test("replaces a node in an array", () => {
         const one = builders.number("1");
         const two = builders.number("2");
-        const root = builders.addTerms([one, two]);
+        const root = builders.add([one, two]);
         const three = builders.number("3");
 
         replaceNodeWithId(root, two.id, three);
@@ -109,11 +109,11 @@ describe("util.deepEquals", () => {
     test("returns false if implicit mul property doesn't match", () => {
         expect(
             util.deepEquals(
-                builders.mulFactors(
+                builders.mul(
                     [builders.number("1"), builders.number("2")],
                     true,
                 ),
-                builders.mulFactors(
+                builders.mul(
                     [builders.number("1"), builders.number("2")],
                     false,
                 ),

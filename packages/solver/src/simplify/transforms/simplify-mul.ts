@@ -43,7 +43,7 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
         return undefined;
     }
 
-    const newProd = builders.mulFactors(newFactors, true);
+    const newProd = builders.mul(newFactors, true);
 
     const after = isNegative(before) ? builders.neg(newProd, false) : newProd;
 

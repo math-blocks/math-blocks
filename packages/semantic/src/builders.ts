@@ -35,16 +35,6 @@ export const ellipsis = (loc?: types.Location): types.Ellipsis => ({
 });
 
 export const add = (
-    args: TwoOrMore<types.NumericNode>,
-    loc?: types.Location,
-): types.Add => ({
-    type: "add",
-    id: getId(),
-    args,
-    loc,
-});
-
-export const addTerms = (
     terms: readonly types.NumericNode[],
     loc?: types.Location,
 ): types.NumericNode => {
@@ -64,18 +54,6 @@ export const addTerms = (
 };
 
 export const mul = (
-    args: TwoOrMore<types.NumericNode>,
-    implicit = false,
-    loc?: types.Location,
-): types.Mul => ({
-    type: "mul",
-    id: getId(),
-    implicit,
-    args,
-    loc,
-});
-
-export const mulFactors = (
     factors: readonly types.NumericNode[],
     implicit = false,
     loc?: types.Location,

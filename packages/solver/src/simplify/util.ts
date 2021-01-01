@@ -59,7 +59,7 @@ export const mul = (
         coeff = numberFactors;
     } else {
         // Multiply all number factors together to determine the new coefficient
-        const before = builders.mulFactors(numberFactors, true);
+        const before = builders.mul(numberFactors, true);
         const after = builders.number(util.evalNode(before).toString());
         substeps?.push({
             message: "evaluate multiplication",
@@ -74,10 +74,10 @@ export const mul = (
 
     if (isResultNegative) {
         const before = builders.neg(
-            builders.mulFactors([...coeff, ...nonNumberFactors], true),
+            builders.mul([...coeff, ...nonNumberFactors], true),
         );
         if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = builders.neg(builders.mulFactors(nonNumberFactors, true));
+            after = builders.neg(builders.mul(nonNumberFactors, true));
             substeps?.push({
                 message: "multiplication by -1 is the same as being negative",
                 before,
@@ -88,12 +88,9 @@ export const mul = (
             after = before;
         }
     } else {
-        const before = builders.mulFactors(
-            [...coeff, ...nonNumberFactors],
-            true,
-        );
+        const before = builders.mul([...coeff, ...nonNumberFactors], true);
         if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = builders.mulFactors(nonNumberFactors, true);
+            after = builders.mul(nonNumberFactors, true);
             substeps?.push({
                 message: "multiplication by 1 is a no-op",
                 before,
@@ -106,7 +103,7 @@ export const mul = (
     }
 
     if (isNegative(a) && isNegative(b)) {
-        const before = builders.mulFactors(numberFactors, true);
+        const before = builders.mul(numberFactors, true);
         substeps?.push({
             message: "multiplying two negatives is a positive",
             before,

@@ -9,7 +9,7 @@ const distSub = (
     substeps: Step[],
 ): types.NumericNode[] | undefined => {
     const add = node.arg;
-    const mulNegOne = builders.mulFactors(
+    const mulNegOne = builders.mul(
         [builders.number("-1"), add],
         true,
     ) as types.Mul;
@@ -152,7 +152,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
         return undefined;
     }
 
-    const after = builders.addTerms(newNodes);
+    const after = builders.add(newNodes);
 
     return {
         message: "distribute",
