@@ -1,7 +1,7 @@
 import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
-import {mul} from "../util";
+import {simplifyMul} from "../util";
 
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
@@ -68,16 +68,36 @@ const distMul = (
     if (node.args.length === 2) {
         if (node.args[1].type === "add") {
             const add = node.args[1];
+            // convert subtraction to negative within the `add` node
             const terms = add.args.map((term) => subToNeg(term, substeps));
-            return terms.map((term) => {
-                const newTerm = mul(node.args[0], term, substeps);
+            const newNode = builders.add(
+                terms.map((term) => builders.mul([node.args[0], term], true)),
+            ) as types.Add;
+            substeps.push({
+                message: "multiply each term",
+                before: node,
+                after: newNode,
+                substeps: [],
+            });
+            return newNode.args.map((term) => {
+                const newTerm = simplifyMul(term as types.Mul, substeps);
+                newTerm; // ?
                 return newTerm;
             });
         } else if (node.args[0].type === "add") {
             const add = node.args[0];
             const terms = add.args.map((term) => subToNeg(term, substeps));
-            return terms.map((term) => {
-                const newTerm = mul(term, node.args[1], substeps);
+            const newNode = builders.add(
+                terms.map((term) => builders.mul([term, node.args[1]], true)),
+            ) as types.Add;
+            substeps.push({
+                message: "multiply each term",
+                before: node,
+                after: newNode,
+                substeps: [],
+            });
+            return newNode.args.map((term) => {
+                const newTerm = simplifyMul(term as types.Mul, substeps);
                 return newTerm;
             });
         }

@@ -1,6 +1,8 @@
 import {types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
+import {applyStep} from "../../../apply-step";
+
 import {distribute as _distribute} from "../distribute";
 import {Step} from "../../types";
 
@@ -19,8 +21,25 @@ describe("distribution", () => {
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+        expect(step.substeps.map((substep) => substep.message)).toEqual([
+            "multiply each term",
+        ]);
         expect(print(step.after)).toEqual("ab + ac");
+    });
+
+    test("x + a(b + c) -> x + ab + ac", () => {
+        const ast = parse("x + a(b + c)");
+
+        const step = distribute(ast);
+
+        expect(step.message).toEqual("distribute");
+        expect(step.substeps.map((substep) => substep.message)).toEqual([
+            "multiply each term",
+        ]);
+        expect(print(step.after)).toEqual("x + ab + ac");
+
+        const after = applyStep(ast, step);
+        expect(print(after)).toEqual("x + ab + ac");
     });
 
     test("3(x + 1) -> 3x + 3", () => {
@@ -30,21 +49,27 @@ describe("distribution", () => {
 
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "evaluate multiplication",
+            "multiply each term",
+            "multiply monomials",
         ]);
         expect(print(step.after)).toEqual("3x + 3");
     });
 
-    test("3(x + 1) + 4 -> 3x + 7", () => {
+    test("3(x + 1) + 4 -> 3x + 3 + 4", () => {
         const ast = parse("3(x + 1) + 4");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "evaluate multiplication",
+            "multiply each term",
+            "multiply monomials",
         ]);
         expect(print(step.after)).toEqual("3x + 3 + 4");
+        const first = applyStep(ast, step.substeps[0]);
+        expect(print(first)).toEqual("3x + (3)(1) + 4");
+        const second = applyStep(first, step.substeps[1]);
+        expect(print(second)).toEqual("3x + 3 + 4");
     });
 
     test("3(x + y + z) -> 3x + 3y + 3z", () => {
@@ -53,7 +78,9 @@ describe("distribution", () => {
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+        expect(step.substeps.map((substep) => substep.message)).toEqual([
+            "multiply each term",
+        ]);
         expect(print(step.after)).toEqual("3x + 3y + 3z");
     });
 
@@ -65,7 +92,8 @@ describe("distribution", () => {
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
-            "evaluate multiplication",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
             "multiplying two negatives is a positive",
         ]);
         expect(print(step.after)).toEqual("-2x + 6");
@@ -79,8 +107,9 @@ describe("distribution", () => {
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "negation is the same as multipyling by one",
-            "multiplication by -1 is the same as being negative",
-            "evaluate multiplication",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
+            "multiplying a negative by a positive is negative",
             "adding the negative is the same as subtraction",
             "adding the negative is the same as subtraction",
         ]);
@@ -88,14 +117,16 @@ describe("distribution", () => {
 
         expect(print(step.substeps[0].before)).toEqual("-(x + 1)");
         expect(print(step.substeps[0].after)).toEqual("-1(x + 1)");
-        // TODO: figure out how we can show the entire expression at each of these substeps
-        expect(print(step.substeps[1].before)).toEqual("-1x");
-        expect(print(step.substeps[1].after)).toEqual("-x");
-        expect(print(step.substeps[2].before)).toEqual("(1)(1)");
-        expect(print(step.substeps[2].after)).toEqual("1");
-        // TODO: figure out how we can show the entire expression at each of these substeps
-        expect(print(step.substeps[3].before)).toEqual("-x");
-        expect(print(step.substeps[3].after)).toEqual("-x");
+        expect(print(step.substeps[1].before)).toEqual("-1(x + 1)");
+        expect(print(step.substeps[1].after)).toEqual("-1x + (-1)(1)");
+        expect(print(step.substeps[2].before)).toEqual("-1x");
+        expect(print(step.substeps[2].after)).toEqual("-x");
+        // This is wrong
+        // expect(step.substeps[3].message).toEqual("evaluate multiplication")
+        expect(print(step.substeps[3].before)).toEqual("(-1)(1)");
+        expect(print(step.substeps[3].after)).toEqual("-1");
+        expect(print(step.substeps[4].before)).toEqual("-x");
+        expect(print(step.substeps[4].after)).toEqual("-x");
     });
 
     test("(ab)(xy - yz)", () => {
@@ -107,6 +138,9 @@ describe("distribution", () => {
         expect(print(step.after)).toEqual("abxy - abyz");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
+            "multiply each term",
+            "multiply monomials",
+            "multiplying a negative by a positive is negative",
             "adding the negative is the same as subtraction",
         ]);
     });
@@ -120,6 +154,8 @@ describe("distribution", () => {
         expect(print(step.after)).toEqual("-abxy + abyz");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
             "multiplying two negatives is a positive",
         ]);
     });
@@ -131,7 +167,8 @@ describe("distribution", () => {
 
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "evaluate multiplication",
+            "multiply each term",
+            "multiply monomials",
         ]);
         expect(print(step.after)).toEqual("3x + 3 + 4(x - 1)");
     });
@@ -143,7 +180,8 @@ describe("distribution", () => {
 
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "multiplication by 1 is a no-op",
+            "multiply each term",
+            "multiply monomials",
         ]);
         expect(print(step.after)).toEqual("xx + x");
     });
@@ -156,7 +194,8 @@ describe("distribution", () => {
         expect(step.message).toEqual("distribute");
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
-            "multiplication by -1 is the same as being negative",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
             "adding the negative is the same as subtraction",
         ]);
         expect(print(step.after)).toEqual("xx - x");

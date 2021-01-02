@@ -1,7 +1,7 @@
 import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
-import {mul} from "../util";
+import {simplifyMul} from "../util";
 
 export const getFactors = (
     node: types.NumericNode,
@@ -135,7 +135,12 @@ export const collectLikeTerms: Transform = (node) => {
                 newCoeff = builders.neg(newCoeff);
             }
 
-            newTerms.push(mul(newCoeff, k));
+            // simplifyMul handles situations where k has more than one factor
+            const product = simplifyMul(
+                builders.mul([newCoeff, k], true) as types.Mul,
+            );
+
+            newTerms.push(product);
         } else {
             // Pass through unique terms
             newTerms.push(v[0].term);
@@ -183,6 +188,7 @@ export const collectLikeTerms: Transform = (node) => {
             }
         }),
     );
+
     return {
         message: "collect like terms",
         before: node,

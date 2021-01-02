@@ -1,6 +1,8 @@
 import {types} from "@math-blocks/semantic";
 import {parse, print} from "@math-blocks/testing";
 
+import {applyStep} from "../../apply-step";
+
 import {simplify as _simplify} from "../simplify";
 import {Step} from "../types";
 
@@ -103,6 +105,11 @@ describe("simplify", () => {
                 "collect like terms",
             ]);
             expect(print(step.after)).toEqual("5x");
+
+            const first = applyStep(ast, step.substeps[0]);
+            const second = applyStep(first, step.substeps[1]);
+            expect(print(first)).toEqual("2x - -3x");
+            expect(print(second)).toEqual("5x");
         });
 
         test("2x - -3x -> 5x", () => {
@@ -205,6 +212,18 @@ describe("simplify", () => {
                 "simplify multiplication",
             ]);
             expect(print(step.after)).toEqual("-(x / 6)");
+        });
+
+        test("2xy + 3xy -> 5xy", () => {
+            const ast = parse("2xy + 3xy");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+            ]);
+            expect(print(step.after)).toEqual("5xy");
         });
 
         test("1x -> x", () => {
@@ -321,6 +340,10 @@ describe("simplify", () => {
                 "distribute",
             ]);
             expect(print(step.after)).toEqual("3x + 3");
+
+            expect(
+                step.substeps[0].substeps.map((step) => step.message),
+            ).toEqual(["multiply each term", "multiply monomials"]);
         });
 
         test("3(x + y + z) -> 3x + 3y + 3z", () => {
@@ -390,8 +413,9 @@ describe("simplify", () => {
                 step.substeps[0].substeps.map((substep) => substep.message),
             ).toEqual([
                 "negation is the same as multipyling by one",
-                "multiplication by -1 is the same as being negative",
-                "evaluate multiplication",
+                "multiply each term",
+                "multiplying a negative by a positive is negative",
+                "multiplying a negative by a positive is negative",
                 "adding the negative is the same as subtraction",
                 "adding the negative is the same as subtraction",
             ]);
@@ -401,13 +425,20 @@ describe("simplify", () => {
             expect(print(step.substeps[0].substeps[0].after)).toEqual(
                 "-1(x + 1)",
             );
-            // TODO: figure out how we can show the entire expression at each of these substeps
-            expect(print(step.substeps[0].substeps[1].before)).toEqual("-1x");
-            expect(print(step.substeps[0].substeps[1].after)).toEqual("-x");
-            expect(print(step.substeps[0].substeps[2].before)).toEqual(
-                "(1)(1)",
+            expect(print(step.substeps[0].substeps[1].before)).toEqual(
+                "-1(x + 1)",
             );
-            expect(print(step.substeps[0].substeps[2].after)).toEqual("1");
+            expect(print(step.substeps[0].substeps[1].after)).toEqual(
+                "-1x + (-1)(1)",
+            );
+            expect(print(step.substeps[0].substeps[2].before)).toEqual("-1x");
+            expect(print(step.substeps[0].substeps[2].after)).toEqual("-x");
+
+            const first = applyStep(ast, step.substeps[0].substeps[0]);
+            const second = applyStep(first, step.substeps[0].substeps[1]);
+            expect(print(first)).toEqual("3 + -1(x + 1)");
+            expect(print(second)).toEqual("3 + -1x + (-1)(1)");
+            // ... and so on.
         });
 
         test("3(x + 2(x - 1)) -> 3(3x - 2) -> 9x - 6", () => {
@@ -425,8 +456,9 @@ describe("simplify", () => {
                 step.substeps[2].substeps.map((substep) => substep.message),
             ).toEqual([
                 "subtraction is the same as adding the negative",
-                "evaluate multiplication", // 3 * 2x
-                "evaluate multiplication", // 3 * -2
+                "multiply each term",
+                "multiply monomials",
+                "multiplying a negative by a positive is negative",
                 "adding the negative is the same as subtraction",
             ]);
             expect(print(step.after)).toEqual("9x - 6");
@@ -459,6 +491,8 @@ describe("simplify", () => {
                 step.substeps[0].substeps.map((substep) => substep.message),
             ).toEqual([
                 "subtraction is the same as adding the negative",
+                "multiply each term",
+                "multiplying a negative by a positive is negative",
                 "multiplying two negatives is a positive",
             ]);
         });
@@ -531,7 +565,7 @@ describe("simplify", () => {
 
             expect(
                 step.substeps[0].substeps.map((substep) => substep.message),
-            ).toEqual(["multiplication by 1 is a no-op"]);
+            ).toEqual(["multiply each term", "multiply monomials"]);
         });
 
         test("x(x - 1) -> x^2 - x", () => {
@@ -550,20 +584,14 @@ describe("simplify", () => {
                 step.substeps[0].substeps.map((substep) => substep.message),
             ).toEqual([
                 "subtraction is the same as adding the negative",
-                "multiplication by -1 is the same as being negative",
+                "multiply each term",
+                "multiplying a negative by a positive is negative",
                 "adding the negative is the same as subtraction",
             ]);
         });
 
         test("(x + 1)(x + 3) -> x^2 + 4x + 3", () => {
             const ast = parse("(x + 1)(x + 3)");
-
-            // Ideally I'd like to show the steps as:
-            // - (x + 1)(x + 3)
-            // - (x + 1)(x) + (x + 1)(3)
-            // - (x)(x) + (1)(x) + (x)(3) + (1)(3) ... this currently missing
-            // - x^2 + x + 3x + 3
-            // - x^2 + 4x + 3
 
             const step = simplify(ast);
 
@@ -576,6 +604,15 @@ describe("simplify", () => {
                 "repeated multiplication can be written as a power",
             ]);
             expect(print(step.after)).toEqual("x^2 + 4x + 3");
+
+            const first = applyStep(ast, step.substeps[0]);
+            expect(print(first)).toEqual("(x + 1)x + 3(x + 1)"); // is the 3 at the front?
+            const second = applyStep(first, step.substeps[1]);
+            expect(print(second)).toEqual("xx + x + 3(x + 1)");
+            const third = applyStep(second, step.substeps[2]);
+            expect(print(third)).toEqual("xx + x + 3x + 3");
+            const fourth = applyStep(third, step.substeps[3]);
+            expect(print(fourth)).toEqual("x^2 + 4x + 3");
         });
 
         test.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
