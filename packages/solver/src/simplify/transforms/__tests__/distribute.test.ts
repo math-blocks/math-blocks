@@ -6,9 +6,9 @@ import {applyStep} from "../../../apply-step";
 import {distribute as _distribute} from "../distribute";
 import {Step} from "../../types";
 
-import {toHaveSubstepsLike} from "../../../test-util";
+import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";
 
-expect.extend({toHaveSubstepsLike});
+expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
 // TODO: recursively handle steps with sub-steps
 const applySteps = (node: types.Node, steps: Step[]): types.Node => {
@@ -94,6 +94,16 @@ describe("distribution", () => {
             ["(x)(3)", "3x"],
             ["(1)(3)", "3"],
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "(x + 1)(3)",
+                "(x)(3) + (1)(3)",
+                "3x + (1)(3)",
+                "3x + 3",
+            ],
+        });
     });
 
     test("(x - 1)(3) -> 3x - 3", () => {
@@ -119,6 +129,18 @@ describe("distribution", () => {
             ["(-1)(3)", "-3"],
             ["-3", "-3"], // add inverse -> subtraction
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "(x - 1)(3)",
+                "(x + -1)(3)",
+                "(x)(3) + (-1)(3)",
+                "3x + (-1)(3)",
+                "3x + -3",
+                "3x - 3",
+            ],
+        });
     });
 
     test("3(x + 1) + 4 -> 3x + 3 + 4", () => {
@@ -140,10 +162,10 @@ describe("distribution", () => {
             ["(3)(1)", "3"],
         ]);
 
-        const first = applyStep(ast, step.substeps[0]);
-        expect(print(first)).toEqual("3x + (3)(1) + 4");
-        const second = applyStep(first, step.substeps[1]);
-        expect(print(second)).toEqual("3x + 3 + 4");
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: ["3(x + 1) + 4", "3x + (3)(1) + 4", "3x + 3 + 4"],
+        });
     });
 
     test("3(x + y + z) -> 3x + 3y + 3z", () => {
@@ -186,6 +208,22 @@ describe("distribution", () => {
             // to do this automatically if possible.
             ["(-2)(-3)", "6"],
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "-2(x - 3)",
+                "-2(x + -3)",
+                "-2x + (-2)(-3)",
+                "-2x + (-2)(-3)", // we're printing both (-2)(x) and -(2x) as the same thing here
+                // If the printed values are the same we should elide the step
+                // This means we set `after` to be (-2)(x) with -(2x) without reporting a substep
+                // It's bit a more complicatated than that becuase we want the `-2x` that appears
+                // in the previous step's `after` to be replaced.  We really need to find a way
+                // to do this automatically if possible.
+                "-2x + 6",
+            ],
+        });
     });
 
     test("3 - (x + 1) -> -x + 2", () => {
@@ -214,6 +252,19 @@ describe("distribution", () => {
             ["-x", "-x"], // add inverse -> subtraction
             ["-1", "-1"], // add inverse -> subtraction
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "3 - (x + 1)",
+                "3 + -1(x + 1)",
+                "3 + -1x + (-1)(1)",
+                "3 + -x + (-1)(1)",
+                "3 + -x + -1",
+                "3 - x + -1",
+                "3 - x - 1",
+            ],
+        });
     });
 
     test("(ab)(xy - yz)", () => {
@@ -240,6 +291,18 @@ describe("distribution", () => {
             ["(ab)(-yz)", "-abyz"],
             ["-abyz", "-abyz"], // add inverse -> subtraction
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "(ab)(xy - yz)",
+                "(ab)(xy + -yz)",
+                "(ab)(xy) + (ab)(-yz)",
+                "abxy + (ab)(-yz)",
+                "abxy + -abyz",
+                "abxy - abyz",
+            ],
+        });
     });
 
     test("(-ab)(xy - yz)", () => {
@@ -260,7 +323,7 @@ describe("distribution", () => {
     });
 
     // `distribute` only performs one distribution at a time
-    test("3(x + 1) + 4(x - 1) -> 7x - 1", () => {
+    test("3(x + 1) + 4(x - 1) -> 3x + 3 + 4(x - 1)", () => {
         const ast = parse("3(x + 1) + 4(x - 1)");
 
         const step = distribute(ast);
@@ -275,9 +338,18 @@ describe("distribution", () => {
             "multiply each term",
             "multiply monomials",
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "3(x + 1) + 4(x - 1)",
+                "3x + (3)(1) + 4(x - 1)",
+                "3x + 3 + 4(x - 1)",
+            ],
+        });
     });
 
-    test("x(x + 1) -> x^2 + x", () => {
+    test("x(x + 1) -> xx + x", () => {
         const ast = parse("x(x + 1)");
 
         const step = distribute(ast);
@@ -290,9 +362,14 @@ describe("distribution", () => {
             "multiply each term",
             "multiply monomials",
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: ["x(x + 1)", "xx + (x)(1)", "xx + x"],
+        });
     });
 
-    test("x(x - 1) -> x^2 - x", () => {
+    test("x(x - 1) -> xx - x", () => {
         const ast = parse("x(x - 1)");
 
         const step = distribute(ast);
@@ -314,5 +391,16 @@ describe("distribution", () => {
             ["(x)(-1)", "-x"],
             ["-x", "-x"], // add inverse -> subtraction
         ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "x(x - 1)",
+                "x(x + -1)",
+                "xx + (x)(-1)",
+                "xx + -x",
+                "xx - x",
+            ],
+        });
     });
 });

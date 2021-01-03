@@ -4,5 +4,9 @@ declare namespace jest {
         toHaveSubstepsLike(
             expected: [string, string][],
         ): {message: () => string; pass: boolean};
+        toHaveFullStepsLike(expected: {
+            steps: Step[];
+            expressions: string[];
+        }): {message: () => string; pass: boolean};
     }
 }
