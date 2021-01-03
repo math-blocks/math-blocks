@@ -161,6 +161,7 @@ describe("collect like terms", () => {
 
         expect(step.message).toEqual("collect like terms");
         expect(print(step.after)).toEqual("a - x");
+        expect(print(applySteps(ast, step.substeps))).toEqual("a - x");
     });
 
     // Shows that we convert additive inverse to subtraction where possible
@@ -171,6 +172,7 @@ describe("collect like terms", () => {
 
         expect(step.message).toEqual("collect like terms");
         expect(print(step.after)).toEqual("a - 3x");
+        expect(print(applySteps(ast, step.substeps))).toEqual("a - 3x");
     });
 
     test("2x - -3x -> 5x", () => {
@@ -211,15 +213,6 @@ describe("collect like terms", () => {
         });
     });
 
-    // This test case makes use of all sub-steps
-    // TODO - add the following test cases:
-    // - no subtraction
-    // - subtraction on passthrough terms only
-    // - already adjacent terms (no reorder necessary)
-    // - multiple variables
-    // - terms that have multiple factors
-    // In particular we want to make sure that we're not include steps when they
-    // aren't necessary.
     test("5x + 1 - 3x - 7 -> 2x - 6", () => {
         const ast = parse("5x + 1 - 3x - 7");
 
@@ -257,6 +250,7 @@ describe("collect like terms", () => {
 
         expect(step.message).toEqual("collect like terms");
         expect(print(step.after)).toEqual("x - 1");
+        expect(print(applySteps(ast, step.substeps))).toEqual("x - 1");
     });
 
     test("4x - 3x - 1 -> 7x - 1", () => {
@@ -266,135 +260,193 @@ describe("collect like terms", () => {
 
         expect(step.message).toEqual("collect like terms");
         expect(print(step.after)).toEqual("x - 1");
+        expect(print(applySteps(ast, step.substeps))).toEqual("x - 1");
     });
 
-    test("(1/2)x + (1/3)x -> (5/6)x", () => {
-        const ast = parse("(1/2)x + (1/3)x");
+    describe("fractions", () => {
+        test("(1/2)x + (1/3)x -> (5/6)x", () => {
+            const ast = parse("(1/2)x + (1/3)x");
 
-        const step = collectLikeTerms(ast);
+            const step = collectLikeTerms(ast);
 
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("(5 / 6)(x)");
-        expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 6)(x)");
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(5 / 6)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 6)(x)");
 
-        expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "factor variable part of like terms", // substeps
-            "compute new coefficients", // substeps
-        ]);
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "factor variable part of like terms", // substeps
+                "compute new coefficients", // substeps
+            ]);
 
-        expect(ast).toHaveFullStepsLike({
-            steps: step.substeps,
-            expressions: [
-                "(1 / 2)(x) + (1 / 3)(x)",
-                "(1 / 2 + 1 / 3)x", // The printer could be a bit more consistent with the parens
-                "(5 / 6)(x)",
-            ],
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "(1 / 2)(x) + (1 / 3)(x)",
+                    "(1 / 2 + 1 / 3)x", // The printer could be a bit more consistent with the parens
+                    "(5 / 6)(x)",
+                ],
+            });
+        });
+
+        test("x/2 + x/3 -> (5/6)x", () => {
+            const ast = parse("x/2 + x/3");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(5 / 6)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 6)(x)");
+
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "factor variable part of like terms", // substeps
+                "compute new coefficients", // substeps
+            ]);
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "x / 2 + x / 3", // TODO: add a step to convert x / 2 -> (1 / 2)(x)
+                    "(1 / 2 + 1 / 3)x", // The printer could be a bit more consistent with the parens
+                    "(5 / 6)(x)",
+                ],
+            });
+        });
+
+        test("2x/7 + 3x/7 -> (5/7)x", () => {
+            const ast = parse("2x/7 + 3x/7");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(5 / 7)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 7)(x)");
+
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "factor variable part of like terms", // substeps
+                "compute new coefficients", // substeps
+            ]);
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "2x / 7 + 3x / 7", // TODO: add a step to convert x / 2 -> (1 / 2)(x)
+                    "(2 / 7 + 3 / 7)x", // The printer could be a bit more consistent with the parens
+                    "(5 / 7)(x)",
+                ],
+            });
+        });
+
+        test("x/2 - x/3 -> x / 6", () => {
+            const ast = parse("x/2 - x/3");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(1 / 6)(x)");
+        });
+
+        test("x/2 + x/-3 -> x", () => {
+            const ast = parse("x/2 + x/-3");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(1 / 6)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual("(1 / 6)(x)");
+        });
+
+        test("x/-2 + x/3 -> x", () => {
+            const ast = parse("x/-2 + x/3");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("-(1 / 6)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual(
+                "-(1 / 6)(x)",
+            );
+        });
+
+        test("x/2 + x/3 -> x", () => {
+            const ast = parse("x/2 + x/3");
+
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("(5 / 6)(x)");
+            expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 6)(x)");
         });
     });
 
-    test("x/2 + x/3 -> (5/6)x", () => {
-        const ast = parse("x/2 + x/3");
+    describe("terms with multiple variables", () => {
+        test("2xy + 3xy -> 5xy", () => {
+            const ast = parse("2xy + 3xy");
 
-        const step = collectLikeTerms(ast);
+            const step = collectLikeTerms(ast);
 
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("(5 / 6)(x)");
-        expect(print(applySteps(ast, step.substeps))).toEqual("(5 / 6)(x)");
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("5xy");
+            expect(print(applySteps(ast, step.substeps))).toEqual("5xy");
+        });
 
-        expect(step.substeps.map((substep) => substep.message)).toEqual([
-            "factor variable part of like terms", // substeps
-            "compute new coefficients", // substeps
-        ]);
+        test("2ab + 3xy + 4ab - xy -> 6ab + 2xy", () => {
+            const ast = parse("2ab + 3xy + 4ab - xy");
 
-        expect(ast).toHaveFullStepsLike({
-            steps: step.substeps,
-            expressions: [
-                "x / 2 + x / 3", // TODO: add a step to convert x / 2 -> (1 / 2)(x)
-                "(1 / 2 + 1 / 3)x", // The printer could be a bit more consistent with the parens
-                "(5 / 6)(x)",
-            ],
+            const step = collectLikeTerms(ast);
+
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("6ab + 2xy");
+            expect(print(applySteps(ast, step.substeps))).toEqual("6ab + 2xy");
+
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "subtraction is the same as adding the inverse",
+                "reorder terms so that like terms are beside each other",
+                "factor variable part of like terms", // substeps
+                "compute new coefficients", // substeps
+                "simplify terms",
+            ]);
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "2ab + 3xy + 4ab - xy",
+                    "2ab + 3xy + 4ab + -xy",
+                    "2ab + 4ab + 3xy + -xy",
+                    "(2 + 4)(ab) + (3 + -1)(xy)",
+                    "6(ab) + 2(xy)", // we should probably elide this step
+                    "6ab + 2xy",
+                ],
+            });
         });
     });
 
-    test("x/2 - x/3 -> x / 6", () => {
-        const ast = parse("x/2 - x/3");
+    describe("simplifying terms", () => {
+        test("x + 1 + 4 -> x + 5", () => {
+            const ast = parse("x + 1 + 4");
 
-        const step = collectLikeTerms(ast);
+            const step = collectLikeTerms(ast);
 
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("(1 / 6)(x)");
-    });
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("x + 5");
+        });
 
-    test("x/2 + x/-3 -> x", () => {
-        const ast = parse("x/2 + x/-3");
+        test("3 - 1x - 1 -> -x + 2", () => {
+            const ast = parse("3 - 1x - 1");
 
-        const step = collectLikeTerms(ast);
+            const step = collectLikeTerms(ast);
 
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("(1 / 6)(x)");
-    });
+            expect(step.message).toEqual("collect like terms");
+            // TODO: have the output use -x instead of -1x
+            expect(print(step.after)).toEqual("2 - x");
+        });
 
-    test("x/-2 + x/3 -> x", () => {
-        const ast = parse("x/-2 + x/3");
+        test("3 - x - 1 -> -x + 2", () => {
+            const ast = parse("3 - x - 1");
 
-        const step = collectLikeTerms(ast);
+            const step = collectLikeTerms(ast);
 
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("-(1 / 6)(x)");
-    });
-
-    test("2xy + 3xy -> 5xy", () => {
-        const ast = parse("2xy + 3xy");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("5xy");
-    });
-
-    test("x/2 + x/3 -> x", () => {
-        const ast = parse("x/2 + x/3");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("(5 / 6)(x)");
-    });
-
-    test("x + 1 + 4 -> x + 5", () => {
-        const ast = parse("x + 1 + 4");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("x + 5");
-    });
-
-    test("3 - 1x - 1 -> -x + 2", () => {
-        const ast = parse("3 - 1x - 1");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        // TODO: have the output use -x instead of -1x
-        expect(print(step.after)).toEqual("2 - x");
-    });
-
-    test("3 - x - 1 -> -x + 2", () => {
-        const ast = parse("3 - x - 1");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("2 - x");
-    });
-
-    test.skip("(1 + 2)(x + 1) -> no path", () => {
-        const ast = parse("(1 + 2)(x + 1)");
-
-        const step = collectLikeTerms(ast);
-
-        expect(step.message).toEqual("collect like terms");
-        expect(print(step.after)).toEqual("2 - x");
+            expect(step.message).toEqual("collect like terms");
+            expect(print(step.after)).toEqual("2 - x");
+        });
     });
 });
