@@ -1,7 +1,7 @@
 import {builders, types, util} from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
-import {mul} from "../util";
+import {simplifyMul} from "../util";
 
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
@@ -61,23 +61,95 @@ const negToSub = (
 
 // a(b + c) -> ab + bc
 const distMul = (
-    node: types.Mul,
+    node: Readonly<types.Mul>,
     substeps: Step[],
 ): types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
         if (node.args[1].type === "add") {
             const add = node.args[1];
-            const terms = add.args.map((term) => subToNeg(term, substeps));
-            return terms.map((term) => {
-                const newTerm = mul(node.args[0], term, substeps);
+
+            // Convert subtraction to negative within the `add` node
+            let changed = false;
+            const terms = add.args.map((term) => {
+                const result = subToNeg(term, substeps);
+                // This works because subToNeg returns the original node if
+                // nothing changes.
+                if (result !== term) {
+                    changed = true;
+                }
+                return result;
+            });
+
+            // If we changed subtractions to negatives, create a new mul node
+            // expressing that change
+            const before = changed
+                ? builders.mul([node.args[0], builders.add(terms)], true)
+                : node;
+
+            // HACK: In order for us to be able to apply the step, we need to
+            // ensure that before.id is the same as node.id.  We create a new
+            // `before` node instead of modifying the incoming `node` directly
+            // to avoid hard to debut issues.
+            before.id = node.id;
+
+            // Finally, multiply each term in `before`
+            const newNode = builders.add(
+                terms.map((term) => builders.mul([node.args[0], term], true)),
+            ) as types.Add;
+
+            substeps.push({
+                message: "multiply each term",
+                before,
+                after: newNode,
+                substeps: [],
+            });
+
+            return newNode.args.map((term) => {
+                const newTerm = simplifyMul(term as types.Mul, substeps);
                 return newTerm;
             });
         } else if (node.args[0].type === "add") {
             const add = node.args[0];
-            const terms = add.args.map((term) => subToNeg(term, substeps));
-            return terms.map((term) => {
-                const newTerm = mul(term, node.args[1], substeps);
+
+            // Convert subtraction to negative within the `add` node
+            let changed = false;
+            const terms = add.args.map((term) => {
+                const result = subToNeg(term, substeps);
+                // This works because subToNeg returns the original node if
+                // nothing changes.
+                if (result !== term) {
+                    changed = true;
+                }
+                return result;
+            });
+
+            // If we changed subtractions to negatives, create a new mul node
+            // expressing that change
+            const before = changed
+                ? builders.mul([builders.add(terms), node.args[1]], true)
+                : node;
+
+            // HACK: In order for us to be able to apply the step, we need to
+            // ensure that before.id is the same as node.id.  We create a new
+            // `before` node instead of modifying the incoming `node` directly
+            // to avoid hard to debut issues.
+            before.id = node.id;
+
+            // Finally, multiply each term in `before`
+            const newNode = builders.add(
+                terms.map((term) => builders.mul([term, node.args[1]], true)),
+            ) as types.Add;
+
+            substeps.push({
+                message: "multiply each term",
+                before,
+                after: newNode,
+                substeps: [],
+            });
+
+            return newNode.args.map((term) => {
+                const newTerm = simplifyMul(term as types.Mul, substeps);
                 return newTerm;
             });
         }

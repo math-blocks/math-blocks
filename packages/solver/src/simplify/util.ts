@@ -23,94 +23,87 @@ export const isNegative = (node: types.NumericNode): boolean => {
     return false;
 };
 
-export const mul = (
-    a: types.NumericNode,
-    b: types.NumericNode,
-    substeps?: Step[], // NOTE: this array is modified
+export const simplifyMul = (
+    node: types.Mul, // restrict this to 2 factors
+    steps?: Step[],
 ): types.NumericNode => {
-    const aFactors: readonly types.NumericNode[] =
+    const [a, b] = node.args;
+
+    // if a and b are monomials
+    const aFactors =
         a.type === "neg" ? util.getFactors(a.arg) : util.getFactors(a);
-    const bFactors: readonly types.NumericNode[] =
+    const bFactors =
         b.type === "neg" ? util.getFactors(b.arg) : util.getFactors(b);
 
-    // It's okay to reuse this since we're only using it for comparison
-    const one: types.Num = {
-        id: -1,
-        type: "number",
-        value: "1",
-    };
-
-    const isResultNegative = isNegative(a) !== isNegative(b);
-
-    const numberFactors = [
-        ...aFactors.filter(util.isNumber),
-        ...bFactors.filter(util.isNumber),
-    ];
-
-    const nonNumberFactors = [
-        ...aFactors.filter((f) => !util.isNumber(f)),
-        ...bFactors.filter((f) => !util.isNumber(f)),
-    ];
-
-    let coeff: types.NumericNode[];
-    if (numberFactors.length === 0) {
-        coeff = []; // avoid introducing a coefficient if we don't need to
-    } else if (numberFactors.length === 1) {
-        coeff = numberFactors;
-    } else {
-        // Multiply all number factors together to determine the new coefficient
-        const before = builders.mul(numberFactors, true);
-        const after = builders.number(util.evalNode(before).toString());
-        substeps?.push({
-            message: "evaluate multiplication",
-            before,
-            after,
-            substeps: [],
-        });
-        coeff = [after];
-    }
+    const resultIsNeg = (a.type === "neg") !== (b.type === "neg");
 
     let after: types.NumericNode;
 
-    if (isResultNegative) {
-        const before = builders.neg(
-            builders.mul([...coeff, ...nonNumberFactors], true),
+    if (util.isNumber(aFactors[0]) && util.isNumber(bFactors[0])) {
+        const aCoeff = aFactors[0];
+        const bCoeff = bFactors[0];
+        // TODO: make the number builder handle fractions or evalNode to everything
+        // for us.
+        const coeff = builders.number(
+            util.evalNode(builders.mul([aCoeff, bCoeff])).toString(),
         );
-        if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = builders.neg(builders.mul(nonNumberFactors, true));
-            substeps?.push({
-                message: "multiplication by -1 is the same as being negative",
-                before,
-                after,
-                substeps: [],
-            });
-        } else {
-            after = before;
-        }
+        const product = builders.mul(
+            [coeff, ...aFactors.slice(1), ...bFactors.slice(1)],
+            true,
+        );
+        after = resultIsNeg ? builders.neg(product) : product;
+    } else if (util.isNumber(aFactors[0])) {
+        const coeff = aFactors[0];
+        const product = builders.mul(
+            [coeff, ...aFactors.slice(1), ...bFactors],
+            true,
+        );
+        after = resultIsNeg ? builders.neg(product) : product;
+    } else if (util.isNumber(bFactors[0])) {
+        const coeff = bFactors[0];
+        const product = builders.mul(
+            [coeff, ...aFactors, ...bFactors.slice(1)],
+            true,
+        );
+        after = resultIsNeg ? builders.neg(product) : product;
     } else {
-        const before = builders.mul([...coeff, ...nonNumberFactors], true);
-        if (util.deepEquals(coeff[0], one) && nonNumberFactors.length > 0) {
-            after = builders.mul(nonNumberFactors, true);
-            substeps?.push({
-                message: "multiplication by 1 is a no-op",
-                before,
-                after,
-                substeps: [],
-            });
-        } else {
-            after = before;
+        const product = builders.mul([...aFactors, ...bFactors], true);
+        after = resultIsNeg ? builders.neg(product) : product;
+    }
+
+    const factors =
+        after.type === "neg"
+            ? util.getFactors(after.arg)
+            : util.getFactors(after);
+
+    if (util.isNumber(factors[0])) {
+        const coeff = factors[0];
+        if (util.deepEquals(coeff, builders.number("1"))) {
+            const product = builders.mul(factors.slice(1), true);
+            after = resultIsNeg ? builders.neg(product) : product;
         }
     }
 
-    if (isNegative(a) && isNegative(b)) {
-        const before = builders.mul(numberFactors, true);
-        substeps?.push({
-            message: "multiplying two negatives is a positive",
-            before,
-            after,
-            substeps: [],
-        });
+    // Don't include steps that don't change anything
+    if (util.deepEquals(node, after)) {
+        return node;
     }
+
+    let message: string;
+    if (a.type === "neg" && b.type === "neg") {
+        message = "multiplying two negatives is a positive";
+    } else if (resultIsNeg) {
+        message = "multiplying a negative by a positive is negative";
+    } else {
+        message = "multiply monomials";
+    }
+
+    steps?.push({
+        message,
+        before: node,
+        after,
+        substeps: [],
+    });
 
     return after;
 };

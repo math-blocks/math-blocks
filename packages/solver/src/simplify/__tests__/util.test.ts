@@ -1,7 +1,7 @@
-import {types} from "@math-blocks/semantic";
+import {builders, types} from "@math-blocks/semantic";
 import {parse as _parse, print} from "@math-blocks/testing";
 
-import {mul, isNegative} from "../util";
+import {simplifyMul, isNegative} from "../util";
 
 const parse = (str: string): types.NumericNode =>
     _parse(str) as types.NumericNode;
@@ -51,7 +51,9 @@ describe("mul", () => {
         ${"-ab"} | ${"-xy"} | ${"abxy"}
         ${"ab"}  | ${"-xy"} | ${"-abxy"}
     `("($a)($b) = $prod", ({a, b, prod}) => {
-        const result = mul(parse(a), parse(b));
+        const result = simplifyMul(
+            builders.mul([parse(a), parse(b)]) as types.Mul,
+        );
 
         expect(print(result)).toEqual(prod);
     });
