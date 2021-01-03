@@ -7,4 +7,9 @@ module.exports = {
         "^@math-blocks/(.*)$": "<rootDir>/packages/$1/src/index.ts",
     },
     collectCoverageFrom: ["src/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
+    coveragePathIgnorePatterns: [
+        "/node_modules/",
+        "packages/grader/src/test-util.ts",
+        "packages/solver/src/test-util.ts",
+    ],
 };

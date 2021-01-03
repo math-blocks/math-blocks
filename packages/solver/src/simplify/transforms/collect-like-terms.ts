@@ -1,7 +1,10 @@
 import {builders, types, util} from "@math-blocks/semantic";
+import {print} from "@math-blocks/testing";
 
 import {Step, Transform} from "../types";
 import {simplifyMul} from "../util";
+
+import {getCoeff} from "../../solve/util";
 
 export const getFactors = (
     node: types.NumericNode,
@@ -13,186 +16,262 @@ export const getFactors = (
     }
 };
 
-// TODO: dedupe with polynomial-checks.ts in grader
-export const collectLikeTerms: Transform = (node) => {
-    if (node.type !== "add") {
-        return;
+const fancyGetFactors = (
+    arg: types.NumericNode,
+): readonly types.NumericNode[] => {
+    let factors: readonly types.NumericNode[];
+
+    // TODO: move this logic into `getFactors`.
+    if (arg.type === "div" && util.isNumber(arg.args[1])) {
+        const [num, den] = arg.args;
+        factors = [
+            ...getFactors(num),
+            // convert division in to mul-by-reciprocal
+            // TODO: make this a substep
+            builders.div(builders.number("1"), den),
+        ];
+    } else if (arg.type === "neg") {
+        if (arg.arg.type === "div" && util.isNumber(arg.arg.args[1])) {
+            const [num, den] = arg.arg.args;
+            factors = [
+                ...getFactors(num),
+                // convert division in to mul-by-reciprocal
+                // TODO: make this a substep
+                builders.div(builders.number("1"), den),
+            ];
+        } else {
+            factors = getFactors(arg.arg);
+        }
+    } else {
+        factors = getFactors(arg);
     }
 
-    // Map from variable part to an array of coefficients.
-    const map = new Map<
-        types.NumericNode,
-        {
-            coeff: types.NumericNode;
-            term: types.NumericNode;
-        }[]
-    >();
+    return factors;
+};
 
-    const newTerms: types.NumericNode[] = [];
-    const numberTerms: types.NumericNode[] = [];
+const evalNode = (node: types.NumericNode): types.NumericNode => {
+    const value = util.evalNode(node);
 
-    const beforeSteps: Step[] = [];
+    const newValue =
+        value.d === 1
+            ? builders.number(value.n.toString())
+            : builders.div(
+                  builders.number(value.n.toString()),
+                  builders.number(value.d.toString()),
+              );
 
-    for (const arg of node.args) {
-        if (util.isNumber(arg)) {
-            numberTerms.push(arg);
+    return value.s === -1 ? builders.neg(newValue) : newValue;
+};
+
+const groupTerms = (
+    terms: readonly types.NumericNode[],
+): Map<types.NumericNode | null, types.NumericNode[]> => {
+    const map = new Map<types.NumericNode | null, types.NumericNode[]>();
+
+    for (const term of terms) {
+        if (util.isNumber(term)) {
+            const key = null;
+            if (!map.has(key)) {
+                map.set(null, [term]);
+            } else {
+                map.get(key)?.push(term);
+            }
             continue;
         }
 
-        let coeff: types.NumericNode;
-        let varPart: types.NumericNode;
+        const factors = fancyGetFactors(term);
 
-        let factors: readonly types.NumericNode[];
-
-        // TODO: move this logic into `getFactors`.
-        if (arg.type === "div" && util.isNumber(arg.args[1])) {
-            const [num, den] = arg.args;
-            factors = [
-                ...getFactors(num),
-                builders.div(builders.number("1"), den),
-            ];
-        } else if (util.isSubtraction(arg)) {
-            if (arg.arg.type === "div" && util.isNumber(arg.arg.args[1])) {
-                const [num, den] = arg.arg.args;
-                factors = [
-                    ...getFactors(num),
-                    builders.div(builders.number("1"), den),
-                ];
-            } else {
-                factors = getFactors(arg.arg);
-            }
-        } else {
-            factors = getFactors(arg);
-        }
-
-        // TODO: maybe restrict ourselves to nodes of type "number" or "neg"?
-        const numericFactors = factors.filter(util.isNumber);
         const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
+        const varPart = builders.mul(nonNumericFactors, true);
 
-        if (numericFactors.length > 0) {
-            // If there's a single number factor then it's the coefficient
-            if (numericFactors.length === 1) {
-                // We don't have to worry about evaluating this since it should
-                // be pre-evaluated by evalMul or one of the other transforms
-                coeff = numericFactors[0];
-            } else {
-                // If there a multiple factors that are numbers, multiply them
-                // together and evaluate them.
-                const mul = builders.mul(numericFactors);
-                coeff = builders.number(util.evalNode(mul).toString());
-                beforeSteps.push({
-                    message: "evaluate multiplication",
-                    before: mul,
-                    after: coeff,
-                    substeps: [],
-                });
-            }
-            varPart = builders.mul(nonNumericFactors, true);
-        } else {
-            if (arg.type === "neg") {
-                coeff = builders.neg(builders.number("1"));
-                varPart = arg.arg;
-            } else {
-                coeff = builders.number("1");
-                varPart = arg;
-            }
-        }
-
-        if (util.isSubtraction(arg)) {
-            coeff = builders.neg(coeff, true);
-        }
-
-        let key: types.NumericNode | undefined;
+        let key: types.NumericNode | null = null;
         for (const k of map.keys()) {
-            // TODO: add an option to ignore mul.implicit
             if (util.deepEquals(k, varPart)) {
                 key = k;
             }
         }
         if (!key) {
-            map.set(varPart, [{coeff, term: arg}]);
+            map.set(varPart, [term]);
         } else {
-            map.get(key)?.push({coeff, term: arg});
+            map.get(key)?.push(term);
         }
     }
 
-    for (const [k, v] of map.entries()) {
-        if (v.length > 1) {
-            // Collect common terms
-            // TODO: make this evaluation be a sub-step
-            const sum = builders.add(v.map(({coeff}) => coeff));
-            const evaledSum = util.evalNode(sum);
+    return map;
+};
 
-            let newCoeff =
-                evaledSum.d === 1
-                    ? builders.number(evaledSum.n.toString())
-                    : builders.div(
-                          builders.number(evaledSum.n.toString()),
-                          builders.number(evaledSum.d.toString()),
-                      );
+export const collectLikeTerms: Transform = (node): Step | undefined => {
+    if (node.type !== "add") {
+        return;
+    }
 
-            if (evaledSum.s === -1) {
-                newCoeff = builders.neg(newCoeff);
+    node; // ?
+
+    const substeps: Step[] = [];
+    let changed = false;
+
+    // step 0: convert subtraction to adding the inverse
+    let newSum = builders.add(
+        node.args.map((term) => {
+            if (util.isSubtraction(term)) {
+                changed = true;
+                return builders.neg(term.arg, false);
             }
+            return term;
+        }),
+    ) as types.Add;
 
-            // simplifyMul handles situations where k has more than one factor
-            const product = simplifyMul(
-                builders.mul([newCoeff, k], true) as types.Mul,
-            );
-
-            newTerms.push(product);
-        } else {
-            // Pass through unique terms
-            newTerms.push(v[0].term);
-        }
+    if (changed) {
+        substeps.push({
+            message: "subtraction is the same as adding the inverse",
+            before: node,
+            after: newSum,
+            substeps: [],
+        });
+    } else {
+        newSum = node;
     }
 
-    const numbers =
-        numberTerms.length > 0
-            ? [
-                  builders.number(
-                      // TODO: handle adding fractions better, since the result
-                      // may itself be a fraction
-                      util.evalNode(builders.add(numberTerms)).toString(),
-                  ),
-              ]
-            : [];
-
-    // If no terms have be collected together then return early.
-    if (
-        newTerms.length === 0 ||
-        newTerms.length + numbers.length === node.args.length
-    ) {
+    // step 1: group like terms
+    const groups = groupTerms(newSum.args);
+    const keys = [...groups.keys()];
+    // If all the terms are numbers then don't do anything, let evaluate addition handle that
+    if (keys.length === 1 && keys[0] === null) {
         return undefined;
     }
+    const orderedTerms: types.NumericNode[] = [];
+    changed = false;
+    for (const values of groups.values()) {
+        if (values.length > 1) {
+            changed = true;
+        }
+        orderedTerms.push(...values);
+    }
+    if (!changed) {
+        return undefined;
+    }
+    let orderedSum = builders.add(orderedTerms);
 
-    // Place numbers at the end which is a comment convention.
-    const after = builders.add(
-        [...newTerms, ...numbers].map((term, index) => {
-            if (term.type === "mul" && term.args[0].type === "neg") {
-                // TODO: make this a substep
-                // TODO: give this a new id
-                const newTerm = {
-                    ...term,
-                    args: ([
-                        term.args[0].arg,
-                        ...term.args.slice(1),
-                    ] as unknown) as TwoOrMore<types.NumericNode>,
-                };
-                return builders.neg(newTerm, index > 0);
-            } else if (term.type === "neg") {
-                // TODO: make this a substep if subtraction is changing
-                return builders.neg(term.arg, index > 0);
+    changed = print(newSum) !== print(orderedSum);
+
+    if (changed) {
+        substeps.push({
+            message: "reorder terms so that like terms are beside each other",
+            before: newSum,
+            after: orderedSum,
+            substeps: [],
+        });
+    } else {
+        orderedSum = newSum;
+    }
+
+    // step 2: actually collect like terms
+    // TODO: track which terms have coefficients that need evaluating
+    const groupedTerms: types.NumericNode[] = [];
+    for (const [key, values] of groups.entries()) {
+        let newTerm: types.NumericNode;
+        if (key === null) {
+            newTerm = builders.add(values);
+        } else {
+            const coeffs = values.map(getCoeff);
+            const coeff = builders.add(coeffs);
+            newTerm = builders.mul([coeff, key], true);
+        }
+        groupedTerms.push(newTerm);
+    }
+    const groupedSum = builders.add(groupedTerms);
+
+    substeps.push({
+        message: "factor variable part of like terms",
+        before: orderedSum,
+        after: groupedSum,
+        substeps: [],
+    });
+
+    // step 3: evaluate the sums
+    const addedTerms: types.NumericNode[] = [];
+    for (const term of util.getTerms(groupedSum)) {
+        // What if there was a term that was initial a sum of numbers, we wouldn't?
+        // Ideally we'd deal with it first, but we should try to be defensive and
+        // make sure that we're only processing nodes created by the previous step.
+        // Passthrough nodes should be ignored.
+        if (term.type === "add") {
+            // number group
+            addedTerms.push(evalNode(term));
+        } else if (term.type === "mul" && term.args.length === 2) {
+            const [coeff, variable] = term.args;
+            const newCoeff = evalNode(coeff);
+            // use simplifyMul here to handle situations where variable has more
+            // than one factor
+            addedTerms.push(builders.mul([newCoeff, variable], true));
+        } else {
+            // passthrough
+            addedTerms.push(term);
+        }
+    }
+    const addedSum = builders.add(addedTerms);
+
+    substeps.push({
+        message: "compute new coefficients",
+        before: groupedSum,
+        after: addedSum,
+        substeps: [],
+    });
+
+    changed = false;
+    const simplifiedTerms: types.NumericNode[] = [];
+    for (const term of util.getTerms(addedSum)) {
+        if (term.type === "mul") {
+            // simplifyMul returns the same term if nothing changed
+            // TODO: collect sub-steps here
+            const newTerm = simplifyMul(term);
+            if (newTerm !== term) {
+                changed = true;
+                simplifiedTerms.push(newTerm);
             } else {
-                return term;
+                simplifiedTerms.push(term);
             }
+        } else {
+            simplifiedTerms.push(term);
+        }
+    }
+    const simplifiedSum = changed ? builders.add(simplifiedTerms) : addedSum;
+
+    if (changed) {
+        substeps.push({
+            message: "simplify terms",
+            before: addedSum,
+            after: simplifiedSum,
+            substeps: [],
+        });
+    }
+
+    // step 4: convert add inserve to subtract
+    changed = false;
+    let finalSum = builders.add(
+        util.getTerms(simplifiedSum).map((term, index) => {
+            if (term.type === "neg" && index > 0) {
+                changed = true;
+                return builders.neg(term.arg, true);
+            }
+            return term;
         }),
     );
+    if (changed) {
+        substeps.push({
+            message: "adding the inverse is the same as subtraction",
+            before: simplifiedSum,
+            after: finalSum,
+            substeps: [],
+        });
+    } else {
+        finalSum = simplifiedSum;
+    }
 
     return {
         message: "collect like terms",
         before: node,
-        after,
-        substeps: [],
+        after: finalSum,
+        substeps,
     };
 };

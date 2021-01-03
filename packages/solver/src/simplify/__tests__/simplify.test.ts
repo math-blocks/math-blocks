@@ -300,7 +300,7 @@ describe("simplify", () => {
                 "collect like terms",
             ]);
 
-            expect(print(step.after)).toEqual("-x + 2");
+            expect(print(step.after)).toEqual("2 - x");
         });
 
         test("1 - (2x + 3x) -> 1 - 5x", () => {
@@ -313,6 +313,19 @@ describe("simplify", () => {
                 "collect like terms",
             ]);
             expect(print(step.after)).toEqual("1 - 5x");
+        });
+
+        test("1 - (2x + 3x + 4y) -> 1 - 5x + 4y", () => {
+            const ast = parse("1 - (2x + 3x + 4y)");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "collect like terms",
+                "distribute",
+            ]);
+            expect(print(step.after)).toEqual("1 - 5x - 4y");
         });
     });
 
@@ -407,7 +420,7 @@ describe("simplify", () => {
                 "collect like terms",
             ]);
             expect(print(step.substeps[0].after)).toEqual("3 - x - 1");
-            expect(print(step.after)).toEqual("-x + 2");
+            expect(print(step.after)).toEqual("2 - x");
 
             expect(
                 step.substeps[0].substeps.map((substep) => substep.message),
