@@ -11,17 +11,32 @@ A set of tools, components, and libraries for building interactive math applicat
 
 ## Main Packages
 
-- [@math-blocks/editor](packages/editor/README.md)
-- [@math-blocks/grader](packages/grader/README.md)
-- [@math-blocks/react](packages/react/README.md)
-- [@math-blocks/solver](packages/solver/README.md)
+### [@math-blocks/editor](packages/editor/README.md)
+
+### [@math-blocks/grader](packages/grader/README.md)
+
+### [@math-blocks/react](packages/react/README.md)
+
+### [@math-blocks/solver](packages/solver/README.md)
+
+Is able to solve basic equations and simplify basic expressions using steps that
+are similar to what a human would do.  This can then be used by intelligent tutors
+to provide suggestions to users when they don't know what step to take next or
+provide a complete worked solution.
 
 ## Supporting Packages
 
-- [@math-blocks/core](package/core/README.md)
-- [@math-blocks/metrics](packages/metrics/README.md)
-- [@math-blocks/parser-factory](packages/parser-factory/README.md)
-- [@math-blocks/schema](packages/schema/README.md)
-- [@math-blocks/semantic](packages/semantic/README.md)
-- [@math-blocks/testing](packages/typesetter/README.md)
-- [@math-blocks/typesetter](packages/typesetter/README.md)
+### [@math-blocks/core](package/core/README.md)
+
+### [@math-blocks/metrics](packages/metrics/README.md)
+
+### [@math-blocks/parser-factory](packages/parser-factory/README.md)
+
+### [@math-blocks/schema](packages/schema/README.md)
+
+### [@math-blocks/semantic](packages/semantic/README.md)
+
+### [@math-blocks/testing](packages/typesetter/README.md)
+
+### [@math-blocks/typesetter](packages/typesetter/README.md)
+
