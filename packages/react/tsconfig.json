@@ -9,6 +9,7 @@
     {"path": "../editor"},
     {"path": "../editor-parser"},
     {"path": "../metrics"},
+    {"path": "../semantic"},
     {"path": "../typesetter"}
   ]
 }

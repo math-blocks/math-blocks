@@ -1,6 +1,6 @@
-import * as Editor from "@math-blocks/editor";
 import {getId} from "@math-blocks/core";
 
+import * as Editor from "../editor-ast";
 import {State} from "../row-reducer";
 import {HasChildren, selectionSplit, insertBeforeChildWithIndex} from "../util";
 import {SUB} from "../constants";

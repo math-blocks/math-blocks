@@ -1,4 +1,8 @@
 {
     "name": "@math-blocks/solver",
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "dependencies": {
+        "@math-blocks/semantic": "0.0.1",
+        "@math-blocks/testing": "0.0.1"
+    }
 }

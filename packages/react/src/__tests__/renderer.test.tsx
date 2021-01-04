@@ -9,7 +9,7 @@ import {typeset, Layout} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor";
 import fontMetrics from "@math-blocks/metrics";
 
-import {MathRenderer} from "@math-blocks/react";
+import MathRenderer from "../math-renderer";
 import {
     ColorizedFraction,
     Equation,

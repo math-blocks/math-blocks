@@ -5,9 +5,10 @@
     "rootDir": "."
   },
   "references": [
+    {"path": "../core"},
+    {"path": "../editor-parser"},
+    {"path": "../editor"},
     {"path": "../semantic"},
     {"path": "../testing"},
-    {"path": "../editor"},
-    {"path": "../editor-parser"},
   ]
 }
