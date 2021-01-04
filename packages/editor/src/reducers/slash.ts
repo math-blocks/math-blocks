@@ -1,5 +1,4 @@
-import * as Editor from "@math-blocks/editor";
-
+import * as Editor from "../editor-ast";
 import {State} from "../row-reducer";
 import {HasChildren, selectionSplit} from "../util";
 import {NUMERATOR, DENOMINATOR} from "../constants";

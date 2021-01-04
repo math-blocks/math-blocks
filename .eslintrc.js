@@ -1,6 +1,6 @@
 module.exports = {
     extends: ["typescript", "typescript/react", "plugin:import/typescript"],
-    plugins: ["flowtype", "import", "jest", "react"],
+    plugins: ["flowtype", "import", "jest", "workspaces", "react"],
     overrides: [
         {
             files: ["**/*.ts", "**/*.tsx"],
@@ -32,6 +32,9 @@ module.exports = {
         "react/jsx-uses-react": "error",
         "react/jsx-uses-vars": "error",
         "react/prop-types": "off",
+        "workspaces/no-absolute-imports": "error",
+        "workspaces/no-relative-imports": "error",
+        "workspaces/require-dependency": "error",
     },
     env: {
         jest: true,

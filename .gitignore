@@ -2,4 +2,6 @@ node_modules
 dist
 coverage
 out
+packages/*/out
+demo/out
 !dist/_redirects

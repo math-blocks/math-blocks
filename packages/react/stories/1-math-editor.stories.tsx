@@ -2,7 +2,8 @@ import React from "react";
 import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor";
-import {MathEditor} from "@math-blocks/react";
+
+import MathEditor from "../src/math-editor";
 
 const {row, glyph} = Editor;
 

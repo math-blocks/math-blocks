@@ -3,10 +3,10 @@ import * as React from "react";
 import * as Editor from "@math-blocks/editor";
 import {types} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/editor-parser";
-import {MathRenderer} from "@math-blocks/react";
 import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
-
 import fontMetrics from "@math-blocks/metrics";
+
+import MathRenderer from "../src/math-renderer";
 
 const {row, glyph, frac, limits, root} = Editor;
 

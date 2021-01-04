@@ -1,6 +1,5 @@
-import * as Editor from "@math-blocks/editor";
-
-import {State} from "../row-reducer";
+import * as Editor from "../editor-ast";
+import * as Util from "../util";
 import {
     prevIndex,
     hasChildren,
@@ -10,6 +9,7 @@ import {
     hasGrandchildren,
     isGlyph,
 } from "../util";
+import {State} from "../row-reducer";
 import {SUB, SUP, NUMERATOR, RADICAND, DENOMINATOR} from "../constants";
 
 const enterFromRight = (
@@ -59,8 +59,8 @@ export const moveLeft = (
     const {children} = currentNode;
 
     if (cursor.prev !== -Infinity) {
-        const cols = Editor.Util.rowToColumns(currentNode);
-        const {colIndex, cursor: cursorInCol} = Editor.Util.cursorInColumns(
+        const cols = Util.rowToColumns(currentNode);
+        const {colIndex, cursor: cursorInCol} = Util.cursorInColumns(
             cols,
             cursor,
         );
@@ -70,10 +70,10 @@ export const moveLeft = (
         if (
             cursorInCol.prev === -Infinity &&
             prevCol.nodes.length === 1 &&
-            Editor.Util.matchesGlyphs(prevCol.nodes[0], ["+", "\u2212"]) &&
+            Util.matchesGlyphs(prevCol.nodes[0], ["+", "\u2212"]) &&
             prevPrevCol
         ) {
-            return Editor.Util.columnCursorToCursor(
+            return Util.columnCursorToCursor(
                 {
                     colIndex: colIndex - 2,
                     cursor: {
