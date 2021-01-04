@@ -1,5 +1,5 @@
 import {print} from "@math-blocks/testing";
-import {types} from "semantic/src";
+import {types} from "@math-blocks/semantic";
 import {applyStep} from "./apply-step";
 
 import {Step} from "./types";
