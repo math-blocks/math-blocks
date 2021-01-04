@@ -1,4 +1,5 @@
 {
     "name": "@math-blocks/core",
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "main": "./out/src/index.js"
 }
