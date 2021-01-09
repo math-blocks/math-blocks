@@ -493,12 +493,16 @@ export const symmetricProperty: Check = (prev, next, context) => {
         next.type === "eq" &&
         prev.args.length === next.args.length
     ) {
-        const pairs = zip(prev.args, next.args);
+        // TODO: actually check that this is the case
+        const prevArgs = prev.args as TwoOrMore<types.NumericNode>;
+        const nextArgs = next.args as TwoOrMore<types.NumericNode>;
+
+        const pairs = zip(prevArgs, nextArgs);
 
         // If there are only two args, we swap them and then check that it
         // exactly matches the next step.
         if (pairs.length === 2) {
-            const newPrev = builders.eq([prev.args[1], prev.args[0]]);
+            const newPrev = builders.eq([prevArgs[1], prevArgs[0]]);
             const result = exactMatch(newPrev, next, context);
 
             if (result) {

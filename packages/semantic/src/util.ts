@@ -224,12 +224,14 @@ export const traverse = (
             // All arrays in the tree except for Location.path contain nodes.
             // Since we never pass a Location as an arg to traverse we should
             // be okey without doing additional checks.
+            // @ts-expect-error: key is typed as string so using it as a key is unsafe
             node[key] = value.map((child) => traverse(child, callbacks));
         } else if (
             typeof value === "object" &&
             value != null &&
             value.hasOwnProperty("type")
         ) {
+            // @ts-expect-error: key is typed as string so using it as a key is unsafe
             node[key] = traverse(value as types.Node, callbacks);
         }
     }

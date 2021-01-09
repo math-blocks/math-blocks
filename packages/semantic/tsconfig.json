@@ -5,7 +5,6 @@
     "rootDir": "."
   },
   "references": [
-    {"path": "../core"},
-    {"path": "../schema"}
+    {"path": "../core"}
   ]
 }

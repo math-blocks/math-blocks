@@ -77,7 +77,7 @@ describe("serializer", () => {
     });
 
     test("root", () => {
-        const ast = builders.root(builders.identifier("x"));
+        const ast = builders.sqrt(builders.identifier("x"));
         expect(ast).toMatchInlineSnapshot(`(root :radicand x :index 2)`);
     });
 

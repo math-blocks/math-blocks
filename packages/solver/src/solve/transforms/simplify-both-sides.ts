@@ -1,13 +1,16 @@
-import {builders} from "@math-blocks/semantic";
+import {builders, types} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {simplify} from "../../simplify/simplify";
 
 export const simplifyBothSides: Transform = (before, ident) => {
-    const left = simplify(before.args[0], []);
-    const right = simplify(before.args[1], []);
+    const args = before.args as TwoOrMore<types.NumericNode>;
+    const left = simplify(args[0], []);
+    const right = simplify(args[1], []);
 
     if (left && right) {
+        // TODO: parameterize Step based on the return type of that step
+        // @ts-expect-error: Eq expects all args to be either NumericNodes, LogicNodes, or SetNodes
         const after = builders.eq([left.after, right.after]);
         return {
             message: "simplify both sides",
@@ -26,6 +29,8 @@ export const simplifyBothSides: Transform = (before, ident) => {
         };
     }
     if (left) {
+        // TODO: parameterize Step based on the return type of that step
+        // @ts-expect-error: Eq expects all args to be either NumericNodes, LogicNodes, or SetNodes
         const after = builders.eq([left.after, before.args[1]]);
         return {
             message: "simplify the left hand side",
@@ -35,6 +40,8 @@ export const simplifyBothSides: Transform = (before, ident) => {
         };
     }
     if (right) {
+        // TODO: parameterize Step based on the return type of that step
+        // @ts-expect-error: Eq expects all args to be either NumericNodes, LogicNodes, or SetNodes
         const after = builders.eq([before.args[0], right.after]);
         return {
             message: "simplify the right hand side",

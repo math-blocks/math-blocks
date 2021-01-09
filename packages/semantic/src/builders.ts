@@ -4,7 +4,7 @@ import * as types from "./types";
 
 export const identifier = (
     name: string,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Ident => ({
     type: "identifier",
     id: getId(),
@@ -14,7 +14,7 @@ export const identifier = (
 
 export const number = <T extends string>(
     value: T,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Num | types.Neg => {
     if (value.startsWith("-")) {
         // TODO: handle location data correctly
@@ -28,7 +28,7 @@ export const number = <T extends string>(
     };
 };
 
-export const ellipsis = (loc?: types.Location): types.Ellipsis => ({
+export const ellipsis = (loc?: types.SourceLocation): types.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
@@ -36,7 +36,7 @@ export const ellipsis = (loc?: types.Location): types.Ellipsis => ({
 
 export const add = (
     terms: readonly types.NumericNode[],
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.NumericNode => {
     switch (terms.length) {
         case 0:
@@ -56,7 +56,7 @@ export const add = (
 export const mul = (
     factors: readonly types.NumericNode[],
     implicit = false,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.NumericNode => {
     switch (factors.length) {
         case 0:
@@ -75,8 +75,11 @@ export const mul = (
 };
 
 export const eq = (
-    args: TwoOrMore<types.Node>,
-    loc?: types.Location,
+    args:
+        | TwoOrMore<types.NumericNode>
+        | TwoOrMore<types.LogicNode>
+        | TwoOrMore<types.SetNode>,
+    loc?: types.SourceLocation,
 ): types.Eq => ({
     type: "eq",
     id: getId(),
@@ -87,7 +90,7 @@ export const eq = (
 export const neg = (
     arg: types.NumericNode,
     subtraction = false,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Neg => ({
     type: "neg",
     id: getId(),
@@ -99,7 +102,7 @@ export const neg = (
 export const div = (
     num: types.NumericNode,
     den: types.NumericNode,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Div => ({
     type: "div",
     id: getId(),
@@ -110,7 +113,7 @@ export const div = (
 export const pow = (
     base: types.NumericNode,
     exp: types.NumericNode,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Pow => ({
     type: "pow",
     id: getId(),
@@ -123,19 +126,32 @@ export const pow = (
 // nodes to be created for the index of each root.
 export const root = (
     radicand: types.NumericNode,
-    index?: types.NumericNode,
-    loc?: types.Location,
+    index: types.NumericNode,
+    loc?: types.SourceLocation,
 ): types.Root => ({
     type: "root",
     id: getId(),
     radicand,
-    index: index || number("2"),
+    index,
+    sqrt: false,
+    loc,
+});
+
+export const sqrt = (
+    radicand: types.NumericNode,
+    loc?: types.SourceLocation,
+): types.Root => ({
+    type: "root",
+    id: getId(),
+    radicand,
+    index: number("2"),
+    sqrt: true,
     loc,
 });
 
 export const parens = (
     arg: types.Node,
-    loc?: types.Location,
+    loc?: types.SourceLocation,
 ): types.Parens => ({
     type: "parens",
     id: getId(),

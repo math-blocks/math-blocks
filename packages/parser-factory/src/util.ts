@@ -4,12 +4,12 @@
  */
 import {getId} from "@math-blocks/core";
 
-import * as Types from "./types";
+import * as types from "./types";
 
 export const identifier = (
     name: string,
-    loc?: Types.Location,
-): Types.Ident => ({
+    loc?: types.SourceLocation,
+): types.Ident => ({
     type: "identifier",
     id: getId(),
     name,
@@ -18,24 +18,24 @@ export const identifier = (
 
 export const number = <T extends string>(
     value: T,
-    loc?: Types.Location,
-): Types.Num => ({
+    loc?: types.SourceLocation,
+): types.Num => ({
     type: "number",
     id: getId(),
     value: value.replace(/-/g, "\u2212"),
     loc,
 });
 
-export const ellipsis = (loc?: Types.Location): Types.Ellipsis => ({
+export const ellipsis = (loc?: types.SourceLocation): types.Ellipsis => ({
     type: "ellipsis",
     id: getId(),
     loc,
 });
 
 export const add = (
-    args: TwoOrMore<Types.Node>,
-    loc?: Types.Location,
-): Types.Add => ({
+    args: TwoOrMore<types.Node>,
+    loc?: types.SourceLocation,
+): types.Add => ({
     type: "add",
     id: getId(),
     args,
@@ -43,10 +43,10 @@ export const add = (
 });
 
 export const mul = (
-    args: TwoOrMore<Types.Node>,
+    args: TwoOrMore<types.Node>,
     implicit = false,
-    loc?: Types.Location,
-): Types.Mul => ({
+    loc?: types.SourceLocation,
+): types.Mul => ({
     type: "mul",
     id: getId(),
     implicit,
@@ -55,9 +55,9 @@ export const mul = (
 });
 
 export const eq = (
-    args: TwoOrMore<Types.Node>,
-    loc?: Types.Location,
-): Types.Eq => ({
+    args: TwoOrMore<types.Node>,
+    loc?: types.SourceLocation,
+): types.Eq => ({
     type: "eq",
     id: getId(),
     args,
@@ -65,10 +65,10 @@ export const eq = (
 });
 
 export const neg = (
-    arg: Types.Node,
+    arg: types.Node,
     subtraction = false,
-    loc?: Types.Location,
-): Types.Neg => ({
+    loc?: types.SourceLocation,
+): types.Neg => ({
     type: "neg",
     id: getId(),
     arg,
@@ -77,10 +77,10 @@ export const neg = (
 });
 
 export const div = (
-    num: Types.Node,
-    den: Types.Node,
-    loc?: Types.Location,
-): Types.Div => ({
+    num: types.Node,
+    den: types.Node,
+    loc?: types.SourceLocation,
+): types.Div => ({
     type: "div",
     id: getId(),
     args: [num, den],
@@ -88,10 +88,10 @@ export const div = (
 });
 
 export const pow = (
-    base: Types.Node,
-    exp: Types.Node,
-    loc?: Types.Location,
-): Types.Pow => ({
+    base: types.Node,
+    exp: types.Node,
+    loc?: types.SourceLocation,
+): types.Pow => ({
     type: "pow",
     id: getId(),
     base,
@@ -102,21 +102,34 @@ export const pow = (
 // NOTE: we don't use a default param here since we want individual
 // nodes to be created for the index of each root.
 export const root = (
-    radicand: Types.Node,
-    index?: Types.Node,
-    loc?: Types.Location,
-): Types.Root => ({
+    radicand: types.Node,
+    index: types.Node,
+    loc?: types.SourceLocation,
+): types.Root => ({
     type: "root",
     id: getId(),
     radicand,
-    index: index || number("2"),
+    index,
+    sqrt: false,
+    loc,
+});
+
+export const sqrt = (
+    radicand: types.Node,
+    loc?: types.SourceLocation,
+): types.Root => ({
+    type: "root",
+    id: getId(),
+    radicand,
+    index: number("2"),
+    sqrt: true,
     loc,
 });
 
 export const parens = (
-    arg: Types.Node,
-    loc?: Types.Location,
-): Types.Parens => ({
+    arg: types.Node,
+    loc?: types.SourceLocation,
+): types.Parens => ({
     type: "parens",
     id: getId(),
     arg,

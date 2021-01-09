@@ -96,11 +96,16 @@ const getPrefixParselet = (
             return {
                 parse: () => {
                     const [arg, index] = token.children;
-                    return Parser.Util.root(
-                        editorParser.parse(arg.children),
-                        index ? editorParser.parse(index.children) : undefined,
-                        token.loc,
-                    );
+                    return index === null
+                        ? Parser.Util.sqrt(
+                              editorParser.parse(arg.children),
+                              token.loc,
+                          )
+                        : Parser.Util.root(
+                              editorParser.parse(arg.children),
+                              editorParser.parse(index.children),
+                              token.loc,
+                          );
                 },
             };
         default:
@@ -193,11 +198,14 @@ const parseNaryArgs = (
     } else if (token.type === "root") {
         parser.consume();
         const [arg, index] = token.children;
-        const expr = Parser.Util.root(
-            editorParser.parse(arg.children),
-            index ? editorParser.parse(index.children) : undefined,
-            token.loc,
-        );
+        const expr =
+            index === null
+                ? Parser.Util.sqrt(editorParser.parse(arg.children), token.loc)
+                : Parser.Util.root(
+                      editorParser.parse(arg.children),
+                      editorParser.parse(index.children),
+                      token.loc,
+                  );
         const nextToken = parser.peek();
         if (nextToken.type === "root" || isIdentifier(nextToken)) {
             return [expr, ...parseNaryArgs(parser, "mul.imp")];

@@ -76,10 +76,10 @@ describe("traverse", () => {
             id: 0,
             type: "number",
             value: "123",
-            location: {
+            loc: {
                 path: [],
-                prev: 1,
-                next: 2,
+                start: 1,
+                end: 2,
             },
         };
         const enter = jest.fn();

@@ -102,6 +102,7 @@ export const replaceNodeWithId = (
         }
         if (isNode(val)) {
             if (val.id === id) {
+                // @ts-expect-error: key is a string so using it as an indexer here is unsafe
                 root[key] = replacement;
             } else {
                 replaceNodeWithId(val, id, replacement);

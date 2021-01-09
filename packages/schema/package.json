@@ -1,5 +1,0 @@
-{
-    "name": "@math-blocks/schema",
-    "version": "0.0.1",
-    "main": "./out/src/index.js"
-}
