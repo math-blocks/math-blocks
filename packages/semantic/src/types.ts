@@ -1,4 +1,8 @@
 export type Node = NumericNode | LogicNode | SetNode;
+
+/**
+ * When a numeric node is evaluated it should return another numeric node.
+ */
 export type NumericNode =
     | Num
     | Infinity
@@ -23,56 +27,74 @@ export type NumericNode =
     | PDiff
     | Int;
 
+/**
+ * Number
+ *
+ * TODO:
+ * - handle units, e.g. m/s, kg, etc.
+ * - add ComplexNumber type
+ */
 export type Num = Common & {
     type: "number";
     value: string;
 };
 
-export type Infinity = Common & {
-    type: "infinity";
-};
-
-export type Pi = Common & {
-    type: "pi";
-};
-
+/**
+ * Identifier
+ */
 export type Ident = Common & {
     type: "identifier";
     name: string;
     subscript?: NumericNode;
 };
 
-export type Ellipsis = Common & {
-    type: "ellipsis";
-};
-
+/**
+ * Addition
+ */
 export type Add = Common & {
     type: "add";
     args: TwoOrMore<NumericNode>;
 };
 
+/**
+ * Multiplication
+ */
 export type Mul = Common & {
     type: "mul";
     args: TwoOrMore<NumericNode>;
     implicit: boolean;
 };
 
-export type Func = Common & {
-    type: "func";
-    func: NumericNode;
-    args: OneOrMore<NumericNode>;
+/**
+ * Negation
+ * Can be used to represent negative values as well as subtraction
+ */
+export type Neg = Common & {
+    type: "neg";
+    arg: NumericNode;
+    subtraction: boolean;
 };
 
+/**
+ * Division
+ */
 export type Div = Common & {
     type: "div";
     args: readonly [NumericNode, NumericNode];
 };
 
+/**
+ * Modulus
+ */
 export type Mod = Common & {
     type: "mod";
     args: readonly [NumericNode, NumericNode];
 };
 
+/**
+ * Root
+ * Can be used for square roots as well nth-degree roots
+ */
 export type Root = Common & {
     type: "root";
     radicand: NumericNode;
@@ -80,22 +102,54 @@ export type Root = Common & {
     sqrt: boolean; // implies index = 2 and that the index should not be rendered
 };
 
+/**
+ * Power
+ */
 export type Pow = Common & {
     type: "pow";
     base: NumericNode;
     exp: NumericNode;
 };
 
+/**
+ * Logarithm
+ */
 export type Log = Common & {
     type: "log";
     base: NumericNode;
     arg: NumericNode;
 };
 
-export type Neg = Common & {
-    type: "neg";
-    arg: NumericNode;
-    subtraction: boolean;
+/**
+ * Function
+ * Can be used to represent function declaration as well as application.
+ */
+export type Func = Common & {
+    type: "func";
+    func: NumericNode;
+    args: OneOrMore<NumericNode>;
+};
+
+/**
+ * Infinity
+ */
+export type Infinity = Common & {
+    type: "infinity";
+};
+
+/**
+ * pi
+ * TODO: Why is pi special?  Maybe we should just use Ident for pi.  What about e?
+ */
+export type Pi = Common & {
+    type: "pi";
+};
+
+/**
+ * Ellipsis
+ */
+export type Ellipsis = Common & {
+    type: "ellipsis";
 };
 
 /**
@@ -181,6 +235,9 @@ export type PDiff = Common & {
     args: [NumericNode, NumericNode];
 };
 
+/**
+ * Integral
+ */
 export type Int = Common & {
     type: "int";
     arg: NumericNode;
