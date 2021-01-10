@@ -51,7 +51,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                         </div>
                         {/* TODO: special case substeps.length === 1 */}
                         {substep.substeps.length > 0 && (
-                            <div style={{paddingLeft: 32}}>
+                            <div style={{paddingLeft: 64}}>
                                 <Substeps
                                     prefix={num}
                                     start={before}
@@ -59,12 +59,14 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                                 />
                             </div>
                         )}
-                        <MathRenderer
-                            box={afterBox}
-                            cursor={undefined}
-                            style={{marginBottom: 32}}
-                            cancelRegions={[]}
-                        />
+                        {substep.substeps.length === 0 && (
+                            <MathRenderer
+                                box={afterBox}
+                                cursor={undefined}
+                                style={{marginBottom: 32}}
+                                cancelRegions={[]}
+                            />
+                        )}
                     </React.Fragment>
                 );
             })}
