@@ -32,7 +32,7 @@ ReactDOM.render(
                 <h1>MathBlocks Demos</h1>
                 <ul>
                     <li>
-                        <Link to="/editor">Editor test</Link>
+                        <Link to="/editor-test">Editor test</Link>
                     </li>
                     <li>
                         <Link to="/handwriting">Handwriting input</Link>

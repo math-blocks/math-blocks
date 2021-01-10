@@ -86,7 +86,7 @@ const print = (expr: types.Node, oneToOne: boolean): Editor.Node => {
             const children: Editor.Node[] = [];
 
             const wrapAll = expr.args.some((arg, index) => {
-                if (arg.type === "number") {
+                if (arg.type === "number" && index > 0) {
                     return true;
                 }
                 if (arg.type === "neg" && (index > 0 || oneToOne)) {

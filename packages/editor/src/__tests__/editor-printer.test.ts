@@ -88,6 +88,17 @@ describe("print", () => {
         expect(node).toEqualMath(Util.row("abc"));
     });
 
+    test("5y", () => {
+        const ast = builders.mul(
+            [builders.number("5"), builders.identifier("y")],
+            true,
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("5y"));
+    });
+
     test("abc+123", () => {
         const ast = builders.add([
             builders.mul(
