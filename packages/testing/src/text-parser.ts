@@ -1,9 +1,7 @@
 import * as Parser from "@math-blocks/parser-factory";
-import {types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {lex, Token} from "./text-lexer";
-
-const Util = Parser.Util;
 
 // TODO: fill out this list
 type Operator =
@@ -19,7 +17,7 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
 
-type Node = Parser.Types.Node;
+type Node = Parser.types.Node;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
@@ -38,26 +36,28 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Parser.Types.Ident => Util.identifier(token.name),
+                parse: (): Parser.types.Ident =>
+                    Parser.builders.identifier(token.name),
             };
         case "number":
             return {
-                parse: (): Parser.Types.Num => Util.number(token.value),
+                parse: (): Parser.types.Num =>
+                    Parser.builders.number(token.value),
             };
         case "minus":
             return {
-                parse: (parser): Parser.Types.Neg =>
-                    Util.neg(parser.parseWithOperator("neg"), false),
+                parse: (parser): Parser.types.Neg =>
+                    Parser.builders.neg(parser.parseWithOperator("neg"), false),
             };
         case "lparen":
             return {
-                parse: (parser): Parser.Types.Node => {
+                parse: (parser): Parser.types.Node => {
                     const result = parser.parse();
                     const nextToken = parser.consume();
                     if (nextToken.type !== "rparen") {
                         throw new Error("unmatched left paren");
                     }
-                    return Parser.Util.parens(result);
+                    return Parser.builders.parens(result);
                 },
             };
         default:
@@ -74,7 +74,7 @@ const getPrefixParselet = (
 //   };
 // };
 
-const parseMulByParen = (parser: TextParser): OneOrMore<Parser.Types.Node> => {
+const parseMulByParen = (parser: TextParser): OneOrMore<Parser.types.Node> => {
     const expr = parser.parseWithOperator("mul.imp");
     if (parser.peek().type === "lparen") {
         return [expr, ...parseMulByParen(parser)];
@@ -97,18 +97,21 @@ const getInfixParselet = (
         case "slash":
             return {
                 op: "div",
-                parse: (parser, left): Parser.Types.Div => {
+                parse: (parser, left): Parser.types.Div => {
                     parser.consume();
-                    return Util.div(left, parser.parseWithOperator("div"));
+                    return Parser.builders.div(
+                        left,
+                        parser.parseWithOperator("div"),
+                    );
                 },
             };
         case "caret":
             return {
                 op: "caret",
-                parse: (parser, left): Parser.Types.Pow => {
+                parse: (parser, left): Parser.types.Pow => {
                     parser.consume();
                     // exponents are right-associative
-                    return Util.pow(
+                    return Parser.builders.pow(
                         left,
                         parser.parseWithOperator("caret", "right"),
                     );
@@ -121,15 +124,15 @@ const getInfixParselet = (
         case "lparen":
             return {
                 op: "mul.imp",
-                parse: (parser, left): Parser.Types.Mul => {
+                parse: (parser, left): Parser.types.Mul => {
                     const [right, ...rest] = parseMulByParen(parser);
-                    return Util.mul([left, right, ...rest], true);
+                    return Parser.builders.mul([left, right, ...rest], true);
                 },
             };
         case "rparen":
             return {
                 op: "nul",
-                parse: (): Parser.Types.Node => {
+                parse: (): Parser.types.Node => {
                     throw new Error("mismatched parens");
                 },
             };
@@ -146,13 +149,13 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
-            return Util.add([left, right, ...rest]);
+            return Parser.builders.add([left, right, ...rest]);
         case "mul.imp":
-            return Util.mul([left, right, ...rest], true);
+            return Parser.builders.mul([left, right, ...rest], true);
         case "mul.exp":
-            return Util.mul([left, right, ...rest], false);
+            return Parser.builders.mul([left, right, ...rest], false);
         case "eq":
-            return Util.eq([left, right, ...rest]);
+            return Parser.builders.eq([left, right, ...rest]);
     }
 };
 
@@ -171,7 +174,7 @@ const parseNaryArgs = (
     }
     let expr: Node = parser.parseWithOperator(op);
     if (op === "sub") {
-        expr = Util.neg(expr, true);
+        expr = Parser.builders.neg(expr, true);
     }
     const nextToken = parser.peek();
 
@@ -250,10 +253,10 @@ const textParser = Parser.parserFactory<Token, Node, Operator>(
 );
 
 // WARNING: This function mutates `node`.
-const removeExcessParens = (node: types.Node): types.Node => {
-    const path: types.Node[] = [];
+const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
+    const path: Semantic.types.Node[] = [];
 
-    return util.traverse(node, {
+    return Semantic.util.traverse(node, {
         enter: (node) => {
             path.push(node);
         },
@@ -289,7 +292,7 @@ const removeExcessParens = (node: types.Node): types.Node => {
     });
 };
 
-export const parse = (input: string): types.Node => {
+export const parse = (input: string): Semantic.types.Node => {
     const result = textParser.parse(lex(input));
-    return removeExcessParens(result as types.Node);
+    return removeExcessParens(result as Semantic.types.Node);
 };

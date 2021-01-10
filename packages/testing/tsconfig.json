@@ -6,7 +6,6 @@
   },
   "references": [
     {"path": "../parser-factory"},
-    {"path": "../schema"},
     {"path": "../semantic"}
   ]
 }

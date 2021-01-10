@@ -37,8 +37,11 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
+        // TODO: add a check to make sure this is true
+        const args = before.args as TwoOrMore<types.NumericNode>;
+
         const after = builders.eq(
-            (before.args.map((arg) => {
+            (args.map((arg) => {
                 const result = builders.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;
@@ -63,8 +66,11 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
+        // TODO: add a check to make sure this is true
+        const args = before.args as TwoOrMore<types.NumericNode>;
+
         const after = builders.eq(
-            (before.args.map((arg) => {
+            (args.map((arg) => {
                 const result = builders.div(arg as types.NumericNode, coeff);
                 result.source = "divBothSides";
                 return result;

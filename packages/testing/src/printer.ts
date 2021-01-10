@@ -140,7 +140,9 @@ export const print = (expr: types.Node, oneToOne = false): string => {
             return `${numerator} / ${denominator}`;
         }
         case "eq": {
-            return expr.args.map((arg) => print(arg, oneToOne)).join(" = ");
+            // TODO: add a check to make sure this is true
+            const args = expr.args as TwoOrMore<types.NumericNode>;
+            return args.map((arg) => print(arg, oneToOne)).join(" = ");
         }
         case "pow": {
             const {base, exp} = expr;

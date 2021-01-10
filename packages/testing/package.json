@@ -4,7 +4,6 @@
     "main": "./out/src/index.js",
     "dependencies": {
         "@math-blocks/parser-factory": "0.0.1",
-        "@math-blocks/schema": "0.0.1",
         "@math-blocks/semantic": "0.0.1"
     }
 }

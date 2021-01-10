@@ -76,7 +76,7 @@ describe("util", () => {
         });
 
         test("a square root of a number is a number", () => {
-            const ast = builders.root(builders.number("3"));
+            const ast = builders.sqrt(builders.number("3"));
             expect(util.isNumber(ast)).toBeTruthy();
         });
 
@@ -99,7 +99,7 @@ describe("util", () => {
         });
 
         test("a square root of an identifier is not a number", () => {
-            const ast = builders.root(builders.identifier("x"));
+            const ast = builders.sqrt(builders.identifier("x"));
             expect(util.isNumber(ast)).toBeFalsy();
         });
 
