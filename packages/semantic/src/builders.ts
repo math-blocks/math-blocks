@@ -122,8 +122,6 @@ export const pow = (
     loc,
 });
 
-// NOTE: we don't use a default param here since we want individual
-// nodes to be created for the index of each root.
 export const root = (
     radicand: types.NumericNode,
     index: types.NumericNode,
