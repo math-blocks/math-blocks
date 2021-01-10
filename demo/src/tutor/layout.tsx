@@ -5,7 +5,7 @@ type Props = {
     children: React.ReactNode;
 };
 
-export const HStack: React.SFC<Props> = (props) => {
+export const HStack: React.FunctionComponent<Props> = (props) => {
     const style: React.CSSProperties = {
         ...props.style,
         display: "flex",
@@ -15,7 +15,7 @@ export const HStack: React.SFC<Props> = (props) => {
     return <div style={style}>{props.children}</div>;
 };
 
-export const VStack: React.SFC<Props> = (props) => {
+export const VStack: React.FunctionComponent<Props> = (props) => {
     const style: React.CSSProperties = {
         ...props.style,
         display: "flex",

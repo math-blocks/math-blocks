@@ -21,7 +21,7 @@ type EmptyProps = Record<string, never>;
 //   correct the issue before proceeding.
 // - Delayed feedback will conceal the correctness of each step
 //   until the user submits their answer.
-export const App: React.FunctionComponent<EmptyProps> = () => {
+const Tutor: React.FunctionComponent<EmptyProps> = () => {
     const [mode, setMode] = useState<"edit" | "solve">("solve");
 
     const state = useSelector<State, State>((state) => state);
@@ -128,4 +128,4 @@ export const App: React.FunctionComponent<EmptyProps> = () => {
     );
 };
 
-export default hot(App);
+export default hot(Tutor);

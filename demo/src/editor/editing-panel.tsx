@@ -14,7 +14,9 @@ const triggerKeydown = (key: string): void => {
     }
 };
 
-const Button: React.SFC<{children: string; keyName: string}> = (props) => (
+const Button: React.FunctionComponent<{children: string; keyName: string}> = (
+    props,
+) => (
     <div
         className={css(styles.button)}
         onMouseDown={(e) => e.preventDefault()}

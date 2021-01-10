@@ -13,7 +13,7 @@ import {
 import {types, util} from "@math-blocks/semantic";
 
 import {Step as _Step, StepStatus} from "./reducer";
-import {HStack, VStack} from "./containers";
+import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
 
 type Props = {
