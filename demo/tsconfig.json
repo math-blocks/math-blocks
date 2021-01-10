@@ -9,6 +9,7 @@
     {"path": "../packages/editor-parser"},
     {"path": "../packages/grader"},
     {"path": "../packages/react"},
-    {"path": "../packages/semantic"}
+    {"path": "../packages/semantic"},
+    {"path": "../packages/solver"}
   ]
 }

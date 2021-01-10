@@ -9,5 +9,8 @@
         "@math-blocks/metrics": "0.0.1",
         "@math-blocks/semantic": "0.0.1",
         "@math-blocks/typesetter": "0.0.1"
+    },
+    "peerDependencies": {
+        "react": "^16.14.0"
     }
 }
