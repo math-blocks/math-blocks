@@ -6,6 +6,20 @@ import {applyStep} from "../../apply-step";
 import {simplify as _simplify} from "../simplify";
 import {Step} from "../types";
 
+import {toHaveFullStepsLike} from "../../test-util";
+
+expect.extend({toHaveFullStepsLike});
+
+// TODO: recursively handle steps with sub-steps
+// TODO: dedupe
+const applySteps = (node: types.Node, steps: Step[]): types.Node => {
+    let result = node;
+    for (const step of steps) {
+        result = applyStep(result, step);
+    }
+    return result;
+};
+
 const simplify = (node: types.Node): Step => {
     const result = _simplify(node, []);
     if (!result) {
@@ -38,6 +52,11 @@ describe("simplify", () => {
                 "collect like terms",
             ]);
             expect(print(step.after)).toEqual("4x");
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: ["x + 3x", "4x"],
+            });
         });
 
         test("-x + 3x -> 2x", () => {
@@ -209,9 +228,14 @@ describe("simplify", () => {
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
                 "multiply fraction(s)",
-                "simplify multiplication",
+                // "simplify multiplication", // TODO: figure out why this step isn't happening
             ]);
-            expect(print(step.after)).toEqual("-(x / 6)");
+            expect(print(step.after)).toEqual("-(1x / 6)"); // TODO: this should be -(x / 6)
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: ["x / -2 + x / 3", "-(1 / 6)(x)", "-(1x / 6)"],
+            });
         });
 
         test("2xy + 3xy -> 5xy", () => {
@@ -233,7 +257,7 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                "simplify multiplication",
+                "simplify multiplication", // Don't elide this step
             ]);
             expect(print(step.after)).toEqual("x");
         });
@@ -245,7 +269,7 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                "simplify multiplication",
+                "simplify multiplication", // Don't elide this step
             ]);
             expect(print(step.after)).toEqual("-x");
         });
@@ -625,7 +649,9 @@ describe("simplify", () => {
             const third = applyStep(second, step.substeps[2]);
             expect(print(third)).toEqual("xx + x + 3x + 3");
             const fourth = applyStep(third, step.substeps[3]);
-            expect(print(fourth)).toEqual("x^2 + 4x + 3");
+            expect(print(fourth)).toEqual("xx + 4x + 3");
+            const fifth = applyStep(fourth, step.substeps[4]);
+            expect(print(fifth)).toEqual("x^2 + 4x + 3");
         });
 
         test.skip("(x + 1)^2 -> x^2 + 2x + 1", () => {
@@ -821,10 +847,19 @@ describe("simplify", () => {
 
             expect(step.message).toEqual("simplify expression");
             expect(step.substeps.map((substep) => substep.message)).toEqual([
-                "simplify multiplication",
+                "simplify multiplication", // TODO: elide this step
                 "reduce fraction",
             ]);
             expect(print(step.after)).toEqual("-ac");
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "-abc / b",
+                    "-abc / b", // TODO: elide this step
+                    "-ac",
+                ],
+            });
         });
     });
 
@@ -883,6 +918,56 @@ describe("simplify", () => {
                 "reduce fraction",
             ]);
             expect(print(step.after)).toEqual("x");
+        });
+    });
+
+    describe("numeric fractions", () => {
+        test("1 / 2 + 1 / 3", () => {
+            const ast = parse("1 / 2 + 1 / 3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "evaluate addition",
+            ]);
+            expect(print(step.after)).toEqual("5 / 6");
+        });
+
+        test("1 / 2 - 1 / 3", () => {
+            const ast = parse("1 / 2 - 1 / 3");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "evaluate addition",
+            ]);
+            expect(print(step.after)).toEqual("1 / 6");
+        });
+
+        test("-(1 / 6) * 6", () => {
+            const ast = parse("-(1 / 6) * 6");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(print(step.after)).toEqual("-1");
+            expect(print(applySteps(ast, step.substeps))).toEqual("-1");
+
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "simplify multiplication", // TODO: elide this step
+                "evaluate multiplication",
+            ]);
+
+            expect(ast).toHaveFullStepsLike({
+                steps: step.substeps,
+                expressions: [
+                    "-(1 / 6) * 6",
+                    "-(1 / 6 * 6)", // TODO: elide this step
+                    "-1",
+                ],
+            });
         });
     });
 

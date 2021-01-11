@@ -6,7 +6,11 @@ import {isNegative} from "../util";
 // This transform should go at the top of the simplify stack so that other
 // transforms that work with `mul` nodes don't have to handle as many cases.
 //
-// (-a)(b)(c) -> -abc
+// In specific situations where the negative is at the start and there's only
+// one negative we can and should elide the step.  The reason for eliding it is
+// that the resulting editor AST produced by editor-printer is the same for both.
+// (-a)(b)(c) -> -abc (elide)
+// -(1 / 6) * 6 -> -(1 / 6 * 6) (elide)
 // (a)(b)(-c) -> -abc
 // (-a)(b)(-c) -> abc
 // (-a)(-b)(-c) -> -abc
@@ -43,7 +47,7 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
         return undefined;
     }
 
-    const newProd = builders.mul(newFactors, true);
+    const newProd = builders.mul(newFactors, before.implicit);
 
     const after = isNegative(before) ? builders.neg(newProd, false) : newProd;
 

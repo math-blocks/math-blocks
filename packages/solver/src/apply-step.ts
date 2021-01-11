@@ -3,6 +3,7 @@ import {builders, types, util} from "@math-blocks/semantic";
 import {Step} from "./types";
 
 export const applyStep = (node: types.Node, step: Step): types.Node => {
+    // Cloning is important since `util.traverse` mutates `current`.
     const clone = JSON.parse(JSON.stringify(node));
 
     const path: types.Node[] = [];

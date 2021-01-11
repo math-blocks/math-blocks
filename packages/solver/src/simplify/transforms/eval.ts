@@ -2,6 +2,32 @@ import {builders, types, util} from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+// TODO: backport this to @math-blocks/semantic
+const evalNode = (node: types.NumericNode): types.NumericNode => {
+    const result = util.evalNode(node);
+    if (result.d === 1) {
+        if (result.s === 1) {
+            return builders.number(result.n.toString());
+        } else {
+            return builders.neg(builders.number(result.n.toString()));
+        }
+    } else {
+        if (result.s === 1) {
+            return builders.div(
+                builders.number(result.n.toString()),
+                builders.number(result.d.toString()),
+            );
+        } else {
+            return builders.neg(
+                builders.div(
+                    builders.number(result.n.toString()),
+                    builders.number(result.d.toString()),
+                ),
+            );
+        }
+    }
+};
+
 // This function will evaluate the multiple any factors that are numbers in node
 // but won't touch any non-number terms, e.g.
 // (2)(x)(3)(y) -> 6xy
@@ -16,8 +42,7 @@ export const evalMul: Transform = (node) => {
     const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
 
     if (numericFactors.length > 1) {
-        const mul = builders.mul(numericFactors);
-        const coeff = builders.number(util.evalNode(mul).toString());
+        const coeff = evalNode(builders.mul(numericFactors));
 
         return {
             message: "evaluate multiplication",
@@ -40,9 +65,7 @@ export const evalAdd: Transform = (node) => {
     const nonNumericTerms = terms.filter((f) => !util.isNumber(f));
 
     if (numericTerms.length > 1) {
-        const sum = builders.number(
-            util.evalNode(builders.add(numericTerms)).toString(),
-        );
+        const sum = evalNode(builders.add(numericTerms));
 
         return {
             message: "evaluate addition",

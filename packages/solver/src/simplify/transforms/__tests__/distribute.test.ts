@@ -11,6 +11,7 @@ import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
 // TODO: recursively handle steps with sub-steps
+// TODO: dedupe
 const applySteps = (node: types.Node, steps: Step[]): types.Node => {
     let result = node;
     for (const step of steps) {

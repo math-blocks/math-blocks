@@ -74,7 +74,13 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        current = util.traverse(current, {enter, exit});
+        const next = util.traverse(current, {enter, exit});
+        if (next === current) {
+            break;
+        }
+
+        // Cloning is important since `util.traverse` mutates `current`.
+        current = JSON.parse(JSON.stringify(next));
     }
 
     if (substeps.length > 0) {

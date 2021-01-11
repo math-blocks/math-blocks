@@ -24,12 +24,14 @@ export const solve: Transform = (node, ident) => {
         return undefined;
     }
 
+    // NOTE: We simplify both sides before and after every other transform.
+    // This is so that we don't jump from something like 2x = 10 - 5 to 2x / 2 = 5 / 2.
     const transforms: Transform[] = [
-        simplifyBothSides,
         moveTermsToOneSide,
         divBothSides,
         mulBothSides,
-    ];
+    ].flatMap((transform) => [simplifyBothSides, transform]);
+    transforms.push(simplifyBothSides);
 
     const substeps: Step[] = [];
     let current = node as types.Eq;
