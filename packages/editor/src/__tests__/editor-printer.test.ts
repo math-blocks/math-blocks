@@ -70,7 +70,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a*b*c"));
+        expect(node).toEqualMath(Util.row("a\u00B7b\u00B7c"));
     });
 
     test("abc", () => {
@@ -86,6 +86,17 @@ describe("print", () => {
         const node = print(ast);
 
         expect(node).toEqualMath(Util.row("abc"));
+    });
+
+    test("5y", () => {
+        const ast = builders.mul(
+            [builders.number("5"), builders.identifier("y")],
+            true,
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(Util.row("5y"));
     });
 
     test("abc+123", () => {
@@ -173,6 +184,32 @@ describe("print", () => {
                 Editor.glyph("("),
                 Util.frac("c", "d"),
                 Editor.glyph(")"),
+            ]),
+        );
+    });
+
+    test("a/b * c/d", () => {
+        const ast = builders.mul(
+            [
+                builders.div(
+                    builders.identifier("a"),
+                    builders.identifier("b"),
+                ),
+                builders.div(
+                    builders.identifier("c"),
+                    builders.identifier("d"),
+                ),
+            ],
+            false,
+        );
+
+        const node = print(ast);
+
+        expect(node).toEqualMath(
+            Editor.row([
+                Util.frac("a", "b"),
+                Editor.glyph("\u00B7"),
+                Util.frac("c", "d"),
             ]),
         );
     });
@@ -333,7 +370,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a*b*1"));
+        expect(node).toEqualMath(Util.row("a\u00B7b\u00B71"));
     });
 
     test("y = x + 1", () => {

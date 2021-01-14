@@ -72,6 +72,7 @@ const MathRenderer: React.SFC<{
     box: Layout.Box;
     cursor?: LayoutCursor;
     cancelRegions?: LayoutCursor[];
+    style?: React.CSSProperties;
 }> = (props) => {
     const group = SceneGraph.render(props);
     const {width, height} = group;
@@ -84,6 +85,7 @@ const MathRenderer: React.SFC<{
             viewBox={viewBox}
             width={width}
             height={height + CURSOR_WIDTH}
+            style={props.style}
         >
             <Group {...group} />
         </svg>

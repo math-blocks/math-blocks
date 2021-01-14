@@ -86,13 +86,13 @@ const print = (expr: types.Node, oneToOne: boolean): Editor.Node => {
             const children: Editor.Node[] = [];
 
             const wrapAll = expr.args.some((arg, index) => {
-                if (arg.type === "number") {
+                if (arg.type === "number" && index > 0) {
                     return true;
                 }
                 if (arg.type === "neg" && (index > 0 || oneToOne)) {
                     return true;
                 }
-                if (arg.type === "div") {
+                if (arg.type === "div" && expr.implicit && index > 0) {
                     return true;
                 }
                 return false;
@@ -113,7 +113,7 @@ const print = (expr: types.Node, oneToOne: boolean): Editor.Node => {
                 }
 
                 if (!expr.implicit) {
-                    children.push(Editor.glyph("*"));
+                    children.push(Editor.glyph("\u00B7"));
                 }
             }
 
@@ -127,6 +127,7 @@ const print = (expr: types.Node, oneToOne: boolean): Editor.Node => {
             if (
                 expr.arg.type === "number" ||
                 expr.arg.type === "identifier" ||
+                expr.arg.type === "div" ||
                 (expr.arg.type === "neg" && !expr.arg.subtraction) ||
                 (expr.arg.type === "mul" && expr.arg.implicit) ||
                 expr.arg.type === "pow" // pow has a higher precedence

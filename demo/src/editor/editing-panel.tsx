@@ -1,8 +1,6 @@
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
-type EmptyProps = Record<string, never>;
-
 const triggerKeydown = (key: string): void => {
     if (document.activeElement) {
         const event = new KeyboardEvent("keydown", {
@@ -26,7 +24,7 @@ const Button: React.FunctionComponent<{children: string; keyName: string}> = (
     </div>
 );
 
-const EditingPanel: React.FunctionComponent<EmptyProps> = () => {
+const EditingPanel: React.FunctionComponent = () => {
     return (
         <div className={css(styles.container)}>
             <Button keyName="Cancel">Cancel</Button>

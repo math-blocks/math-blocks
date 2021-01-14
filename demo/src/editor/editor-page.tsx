@@ -10,9 +10,7 @@ const startingValue = Editor.Util.row(
     "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
 );
 
-type EmptyProps = Record<string, never>;
-
-const EditorPage: React.FunctionComponent<EmptyProps> = () => (
+const EditorPage: React.FunctionComponent = () => (
     <div>
         <MathEditor readonly={false} rows={[startingValue]} focus={true} />
         <div style={{position: "fixed", bottom: 0, left: 0}}>

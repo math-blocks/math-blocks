@@ -17,9 +17,7 @@ declare global {
     }
 }
 
-type EmptyProps = Record<string, never>;
-
-const HandwritingPage: React.FunctionComponent<EmptyProps> = () => {
+const HandwritingPage: React.FunctionComponent = () => {
     return (
         <div
             style={{
