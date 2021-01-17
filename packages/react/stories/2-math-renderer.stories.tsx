@@ -3,7 +3,7 @@ import * as React from "react";
 import * as Editor from "@math-blocks/editor";
 import {types} from "@math-blocks/semantic";
 import {parse} from "@math-blocks/editor-parser";
-import {Layout, typeset, typesetWithWork} from "@math-blocks/typesetter";
+import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../src/math-renderer";
@@ -35,7 +35,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context) as Layout.Box;
+    const box = typeset(math, context);
 
     return <MathRenderer box={box} />;
 };
@@ -58,7 +58,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context) as Layout.Box;
+    const box = typeset(math, context);
 
     return <MathRenderer box={box} />;
 };
@@ -219,12 +219,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return (
-        <MathRenderer
-            box={typeset(math, context) as Layout.Box}
-            cursor={layoutCursor}
-        />
-    );
+    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
 };
 
 export const Selection: React.FunctionComponent<EmptyProps> = () => {
@@ -264,12 +259,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return (
-        <MathRenderer
-            box={typeset(math, context) as Layout.Box}
-            cursor={layoutCursor}
-        />
-    );
+    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
 };
 
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
@@ -293,7 +283,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
             Editor.Util.sup("2"),
         ]),
         context,
-    ) as Layout.Box;
+    );
 
     return <MathRenderer box={pythagoras} />;
 };
@@ -332,7 +322,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
             ),
         ]),
         context,
-    ) as Layout.Box;
+    );
 
     return <MathRenderer box={quadraticEquation} />;
 };
@@ -357,7 +347,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
             glyph("x"),
         ]),
         context,
-    ) as Layout.Box;
+    );
 
     return <MathRenderer box={lim} />;
 };
@@ -381,7 +371,7 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
             frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
         ]),
         context,
-    ) as Layout.Box;
+    );
 
     return <MathRenderer box={sum} />;
 };
@@ -406,7 +396,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         colorMap.set(subsup.children[1].id, "pink");
     }
 
-    const sum = typeset(fracNode, context) as Layout.Box;
+    const sum = typeset(fracNode, context);
 
     return <MathRenderer box={sum} />;
 };
@@ -441,7 +431,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context) as Layout.Box;
+    const prod = typeset(editNode, context);
 
     return <MathRenderer box={prod} />;
 };
@@ -476,7 +466,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context) as Layout.Box;
+    const prod = typeset(editNode, context);
 
     return <MathRenderer box={prod} />;
 };
@@ -517,7 +507,7 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context) as Layout.Box;
+    const prod = typeset(editNode, context);
 
     return <MathRenderer box={prod} />;
 };

@@ -5,7 +5,7 @@ import fontMetrics from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
 import {Step, applyStep} from "@math-blocks/solver";
-import * as Typesetter from "@math-blocks/typesetter";
+import {typeset} from "@math-blocks/typesetter";
 
 type Props = {
     // Prefix to start numbering from, e.g. 1.2.3
@@ -35,10 +35,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                 const before = current;
 
                 const after = applyStep(before, substep);
-                const afterBox = Typesetter.typeset(
-                    Editor.print(after),
-                    context,
-                ) as Typesetter.Layout.Box;
+                const afterBox = typeset(Editor.print(after), context);
 
                 current = after;
 

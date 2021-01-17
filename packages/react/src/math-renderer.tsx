@@ -9,7 +9,11 @@ type LayoutCursor = {
     selection: boolean;
 };
 
-const Line: React.SFC<SceneGraph.Line> = ({id, color, ...props}) => {
+const Line: React.FunctionComponent<SceneGraph.Line> = ({
+    id,
+    color,
+    ...props
+}) => {
     return (
         <line
             {...props}
@@ -20,11 +24,15 @@ const Line: React.SFC<SceneGraph.Line> = ({id, color, ...props}) => {
     );
 };
 
-const Rect: React.SFC<SceneGraph.Rect> = ({fill, id, ...props}) => {
+const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
+    fill,
+    id,
+    ...props
+}) => {
     return <rect {...props} fill={fill} />;
 };
 
-const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
+const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
     return (
@@ -42,7 +50,13 @@ const Glyph: React.SFC<SceneGraph.Glyph> = ({x, y, glyph}) => {
     );
 };
 
-const Group: React.SFC<SceneGraph.Group> = ({x, y, layers, color, id}) => {
+const Group: React.FunctionComponent<SceneGraph.Group> = ({
+    x,
+    y,
+    layers,
+    color,
+    id,
+}) => {
     const _id = typeof id !== undefined ? String(id) : undefined;
 
     return (
@@ -68,13 +82,16 @@ const Group: React.SFC<SceneGraph.Group> = ({x, y, layers, color, id}) => {
 
 const CURSOR_WIDTH = 2;
 
-const MathRenderer: React.SFC<{
+type Props = {
     box: Layout.Box;
     cursor?: LayoutCursor;
     cancelRegions?: LayoutCursor[];
     style?: React.CSSProperties;
-}> = (props) => {
-    const group = SceneGraph.render(props);
+};
+
+const MathRenderer: React.FunctionComponent<Props> = (props) => {
+    const {box, cursor, cancelRegions, style} = props;
+    const group = SceneGraph.render({box, cursor, cancelRegions});
     const {width, height} = group;
     const padding = CURSOR_WIDTH / 2;
     const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
@@ -85,7 +102,7 @@ const MathRenderer: React.SFC<{
             viewBox={viewBox}
             width={width}
             height={height + CURSOR_WIDTH}
-            style={props.style}
+            style={style}
         >
             <Group {...group} />
         </svg>

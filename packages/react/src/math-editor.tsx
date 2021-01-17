@@ -3,7 +3,7 @@ import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
 import * as Editor from "@math-blocks/editor";
-import * as Typesetter from "@math-blocks/typesetter";
+import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "./math-renderer";
@@ -31,7 +31,7 @@ type Props = {
     colorMap?: Map<number, string>;
 };
 
-export const MathEditor: React.SFC<Props> = (props: Props) => {
+export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const rows = props.rows.map((row) => ({
@@ -104,11 +104,8 @@ export const MathEditor: React.SFC<Props> = (props: Props) => {
     // console.log(props.colorMap);
 
     const box = props.stepChecker
-        ? (Typesetter.typeset(
-              state.rows[0].math,
-              context,
-          ) as Typesetter.Layout.Box) // TODO: make typeset return a Box
-        : Typesetter.typesetWithWork(state, context);
+        ? typeset(state.rows[0].math, context)
+        : typesetWithWork(state, context);
 
     const layoutCursor = Editor.layoutCursorFromState(
         state.rows[state.rowIndex],

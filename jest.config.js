@@ -6,9 +6,10 @@ module.exports = {
     moduleNameMapper: {
         "^@math-blocks/(.*)$": "<rootDir>/packages/$1/src/index.ts",
     },
-    collectCoverageFrom: ["src/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
+    collectCoverageFrom: ["packages/**/*.{ts,tsx}"],
     coveragePathIgnorePatterns: [
         "/node_modules/",
+        "/stories/",
         "packages/grader/src/test-util.ts",
         "packages/solver/src/test-util.ts",
     ],
