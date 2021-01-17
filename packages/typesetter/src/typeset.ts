@@ -29,7 +29,7 @@ const typesetChildren = (
                           prevChild.value.char,
                       )
                     : true);
-            const glyph = typeset(child, context);
+            const glyph = _typeset(child, context);
 
             if (unary && !column) {
                 glyph.id = child.id;
@@ -50,7 +50,7 @@ const typesetChildren = (
                 return glyph;
             }
         } else {
-            return typeset(child, context);
+            return _typeset(child, context);
         }
     });
 };
@@ -84,7 +84,7 @@ const typesetColumn = (
                           prevChild.value.char,
                       )
                     : true);
-            const glyph = typeset(child, context);
+            const glyph = _typeset(child, context);
             const singleCharCol = col.nodes.length === 1;
             const prevCol = columns[colIndex - 1];
             const prevColPlusMinus =
@@ -113,7 +113,7 @@ const typesetColumn = (
                 return glyph;
             }
         } else {
-            return typeset(child, context);
+            return _typeset(child, context);
         }
     });
 };
@@ -366,7 +366,7 @@ export const typesetWithWork = (
     return verticalLayout;
 };
 
-const typeset = (node: Editor.Node, context: Context): Layout.Node => {
+const _typeset = (node: Editor.Node, context: Context): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
@@ -480,7 +480,7 @@ const typeset = (node: Editor.Node, context: Context): Layout.Node => {
                 }
             }
 
-            const inner = typeset(node.inner, context);
+            const inner = _typeset(node.inner, context);
             inner.id = node.inner.id;
             inner.color = context?.colorMap?.get(inner.id);
 
@@ -605,4 +605,6 @@ const typeset = (node: Editor.Node, context: Context): Layout.Node => {
     }
 };
 
-export default typeset;
+export const typeset = (node: Editor.Node, context: Context): Layout.Box => {
+    return _typeset(node, context) as Layout.Box;
+};

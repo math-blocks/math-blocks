@@ -6,7 +6,7 @@ import fontMetrics from "@math-blocks/metrics";
 import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve, Step} from "@math-blocks/solver";
-import * as Typesetter from "@math-blocks/typesetter";
+import {typeset} from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";
 
@@ -69,10 +69,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const box = Typesetter.typeset(
-                solution,
-                context,
-            ) as Typesetter.Layout.Box;
+            const box = typeset(solution, context);
             return (
                 <MathRenderer box={box} cursor={undefined} cancelRegions={[]} />
             );
