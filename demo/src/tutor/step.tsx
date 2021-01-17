@@ -157,7 +157,7 @@ const highlightMistake = (
     }
 };
 
-const Step: React.SFC<Props> = (props) => {
+const Step: React.FunctionComponent<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();

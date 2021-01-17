@@ -31,7 +31,7 @@ type Props = {
     colorMap?: Map<number, string>;
 };
 
-export const MathEditor: React.SFC<Props> = (props: Props) => {
+export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const rows = props.rows.map((row) => ({
