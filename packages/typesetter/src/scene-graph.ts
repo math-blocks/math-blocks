@@ -42,11 +42,7 @@ export type Rect = {
     fill?: string;
 } & Common;
 
-export type Kern = {
-    type: "kern";
-    x: number;
-    width: number;
-} & Common;
+export type Node = Group | Glyph | Line | Rect;
 
 const unionRect = (rects: Rect[]): Rect => {
     let xMin = Infinity;
@@ -78,14 +74,12 @@ const unionRect = (rects: Rect[]): Rect => {
     };
 };
 
-type Point = {
+export type Point = {
     x: number;
     y: number;
 };
 
-export type Node = Group | Glyph | Line | Rect | Kern;
-
-const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
+const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
     const advance = Layout.getWidth(hrule);
     return {
         type: "line",
@@ -98,17 +92,7 @@ const renderHRule = (hrule: Layout.HRule, loc: Point): Node => {
     };
 };
 
-const renderKern = (kern: Layout.Kern, loc: Point): Node => {
-    return {
-        type: "kern",
-        x: loc.x,
-        width: kern.size,
-        color: kern.color, // this does nothing
-        id: kern.id,
-    };
-};
-
-const renderGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
+const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
     return {
         type: "glyph",
         x: loc.x,
@@ -138,14 +122,14 @@ const right = (node: Node): number => {
     }
 };
 
-type LayoutCursor = {
+export type LayoutCursor = {
     parent: number;
     prev: number;
     next: number;
     selection: boolean;
 };
 
-const renderHBox = ({
+const processHBox = ({
     box,
     cursor,
     cancelRegions,
@@ -244,7 +228,7 @@ const renderHBox = ({
         switch (node.type) {
             case "Box":
                 layer.push(
-                    render({
+                    processBox({
                         box: node,
                         cursor,
                         cancelRegions,
@@ -253,13 +237,14 @@ const renderHBox = ({
                 );
                 break;
             case "HRule":
-                layer.push(renderHRule(node, pen));
+                layer.push(processHRule(node, pen));
                 break;
             case "Glyph":
-                layer.push(renderGlyph(node, pen));
+                layer.push(processGlyph(node, pen));
                 break;
             case "Kern":
-                layer.push(renderKern(node, pen));
+                // We don't need to include kerns in the output since we include
+                // the cursor or select rectangle in the scene graph.
                 break;
             default:
                 throw new UnreachableCaseError(node);
@@ -340,7 +325,7 @@ const renderHBox = ({
     };
 };
 
-const renderVBox = ({
+const processVBox = ({
     box,
     cursor,
     cancelRegions,
@@ -385,7 +370,7 @@ const renderVBox = ({
                     debugger;
                 }
                 layer.push(
-                    render({
+                    processBox({
                         box: node,
                         cursor,
                         cancelRegions,
@@ -396,12 +381,12 @@ const renderVBox = ({
                 break;
             case "HRule":
                 pen.y += height;
-                layer.push(renderHRule(node, pen));
+                layer.push(processHRule(node, pen));
                 pen.y += depth;
                 break;
             case "Glyph":
                 pen.y += height;
-                layer.push(renderGlyph(node, pen));
+                layer.push(processGlyph(node, pen));
                 pen.y += depth;
                 break;
             case "Kern":
@@ -424,7 +409,7 @@ const renderVBox = ({
     };
 };
 
-export const render = ({
+export const processBox = ({
     box,
     cursor,
     cancelRegions,
@@ -444,8 +429,8 @@ export const render = ({
 
     switch (box.kind) {
         case "hbox":
-            return renderHBox({box, cursor, cancelRegions, loc});
+            return processHBox({box, cursor, cancelRegions, loc});
         case "vbox":
-            return renderVBox({box, cursor, cancelRegions, loc});
+            return processVBox({box, cursor, cancelRegions, loc});
     }
 };

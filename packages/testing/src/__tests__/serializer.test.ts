@@ -1,4 +1,4 @@
-import {builders, types} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {serializer} from "../serializer";
 
@@ -6,12 +6,12 @@ expect.addSnapshotSerializer(serializer);
 
 describe("serializer", () => {
     test("number", () => {
-        const ast = builders.number("12");
+        const ast = Semantic.builders.number("12");
         expect(ast).toMatchInlineSnapshot(`12`);
     });
 
     test("identifier", () => {
-        const ast = builders.identifier("a");
+        const ast = Semantic.builders.identifier("a");
         expect(ast).toMatchInlineSnapshot(`a`);
     });
 
@@ -28,14 +28,14 @@ describe("serializer", () => {
     });
 
     test("neg", () => {
-        const ast = builders.number("-12");
+        const ast = Semantic.builders.number("-12");
         expect(ast).toMatchInlineSnapshot(`(neg 12)`);
     });
 
     test("neg (subtraction)", () => {
-        const ast = builders.add([
-            builders.identifier("x"),
-            builders.neg(builders.number("5"), true),
+        const ast = Semantic.builders.add([
+            Semantic.builders.identifier("x"),
+            Semantic.builders.neg(Semantic.builders.number("5"), true),
         ]);
         expect(ast).toMatchInlineSnapshot(`
             (add
@@ -47,52 +47,55 @@ describe("serializer", () => {
     test("not", () => {
         const ast = {
             type: "not",
-            arg: builders.identifier("A"),
+            arg: Semantic.builders.identifier("A"),
         };
         expect(ast).toMatchInlineSnapshot(`(not A)`);
     });
 
     test("mul (explicit)", () => {
-        const ast = builders.mul([
-            builders.number("2"),
-            builders.identifier("x"),
+        const ast = Semantic.builders.mul([
+            Semantic.builders.number("2"),
+            Semantic.builders.identifier("x"),
         ]);
         expect(ast).toMatchInlineSnapshot(`(mul.exp 2 x)`);
     });
 
     test("mul (implicit)", () => {
-        const ast = builders.mul(
-            [builders.number("2"), builders.identifier("x")],
+        const ast = Semantic.builders.mul(
+            [Semantic.builders.number("2"), Semantic.builders.identifier("x")],
             true,
         );
         expect(ast).toMatchInlineSnapshot(`(mul.imp 2 x)`);
     });
 
     test("add", () => {
-        const ast = builders.add([
-            builders.identifier("x"),
-            builders.number("5"),
+        const ast = Semantic.builders.add([
+            Semantic.builders.identifier("x"),
+            Semantic.builders.number("5"),
         ]);
         expect(ast).toMatchInlineSnapshot(`(add x 5)`);
     });
 
     test("root", () => {
-        const ast = builders.sqrt(builders.identifier("x"));
+        const ast = Semantic.builders.sqrt(Semantic.builders.identifier("x"));
         expect(ast).toMatchInlineSnapshot(`(root :radicand x :index 2)`);
     });
 
     test("pow", () => {
-        const ast = builders.pow(
-            builders.identifier("x"),
-            builders.number("2"),
+        const ast = Semantic.builders.pow(
+            Semantic.builders.identifier("x"),
+            Semantic.builders.number("2"),
         );
         expect(ast).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
     });
 
     test("pow (with grandchildren)", () => {
-        const ast = builders.pow(
-            builders.add([builders.identifier("x"), builders.number("1")]),
-            builders.number("2"),
+        const ast = Semantic.builders.pow(
+            Semantic.builders.add([
+                Semantic.builders.identifier("x"),
+                Semantic.builders.number("1"),
+            ]),
+            Semantic.builders.number("2"),
         );
         expect(ast).toMatchInlineSnapshot(`
             (pow
@@ -108,11 +111,11 @@ describe("serializer", () => {
 
     test("unhandled node", () => {
         expect(() => {
-            const ast: types.Node = {
+            const ast: Semantic.types.Node = {
                 id: 0,
                 type: "log",
-                base: builders.number("2"),
-                arg: builders.identifier("x"),
+                base: Semantic.builders.number("2"),
+                arg: Semantic.builders.identifier("x"),
             };
             serializer.print(
                 ast,

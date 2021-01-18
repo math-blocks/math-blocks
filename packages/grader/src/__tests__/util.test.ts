@@ -1,9 +1,9 @@
-import {builders, util} from "@math-blocks/semantic";
-import {serializer} from "@math-blocks/testing";
+import * as Semantic from "@math-blocks/semantic";
+import * as Testing from "@math-blocks/testing";
 
 import {primeDecomp, findNodeById, replaceNodeWithId} from "../checks/util";
 
-expect.addSnapshotSerializer(serializer);
+expect.addSnapshotSerializer(Testing.serializer);
 
 describe("primeDecomp", () => {
     it("should return an empty array for decimal numbers", () => {
@@ -33,7 +33,7 @@ describe("primeDecomp", () => {
 
 describe("findNodeById", () => {
     test("finds the root node", () => {
-        const root = builders.number("1");
+        const root = Semantic.builders.number("1");
 
         const node = findNodeById(root, root.id);
 
@@ -41,9 +41,9 @@ describe("findNodeById", () => {
     });
 
     test("finds a node in an array", () => {
-        const one = builders.number("1");
-        const two = builders.number("2");
-        const root = builders.add([one, two]);
+        const one = Semantic.builders.number("1");
+        const two = Semantic.builders.number("2");
+        const root = Semantic.builders.add([one, two]);
 
         const node = findNodeById(root, two.id);
 
@@ -51,9 +51,9 @@ describe("findNodeById", () => {
     });
 
     test("finds a node in named property", () => {
-        const x = builders.number("x");
-        const two = builders.number("2");
-        const root = builders.pow(x, two);
+        const x = Semantic.builders.number("x");
+        const two = Semantic.builders.number("2");
+        const root = Semantic.builders.pow(x, two);
 
         const node = findNodeById(root, two.id);
 
@@ -61,7 +61,7 @@ describe("findNodeById", () => {
     });
 
     test("doesn't find a node", () => {
-        const root = builders.number("1");
+        const root = Semantic.builders.number("1");
 
         const node = findNodeById(root, -1);
 
@@ -71,10 +71,10 @@ describe("findNodeById", () => {
 
 describe("replaceNode", () => {
     test("replaces a node in an array", () => {
-        const one = builders.number("1");
-        const two = builders.number("2");
-        const root = builders.add([one, two]);
-        const three = builders.number("3");
+        const one = Semantic.builders.number("1");
+        const two = Semantic.builders.number("2");
+        const root = Semantic.builders.add([one, two]);
+        const three = Semantic.builders.number("3");
 
         replaceNodeWithId(root, two.id, three);
 
@@ -82,10 +82,10 @@ describe("replaceNode", () => {
     });
 
     test("finds a node in named property", () => {
-        const x = builders.number("x");
-        const two = builders.number("2");
-        const root = builders.pow(x, two);
-        const three = builders.number("3");
+        const x = Semantic.builders.number("x");
+        const two = Semantic.builders.number("2");
+        const root = Semantic.builders.pow(x, two);
+        const three = Semantic.builders.number("3");
 
         replaceNodeWithId(root, two.id, three);
 
@@ -96,25 +96,37 @@ describe("replaceNode", () => {
 describe("util.deepEquals", () => {
     test("ignores ids", () => {
         expect(
-            util.deepEquals(builders.number("1"), builders.number("1")),
+            Semantic.util.deepEquals(
+                Semantic.builders.number("1"),
+                Semantic.builders.number("1"),
+            ),
         ).toBe(true);
     });
 
     test("returns false if the trees are different", () => {
         expect(
-            util.deepEquals(builders.number("1"), builders.number("2")),
+            Semantic.util.deepEquals(
+                Semantic.builders.number("1"),
+                Semantic.builders.number("2"),
+            ),
         ).toBe(false);
     });
 
     test("returns false if implicit mul property doesn't match", () => {
         expect(
-            util.deepEquals(
-                builders.mul(
-                    [builders.number("1"), builders.number("2")],
+            Semantic.util.deepEquals(
+                Semantic.builders.mul(
+                    [
+                        Semantic.builders.number("1"),
+                        Semantic.builders.number("2"),
+                    ],
                     true,
                 ),
-                builders.mul(
-                    [builders.number("1"), builders.number("2")],
+                Semantic.builders.mul(
+                    [
+                        Semantic.builders.number("1"),
+                        Semantic.builders.number("2"),
+                    ],
                     false,
                 ),
             ),
@@ -123,43 +135,58 @@ describe("util.deepEquals", () => {
 
     test("returns false if subtraction neg property doesn't match", () => {
         expect(
-            util.deepEquals(
-                builders.neg(builders.number("1"), true),
-                builders.neg(builders.number("1"), false),
+            Semantic.util.deepEquals(
+                Semantic.builders.neg(Semantic.builders.number("1"), true),
+                Semantic.builders.neg(Semantic.builders.number("1"), false),
             ),
         ).toBe(false);
     });
 });
 
-describe("util.difference", () => {
+describe("Semantic.util.difference", () => {
     it("should return an empty array if both have the same values", () => {
-        const left = [builders.number("1"), builders.number("2")];
-        const right = [builders.number("1"), builders.number("2")];
-        const result = util.difference(left, right);
+        const left = [
+            Semantic.builders.number("1"),
+            Semantic.builders.number("2"),
+        ];
+        const right = [
+            Semantic.builders.number("1"),
+            Semantic.builders.number("2"),
+        ];
+        const result = Semantic.util.difference(left, right);
 
         expect(result).toEqual([]);
     });
 
-    it("should return the util.difference for unique values", () => {
-        const left = [builders.number("1"), builders.number("2")];
-        const right = [builders.number("2")];
-        const result = util.difference(left, right);
+    it("should return the Semantic.util.difference for unique values", () => {
+        const left = [
+            Semantic.builders.number("1"),
+            Semantic.builders.number("2"),
+        ];
+        const right = [Semantic.builders.number("2")];
+        const result = Semantic.util.difference(left, right);
 
         expect(result).toEqual([left[0]]);
     });
 
     it("should return the original left array if there are no matches", () => {
-        const left = [builders.number("1"), builders.number("2")];
-        const right = [builders.number("3")];
-        const result = util.difference(left, right);
+        const left = [
+            Semantic.builders.number("1"),
+            Semantic.builders.number("2"),
+        ];
+        const right = [Semantic.builders.number("3")];
+        const result = Semantic.util.difference(left, right);
 
         expect(result).toEqual(left);
     });
 
     it("should return the handle duplicates", () => {
-        const left = [builders.number("1"), builders.number("1")];
-        const right = [builders.number("1")];
-        const result = util.difference(left, right);
+        const left = [
+            Semantic.builders.number("1"),
+            Semantic.builders.number("1"),
+        ];
+        const right = [Semantic.builders.number("1")];
+        const result = Semantic.util.difference(left, right);
 
         expect(result).toEqual([left[1]]);
     });

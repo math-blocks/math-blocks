@@ -1,11 +1,11 @@
 import React from "react";
 import {action} from "@storybook/addon-actions";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 
 import MathEditor from "../src/math-editor";
 
-const {row, glyph} = Editor;
+const {row, glyph} = Editor.builders;
 
 export default {
     title: "MathEditor",

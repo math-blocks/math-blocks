@@ -6,8 +6,7 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../editor"},
-    {"path": "../editor-parser"},
+    {"path": "../editor-core"},
     {"path": "../metrics"},
     {"path": "../semantic"},
     {"path": "../typesetter"}

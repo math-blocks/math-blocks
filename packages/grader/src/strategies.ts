@@ -1,4 +1,4 @@
-import {types} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Check, Result, Context} from "./types";
 
@@ -60,8 +60,8 @@ function notUndefined<T>(x: T | undefined): x is T {
  */
 const runCheck = (
     check: Check,
-    prev: types.Node,
-    next: types.Node,
+    prev: Semantic.types.Node,
+    next: Semantic.types.Node,
     context: Context,
 ): Result | undefined => {
     // TODO: create a copy of context before calling 'check' just in case.

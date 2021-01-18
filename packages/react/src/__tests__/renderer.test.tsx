@@ -5,8 +5,8 @@ import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
 
 import * as Core from "@math-blocks/core";
-import {typeset, Layout} from "@math-blocks/typesetter";
-import * as Editor from "@math-blocks/editor";
+import {typeset} from "@math-blocks/typesetter";
+import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
@@ -22,7 +22,7 @@ import {
     Selection,
 } from "../../stories/2-math-renderer.stories";
 
-const {glyph, row, subsup} = Editor;
+const {glyph, row, subsup} = Editor.builders;
 
 const fontSize = 60;
 const context = {
@@ -139,10 +139,10 @@ describe("renderer", () => {
         });
 
         test("subscripts", () => {
-            const recurrenceRelation = typeset(
+            const scene = typeset(
                 row([
                     glyph("a"),
-                    Editor.Util.sup("n"),
+                    Editor.util.sup("n"),
                     glyph("="),
                     glyph("a"),
                     subsup([glyph("n"), glyph("\u2212"), glyph("1")]),
@@ -151,11 +151,9 @@ describe("renderer", () => {
                     subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
                 ]),
                 context,
-            ) as Layout.Box;
+            );
 
-            expect(
-                <MathRenderer box={recurrenceRelation} />,
-            ).toMatchSVGSnapshot();
+            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
     });
 

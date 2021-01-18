@@ -1,5 +1,5 @@
-import {types} from "@math-blocks/semantic";
-import {parse, print} from "@math-blocks/testing";
+import * as Semantic from "@math-blocks/semantic";
+import * as Testing from "@math-blocks/testing";
 
 import {applyStep} from "../../../apply-step";
 
@@ -12,7 +12,10 @@ expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
 // TODO: recursively handle steps with sub-steps
 // TODO: dedupe
-const applySteps = (node: types.Node, steps: Step[]): types.Node => {
+const applySteps = (
+    node: Semantic.types.Node,
+    steps: Step[],
+): Semantic.types.Node => {
     let result = node;
     for (const step of steps) {
         result = applyStep(result, step);
@@ -20,7 +23,7 @@ const applySteps = (node: types.Node, steps: Step[]): types.Node => {
     return result;
 };
 
-const distribute = (node: types.Node): Step => {
+const distribute = (node: Semantic.types.Node): Step => {
     const result = _distribute(node, []);
     if (!result) {
         throw new Error("no step returned");
@@ -30,13 +33,15 @@ const distribute = (node: types.Node): Step => {
 
 describe("distribution", () => {
     test("a(b + c) -> ab + ac", () => {
-        const ast = parse("a(b + c)");
+        const ast = Testing.parse("a(b + c)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("ab + ac");
-        expect(print(applySteps(ast, step.substeps))).toEqual("ab + ac");
+        expect(Testing.print(step.after)).toEqual("ab + ac");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "ab + ac",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -44,13 +49,15 @@ describe("distribution", () => {
     });
 
     test("x + a(b + c) -> x + ab + ac", () => {
-        const ast = parse("x + a(b + c)");
+        const ast = Testing.parse("x + a(b + c)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("x + ab + ac");
-        expect(print(applySteps(ast, step.substeps))).toEqual("x + ab + ac");
+        expect(Testing.print(step.after)).toEqual("x + ab + ac");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "x + ab + ac",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -58,13 +65,13 @@ describe("distribution", () => {
     });
 
     test("3(x + 1) -> 3x + 3", () => {
-        const ast = parse("3(x + 1)");
+        const ast = Testing.parse("3(x + 1)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x + 3");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3x + 3");
+        expect(Testing.print(step.after)).toEqual("3x + 3");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual("3x + 3");
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -77,13 +84,13 @@ describe("distribution", () => {
     });
 
     test("(x + 1)(3) -> 3x + 3", () => {
-        const ast = parse("(x + 1)(3)");
+        const ast = Testing.parse("(x + 1)(3)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x + 3");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3x + 3");
+        expect(Testing.print(step.after)).toEqual("3x + 3");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual("3x + 3");
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -108,13 +115,13 @@ describe("distribution", () => {
     });
 
     test("(x - 1)(3) -> 3x - 3", () => {
-        const ast = parse("(x - 1)(3)");
+        const ast = Testing.parse("(x - 1)(3)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x - 3");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3x - 3");
+        expect(Testing.print(step.after)).toEqual("3x - 3");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual("3x - 3");
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
@@ -145,13 +152,15 @@ describe("distribution", () => {
     });
 
     test("3(x + 1) + 4 -> 3x + 3 + 4", () => {
-        const ast = parse("3(x + 1) + 4");
+        const ast = Testing.parse("3(x + 1) + 4");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x + 3 + 4");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3x + 3 + 4");
+        expect(Testing.print(step.after)).toEqual("3x + 3 + 4");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "3x + 3 + 4",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -170,13 +179,15 @@ describe("distribution", () => {
     });
 
     test("3(x + y + z) -> 3x + 3y + 3z", () => {
-        const ast = parse("3(x + y + z)");
+        const ast = Testing.parse("3(x + y + z)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x + 3y + 3z");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3x + 3y + 3z");
+        expect(Testing.print(step.after)).toEqual("3x + 3y + 3z");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "3x + 3y + 3z",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -184,13 +195,15 @@ describe("distribution", () => {
     });
 
     test("(-2)(x - 3) -> -2x + 6", () => {
-        const ast = parse("(-2)(x - 3)");
+        const ast = Testing.parse("(-2)(x - 3)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("-2x + 6");
-        expect(print(applySteps(ast, step.substeps))).toEqual("-2x + 6");
+        expect(Testing.print(step.after)).toEqual("-2x + 6");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "-2x + 6",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
@@ -228,13 +241,15 @@ describe("distribution", () => {
     });
 
     test("3 - (x + 1) -> -x + 2", () => {
-        const ast = parse("3 - (x + 1)");
+        const ast = Testing.parse("3 - (x + 1)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3 - x - 1");
-        expect(print(applySteps(ast, step.substeps))).toEqual("3 - x - 1");
+        expect(Testing.print(step.after)).toEqual("3 - x - 1");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "3 - x - 1",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "negation is the same as multipyling by one",
@@ -269,13 +284,15 @@ describe("distribution", () => {
     });
 
     test("(ab)(xy - yz)", () => {
-        const ast = parse("(ab)(xy - yz)");
+        const ast = Testing.parse("(ab)(xy - yz)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("abxy - abyz");
-        expect(print(applySteps(ast, step.substeps))).toEqual("abxy - abyz");
+        expect(Testing.print(step.after)).toEqual("abxy - abyz");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "abxy - abyz",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
@@ -307,13 +324,15 @@ describe("distribution", () => {
     });
 
     test("(-ab)(xy - yz)", () => {
-        const ast = parse("(-ab)(xy - yz)");
+        const ast = Testing.parse("(-ab)(xy - yz)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("-abxy + abyz");
-        expect(print(applySteps(ast, step.substeps))).toEqual("-abxy + abyz");
+        expect(Testing.print(step.after)).toEqual("-abxy + abyz");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "-abxy + abyz",
+        );
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",
@@ -325,13 +344,13 @@ describe("distribution", () => {
 
     // `distribute` only performs one distribution at a time
     test("3(x + 1) + 4(x - 1) -> 3x + 3 + 4(x - 1)", () => {
-        const ast = parse("3(x + 1) + 4(x - 1)");
+        const ast = Testing.parse("3(x + 1) + 4(x - 1)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("3x + 3 + 4(x - 1)");
-        expect(print(applySteps(ast, step.substeps))).toEqual(
+        expect(Testing.print(step.after)).toEqual("3x + 3 + 4(x - 1)");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
             "3x + 3 + 4(x - 1)",
         );
 
@@ -351,13 +370,13 @@ describe("distribution", () => {
     });
 
     test("x(x + 1) -> xx + x", () => {
-        const ast = parse("x(x + 1)");
+        const ast = Testing.parse("x(x + 1)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("xx + x");
-        expect(print(applySteps(ast, step.substeps))).toEqual("xx + x");
+        expect(Testing.print(step.after)).toEqual("xx + x");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual("xx + x");
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "multiply each term",
@@ -371,13 +390,13 @@ describe("distribution", () => {
     });
 
     test("x(x - 1) -> xx - x", () => {
-        const ast = parse("x(x - 1)");
+        const ast = Testing.parse("x(x - 1)");
 
         const step = distribute(ast);
 
         expect(step.message).toEqual("distribute");
-        expect(print(step.after)).toEqual("xx - x");
-        expect(print(applySteps(ast, step.substeps))).toEqual("xx - x");
+        expect(Testing.print(step.after)).toEqual("xx - x");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual("xx - x");
 
         expect(step.substeps.map((substep) => substep.message)).toEqual([
             "subtraction is the same as adding the negative",

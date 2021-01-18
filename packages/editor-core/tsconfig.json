@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./out",
+    "rootDir": ".",
+  },
+  "references": [
+    {"path": "../core"},
+    {"path": "../parser-factory"},
+    {"path": "../semantic"},
+    {"path": "../testing"}
+  ]
+}

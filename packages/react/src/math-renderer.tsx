@@ -1,13 +1,7 @@
 import * as React from "react";
 
-import {SceneGraph, Layout} from "@math-blocks/typesetter";
-
-type LayoutCursor = {
-    parent: number;
-    prev: number;
-    next: number;
-    selection: boolean;
-};
+import {UnreachableCaseError} from "@math-blocks/core";
+import {SceneGraph} from "@math-blocks/typesetter";
 
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
@@ -64,35 +58,38 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
             {layers.flatMap((layer, i) =>
                 layer.map((child, j) => {
                     const key = `${i}-${j}`;
-                    switch (child.type) {
-                        case "group":
-                            return <Group key={key} {...child} />;
-                        case "glyph":
-                            return <Glyph key={key} {...child} />;
-                        case "line":
-                            return <Line key={key} {...child} />;
-                        case "rect":
-                            return <Rect key={key} {...child} />;
-                    }
+                    return <Node {...child} key={key} />;
                 }),
             )}
         </g>
     );
 };
 
+const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
+    switch (props.type) {
+        case "glyph":
+            return <Glyph {...props} />;
+        case "group":
+            return <Group {...props} />;
+        case "line":
+            return <Line {...props} />;
+        case "rect":
+            return <Rect {...props} />;
+        default:
+            throw new UnreachableCaseError(props);
+    }
+};
+
 const CURSOR_WIDTH = 2;
 
 type Props = {
-    box: Layout.Box;
-    cursor?: LayoutCursor;
-    cancelRegions?: LayoutCursor[];
+    scene: SceneGraph.Group;
     style?: React.CSSProperties;
 };
 
 const MathRenderer: React.FunctionComponent<Props> = (props) => {
-    const {box, cursor, cancelRegions, style} = props;
-    const group = SceneGraph.render({box, cursor, cancelRegions});
-    const {width, height} = group;
+    const {scene, style} = props;
+    const {width, height} = scene;
     const padding = CURSOR_WIDTH / 2;
     const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
 
@@ -104,7 +101,7 @@ const MathRenderer: React.FunctionComponent<Props> = (props) => {
             height={height + CURSOR_WIDTH}
             style={style}
         >
-            <Group {...group} />
+            <Group {...scene} />
         </svg>
     );
 };

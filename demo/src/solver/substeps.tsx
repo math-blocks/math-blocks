@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
@@ -35,7 +35,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                 const before = current;
 
                 const after = applyStep(before, substep);
-                const afterBox = typeset(Editor.print(after), context);
+                const afterScene = typeset(Editor.print(after), context);
 
                 current = after;
 
@@ -58,10 +58,8 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                         )}
                         {substep.substeps.length === 0 && (
                             <MathRenderer
-                                box={afterBox}
-                                cursor={undefined}
+                                scene={afterScene}
                                 style={{marginBottom: 32}}
-                                cancelRegions={[]}
                             />
                         )}
                     </React.Fragment>

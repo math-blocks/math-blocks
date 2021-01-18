@@ -2,11 +2,11 @@ import * as React from "react";
 import {StyleSheet, css} from "aphrodite";
 
 import {MathEditor, MathKeypad} from "@math-blocks/react";
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 
 import EditingPanel from "./editing-panel";
 
-const startingValue = Editor.Util.row(
+const startingValue = Editor.util.row(
     "\u00082x\u0008+\u00085\u0008\u0008=\u0008\u000810\u0008",
 );
 

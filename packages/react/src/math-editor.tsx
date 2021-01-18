@@ -2,7 +2,7 @@
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
@@ -12,14 +12,14 @@ import useEventListener from "./use-event-listener";
 const {useEffect, useState, useRef} = React;
 
 type Props = {
-    rows: Editor.Row[];
+    rows: Editor.types.Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Row) => unknown;
-    onChange?: (value: Editor.Row) => unknown;
+    onSubmit?: (value: Editor.types.Row) => unknown;
+    onChange?: (value: Editor.types.Row) => unknown;
 
     /**
      * Style
@@ -101,17 +101,16 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         colorMap: props.colorMap,
     };
 
-    // console.log(props.colorMap);
+    const options = {
+        cursor: active
+            ? Editor.layoutCursorFromState(state.rows[state.rowIndex])
+            : undefined,
+        cancelRegions: cancelRegions,
+    };
 
-    const box = props.stepChecker
-        ? typeset(state.rows[0].math, context)
-        : typesetWithWork(state, context);
-
-    const layoutCursor = Editor.layoutCursorFromState(
-        state.rows[state.rowIndex],
-    );
-    // console.log("cursor: ", state.rows[state.rowIndex].cursor);
-    // console.log(layoutCursor);
+    const scene = props.stepChecker
+        ? typeset(state.rows[0].math, context, options)
+        : typesetWithWork(state, context, options);
 
     return (
         <div
@@ -123,11 +122,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             style={style}
             role="textbox"
         >
-            <MathRenderer
-                box={box}
-                cursor={active ? layoutCursor : undefined}
-                cancelRegions={cancelRegions}
-            />
+            <MathRenderer scene={scene} />
         </div>
     );
 };

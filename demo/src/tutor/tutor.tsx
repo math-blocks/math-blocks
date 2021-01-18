@@ -3,7 +3,7 @@ import * as React from "react";
 import {useSelector, useDispatch} from "react-redux";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
@@ -38,7 +38,7 @@ const Tutor: React.FunctionComponent = () => {
                     stepChecker={true}
                     focus={mode === "edit"}
                     style={{marginTop: 8}}
-                    onChange={(value: Editor.Row) => {
+                    onChange={(value: Editor.types.Row) => {
                         dispatch({
                             type: "set",
                             steps: [
@@ -60,7 +60,7 @@ const Tutor: React.FunctionComponent = () => {
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}
-                            onChange={(value: Editor.Row) => {
+                            onChange={(value: Editor.types.Row) => {
                                 dispatch({type: "update", value});
                             }}
                         />

@@ -1,14 +1,13 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor";
-import {types} from "@math-blocks/semantic";
-import {parse} from "@math-blocks/editor-parser";
+import * as Editor from "@math-blocks/editor-core";
+import * as Semantic from "@math-blocks/semantic";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../src/math-renderer";
 
-const {row, glyph, frac, limits, root} = Editor;
+const {row, glyph, frac, limits, root} = Editor.builders;
 
 export default {
     title: "MathRenderer",
@@ -35,9 +34,9 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context);
+    const scene = typeset(math, context);
 
-    return <MathRenderer box={box} />;
+    return <MathRenderer scene={scene} />;
 };
 
 export const Equation: React.FunctionComponent<EmptyProps> = () => {
@@ -58,12 +57,12 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context);
+    const scene = typeset(math, context);
 
-    return <MathRenderer box={box} />;
+    return <MathRenderer scene={scene} />;
 };
 
-const rowsToState = (rows: Editor.Row[]): Editor.State => {
+const rowsToState = (rows: Editor.types.Row[]): Editor.State => {
     return {
         rows: rows.map((row) => ({
             math: row,
@@ -86,17 +85,17 @@ export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const work = typesetWithWork(
+    const scene = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
         ]),
         context,
     );
 
-    return <MathRenderer box={work} />;
+    return <MathRenderer scene={scene} />;
 };
 
 export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
@@ -108,35 +107,47 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const above1 = Editor.Util.row(
+    const above1 = Editor.util.row(
         "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
     );
-    const below1 = Editor.Util.row(
+    const below1 = Editor.util.row(
         "\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008",
     );
+
+    const cursor: Editor.types.Cursor = {
+        path: [],
+        prev: 0,
+        next: 1,
+    };
 
     // TODO: render paren wrapped negatives, like (-5) with the correct kerning
     const linearEquation = typesetWithWork(
         rowsToState([above1, below1]),
         context,
+        {
+            cursor: Editor.layoutCursorFromState({
+                math: below1,
+                cursor: cursor,
+            }),
+        },
     );
 
     const linearEquation2 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u00082x\u0008+\u000810\u0008=\u0008\u000820\u0008",
             ),
-            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
         ]),
         context,
     );
 
     const linearEquation3 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008(2x+1)\u0008+\u00085\u0008-\u0008y\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u0008+\u0008123\u0008\u0008\u0008\u0008+\u00085\u0008",
             ),
         ]),
@@ -145,10 +156,10 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 
     const linearEquation4 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008-\u00085\u0008\u0008\u0008\u0008-\u00085\u0008",
             ),
         ]),
@@ -157,40 +168,29 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 
     const linearEquation5 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008+\u0008(-5)\u0008\u0008\u0008\u0008+\u0008(-5)\u0008",
             ),
         ]),
         context,
     );
 
-    const cursor: Editor.Cursor = {
-        path: [],
-        prev: 0,
-        next: 1,
-    };
-
-    const layoutCursor = Editor.layoutCursorFromState({
-        math: below1,
-        cursor: cursor,
-    });
-
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
-            <MathRenderer box={linearEquation} cursor={layoutCursor} />
-            <MathRenderer box={linearEquation2} />
-            <MathRenderer box={linearEquation3} />
-            <MathRenderer box={linearEquation4} />
-            <MathRenderer box={linearEquation5} />
+            <MathRenderer scene={linearEquation} />
+            <MathRenderer scene={linearEquation2} />
+            <MathRenderer scene={linearEquation3} />
+            <MathRenderer scene={linearEquation4} />
+            <MathRenderer scene={linearEquation5} />
         </div>
     );
 };
 
 export const Cursor: React.FunctionComponent<EmptyProps> = () => {
-    const cursor: Editor.Cursor = {
+    const cursor: Editor.types.Cursor = {
         path: [],
         prev: 0,
         next: 1,
@@ -206,11 +206,6 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
 
-    const layoutCursor = Editor.layoutCursorFromState({
-        math,
-        cursor,
-    });
-
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -219,11 +214,20 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
+    const options = {
+        cursor: Editor.layoutCursorFromState({
+            math,
+            cursor,
+        }),
+    };
+
+    const scene = typeset(math, context, options);
+
+    return <MathRenderer scene={scene} />;
 };
 
 export const Selection: React.FunctionComponent<EmptyProps> = () => {
-    const cursor: Editor.Cursor = {
+    const cursor: Editor.types.Cursor = {
         path: [],
         prev: 0,
         next: 1,
@@ -245,12 +249,6 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
 
-    const layoutCursor = Editor.layoutCursorFromState({
-        math,
-        cursor,
-        selectionStart,
-    });
-
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -259,7 +257,17 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
+    const options = {
+        cursor: Editor.layoutCursorFromState({
+            math,
+            cursor,
+            selectionStart,
+        }),
+    };
+
+    const scene = typeset(math, context, options);
+
+    return <MathRenderer scene={scene} />;
 };
 
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
@@ -274,18 +282,18 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const pythagoras = typeset(
         row([
             glyph("a"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
             glyph("+"),
             glyph("b"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
             glyph("="),
             glyph("c"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
         ]),
         context,
     );
 
-    return <MathRenderer box={pythagoras} />;
+    return <MathRenderer scene={pythagoras} />;
 };
 
 export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
@@ -309,7 +317,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
                     root(
                         [
                             glyph("b"),
-                            Editor.Util.sup("2"),
+                            Editor.util.sup("2"),
                             glyph("\u2212"),
                             glyph("4"),
                             glyph("a"),
@@ -324,7 +332,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={quadraticEquation} />;
+    return <MathRenderer scene={quadraticEquation} />;
 };
 
 export const Limit: React.FunctionComponent<EmptyProps> = () => {
@@ -349,7 +357,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={lim} />;
+    return <MathRenderer scene={lim} />;
 };
 
 export const Summation: React.FunctionComponent<EmptyProps> = () => {
@@ -368,12 +376,12 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
                 [glyph("i"), glyph("="), glyph("0")],
                 [glyph("\u221e")],
             ),
-            frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
+            frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
         ]),
         context,
     );
 
-    return <MathRenderer box={sum} />;
+    return <MathRenderer scene={sum} />;
 };
 
 export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
@@ -387,7 +395,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         colorMap: colorMap,
     };
 
-    const fracNode = frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]);
+    const fracNode = frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]);
 
     colorMap.set(fracNode.id, "darkcyan");
     colorMap.set(fracNode.children[1].id, "orange");
@@ -398,13 +406,13 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
 
     const sum = typeset(fracNode, context);
 
-    return <MathRenderer box={sum} />;
+    return <MathRenderer scene={sum} />;
 };
 
 export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.Util.row("8+10+12+14");
+    const editNode = Editor.util.row("8+10+12+14");
 
-    const semNode = parse(editNode) as types.Add;
+    const semNode = Editor.parse(editNode) as Semantic.types.Add;
 
     const num10 = semNode.args[1];
     const num12 = semNode.args[2];
@@ -433,15 +441,15 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };
 
 export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.Util.row("(11+x)(12-y)");
+    const editNode = Editor.util.row("(11+x)(12-y)");
 
-    const semNode = parse(editNode) as types.Mul;
+    const semNode = Editor.parse(editNode) as Semantic.types.Mul;
 
-    const secondTerm = semNode.args[1] as types.Add;
+    const secondTerm = semNode.args[1] as Semantic.types.Add;
 
     const num12 = secondTerm.args[0];
     const sum0 = semNode.args[0];
@@ -468,14 +476,14 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };
 
 export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
+    const editNode = Editor.builders.row([Editor.util.frac("11+x", "12-y")]);
 
-    const semNode = parse(editNode) as types.Div;
-    const denominator = semNode.args[1] as types.Add;
+    const semNode = Editor.parse(editNode) as Semantic.types.Div;
+    const denominator = semNode.args[1] as Semantic.types.Add;
 
     const num12 = denominator.args[0];
     const sum0 = semNode.args[0];
@@ -483,17 +491,17 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     const colorMap = new Map<number, string>();
     let node;
     if (num12.loc) {
-        node = Editor.Util.nodeAtPath(editNode, num12.loc.path);
+        node = Editor.util.nodeAtPath(editNode, num12.loc.path);
         for (let i = num12.loc.start; i < num12.loc.end; i++) {
-            if (Editor.Util.hasChildren(node)) {
+            if (Editor.util.hasChildren(node)) {
                 colorMap.set(node.children[i].id, "darkCyan");
             }
         }
     }
     if (sum0.loc) {
-        node = Editor.Util.nodeAtPath(editNode, sum0.loc.path);
+        node = Editor.util.nodeAtPath(editNode, sum0.loc.path);
         for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-            if (Editor.Util.hasChildren(node)) {
+            if (Editor.util.hasChildren(node)) {
                 colorMap.set(node.children[i].id, "orange");
             }
         }
@@ -509,5 +517,5 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };

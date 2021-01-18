@@ -1,7 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor";
-import {parse} from "@math-blocks/editor-parser";
+import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
@@ -10,7 +9,9 @@ import {typeset} from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";
 
-const question: Editor.Row = Editor.Util.row("2x+5=10");
+const {parse} = Editor;
+
+const question: Editor.types.Row = Editor.util.row("2x+5=10");
 
 // TODO:
 // - show error messages in the UI
@@ -21,7 +22,9 @@ const question: Editor.Row = Editor.Util.row("2x+5=10");
 
 const SolverPage: React.FunctionComponent = () => {
     const [input, setInput] = React.useState(question);
-    const [solution, setSolution] = React.useState<Editor.Node | null>(null);
+    const [solution, setSolution] = React.useState<Editor.types.Node | null>(
+        null,
+    );
     const [step, setStep] = React.useState<Step | null>(null);
 
     const handleSimplify = (): void => {
@@ -69,10 +72,8 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const box = typeset(solution, context);
-            return (
-                <MathRenderer box={box} cursor={undefined} cancelRegions={[]} />
-            );
+            const scene = typeset(solution, context);
+            return <MathRenderer scene={scene} />;
         }
         return null;
     };
@@ -92,7 +93,7 @@ const SolverPage: React.FunctionComponent = () => {
                     rows={[input]}
                     stepChecker={true}
                     focus={true}
-                    onChange={(value: Editor.Row) => setInput(value)}
+                    onChange={(value: Editor.types.Row) => setInput(value)}
                 />
             </div>
             <div style={styles.gap}></div>

@@ -1,18 +1,18 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {simplifyMul} from "../util";
 
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
-    node: types.Neg,
+    node: Semantic.types.Neg,
     substeps: Step[],
-): types.NumericNode[] | undefined => {
+): Semantic.types.NumericNode[] | undefined => {
     const add = node.arg;
-    const mulNegOne = builders.mul(
-        [builders.number("-1"), add],
+    const mulNegOne = Semantic.builders.mul(
+        [Semantic.builders.number("-1"), add],
         true,
-    ) as types.Mul;
+    ) as Semantic.types.Mul;
     substeps.push({
         message: "negation is the same as multipyling by one",
         before: node,
@@ -24,11 +24,11 @@ const distSub = (
 
 // a - b -> a + -b
 const subToNeg = (
-    before: types.NumericNode,
+    before: Semantic.types.NumericNode,
     substeps: Step[],
-): types.NumericNode => {
-    if (util.isSubtraction(before)) {
-        const after = builders.neg(before.arg, false);
+): Semantic.types.NumericNode => {
+    if (Semantic.util.isSubtraction(before)) {
+        const after = Semantic.builders.neg(before.arg, false);
         substeps.push({
             message: "subtraction is the same as adding the negative",
             before,
@@ -42,12 +42,12 @@ const subToNeg = (
 
 // a + -b -> a - b
 const negToSub = (
-    before: types.NumericNode,
+    before: Semantic.types.NumericNode,
     index: number,
     substeps: Step[],
-): types.NumericNode => {
+): Semantic.types.NumericNode => {
     if (before.type === "neg" && !before.subtraction && index > 0) {
-        const after = builders.neg(before.arg, true);
+        const after = Semantic.builders.neg(before.arg, true);
         substeps.push({
             message: "adding the negative is the same as subtraction",
             before,
@@ -61,9 +61,9 @@ const negToSub = (
 
 // a(b + c) -> ab + bc
 const distMul = (
-    node: Readonly<types.Mul>,
+    node: Readonly<Semantic.types.Mul>,
     substeps: Step[],
-): types.NumericNode[] | undefined => {
+): Semantic.types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
         if (node.args[1].type === "add") {
@@ -84,7 +84,10 @@ const distMul = (
             // If we changed subtractions to negatives, create a new mul node
             // expressing that change
             const before = changed
-                ? builders.mul([node.args[0], builders.add(terms)], true)
+                ? Semantic.builders.mul(
+                      [node.args[0], Semantic.builders.add(terms)],
+                      true,
+                  )
                 : node;
 
             // HACK: In order for us to be able to apply the step, we need to
@@ -94,9 +97,11 @@ const distMul = (
             before.id = node.id;
 
             // Finally, multiply each term in `before`
-            const newNode = builders.add(
-                terms.map((term) => builders.mul([node.args[0], term], true)),
-            ) as types.Add;
+            const newNode = Semantic.builders.add(
+                terms.map((term) =>
+                    Semantic.builders.mul([node.args[0], term], true),
+                ),
+            ) as Semantic.types.Add;
 
             substeps.push({
                 message: "multiply each term",
@@ -106,7 +111,10 @@ const distMul = (
             });
 
             return newNode.args.map((term) => {
-                const newTerm = simplifyMul(term as types.Mul, substeps);
+                const newTerm = simplifyMul(
+                    term as Semantic.types.Mul,
+                    substeps,
+                );
                 return newTerm;
             });
         } else if (node.args[0].type === "add") {
@@ -127,7 +135,10 @@ const distMul = (
             // If we changed subtractions to negatives, create a new mul node
             // expressing that change
             const before = changed
-                ? builders.mul([builders.add(terms), node.args[1]], true)
+                ? Semantic.builders.mul(
+                      [Semantic.builders.add(terms), node.args[1]],
+                      true,
+                  )
                 : node;
 
             // HACK: In order for us to be able to apply the step, we need to
@@ -137,9 +148,11 @@ const distMul = (
             before.id = node.id;
 
             // Finally, multiply each term in `before`
-            const newNode = builders.add(
-                terms.map((term) => builders.mul([term, node.args[1]], true)),
-            ) as types.Add;
+            const newNode = Semantic.builders.add(
+                terms.map((term) =>
+                    Semantic.builders.mul([term, node.args[1]], true),
+                ),
+            ) as Semantic.types.Add;
 
             substeps.push({
                 message: "multiply each term",
@@ -149,7 +162,10 @@ const distMul = (
             });
 
             return newNode.args.map((term) => {
-                const newTerm = simplifyMul(term as types.Mul, substeps);
+                const newTerm = simplifyMul(
+                    term as Semantic.types.Mul,
+                    substeps,
+                );
                 return newTerm;
             });
         }
@@ -173,7 +189,7 @@ const distMul = (
  * @return {Step | undefined}
  */
 export const distribute: Transform = (node, path): Step | undefined => {
-    if (!util.isNumeric(node)) {
+    if (!Semantic.util.isNumeric(node)) {
         return;
     }
 
@@ -194,7 +210,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
     }
 
     const substeps: Step[] = [];
-    const nodes = util.getTerms(node);
+    const nodes = Semantic.util.getTerms(node);
     let changed = false;
     const newNodes = nodes.flatMap((node, outerIndex) => {
         // Only distribute one term at a time.
@@ -202,7 +218,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
             return [node];
         }
 
-        let newTerms: types.NumericNode[] | undefined;
+        let newTerms: Semantic.types.NumericNode[] | undefined;
         if (node.type === "neg") {
             newTerms = distSub(node, substeps);
         } else if (node.type === "mul") {
@@ -224,7 +240,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
         return undefined;
     }
 
-    const after = builders.add(newNodes);
+    const after = Semantic.builders.add(newNodes);
 
     return {
         message: "distribute",

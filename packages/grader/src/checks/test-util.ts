@@ -1,7 +1,6 @@
-import * as Editor from "@math-blocks/editor";
-import {types, util} from "@math-blocks/semantic";
-import {parse as _parse} from "@math-blocks/editor-parser";
-import {parse, print} from "@math-blocks/testing";
+import * as Editor from "@math-blocks/editor-core";
+import * as Semantic from "@math-blocks/semantic";
+import * as Testing from "@math-blocks/testing";
 
 import {checkStep as _checkStep} from "../step-checker";
 import {Result, Mistake} from "../types";
@@ -10,7 +9,10 @@ export const checkStep = (
     prev: string,
     next: string,
 ): Result & {successfulChecks: Set<string>} => {
-    const {result, successfulChecks} = _checkStep(parse(prev), parse(next));
+    const {result, successfulChecks} = _checkStep(
+        Testing.parse(prev),
+        Testing.parse(next),
+    );
     if (!result) {
         throw new Error("No path found");
     }
@@ -21,7 +23,10 @@ export const checkStep = (
 };
 
 export const checkMistake = (prev: string, next: string): Mistake[] => {
-    const {result, mistakes} = _checkStep(parse(prev), parse(next));
+    const {result, mistakes} = _checkStep(
+        Testing.parse(prev),
+        Testing.parse(next),
+    );
     if (!result) {
         if (mistakes.length > 0) {
             return mistakes;
@@ -32,16 +37,16 @@ export const checkMistake = (prev: string, next: string): Mistake[] => {
     throw new Error("Unexpected result");
 };
 
-const myParse = (text: string): types.Node => {
-    const node = Editor.print(parse(text), true) as Editor.Row;
-    return _parse(node);
+const myParse = (text: string): Semantic.types.Node => {
+    const node = Editor.print(Testing.parse(text), true) as Editor.types.Row;
+    return Editor.parse(node);
 };
 
 export const toParseLike = (
     received: string,
     expected: string,
 ): {message: () => string; pass: boolean} => {
-    if (util.deepEquals(received, myParse(expected))) {
+    if (Semantic.util.deepEquals(received, myParse(expected))) {
         return {
             message: () => `expected steps not to match`,
             pass: true,
@@ -87,12 +92,12 @@ export const toHaveStepsLike = (
     const failures: {
         step: number;
         node: number;
-        received: types.Node;
-        expected: types.Node;
+        received: Semantic.types.Node;
+        expected: Semantic.types.Node;
     }[] = [];
     for (let i = 0; i < expected.length; i++) {
         if (
-            !util.deepEquals(
+            !Semantic.util.deepEquals(
                 received.steps[i].nodes[0],
                 myParse(expected[i][0]),
             )
@@ -105,7 +110,7 @@ export const toHaveStepsLike = (
             });
         }
         if (
-            !util.deepEquals(
+            !Semantic.util.deepEquals(
                 received.steps[i].nodes[1],
                 myParse(expected[i][1]),
             )
@@ -124,10 +129,10 @@ export const toHaveStepsLike = (
             message: () =>
                 failures
                     .map(({step, node, received, expected}) => {
-                        return `step ${step}, node ${node}: expected ${print(
+                        return `step ${step}, node ${node}: expected ${Testing.print(
                             expected,
                             true,
-                        )} but received ${print(received, true)}`;
+                        )} but received ${Testing.print(received, true)}`;
                     })
                     .join("\n"),
             pass: false,

@@ -1,17 +1,17 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {getCoeff, isTermOfIdent} from "../util";
 
 export const divBothSides: Transform = (before, ident) => {
-    const [left, right] = before.args as readonly types.NumericNode[];
+    const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
     if (left.source === "mulBothSides" || right.source === "mulBothSides") {
         return undefined;
     }
 
-    const leftTerms = util.getTerms(left);
-    const rightTerms = util.getTerms(right);
+    const leftTerms = Semantic.util.getTerms(left);
+    const rightTerms = Semantic.util.getTerms(right);
 
     const leftIdentTerms = leftTerms.filter((term) =>
         isTermOfIdent(term, ident),
@@ -33,19 +33,22 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
-        if (util.deepEquals(coeff, builders.number("1"))) {
+        if (Semantic.util.deepEquals(coeff, Semantic.builders.number("1"))) {
             return undefined;
         }
 
         // TODO: add a check to make sure this is true
-        const args = before.args as TwoOrMore<types.NumericNode>;
+        const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
-        const after = builders.eq(
+        const after = Semantic.builders.eq(
             (args.map((arg) => {
-                const result = builders.div(arg as types.NumericNode, coeff);
+                const result = Semantic.builders.div(
+                    arg as Semantic.types.NumericNode,
+                    coeff,
+                );
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<types.NumericNode>,
+            }) as unknown) as TwoOrMore<Semantic.types.NumericNode>,
         );
 
         return {
@@ -62,19 +65,22 @@ export const divBothSides: Transform = (before, ident) => {
             return undefined;
         }
 
-        if (util.deepEquals(coeff, builders.number("1"))) {
+        if (Semantic.util.deepEquals(coeff, Semantic.builders.number("1"))) {
             return undefined;
         }
 
         // TODO: add a check to make sure this is true
-        const args = before.args as TwoOrMore<types.NumericNode>;
+        const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
-        const after = builders.eq(
+        const after = Semantic.builders.eq(
             (args.map((arg) => {
-                const result = builders.div(arg as types.NumericNode, coeff);
+                const result = Semantic.builders.div(
+                    arg as Semantic.types.NumericNode,
+                    coeff,
+                );
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<types.NumericNode>,
+            }) as unknown) as TwoOrMore<Semantic.types.NumericNode>,
         );
 
         return {

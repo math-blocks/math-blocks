@@ -1,5 +1,5 @@
-import {builders, types, util} from "@math-blocks/semantic";
-import {print} from "@math-blocks/testing";
+import * as Semantic from "@math-blocks/semantic";
+import * as Testing from "@math-blocks/testing";
 
 import {Step, Transform} from "../types";
 import {simplifyMul} from "../util";
@@ -34,17 +34,23 @@ export const collectLikeTerms: Transform = (node): Step | undefined => {
     };
 };
 
-type Groups = Map<types.NumericNode | null, types.NumericNode[]>;
+type Groups = Map<
+    Semantic.types.NumericNode | null,
+    Semantic.types.NumericNode[]
+>;
 
 /**
  * Given an array of terms, it groups them in a map where the key is the variable
  * part of the term and the value is an array of all terms of that type.
  */
-const getGroups = (terms: readonly types.NumericNode[]): Groups => {
-    const map = new Map<types.NumericNode | null, types.NumericNode[]>();
+const getGroups = (terms: readonly Semantic.types.NumericNode[]): Groups => {
+    const map = new Map<
+        Semantic.types.NumericNode | null,
+        Semantic.types.NumericNode[]
+    >();
 
     for (const term of terms) {
-        if (util.isNumber(term)) {
+        if (Semantic.util.isNumber(term)) {
             const key = null;
             if (!map.has(key)) {
                 map.set(null, [term]);
@@ -56,12 +62,14 @@ const getGroups = (terms: readonly types.NumericNode[]): Groups => {
 
         const factors = fancyGetFactors(term);
 
-        const nonNumericFactors = factors.filter((f) => !util.isNumber(f));
-        const varPart = builders.mul(nonNumericFactors, true);
+        const nonNumericFactors = factors.filter(
+            (f) => !Semantic.util.isNumber(f),
+        );
+        const varPart = Semantic.builders.mul(nonNumericFactors, true);
 
-        let key: types.NumericNode | null = null;
+        let key: Semantic.types.NumericNode | null = null;
         for (const k of map.keys()) {
-            if (util.deepEquals(k, varPart)) {
+            if (Semantic.util.deepEquals(k, varPart)) {
                 key = k;
             }
         }
@@ -84,19 +92,22 @@ const getGroups = (terms: readonly types.NumericNode[]): Groups => {
  * @param node
  * @param substeps this argument can be mutated by this function.
  */
-const subToAddNeg = (node: types.Add, substeps: Step[]): types.Add => {
+const subToAddNeg = (
+    node: Semantic.types.Add,
+    substeps: Step[],
+): Semantic.types.Add => {
     let changed = false;
 
     // step 0: convert subtraction to adding the inverse
-    const newSum = builders.add(
-        util.getTerms(node).map((term) => {
-            if (util.isSubtraction(term)) {
+    const newSum = Semantic.builders.add(
+        Semantic.util.getTerms(node).map((term) => {
+            if (Semantic.util.isSubtraction(term)) {
                 changed = true;
-                return builders.neg(term.arg, false);
+                return Semantic.builders.neg(term.arg, false);
             }
             return term;
         }),
-    ) as types.Add;
+    ) as Semantic.types.Add;
 
     if (changed) {
         substeps.push({
@@ -120,10 +131,10 @@ const subToAddNeg = (node: types.Add, substeps: Step[]): types.Add => {
  * @param substeps this argument can be mutated by this function.
  */
 const orderTerms = (
-    node: types.NumericNode,
+    node: Semantic.types.NumericNode,
     groups: Groups,
     substeps: Step[],
-): types.NumericNode | undefined => {
+): Semantic.types.NumericNode | undefined => {
     const keys = [...groups.keys()];
 
     // If all terms are numbers then don't do anything, let evalAdd handle it.
@@ -132,7 +143,7 @@ const orderTerms = (
     }
 
     let changed = false;
-    const newTerms: types.NumericNode[] = [];
+    const newTerms: Semantic.types.NumericNode[] = [];
     for (const values of groups.values()) {
         if (values.length > 1) {
             changed = true;
@@ -146,8 +157,8 @@ const orderTerms = (
 
     // It's possible that the terms were already ordered with like terms beside
     // each other.
-    const orderedSum = builders.add(newTerms);
-    if (print(node) !== print(orderedSum)) {
+    const orderedSum = Semantic.builders.add(newTerms);
+    if (Testing.print(node) !== Testing.print(orderedSum)) {
         substeps.push({
             message: "reorder terms so that like terms are beside each other",
             before: node,
@@ -167,24 +178,24 @@ const orderTerms = (
  * @param substeps this argument will be mutated by this function.
  */
 const groupTerms = (
-    node: types.NumericNode,
+    node: Semantic.types.NumericNode,
     groups: Groups,
     substeps: Step[],
-): types.NumericNode => {
-    const newTerms: types.NumericNode[] = [];
+): Semantic.types.NumericNode => {
+    const newTerms: Semantic.types.NumericNode[] = [];
     for (const [key, values] of groups.entries()) {
-        let newTerm: types.NumericNode;
+        let newTerm: Semantic.types.NumericNode;
         if (key === null) {
-            newTerm = builders.add(values);
+            newTerm = Semantic.builders.add(values);
         } else {
             const coeffs = values.map(getCoeff);
-            const coeff = builders.add(coeffs);
-            newTerm = builders.mul([coeff, key], true);
+            const coeff = Semantic.builders.add(coeffs);
+            newTerm = Semantic.builders.mul([coeff, key], true);
         }
         newTerms.push(newTerm);
     }
 
-    const newNode = builders.add(newTerms);
+    const newNode = Semantic.builders.add(newTerms);
     substeps.push({
         message: "factor variable part of like terms",
         before: node,
@@ -201,10 +212,10 @@ const groupTerms = (
  * @param substeps this argument will be mutated by this function.
  */
 const evaluteCoeffs = (
-    node: types.NumericNode,
+    node: Semantic.types.NumericNode,
     substeps: Step[],
-): types.NumericNode => {
-    const newTerms = util.getTerms(node).map((term) => {
+): Semantic.types.NumericNode => {
+    const newTerms = Semantic.util.getTerms(node).map((term) => {
         // What if there was a term that was initial a sum of numbers, we wouldn't?
         // Ideally we'd deal with it first, but we should try to be defensive and
         // make sure that we're only processing nodes created by the previous step.
@@ -217,14 +228,14 @@ const evaluteCoeffs = (
             const newCoeff = evalNode(coeff);
             // use simplifyMul here to handle situations where variable has more
             // than one factor
-            return builders.mul([newCoeff, variable], true);
+            return Semantic.builders.mul([newCoeff, variable], true);
         }
 
         // passthrough
         return term;
     });
 
-    const newNode = builders.add(newTerms);
+    const newNode = Semantic.builders.add(newTerms);
     substeps.push({
         message: "compute new coefficients",
         before: node,
@@ -241,11 +252,11 @@ const evaluteCoeffs = (
  * @param substeps this argument can be mutated by this function.
  */
 const simplifyTerms = (
-    node: types.NumericNode,
+    node: Semantic.types.NumericNode,
     substeps: Step[],
-): types.NumericNode => {
+): Semantic.types.NumericNode => {
     let changed = false;
-    const newTerms = util.getTerms(node).map((term) => {
+    const newTerms = Semantic.util.getTerms(node).map((term) => {
         if (term.type === "mul") {
             // simplifyMul returns the same term if nothing changed
             // TODO: collect sub-steps here
@@ -259,7 +270,7 @@ const simplifyTerms = (
     });
 
     if (changed) {
-        const newNode = builders.add(newTerms);
+        const newNode = Semantic.builders.add(newTerms);
         substeps.push({
             message: "simplify terms",
             before: node,
@@ -278,20 +289,20 @@ const simplifyTerms = (
  * @param substeps this argument can be mutated by this function.
  */
 const addNegToSub = (
-    node: types.NumericNode,
+    node: Semantic.types.NumericNode,
     substeps: Step[],
-): types.NumericNode => {
+): Semantic.types.NumericNode => {
     let changed = false;
-    const newTerms = util.getTerms(node).map((term, index) => {
+    const newTerms = Semantic.util.getTerms(node).map((term, index) => {
         if (term.type === "neg" && index > 0) {
             changed = true;
-            return builders.neg(term.arg, true);
+            return Semantic.builders.neg(term.arg, true);
         }
         return term;
     });
 
     if (changed) {
-        const newNode = builders.add(newTerms);
+        const newNode = Semantic.builders.add(newTerms);
         substeps.push({
             message: "adding the inverse is the same as subtraction",
             before: node,
@@ -308,9 +319,11 @@ const addNegToSub = (
 // Utility functions
 //
 
-const getFactors = (node: types.NumericNode): OneOrMore<types.NumericNode> => {
+const getFactors = (
+    node: Semantic.types.NumericNode,
+): OneOrMore<Semantic.types.NumericNode> => {
     if (node.type === "neg") {
-        return [builders.number("-1"), ...getFactors(node.arg)];
+        return [Semantic.builders.number("-1"), ...getFactors(node.arg)];
     } else {
         return node.type === "mul" ? node.args : [node];
     }
@@ -318,27 +331,27 @@ const getFactors = (node: types.NumericNode): OneOrMore<types.NumericNode> => {
 
 // TODO: add unit tests just for this
 const fancyGetFactors = (
-    arg: types.NumericNode,
-): readonly types.NumericNode[] => {
-    let factors: readonly types.NumericNode[];
+    arg: Semantic.types.NumericNode,
+): readonly Semantic.types.NumericNode[] => {
+    let factors: readonly Semantic.types.NumericNode[];
 
     // TODO: move this logic into `getFactors`.
-    if (arg.type === "div" && util.isNumber(arg.args[1])) {
+    if (arg.type === "div" && Semantic.util.isNumber(arg.args[1])) {
         const [num, den] = arg.args;
         factors = [
             ...getFactors(num),
             // convert division in to mul-by-reciprocal
             // TODO: make this a substep
-            builders.div(builders.number("1"), den),
+            Semantic.builders.div(Semantic.builders.number("1"), den),
         ];
     } else if (arg.type === "neg") {
-        if (arg.arg.type === "div" && util.isNumber(arg.arg.args[1])) {
+        if (arg.arg.type === "div" && Semantic.util.isNumber(arg.arg.args[1])) {
             const [num, den] = arg.arg.args;
             factors = [
                 ...getFactors(num),
                 // convert division in to mul-by-reciprocal
                 // TODO: make this a substep
-                builders.div(builders.number("1"), den),
+                Semantic.builders.div(Semantic.builders.number("1"), den),
             ];
         } else {
             factors = getFactors(arg.arg);
@@ -353,16 +366,18 @@ const fancyGetFactors = (
 /**
  * Returns either a number, fraction (div), or negative (neg) node.
  */
-const evalNode = (node: types.NumericNode): types.NumericNode => {
-    const value = util.evalNode(node);
+const evalNode = (
+    node: Semantic.types.NumericNode,
+): Semantic.types.NumericNode => {
+    const value = Semantic.util.evalNode(node);
 
     const newValue =
         value.d === 1
-            ? builders.number(value.n.toString())
-            : builders.div(
-                  builders.number(value.n.toString()),
-                  builders.number(value.d.toString()),
+            ? Semantic.builders.number(value.n.toString())
+            : Semantic.builders.div(
+                  Semantic.builders.number(value.n.toString()),
+                  Semantic.builders.number(value.d.toString()),
               );
 
-    return value.s === -1 ? builders.neg(newValue) : newValue;
+    return value.s === -1 ? Semantic.builders.neg(newValue) : newValue;
 };
