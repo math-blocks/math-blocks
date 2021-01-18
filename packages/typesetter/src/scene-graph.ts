@@ -42,11 +42,7 @@ export type Rect = {
     fill?: string;
 } & Common;
 
-export type Kern = {
-    type: "kern";
-    x: number;
-    width: number;
-} & Common;
+export type Node = Group | Glyph | Line | Rect;
 
 const unionRect = (rects: Rect[]): Rect => {
     let xMin = Infinity;
@@ -83,8 +79,6 @@ export type Point = {
     y: number;
 };
 
-export type Node = Group | Glyph | Line | Rect | Kern;
-
 const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
     const advance = Layout.getWidth(hrule);
     return {
@@ -95,16 +89,6 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
         y2: loc.y,
         color: hrule.color,
         id: hrule.id,
-    };
-};
-
-const processKern = (kern: Layout.Kern, loc: Point): Node => {
-    return {
-        type: "kern",
-        x: loc.x,
-        width: kern.size,
-        color: kern.color, // this does nothing
-        id: kern.id,
     };
 };
 
@@ -259,7 +243,8 @@ const processHBox = ({
                 layer.push(processGlyph(node, pen));
                 break;
             case "Kern":
-                layer.push(processKern(node, pen));
+                // We don't need to include kerns in the output since we include
+                // the cursor or select rectangle in the scene graph.
                 break;
             default:
                 throw new UnreachableCaseError(node);
