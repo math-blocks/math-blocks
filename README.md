@@ -42,24 +42,15 @@ A collection of utility functions and types used in most of the other packages.
 - `getId`: function that returns unique, ascending, integer identifiers
 - `UnreachableCaseError`: used for exhaustiveness checks in `switch` statements.
 
-### [@math-blocks/editor](packages/editor/README.md)
+### [@math-blocks/editor-core](packages/editor-core/README.md)
 
 Provides a bunch of related parts for building interactive math editors.
 
 - `reducer`: updates an editor tree based on various editing actions.
+- `parse`: converts an editor tree into a semantic tree.
 - `print`: converts a semantic tree to an editor tree.
-- `Util`: builders for each of the editor node types and some other helpers.
-
-### [@math-blocks/editor-parser](packages/editor-parser/README.md)
-
-```
-TODO: merge this into @math-blocks/editor
-```
-
-A parser for converting editor trees to semantic trees.  Normally one wouldn't
-consider transforming one tree to another to be "parsing".  In this situation,
-the editor tree is very simple with most of the nodes being glyphs within rows
-so calling this a "parser" makes sense.
+- `builders`: builders for each of the editor node types
+- `utils`: other helpers
 
 ### [@math-blocks/metrics](packages/metrics/README.md)
 
