@@ -1,4 +1,4 @@
-import {serializer} from "@math-blocks/testing";
+import * as Testing from "@math-blocks/testing";
 
 import {Status, MistakeId} from "../../enums";
 
@@ -10,7 +10,7 @@ import {
     toHaveStepsLike,
 } from "../test-util";
 
-expect.addSnapshotSerializer(serializer);
+expect.addSnapshotSerializer(Testing.serializer);
 expect.extend({toParseLike, toHaveMessages, toHaveStepsLike});
 
 describe("Equation checks", () => {

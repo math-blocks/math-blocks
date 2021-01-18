@@ -1,4 +1,4 @@
-import {util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Check, Step, Mistake, Context} from "../types";
@@ -32,7 +32,7 @@ export const identifierCheck: Check = (prev, next, context) => {
 };
 
 export const exactMatch: Check = (prev, next, context) => {
-    if (util.deepEquals(prev, next)) {
+    if (Semantic.util.deepEquals(prev, next)) {
         return {
             status: Status.Correct,
             steps: [],
@@ -47,7 +47,11 @@ export const exactMatch: Check = (prev, next, context) => {
 export const checkArgs: Check = (prev, next, context) => {
     const {checker} = context;
 
-    if (prev.type === next.type && util.hasArgs(prev) && util.hasArgs(next)) {
+    if (
+        prev.type === next.type &&
+        Semantic.util.hasArgs(prev) &&
+        Semantic.util.hasArgs(next)
+    ) {
         const steps: Step[] = [];
         if (prev.args.length !== next.args.length) {
             return;

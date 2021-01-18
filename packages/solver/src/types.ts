@@ -1,8 +1,8 @@
-import {types} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 export type Step = {
     message: string;
-    before: types.Node;
-    after: types.Node;
+    before: Semantic.types.Node;
+    after: Semantic.types.Node;
     substeps: Step[];
 };

@@ -1,4 +1,4 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
 import {Check} from "../types";
@@ -38,11 +38,11 @@ export const mulFrac: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const isNotOne = (node: types.NumericNode): boolean =>
-        !exactMatch(node, builders.number("1"), context);
+    const isNotOne = (node: Semantic.types.NumericNode): boolean =>
+        !exactMatch(node, Semantic.builders.number("1"), context);
 
-    const numerators: types.NumericNode[] = [];
-    const denominators: types.NumericNode[] = [];
+    const numerators: Semantic.types.NumericNode[] = [];
+    const denominators: Semantic.types.NumericNode[] = [];
 
     for (const arg of prev.args) {
         if (arg.type === "div") {
@@ -53,9 +53,9 @@ export const mulFrac: Check = (prev, next, context) => {
         }
     }
 
-    const newPrev = builders.div(
-        builders.mul(numerators.filter(isNotOne)),
-        builders.mul(denominators.filter(isNotOne)),
+    const newPrev = Semantic.builders.div(
+        Semantic.builders.mul(numerators.filter(isNotOne)),
+        Semantic.builders.mul(denominators.filter(isNotOne)),
     );
     newPrev.source = "mulFrac";
 
@@ -94,15 +94,15 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
     }
 
     // Don't bother expanding 1/a
-    if (exactMatch(prev.args[0], builders.number("1"), context)) {
+    if (exactMatch(prev.args[0], Semantic.builders.number("1"), context)) {
         return;
     }
 
     const {checker} = context;
 
-    const newPrev = builders.mul([
+    const newPrev = Semantic.builders.mul([
         prev.args[0], // should we clone this?
-        builders.div(builders.number("1"), prev.args[1]),
+        Semantic.builders.div(Semantic.builders.number("1"), prev.args[1]),
     ]);
     newPrev.source = "divIsMulByOneOver";
 
@@ -137,12 +137,12 @@ export const divByFrac: Check = (prev, next, context) => {
             return;
         }
 
-        const reciprocal = builders.div(
+        const reciprocal = Semantic.builders.div(
             denominator.args[1],
             denominator.args[0],
         );
 
-        const newPrev = builders.mul([numerator, reciprocal]);
+        const newPrev = Semantic.builders.mul([numerator, reciprocal]);
         const result = checker.checkStep(newPrev, next, context);
 
         if (result) {
@@ -168,7 +168,7 @@ export const divByFrac: Check = (prev, next, context) => {
     }
 
     // We need a helper like correctResult but one that appends to the result.
-    const newPrev = builders.div(numerator, newDenominator);
+    const newPrev = Semantic.builders.div(numerator, newDenominator);
     const result = divByFrac(newPrev, next, context);
 
     if (result) {
@@ -214,15 +214,23 @@ export const cancelFrac: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const isNotOne = (node: types.NumericNode): boolean =>
-        !exactMatch(node, builders.number("1"), context);
+    const isNotOne = (node: Semantic.types.NumericNode): boolean =>
+        !exactMatch(node, Semantic.builders.number("1"), context);
 
     // Filter out the "1"s
-    const numerators = util.getFactors(prev.args[0]).filter(isNotOne);
-    const denominators = util.getFactors(prev.args[1]).filter(isNotOne);
+    const numerators = Semantic.util.getFactors(prev.args[0]).filter(isNotOne);
+    const denominators = Semantic.util
+        .getFactors(prev.args[1])
+        .filter(isNotOne);
 
-    const remainingNumerators = util.difference(numerators, denominators);
-    const remainingDenominators = util.difference(denominators, numerators);
+    const remainingNumerators = Semantic.util.difference(
+        numerators,
+        denominators,
+    );
+    const remainingDenominators = Semantic.util.difference(
+        denominators,
+        numerators,
+    );
 
     // If there's nothing to cancel return
     if (
@@ -232,23 +240,23 @@ export const cancelFrac: Check = (prev, next, context) => {
         return;
     }
 
-    let newPrev: types.NumericNode;
+    let newPrev: Semantic.types.NumericNode;
     if (
         remainingNumerators.length === 0 &&
         remainingDenominators.length === 0
     ) {
-        newPrev = builders.number("1");
+        newPrev = Semantic.builders.number("1");
     } else if (remainingDenominators.length === 0) {
-        newPrev = builders.mul(remainingNumerators);
+        newPrev = Semantic.builders.mul(remainingNumerators);
     } else if (remainingNumerators.length === 0) {
-        newPrev = builders.div(
-            builders.number("1"),
-            builders.mul(remainingDenominators),
+        newPrev = Semantic.builders.div(
+            Semantic.builders.number("1"),
+            Semantic.builders.mul(remainingDenominators),
         );
     } else {
-        newPrev = builders.div(
-            builders.mul(remainingNumerators),
-            builders.mul(remainingDenominators),
+        newPrev = Semantic.builders.div(
+            Semantic.builders.mul(remainingNumerators),
+            Semantic.builders.mul(remainingDenominators),
         );
     }
 
@@ -272,7 +280,7 @@ export const divByOne: Check = (prev, next, context) => {
     if (prev.type === "div") {
         const result1 = checker.checkStep(
             prev.args[1],
-            builders.number("1"),
+            Semantic.builders.number("1"),
             context,
         );
         if (result1) {
@@ -307,7 +315,10 @@ export const mulInverse: Check = (prev, next, context) => {
 
     const {checker} = context;
 
-    const pairs: [types.NumericNode, types.NumericNode][] = [];
+    const pairs: [
+        Semantic.types.NumericNode,
+        Semantic.types.NumericNode,
+    ][] = [];
     for (let i = 0; i < prev.args.length - 1; i++) {
         pairs.push([prev.args[i], prev.args[i + 1]]);
     }
@@ -317,10 +328,10 @@ export const mulInverse: Check = (prev, next, context) => {
         // a * 1/a -> 1
         if (pair[0].type !== "div" && pair[1].type === "div") {
             if (exactMatch(pair[0], pair[1].args[1], context)) {
-                const newPrev = builders.mul(
+                const newPrev = Semantic.builders.mul(
                     [
                         ...prev.args.slice(0, i),
-                        builders.number("1"),
+                        Semantic.builders.number("1"),
                         ...prev.args.slice(i + 2),
                     ],
                     prev.implicit,
@@ -344,10 +355,10 @@ export const mulInverse: Check = (prev, next, context) => {
         // 1/a * a -> 1
         if (pair[0].type === "div" && pair[1].type !== "div") {
             if (exactMatch(pair[1], pair[0].args[1], context)) {
-                const newPrev = builders.mul(
+                const newPrev = Semantic.builders.mul(
                     [
                         ...prev.args.slice(0, i),
-                        builders.number("1"),
+                        Semantic.builders.number("1"),
                         ...prev.args.slice(i + 2),
                     ],
                     prev.implicit,

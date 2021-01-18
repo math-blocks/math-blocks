@@ -1,4 +1,4 @@
-import {builders, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Step, Transform} from "../types";
 import {isNegative} from "../util";
@@ -34,12 +34,12 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
         return undefined;
     }
 
-    const factors = util
+    const factors = Semantic.util
         .getFactors(before)
         .map((f) => (f.type === "neg" ? f.arg : f));
 
-    const one = builders.number("1");
-    const newFactors = factors.filter((f) => !util.deepEquals(one, f));
+    const one = Semantic.builders.number("1");
+    const newFactors = factors.filter((f) => !Semantic.util.deepEquals(one, f));
 
     changed = changed || newFactors.length < factors.length;
 
@@ -47,9 +47,11 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
         return undefined;
     }
 
-    const newProd = builders.mul(newFactors, before.implicit);
+    const newProd = Semantic.builders.mul(newFactors, before.implicit);
 
-    const after = isNegative(before) ? builders.neg(newProd, false) : newProd;
+    const after = isNegative(before)
+        ? Semantic.builders.neg(newProd, false)
+        : newProd;
 
     return {
         message: "simplify multiplication",

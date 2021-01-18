@@ -1,4 +1,4 @@
-import {types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Step, Transform} from "./types";
 
@@ -34,19 +34,21 @@ export const simplify: Transform = (node) => {
 
     const substeps: Step[] = [];
 
-    const path: types.Node[] = [];
-    const enter = (node: types.Node): void => {
+    const path: Semantic.types.Node[] = [];
+    const enter = (node: Semantic.types.Node): void => {
         path.push(node);
     };
 
     // The inner loop attempts to apply one or more transforms to nodes in the
     // AST from the inside out.
-    const exit = (node: types.Node): types.Node | undefined => {
+    const exit = (
+        node: Semantic.types.Node,
+    ): Semantic.types.Node | undefined => {
         path.pop();
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
-        if (util.isNumeric(node)) {
-            let current: types.Node = node;
+        if (Semantic.util.isNumeric(node)) {
+            let current: Semantic.types.Node = node;
             for (let i = 0; i < 10; i++) {
                 let step: Step | undefined;
                 for (const transform of tranforms) {
@@ -74,12 +76,12 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        const next = util.traverse(current, {enter, exit});
+        const next = Semantic.util.traverse(current, {enter, exit});
         if (next === current) {
             break;
         }
 
-        // Cloning is important since `util.traverse` mutates `current`.
+        // Cloning is important since `Semantic.util.traverse` mutates `current`.
         current = JSON.parse(JSON.stringify(next));
     }
 

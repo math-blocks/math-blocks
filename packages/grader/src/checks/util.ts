@@ -1,6 +1,6 @@
 import produce from "immer";
 
-import {builders, types} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Status} from "../enums";
 import {Step, Context, Result} from "../types";
@@ -38,15 +38,15 @@ export const zip = <A, B>(
 };
 
 export const decomposeFactors = (
-    factors: readonly types.NumericNode[],
-): readonly types.NumericNode[] => {
-    return factors.reduce((result: types.NumericNode[], factor) => {
+    factors: readonly Semantic.types.NumericNode[],
+): readonly Semantic.types.NumericNode[] => {
+    return factors.reduce((result: Semantic.types.NumericNode[], factor) => {
         // TODO: add decomposition of powers
         if (factor.type === "number") {
             return [
                 ...result,
                 ...primeDecomp(parseInt(factor.value)).map((value) =>
-                    builders.number(String(value)),
+                    Semantic.builders.number(String(value)),
                 ),
             ];
         } else {
@@ -55,14 +55,14 @@ export const decomposeFactors = (
     }, []);
 };
 
-const isNode = (val: unknown): val is types.Node => {
+const isNode = (val: unknown): val is Semantic.types.Node => {
     return Object.prototype.hasOwnProperty.call(val, "type");
 };
 
 export const findNodeById = (
-    root: types.Node,
+    root: Semantic.types.Node,
     id: number,
-): types.Node | void => {
+): Semantic.types.Node | void => {
     if (root.id === id) {
         return root;
     }
@@ -92,9 +92,9 @@ export const findNodeById = (
 // TODO: create a version of this that doesn't mutate things for when we're not
 // using immer
 export const replaceNodeWithId = (
-    root: types.Node,
+    root: Semantic.types.Node,
     id: number,
-    replacement: types.Node,
+    replacement: Semantic.types.Node,
 ): void => {
     for (const [key, val] of Object.entries(root)) {
         if (key === "loc") {
@@ -122,9 +122,9 @@ export const replaceNodeWithId = (
 };
 
 export const applySteps = (
-    root: types.Node,
+    root: Semantic.types.Node,
     steps: readonly Step[],
-): types.Node => {
+): Semantic.types.Node => {
     const nextState = produce(root, (draft) => {
         // We need to apply each step
         for (const step of steps) {
@@ -142,8 +142,8 @@ export const applySteps = (
  * and vice versa.
  */
 export const equality = (
-    as: readonly types.Node[],
-    bs: readonly types.Node[],
+    as: readonly Semantic.types.Node[],
+    bs: readonly Semantic.types.Node[],
     context: Context,
 ): boolean => {
     const {checker} = context;
@@ -153,8 +153,8 @@ export const equality = (
 };
 
 export const correctResult = (
-    prev: types.Node,
-    next: types.Node,
+    prev: Semantic.types.Node,
+    next: Semantic.types.Node,
     reversed: boolean,
     beforeSteps: readonly Step[],
     afterSteps: readonly Step[],
@@ -210,8 +210,8 @@ export const correctResult = (
 };
 
 export const incorrectResult = (
-    prev: types.Node,
-    next: types.Node,
+    prev: Semantic.types.Node,
+    next: Semantic.types.Node,
     reversed: boolean,
     beforeSteps: readonly Step[],
     afterSteps: readonly Step[],

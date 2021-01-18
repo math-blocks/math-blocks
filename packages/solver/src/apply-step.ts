@@ -1,14 +1,17 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Step} from "./types";
 
-export const applyStep = (node: types.Node, step: Step): types.Node => {
-    // Cloning is important since `util.traverse` mutates `current`.
+export const applyStep = (
+    node: Semantic.types.Node,
+    step: Step,
+): Semantic.types.Node => {
+    // Cloning is important since `Semantic.util.traverse` mutates `current`.
     const clone = JSON.parse(JSON.stringify(node));
 
-    const path: types.Node[] = [];
+    const path: Semantic.types.Node[] = [];
 
-    return util.traverse(clone, {
+    return Semantic.util.traverse(clone, {
         enter: (node) => {
             path.push(node);
         },
@@ -34,7 +37,7 @@ export const applyStep = (node: types.Node, step: Step): types.Node => {
                     (arg) => arg.id === oldNode.id,
                 );
                 if (index !== -1) {
-                    return builders.add([
+                    return Semantic.builders.add([
                         ...node.args.slice(0, index),
                         ...newNode.args,
                         ...node.args.slice(index + 1),

@@ -1,4 +1,4 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 import {isNegative} from "../util";
@@ -11,29 +11,35 @@ export const reduceFraction: Transform = (node) => {
         return undefined;
     }
 
-    if (util.deepEquals(node.args[0], builders.number("1"))) {
+    if (Semantic.util.deepEquals(node.args[0], Semantic.builders.number("1"))) {
         return;
     }
 
     const numFactors =
         node.args[0].type === "neg"
-            ? util.getFactors(node.args[0].arg)
-            : util.getFactors(node.args[0]);
+            ? Semantic.util.getFactors(node.args[0].arg)
+            : Semantic.util.getFactors(node.args[0]);
     const denFactors =
         node.args[1].type === "neg"
-            ? util.getFactors(node.args[1].arg)
-            : util.getFactors(node.args[1]);
+            ? Semantic.util.getFactors(node.args[1].arg)
+            : Semantic.util.getFactors(node.args[1]);
 
     const resultIsNegative =
         isNegative(node.args[0]) !== isNegative(node.args[1]);
 
-    const commonFactors = util.intersection(numFactors, denFactors);
+    const commonFactors = Semantic.util.intersection(numFactors, denFactors);
 
-    const num = builders.mul(util.difference(numFactors, commonFactors), true);
-    const den = builders.mul(util.difference(denFactors, commonFactors), true);
+    const num = Semantic.builders.mul(
+        Semantic.util.difference(numFactors, commonFactors),
+        true,
+    );
+    const den = Semantic.builders.mul(
+        Semantic.util.difference(denFactors, commonFactors),
+        true,
+    );
 
-    let after: types.NumericNode;
-    if (util.deepEquals(den, builders.number("1"))) {
+    let after: Semantic.types.NumericNode;
+    if (Semantic.util.deepEquals(den, Semantic.builders.number("1"))) {
         // a / 1 -> a
         after = num;
     } else {
@@ -45,17 +51,17 @@ export const reduceFraction: Transform = (node) => {
         if (resultIsNegative) {
             // Maintain the position of the negative.
             if (isNegative(node.args[0])) {
-                after = builders.div(builders.neg(num), den);
+                after = Semantic.builders.div(Semantic.builders.neg(num), den);
             } else {
-                after = builders.div(num, builders.neg(den));
+                after = Semantic.builders.div(num, Semantic.builders.neg(den));
             }
         } else {
-            after = builders.div(num, den);
+            after = Semantic.builders.div(num, den);
         }
     }
 
     if (resultIsNegative && after.type !== "div") {
-        after = builders.neg(after);
+        after = Semantic.builders.neg(after);
     }
 
     return {

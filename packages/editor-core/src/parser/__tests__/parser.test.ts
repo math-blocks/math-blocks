@@ -1,11 +1,11 @@
-import {serializer} from "@math-blocks/testing";
+import * as Testing from "@math-blocks/testing";
 
 import {row, glyph, subsup} from "../../builders";
 import * as util from "../../reducer/util";
 
 import * as parser from "../parser";
 
-expect.addSnapshotSerializer(serializer);
+expect.addSnapshotSerializer(Testing.serializer);
 
 describe("EditorParser", () => {
     it("should handle equations", () => {

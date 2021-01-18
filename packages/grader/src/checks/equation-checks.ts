@@ -1,4 +1,4 @@
-import {builders, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Check} from "../types";
 import {MistakeId} from "../enums";
@@ -23,10 +23,10 @@ export const checkAddSub: Check = (prev, next, context) => {
     const [nextLHS, nextRHS] = next.args;
 
     if (
-        !util.isNumeric(prevLHS) ||
-        !util.isNumeric(prevRHS) ||
-        !util.isNumeric(nextLHS) ||
-        !util.isNumeric(nextRHS)
+        !Semantic.util.isNumeric(prevLHS) ||
+        !Semantic.util.isNumeric(prevRHS) ||
+        !Semantic.util.isNumeric(nextLHS) ||
+        !Semantic.util.isNumeric(nextRHS)
     ) {
         return;
     }
@@ -34,15 +34,21 @@ export const checkAddSub: Check = (prev, next, context) => {
     // TODO: take into account LHS and RHS being swapped
     // e.g. y = x -> x + 10 = y + 10
     if (nextLHS.type === "add" || nextRHS.type === "add") {
-        const prevTermsLHS = util.getTerms(prevLHS);
-        const prevTermsRHS = util.getTerms(prevRHS);
-        const nextTermsLHS = util.getTerms(nextLHS);
-        const nextTermsRHS = util.getTerms(nextRHS);
+        const prevTermsLHS = Semantic.util.getTerms(prevLHS);
+        const prevTermsRHS = Semantic.util.getTerms(prevRHS);
+        const nextTermsLHS = Semantic.util.getTerms(nextLHS);
+        const nextTermsRHS = Semantic.util.getTerms(nextRHS);
 
         // Which terms from the previous step appear in the next step on each
         // side.
-        const oldTermsLHS = util.intersection(nextTermsLHS, prevTermsLHS);
-        const oldTermsRHS = util.intersection(nextTermsRHS, prevTermsRHS);
+        const oldTermsLHS = Semantic.util.intersection(
+            nextTermsLHS,
+            prevTermsLHS,
+        );
+        const oldTermsRHS = Semantic.util.intersection(
+            nextTermsRHS,
+            prevTermsRHS,
+        );
 
         // All previous terms for each side should appear in the next step as
         // terms as well.  If any are missing then we're doing something other
@@ -54,12 +60,18 @@ export const checkAddSub: Check = (prev, next, context) => {
             return;
         }
 
-        const newTermsLHS = util.difference(nextTermsLHS, prevTermsLHS);
-        const newTermsRHS = util.difference(nextTermsRHS, prevTermsRHS);
+        const newTermsLHS = Semantic.util.difference(
+            nextTermsLHS,
+            prevTermsLHS,
+        );
+        const newTermsRHS = Semantic.util.difference(
+            nextTermsRHS,
+            prevTermsRHS,
+        );
 
         const areNewTermsEquivalent = checker.checkStep(
-            builders.add(newTermsLHS),
-            builders.add(newTermsRHS),
+            Semantic.builders.add(newTermsLHS),
+            Semantic.builders.add(newTermsRHS),
             context,
         );
 
@@ -94,9 +106,9 @@ export const checkAddSub: Check = (prev, next, context) => {
         const newTerms =
             newTermsLHS.length < newTermsRHS.length ? newTermsLHS : newTermsRHS;
 
-        const newPrev = builders.eq([
-            builders.add([...prevTermsLHS, ...newTerms]),
-            builders.add([...prevTermsRHS, ...newTerms]),
+        const newPrev = Semantic.builders.eq([
+            Semantic.builders.add([...prevTermsLHS, ...newTerms]),
+            Semantic.builders.add([...prevTermsRHS, ...newTerms]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -132,21 +144,27 @@ export const checkMul: Check = (prev, next, context) => {
     // e.g. y = x -> x * 10 = y * 10
     if (nextLHS.type === "mul" || nextRHS.type === "mul") {
         if (
-            !util.isNumeric(prevLHS) ||
-            !util.isNumeric(prevRHS) ||
-            !util.isNumeric(nextLHS) ||
-            !util.isNumeric(nextRHS)
+            !Semantic.util.isNumeric(prevLHS) ||
+            !Semantic.util.isNumeric(prevRHS) ||
+            !Semantic.util.isNumeric(nextLHS) ||
+            !Semantic.util.isNumeric(nextRHS)
         ) {
             return;
         }
 
-        const prevFactorsLHS = util.getFactors(prevLHS);
-        const prevFactorsRHS = util.getFactors(prevRHS);
-        const nextFactorsLHS = util.getFactors(nextLHS);
-        const nextFacotrsRHS = util.getFactors(nextRHS);
+        const prevFactorsLHS = Semantic.util.getFactors(prevLHS);
+        const prevFactorsRHS = Semantic.util.getFactors(prevRHS);
+        const nextFactorsLHS = Semantic.util.getFactors(nextLHS);
+        const nextFacotrsRHS = Semantic.util.getFactors(nextRHS);
 
-        const oldFactorsLHS = util.intersection(nextFactorsLHS, prevFactorsLHS);
-        const oldFactorsRHS = util.intersection(nextFacotrsRHS, prevFactorsRHS);
+        const oldFactorsLHS = Semantic.util.intersection(
+            nextFactorsLHS,
+            prevFactorsLHS,
+        );
+        const oldFactorsRHS = Semantic.util.intersection(
+            nextFacotrsRHS,
+            prevFactorsRHS,
+        );
 
         // All previous factors for each side should appear in the next step as
         // factors as well.  If any are missing then we're doing something other
@@ -158,18 +176,18 @@ export const checkMul: Check = (prev, next, context) => {
             return;
         }
 
-        const newFactorsLHS = util.difference(
-            util.getFactors(nextLHS),
+        const newFactorsLHS = Semantic.util.difference(
+            Semantic.util.getFactors(nextLHS),
             prevFactorsLHS,
         );
-        const newFactorsRHS = util.difference(
-            util.getFactors(nextRHS),
+        const newFactorsRHS = Semantic.util.difference(
+            Semantic.util.getFactors(nextRHS),
             prevFactorsRHS,
         );
 
         const areNewFactorsEquivalent = checker.checkStep(
-            builders.mul(newFactorsLHS),
-            builders.mul(newFactorsRHS),
+            Semantic.builders.mul(newFactorsLHS),
+            Semantic.builders.mul(newFactorsRHS),
             context,
         );
 
@@ -202,9 +220,9 @@ export const checkMul: Check = (prev, next, context) => {
 
         // We place the new factors at the start since it is common to go
         // from x = y -> 2x = 2y or x + 1 = y - 2 -> 5(x + 1) = 5(y - 2)
-        const newPrev = builders.eq([
-            builders.mul([...newFactors, ...prevFactorsLHS]),
-            builders.mul([...newFactors, ...prevFactorsRHS]),
+        const newPrev = Semantic.builders.eq([
+            Semantic.builders.mul([...newFactors, ...prevFactorsLHS]),
+            Semantic.builders.mul([...newFactors, ...prevFactorsRHS]),
         ]);
 
         // This checkStep allows for commutation of the result, but doesn't
@@ -236,7 +254,10 @@ export const checkDiv: Check = (prev, next, context) => {
     const [prevLHS, prevRHS] = prev.args;
     const [nextLHS, nextRHS] = next.args;
 
-    if (!util.isNumeric(prevLHS) || !util.isNumeric(prevRHS)) {
+    if (
+        !Semantic.util.isNumeric(prevLHS) ||
+        !Semantic.util.isNumeric(prevRHS)
+    ) {
         return;
     }
 
@@ -255,17 +276,27 @@ export const checkDiv: Check = (prev, next, context) => {
                 return;
             }
 
-            const denFactorsLSH = util.getFactors(nextLHS.args[DENOMINATOR]);
-            const denFactorsRHS = util.getFactors(nextRHS.args[DENOMINATOR]);
+            const denFactorsLSH = Semantic.util.getFactors(
+                nextLHS.args[DENOMINATOR],
+            );
+            const denFactorsRHS = Semantic.util.getFactors(
+                nextRHS.args[DENOMINATOR],
+            );
 
             const denFactors =
                 denFactorsLSH.length < denFactorsRHS.length
                     ? denFactorsLSH
                     : denFactorsRHS;
 
-            const newPrev = builders.eq([
-                builders.div(prevLHS, builders.mul(denFactors)),
-                builders.div(prevRHS, builders.mul(denFactors)),
+            const newPrev = Semantic.builders.eq([
+                Semantic.builders.div(
+                    prevLHS,
+                    Semantic.builders.mul(denFactors),
+                ),
+                Semantic.builders.div(
+                    prevRHS,
+                    Semantic.builders.mul(denFactors),
+                ),
             ]);
 
             const result = checker.checkStep(newPrev, next, context);

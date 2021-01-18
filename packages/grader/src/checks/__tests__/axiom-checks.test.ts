@@ -1,4 +1,4 @@
-import {serializer} from "@math-blocks/testing";
+import * as Testing from "@math-blocks/testing";
 
 import {MistakeId} from "../../enums";
 
@@ -10,7 +10,7 @@ import {
     toHaveMessages,
 } from "../test-util";
 
-expect.addSnapshotSerializer(serializer);
+expect.addSnapshotSerializer(Testing.serializer);
 
 expect.extend({toParseLike, toHaveStepsLike, toHaveMessages});
 

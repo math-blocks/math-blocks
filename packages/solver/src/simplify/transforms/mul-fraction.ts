@@ -1,4 +1,4 @@
-import {builders, types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
@@ -7,22 +7,22 @@ export const mulFraction: Transform = (before) => {
         before.type === "mul" &&
         before.args.some((arg) => arg.type === "div")
     ) {
-        const numFactors: types.NumericNode[] = [];
-        const denFactors: types.NumericNode[] = [];
+        const numFactors: Semantic.types.NumericNode[] = [];
+        const denFactors: Semantic.types.NumericNode[] = [];
 
         for (const factor of before.args) {
             if (factor.type === "div") {
                 const [num, den] = factor.args;
-                numFactors.push(...util.getFactors(num));
-                denFactors.push(...util.getFactors(den));
+                numFactors.push(...Semantic.util.getFactors(num));
+                denFactors.push(...Semantic.util.getFactors(den));
             } else {
                 numFactors.push(factor);
             }
         }
 
-        const after = builders.div(
-            builders.mul(numFactors, true),
-            builders.mul(denFactors, true),
+        const after = Semantic.builders.div(
+            Semantic.builders.mul(numFactors, true),
+            Semantic.builders.mul(denFactors, true),
         );
 
         return {

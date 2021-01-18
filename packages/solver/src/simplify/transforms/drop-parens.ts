@@ -1,12 +1,12 @@
-import {builders, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
 export const dropParens: Transform = (node) => {
-    if (!util.isNumeric(node)) {
+    if (!Semantic.util.isNumeric(node)) {
         return;
     }
-    const terms = util.getTerms(node);
+    const terms = Semantic.util.getTerms(node);
     let changed = false;
     const newTerms = terms.flatMap((term) => {
         if (term.type === "add") {
@@ -22,7 +22,7 @@ export const dropParens: Transform = (node) => {
     return {
         message: "drop parentheses",
         before: node,
-        after: builders.add(newTerms),
+        after: Semantic.builders.add(newTerms),
         substeps: [],
     };
 };

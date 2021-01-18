@@ -1,14 +1,14 @@
 /**
  * Converts a Semantic AST to an Editor AST.
  */
-import {types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 // TODO: Use the operator precedence numbers from text-parser to determine when
 // to add parens (or not).
 
 // TODO: handle the case when there's a neg.sub node at the start of an expression
 
-export const print = (expr: types.Node, oneToOne = false): string => {
+export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -28,12 +28,12 @@ export const print = (expr: types.Node, oneToOne = false): string => {
             for (let i = 0; i < expr.args.length; i++) {
                 const arg = expr.args[i];
                 if (i > 0) {
-                    if (util.isSubtraction(arg)) {
+                    if (Semantic.util.isSubtraction(arg)) {
                         result += " - ";
                     } else {
                         result += " + ";
                     }
-                } else if (util.isSubtraction(arg)) {
+                } else if (Semantic.util.isSubtraction(arg)) {
                     console.warn(
                         "leading subtraction term should be simple negation",
                     );
@@ -49,7 +49,7 @@ export const print = (expr: types.Node, oneToOne = false): string => {
                     (arg.type === "neg" && !arg.subtraction)
                 ) {
                     result += print(arg, oneToOne);
-                } else if (util.isSubtraction(arg)) {
+                } else if (Semantic.util.isSubtraction(arg)) {
                     if (
                         arg.arg.type === "number" ||
                         arg.arg.type === "identifier" ||
@@ -141,7 +141,7 @@ export const print = (expr: types.Node, oneToOne = false): string => {
         }
         case "eq": {
             // TODO: add a check to make sure this is true
-            const args = expr.args as TwoOrMore<types.NumericNode>;
+            const args = expr.args as TwoOrMore<Semantic.types.NumericNode>;
             return args.map((arg) => print(arg, oneToOne)).join(" = ");
         }
         case "pow": {
