@@ -11,11 +11,20 @@ A set of tools, components, and libraries for building interactive math applicat
 
 ## Main Packages
 
-### [@math-blocks/editor](packages/editor/README.md)
-
 ### [@math-blocks/grader](packages/grader/README.md)
 
+Provides feedback on a single step that user might show when solving a math
+problem.  The feedback can be either "correct" or "incorrect".  In some situations,
+when the step is "incorrect", the solver may also provide additional feedback
+such as why the step is incorrect.  In a subset of those cases, it can also fix
+the mistake for the user.
+
 ### [@math-blocks/react](packages/react/README.md)
+
+A set of React components for rendering and editing math expressions.
+
+- `MathRenderer`
+- `MathEditor`
 
 ### [@math-blocks/solver](packages/solver/README.md)
 
@@ -28,13 +37,57 @@ provide a complete worked solution.
 
 ### [@math-blocks/core](package/core/README.md)
 
+A collection of utility functions and types used in most of the other packages.
+
+- `getId`: function that returns unique, ascending, integer identifiers
+- `UnreachableCaseError`: used for exhaustiveness checks in `switch` statements.
+
+### [@math-blocks/editor](packages/editor/README.md)
+
+Provides a bunch of related parts for building interactive math editors.
+
+- `reducer`: updates an editor tree based on various editing actions.
+- `print`: converts a semantic tree to an editor tree.
+- `Util`: builders for each of the editor node types and some other helpers.
+
+### [@math-blocks/editor-parser](packages/editor-parser/README.md)
+
+```
+TODO: merge this into @math-blocks/editor
+```
+
+A parser for converting editor trees to semantic trees.  Normally one wouldn't
+consider transforming one tree to another to be "parsing".  In this situation,
+the editor tree is very simple with most of the nodes being glyphs within rows
+so calling this a "parser" makes sense.
+
 ### [@math-blocks/metrics](packages/metrics/README.md)
+
+Provides font and glyph metrics for Comic Sans MS.  The plan is to add metrics
+for more fonts in the future.
 
 ### [@math-blocks/parser-factory](packages/parser-factory/README.md)
 
+Defines a `parserFactory` function is used by `@math-blocks/testing` and
+`@math-blocks/editor-parser` to define Pratt (top-down precedence) parsers.  It
+also exports common `types` used by the parsers and a set of `builders` for
+constructing nodes in the output of each parser.
+
 ### [@math-blocks/semantic](packages/semantic/README.md)
+
+Provides `types`, `builders`, and `utils` for working with semantic nodes.  The
+`types` are almost the same as those from `@math-block/parser-factory`, but are
+more constrained to avoid invalid semantic trees.
 
 ### [@math-blocks/testing](packages/typesetter/README.md)
 
+Implements its own text-only parser which is used for writing tests.  It's more
+convenient then having to create editor trees for each test.
+
 ### [@math-blocks/typesetter](packages/typesetter/README.md)
 
+The typesetter converts a semantic tree to a layout tree and finally a scene
+graph.  The layout tree comprizes typesetting primitives while the scene graph
+is more closely maps to SVG or HTML Canvas primitives.  The reason for doing
+this is multiple passes is that it makes converting from one representation to
+another easier to understand.

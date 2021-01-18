@@ -35,9 +35,9 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context);
+    const scene = typeset(math, context);
 
-    return <MathRenderer box={box} />;
+    return <MathRenderer scene={scene} />;
 };
 
 export const Equation: React.FunctionComponent<EmptyProps> = () => {
@@ -58,9 +58,9 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const box = typeset(math, context);
+    const scene = typeset(math, context);
 
-    return <MathRenderer box={box} />;
+    return <MathRenderer scene={scene} />;
 };
 
 const rowsToState = (rows: Editor.Row[]): Editor.State => {
@@ -86,7 +86,7 @@ export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const work = typesetWithWork(
+    const scene = typesetWithWork(
         rowsToState([
             Editor.Util.row(
                 "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
@@ -96,7 +96,7 @@ export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={work} />;
+    return <MathRenderer scene={scene} />;
 };
 
 export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
@@ -115,10 +115,22 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
         "\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008",
     );
 
+    const cursor: Editor.Cursor = {
+        path: [],
+        prev: 0,
+        next: 1,
+    };
+
     // TODO: render paren wrapped negatives, like (-5) with the correct kerning
     const linearEquation = typesetWithWork(
         rowsToState([above1, below1]),
         context,
+        {
+            cursor: Editor.layoutCursorFromState({
+                math: below1,
+                cursor: cursor,
+            }),
+        },
     );
 
     const linearEquation2 = typesetWithWork(
@@ -167,24 +179,13 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    const cursor: Editor.Cursor = {
-        path: [],
-        prev: 0,
-        next: 1,
-    };
-
-    const layoutCursor = Editor.layoutCursorFromState({
-        math: below1,
-        cursor: cursor,
-    });
-
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
-            <MathRenderer box={linearEquation} cursor={layoutCursor} />
-            <MathRenderer box={linearEquation2} />
-            <MathRenderer box={linearEquation3} />
-            <MathRenderer box={linearEquation4} />
-            <MathRenderer box={linearEquation5} />
+            <MathRenderer scene={linearEquation} />
+            <MathRenderer scene={linearEquation2} />
+            <MathRenderer scene={linearEquation3} />
+            <MathRenderer scene={linearEquation4} />
+            <MathRenderer scene={linearEquation5} />
         </div>
     );
 };
@@ -206,11 +207,6 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
 
-    const layoutCursor = Editor.layoutCursorFromState({
-        math,
-        cursor,
-    });
-
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -219,7 +215,16 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
+    const options = {
+        cursor: Editor.layoutCursorFromState({
+            math,
+            cursor,
+        }),
+    };
+
+    const scene = typeset(math, context, options);
+
+    return <MathRenderer scene={scene} />;
 };
 
 export const Selection: React.FunctionComponent<EmptyProps> = () => {
@@ -245,12 +250,6 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
 
-    const layoutCursor = Editor.layoutCursorFromState({
-        math,
-        cursor,
-        selectionStart,
-    });
-
     const fontSize = 60;
     const context = {
         fontMetrics: fontMetrics,
@@ -259,7 +258,17 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    return <MathRenderer box={typeset(math, context)} cursor={layoutCursor} />;
+    const options = {
+        cursor: Editor.layoutCursorFromState({
+            math,
+            cursor,
+            selectionStart,
+        }),
+    };
+
+    const scene = typeset(math, context, options);
+
+    return <MathRenderer scene={scene} />;
 };
 
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
@@ -285,7 +294,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={pythagoras} />;
+    return <MathRenderer scene={pythagoras} />;
 };
 
 export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
@@ -324,7 +333,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={quadraticEquation} />;
+    return <MathRenderer scene={quadraticEquation} />;
 };
 
 export const Limit: React.FunctionComponent<EmptyProps> = () => {
@@ -349,7 +358,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={lim} />;
+    return <MathRenderer scene={lim} />;
 };
 
 export const Summation: React.FunctionComponent<EmptyProps> = () => {
@@ -373,7 +382,7 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
         context,
     );
 
-    return <MathRenderer box={sum} />;
+    return <MathRenderer scene={sum} />;
 };
 
 export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
@@ -398,7 +407,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
 
     const sum = typeset(fracNode, context);
 
-    return <MathRenderer box={sum} />;
+    return <MathRenderer scene={sum} />;
 };
 
 export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
@@ -433,7 +442,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };
 
 export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
@@ -468,7 +477,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };
 
 export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
@@ -509,5 +518,5 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     };
     const prod = typeset(editNode, context);
 
-    return <MathRenderer box={prod} />;
+    return <MathRenderer scene={prod} />;
 };

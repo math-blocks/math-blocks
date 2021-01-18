@@ -69,10 +69,8 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const box = typeset(solution, context);
-            return (
-                <MathRenderer box={box} cursor={undefined} cancelRegions={[]} />
-            );
+            const scene = typeset(solution, context);
+            return <MathRenderer scene={scene} />;
         }
         return null;
     };

@@ -2,7 +2,8 @@ import * as Editor from "@math-blocks/editor";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
-import {Context} from "./types";
+import {processBox, Group} from "./scene-graph";
+import {Context, Options} from "./types";
 
 const DEBUG = typeof jest === "undefined";
 
@@ -261,7 +262,8 @@ const withOperatorPadding = (
 export const typesetWithWork = (
     state: Editor.State,
     context: Context,
-): Layout.Box => {
+    options: Options = {},
+): Group => {
     const {multiplier} = context;
 
     // TODO: split state.rows in two arrays:
@@ -363,7 +365,7 @@ export const typesetWithWork = (
         multiplier,
     );
 
-    return verticalLayout;
+    return processBox({box: verticalLayout, ...options});
 };
 
 const _typeset = (node: Editor.Node, context: Context): Layout.Node => {
@@ -605,6 +607,11 @@ const _typeset = (node: Editor.Node, context: Context): Layout.Node => {
     }
 };
 
-export const typeset = (node: Editor.Node, context: Context): Layout.Box => {
-    return _typeset(node, context) as Layout.Box;
+export const typeset = (
+    node: Editor.Node,
+    context: Context,
+    options: Options = {},
+): Group => {
+    const box = _typeset(node, context) as Layout.Box;
+    return processBox({box, ...options});
 };

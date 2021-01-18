@@ -101,17 +101,16 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         colorMap: props.colorMap,
     };
 
-    // console.log(props.colorMap);
+    const options = {
+        cursor: active
+            ? Editor.layoutCursorFromState(state.rows[state.rowIndex])
+            : undefined,
+        cancelRegions: cancelRegions,
+    };
 
-    const box = props.stepChecker
-        ? typeset(state.rows[0].math, context)
-        : typesetWithWork(state, context);
-
-    const layoutCursor = Editor.layoutCursorFromState(
-        state.rows[state.rowIndex],
-    );
-    // console.log("cursor: ", state.rows[state.rowIndex].cursor);
-    // console.log(layoutCursor);
+    const scene = props.stepChecker
+        ? typeset(state.rows[0].math, context, options)
+        : typesetWithWork(state, context, options);
 
     return (
         <div
@@ -123,11 +122,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             style={style}
             role="textbox"
         >
-            <MathRenderer
-                box={box}
-                cursor={active ? layoutCursor : undefined}
-                cancelRegions={cancelRegions}
-            />
+            <MathRenderer scene={scene} />
         </div>
     );
 };

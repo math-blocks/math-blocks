@@ -1,13 +1,6 @@
 import * as React from "react";
 
-import {SceneGraph, Layout} from "@math-blocks/typesetter";
-
-type LayoutCursor = {
-    parent: number;
-    prev: number;
-    next: number;
-    selection: boolean;
-};
+import {SceneGraph} from "@math-blocks/typesetter";
 
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
@@ -83,16 +76,13 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
 const CURSOR_WIDTH = 2;
 
 type Props = {
-    box: Layout.Box;
-    cursor?: LayoutCursor;
-    cancelRegions?: LayoutCursor[];
+    scene: SceneGraph.Group;
     style?: React.CSSProperties;
 };
 
 const MathRenderer: React.FunctionComponent<Props> = (props) => {
-    const {box, cursor, cancelRegions, style} = props;
-    const group = SceneGraph.render({box, cursor, cancelRegions});
-    const {width, height} = group;
+    const {scene, style} = props;
+    const {width, height} = scene;
     const padding = CURSOR_WIDTH / 2;
     const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
 
@@ -104,7 +94,7 @@ const MathRenderer: React.FunctionComponent<Props> = (props) => {
             height={height + CURSOR_WIDTH}
             style={style}
         >
-            <Group {...group} />
+            <Group {...scene} />
         </svg>
     );
 };

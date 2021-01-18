@@ -5,7 +5,7 @@ import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
 
 import * as Core from "@math-blocks/core";
-import {typeset, Layout} from "@math-blocks/typesetter";
+import {typeset} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor";
 import fontMetrics from "@math-blocks/metrics";
 
@@ -139,7 +139,7 @@ describe("renderer", () => {
         });
 
         test("subscripts", () => {
-            const recurrenceRelation = typeset(
+            const scene = typeset(
                 row([
                     glyph("a"),
                     Editor.Util.sup("n"),
@@ -151,11 +151,9 @@ describe("renderer", () => {
                     subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
                 ]),
                 context,
-            ) as Layout.Box;
+            );
 
-            expect(
-                <MathRenderer box={recurrenceRelation} />,
-            ).toMatchSVGSnapshot();
+            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
     });
 
