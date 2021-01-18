@@ -1,7 +1,7 @@
-import {print} from "@math-blocks/testing";
-import {types} from "@math-blocks/semantic";
-import {applyStep} from "./apply-step";
+import * as Semantic from "@math-blocks/semantic";
+import * as Testing from "@math-blocks/testing";
 
+import {applyStep} from "./apply-step";
 import {Step} from "./types";
 
 export const toHaveSubstepsLike = (
@@ -24,19 +24,19 @@ export const toHaveSubstepsLike = (
     }[] = [];
 
     for (let i = 0; i < expected.length; i++) {
-        if (print(received.substeps[i].before) !== expected[i][0]) {
+        if (Testing.print(received.substeps[i].before) !== expected[i][0]) {
             failures.push({
                 step: i,
                 node: "before",
-                received: print(received.substeps[i].before),
+                received: Testing.print(received.substeps[i].before),
                 expected: expected[i][0],
             });
         }
-        if (print(received.substeps[i].after) !== expected[i][1]) {
+        if (Testing.print(received.substeps[i].after) !== expected[i][1]) {
             failures.push({
                 step: i,
                 node: "after",
-                received: print(received.substeps[i].after),
+                received: Testing.print(received.substeps[i].after),
                 expected: expected[i][1],
             });
         }
@@ -61,7 +61,7 @@ export const toHaveSubstepsLike = (
 };
 
 export const toHaveFullStepsLike = (
-    received: types.Node,
+    received: Semantic.types.Node,
     expected: {steps: Step[]; expressions: string[]},
 ): {message: () => string; pass: boolean} => {
     if (expected.steps.length + 1 !== expected.expressions.length) {
@@ -80,10 +80,10 @@ export const toHaveFullStepsLike = (
 
     let node = received;
 
-    if (print(node) !== expected.expressions[0]) {
+    if (Testing.print(node) !== expected.expressions[0]) {
         failures.push({
             step: 0,
-            received: print(node),
+            received: Testing.print(node),
             expected: expected.expressions[0],
         });
     }
@@ -91,10 +91,10 @@ export const toHaveFullStepsLike = (
     for (let i = 0; i < expected.steps.length; i++) {
         const step = expected.steps[i];
         node = applyStep(node, step);
-        if (print(node) !== expected.expressions[i + 1]) {
+        if (Testing.print(node) !== expected.expressions[i + 1]) {
             failures.push({
                 step: i + 1,
-                received: print(node),
+                received: Testing.print(node),
                 expected: expected.expressions[i + 1],
             });
         }

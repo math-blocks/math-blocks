@@ -2,8 +2,7 @@
   "references": [
     {"path": "./demo"},
     {"path": "./packages/core"},
-    {"path": "./packages/editor"},
-    {"path": "./packages/editor-parser"},
+    {"path": "./packages/editor-core"},
     {"path": "./packages/grader"},
     {"path": "./packages/metrics"},
     {"path": "./packages/parser-factory"},

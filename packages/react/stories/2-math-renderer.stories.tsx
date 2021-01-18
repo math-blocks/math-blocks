@@ -1,14 +1,13 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import {types} from "@math-blocks/semantic";
-import {parse} from "@math-blocks/editor-parser";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../src/math-renderer";
 
-const {row, glyph, frac, limits, root} = Editor;
+const {row, glyph, frac, limits, root} = Editor.builders;
 
 export default {
     title: "MathRenderer",
@@ -63,7 +62,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-const rowsToState = (rows: Editor.Row[]): Editor.State => {
+const rowsToState = (rows: Editor.types.Row[]): Editor.State => {
     return {
         rows: rows.map((row) => ({
             math: row,
@@ -88,10 +87,10 @@ export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
 
     const scene = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
         ]),
         context,
     );
@@ -108,14 +107,14 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const above1 = Editor.Util.row(
+    const above1 = Editor.util.row(
         "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
     );
-    const below1 = Editor.Util.row(
+    const below1 = Editor.util.row(
         "\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008",
     );
 
-    const cursor: Editor.Cursor = {
+    const cursor: Editor.types.Cursor = {
         path: [],
         prev: 0,
         next: 1,
@@ -135,20 +134,20 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 
     const linearEquation2 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u00082x\u0008+\u000810\u0008=\u0008\u000820\u0008",
             ),
-            Editor.Util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
+            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
         ]),
         context,
     );
 
     const linearEquation3 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008(2x+1)\u0008+\u00085\u0008-\u0008y\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u0008+\u0008123\u0008\u0008\u0008\u0008+\u00085\u0008",
             ),
         ]),
@@ -157,10 +156,10 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 
     const linearEquation4 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008-\u00085\u0008\u0008\u0008\u0008-\u00085\u0008",
             ),
         ]),
@@ -169,10 +168,10 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 
     const linearEquation5 = typesetWithWork(
         rowsToState([
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
             ),
-            Editor.Util.row(
+            Editor.util.row(
                 "\u0008+\u0008(-5)\u0008\u0008\u0008\u0008+\u0008(-5)\u0008",
             ),
         ]),
@@ -191,7 +190,7 @@ export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
 };
 
 export const Cursor: React.FunctionComponent<EmptyProps> = () => {
-    const cursor: Editor.Cursor = {
+    const cursor: Editor.types.Cursor = {
         path: [],
         prev: 0,
         next: 1,
@@ -228,7 +227,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
 };
 
 export const Selection: React.FunctionComponent<EmptyProps> = () => {
-    const cursor: Editor.Cursor = {
+    const cursor: Editor.types.Cursor = {
         path: [],
         prev: 0,
         next: 1,
@@ -283,13 +282,13 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const pythagoras = typeset(
         row([
             glyph("a"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
             glyph("+"),
             glyph("b"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
             glyph("="),
             glyph("c"),
-            Editor.Util.sup("2"),
+            Editor.util.sup("2"),
         ]),
         context,
     );
@@ -318,7 +317,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
                     root(
                         [
                             glyph("b"),
-                            Editor.Util.sup("2"),
+                            Editor.util.sup("2"),
                             glyph("\u2212"),
                             glyph("4"),
                             glyph("a"),
@@ -377,7 +376,7 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
                 [glyph("i"), glyph("="), glyph("0")],
                 [glyph("\u221e")],
             ),
-            frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]),
+            frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
         ]),
         context,
     );
@@ -396,7 +395,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         colorMap: colorMap,
     };
 
-    const fracNode = frac([glyph("1")], [glyph("2"), Editor.Util.sup("i")]);
+    const fracNode = frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]);
 
     colorMap.set(fracNode.id, "darkcyan");
     colorMap.set(fracNode.children[1].id, "orange");
@@ -411,9 +410,9 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
 };
 
 export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.Util.row("8+10+12+14");
+    const editNode = Editor.util.row("8+10+12+14");
 
-    const semNode = parse(editNode) as types.Add;
+    const semNode = Editor.parse(editNode) as types.Add;
 
     const num10 = semNode.args[1];
     const num12 = semNode.args[2];
@@ -446,9 +445,9 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
 };
 
 export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.Util.row("(11+x)(12-y)");
+    const editNode = Editor.util.row("(11+x)(12-y)");
 
-    const semNode = parse(editNode) as types.Mul;
+    const semNode = Editor.parse(editNode) as types.Mul;
 
     const secondTerm = semNode.args[1] as types.Add;
 
@@ -481,9 +480,9 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 };
 
 export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
-    const editNode = Editor.row([Editor.Util.frac("11+x", "12-y")]);
+    const editNode = Editor.builders.row([Editor.util.frac("11+x", "12-y")]);
 
-    const semNode = parse(editNode) as types.Div;
+    const semNode = Editor.parse(editNode) as types.Div;
     const denominator = semNode.args[1] as types.Add;
 
     const num12 = denominator.args[0];
@@ -492,17 +491,17 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     const colorMap = new Map<number, string>();
     let node;
     if (num12.loc) {
-        node = Editor.Util.nodeAtPath(editNode, num12.loc.path);
+        node = Editor.util.nodeAtPath(editNode, num12.loc.path);
         for (let i = num12.loc.start; i < num12.loc.end; i++) {
-            if (Editor.Util.hasChildren(node)) {
+            if (Editor.util.hasChildren(node)) {
                 colorMap.set(node.children[i].id, "darkCyan");
             }
         }
     }
     if (sum0.loc) {
-        node = Editor.Util.nodeAtPath(editNode, sum0.loc.path);
+        node = Editor.util.nodeAtPath(editNode, sum0.loc.path);
         for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-            if (Editor.Util.hasChildren(node)) {
+            if (Editor.util.hasChildren(node)) {
                 colorMap.set(node.children[i].id, "orange");
             }
         }

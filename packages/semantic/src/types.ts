@@ -535,6 +535,7 @@ export interface Common {
     loc?: SourceLocation;
     source?: string;
 }
+
 export interface SourceLocation {
     path: readonly number[];
     start: number;

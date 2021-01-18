@@ -1,8 +1,7 @@
 import * as React from "react";
 import {useDispatch} from "react-redux";
 
-import * as Editor from "@math-blocks/editor";
-import {parse} from "@math-blocks/editor-parser";
+import * as Editor from "@math-blocks/editor-core";
 import {Icon, MathEditor} from "@math-blocks/react";
 import {
     MistakeId,
@@ -23,7 +22,7 @@ type Props = {
     prevStep: _Step;
     step: _Step;
 
-    onChange: (value: Editor.Row) => unknown;
+    onChange: (value: Editor.types.Row) => unknown;
 };
 
 const MistakeMessages: Record<MistakeId, string> = {
@@ -84,12 +83,12 @@ const findParent = (
 };
 
 const colorLocation = (
-    editorRoot: Editor.Row,
+    editorRoot: Editor.types.Row,
     loc: Location,
     colorMap: Map<number, string>,
 ): void => {
-    const editNode = Editor.Util.nodeAtPath(editorRoot, loc.path);
-    if (editNode && Editor.Util.hasChildren(editNode)) {
+    const editNode = Editor.util.nodeAtPath(editorRoot, loc.path);
+    if (editNode && Editor.util.hasChildren(editNode)) {
         for (let i = loc.start; i < loc.end; i++) {
             colorMap.set(editNode.children[i].id, "darkCyan");
         }
@@ -97,7 +96,7 @@ const colorLocation = (
 };
 
 const highlightMistake = (
-    editorRoot: Editor.Row,
+    editorRoot: Editor.types.Row,
     semanticRoot: types.Node,
     mistake: Mistake,
     colorMap: Map<number, string>,
@@ -167,8 +166,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
         const prev = prevStep.value;
         const next = step.value;
 
-        const parsedPrev = parse(prev);
-        const parsedNext = parse(next);
+        const parsedPrev = Editor.parse(prev);
+        const parsedNext = Editor.parse(next);
 
         parsedNextRef.current = parsedNext;
 

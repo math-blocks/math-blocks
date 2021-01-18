@@ -1,4 +1,4 @@
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import {Mistake} from "@math-blocks/grader";
 
 export enum StepStatus {
@@ -11,19 +11,19 @@ export enum StepStatus {
 export type Step =
     | {
           status: StepStatus.Correct;
-          value: Editor.Row;
+          value: Editor.types.Row;
       }
     | {
           status: StepStatus.Duplicate;
-          value: Editor.Row;
+          value: Editor.types.Row;
       }
     | {
           status: StepStatus.Pending;
-          value: Editor.Row;
+          value: Editor.types.Row;
       }
     | {
           status: StepStatus.Incorrect;
-          value: Editor.Row;
+          value: Editor.types.Row;
           mistakes: Mistake[];
       };
 
@@ -50,7 +50,7 @@ export type Action =
       }
     | {
           type: "update";
-          value: Editor.Row;
+          value: Editor.types.Row;
       }
     | {
           type: "set";

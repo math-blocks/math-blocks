@@ -1,10 +1,10 @@
 import {createStore} from "redux";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 
 import {reducer, State, StepStatus, ProblemStatus} from "./reducer";
 
-const question: Editor.Row = Editor.Util.row("2x+5=10");
+const question: Editor.types.Row = Editor.util.row("2x+5=10");
 
 const initialState: State = {
     steps: [

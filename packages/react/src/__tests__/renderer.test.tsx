@@ -6,7 +6,7 @@ import format from "xml-formatter";
 
 import * as Core from "@math-blocks/core";
 import {typeset} from "@math-blocks/typesetter";
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
@@ -22,7 +22,7 @@ import {
     Selection,
 } from "../../stories/2-math-renderer.stories";
 
-const {glyph, row, subsup} = Editor;
+const {glyph, row, subsup} = Editor.builders;
 
 const fontSize = 60;
 const context = {
@@ -142,7 +142,7 @@ describe("renderer", () => {
             const scene = typeset(
                 row([
                     glyph("a"),
-                    Editor.Util.sup("n"),
+                    Editor.util.sup("n"),
                     glyph("="),
                     glyph("a"),
                     subsup([glyph("n"), glyph("\u2212"), glyph("1")]),

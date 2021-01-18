@@ -6,6 +6,6 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../editor"}
+    {"path": "../editor-core"}
   ]
 }

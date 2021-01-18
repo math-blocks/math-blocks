@@ -1,4 +1,4 @@
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
@@ -8,12 +8,14 @@ import {Context, Options} from "./types";
 const DEBUG = typeof jest === "undefined";
 
 // Dedupe this with editor/src/util.ts
-export const isGlyph = (node: Editor.Node, char: string): node is Editor.Atom =>
-    node.type === "atom" && node.value.char == char;
+export const isGlyph = (
+    node: Editor.types.Node,
+    char: string,
+): node is Editor.types.Atom => node.type === "atom" && node.value.char == char;
 
 // Adds appropriate padding around operators where appropriate
 const typesetChildren = (
-    children: Editor.Node[],
+    children: Editor.types.Node[],
     context: Context,
     column = false, // isSingleChildColumn?
 ): Layout.Node[] => {
@@ -56,7 +58,7 @@ const typesetChildren = (
     });
 };
 
-const typesetRow = (row: Editor.Row, context: Context): Layout.Box => {
+const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
     const box = Layout.hpackNat(
         typesetChildren(row.children, context),
         context.multiplier,
@@ -120,17 +122,17 @@ const typesetColumn = (
 };
 
 type Column = {
-    nodes: Editor.Node[];
+    nodes: Editor.types.Node[];
     // TODO: change this to first and last
     start: number;
     end: number; // bounds are inclusive
 };
 
 // TODO: add columns before first separator and after last separator
-export const splitRow = (row: Editor.Row): Column[] => {
+export const splitRow = (row: Editor.types.Row): Column[] => {
     const result: Column[] = [];
 
-    let column: Editor.Node[] = [];
+    let column: Editor.types.Node[] = [];
     let start = -Infinity;
     let i = 0;
 
@@ -165,7 +167,7 @@ export const splitRow = (row: Editor.Row): Column[] => {
 };
 
 const colToLayout = (
-    row: Editor.Row,
+    row: Editor.types.Row,
     columns: Column[],
     columnLayouts: Layout.Node[][],
     columnWidths: number[],
@@ -300,7 +302,7 @@ export const typesetWithWork = (
     if (DEBUG) {
         const currentRow = state.rows[state.rowIndex];
         const currentCols = rowCols[state.rowIndex];
-        const colCursor = Editor.Util.cursorInColumns(
+        const colCursor = Editor.util.cursorInColumns(
             currentCols,
             currentRow.cursor,
         );
@@ -368,7 +370,7 @@ export const typesetWithWork = (
     return processBox({box: verticalLayout, ...options});
 };
 
-const _typeset = (node: Editor.Node, context: Context): Layout.Node => {
+const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
     const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
     const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
@@ -608,7 +610,7 @@ const _typeset = (node: Editor.Node, context: Context): Layout.Node => {
 };
 
 export const typeset = (
-    node: Editor.Node,
+    node: Editor.types.Node,
     context: Context,
     options: Options = {},
 ): Group => {

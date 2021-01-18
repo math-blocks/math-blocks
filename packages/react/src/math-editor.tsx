@@ -2,7 +2,7 @@
 import * as React from "react";
 import {css, StyleSheet} from "aphrodite";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
@@ -12,14 +12,14 @@ import useEventListener from "./use-event-listener";
 const {useEffect, useState, useRef} = React;
 
 type Props = {
-    rows: Editor.Row[];
+    rows: Editor.types.Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Row) => unknown;
-    onChange?: (value: Editor.Row) => unknown;
+    onSubmit?: (value: Editor.types.Row) => unknown;
+    onChange?: (value: Editor.types.Row) => unknown;
 
     /**
      * Style

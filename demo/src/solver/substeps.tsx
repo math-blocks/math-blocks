@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor";
+import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";

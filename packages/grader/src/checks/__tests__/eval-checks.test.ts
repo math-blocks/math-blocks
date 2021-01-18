@@ -1,4 +1,4 @@
-import {parse} from "@math-blocks/testing";
+import * as Testing from "@math-blocks/testing";
 
 import StepChecker from "../../step-checker";
 import {MistakeId} from "../../enums";
@@ -242,13 +242,17 @@ describe("Eval (decomposition) checks", () => {
 
         it("2 * 5 * 1/5 -> 2 (don't eval factions)", () => {
             const checker = new StepChecker({evalFractions: false});
-            const result = checker.checkStep(parse("2 * 5 * 1/5"), parse("2"), {
-                checker,
-                steps: [],
-                successfulChecks: new Set(),
-                reversed: false,
-                mistakes: [],
-            });
+            const result = checker.checkStep(
+                Testing.parse("2 * 5 * 1/5"),
+                Testing.parse("2"),
+                {
+                    checker,
+                    steps: [],
+                    successfulChecks: new Set(),
+                    reversed: false,
+                    mistakes: [],
+                },
+            );
 
             expect(result).toBeTruthy();
             if (!result) {
