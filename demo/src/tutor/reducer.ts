@@ -1,6 +1,7 @@
 import * as Editor from "@math-blocks/editor-core";
 import {Mistake} from "@math-blocks/grader";
 
+// TODO: add an 'Error' status
 export enum StepStatus {
     Correct,
     Incorrect,

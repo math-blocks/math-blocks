@@ -50,13 +50,27 @@ export const solve: Transform = (node, ident) => {
         }
     }
 
-    if (substeps.length > 0) {
-        return {
-            message: "solve for variable", // TODO: include variable in message
-            before: node,
-            after: current,
-            substeps,
-        };
+    // If there are no steps, `solve` doesn't know how to solve this particular
+    // equation yet.
+    if (substeps.length === 0) {
+        return undefined;
+    }
+
+    const after = current;
+
+    if (after.type === "eq") {
+        const [left, right] = after.args;
+        if (
+            Semantic.util.deepEquals(left, ident) ||
+            Semantic.util.deepEquals(right, ident)
+        ) {
+            return {
+                message: "solve for variable", // TODO: include variable in message
+                before: node,
+                after: current,
+                substeps,
+            };
+        }
     }
 
     return undefined;

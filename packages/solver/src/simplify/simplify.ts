@@ -4,6 +4,7 @@ import {Step, Transform} from "./types";
 
 import {addNegToSub} from "./transforms/add-neg-to-sub";
 import {dropParens} from "./transforms/drop-parens";
+import {dropAddIdentity} from "./transforms/drop-add-identity";
 import {evalMul, evalAdd, evalDiv} from "./transforms/eval";
 import {collectLikeTerms} from "./transforms/collect-like-terms";
 import {distribute} from "./transforms/distribute";
@@ -14,6 +15,8 @@ import {simplifyMul} from "./transforms/simplify-mul";
 
 export const simplify: Transform = (node) => {
     const tranforms: Transform[] = [
+        dropAddIdentity,
+
         simplifyMul, // We do this first so that we don't repeat what it does in other transforms
 
         distribute,

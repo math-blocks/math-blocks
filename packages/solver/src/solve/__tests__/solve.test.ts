@@ -47,6 +47,31 @@ describe("solve", () => {
             });
         });
 
+        // TODO: update 'simplify' to deal with '+ 0'
+        test("2x + 0 = 5", () => {
+            const ast = parseEq("2x + 0 = 5");
+
+            const result = solve(ast, Semantic.builders.identifier("x"));
+
+            expect(Testing.print(result.after)).toEqual("x = 5 / 2");
+
+            expect(result.substeps.map((step) => step.message)).toEqual([
+                "simplify the left hand side",
+                "divide both sides",
+                "simplify the left hand side",
+            ]);
+
+            expect(ast).toHaveFullStepsLike({
+                steps: result.substeps,
+                expressions: [
+                    "2x + 0 = 5",
+                    "2x = 5",
+                    "2x / 2 = 5 / 2",
+                    "x = 5 / 2",
+                ],
+            });
+        });
+
         test("2x + 3x = 7 - 4", () => {
             const ast = parseEq("2x + 3x = 7 - 4");
 

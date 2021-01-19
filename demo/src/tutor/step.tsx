@@ -9,7 +9,8 @@ import {
     checkStep,
     replaceNodeWithId,
 } from "@math-blocks/grader";
-import {types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
+import {solve, applyStep} from "@math-blocks/solver";
 
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./layout";
@@ -59,15 +60,15 @@ const mergeLocation = (start: Location, end: Location): Location => {
 };
 
 const findParent = (
-    root: types.Node,
-    node: types.Node,
-): types.Node | undefined => {
-    const stack: types.Node[] = [];
-    let result: types.Node | undefined = undefined;
+    root: Semantic.types.Node,
+    node: Semantic.types.Node,
+): Semantic.types.Node | undefined => {
+    const stack: Semantic.types.Node[] = [];
+    let result: Semantic.types.Node | undefined = undefined;
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    util.traverse(root, {
+    Semantic.util.traverse(root, {
         enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];
@@ -97,7 +98,7 @@ const colorLocation = (
 
 const highlightMistake = (
     editorRoot: Editor.types.Row,
-    semanticRoot: types.Node,
+    semanticRoot: Semantic.types.Node,
     mistake: Mistake,
     colorMap: Map<number, string>,
 ): void => {
@@ -116,7 +117,7 @@ const highlightMistake = (
                 (parentNode.type === "add" || parentNode.type === "mul")
             ) {
                 const index = parentNode.args.indexOf(
-                    node as types.NumericNode,
+                    node as Semantic.types.NumericNode,
                 );
                 if (parentNode) {
                     if (entriesByParentId.has(parentNode.id)) {
@@ -160,14 +161,11 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();
-    const parsedNextRef = React.useRef<types.Node | null>(null);
+    const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
 
     const handleCheckStep = (): boolean => {
-        const prev = prevStep.value;
-        const next = step.value;
-
-        const parsedPrev = Editor.parse(prev);
-        const parsedNext = Editor.parse(next);
+        const parsedPrev = Editor.parse(prevStep.value);
+        const parsedNext = Editor.parse(step.value);
 
         parsedNextRef.current = parsedNext;
 
@@ -177,7 +175,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             if (
                 parsedNext.type === "eq" &&
                 parsedNext.args[0].type === "identifier" &&
-                util.isNumber(parsedNext.args[1])
+                Semantic.util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right"});
                 dispatch({type: "complete"});
@@ -193,26 +191,66 @@ const Step: React.FunctionComponent<Props> = (props) => {
         return false;
     };
 
-    let buttonOrIcon = (
-        <button
-            style={{
-                fontSize: 30,
-                borderRadius: 4,
-            }}
-            onClick={handleCheckStep}
-            onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }}
-            disabled={step.status !== StepStatus.Pending}
-        >
-            Check
-        </button>
+    const handleGetHint = (): void => {
+        // TODO: check that we're solving an equations
+        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+
+        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+
+        if (solution && solution.substeps.length > 0) {
+            // Grab the first step of the solution and apply it to the previous
+            // math statement that the user has entered.
+            const step = solution.substeps[0];
+            const next = applyStep(parsedPrev, step);
+
+            // NOTE: Some steps will have their own sub-steps which we may want
+            // to apply to help students better understand what the hint is doing.
+
+            dispatch({
+                type: "update",
+                value: Editor.print(next),
+            });
+        } else {
+            throw new Error("no solution");
+        }
+    };
+
+    let buttonsOrIcon = (
+        <HStack>
+            <button
+                style={{
+                    fontSize: 30,
+                    borderRadius: 4,
+                }}
+                onClick={handleCheckStep}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+                disabled={step.status !== StepStatus.Pending}
+            >
+                Check
+            </button>
+            <button
+                style={{
+                    fontSize: 30,
+                    borderRadius: 4,
+                }}
+                onClick={handleGetHint}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+            >
+                Hint
+            </button>
+        </HStack>
     );
+
     if (step.status === StepStatus.Incorrect) {
-        buttonOrIcon = <Icon name="incorrect" size={48} />;
+        buttonsOrIcon = <Icon name="incorrect" size={48} />;
     } else if (step.status === StepStatus.Correct) {
-        buttonOrIcon = <Icon name="correct" size={48} />;
+        buttonsOrIcon = <Icon name="correct" size={48} />;
     }
 
     const colorMap = new Map<number, string>();
@@ -276,14 +314,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
                         justifyContent: "center",
                     }}
                 >
-                    <div
-                        style={{
-                            marginLeft: 8,
-                            position: "absolute",
-                            left: 800,
-                        }}
-                    >
-                        {buttonOrIcon}
+                    <div style={{width: 200, marginLeft: 8}}>
+                        {buttonsOrIcon}
                     </div>
                 </VStack>
             </HStack>

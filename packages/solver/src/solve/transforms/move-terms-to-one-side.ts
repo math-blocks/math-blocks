@@ -78,7 +78,13 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         rightIdentTerms.length === 0 &&
         leftNonIdentTerms.length > 0
     ) {
-        let left = leftIdentTerms[0];
+        let left = Semantic.builders.add([
+            leftIdentTerms[0],
+            ...leftNonIdentTerms,
+            ...leftNonIdentTerms.map(flipSign),
+        ]);
+
+        // TODO: run this check on leftIdentTerms[0]
         if (left.type === "neg") {
             left = convertSubTermToNeg(left);
         }
