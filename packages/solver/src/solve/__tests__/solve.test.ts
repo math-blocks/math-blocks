@@ -30,7 +30,7 @@ describe("solve", () => {
 
             expect(result.substeps.map((step) => step.message)).toEqual([
                 "move terms to one side",
-                "simplify the right hand side",
+                "simplify both sides",
                 "divide both sides",
                 "simplify the left hand side",
             ]);
@@ -39,7 +39,7 @@ describe("solve", () => {
                 steps: result.substeps,
                 expressions: [
                     "2x + 5 = 10",
-                    "2x = 10 - 5",
+                    "2x + 5 - 5 = 10 - 5",
                     "2x = 5",
                     "2x / 2 = 5 / 2",
                     "x = 5 / 2",
@@ -163,7 +163,7 @@ describe("solve", () => {
             expect(Testing.print(result.after)).toEqual("x = 3");
             expect(result.substeps.map((step) => step.message)).toEqual([
                 "move terms to one side",
-                "simplify the right hand side",
+                "simplify both sides",
                 "divide both sides",
                 "simplify both sides",
             ]);
@@ -172,7 +172,7 @@ describe("solve", () => {
                 steps: result.substeps,
                 expressions: [
                     "2x + 1 = 7",
-                    "2x = 7 - 1",
+                    "2x + 1 - 1 = 7 - 1",
                     "2x = 6",
                     "2x / 2 = 6 / 2",
                     "x = 3",
@@ -250,7 +250,7 @@ describe("solve", () => {
             expect(Testing.print(result.after)).toEqual("x = -3");
             expect(result.substeps.map((step) => step.message)).toEqual([
                 "move terms to one side",
-                "simplify the right hand side",
+                "simplify both sides",
                 "divide both sides",
                 "simplify both sides",
             ]);
@@ -273,7 +273,7 @@ describe("solve", () => {
                 steps: result.substeps,
                 expressions: [
                     "2 - 2x = 5",
-                    "-2x = 5 - 2",
+                    "-2x + 2 - 2 = 5 - 2",
                     "-2x = 3",
                     "-2x / -2 = 3 / -2",
                     "x = -(3 / 2)",
@@ -327,7 +327,7 @@ describe("solve", () => {
             expect(Testing.print(result.after)).toEqual("x = 0");
             expect(result.substeps.map((step) => step.message)).toEqual([
                 "move terms to one side",
-                "simplify the right hand side",
+                "simplify both sides",
                 "divide both sides",
                 "simplify both sides",
             ]);
@@ -336,7 +336,7 @@ describe("solve", () => {
                 steps: result.substeps,
                 expressions: [
                     "2x + 3 = 3",
-                    "2x = 3 - 3",
+                    "2x + 3 - 3 = 3 - 3",
                     "2x = 0",
                     "2x / 2 = 0 / 2",
                     "x = 0",
