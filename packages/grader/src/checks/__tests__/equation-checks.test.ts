@@ -1,6 +1,6 @@
 import * as Testing from "@math-blocks/testing";
 
-import {Status, MistakeId} from "../../enums";
+import {MistakeId} from "../../enums";
 
 import {
     checkStep,
@@ -219,7 +219,6 @@ describe("Equation checks", () => {
             const result = checkStep("y = x", "x + 10 = y + 10");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "decompose product",
@@ -355,7 +354,6 @@ describe("Equation checks", () => {
             const result = checkStep("y = x", "x * 10 = y * 10");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "decompose product",
@@ -378,7 +376,6 @@ describe("Equation checks", () => {
             const result = checkStep("xa = yb", "5ax = 5by");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "commutative property",

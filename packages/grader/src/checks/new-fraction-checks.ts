@@ -182,6 +182,7 @@ export const divByFrac: Check = (prev, next, context): Result | undefined => {
                             "A power with a negative exponent is the same as one over the power with the positive exponent",
                         before: newDenominator,
                         after: denominator,
+                        substeps: [],
                     },
                 ],
             };
@@ -194,6 +195,7 @@ export const divByFrac: Check = (prev, next, context): Result | undefined => {
                             "A power with a negative exponent is the same as one over the power with the positive exponent",
                         before: denominator,
                         after: newDenominator,
+                        substeps: [],
                     },
                     ...result.steps,
                 ],

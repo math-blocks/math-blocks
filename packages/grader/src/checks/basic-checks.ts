@@ -1,6 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Status} from "../enums";
 import {Check, Result, Step, Mistake, Context} from "../types";
 
 export const numberCheck: Check = (prev, next, context): Result | undefined => {
@@ -10,7 +9,6 @@ export const numberCheck: Check = (prev, next, context): Result | undefined => {
         prev.value === next.value
     ) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
@@ -28,7 +26,6 @@ export const identifierCheck: Check = (
         prev.name === next.name
     ) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
@@ -38,7 +35,6 @@ export const identifierCheck: Check = (
 export const exactMatch: Check = (prev, next, context): Result | undefined => {
     if (Semantic.util.deepEquals(prev, next)) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
@@ -78,10 +74,8 @@ export const checkArgs: Check = (prev, next, context): Result | undefined => {
             const index = remainingNextArgs.findIndex((nextArg) => {
                 const result = checker.checkStep(prevArg, nextArg, newContext);
                 if (result) {
-                    if (result.status === Status.Correct) {
-                        steps.push(...result.steps);
-                        return result;
-                    }
+                    steps.push(...result.steps);
+                    return result;
                 }
             });
 
@@ -113,7 +107,6 @@ export const checkArgs: Check = (prev, next, context): Result | undefined => {
         }
 
         return {
-            status: Status.Correct,
             steps: steps,
         };
     } else if (prev.type === "neg" && next.type === "neg") {
@@ -131,7 +124,6 @@ export const checkArgs: Check = (prev, next, context): Result | undefined => {
             // TODO: file a ticket about where errors are reported for returns
             // that don't match the expected type.
             return {
-                status: Status.Correct,
                 steps: [...baseResult.steps, ...expResult.steps],
             };
         }

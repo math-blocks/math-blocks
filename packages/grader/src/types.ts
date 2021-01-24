@@ -1,15 +1,15 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {MistakeId, Status} from "./enums";
+import {MistakeId} from "./enums";
 
 export type Step = {
     message: string;
     before: Semantic.types.Node;
     after: Semantic.types.Node;
+    substeps: [];
 };
 
 export type Result = {
-    status: Status;
     steps: readonly Step[];
 };
 

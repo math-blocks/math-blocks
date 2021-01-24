@@ -2,7 +2,6 @@ import produce from "immer";
 
 import * as Semantic from "@math-blocks/semantic";
 
-import {Status} from "../enums";
 import {Step, Context, Result} from "../types";
 
 // TODO: handle negative numbers
@@ -230,10 +229,7 @@ export const correctResult = (
     //     beforeSteps.reverse();
     // }
 
-    newPrev; // ?
-
     return {
-        status: Status.Correct,
         steps: reversed
             ? [
                   ...afterSteps,
@@ -241,6 +237,7 @@ export const correctResult = (
                       message: reverseMessage,
                       before: next,
                       after: newPrev,
+                      substeps: [],
                   },
                   ...beforeSteps,
               ]
@@ -250,64 +247,7 @@ export const correctResult = (
                       message: forwardMessage,
                       before: newPrev,
                       after: next,
-                  },
-                  ...afterSteps,
-              ],
-    };
-};
-
-export const incorrectResult = (
-    prev: Semantic.types.Node,
-    next: Semantic.types.Node,
-    reversed: boolean,
-    beforeSteps: readonly Step[],
-    afterSteps: readonly Step[],
-    forwardMessage: string,
-    reverseMessage: string = forwardMessage,
-): Result => {
-    const newPrev = beforeSteps
-        ? reversed
-            ? applySteps(
-                  prev,
-                  beforeSteps.map((step) => {
-                      return {
-                          ...step,
-                          // The order of the nodes needs to be reversed when
-                          // operating in a reversed context.
-                          before: step.after,
-                          after: step.before,
-                      };
-                  }),
-              )
-            : applySteps(prev, beforeSteps)
-        : prev;
-
-    // TODO: figure out why afterSteps.reverse() and beforeSteps.reverse()
-    // breaks a number of our tests.
-
-    // if (reversed) {
-    //     afterSteps.reverse();
-    //     beforeSteps.reverse();
-    // }
-
-    return {
-        status: Status.Incorrect,
-        steps: reversed
-            ? [
-                  ...afterSteps,
-                  {
-                      message: reverseMessage,
-                      before: next,
-                      after: newPrev,
-                  },
-                  ...beforeSteps,
-              ]
-            : [
-                  ...beforeSteps,
-                  {
-                      message: forwardMessage,
-                      before: newPrev,
-                      after: next,
+                      substeps: [],
                   },
                   ...afterSteps,
               ],

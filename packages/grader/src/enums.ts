@@ -8,8 +8,3 @@ export enum MistakeId {
     DECOMP_ADD,
     DECOMP_MUL,
 }
-
-export enum Status {
-    Correct,
-    Incorrect,
-}

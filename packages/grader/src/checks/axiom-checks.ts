@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Result, Step, Check} from "../types";
-import {Status, MistakeId} from "../enums";
+import {MistakeId} from "../enums";
 
 import {exactMatch, checkArgs} from "./basic-checks";
 import {zip, applySteps, correctResult} from "./util";
@@ -409,13 +409,13 @@ export const symmetricProperty: Check = (
 
             if (result) {
                 return {
-                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
                             message: "symmetric property",
                             before: newPrev,
                             after: prev,
+                            substeps: [],
                         },
                     ],
                 };
@@ -445,13 +445,13 @@ export const symmetricProperty: Check = (
             if (result) {
                 const newNext = applySteps(next, result.steps);
                 return {
-                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
                             message: "symmetric property",
                             before: newNext,
                             after: prev,
+                            substeps: [],
                         },
                     ],
                 };

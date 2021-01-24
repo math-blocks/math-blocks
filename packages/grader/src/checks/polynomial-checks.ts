@@ -62,6 +62,7 @@ export const collectLikeTerms: Check = (
                         message: "evaluate coefficient",
                         before: originalCoeff,
                         after: coeff,
+                        substeps: [],
                     });
                 }
             } else {
@@ -75,6 +76,7 @@ export const collectLikeTerms: Check = (
                     message: "evaluate multiplication",
                     before: mul,
                     after: coeff,
+                    substeps: [],
                 });
             }
             varPart = Semantic.builders.mul(nonNumericFactors, true);

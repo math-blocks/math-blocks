@@ -322,6 +322,7 @@ export const mulPowsSameBase: Check = (
                       message: "decompose sum",
                       before: nodes[0],
                       after: nodes[1],
+                      substeps: [],
                   })),
               ]
             : [
@@ -329,6 +330,7 @@ export const mulPowsSameBase: Check = (
                       message: "evaluate sum",
                       before: nodes[0],
                       after: nodes[1],
+                      substeps: [],
                   })),
                   ...result2.steps,
               ];
@@ -411,6 +413,7 @@ export const divPowsSameBase: Check = (
                               message: "decompose sum",
                               before: newPrev.exp,
                               after: exp,
+                              substeps: [],
                           },
                       ]
                     : [
@@ -418,6 +421,7 @@ export const divPowsSameBase: Check = (
                               message: "evaluate sum",
                               before: newPrev.exp,
                               after: exp,
+                              substeps: [],
                           },
                           ...result2.steps,
                       ];
