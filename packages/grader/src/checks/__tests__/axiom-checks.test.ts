@@ -790,7 +790,10 @@ describe("Axiom checks", () => {
         });
 
         it("(x + 1)(x + 1) -> x*x + x*1 + 1*x + 1*1", () => {
-            const result = checkStep("(x + 1)(x + 1)", "x*x + x*1 + 1*x + 1*1");
+            const result = checkStep(
+                "(x + 1)(x + 1)",
+                "xx + 1x + (x)(1) + (1)(1)",
+            );
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
@@ -800,14 +803,32 @@ describe("Axiom checks", () => {
             ]);
 
             expect(result).toHaveStepsLike([
-                ["(x + 1)(x + 1)", "x*(x + 1) + 1*(x + 1)"],
-                ["x*(x + 1) + 1*(x + 1)", "x*x + x*1 + 1*(x + 1)"],
-                ["x*x + x*1 + 1*(x + 1)", "x*x + x*1 + 1*x + 1*1"],
+                ["(x + 1)(x + 1)", "(x + 1)x + (x + 1)(1)"],
+                ["(x + 1)x + (x + 1)(1)", "xx + 1x + (x + 1)(1)"],
+                ["xx + 1x + (x + 1)(1)", "xx + 1x + (x)(1) + (1)(1)"],
             ]);
         });
 
         it("(x + 1)(x + 1) -> x^2 + 2x + 1", () => {
             const result = checkStep("(x + 1)(x + 1)", "x^2 + x + x + 1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "distribution",
+                "distribution",
+                "distribution",
+                "multiplying a factor n-times is an exponent", // x*x -> x^2
+                "multiplication with identity",
+                "multiplication with identity",
+                "multiplication with identity",
+            ]);
+        });
+
+        it("1 + (x + 1)(x + 1) -> 1 + x^2 + 2x + 1", () => {
+            const result = checkStep(
+                "1 + (x + 1)(x + 1)",
+                "1 + x^2 + x + x + 1",
+            );
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([

@@ -238,6 +238,9 @@ export const checkDistribution: Check = (prev, next, context) => {
         for (let i = 0; i < prev.args.length; i++) {
             const mul = prev.args[i];
 
+            const potentialResults: Result[] = [];
+            const potentialNewPrevs = [];
+
             if (
                 mul.type === "mul" &&
                 mul.args.length === 2 &&
@@ -257,18 +260,55 @@ export const checkDistribution: Check = (prev, next, context) => {
                     context,
                 );
                 if (result) {
-                    results.push(
-                        correctResult(
-                            prev,
-                            newPrev,
-                            context.reversed,
-                            [],
-                            result.steps,
-                            "distribution",
-                            "factoring",
-                        ),
-                    );
+                    potentialResults.push(result);
+                    potentialNewPrevs.push(newPrev);
                 }
+            } else if (
+                mul.type === "mul" &&
+                mul.args.length === 2 &&
+                mul.args[0].type === "add"
+            ) {
+                const newPrev = Semantic.builders.add([
+                    ...prev.args.slice(0, i),
+                    ...mul.args[0].args.map((arg) =>
+                        Semantic.builders.mul([arg, mul.args[1]], mul.implicit),
+                    ),
+                    ...prev.args.slice(i + 1),
+                ]);
+
+                const result = context.checker.checkStep(
+                    newPrev,
+                    next,
+                    context,
+                );
+                if (result) {
+                    potentialResults.push(result);
+                    potentialNewPrevs.push(newPrev);
+                }
+            }
+
+            if (potentialResults.length > 0) {
+                let result = potentialResults[0];
+                let newPrev = potentialNewPrevs[0];
+                if (potentialResults.length === 2) {
+                    if (
+                        potentialResults[1].steps.length < result.steps.length
+                    ) {
+                        result = potentialResults[1];
+                        newPrev = potentialNewPrevs[1];
+                    }
+                }
+                results.push(
+                    correctResult(
+                        prev,
+                        newPrev,
+                        context.reversed,
+                        [],
+                        result.steps,
+                        "distribution",
+                        "factoring",
+                    ),
+                );
             }
         }
 
@@ -288,6 +328,9 @@ export const checkDistribution: Check = (prev, next, context) => {
     if (prev.type !== "mul" || next.type !== "add") {
         return;
     }
+
+    const potentialResults: Result[] = [];
+    const potentialNewPrevs = [];
 
     // If the second factor is an add, e.g. a(b + c) -> ...
     if (prev.args[1].type === "add") {
@@ -310,15 +353,8 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return correctResult(
-                prev,
-                newPrev,
-                context.reversed,
-                [],
-                result.steps,
-                "distribution",
-                "factoring",
-            );
+            potentialResults.push(result);
+            potentialNewPrevs.push(newPrev);
         }
     }
 
@@ -332,16 +368,29 @@ export const checkDistribution: Check = (prev, next, context) => {
 
         const result = context.checker.checkStep(newPrev, next, context);
         if (result) {
-            return correctResult(
-                prev,
-                newPrev,
-                context.reversed,
-                [],
-                result.steps,
-                "distribution",
-                "factoring",
-            );
+            potentialResults.push(result);
+            potentialNewPrevs.push(newPrev);
         }
+    }
+
+    if (potentialResults.length > 0) {
+        let result = potentialResults[0];
+        let newPrev = potentialNewPrevs[0];
+        if (potentialResults.length === 2) {
+            if (potentialResults[1].steps.length < result.steps.length) {
+                result = potentialResults[1];
+                newPrev = potentialNewPrevs[1];
+            }
+        }
+        return correctResult(
+            prev,
+            newPrev,
+            context.reversed,
+            [],
+            result.steps,
+            "distribution",
+            "factoring",
+        );
     }
 };
 
