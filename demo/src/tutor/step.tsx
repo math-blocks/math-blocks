@@ -2,7 +2,7 @@ import * as React from "react";
 import {useDispatch} from "react-redux";
 
 import * as Editor from "@math-blocks/editor-core";
-import {Icon, MathEditor} from "@math-blocks/react";
+import {MathEditor} from "@math-blocks/react";
 import {
     MistakeId,
     Mistake,
@@ -12,6 +12,7 @@ import {
 import * as Semantic from "@math-blocks/semantic";
 import {solve, applyStep} from "@math-blocks/solver";
 
+import Icon from "./icon";
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
@@ -32,7 +33,7 @@ const MistakeMessages: Record<MistakeId, string> = {
     [MistakeId.EXPR_ADD_NON_IDENTITY]:
         "adding a non-identity valid is not allowed",
     [MistakeId.EXPR_MUL_NON_IDENTITY]:
-        "multiplying a non-identity valid is not allowed",
+        "multiplying a non-identity value is not allowed",
 
     // TODO: handle subtraction
     [MistakeId.EVAL_ADD]: "addition is incorrect",
@@ -162,6 +163,9 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const dispatch: Dispatch = useDispatch();
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
+    const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
+    const [hintText, setHintText] = React.useState<string | null>(null);
+    const [showed, setShowed] = React.useState<boolean>(false);
 
     const handleCheckStep = (): boolean => {
         const parsedPrev = Editor.parse(prevStep.value);
@@ -177,10 +181,10 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 parsedNext.args[0].type === "identifier" &&
                 Semantic.util.isNumber(parsedNext.args[1])
             ) {
-                dispatch({type: "right"});
+                dispatch({type: "right", hint});
                 dispatch({type: "complete"});
             } else {
-                dispatch({type: "right"});
+                dispatch({type: "right", hint});
                 dispatch({type: "duplicate"});
             }
             return true;
@@ -201,11 +205,34 @@ const Step: React.FunctionComponent<Props> = (props) => {
             // Grab the first step of the solution and apply it to the previous
             // math statement that the user has entered.
             const step = solution.substeps[0];
-            const next = applyStep(parsedPrev, step);
 
             // NOTE: Some steps will have their own sub-steps which we may want
             // to apply to help students better understand what the hint is doing.
 
+            setHint("text");
+            setHintText(step.message);
+        } else {
+            throw new Error("no solution");
+        }
+    };
+
+    const handleShowMe = (): void => {
+        // TODO: check that we're solving an equations
+        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+
+        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+
+        if (solution && solution.substeps.length > 0) {
+            // Grab the first step of the solution and apply it to the previous
+            // math statement that the user has entered.
+            const step = solution.substeps[0];
+            const next = applyStep(parsedPrev, step);
+
+            setHint("showme");
+            setShowed(true);
+
+            // NOTE: Some steps will have their own sub-steps which we may want
+            // to apply to help students better understand what the hint is doing.
             dispatch({
                 type: "update",
                 value: Editor.print(next),
@@ -248,9 +275,22 @@ const Step: React.FunctionComponent<Props> = (props) => {
     );
 
     if (step.status === StepStatus.Incorrect) {
-        buttonsOrIcon = <Icon name="incorrect" size={48} />;
+        buttonsOrIcon = (
+            <HStack>
+                <Icon name="incorrect" size={48} />
+            </HStack>
+        );
     } else if (step.status === StepStatus.Correct) {
-        buttonsOrIcon = <Icon name="correct" size={48} />;
+        const {hint} = step;
+
+        buttonsOrIcon = (
+            <HStack>
+                <Icon name="correct" size={48} />
+                {(hint === "showme" || hint === "text") && (
+                    <Icon name="hint" size={48} />
+                )}
+            </HStack>
+        );
     }
 
     const colorMap = new Map<number, string>();
@@ -319,6 +359,24 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     </div>
                 </VStack>
             </HStack>
+            {hintText && (
+                <HStack
+                    style={{
+                        alignItems: "center",
+                        fontSize: 20,
+                        fontFamily: "sans-serif",
+                    }}
+                >
+                    {hintText}
+                    <button
+                        disabled={showed}
+                        style={{fontSize: 20}}
+                        onClick={() => handleShowMe()}
+                    >
+                        Show me how!
+                    </button>
+                </HStack>
+            )}
             {step.status === StepStatus.Incorrect &&
                 step.mistakes.map((mistake, index) => {
                     return (

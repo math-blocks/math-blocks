@@ -11,6 +11,7 @@ const initialState: State = {
         {
             status: StepStatus.Correct,
             value: question,
+            hint: "none",
         },
         {
             status: StepStatus.Duplicate,

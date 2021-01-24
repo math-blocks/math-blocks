@@ -47,6 +47,7 @@ const Tutor: React.FunctionComponent = () => {
                                     {
                                         status: StepStatus.Correct,
                                         value: value,
+                                        hint: "none",
                                     },
                                 ],
                             });

@@ -13,6 +13,7 @@ export type Step =
     | {
           status: StepStatus.Correct;
           value: Editor.types.Row;
+          hint: "none" | "text" | "showme";
       }
     | {
           status: StepStatus.Duplicate;
@@ -41,6 +42,7 @@ export type State = {
 export type Action =
     | {
           type: "right";
+          hint: "none" | "text" | "showme";
       }
     | {
           type: "wrong";
@@ -77,6 +79,7 @@ export const reducer = (state: State = initialState, action: Action): State => {
                     {
                         ...state.steps[state.steps.length - 1],
                         status: StepStatus.Correct,
+                        hint: action.hint,
                     },
                 ],
             };
