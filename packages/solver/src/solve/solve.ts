@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
 import {divBothSides} from "./transforms/div-both-sides";
 import {mulBothSides} from "./transforms/mul-both-sides";
 import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
-import {Step, Transform} from "./types";
+import {Transform} from "./types";
 
 /**
  * Solve an equation for a given variable.

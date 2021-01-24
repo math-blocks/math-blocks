@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Result, Check, Step} from "../types";
+import {Result, Check} from "../types";
 import {correctResult} from "./util";
 
 function notNull<T>(x: T | null): x is T {

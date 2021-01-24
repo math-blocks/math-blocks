@@ -4,7 +4,8 @@ import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
-import {simplify, solve, Step} from "@math-blocks/solver";
+import {simplify, solve} from "@math-blocks/solver";
+import {Step} from "@math-blocks/step-utils";
 import {typeset} from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";

@@ -2,11 +2,10 @@
     "extends": "../tsconfig-base.json",
     "compilerOptions": {
       "outDir": "./out",
-      "rootDir": "."
+      "rootDir": ".",
     },
     "references": [
-      {"path": "../semantic"},
-      {"path": "../step-utils"},
-      {"path": "../testing"}
+      {"path": "../core"},
+      {"path": "../semantic"}
     ]
   }

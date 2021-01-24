@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Step, Transform} from "../types";
+import {Transform} from "../types";
 
 // (a + b) / c -> a/c + b/c
 export const distributeDiv: Transform = (node, path): Step | undefined => {

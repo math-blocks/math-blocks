@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Check, Result, Step} from "../types";
+import {Check, Result} from "../types";
 
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";

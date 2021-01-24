@@ -10,7 +10,8 @@ import {
     replaceNodeWithId,
 } from "@math-blocks/grader";
 import * as Semantic from "@math-blocks/semantic";
-import {solve, applyStep} from "@math-blocks/solver";
+import {applyStep} from "@math-blocks/step-utils";
+import {solve} from "@math-blocks/solver";
 
 import Icon from "./icon";
 import {Step as _Step, StepStatus} from "./reducer";

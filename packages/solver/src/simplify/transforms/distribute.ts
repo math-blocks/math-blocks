@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Step, Transform} from "../types";
+import {Transform} from "../types";
 import {simplifyMul} from "../util";
 
 // a - (b + c) -> a + -1(b + c)

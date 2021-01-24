@@ -4,7 +4,7 @@ import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
-import {Step, applyStep} from "@math-blocks/solver";
+import {Step, applyStep} from "@math-blocks/step-utils";
 import {typeset} from "@math-blocks/typesetter";
 
 type Props = {

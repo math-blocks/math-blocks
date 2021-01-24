@@ -1,13 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
 import {MistakeId} from "./enums";
-
-export type Step = {
-    message: string;
-    before: Semantic.types.Node;
-    after: Semantic.types.Node;
-    substeps: [];
-};
 
 export type Result = {
     steps: readonly Step[];

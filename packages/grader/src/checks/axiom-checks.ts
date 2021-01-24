@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step, applySteps} from "@math-blocks/step-utils";
 
-import {Result, Step, Check} from "../types";
+import {Result, Check} from "../types";
 import {MistakeId} from "../enums";
 
 import {exactMatch, checkArgs} from "./basic-checks";
-import {zip, applySteps, correctResult} from "./util";
+import {zip, correctResult} from "./util";
 
 export const addZero: Check = (prev, next, context) => {
     if (next.type !== "add") {

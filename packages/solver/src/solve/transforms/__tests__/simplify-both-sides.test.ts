@@ -1,7 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-
-import {Step} from "../../types";
+import {Step} from "@math-blocks/step-utils";
 
 import {simplifyBothSides} from "../simplify-both-sides";
 

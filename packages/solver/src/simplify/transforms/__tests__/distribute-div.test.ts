@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
+import {Step} from "@math-blocks/step-utils";
 
 import {distributeDiv as _distributeDiv} from "../distribute-div";
-import {Step} from "../../types";
 
 const distributeDiv = (node: Semantic.types.Node): Step => {
     const result = _distributeDiv(node, []);

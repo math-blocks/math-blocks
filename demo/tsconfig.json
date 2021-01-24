@@ -10,6 +10,7 @@
     {"path": "../packages/grader"},
     {"path": "../packages/react"},
     {"path": "../packages/semantic"},
-    {"path": "../packages/solver"}
+    {"path": "../packages/solver"},
+    {"path": "../packages/step-utils"}
   ]
 }

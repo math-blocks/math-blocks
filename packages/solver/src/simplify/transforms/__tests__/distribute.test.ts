@@ -1,27 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-
-import {applyStep} from "../../../apply-step";
+import {Step, applySteps} from "@math-blocks/step-utils";
 
 import {distribute as _distribute} from "../distribute";
-import {Step} from "../../types";
 
 import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";
 
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
-
-// TODO: recursively handle steps with sub-steps
-// TODO: dedupe
-const applySteps = (
-    node: Semantic.types.Node,
-    steps: Step[],
-): Semantic.types.Node => {
-    let result = node;
-    for (const step of steps) {
-        result = applyStep(result, step);
-    }
-    return result;
-};
 
 const distribute = (node: Semantic.types.Node): Step => {
     const result = _distribute(node, []);

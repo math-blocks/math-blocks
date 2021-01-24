@@ -1,27 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-
-import {applyStep} from "../../apply-step";
+import {applySteps, applyStep, Step} from "@math-blocks/step-utils";
 
 import {simplify as _simplify} from "../simplify";
-import {Step} from "../types";
 
 import {toHaveFullStepsLike} from "../../test-util";
 
 expect.extend({toHaveFullStepsLike});
-
-// TODO: recursively handle steps with sub-steps
-// TODO: dedupe
-const applySteps = (
-    node: Semantic.types.Node,
-    steps: Step[],
-): Semantic.types.Node => {
-    let result = node;
-    for (const step of steps) {
-        result = applyStep(result, step);
-    }
-    return result;
-};
 
 const simplify = (node: Semantic.types.Node): Step => {
     const result = _simplify(node, []);

@@ -1,8 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-
-import {applyStep} from "./apply-step";
-import {Step} from "./types";
+import {Step, applyStep} from "@math-blocks/step-utils";
 
 export const toHaveSubstepsLike = (
     received: Step,

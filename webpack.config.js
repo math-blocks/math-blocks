@@ -52,10 +52,6 @@ module.exports = {
                 "./packages/parser-factory/src",
             ),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
-            "@math-blocks/schema": path.join(
-                __dirname,
-                "./packages/schema/src",
-            ),
             "@math-blocks/semantic": path.join(
                 __dirname,
                 "./packages/semantic/src",
@@ -63,6 +59,10 @@ module.exports = {
             "@math-blocks/solver": path.join(
                 __dirname,
                 "./packages/solver/src",
+            ),
+            "@math-blocks/step-utils": path.join(
+                __dirname,
+                "./packages/step-utils/src",
             ),
             "@math-blocks/testing": path.join(
                 __dirname,

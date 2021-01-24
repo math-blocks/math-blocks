@@ -1,6 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-
-import {Step} from "./types";
+import {Step} from "@math-blocks/step-utils";
 
 // TODO: backport the change to @math-blocks/semantic
 // We want three checks:
