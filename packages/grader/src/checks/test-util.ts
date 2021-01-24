@@ -98,27 +98,27 @@ export const toHaveStepsLike = (
     for (let i = 0; i < expected.length; i++) {
         if (
             !Semantic.util.deepEquals(
-                received.steps[i].nodes[0],
+                received.steps[i].before,
                 myParse(expected[i][0]),
             )
         ) {
             failures.push({
                 step: i,
                 node: 0,
-                received: received.steps[i].nodes[0],
+                received: received.steps[i].before,
                 expected: myParse(expected[i][0]),
             });
         }
         if (
             !Semantic.util.deepEquals(
-                received.steps[i].nodes[1],
+                received.steps[i].after,
                 myParse(expected[i][1]),
             )
         ) {
             failures.push({
                 step: i,
                 node: 1,
-                received: received.steps[i].nodes[1],
+                received: received.steps[i].after,
                 expected: myParse(expected[i][1]),
             });
         }

@@ -56,11 +56,11 @@ describe("Integer checks", () => {
             "addition with identity",
         ]);
 
-        expect(result.steps[0].nodes[0]).toParseLike("a + 1 + b + -a + -b");
-        expect(result.steps[0].nodes[1]).toParseLike("0 + 1 + 0");
+        expect(result.steps[0].before).toParseLike("a + 1 + b + -a + -b");
+        expect(result.steps[0].after).toParseLike("0 + 1 + 0");
 
-        expect(result.steps[1].nodes[0]).toParseLike("0 + 1 + 0");
-        expect(result.steps[1].nodes[1]).toParseLike("1");
+        expect(result.steps[1].before).toParseLike("0 + 1 + 0");
+        expect(result.steps[1].after).toParseLike("1");
     });
 
     it("0 -> a + -a", () => {
@@ -68,8 +68,8 @@ describe("Integer checks", () => {
 
         expect(result).toBeTruthy();
 
-        expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`0`);
-        expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+        expect(result.steps[0].before).toMatchInlineSnapshot(`0`);
+        expect(result.steps[0].after).toMatchInlineSnapshot(`
             (add
               a
               (neg a))

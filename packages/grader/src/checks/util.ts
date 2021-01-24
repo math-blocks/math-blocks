@@ -128,10 +128,7 @@ export const applySteps = (
     const nextState = produce(root, (draft) => {
         // We need to apply each step
         for (const step of steps) {
-            // Not all reasons come with nodes yet.
-            if (step.nodes.length === 2) {
-                replaceNodeWithId(draft, step.nodes[0].id, step.nodes[1]);
-            }
+            replaceNodeWithId(draft, step.before.id, step.after);
         }
     });
     return nextState;
@@ -170,7 +167,8 @@ export const correctResult = (
                           ...step,
                           // The order of the nodes needs to be reversed when
                           // operating in a reversed context.
-                          nodes: [step.nodes[1], step.nodes[0]],
+                          before: step.after,
+                          after: step.before,
                       };
                   }),
               )
@@ -194,7 +192,8 @@ export const correctResult = (
                   ...afterSteps,
                   {
                       message: reverseMessage,
-                      nodes: [next, newPrev],
+                      before: next,
+                      after: newPrev,
                   },
                   ...beforeSteps,
               ]
@@ -202,7 +201,8 @@ export const correctResult = (
                   ...beforeSteps,
                   {
                       message: forwardMessage,
-                      nodes: [newPrev, next],
+                      before: newPrev,
+                      after: next,
                   },
                   ...afterSteps,
               ],
@@ -227,7 +227,8 @@ export const incorrectResult = (
                           ...step,
                           // The order of the nodes needs to be reversed when
                           // operating in a reversed context.
-                          nodes: [step.nodes[1], step.nodes[0]],
+                          before: step.after,
+                          after: step.before,
                       };
                   }),
               )
@@ -249,7 +250,8 @@ export const incorrectResult = (
                   ...afterSteps,
                   {
                       message: reverseMessage,
-                      nodes: [next, newPrev],
+                      before: next,
+                      after: newPrev,
                   },
                   ...beforeSteps,
               ]
@@ -257,7 +259,8 @@ export const incorrectResult = (
                   ...beforeSteps,
                   {
                       message: forwardMessage,
-                      nodes: [newPrev, next],
+                      before: newPrev,
+                      after: next,
                   },
                   ...afterSteps,
               ],

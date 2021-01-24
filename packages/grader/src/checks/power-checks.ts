@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, Step} from "../types";
+import {Check, Result, Step} from "../types";
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 
@@ -10,7 +10,7 @@ const isPower = (node: Semantic.types.Node): node is Semantic.types.Pow => {
 
 // a*a*...*a -> a^n
 // TODO: make check generic and then have runChecks do some preliminary checking.
-export const powDef: Check = (prev, next, context) => {
+export const powDef: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     // Avoid infinite recursion
@@ -111,7 +111,11 @@ export const powDef: Check = (prev, next, context) => {
 powDef.symmetric = true;
 
 // a^n -> a*a*...*a
-export const powDefReverse: Check = (prev, next, context) => {
+export const powDefReverse: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "pow") {
         return undefined;
     }
@@ -161,7 +165,11 @@ export const powDefReverse: Check = (prev, next, context) => {
 };
 powDefReverse.symmetric = true;
 
-export const mulPowsSameBase: Check = (prev, next, context) => {
+export const mulPowsSameBase: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     if (prev.type !== "mul") {
@@ -312,13 +320,15 @@ export const mulPowsSameBase: Check = (prev, next, context) => {
                   ...result2.steps,
                   ...evaluatedNodes.map<Step>((nodes) => ({
                       message: "decompose sum",
-                      nodes,
+                      before: nodes[0],
+                      after: nodes[1],
                   })),
               ]
             : [
                   ...evaluatedNodes.map<Step>((nodes) => ({
                       message: "evaluate sum",
-                      nodes,
+                      before: nodes[0],
+                      after: nodes[1],
                   })),
                   ...result2.steps,
               ];
@@ -343,7 +353,11 @@ mulPowsSameBase.symmetric = true;
 // NOTE: make sure that (a^x)(b^(n+m))(c^y) -> (a^x)(b^n)(b^m)(c^y)
 
 // (a^n)/(a^m) -> a^(n-m)
-export const divPowsSameBase: Check = (prev, next, context) => {
+export const divPowsSameBase: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "div") {
         return;
     }
@@ -395,13 +409,15 @@ export const divPowsSameBase: Check = (prev, next, context) => {
                           ...result2.steps,
                           {
                               message: "decompose sum",
-                              nodes: [newPrev.exp, exp],
+                              before: newPrev.exp,
+                              after: exp,
                           },
                       ]
                     : [
                           {
                               message: "evaluate sum",
-                              nodes: [newPrev.exp, exp],
+                              before: newPrev.exp,
+                              after: exp,
                           },
                           ...result2.steps,
                       ];
@@ -442,7 +458,7 @@ export const convertPowNegExpToDiv = (
 };
 
 // a^(-n) -> 1 / a^n
-export const powNegExp: Check = (prev, next, context) => {
+export const powNegExp: Check = (prev, next, context): Result | undefined => {
     // TODO: make Check generic so that we only have to check call isNumeric()
     // once in checkStep().
     if (!Semantic.util.isNumeric(prev)) {
@@ -485,7 +501,11 @@ export const powNegExp: Check = (prev, next, context) => {
 powNegExp.symmetric = true;
 
 // 1 / a^n -> a^(-n)
-export const oneOverPowToNegPow: Check = (prev, next, context) => {
+export const oneOverPowToNegPow: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "div") {
         return undefined;
     }
@@ -532,7 +552,7 @@ export const oneOverPowToNegPow: Check = (prev, next, context) => {
 };
 
 // (a^n)^m -> a^(n*m)
-export const powOfPow: Check = (prev, next, context) => {
+export const powOfPow: Check = (prev, next, context): Result | undefined => {
     if (!isPower(prev)) {
         return;
     }
@@ -569,7 +589,7 @@ export const powOfPow: Check = (prev, next, context) => {
 powOfPow.symmetric = true;
 
 // (xy)^n -> (x^n)(y^n)
-export const powOfMul: Check = (prev, next, context) => {
+export const powOfMul: Check = (prev, next, context): Result | undefined => {
     if (!(prev.type === "pow" && prev.base.type === "mul")) {
         return;
     }
@@ -606,7 +626,11 @@ powOfMul.symmetric = true;
 // (a^n)(b^n)(c^n) -> (abc)^n
 // NOTE: this check currently requires all exponents in the product to be the same.
 // TODO: support (a^n)(b^n)(c^m) -> (ab^n)(c^m)
-export const mulPowsSameExp: Check = (prev, next, context) => {
+export const mulPowsSameExp: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "mul") {
         return undefined;
     }
@@ -654,7 +678,7 @@ export const mulPowsSameExp: Check = (prev, next, context) => {
 mulPowsSameExp.symmetric = true;
 
 // (x/y)^n -> x^n / y^n
-export const powOfDiv: Check = (prev, next, context) => {
+export const powOfDiv: Check = (prev, next, context): Result | undefined => {
     if (!(prev.type === "pow" && prev.base.type === "div")) {
         return;
     }
@@ -694,7 +718,11 @@ export const powOfDiv: Check = (prev, next, context) => {
 powOfDiv.symmetric = true;
 
 // x^n / y^n -> (x/y)^n
-export const divOfPowsSameExp: Check = (prev, next, context) => {
+export const divOfPowsSameExp: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "div") {
         return undefined;
     }
@@ -739,7 +767,7 @@ divOfPowsSameExp.symmetric = true;
 
 // x^0 -> 1
 // NOTE: 0^0 is defined as 1 for convenience
-export const powToZero: Check = (prev, next, context) => {
+export const powToZero: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "pow") {
         return;
     }
@@ -769,7 +797,7 @@ export const powToZero: Check = (prev, next, context) => {
 powToZero.symmetric = true;
 
 // x^1 -> x
-export const powToOne: Check = (prev, next, context) => {
+export const powToOne: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "pow") {
         return;
     }
@@ -831,7 +859,7 @@ export const powOfOne: Check = (prev, next, context) => {
 powOfOne.symmetric = true;
 
 // 0^x -> 0
-export const powOfZero: Check = (prev, next, context) => {
+export const powOfZero: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "pow") {
         return;
     }

@@ -497,7 +497,11 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 };
 
 // TODO: check that context.reversed is being handled correctly
-export const symmetricProperty: Check = (prev, next, context) => {
+export const symmetricProperty: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     // We prefer that 'symmetric property' always appear last in the list of
     // steps.  This is because it's common to do a bunch of steps to an equation
     // and then swap sides at the last moment so that the variable that we're
@@ -530,7 +534,8 @@ export const symmetricProperty: Check = (prev, next, context) => {
                         ...result.steps,
                         {
                             message: "symmetric property",
-                            nodes: [newPrev, prev],
+                            before: newPrev,
+                            after: prev,
                         },
                     ],
                 };
@@ -565,7 +570,8 @@ export const symmetricProperty: Check = (prev, next, context) => {
                         ...result.steps,
                         {
                             message: "symmetric property",
-                            nodes: [newNext, prev],
+                            before: newNext,
+                            after: prev,
                         },
                     ],
                 };

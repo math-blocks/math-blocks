@@ -1,9 +1,9 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {Status} from "../enums";
-import {Check, Step, Mistake, Context} from "../types";
+import {Check, Result, Step, Mistake, Context} from "../types";
 
-export const numberCheck: Check = (prev, next, context) => {
+export const numberCheck: Check = (prev, next, context): Result | undefined => {
     if (
         prev.type === "number" &&
         next.type === "number" &&
@@ -17,7 +17,11 @@ export const numberCheck: Check = (prev, next, context) => {
     return;
 };
 
-export const identifierCheck: Check = (prev, next, context) => {
+export const identifierCheck: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (
         prev.type === "identifier" &&
         next.type === "identifier" &&
@@ -31,7 +35,7 @@ export const identifierCheck: Check = (prev, next, context) => {
     return;
 };
 
-export const exactMatch: Check = (prev, next, context) => {
+export const exactMatch: Check = (prev, next, context): Result | undefined => {
     if (Semantic.util.deepEquals(prev, next)) {
         return {
             status: Status.Correct,
@@ -44,7 +48,7 @@ export const exactMatch: Check = (prev, next, context) => {
 // than are an array and not a tuple.
 // TODO: filter out equation checks if prev and next are equations since equations
 // can't be nested
-export const checkArgs: Check = (prev, next, context) => {
+export const checkArgs: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     if (

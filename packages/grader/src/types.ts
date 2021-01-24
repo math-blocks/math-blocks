@@ -4,7 +4,8 @@ import {MistakeId, Status} from "./enums";
 
 export type Step = {
     message: string;
-    nodes: readonly [Semantic.types.Node, Semantic.types.Node];
+    before: Semantic.types.Node;
+    after: Semantic.types.Node;
 };
 
 export type Result = {

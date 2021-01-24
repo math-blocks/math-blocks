@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check} from "../types";
+import {Check, Result} from "../types";
 import {MistakeId} from "../enums";
 import {correctResult} from "./util";
 
@@ -12,7 +12,7 @@ import {correctResult} from "./util";
 const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
-export const checkAddSub: Check = (prev, next, context) => {
+export const checkAddSub: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return;
     }
@@ -130,7 +130,7 @@ export const checkAddSub: Check = (prev, next, context) => {
 };
 checkAddSub.symmetric = true;
 
-export const checkMul: Check = (prev, next, context) => {
+export const checkMul: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return;
     }
@@ -244,7 +244,7 @@ export const checkMul: Check = (prev, next, context) => {
 };
 checkMul.symmetric = true;
 
-export const checkDiv: Check = (prev, next, context) => {
+export const checkDiv: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== "eq" || next.type !== "eq") {
         return;
     }

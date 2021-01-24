@@ -650,38 +650,34 @@ describe("Axiom checks", () => {
             ]);
 
             // TODO: use implicit multiplication in more places
-            expect(result.steps[0].nodes[0]).toParseLike(
-                "1 - (x + y) - (a + b)",
-            );
-            expect(result.steps[0].nodes[1]).toParseLike(
-                "1 + -(x + y) - (a + b)",
-            );
+            expect(result.steps[0].before).toParseLike("1 - (x + y) - (a + b)");
+            expect(result.steps[0].after).toParseLike("1 + -(x + y) - (a + b)");
 
-            expect(result.steps[1].nodes[0]).toParseLike(
+            expect(result.steps[1].before).toParseLike(
                 "1 + -(x + y) - (a + b)",
             );
-            expect(result.steps[1].nodes[1]).toParseLike(
+            expect(result.steps[1].after).toParseLike(
                 "1 + -(x + y) + -(a + b)",
             );
 
-            expect(result.steps[2].nodes[0]).toParseLike(
+            expect(result.steps[2].before).toParseLike(
                 "1 + -(x + y) + -(a + b)",
             );
-            expect(result.steps[2].nodes[1]).toParseLike(
+            expect(result.steps[2].after).toParseLike(
                 "1 + (-1)(x + y) + (-1)(a + b)",
             );
 
-            expect(result.steps[3].nodes[0]).toParseLike(
+            expect(result.steps[3].before).toParseLike(
                 "1 + (-1)(x + y) + (-1)(a + b)",
             );
-            expect(result.steps[3].nodes[1]).toParseLike(
+            expect(result.steps[3].after).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
 
-            expect(result.steps[4].nodes[0]).toParseLike(
+            expect(result.steps[4].before).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
-            expect(result.steps[4].nodes[1]).toParseLike(
+            expect(result.steps[4].after).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a) + (-1)(b)",
             );
 
@@ -733,13 +729,13 @@ describe("Axiom checks", () => {
         it("(a + b) * (x + y) -> ax + ay + bx + by", () => {
             const result = checkStep("(a + b) * (x + y)", "ax + ay + bx + by");
 
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[0].before).toMatchInlineSnapshot(`
                 (mul.exp
                   (add a b)
                   (add x y))
             `);
 
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[0].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp
                     a
@@ -749,7 +745,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[1].before).toMatchInlineSnapshot(`
                 (add
                   (mul.exp
                     a
@@ -759,7 +755,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[1].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
@@ -768,7 +764,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[2].before).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
@@ -777,7 +773,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[2].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
