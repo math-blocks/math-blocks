@@ -684,12 +684,15 @@ describe("Axiom checks", () => {
             // TODO: finish writing this test
         });
 
-        // TODO: make this test pass
-        it.skip("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
-            const result = checkStep(
-                "2 * a * (b + c)",
-                "2 * a * b + 2 * a * c",
-            );
+        it("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
+            const result = checkStep("(2)(a)(b + c)", "2ab + 2ac");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["distribution"]);
+        });
+
+        it("(x)(a + b)(y) -> xay + xby", () => {
+            const result = checkStep("(x)(a + b)(y)", "xay + xby");
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages(["distribution"]);
