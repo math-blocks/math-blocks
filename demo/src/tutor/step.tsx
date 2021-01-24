@@ -2,15 +2,17 @@ import * as React from "react";
 import {useDispatch} from "react-redux";
 
 import * as Editor from "@math-blocks/editor-core";
-import {Icon, MathEditor} from "@math-blocks/react";
+import {MathEditor} from "@math-blocks/react";
 import {
     MistakeId,
     Mistake,
     checkStep,
     replaceNodeWithId,
 } from "@math-blocks/grader";
-import {types, util} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
+import {solve, applyStep} from "@math-blocks/solver";
 
+import Icon from "./icon";
 import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
@@ -31,7 +33,7 @@ const MistakeMessages: Record<MistakeId, string> = {
     [MistakeId.EXPR_ADD_NON_IDENTITY]:
         "adding a non-identity valid is not allowed",
     [MistakeId.EXPR_MUL_NON_IDENTITY]:
-        "multiplying a non-identity valid is not allowed",
+        "multiplying a non-identity value is not allowed",
 
     // TODO: handle subtraction
     [MistakeId.EVAL_ADD]: "addition is incorrect",
@@ -59,15 +61,15 @@ const mergeLocation = (start: Location, end: Location): Location => {
 };
 
 const findParent = (
-    root: types.Node,
-    node: types.Node,
-): types.Node | undefined => {
-    const stack: types.Node[] = [];
-    let result: types.Node | undefined = undefined;
+    root: Semantic.types.Node,
+    node: Semantic.types.Node,
+): Semantic.types.Node | undefined => {
+    const stack: Semantic.types.Node[] = [];
+    let result: Semantic.types.Node | undefined = undefined;
 
     // traverse needs enter and exit semantics so that we can push/pop items
     // from the stack.
-    util.traverse(root, {
+    Semantic.util.traverse(root, {
         enter: (n) => {
             if (n === node) {
                 result = stack[stack.length - 1];
@@ -97,7 +99,7 @@ const colorLocation = (
 
 const highlightMistake = (
     editorRoot: Editor.types.Row,
-    semanticRoot: types.Node,
+    semanticRoot: Semantic.types.Node,
     mistake: Mistake,
     colorMap: Map<number, string>,
 ): void => {
@@ -116,7 +118,7 @@ const highlightMistake = (
                 (parentNode.type === "add" || parentNode.type === "mul")
             ) {
                 const index = parentNode.args.indexOf(
-                    node as types.NumericNode,
+                    node as Semantic.types.NumericNode,
                 );
                 if (parentNode) {
                     if (entriesByParentId.has(parentNode.id)) {
@@ -160,14 +162,14 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const {focus, readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();
-    const parsedNextRef = React.useRef<types.Node | null>(null);
+    const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
+    const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
+    const [hintText, setHintText] = React.useState<string | null>(null);
+    const [showed, setShowed] = React.useState<boolean>(false);
 
     const handleCheckStep = (): boolean => {
-        const prev = prevStep.value;
-        const next = step.value;
-
-        const parsedPrev = Editor.parse(prev);
-        const parsedNext = Editor.parse(next);
+        const parsedPrev = Editor.parse(prevStep.value);
+        const parsedNext = Editor.parse(step.value);
 
         parsedNextRef.current = parsedNext;
 
@@ -177,12 +179,12 @@ const Step: React.FunctionComponent<Props> = (props) => {
             if (
                 parsedNext.type === "eq" &&
                 parsedNext.args[0].type === "identifier" &&
-                util.isNumber(parsedNext.args[1])
+                Semantic.util.isNumber(parsedNext.args[1])
             ) {
-                dispatch({type: "right"});
+                dispatch({type: "right", hint});
                 dispatch({type: "complete"});
             } else {
-                dispatch({type: "right"});
+                dispatch({type: "right", hint});
                 dispatch({type: "duplicate"});
             }
             return true;
@@ -193,26 +195,102 @@ const Step: React.FunctionComponent<Props> = (props) => {
         return false;
     };
 
-    let buttonOrIcon = (
-        <button
-            style={{
-                fontSize: 30,
-                borderRadius: 4,
-            }}
-            onClick={handleCheckStep}
-            onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }}
-            disabled={step.status !== StepStatus.Pending}
-        >
-            Check
-        </button>
+    const handleGetHint = (): void => {
+        // TODO: check that we're solving an equations
+        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+
+        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+
+        if (solution && solution.substeps.length > 0) {
+            // Grab the first step of the solution and apply it to the previous
+            // math statement that the user has entered.
+            const step = solution.substeps[0];
+
+            // NOTE: Some steps will have their own sub-steps which we may want
+            // to apply to help students better understand what the hint is doing.
+
+            setHint("text");
+            setHintText(step.message);
+        } else {
+            throw new Error("no solution");
+        }
+    };
+
+    const handleShowMe = (): void => {
+        // TODO: check that we're solving an equations
+        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+
+        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+
+        if (solution && solution.substeps.length > 0) {
+            // Grab the first step of the solution and apply it to the previous
+            // math statement that the user has entered.
+            const step = solution.substeps[0];
+            const next = applyStep(parsedPrev, step);
+
+            setHint("showme");
+            setShowed(true);
+
+            // NOTE: Some steps will have their own sub-steps which we may want
+            // to apply to help students better understand what the hint is doing.
+            dispatch({
+                type: "update",
+                value: Editor.print(next),
+            });
+        } else {
+            throw new Error("no solution");
+        }
+    };
+
+    let buttonsOrIcon = (
+        <HStack>
+            <button
+                style={{
+                    fontSize: 30,
+                    borderRadius: 4,
+                }}
+                onClick={handleCheckStep}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+                disabled={step.status !== StepStatus.Pending}
+            >
+                Check
+            </button>
+            <button
+                style={{
+                    fontSize: 30,
+                    borderRadius: 4,
+                }}
+                onClick={handleGetHint}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+            >
+                Hint
+            </button>
+        </HStack>
     );
+
     if (step.status === StepStatus.Incorrect) {
-        buttonOrIcon = <Icon name="incorrect" size={48} />;
+        buttonsOrIcon = (
+            <HStack>
+                <Icon name="incorrect" size={48} />
+            </HStack>
+        );
     } else if (step.status === StepStatus.Correct) {
-        buttonOrIcon = <Icon name="correct" size={48} />;
+        const {hint} = step;
+
+        buttonsOrIcon = (
+            <HStack>
+                <Icon name="correct" size={48} />
+                {(hint === "showme" || hint === "text") && (
+                    <Icon name="hint" size={48} />
+                )}
+            </HStack>
+        );
     }
 
     const colorMap = new Map<number, string>();
@@ -276,17 +354,29 @@ const Step: React.FunctionComponent<Props> = (props) => {
                         justifyContent: "center",
                     }}
                 >
-                    <div
-                        style={{
-                            marginLeft: 8,
-                            position: "absolute",
-                            left: 800,
-                        }}
-                    >
-                        {buttonOrIcon}
+                    <div style={{width: 200, marginLeft: 8}}>
+                        {buttonsOrIcon}
                     </div>
                 </VStack>
             </HStack>
+            {hintText && (
+                <HStack
+                    style={{
+                        alignItems: "center",
+                        fontSize: 20,
+                        fontFamily: "sans-serif",
+                    }}
+                >
+                    {hintText}
+                    <button
+                        disabled={showed}
+                        style={{fontSize: 20}}
+                        onClick={() => handleShowMe()}
+                    >
+                        Show me how!
+                    </button>
+                </HStack>
+            )}
             {step.status === StepStatus.Incorrect &&
                 step.mistakes.map((mistake, index) => {
                     return (

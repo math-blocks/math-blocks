@@ -991,4 +991,54 @@ describe("simplify", () => {
             expect(Testing.print(step.after)).toEqual("a - b");
         });
     });
+
+    describe("adding/subtracting zero", () => {
+        test("a + 0", () => {
+            const ast = Testing.parse("a + 0");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "drop adding zero (additive identity)",
+            ]);
+            expect(Testing.print(step.after)).toEqual("a");
+        });
+
+        test("a + 0 + b", () => {
+            const ast = Testing.parse("a + 0 + b");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "drop adding zero (additive identity)",
+            ]);
+            expect(Testing.print(step.after)).toEqual("a + b");
+        });
+
+        test("a - 0", () => {
+            const ast = Testing.parse("a - 0");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "drop adding zero (additive identity)",
+            ]);
+            expect(Testing.print(step.after)).toEqual("a");
+        });
+
+        test("0 - a", () => {
+            const ast = Testing.parse("0 - a");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "drop adding zero (additive identity)",
+            ]);
+            expect(Testing.print(step.after)).toEqual("-a");
+        });
+    });
 });

@@ -10,6 +10,7 @@ import Step from "./step";
 import {getPairs} from "./util";
 import {State, ProblemStatus, StepStatus} from "./reducer";
 import {Dispatch} from "./store";
+import {HStack, VStack} from "./layout";
 
 const {useState} = React;
 
@@ -29,27 +30,31 @@ const Tutor: React.FunctionComponent = () => {
     const pairs = getPairs(state.steps);
 
     return (
-        <div style={{width: 800, margin: "auto"}}>
-            <div style={{display: "flex", flexDirection: "column"}}>
-                <MathEditor
-                    key={`question`}
-                    readonly={false}
-                    rows={[state.steps[0].value]}
-                    stepChecker={true}
-                    focus={mode === "edit"}
-                    style={{marginTop: 8}}
-                    onChange={(value: Editor.types.Row) => {
-                        dispatch({
-                            type: "set",
-                            steps: [
-                                {
-                                    status: StepStatus.Correct,
-                                    value: value,
-                                },
-                            ],
-                        });
-                    }}
-                />
+        <div style={{margin: "auto"}}>
+            <VStack>
+                <HStack>
+                    <MathEditor
+                        key={`question`}
+                        readonly={false}
+                        rows={[state.steps[0].value]}
+                        stepChecker={true}
+                        focus={mode === "edit"}
+                        style={{marginTop: 8, flexGrow: 1}}
+                        onChange={(value: Editor.types.Row) => {
+                            dispatch({
+                                type: "set",
+                                steps: [
+                                    {
+                                        status: StepStatus.Correct,
+                                        value: value,
+                                        hint: "none",
+                                    },
+                                ],
+                            });
+                        }}
+                    />
+                    <div style={{width: 200, marginLeft: 8}} />
+                </HStack>
                 {pairs.map(([prevStep, step], index) => {
                     const isLast = index === pairs.length - 1;
 
@@ -66,7 +71,7 @@ const Tutor: React.FunctionComponent = () => {
                         />
                     );
                 })}
-            </div>
+            </VStack>
             {isComplete && (
                 <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
             )}
