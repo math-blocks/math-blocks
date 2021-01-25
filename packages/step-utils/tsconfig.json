@@ -6,6 +6,7 @@
     },
     "references": [
       {"path": "../core"},
-      {"path": "../semantic"}
+      {"path": "../semantic"},
+      {"path": "../testing"}
     ]
   }
