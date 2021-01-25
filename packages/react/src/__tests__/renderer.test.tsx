@@ -20,7 +20,7 @@ import {
     Summation,
     Cursor,
     Selection,
-} from "../../stories/2-math-renderer.stories";
+} from "../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor.builders;
 

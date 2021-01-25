@@ -3,7 +3,7 @@ import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor-core";
 
-import MathEditor from "../src/math-editor";
+import MathEditor from "../math-editor";
 
 const {row, glyph} = Editor.builders;
 
