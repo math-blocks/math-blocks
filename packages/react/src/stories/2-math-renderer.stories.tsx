@@ -5,7 +5,7 @@ import * as Semantic from "@math-blocks/semantic";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
-import MathRenderer from "../src/math-renderer";
+import MathRenderer from "../math-renderer";
 
 const {row, glyph, frac, limits, root} = Editor.builders;
 
