@@ -1,6 +1,6 @@
 import * as Testing from "@math-blocks/testing";
 
-import {Status, MistakeId} from "../../enums";
+import {MistakeId} from "../../enums";
 
 import {
     checkStep,
@@ -86,25 +86,25 @@ describe("Equation checks", () => {
             ]);
 
             expect(result).toBeTruthy();
-            expect(result.steps[0].nodes[0]).toParseLike("x + 5 - 5");
-            expect(result.steps[0].nodes[1]).toParseLike("x + 5 + -5");
+            expect(result.steps[0].before).toParseLike("x + 5 - 5");
+            expect(result.steps[0].after).toParseLike("x + 5 + -5");
 
-            expect(result.steps[1].nodes[0]).toParseLike("x + 5 + -5");
-            expect(result.steps[1].nodes[1]).toParseLike("x + 0");
+            expect(result.steps[1].before).toParseLike("x + 5 + -5");
+            expect(result.steps[1].after).toParseLike("x + 0");
 
-            expect(result.steps[2].nodes[0]).toParseLike("x + 0");
-            expect(result.steps[2].nodes[1]).toParseLike("x");
+            expect(result.steps[2].before).toParseLike("x + 0");
+            expect(result.steps[2].after).toParseLike("x");
 
-            expect(result.steps[3].nodes[0]).toParseLike("y + 5 + 5 - 5");
-            expect(result.steps[3].nodes[1]).toParseLike("y + 5 + 5 + -5");
+            expect(result.steps[3].before).toParseLike("y + 5 + 5 - 5");
+            expect(result.steps[3].after).toParseLike("y + 5 + 5 + -5");
 
             // TODO: figure out how to get addInverse to match the last two
             // terms instead of the 2nd and the 4th.
-            expect(result.steps[4].nodes[0]).toParseLike("y + 5 + 5 + -5");
-            expect(result.steps[4].nodes[1]).toParseLike("y + 0 + 5");
+            expect(result.steps[4].before).toParseLike("y + 5 + 5 + -5");
+            expect(result.steps[4].after).toParseLike("y + 0 + 5");
 
-            expect(result.steps[5].nodes[0]).toParseLike("y + 0 + 5");
-            expect(result.steps[5].nodes[1]).toParseLike("y + 5");
+            expect(result.steps[5].before).toParseLike("y + 0 + 5");
+            expect(result.steps[5].after).toParseLike("y + 5");
         });
 
         it("x = y -> 5 + x = y + 5", () => {
@@ -219,7 +219,6 @@ describe("Equation checks", () => {
             const result = checkStep("y = x", "x + 10 = y + 10");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "adding the same value to both sides",
                 "decompose product",
@@ -355,7 +354,6 @@ describe("Equation checks", () => {
             const result = checkStep("y = x", "x * 10 = y * 10");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "decompose product",
@@ -378,7 +376,6 @@ describe("Equation checks", () => {
             const result = checkStep("xa = yb", "5ax = 5by");
 
             expect(result).toBeTruthy();
-            expect(result.status).toEqual(Status.Correct);
             expect(result).toHaveMessages([
                 "multiply both sides by the same value",
                 "commutative property",

@@ -12,9 +12,9 @@ import {
     associativeAdd,
     addZero,
     mulOne,
-    checkDistribution,
     mulByZero,
 } from "./checks/axiom-checks";
+import {checkDistribution} from "./checks/distribution-check";
 import {checkAddSub, checkMul, checkDiv} from "./checks/equation-checks";
 import {evalMul, evalAdd} from "./checks/eval-checks";
 import {

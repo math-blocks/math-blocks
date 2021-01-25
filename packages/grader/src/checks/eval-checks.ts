@@ -1,13 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, Correction} from "../types";
+import {Check, Correction, Result} from "../types";
 import {MistakeId} from "../enums";
 
 import {correctResult} from "./util";
 
 // TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
 // e.g. "adding inverse" and "addition with identity"
-export const evalAdd: Check = (prev, next, context) => {
+export const evalAdd: Check = (prev, next, context): Result | undefined => {
     if (!Semantic.util.isNumeric(prev) || !Semantic.util.isNumeric(next)) {
         return;
     }
@@ -147,7 +147,7 @@ evalAdd.symmetric = true;
 
 // TODO: when evaluating 5 * 1/5 or 5 / 5 then we may want to include substeps,
 // e.g. "multiplying inverse" and "multiplication with identity"
-export const evalMul: Check = (prev, next, context) => {
+export const evalMul: Check = (prev, next, context): Result | undefined => {
     if (!Semantic.util.isNumeric(prev) || !Semantic.util.isNumeric(next)) {
         return;
     }

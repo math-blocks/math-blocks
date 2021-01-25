@@ -1,12 +1,17 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Check, Step} from "../types";
+import {Check, Result} from "../types";
 
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 
 // 2x + 3x -> 5x
-export const collectLikeTerms: Check = (prev, next, context) => {
+export const collectLikeTerms: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (prev.type !== "add") {
         return;
     }
@@ -56,7 +61,9 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                     );
                     beforeSteps.push({
                         message: "evaluate coefficient",
-                        nodes: [originalCoeff, coeff],
+                        before: originalCoeff,
+                        after: coeff,
+                        substeps: [],
                     });
                 }
             } else {
@@ -68,7 +75,9 @@ export const collectLikeTerms: Check = (prev, next, context) => {
                 );
                 beforeSteps.push({
                     message: "evaluate multiplication",
-                    nodes: [mul, coeff],
+                    before: mul,
+                    after: coeff,
+                    substeps: [],
                 });
             }
             varPart = Semantic.builders.mul(nonNumericFactors, true);

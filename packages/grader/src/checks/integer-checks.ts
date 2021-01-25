@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Result, Check, Step} from "../types";
+import {Result, Check} from "../types";
 import {correctResult} from "./util";
 
 function notNull<T>(x: T | null): x is T {
@@ -8,7 +9,7 @@ function notNull<T>(x: T | null): x is T {
 }
 
 // a + -a -> 0
-export const addInverse: Check = (prev, next, context) => {
+export const addInverse: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     if (prev.type !== "add") {
@@ -81,7 +82,11 @@ export const addInverse: Check = (prev, next, context) => {
 };
 addInverse.symmetric = true;
 
-export const doubleNegative: Check = (prev, next, context) => {
+export const doubleNegative: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     if (!Semantic.util.isNumeric(prev)) {
@@ -108,7 +113,7 @@ export const doubleNegative: Check = (prev, next, context) => {
 
 doubleNegative.symmetric = true;
 
-export const subIsNeg: Check = (prev, next, context) => {
+export const subIsNeg: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     const results: Result[] = [];
@@ -163,7 +168,11 @@ export const subIsNeg: Check = (prev, next, context) => {
 subIsNeg.symmetric = true;
 
 // TODO: have different messages based on direction
-export const negIsMulNegOne: Check = (prev, next, context) => {
+export const negIsMulNegOne: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     // Avoid infinite recursion with self.
@@ -244,7 +253,11 @@ export const negIsMulNegOne: Check = (prev, next, context) => {
 
 negIsMulNegOne.symmetric = true;
 
-export const mulTwoNegsIsPos: Check = (prev, next, context) => {
+export const mulTwoNegsIsPos: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     if (prev.type === "mul" && next.type === "mul") {
@@ -308,7 +321,11 @@ mulTwoNegsIsPos.symmetric = true;
  * @param next
  * @param context
  */
-export const moveNegToFirstFactor: Check = (prev, next, context) => {
+export const moveNegToFirstFactor: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     if (prev.type === "mul" && prev.args[0].type !== "neg") {
@@ -349,7 +366,11 @@ export const moveNegToFirstFactor: Check = (prev, next, context) => {
 };
 moveNegToFirstFactor.symmetric = true;
 
-export const moveNegInsideMul: Check = (prev, next, context) => {
+export const moveNegInsideMul: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     const {checker} = context;
 
     if (prev.type === "neg" && !prev.subtraction && prev.arg.type === "mul") {

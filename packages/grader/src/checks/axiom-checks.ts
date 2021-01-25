@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step, applySteps} from "@math-blocks/step-utils";
 
-import {Result, Step, Check} from "../types";
-import {Status, MistakeId} from "../enums";
+import {Result, Check} from "../types";
+import {MistakeId} from "../enums";
 
 import {exactMatch, checkArgs} from "./basic-checks";
-import {zip, applySteps, correctResult} from "./util";
+import {zip, correctResult} from "./util";
 
 export const addZero: Check = (prev, next, context) => {
     if (next.type !== "add") {
@@ -227,126 +228,6 @@ export const mulOne: Check = (prev, next, context) => {
 };
 mulOne.symmetric = true;
 
-export const checkDistribution: Check = (prev, next, context) => {
-    // Handle the situation where we have a term within an 'add' node that needs
-    // distributing.
-    if (prev.type === "add" && next.type === "add") {
-        const results: Result[] = [];
-
-        // Find all 'mul' nodes and then try generating a newPrev node from
-        // each of them.
-        for (let i = 0; i < prev.args.length; i++) {
-            const mul = prev.args[i];
-
-            if (
-                mul.type === "mul" &&
-                mul.args.length === 2 &&
-                mul.args[1].type === "add"
-            ) {
-                const newPrev = Semantic.builders.add([
-                    ...prev.args.slice(0, i),
-                    ...mul.args[1].args.map((arg) =>
-                        Semantic.builders.mul([mul.args[0], arg], mul.implicit),
-                    ),
-                    ...prev.args.slice(i + 1),
-                ]);
-
-                const result = context.checker.checkStep(
-                    newPrev,
-                    next,
-                    context,
-                );
-                if (result) {
-                    results.push(
-                        correctResult(
-                            prev,
-                            newPrev,
-                            context.reversed,
-                            [],
-                            result.steps,
-                            "distribution",
-                            "factoring",
-                        ),
-                    );
-                }
-            }
-        }
-
-        // If there are multiple results, pick the one with the shortest number
-        // of steps.
-        if (results.length > 0) {
-            let shortestResult = results[0];
-            for (const result of results.slice(1)) {
-                if (result.steps.length < shortestResult.steps.length) {
-                    shortestResult = result;
-                }
-            }
-            return shortestResult;
-        }
-    }
-
-    if (prev.type !== "mul" || next.type !== "add") {
-        return;
-    }
-
-    // If the second factor is an add, e.g. a(b + c) -> ...
-    if (prev.args[1].type === "add") {
-        const newPrev = Semantic.builders.add(
-            prev.args[1].args.map((arg) => {
-                if (arg.type === "neg") {
-                    // Set 'subtraction' prop to false
-                    return Semantic.builders.mul([
-                        prev.args[0],
-                        Semantic.builders.neg(arg.arg),
-                    ]);
-                } else {
-                    return Semantic.builders.mul(
-                        [prev.args[0], arg],
-                        prev.implicit,
-                    );
-                }
-            }),
-        );
-
-        const result = context.checker.checkStep(newPrev, next, context);
-        if (result) {
-            return correctResult(
-                prev,
-                newPrev,
-                context.reversed,
-                [],
-                result.steps,
-                "distribution",
-                "factoring",
-            );
-        }
-    }
-
-    // If the first factor is an add, e.g. (b + c)a -> ...
-    if (prev.args[0].type === "add") {
-        const newPrev = Semantic.builders.add(
-            prev.args[0].args.map((arg) =>
-                Semantic.builders.mul([arg, prev.args[1]]),
-            ),
-        );
-
-        const result = context.checker.checkStep(newPrev, next, context);
-        if (result) {
-            return correctResult(
-                prev,
-                newPrev,
-                context.reversed,
-                [],
-                result.steps,
-                "distribution",
-                "factoring",
-            );
-        }
-    }
-};
-
-checkDistribution.symmetric = true;
-
 export const mulByZero: Check = (prev, next, context) => {
     const {checker} = context;
 
@@ -497,7 +378,11 @@ export const commuteMultiplication: Check = (prev, next, context) => {
 };
 
 // TODO: check that context.reversed is being handled correctly
-export const symmetricProperty: Check = (prev, next, context) => {
+export const symmetricProperty: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     // We prefer that 'symmetric property' always appear last in the list of
     // steps.  This is because it's common to do a bunch of steps to an equation
     // and then swap sides at the last moment so that the variable that we're
@@ -525,12 +410,13 @@ export const symmetricProperty: Check = (prev, next, context) => {
 
             if (result) {
                 return {
-                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
                             message: "symmetric property",
-                            nodes: [newPrev, prev],
+                            before: newPrev,
+                            after: prev,
+                            substeps: [],
                         },
                     ],
                 };
@@ -560,12 +446,13 @@ export const symmetricProperty: Check = (prev, next, context) => {
             if (result) {
                 const newNext = applySteps(next, result.steps);
                 return {
-                    status: Status.Correct,
                     steps: [
                         ...result.steps,
                         {
                             message: "symmetric property",
-                            nodes: [newNext, prev],
+                            before: newNext,
+                            after: prev,
+                            substeps: [],
                         },
                     ],
                 };

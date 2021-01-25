@@ -4,6 +4,7 @@
     "main": "./out/src/index.js",
     "dependencies": {
         "@math-blocks/semantic": "0.0.1",
+        "@math-blocks/step-utils": "0.0.1",
         "@math-blocks/testing": "0.0.1"
     }
 }

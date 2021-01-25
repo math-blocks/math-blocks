@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
+import {Step} from "@math-blocks/step-utils";
 
 import {solve as _solve} from "../solve";
-import {Step} from "../types";
 import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../test-util";
 
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});

@@ -30,11 +30,11 @@ export const applyStep = (
                 return;
             }
             if (node.id === oldNode.id) {
-                return step.after;
+                return newNode;
             }
             if (newNode.type === "add" && node.type === "add") {
                 const index = node.args.findIndex(
-                    (arg) => arg.id === oldNode.id,
+                    (arg: Semantic.types.NumericNode) => arg.id === oldNode.id,
                 );
                 if (index !== -1) {
                     return Semantic.builders.add([
@@ -46,4 +46,15 @@ export const applyStep = (
             }
         },
     });
+};
+
+export const applySteps = (
+    node: Semantic.types.Node,
+    steps: readonly Step[],
+): Semantic.types.Node => {
+    let result = node;
+    for (const step of steps) {
+        result = applyStep(result, step);
+    }
+    return result;
 };

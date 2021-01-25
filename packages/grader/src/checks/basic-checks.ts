@@ -1,40 +1,41 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Status} from "../enums";
-import {Check, Step, Mistake, Context} from "../types";
+import {Check, Result, Mistake, Context} from "../types";
 
-export const numberCheck: Check = (prev, next, context) => {
+export const numberCheck: Check = (prev, next, context): Result | undefined => {
     if (
         prev.type === "number" &&
         next.type === "number" &&
         prev.value === next.value
     ) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
     return;
 };
 
-export const identifierCheck: Check = (prev, next, context) => {
+export const identifierCheck: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
     if (
         prev.type === "identifier" &&
         next.type === "identifier" &&
         prev.name === next.name
     ) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
     return;
 };
 
-export const exactMatch: Check = (prev, next, context) => {
+export const exactMatch: Check = (prev, next, context): Result | undefined => {
     if (Semantic.util.deepEquals(prev, next)) {
         return {
-            status: Status.Correct,
             steps: [],
         };
     }
@@ -44,7 +45,7 @@ export const exactMatch: Check = (prev, next, context) => {
 // than are an array and not a tuple.
 // TODO: filter out equation checks if prev and next are equations since equations
 // can't be nested
-export const checkArgs: Check = (prev, next, context) => {
+export const checkArgs: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     if (
@@ -74,10 +75,8 @@ export const checkArgs: Check = (prev, next, context) => {
             const index = remainingNextArgs.findIndex((nextArg) => {
                 const result = checker.checkStep(prevArg, nextArg, newContext);
                 if (result) {
-                    if (result.status === Status.Correct) {
-                        steps.push(...result.steps);
-                        return result;
-                    }
+                    steps.push(...result.steps);
+                    return result;
                 }
             });
 
@@ -109,7 +108,6 @@ export const checkArgs: Check = (prev, next, context) => {
         }
 
         return {
-            status: Status.Correct,
             steps: steps,
         };
     } else if (prev.type === "neg" && next.type === "neg") {
@@ -127,7 +125,6 @@ export const checkArgs: Check = (prev, next, context) => {
             // TODO: file a ticket about where errors are reported for returns
             // that don't match the expected type.
             return {
-                status: Status.Correct,
                 steps: [...baseResult.steps, ...expResult.steps],
             };
         }

@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
+import {Step} from "@math-blocks/step-utils";
 
-import {Step, Transform} from "../types";
+import {Transform} from "../types";
 import {isNegative} from "../util";
 
 // This transform should go at the top of the simplify stack so that other

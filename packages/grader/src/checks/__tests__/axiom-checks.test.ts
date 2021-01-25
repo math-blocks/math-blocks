@@ -650,50 +650,49 @@ describe("Axiom checks", () => {
             ]);
 
             // TODO: use implicit multiplication in more places
-            expect(result.steps[0].nodes[0]).toParseLike(
-                "1 - (x + y) - (a + b)",
-            );
-            expect(result.steps[0].nodes[1]).toParseLike(
-                "1 + -(x + y) - (a + b)",
-            );
+            expect(result.steps[0].before).toParseLike("1 - (x + y) - (a + b)");
+            expect(result.steps[0].after).toParseLike("1 + -(x + y) - (a + b)");
 
-            expect(result.steps[1].nodes[0]).toParseLike(
+            expect(result.steps[1].before).toParseLike(
                 "1 + -(x + y) - (a + b)",
             );
-            expect(result.steps[1].nodes[1]).toParseLike(
+            expect(result.steps[1].after).toParseLike(
                 "1 + -(x + y) + -(a + b)",
             );
 
-            expect(result.steps[2].nodes[0]).toParseLike(
+            expect(result.steps[2].before).toParseLike(
                 "1 + -(x + y) + -(a + b)",
             );
-            expect(result.steps[2].nodes[1]).toParseLike(
+            expect(result.steps[2].after).toParseLike(
                 "1 + (-1)(x + y) + (-1)(a + b)",
             );
 
-            expect(result.steps[3].nodes[0]).toParseLike(
+            expect(result.steps[3].before).toParseLike(
                 "1 + (-1)(x + y) + (-1)(a + b)",
             );
-            expect(result.steps[3].nodes[1]).toParseLike(
+            expect(result.steps[3].after).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
 
-            expect(result.steps[4].nodes[0]).toParseLike(
+            expect(result.steps[4].before).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a + b)",
             );
-            expect(result.steps[4].nodes[1]).toParseLike(
+            expect(result.steps[4].after).toParseLike(
                 "1 + (-1)(x) + (-1)(y) + (-1)(a) + (-1)(b)",
             );
 
             // TODO: finish writing this test
         });
 
-        // TODO: make this test pass
-        it.skip("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
-            const result = checkStep(
-                "2 * a * (b + c)",
-                "2 * a * b + 2 * a * c",
-            );
+        it("2 * a * (b + c) -> 2 * a * b + 2 * a * c", () => {
+            const result = checkStep("(2)(a)(b + c)", "2ab + 2ac");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages(["distribution"]);
+        });
+
+        it("(x)(a + b)(y) -> xay + xby", () => {
+            const result = checkStep("(x)(a + b)(y)", "xay + xby");
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages(["distribution"]);
@@ -733,13 +732,13 @@ describe("Axiom checks", () => {
         it("(a + b) * (x + y) -> ax + ay + bx + by", () => {
             const result = checkStep("(a + b) * (x + y)", "ax + ay + bx + by");
 
-            expect(result.steps[0].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[0].before).toMatchInlineSnapshot(`
                 (mul.exp
                   (add a b)
                   (add x y))
             `);
 
-            expect(result.steps[0].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[0].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp
                     a
@@ -749,7 +748,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[1].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[1].before).toMatchInlineSnapshot(`
                 (add
                   (mul.exp
                     a
@@ -759,7 +758,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[1].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[1].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
@@ -768,7 +767,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[2].nodes[0]).toMatchInlineSnapshot(`
+            expect(result.steps[2].before).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
@@ -777,7 +776,7 @@ describe("Axiom checks", () => {
                     (add x y)))
             `);
 
-            expect(result.steps[2].nodes[1]).toMatchInlineSnapshot(`
+            expect(result.steps[2].after).toMatchInlineSnapshot(`
                 (add
                   (mul.exp a x)
                   (mul.exp a y)
@@ -794,7 +793,10 @@ describe("Axiom checks", () => {
         });
 
         it("(x + 1)(x + 1) -> x*x + x*1 + 1*x + 1*1", () => {
-            const result = checkStep("(x + 1)(x + 1)", "x*x + x*1 + 1*x + 1*1");
+            const result = checkStep(
+                "(x + 1)(x + 1)",
+                "xx + 1x + (x)(1) + (1)(1)",
+            );
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([
@@ -804,14 +806,32 @@ describe("Axiom checks", () => {
             ]);
 
             expect(result).toHaveStepsLike([
-                ["(x + 1)(x + 1)", "x*(x + 1) + 1*(x + 1)"],
-                ["x*(x + 1) + 1*(x + 1)", "x*x + x*1 + 1*(x + 1)"],
-                ["x*x + x*1 + 1*(x + 1)", "x*x + x*1 + 1*x + 1*1"],
+                ["(x + 1)(x + 1)", "(x + 1)x + (x + 1)(1)"],
+                ["(x + 1)x + (x + 1)(1)", "xx + 1x + (x + 1)(1)"],
+                ["xx + 1x + (x + 1)(1)", "xx + 1x + (x)(1) + (1)(1)"],
             ]);
         });
 
         it("(x + 1)(x + 1) -> x^2 + 2x + 1", () => {
             const result = checkStep("(x + 1)(x + 1)", "x^2 + x + x + 1");
+
+            expect(result).toBeTruthy();
+            expect(result).toHaveMessages([
+                "distribution",
+                "distribution",
+                "distribution",
+                "multiplying a factor n-times is an exponent", // x*x -> x^2
+                "multiplication with identity",
+                "multiplication with identity",
+                "multiplication with identity",
+            ]);
+        });
+
+        it("1 + (x + 1)(x + 1) -> 1 + x^2 + 2x + 1", () => {
+            const result = checkStep(
+                "1 + (x + 1)(x + 1)",
+                "1 + x^2 + x + x + 1",
+            );
 
             expect(result).toBeTruthy();
             expect(result).toHaveMessages([

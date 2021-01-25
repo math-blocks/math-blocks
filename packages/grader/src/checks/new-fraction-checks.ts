@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
-import {Check} from "../types";
+import {Check, Result} from "../types";
 
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
@@ -121,7 +121,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 };
 
 // a / b/c -> a * c/b
-export const divByFrac: Check = (prev, next, context) => {
+export const divByFrac: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
     if (prev.type !== "div") {
@@ -180,7 +180,9 @@ export const divByFrac: Check = (prev, next, context) => {
                     {
                         message:
                             "A power with a negative exponent is the same as one over the power with the positive exponent",
-                        nodes: [newDenominator, denominator],
+                        before: newDenominator,
+                        after: denominator,
+                        substeps: [],
                     },
                 ],
             };
@@ -191,7 +193,9 @@ export const divByFrac: Check = (prev, next, context) => {
                     {
                         message:
                             "A power with a negative exponent is the same as one over the power with the positive exponent",
-                        nodes: [denominator, newDenominator],
+                        before: denominator,
+                        after: newDenominator,
+                        substeps: [],
                     },
                     ...result.steps,
                 ],
