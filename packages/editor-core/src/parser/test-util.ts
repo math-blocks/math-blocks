@@ -1,6 +1,6 @@
 import {Token} from "./lexer";
 import {locFromRange} from "./util";
-import {Node, Row, SubSup, Frac, Root, Atom, Location} from "./types";
+import {Node, Row, SubSup, Frac, Root, Atom, SourceLocation} from "./types";
 
 export function row(children: OneOrMore<Node>): Row {
     // What should the location be for an empty row?
@@ -20,7 +20,7 @@ export function row(children: OneOrMore<Node>): Row {
 export function subsup(
     sub: OneOrMore<Node> | void,
     sup: OneOrMore<Node> | void,
-    loc: Location,
+    loc: SourceLocation,
 ): SubSup {
     return {
         type: "subsup",
@@ -32,7 +32,7 @@ export function subsup(
 export function frac(
     numerator: OneOrMore<Node>,
     denominator: OneOrMore<Node>,
-    loc: Location,
+    loc: SourceLocation,
 ): Frac {
     return {
         type: "frac",
@@ -46,7 +46,7 @@ export function frac(
 export function root(
     arg: OneOrMore<Node>,
     index: OneOrMore<Node> | null,
-    loc: Location,
+    loc: SourceLocation,
 ): Root {
     return {
         type: "root",
@@ -55,7 +55,7 @@ export function root(
     };
 }
 
-export function atom(value: Token, loc: Location): Atom {
+export function atom(value: Token, loc: SourceLocation): Atom {
     return {
         type: "atom",
         value,

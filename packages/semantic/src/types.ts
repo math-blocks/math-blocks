@@ -536,6 +536,7 @@ export interface Common {
     source?: string;
 }
 
+// TODO: dedupe with editor-core and parser-factory
 export interface SourceLocation {
     path: readonly number[];
     start: number;

@@ -1,4 +1,5 @@
-export type Location = {
+// TODO: dedupe with parser-factory and semantic
+export type SourceLocation = {
     path: readonly number[];
     start: number;
     end: number;
@@ -22,38 +23,38 @@ export type Token =
 export type Row = {
     type: "row";
     children: OneOrMore<Node>;
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type SubSup = {
     type: "subsup";
     children: readonly [Row | null, Row | null]; // sub, sup
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type Limits = {
     type: "limits";
     inner: Node;
     children: readonly [Row, Row | null];
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type Frac = {
     type: "frac";
     children: readonly [Row, Row]; // numerator, denominator
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type Root = {
     type: "root";
     children: readonly [Row, Row | null];
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type Atom = {
     type: "atom";
     value: Token;
-    loc: Location;
+    loc: SourceLocation;
 };
 
 export type Node = Row | SubSup | Limits | Frac | Root | Atom;

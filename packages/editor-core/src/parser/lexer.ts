@@ -9,13 +9,13 @@
 import * as types from "../types";
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Node, Row, Atom, Location} from "./types";
+import {Node, Row, Atom, SourceLocation} from "./types";
 
 export const location = (
     path: number[],
     start: number,
     end: number,
-): Location => ({
+): SourceLocation => ({
     path,
     start,
     end,
@@ -41,35 +41,38 @@ type Prod = {kind: "prod"};
 type Lim = {kind: "lim"};
 type EOL = {kind: "eol"};
 
-export const atom = (token: Token, loc: Location): Atom => ({
+export const atom = (token: Token, loc: SourceLocation): Atom => ({
     type: "atom",
     value: token,
     loc,
 });
 
-export const identifier = (name: string, loc: Location): Atom =>
+export const identifier = (name: string, loc: SourceLocation): Atom =>
     atom({kind: "identifier", name}, loc);
 
-export const number = (value: string, loc: Location): Atom => {
+export const number = (value: string, loc: SourceLocation): Atom => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
     return atom({kind: "number", value}, loc);
 };
 
-export const plus = (loc: Location): Atom => atom({kind: "plus"}, loc);
+export const plus = (loc: SourceLocation): Atom => atom({kind: "plus"}, loc);
 
-export const minus = (loc: Location): Atom => atom({kind: "minus"}, loc);
+export const minus = (loc: SourceLocation): Atom => atom({kind: "minus"}, loc);
 
-export const times = (loc: Location): Atom => atom({kind: "times"}, loc);
+export const times = (loc: SourceLocation): Atom => atom({kind: "times"}, loc);
 
-export const lparens = (loc: Location): Atom => atom({kind: "lparens"}, loc);
+export const lparens = (loc: SourceLocation): Atom =>
+    atom({kind: "lparens"}, loc);
 
-export const rparens = (loc: Location): Atom => atom({kind: "rparens"}, loc);
+export const rparens = (loc: SourceLocation): Atom =>
+    atom({kind: "rparens"}, loc);
 
-export const ellipsis = (loc: Location): Atom => atom({kind: "ellipsis"}, loc);
+export const ellipsis = (loc: SourceLocation): Atom =>
+    atom({kind: "ellipsis"}, loc);
 
-export const eq = (loc: Location): Atom => atom({kind: "eq"}, loc);
+export const eq = (loc: SourceLocation): Atom => atom({kind: "eq"}, loc);
 
 export type Token =
     | Ident
