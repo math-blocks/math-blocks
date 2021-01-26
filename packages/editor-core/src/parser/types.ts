@@ -1,8 +1,11 @@
-export type Location = {
+// TODO: dedupe with parser-factory and semantic
+export type SourceLocation = {
     path: readonly number[];
     start: number;
     end: number;
 };
+
+import * as sharedTypes from "../shared-types";
 
 export type Token =
     | {kind: "identifier"; name: string}
@@ -19,41 +22,13 @@ export type Token =
     | {kind: "lim"}
     | {kind: "eol"};
 
-export type Row = {
-    type: "row";
-    children: OneOrMore<Node>;
-    loc: Location;
-};
+type Common = {loc: SourceLocation};
 
-export type SubSup = {
-    type: "subsup";
-    children: readonly [Row | null, Row | null]; // sub, sup
-    loc: Location;
-};
-
-export type Limits = {
-    type: "limits";
-    inner: Node;
-    children: readonly [Row, Row | null];
-    loc: Location;
-};
-
-export type Frac = {
-    type: "frac";
-    children: readonly [Row, Row]; // numerator, denominator
-    loc: Location;
-};
-
-export type Root = {
-    type: "root";
-    children: readonly [Row, Row | null];
-    loc: Location;
-};
-
-export type Atom = {
-    type: "atom";
-    value: Token;
-    loc: Location;
-};
+export type Row = sharedTypes.Row<Token, Common>;
+export type SubSup = sharedTypes.SubSup<Token, Common>;
+export type Limits = sharedTypes.Limits<Token, Common>;
+export type Frac = sharedTypes.Frac<Token, Common>;
+export type Root = sharedTypes.Root<Token, Common>;
+export type Atom = sharedTypes.Atom<Token, Common>;
 
 export type Node = Row | SubSup | Limits | Frac | Root | Atom;

@@ -540,6 +540,8 @@ export interface Common {
     loc?: SourceLocation;
     source?: string;
 }
+
+// TODO: dedup with editor-core and semantic
 export interface SourceLocation {
     path: readonly number[];
     start: number;

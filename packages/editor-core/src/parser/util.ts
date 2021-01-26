@@ -1,9 +1,9 @@
-import {Location} from "./types";
+import {SourceLocation} from "./types";
 
 export const locFromRange = (
-    start?: Location,
-    end?: Location,
-): Location | undefined => {
+    start?: SourceLocation,
+    end?: SourceLocation,
+): SourceLocation | undefined => {
     if (start && end) {
         // TODO: assert start.path === end.path
         return {

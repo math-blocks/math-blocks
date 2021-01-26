@@ -1,46 +1,19 @@
+import * as sharedTypes from "./shared-types";
+
 export type Glyph = {
     kind: "glyph";
     char: string;
     pending?: boolean;
 };
 
-export type Row = {
-    type: "row";
-    children: Node[];
-    id: number;
-};
+type Common = {id: number};
 
-// TODO: collapse SubSup, Frac, and Root since they're very similar
-export type SubSup = {
-    type: "subsup";
-    children: [Row | null, Row | null]; // sub, sup
-    id: number;
-};
-
-export type Limits = {
-    type: "limits";
-    inner: Node;
-    children: [Row, Row | null];
-    id: number;
-};
-
-export type Frac = {
-    type: "frac";
-    children: [Row, Row]; // numerator, denominator
-    id: number;
-};
-
-export type Root = {
-    type: "root";
-    children: [Row, Row | null]; // radicand, index
-    id: number;
-};
-
-export type Atom = {
-    type: "atom";
-    value: Glyph;
-    id: number;
-};
+export type Row = sharedTypes.Row<Glyph, Common>;
+export type SubSup = sharedTypes.SubSup<Glyph, Common>;
+export type Limits = sharedTypes.Limits<Glyph, Common>;
+export type Frac = sharedTypes.Frac<Glyph, Common>;
+export type Root = sharedTypes.Root<Glyph, Common>;
+export type Atom = sharedTypes.Atom<Glyph, Common>;
 
 export type Node = Row | SubSup | Limits | Frac | Root | Atom;
 
