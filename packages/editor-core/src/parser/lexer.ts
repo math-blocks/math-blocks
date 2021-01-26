@@ -168,10 +168,7 @@ const processGlyphs = (
     return tokens;
 };
 
-const lexChildren = (
-    nodes: OneOrMore<types.Node>,
-    path: number[],
-): OneOrMore<Node> => {
+const lexChildren = (nodes: types.Node[], path: number[]): Node[] => {
     // TODO: assert that nodes.length > 0
 
     const tokens: Node[] = [];
@@ -193,7 +190,7 @@ const lexChildren = (
     const offset = nodes.length - glyphs.length;
     tokens.push(...processGlyphs(glyphs, path, offset));
 
-    return (tokens as unknown) as OneOrMore<Node>;
+    return tokens;
 };
 
 function assertOneOrMore<T>(

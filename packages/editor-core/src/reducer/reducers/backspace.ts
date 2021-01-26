@@ -151,6 +151,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
                             ...currentNode.children,
                             ...grandparent.children.slice(index),
                         ];
+                        // @ts-expect-error: it's okay to mutate here because we're using immer
                         parent.children[0] = null;
                     } else {
                         newChildren = [
@@ -158,6 +159,7 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
                             ...currentNode.children,
                             ...grandparent.children.slice(index + 1),
                         ];
+                        // @ts-expect-error: it's okay to mutate here because we're using immer
                         parent.children[1] = null;
                         // position the cursor after the subsup
                         parentIndex++;
