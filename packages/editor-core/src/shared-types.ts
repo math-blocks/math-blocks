@@ -23,6 +23,7 @@ export type Frac<A, C> = C & {
 
 export type Root<A, C> = C & {
     type: "root";
+    // TODO: reverse the order to be index, radicand
     children: readonly [Row<A, C>, Row<A, C> | null]; // radicand, index
 };
 

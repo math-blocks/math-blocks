@@ -1,3 +1,5 @@
+import {UnreachableCaseError} from "@math-blocks/core";
+
 import {Zipper, Breadcrumb} from "./types";
 import * as types from "../types";
 import * as util from "./util";
@@ -54,7 +56,7 @@ export const moveLeft = (zipper: Zipper): Zipper => {
                         id: prev.id,
                         type: "zsubsup",
                         left: subscript,
-                        right: undefined,
+                        right: undefined, // superscript is focused
                     },
                 };
                 focusedRow = superscript;
@@ -64,8 +66,8 @@ export const moveLeft = (zipper: Zipper): Zipper => {
                     focus: {
                         id: prev.id,
                         type: "zsubsup",
-                        left: undefined,
-                        right: superscript,
+                        left: undefined, // subscript is focused
+                        right: null,
                     },
                 };
                 focusedRow = subscript;
@@ -84,94 +86,61 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
     if (path.length > 0) {
         const {focus, row: parentRow} = path[path.length - 1];
+        const {left, right} = focus;
 
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
-        switch (focus.type) {
-            case "zfrac": {
-                const {left: numerator, right: denominator} = focus;
+        // move between branches of the focus
+        if (left) {
+            return {
+                path: [
+                    ...path.slice(0, -1),
+                    {
+                        row: parentRow,
+                        focus: {
+                            ...focus,
+                            left: undefined, // focus
+                            right: exitedRow,
+                        },
+                    },
+                ],
+                row: util.endRow(left),
+            };
+        }
 
-                // move from the denominator to the numerator
-                if (numerator !== undefined) {
-                    return {
-                        path: [
-                            ...path.slice(0, -1),
-                            {
-                                row: parentRow,
-                                focus: {
-                                    ...focus,
-                                    left: undefined,
-                                    right: exitedRow,
-                                },
-                            },
-                        ],
-                        row: util.endRow(numerator),
-                    };
+        // exit the focus to the left
+        else {
+            let updatedNode;
+            switch (focus.type) {
+                case "zsubsup": {
+                    const [newLeft, newRight] =
+                        // left === null -> there is no left branch
+                        left === null
+                            ? [null, exitedRow]
+                            : [exitedRow, right ?? null];
+                    updatedNode = util.subsup(focus.id, newLeft, newRight);
+                    break;
                 }
-
-                // exit the fraction to the left
-                else if (denominator !== undefined) {
-                    const numerator = exitedRow;
-                    return {
-                        path: [...path.slice(0, -1)],
-                        // place the fraction we exited on our right
-                        row: util.insertRight(
-                            parentRow,
-                            util.frac(focus.id, numerator, denominator),
-                        ),
-                    };
+                case "zfrac": {
+                    updatedNode = util.frac(
+                        focus.id,
+                        exitedRow,
+                        right as types.Row,
+                    );
+                    break;
                 }
-
-                // we should never be able to get here... but how to prove that
-                // to typescript is another question
-
-                return zipper;
+                case "zroot": // TODO
+                case "zlimits": // TODO
+                    return zipper; // fallback
+                default:
+                    throw new UnreachableCaseError(focus);
             }
 
-            case "zsubsup": {
-                const {left: subscript, right: superscript} = focus;
-
-                // move into the subscript
-                if (subscript) {
-                    return {
-                        path: [
-                            ...path.slice(0, -1),
-                            {
-                                row: parentRow,
-                                focus: {
-                                    ...focus,
-                                    left: undefined,
-                                    right: exitedRow,
-                                },
-                            },
-                        ],
-                        row: util.endRow(subscript),
-                    };
-                }
-
-                // exit the subsup to the left
-                else {
-                    return {
-                        path: [...path.slice(0, -1)],
-                        // place the fraction we exited on our right
-                        row: util.insertRight(
-                            parentRow,
-                            util.subsup(
-                                focus.id,
-                                // subscript === null -> there is no subscript
-                                subscript === null ? null : exitedRow,
-                                subscript === null
-                                    ? exitedRow
-                                    : superscript ?? null,
-                            ),
-                        ),
-                    };
-                }
-            }
-
-            default: {
-                return zipper;
-            }
+            return {
+                path: [...path.slice(0, -1)],
+                // place the fraction we exited on our right
+                row: util.insertRight(parentRow, updatedNode),
+            };
         }
     }
 

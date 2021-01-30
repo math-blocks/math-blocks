@@ -1,3 +1,5 @@
+import {UnreachableCaseError} from "@math-blocks/core";
+
 import {Zipper, Breadcrumb} from "./types";
 import * as types from "../types";
 import * as util from "./util";
@@ -64,7 +66,7 @@ export const moveRight = (zipper: Zipper): Zipper => {
                     focus: {
                         id: next.id,
                         type: "zsubsup",
-                        left: subscript,
+                        left: null,
                         right: undefined, // superscript is focused
                     },
                 };
@@ -84,95 +86,60 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
     if (path.length > 0) {
         const {focus, row: parentRow} = path[path.length - 1];
+        const {left, right} = focus;
 
-        // We're exiting currentRow so convert it back to a regular Row.
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
-        switch (focus.type) {
-            case "zfrac": {
-                const {left: numerator, right: denominator} = focus;
+        // move between branches of the focus
+        if (right) {
+            return {
+                path: [
+                    ...path.slice(0, -1),
+                    {
+                        row: parentRow,
+                        focus: {
+                            ...focus,
+                            left: exitedRow,
+                            right: undefined, // focused
+                        },
+                    },
+                ],
+                row: util.startRow(right),
+            };
+        }
 
-                // move from the numerator into the denonimator
-                if (denominator !== undefined) {
-                    return {
-                        path: [
-                            ...path.slice(0, -1),
-                            {
-                                row: parentRow,
-                                focus: {
-                                    ...focus,
-                                    left: exitedRow,
-                                    right: undefined,
-                                },
-                            },
-                        ],
-                        row: util.startRow(denominator),
-                    };
+        // exit the focus to the right
+        else {
+            let updatedNode;
+            switch (focus.type) {
+                case "zsubsup": {
+                    const [newLeft, newRight] =
+                        // right === null -> there is no right branch
+                        right === null
+                            ? [exitedRow, null]
+                            : [left ?? null, exitedRow];
+                    updatedNode = util.subsup(focus.id, newLeft, newRight);
+                    break;
                 }
-
-                // exit the fraction to the right
-                else if (numerator !== undefined) {
-                    const denominator = exitedRow;
-                    return {
-                        path: [...path.slice(0, -1)],
-                        // place the fraction we exited on our left
-                        row: util.insertLeft(
-                            parentRow,
-                            util.frac(focus.id, numerator, denominator),
-                        ),
-                    };
+                case "zfrac": {
+                    updatedNode = util.frac(
+                        focus.id,
+                        left as types.Row,
+                        exitedRow,
+                    );
+                    break;
                 }
-
-                // we should never be able to get here... but how to prove that
-                // to typescript is another question
-
-                return zipper;
+                case "zroot": // TODO
+                case "zlimits": // TODO
+                    return zipper; // fallback
+                default:
+                    throw new UnreachableCaseError(focus);
             }
-
-            case "zsubsup": {
-                const {left: subscript, right: superscript} = focus;
-
-                // move into the superscript
-                if (superscript) {
-                    return {
-                        path: [
-                            ...path.slice(0, -1),
-                            {
-                                row: parentRow,
-                                focus: {
-                                    ...focus,
-                                    left: exitedRow,
-                                    right: undefined,
-                                },
-                            },
-                        ],
-                        row: util.startRow(superscript),
-                    };
-                }
-
-                // exit the subsup to the right
-                else {
-                    return {
-                        path: [...path.slice(0, -1)],
-                        // place the subsup we exited on our left
-                        row: util.insertLeft(
-                            parentRow,
-                            util.subsup(
-                                focus.id,
-                                // superscript === null -> there is no superscript
-                                superscript === null
-                                    ? exitedRow
-                                    : subscript ?? null,
-                                superscript === null ? null : exitedRow,
-                            ),
-                        ),
-                    };
-                }
-            }
-
-            default: {
-                return zipper;
-            }
+            return {
+                path: [...path.slice(0, -1)],
+                // place the subsup we exited on our left
+                row: util.insertLeft(parentRow, updatedNode),
+            };
         }
     }
 

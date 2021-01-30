@@ -43,6 +43,18 @@ export const subsup = (
     };
 };
 
+export const root = (
+    id: number,
+    index: types.Row | null,
+    radicand: types.Row,
+): types.Root => {
+    return {
+        id,
+        type: "root",
+        children: [radicand, index],
+    };
+};
+
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}
 >(
