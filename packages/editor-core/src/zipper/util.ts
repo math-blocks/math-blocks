@@ -31,6 +31,18 @@ export const frac = (
     };
 };
 
+export const subsup = (
+    id: number,
+    subscript: types.Row | null,
+    superscript: types.Row | null,
+): types.SubSup => {
+    return {
+        id,
+        type: "subsup",
+        children: [subscript, superscript],
+    };
+};
+
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}
 >(

@@ -32,12 +32,49 @@ export const moveRight = (zipper: Zipper): Zipper => {
                 focus: {
                     id: next.id,
                     type: "zfrac",
-                    children: [undefined, denominator],
+                    left: undefined,
+                    right: denominator,
                 },
             };
             return {
                 path: [...path, breadcrumb],
                 row: util.startRow(numerator), // [] [1, 2, ...]
+            };
+        }
+
+        // enter the subscript if it exists then fallback to the superscript
+        else if (next.type === "subsup") {
+            const [subscript, superscript] = next.children;
+            let breadcrumb: Breadcrumb;
+            let focusedRow: types.Row;
+            if (subscript) {
+                breadcrumb = {
+                    row: util.delRight(currentRow),
+                    focus: {
+                        id: next.id,
+                        type: "zsubsup",
+                        left: undefined, // subscript is focused
+                        right: superscript,
+                    },
+                };
+                focusedRow = subscript;
+            } else if (superscript) {
+                breadcrumb = {
+                    row: util.delRight(currentRow),
+                    focus: {
+                        id: next.id,
+                        type: "zsubsup",
+                        left: subscript,
+                        right: undefined, // superscript is focused
+                    },
+                };
+                focusedRow = superscript;
+            } else {
+                throw new Error("subsup without subscript or superscript");
+            }
+            return {
+                path: [...path, breadcrumb],
+                row: util.startRow(focusedRow), // [] [1, 2, ...]
             };
         }
 
@@ -53,7 +90,7 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zfrac": {
-                const [numerator, denominator] = focus.children;
+                const {left: numerator, right: denominator} = focus;
 
                 // move from the numerator into the denonimator
                 if (denominator !== undefined) {
@@ -64,7 +101,8 @@ export const moveRight = (zipper: Zipper): Zipper => {
                                 row: parentRow,
                                 focus: {
                                     ...focus,
-                                    children: [exitedRow, undefined],
+                                    left: exitedRow,
+                                    right: undefined,
                                 },
                             },
                         ],
@@ -90,6 +128,48 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
                 return zipper;
             }
+
+            case "zsubsup": {
+                const {left: subscript, right: superscript} = focus;
+
+                // move into the superscript
+                if (superscript) {
+                    return {
+                        path: [
+                            ...path.slice(0, -1),
+                            {
+                                row: parentRow,
+                                focus: {
+                                    ...focus,
+                                    left: exitedRow,
+                                    right: undefined,
+                                },
+                            },
+                        ],
+                        row: util.startRow(superscript),
+                    };
+                }
+
+                // exit the subsup to the right
+                else {
+                    return {
+                        path: [...path.slice(0, -1)],
+                        // place the subsup we exited on our left
+                        row: util.insertLeft(
+                            parentRow,
+                            util.subsup(
+                                focus.id,
+                                // superscript === null -> there is no superscript
+                                superscript === null
+                                    ? exitedRow
+                                    : subscript ?? null,
+                                superscript === null ? null : exitedRow,
+                            ),
+                        ),
+                    };
+                }
+            }
+
             default: {
                 return zipper;
             }

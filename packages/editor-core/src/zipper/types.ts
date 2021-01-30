@@ -28,15 +28,21 @@ export type ZRow = {
 //         | [undefined, ZRow, types.Row]
 // };
 
+// type ZFrac = {
+//     id: number;
+//     type: "zfrac";
+//     // TODO: replace children with `left` and `right`
+//     // How do we enforce the number of children... what if we do:
+//     // left?: types.Row
+//     // right?: types.Row
+//     children: [undefined, types.Row] | [types.Row, undefined]; // numerator, denominator
+// };
+
 type ZFrac = {
     id: number;
     type: "zfrac";
-    // TODO: replace children with `left` and `right`
-    // How do we enforce the number of children... what if we do:
-    // left?: types.Row
-    // right?: types.Row
-    children: // numerator, denominator
-    [undefined, types.Row] | [types.Row, undefined];
+    left?: types.Row; // numerator
+    right?: types.Row; // denominator
 };
 
 // TODO: consider splitting up SubSup into three different types.
@@ -44,8 +50,8 @@ type ZFrac = {
 type ZSubSup = {
     id: number;
     type: "zsubsup";
-    children: // subscript, superscript
-    [undefined, types.Row | null] | [types.Row | null, undefined];
+    left?: types.Row | null; // numerator
+    right?: types.Row | null; // denominator
 };
 
 type ZLimit = {

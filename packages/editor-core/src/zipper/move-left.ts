@@ -28,19 +28,53 @@ export const moveLeft = (zipper: Zipper): Zipper => {
         else if (prev.type === "frac") {
             const [numerator, denominator] = prev.children;
             const breadcrumb: Breadcrumb = {
-                row: {
-                    ...currentRow,
-                    left: left.slice(0, -1), // left - prev
-                },
+                row: util.delLeft(currentRow),
                 focus: {
                     id: prev.id,
                     type: "zfrac",
-                    children: [numerator, undefined],
+                    left: numerator,
+                    right: undefined,
                 },
             };
             return {
                 path: [...path, breadcrumb],
                 row: util.endRow(denominator), // [1, 2, ...] []
+            };
+        }
+
+        // enter the superscript if it exists then fallback to the subscript
+        else if (prev.type === "subsup") {
+            const [subscript, superscript] = prev.children;
+            let breadcrumb: Breadcrumb;
+            let focusedRow: types.Row;
+            if (superscript) {
+                breadcrumb = {
+                    row: util.delLeft(currentRow),
+                    focus: {
+                        id: prev.id,
+                        type: "zsubsup",
+                        left: subscript,
+                        right: undefined,
+                    },
+                };
+                focusedRow = superscript;
+            } else if (subscript) {
+                breadcrumb = {
+                    row: util.delLeft(currentRow),
+                    focus: {
+                        id: prev.id,
+                        type: "zsubsup",
+                        left: undefined,
+                        right: superscript,
+                    },
+                };
+                focusedRow = subscript;
+            } else {
+                throw new Error("subsup without subscript or superscript");
+            }
+            return {
+                path: [...path, breadcrumb],
+                row: util.endRow(focusedRow), // [1, 2, ...] []
             };
         }
 
@@ -55,7 +89,7 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zfrac": {
-                const [numerator, denominator] = focus.children;
+                const {left: numerator, right: denominator} = focus;
 
                 // move from the denominator to the numerator
                 if (numerator !== undefined) {
@@ -66,7 +100,8 @@ export const moveLeft = (zipper: Zipper): Zipper => {
                                 row: parentRow,
                                 focus: {
                                     ...focus,
-                                    children: [undefined, exitedRow],
+                                    left: undefined,
+                                    right: exitedRow,
                                 },
                             },
                         ],
@@ -92,6 +127,48 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
                 return zipper;
             }
+
+            case "zsubsup": {
+                const {left: subscript, right: superscript} = focus;
+
+                // move into the subscript
+                if (subscript) {
+                    return {
+                        path: [
+                            ...path.slice(0, -1),
+                            {
+                                row: parentRow,
+                                focus: {
+                                    ...focus,
+                                    left: undefined,
+                                    right: exitedRow,
+                                },
+                            },
+                        ],
+                        row: util.endRow(subscript),
+                    };
+                }
+
+                // exit the subsup to the left
+                else {
+                    return {
+                        path: [...path.slice(0, -1)],
+                        // place the fraction we exited on our right
+                        row: util.insertRight(
+                            parentRow,
+                            util.subsup(
+                                focus.id,
+                                // subscript === null -> there is no subscript
+                                subscript === null ? null : exitedRow,
+                                subscript === null
+                                    ? exitedRow
+                                    : superscript ?? null,
+                            ),
+                        ),
+                    };
+                }
+            }
+
             default: {
                 return zipper;
             }
