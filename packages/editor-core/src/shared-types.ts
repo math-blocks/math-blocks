@@ -7,13 +7,13 @@ export type Row<A, C> = C & {
 
 export type SubSup<A, C> = C & {
     type: "subsup";
-    children: readonly [Row<A, C> | null, Row<A, C> | null]; // sub, sup
+    children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
 };
 
 export type Limits<A, C> = C & {
     type: "limits";
     inner: Node<A, C>;
-    children: readonly [Row<A, C>, Row<A, C> | null];
+    children: readonly [Row<A, C>, Row<A, C> | null]; // lower, upper
 };
 
 export type Frac<A, C> = C & {
@@ -23,7 +23,7 @@ export type Frac<A, C> = C & {
 
 export type Root<A, C> = C & {
     type: "root";
-    children: readonly [Row<A, C>, Row<A, C> | null];
+    children: readonly [Row<A, C>, Row<A, C> | null]; // radicand, index
 };
 
 export type Atom<A, C> = C & {
