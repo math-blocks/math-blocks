@@ -15,6 +15,8 @@ export type Frac = sharedTypes.Frac<Glyph, Common>;
 export type Root = sharedTypes.Root<Glyph, Common>;
 export type Atom = sharedTypes.Atom<Glyph, Common>;
 
+// TODO: split the concept of Node and Children where Children doesn't include
+// Row.
 export type Node = Row | SubSup | Limits | Frac | Root | Atom;
 
 // The editor nodes need IDs so we can position the cursor relative to

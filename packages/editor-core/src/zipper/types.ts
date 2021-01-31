@@ -57,7 +57,7 @@ export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot;
 
 export type Breadcrumb = {
     row: ZRow;
-    focus: Focus;
+    focus: Focus; // How does focus differ from selection?
 };
 
 export type Zipper = {
