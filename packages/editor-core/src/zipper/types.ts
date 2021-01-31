@@ -7,7 +7,7 @@ export type ZRow = {
     right: types.Node[];
 };
 
-type ZFrac = {
+export type ZFrac = {
     id: number;
     type: "zfrac";
     left?: types.Row; // numerator
@@ -16,30 +16,32 @@ type ZFrac = {
 
 // TODO: consider splitting up SubSup into three different types.
 // If both `sub` and `sup` are `null` then the node is invalid.
-type ZSubSup = {
+export type ZSubSup = {
     id: number;
     type: "zsubsup";
     left?: types.Row | null; // numerator
     right?: types.Row | null; // denominator
 };
 
-type ZLimit = {
+export type ZLimit = {
     id: number;
     type: "zlimits";
     left?: types.Row; // lower
     right?: types.Row | null; // upper
 };
 
-type ZRoot = {
+export type ZRoot = {
     id: number;
     type: "zroot";
     left?: types.Row | null; // index
     right?: types.Row; // radicand
 };
 
+export type Focus = ZFrac | ZSubSup | ZLimit | ZRoot;
+
 export type Breadcrumb = {
     row: ZRow;
-    focus: ZFrac | ZSubSup | ZLimit | ZRoot;
+    focus: Focus;
 };
 
 export type Zipper = {

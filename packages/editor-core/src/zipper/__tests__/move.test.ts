@@ -27,10 +27,10 @@ export const sqrt = (radicand: string): types.Root =>
         radicand.split("").map((glyph) => builders.glyph(glyph)),
     );
 
-export const root = (radicand: string, index: string): types.Root =>
+export const root = (index: string | null, radicand: string): types.Root =>
     builders.root(
+        index ? index.split("").map((glyph) => builders.glyph(glyph)) : null,
         radicand.split("").map((glyph) => builders.glyph(glyph)),
-        index.split("").map((glyph) => builders.glyph(glyph)),
     );
 
 export const sup = (sup: string): types.SubSup =>
@@ -331,6 +331,128 @@ describe("moveRight", () => {
             expect(result.row.right).toHaveLength(1);
         });
     });
+
+    describe("nroot", () => {
+        test("moves into the index of an nth root", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [r, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: undefined,
+                right: r.children[1],
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(r.children[0]?.children[0]);
+        });
+
+        test("moves from the index to the radicand", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [r, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(moveRight(moveRight(zipper)));
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: r.children[0],
+                right: undefined,
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(r.children[1]?.children[0]);
+        });
+
+        test("moves out of the radicand", () => {
+            const r = subsup("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [r, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(
+                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            );
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(2);
+            expect(result.row.right).toHaveLength(1);
+        });
+    });
+
+    describe("sqrt", () => {
+        test("moves into the radicand of a root", () => {
+            const r = root(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [r, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: null,
+                right: undefined,
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(r.children[1]?.children[0]);
+        });
+
+        test("moves out of the root", () => {
+            const r = root(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [r, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(moveRight(moveRight(zipper)));
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(2);
+            expect(result.row.right).toHaveLength(1);
+        });
+    });
 });
 
 describe("moveLeft", () => {
@@ -601,6 +723,128 @@ describe("moveLeft", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), ss],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(moveLeft(moveLeft(zipper)));
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.row.left).toHaveLength(1);
+        });
+    });
+
+    describe("nroot", () => {
+        test("moves into the radicand of an nth root", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: r.children[0],
+                right: undefined,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(r.children[1]?.children[0]);
+        });
+
+        test("moves from the radicand to the index", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(moveLeft(moveLeft(zipper)));
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: undefined,
+                right: r.children[1],
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(r.children[0]?.children[0]);
+        });
+
+        test("moves out of the index", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            );
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.row.left).toHaveLength(1);
+        });
+    });
+
+    describe("sqrt", () => {
+        test("moves into the radicand of a root", () => {
+            const r = root(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                left: null,
+                right: undefined,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(r.children[1]?.children[0]);
+        });
+
+        test("exits the sup to the left", () => {
+            const r = root(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
                     right: [builders.glyph("d")],
                 },
                 path: [],

@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Zipper, Breadcrumb} from "./types";
+import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 
@@ -26,54 +26,41 @@ export const moveLeft = (zipper: Zipper): Zipper => {
             };
         }
 
-        // enter the denominator
-        else if (prev.type === "frac") {
-            const [numerator, denominator] = prev.children;
+        // Rows should only be used as children of non-rows
+        else if (prev.type !== "row") {
+            const [leftChild, rightChild] = prev.children;
+
+            let focus: Focus;
+            switch (prev.type) {
+                case "frac": {
+                    focus = util.zfrac(prev.id, prev.children[0], undefined);
+                    break;
+                }
+                case "subsup": {
+                    focus = rightChild
+                        ? util.zsubsup(prev.id, leftChild, undefined)
+                        : util.zsubsup(prev.id, undefined, null);
+                    break;
+                }
+                case "root": {
+                    focus = util.zroot(prev.id, leftChild, undefined);
+                    break;
+                }
+                default: {
+                    throw new Error(`${prev.type} case not handled`);
+                }
+            }
+
             const breadcrumb: Breadcrumb = {
                 row: util.delLeft(currentRow),
-                focus: {
-                    id: prev.id,
-                    type: "zfrac",
-                    left: numerator,
-                    right: undefined,
-                },
+                focus: focus,
             };
-            return {
-                path: [...path, breadcrumb],
-                row: util.endRow(denominator), // [1, 2, ...] []
-            };
-        }
 
-        // enter the superscript if it exists then fallback to the subscript
-        else if (prev.type === "subsup") {
-            const [subscript, superscript] = prev.children;
-            let breadcrumb: Breadcrumb;
-            let focusedRow: types.Row;
-            if (superscript) {
-                breadcrumb = {
-                    row: util.delLeft(currentRow),
-                    focus: {
-                        id: prev.id,
-                        type: "zsubsup",
-                        left: subscript,
-                        right: undefined, // superscript is focused
-                    },
-                };
-                focusedRow = superscript;
-            } else if (subscript) {
-                breadcrumb = {
-                    row: util.delLeft(currentRow),
-                    focus: {
-                        id: prev.id,
-                        type: "zsubsup",
-                        left: undefined, // subscript is focused
-                        right: null,
-                    },
-                };
-                focusedRow = subscript;
-            } else {
+            const focusedRow = rightChild || leftChild;
+            if (!focusedRow) {
                 throw new Error("subsup without subscript or superscript");
             }
+
             return {
                 path: [...path, breadcrumb],
                 row: util.endRow(focusedRow), // [1, 2, ...] []
@@ -113,12 +100,11 @@ export const moveLeft = (zipper: Zipper): Zipper => {
             let updatedNode;
             switch (focus.type) {
                 case "zsubsup": {
-                    const [newLeft, newRight] =
-                        // left === null -> there is no left branch
+                    // left === null -> there is no subscript
+                    updatedNode =
                         left === null
-                            ? [null, exitedRow]
-                            : [exitedRow, right ?? null];
-                    updatedNode = util.subsup(focus.id, newLeft, newRight);
+                            ? util.subsup(focus.id, null, exitedRow)
+                            : util.subsup(focus.id, exitedRow, right ?? null);
                     break;
                 }
                 case "zfrac": {
@@ -129,7 +115,14 @@ export const moveLeft = (zipper: Zipper): Zipper => {
                     );
                     break;
                 }
-                case "zroot": // TODO
+                case "zroot": {
+                    const [newLeft, newRight] =
+                        left === null
+                            ? [null, exitedRow]
+                            : [exitedRow, right as types.Row];
+                    updatedNode = util.root(focus.id, newLeft, newRight);
+                    break;
+                }
                 case "zlimits": // TODO
                     return zipper; // fallback
                 default:

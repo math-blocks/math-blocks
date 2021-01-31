@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Zipper, Breadcrumb} from "./types";
+import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 
@@ -26,54 +26,43 @@ export const moveRight = (zipper: Zipper): Zipper => {
             };
         }
 
-        // enter the numerator
-        else if (next.type === "frac") {
-            const [numerator, denominator] = next.children;
+        // Rows should only be used as children of non-rows
+        else if (next.type !== "row") {
+            const [leftChild, rightChild] = next.children;
+
+            let focus: Focus;
+            switch (next.type) {
+                case "frac": {
+                    focus = util.zfrac(next.id, undefined, next.children[1]);
+                    break;
+                }
+                case "subsup": {
+                    focus = leftChild
+                        ? util.zsubsup(next.id, undefined, rightChild)
+                        : util.zsubsup(next.id, null, undefined);
+                    break;
+                }
+                case "root": {
+                    focus = leftChild
+                        ? util.zroot(next.id, undefined, next.children[1])
+                        : util.zroot(next.id, null, undefined);
+                    break;
+                }
+                default: {
+                    throw new Error(`${next.type} case not handled`);
+                }
+            }
+
             const breadcrumb: Breadcrumb = {
                 row: util.delRight(currentRow),
-                focus: {
-                    id: next.id,
-                    type: "zfrac",
-                    left: undefined,
-                    right: denominator,
-                },
+                focus: focus,
             };
-            return {
-                path: [...path, breadcrumb],
-                row: util.startRow(numerator), // [] [1, 2, ...]
-            };
-        }
 
-        // enter the subscript if it exists then fallback to the superscript
-        else if (next.type === "subsup") {
-            const [subscript, superscript] = next.children;
-            let breadcrumb: Breadcrumb;
-            let focusedRow: types.Row;
-            if (subscript) {
-                breadcrumb = {
-                    row: util.delRight(currentRow),
-                    focus: {
-                        id: next.id,
-                        type: "zsubsup",
-                        left: undefined, // subscript is focused
-                        right: superscript,
-                    },
-                };
-                focusedRow = subscript;
-            } else if (superscript) {
-                breadcrumb = {
-                    row: util.delRight(currentRow),
-                    focus: {
-                        id: next.id,
-                        type: "zsubsup",
-                        left: null,
-                        right: undefined, // superscript is focused
-                    },
-                };
-                focusedRow = superscript;
-            } else {
+            const focusedRow = leftChild || rightChild;
+            if (!focusedRow) {
                 throw new Error("subsup without subscript or superscript");
             }
+
             return {
                 path: [...path, breadcrumb],
                 row: util.startRow(focusedRow), // [] [1, 2, ...]
@@ -113,12 +102,11 @@ export const moveRight = (zipper: Zipper): Zipper => {
             let updatedNode;
             switch (focus.type) {
                 case "zsubsup": {
-                    const [newLeft, newRight] =
-                        // right === null -> there is no right branch
+                    // right === null -> there is no superscript
+                    updatedNode =
                         right === null
-                            ? [exitedRow, null]
-                            : [left ?? null, exitedRow];
-                    updatedNode = util.subsup(focus.id, newLeft, newRight);
+                            ? util.subsup(focus.id, exitedRow, null)
+                            : util.subsup(focus.id, left ?? null, exitedRow);
                     break;
                 }
                 case "zfrac": {
@@ -129,7 +117,10 @@ export const moveRight = (zipper: Zipper): Zipper => {
                     );
                     break;
                 }
-                case "zroot": // TODO
+                case "zroot": {
+                    updatedNode = util.root(focus.id, left || null, exitedRow);
+                    break;
+                }
                 case "zlimits": // TODO
                     return zipper; // fallback
                 default:

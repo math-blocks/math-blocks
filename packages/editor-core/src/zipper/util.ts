@@ -1,4 +1,4 @@
-import {ZRow} from "./types";
+import {ZRow, ZFrac, ZSubSup, ZRoot} from "./types";
 import * as types from "../types";
 
 export const startRow = (row: types.Row): ZRow => {
@@ -31,6 +31,19 @@ export const frac = (
     };
 };
 
+export const zfrac = (
+    id: number,
+    numerator?: types.Row,
+    denominator?: types.Row,
+): ZFrac => {
+    return {
+        id,
+        type: "zfrac",
+        left: numerator,
+        right: denominator,
+    };
+};
+
 export const subsup = (
     id: number,
     subscript: types.Row | null,
@@ -43,6 +56,19 @@ export const subsup = (
     };
 };
 
+export const zsubsup = (
+    id: number,
+    numerator?: types.Row | null,
+    denominator?: types.Row | null,
+): ZSubSup => {
+    return {
+        id,
+        type: "zsubsup",
+        left: numerator,
+        right: denominator,
+    };
+};
+
 export const root = (
     id: number,
     index: types.Row | null,
@@ -52,6 +78,19 @@ export const root = (
         id,
         type: "root",
         children: [index, radicand],
+    };
+};
+
+export const zroot = (
+    id: number,
+    index?: types.Row | null,
+    radicand?: types.Row,
+): ZRoot => {
+    return {
+        id,
+        type: "zroot",
+        left: index,
+        right: radicand,
     };
 };
 
