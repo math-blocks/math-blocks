@@ -19,135 +19,133 @@ export const endRow = (row: types.Row): ZRow => {
     };
 };
 
-export const frac = (
-    id: number,
-    numerator: types.Row,
-    denominator: types.Row,
-): types.Frac => {
-    return {
-        id,
-        type: "frac",
-        children: [numerator, denominator],
-    };
+export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
+    if (focus.dir === "left") {
+        return {
+            id: focus.id,
+            type: "frac",
+            children: [replacement, focus.other],
+        };
+    } else {
+        return {
+            id: focus.id,
+            type: "frac",
+            children: [focus.other, replacement],
+        };
+    }
 };
 
-export const zfrac = (
-    id: number,
-    dir: "left" | "right",
-    other: types.Row,
-): ZFrac => {
+export const zfrac = (node: types.Frac, dir: "left" | "right"): ZFrac => {
     return {
-        id,
+        id: node.id,
         type: "zfrac",
         dir,
-        other,
+        other: dir === "left" ? node.children[1] : node.children[0],
     };
 };
 
 export const subsup = (
-    id: number,
-    subscript: types.Row | null,
-    superscript: types.Row | null,
+    focus: ZSubSup,
+    replacement: types.Row,
 ): types.SubSup => {
-    return {
-        id,
-        type: "subsup",
-        children: [subscript, superscript],
-    };
+    if (focus.dir === "left") {
+        return {
+            id: focus.id,
+            type: "subsup",
+            children: [replacement, focus.other],
+        };
+    } else {
+        return {
+            id: focus.id,
+            type: "subsup",
+            children: [focus.other, replacement],
+        };
+    }
 };
 
-export const zsubsup = (
-    id: number,
-    dir: "left" | "right",
-    other: types.Row | null,
-): ZSubSup => {
+export const zsubsup = (node: types.SubSup, dir: "left" | "right"): ZSubSup => {
     return {
-        id,
+        id: node.id,
         type: "zsubsup",
         dir,
-        other,
+        other: dir === "left" ? node.children[1] : node.children[0],
     };
 };
 
-export const root = (
-    id: number,
-    index: types.Row | null,
-    radicand: types.Row,
-): types.Root => {
-    return {
-        id,
-        type: "root",
-        children: [index, radicand],
-    };
-};
-
-function zroot(id: number, dir: "left", other: types.Row): ZRoot;
-function zroot(id: number, dir: "right", other: types.Row | null): ZRoot;
-function zroot(id: number, dir: any, other: any): ZRoot {
-    if (dir === "left") {
+export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
+    if (focus.dir === "left") {
         return {
-            id,
-            type: "zroot",
-            dir: "left",
-            other,
+            id: focus.id,
+            type: "root",
+            children: [replacement, focus.other],
+        };
+    } else {
+        return {
+            id: focus.id,
+            type: "root",
+            children: [focus.other, replacement],
         };
     }
-    return {
-        type: "zroot",
-        id,
-        dir,
-        other,
-    };
-}
+};
 
-export {zroot};
+export const zroot = (node: types.Root, dir: "left" | "right"): ZRoot => {
+    if (dir === "left") {
+        return {
+            id: node.id,
+            type: "zroot",
+            dir,
+            other: node.children[1],
+        };
+    } else {
+        return {
+            id: node.id,
+            type: "zroot",
+            dir,
+            other: node.children[0],
+        };
+    }
+};
 
 export const limits = (
-    id: number,
-    lower: types.Row,
-    upper: types.Row | null,
-    inner: types.Node,
+    focus: ZLimits,
+    replacement: types.Row,
 ): types.Limits => {
-    return {
-        id,
-        type: "limits",
-        children: [lower, upper],
-        inner,
-    };
-};
-
-function zlimits(
-    id: number,
-    dir: "left",
-    other: types.Row | null,
-    inner: types.Node,
-): ZLimits;
-function zlimits(
-    id: number,
-    dir: "right",
-    other: types.Row,
-    inner: types.Node,
-): ZLimits;
-function zlimits(id: number, dir: any, other: any, inner: types.Node): ZLimits {
-    if (dir === "left") {
+    if (focus.dir === "left") {
         return {
-            id,
-            type: "zlimits",
-            dir: "left",
-            other,
-            inner,
+            id: focus.id,
+            type: "limits",
+            children: [replacement, focus.other],
+            inner: focus.inner,
+        };
+    } else {
+        return {
+            id: focus.id,
+            type: "limits",
+            children: [focus.other, replacement],
+            inner: focus.inner,
         };
     }
-    return {
-        type: "zlimits",
-        id,
-        dir,
-        other,
-        inner,
-    };
-}
+};
 
-export {zlimits};
+export const zlimits = (node: types.Limits, dir: "left" | "right"): ZLimits => {
+    if (dir === "left") {
+        return {
+            id: node.id,
+            type: "zlimits",
+            dir,
+            other: node.children[1],
+            inner: node.inner,
+        };
+    } else {
+        return {
+            id: node.id,
+            type: "zlimits",
+            dir,
+            other: node.children[0],
+            inner: node.inner,
+        };
+    }
+};
 
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}

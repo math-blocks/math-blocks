@@ -34,28 +34,21 @@ export const moveRight = (zipper: Zipper): Zipper => {
             let focus: Focus;
             switch (next.type) {
                 case "frac": {
-                    focus = util.zfrac(next.id, "left", next.children[1]);
+                    focus = util.zfrac(next, "left");
                     break;
                 }
                 case "subsup": {
-                    focus = next.children[0]
-                        ? util.zsubsup(next.id, "left", next.children[1])
-                        : util.zsubsup(next.id, "right", next.children[0]);
+                    const dir = next.children[0] ? "left" : "right";
+                    focus = util.zsubsup(next, dir);
                     break;
                 }
                 case "root": {
-                    focus = next.children[0]
-                        ? util.zroot(next.id, "left", next.children[1])
-                        : util.zroot(next.id, "right", next.children[0]);
+                    const dir = next.children[0] ? "left" : "right";
+                    focus = util.zroot(next, dir);
                     break;
                 }
                 case "limits":
-                    focus = util.zlimits(
-                        next.id,
-                        "left",
-                        next.children[1],
-                        next.inner,
-                    );
+                    focus = util.zlimits(next, "left");
                     break;
                 default:
                     throw new UnreachableCaseError(next);
@@ -108,40 +101,21 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zsubsup":
-                if (focus.dir === "left") {
-                    return focus.other
-                        ? focusRight(focus.other)
-                        : exitNode(
-                              util.subsup(focus.id, exitedRow, focus.other),
-                          );
-                }
-                return exitNode(util.subsup(focus.id, focus.other, exitedRow));
+                return focus.dir === "left" && focus.other
+                    ? focusRight(focus.other)
+                    : exitNode(util.subsup(focus, exitedRow));
             case "zfrac":
-                if (focus.dir === "left") {
-                    return focusRight(focus.other);
-                }
-                return exitNode(util.frac(focus.id, focus.other, exitedRow));
+                return focus.dir === "left"
+                    ? focusRight(focus.other)
+                    : exitNode(util.frac(focus, exitedRow));
             case "zroot":
-                if (focus.dir === "left") {
-                    return focusRight(focus.other);
-                }
-                return exitNode(util.root(focus.id, focus.other, exitedRow));
+                return focus.dir === "left"
+                    ? focusRight(focus.other)
+                    : exitNode(util.root(focus, exitedRow));
             case "zlimits":
-                if (focus.dir === "left") {
-                    return focus.other
-                        ? focusRight(focus.other)
-                        : exitNode(
-                              util.limits(
-                                  focus.id,
-                                  exitedRow,
-                                  focus.other,
-                                  focus.inner,
-                              ),
-                          );
-                }
-                return exitNode(
-                    util.limits(focus.id, focus.other, exitedRow, focus.inner),
-                );
+                return focus.dir === "left" && focus.other
+                    ? focusRight(focus.other)
+                    : exitNode(util.limits(focus, exitedRow));
             default:
                 throw new UnreachableCaseError(focus);
         }
