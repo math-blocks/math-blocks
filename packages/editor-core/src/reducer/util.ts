@@ -13,8 +13,8 @@ export const isEqual = (a: types.Node, b: types.Node): boolean => {
         const [bNum, bDen] = b.children;
         return isEqual(aNum, bNum) && isEqual(aDen, bDen);
     } else if (a.type === "root" && b.type === "root") {
-        const [aRad, aIndex] = a.children;
-        const [bRad, bIndex] = b.children;
+        const [aIndex, aRad] = a.children;
+        const [bIndex, bRad] = b.children;
         if (isEqual(aRad, bRad)) {
             return aIndex != null && bIndex != null
                 ? isEqual(aIndex, bIndex)
@@ -82,8 +82,8 @@ export const frac = (num: string, den: string): types.Frac =>
 
 export const sqrt = (radicand: string): types.Root =>
     builders.root(
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
         null,
+        radicand.split("").map((glyph) => builders.glyph(glyph)),
     );
 
 export const root = (radicand: string, index: string): types.Root =>

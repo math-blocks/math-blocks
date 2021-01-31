@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 465.935546875 160.66015625" width="463.935546875" height="162.66015625">
-    <g transform="translate(0,107.1484375)" id="21">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 277.732421875 145.501953125" width="275.732421875" height="147.501953125">
+    <g transform="translate(0,91.990234375)" id="21">
         <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1">
             x
         </text>
@@ -23,43 +23,18 @@
                     </text>
                 </g>
                 <g transform="translate(123.251953125,0)" id="13">
-                    <g transform="translate(0,-29.904296875)" id="undefined">
+                    <g transform="translate(0,-14.74609375)" id="undefined">
                         <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="undefined" style="opacity:1">
                             √
                         </text>
                     </g>
                     <g transform="translate(26.4453125,0)" id="undefined">
-                        <g transform="translate(0,0)" id="14">
-                            <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="5" style="opacity:1">
-                                b
-                            </text>
-                            <g transform="translate(35.595703125,-10)" id="7">
-                                <g transform="translate(0,-22.2431640625)" id="8">
-                                    <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="6" style="opacity:1">
-                                        2
-                                    </text>
-                                </g>
-                            </g>
-                            <g transform="translate(61.23046875,0)" id="9">
-                                <text x="15" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="9" style="opacity:1">
-                                    −
-                                </text>
-                            </g>
-                            <text x="120.05859375" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="10" style="opacity:1">
-                                4
-                            </text>
-                            <text x="156.6796875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="11" style="opacity:1">
-                                a
-                            </text>
-                            <text x="187.3828125" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="12" style="opacity:1">
-                                c
-                            </text>
-                        </g>
-                        <line type="line" x1="0" y1="-74.408203125" x2="218.203125" y2="-74.408203125" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
+                        <g transform="translate(0,0)" id="15"></g>
+                        <line type="line" x1="0" y1="-59.25" x2="30" y2="-59.25" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
                     </g>
                 </g>
             </g>
-            <g transform="translate(150.2880859375,58.021484375)" id="20">
+            <g transform="translate(56.1865234375,58.021484375)" id="20">
                 <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="16" style="opacity:1">
                     2
                 </text>
@@ -68,7 +43,7 @@
                 </text>
             </g>
             <g transform="translate(2.5,2.5)" id="undefined">
-                <line type="line" x1="0" y1="0" x2="362.900390625" y2="0" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
+                <line type="line" x1="0" y1="0" x2="174.697265625" y2="0" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
             </g>
         </g>
     </g>

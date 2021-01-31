@@ -44,13 +44,13 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    arg: Node[],
+    radicand: Node[],
     index: Node[] | null,
     loc: SourceLocation,
 ): Root {
     return {
         type: "root",
-        children: [row(arg), index ? row(index) : null],
+        children: [index ? row(index) : null, row(radicand)],
         loc,
     };
 }
@@ -120,7 +120,7 @@ const print = (
             })`;
         }
         case "root": {
-            const [radicand, index] = ast.children;
+            const [index, radicand] = ast.children;
             return `(root@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
             } ${atom.name} ${print(radicand, serialize, indent)} ${

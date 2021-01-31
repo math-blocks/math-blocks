@@ -45,13 +45,13 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    arg: types.Node[],
     index: types.Node[] | null,
+    radicand: types.Node[],
 ): types.Root {
     return {
         id: getId(),
         type: "root",
-        children: [row(arg), index ? row(index) : null],
+        children: [index ? row(index) : null, row(radicand)],
     };
 }
 
