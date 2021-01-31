@@ -27,23 +27,24 @@ export const moveLeft = (zipper: Zipper): Zipper => {
         }
 
         // Rows should only be used as children of non-rows
+        // move into node to the left
         else if (prev.type !== "row") {
             const [leftChild, rightChild] = prev.children;
 
             let focus: Focus;
             switch (prev.type) {
                 case "frac": {
-                    focus = util.zfrac(prev.id, prev.children[0], undefined);
+                    focus = util.zfrac(prev.id, "right", prev.children[0]);
                     break;
                 }
                 case "subsup": {
-                    focus = rightChild
-                        ? util.zsubsup(prev.id, leftChild, undefined)
-                        : util.zsubsup(prev.id, undefined, null);
+                    focus = prev.children[1]
+                        ? util.zsubsup(prev.id, "right", prev.children[0])
+                        : util.zsubsup(prev.id, "left", prev.children[1]);
                     break;
                 }
                 case "root": {
-                    focus = util.zroot(prev.id, leftChild, undefined);
+                    focus = util.zroot(prev.id, "right", prev.children[0]);
                     break;
                 }
                 default: {
@@ -73,7 +74,6 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
     if (path.length > 0) {
         const {focus, row: parentRow} = path[path.length - 1];
-        const {left, right} = focus;
 
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
@@ -84,8 +84,8 @@ export const moveLeft = (zipper: Zipper): Zipper => {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        left: undefined, // focus
-                        right: exitedRow,
+                        dir: "left",
+                        other: exitedRow,
                     },
                 },
             ],
@@ -100,37 +100,32 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zsubsup": {
-                if (focus.left) {
-                    return focusLeft(focus.left);
+                if (focus.dir === "right") {
+                    return focus.other
+                        ? focusLeft(focus.other)
+                        : exitNode(util.subsup(focus.id, null, exitedRow));
                 }
-                // left === null -> there is no subscript
-                return exitNode(
-                    left === null
-                        ? util.subsup(focus.id, null, exitedRow)
-                        : util.subsup(focus.id, exitedRow, right || null),
-                );
+                return exitNode(util.subsup(focus.id, exitedRow, focus.other));
             }
             case "zfrac": {
-                if (focus.left) {
-                    return focusLeft(focus.left);
+                if (focus.dir === "right") {
+                    return focusLeft(focus.other);
                 }
-                return exitNode(
-                    util.frac(focus.id, exitedRow, right as types.Row),
-                );
+                return exitNode(util.frac(focus.id, exitedRow, focus.other));
             }
             case "zroot": {
-                if (focus.left) {
-                    return focusLeft(focus.left);
+                if (focus.dir === "right" && focus.other) {
+                    return focusLeft(focus.other);
                 }
                 return exitNode(
-                    left === null
+                    focus.other === null
                         ? util.root(focus.id, null, exitedRow)
-                        : util.root(focus.id, exitedRow, right as types.Row),
+                        : util.root(focus.id, exitedRow, focus.other),
                 );
             }
             case "zlimits":
-                if (focus.left) {
-                    return focusLeft(focus.left);
+                if (focus.dir === "right") {
+                    return focusLeft(focus.other);
                 }
                 // TODO
                 return zipper; // fallback

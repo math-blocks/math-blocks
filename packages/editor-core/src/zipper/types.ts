@@ -10,8 +10,8 @@ export type ZRow = {
 export type ZFrac = {
     id: number;
     type: "zfrac";
-    left?: types.Row; // numerator
-    right?: types.Row; // denominator
+    dir: "left" | "right";
+    other: types.Row; // what isn't being focused
 };
 
 // TODO: consider splitting up SubSup into three different types.
@@ -19,23 +19,37 @@ export type ZFrac = {
 export type ZSubSup = {
     id: number;
     type: "zsubsup";
-    left?: types.Row | null; // numerator
-    right?: types.Row | null; // denominator
+    dir: "left" | "right";
+    other: types.Row | null; // what isn't being focused
 };
 
-export type ZLimit = {
-    id: number;
-    type: "zlimits";
-    left?: types.Row; // lower
-    right?: types.Row | null; // upper
-};
+export type ZLimit =
+    | {
+          id: number;
+          type: "zlimits";
+          dir: "left";
+          other: types.Row | null;
+      }
+    | {
+          id: number;
+          type: "zlimits";
+          dir: "right";
+          other: types.Row;
+      };
 
-export type ZRoot = {
-    id: number;
-    type: "zroot";
-    left?: types.Row | null; // index
-    right?: types.Row; // radicand
-};
+export type ZRoot =
+    | {
+          id: number;
+          type: "zroot";
+          dir: "left";
+          other: types.Row;
+      }
+    | {
+          id: number;
+          type: "zroot";
+          dir: "right";
+          other: types.Row | null;
+      };
 
 export type Focus = ZFrac | ZSubSup | ZLimit | ZRoot;
 

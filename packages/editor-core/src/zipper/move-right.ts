@@ -27,25 +27,26 @@ export const moveRight = (zipper: Zipper): Zipper => {
         }
 
         // Rows should only be used as children of non-rows
+        // move into row to the right
         else if (next.type !== "row") {
             const [leftChild, rightChild] = next.children;
 
             let focus: Focus;
             switch (next.type) {
                 case "frac": {
-                    focus = util.zfrac(next.id, undefined, next.children[1]);
+                    focus = util.zfrac(next.id, "left", next.children[1]);
                     break;
                 }
                 case "subsup": {
-                    focus = leftChild
-                        ? util.zsubsup(next.id, undefined, rightChild)
-                        : util.zsubsup(next.id, null, undefined);
+                    focus = next.children[0]
+                        ? util.zsubsup(next.id, "left", next.children[1])
+                        : util.zsubsup(next.id, "right", next.children[0]);
                     break;
                 }
                 case "root": {
-                    focus = leftChild
-                        ? util.zroot(next.id, undefined, next.children[1])
-                        : util.zroot(next.id, null, undefined);
+                    focus = next.children[0]
+                        ? util.zroot(next.id, "left", next.children[1])
+                        : util.zroot(next.id, "right", next.children[0]);
                     break;
                 }
                 default: {
@@ -84,8 +85,8 @@ export const moveRight = (zipper: Zipper): Zipper => {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        left: exitedRow,
-                        right: undefined, // focused
+                        dir: "right",
+                        other: exitedRow,
                     },
                 },
             ],
@@ -100,35 +101,28 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zsubsup": {
-                if (focus.right) {
-                    return focusRight(focus.right);
+                if (focus.dir === "left") {
+                    return focus.other
+                        ? focusRight(focus.other)
+                        : exitNode(util.subsup(focus.id, exitedRow, null));
                 }
-                return exitNode(
-                    // right === null -> there is no superscript
-                    focus.right === null
-                        ? util.subsup(focus.id, exitedRow, null)
-                        : util.subsup(focus.id, focus.left || null, exitedRow),
-                );
+                return exitNode(util.subsup(focus.id, focus.other, exitedRow));
             }
             case "zfrac": {
-                if (focus.right) {
-                    return focusRight(focus.right);
+                if (focus.dir === "left") {
+                    return focusRight(focus.other);
                 }
-                return exitNode(
-                    util.frac(focus.id, focus.left as types.Row, exitedRow),
-                );
+                return exitNode(util.frac(focus.id, focus.other, exitedRow));
             }
             case "zroot": {
-                if (focus.right) {
-                    return focusRight(focus.right);
+                if (focus.dir === "left") {
+                    return focusRight(focus.other);
                 }
-                return exitNode(
-                    util.root(focus.id, focus.left || null, exitedRow),
-                );
+                return exitNode(util.root(focus.id, focus.other, exitedRow));
             }
             case "zlimits":
-                if (focus.right) {
-                    return focusRight(focus.right);
+                if (focus.dir === "left" && focus.other) {
+                    return focusRight(focus.other);
                 }
                 // TODO
                 return zipper; // fallback

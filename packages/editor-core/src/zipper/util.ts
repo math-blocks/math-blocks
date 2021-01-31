@@ -33,14 +33,14 @@ export const frac = (
 
 export const zfrac = (
     id: number,
-    numerator?: types.Row,
-    denominator?: types.Row,
+    dir: "left" | "right",
+    other: types.Row,
 ): ZFrac => {
     return {
         id,
         type: "zfrac",
-        left: numerator,
-        right: denominator,
+        dir,
+        other,
     };
 };
 
@@ -58,14 +58,14 @@ export const subsup = (
 
 export const zsubsup = (
     id: number,
-    numerator?: types.Row | null,
-    denominator?: types.Row | null,
+    dir: "left" | "right",
+    other: types.Row | null,
 ): ZSubSup => {
     return {
         id,
         type: "zsubsup",
-        left: numerator,
-        right: denominator,
+        dir,
+        other,
     };
 };
 
@@ -81,18 +81,39 @@ export const root = (
     };
 };
 
-export const zroot = (
-    id: number,
-    index?: types.Row | null,
-    radicand?: types.Row,
-): ZRoot => {
+function zroot(id: number, dir: "left", other: types.Row): ZRoot;
+function zroot(id: number, dir: "right", other: types.Row | null): ZRoot;
+function zroot(id: number, dir: any, other: any): ZRoot {
+    if (dir === "left") {
+        return {
+            id,
+            type: "zroot",
+            dir: "left",
+            other,
+        };
+    }
     return {
-        id,
         type: "zroot",
-        left: index,
-        right: radicand,
+        id,
+        dir,
+        other,
     };
-};
+}
+
+export {zroot};
+
+// export const zroot = (
+//     id: number,
+//     index?: types.Row | null,
+//     radicand?: types.Row,
+// ): ZRoot => {
+//     return {
+//         id,
+//         type: "zroot",
+//         left: index,
+//         right: radicand,
+//     };
+// };
 
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}

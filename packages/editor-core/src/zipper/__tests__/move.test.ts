@@ -107,8 +107,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                left: undefined,
-                right: f.children[1],
+                dir: "left",
+                other: f.children[1],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -133,8 +133,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                left: f.children[0],
-                right: undefined,
+                dir: "right",
+                other: f.children[0],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -160,6 +160,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(f); // fraction should be unchanged
         });
     });
 
@@ -182,8 +183,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: undefined,
-                right: ss.children[1],
+                dir: "left",
+                other: ss.children[1],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -208,8 +209,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: ss.children[0],
-                right: undefined,
+                dir: "right",
+                other: ss.children[0],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -235,6 +236,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(ss); // subsup should be unchanged
         });
     });
 
@@ -257,8 +259,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: undefined,
-                right: null,
+                dir: "left",
+                other: null,
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -282,6 +284,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(ss); // sub should be unchanged
         });
     });
 
@@ -304,15 +307,15 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: null,
-                right: undefined,
+                dir: "right",
+                other: null,
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.right[0]).toEqual(ss.children[1]?.children[0]);
         });
 
-        test("moves out of the sub", () => {
+        test("moves out of the sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
                 row: {
@@ -329,6 +332,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(ss); // sup should be unchanged
         });
     });
 
@@ -351,8 +355,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: undefined,
-                right: r.children[1],
+                dir: "left",
+                other: r.children[1],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -377,8 +381,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: r.children[0],
-                right: undefined,
+                dir: "right",
+                other: r.children[0],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -404,6 +408,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(r); // root should be unchanged
         });
     });
 
@@ -426,8 +431,8 @@ describe("moveRight", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: null,
-                right: undefined,
+                dir: "right",
+                other: null,
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -451,6 +456,7 @@ describe("moveRight", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(r); // root should be unchanged
         });
     });
 });
@@ -511,8 +517,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                left: f.children[0],
-                right: undefined,
+                dir: "right",
+                other: f.children[0],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -537,8 +543,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                left: undefined,
-                right: f.children[1],
+                dir: "left",
+                other: f.children[1],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -564,6 +570,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(f); // frac should be unchanged
         });
     });
 
@@ -586,8 +593,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: ss.children[0],
-                right: undefined,
+                dir: "right",
+                other: ss.children[0],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -612,8 +619,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: undefined,
-                right: ss.children[1],
+                dir: "left",
+                other: ss.children[1],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -639,6 +646,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(ss); // subsup should be unchanged
         });
     });
 
@@ -661,8 +669,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: null,
-                right: undefined,
+                dir: "right",
+                other: null,
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -686,6 +694,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(ss); // sup should be unchanged
         });
     });
 
@@ -708,8 +717,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                left: undefined,
-                right: null,
+                dir: "left",
+                other: null,
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -733,6 +742,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(ss); // sub should be unchanged
         });
     });
 
@@ -755,8 +765,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: r.children[0],
-                right: undefined,
+                dir: "right",
+                other: r.children[0],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -781,8 +791,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: undefined,
-                right: r.children[1],
+                dir: "left",
+                other: r.children[1],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -808,6 +818,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(r); // root should be unchanged
         });
     });
 
@@ -830,8 +841,8 @@ describe("moveLeft", () => {
             expect(result.path[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                left: null,
-                right: undefined,
+                dir: "right",
+                other: null,
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -855,6 +866,7 @@ describe("moveLeft", () => {
             expect(result.path).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(r); // root should be unchanged
         });
     });
 });
