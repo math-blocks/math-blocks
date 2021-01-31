@@ -459,6 +459,206 @@ describe("moveRight", () => {
             expect(result.row.left[1]).toEqual(r); // root should be unchanged
         });
     });
+
+    describe("lim", () => {
+        test("moves into lower", () => {
+            const lower: types.Row = row("b");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const lim: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, null],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [lim, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: lim.id,
+                type: "zlimits",
+                dir: "left",
+                other: null,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(lim.children[0]?.children[0]);
+        });
+
+        test("exits the lim", () => {
+            const lower: types.Row = row("b");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const lim: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, null],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [lim, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(moveRight(moveRight(zipper)));
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(2);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(lim); // lim should be unchanged
+        });
+    });
+
+    describe("sum", () => {
+        test("moves into lower", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [sum, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: sum.id,
+                type: "zlimits",
+                dir: "left",
+                other: upper,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(sum.children[0]?.children[0]);
+        });
+
+        test("moves from lower into upper", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [sum, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(moveRight(moveRight(zipper)));
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: sum.id,
+                type: "zlimits",
+                dir: "right",
+                other: lower,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.right[0]).toEqual(sum.children[1]?.children[0]);
+        });
+
+        test("exits the sum", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a")],
+                    right: [sum, builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveRight(
+                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            );
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(2);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.left[1]).toEqual(sum); // sum should be unchanged
+        });
+    });
 });
 
 describe("moveLeft", () => {
@@ -867,6 +1067,206 @@ describe("moveLeft", () => {
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(r); // root should be unchanged
+        });
+    });
+
+    describe("lim", () => {
+        test("moves into lower", () => {
+            const lower: types.Row = row("b");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const lim: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, null],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), lim],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: lim.id,
+                type: "zlimits",
+                dir: "left",
+                other: null,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(lower.children[0]);
+        });
+
+        test("exits the lim", () => {
+            const lower: types.Row = row("b");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const lim: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, null],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), lim],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(moveLeft(moveLeft(zipper)));
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.row.right[0]).toEqual(lim); // lim should be unchanged
+        });
+    });
+
+    describe("sum", () => {
+        test("moves into upper", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), sum],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(zipper);
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: sum.id,
+                type: "zlimits",
+                dir: "right",
+                other: lower,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(upper.children[0]);
+        });
+
+        test("moves from uper into lower", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), sum],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(moveLeft(moveLeft(zipper)));
+
+            expect(result.path).toHaveLength(1);
+            expect(result.path[0].focus).toEqual({
+                id: sum.id,
+                type: "zlimits",
+                dir: "left",
+                other: upper,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(lower.children[0]);
+        });
+
+        test("exits the sum", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), sum],
+                    right: [builders.glyph("d")],
+                },
+                path: [],
+            };
+
+            const result = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            );
+
+            expect(result.path).toHaveLength(0);
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.row.right[0]).toEqual(sum); // sum should be unchanged
         });
     });
 });

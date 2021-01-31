@@ -1,4 +1,4 @@
-import {ZRow, ZFrac, ZSubSup, ZRoot} from "./types";
+import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits} from "./types";
 import * as types from "../types";
 
 export const startRow = (row: types.Row): ZRow => {
@@ -102,18 +102,52 @@ function zroot(id: number, dir: any, other: any): ZRoot {
 
 export {zroot};
 
-// export const zroot = (
-//     id: number,
-//     index?: types.Row | null,
-//     radicand?: types.Row,
-// ): ZRoot => {
-//     return {
-//         id,
-//         type: "zroot",
-//         left: index,
-//         right: radicand,
-//     };
-// };
+export const limits = (
+    id: number,
+    lower: types.Row,
+    upper: types.Row | null,
+    inner: types.Node,
+): types.Limits => {
+    return {
+        id,
+        type: "limits",
+        children: [lower, upper],
+        inner,
+    };
+};
+
+function zlimits(
+    id: number,
+    dir: "left",
+    other: types.Row | null,
+    inner: types.Node,
+): ZLimits;
+function zlimits(
+    id: number,
+    dir: "right",
+    other: types.Row,
+    inner: types.Node,
+): ZLimits;
+function zlimits(id: number, dir: any, other: any, inner: types.Node): ZLimits {
+    if (dir === "left") {
+        return {
+            id,
+            type: "zlimits",
+            dir: "left",
+            other,
+            inner,
+        };
+    }
+    return {
+        type: "zlimits",
+        id,
+        dir,
+        other,
+        inner,
+    };
+}
+
+export {zlimits};
 
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}

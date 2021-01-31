@@ -49,9 +49,16 @@ export const moveRight = (zipper: Zipper): Zipper => {
                         : util.zroot(next.id, "right", next.children[0]);
                     break;
                 }
-                default: {
-                    throw new Error(`${next.type} case not handled`);
-                }
+                case "limits":
+                    focus = util.zlimits(
+                        next.id,
+                        "left",
+                        next.children[1],
+                        next.inner,
+                    );
+                    break;
+                default:
+                    throw new UnreachableCaseError(next);
             }
 
             const breadcrumb: Breadcrumb = {
@@ -100,32 +107,41 @@ export const moveRight = (zipper: Zipper): Zipper => {
         });
 
         switch (focus.type) {
-            case "zsubsup": {
+            case "zsubsup":
                 if (focus.dir === "left") {
                     return focus.other
                         ? focusRight(focus.other)
-                        : exitNode(util.subsup(focus.id, exitedRow, null));
+                        : exitNode(
+                              util.subsup(focus.id, exitedRow, focus.other),
+                          );
                 }
                 return exitNode(util.subsup(focus.id, focus.other, exitedRow));
-            }
-            case "zfrac": {
+            case "zfrac":
                 if (focus.dir === "left") {
                     return focusRight(focus.other);
                 }
                 return exitNode(util.frac(focus.id, focus.other, exitedRow));
-            }
-            case "zroot": {
+            case "zroot":
                 if (focus.dir === "left") {
                     return focusRight(focus.other);
                 }
                 return exitNode(util.root(focus.id, focus.other, exitedRow));
-            }
             case "zlimits":
-                if (focus.dir === "left" && focus.other) {
-                    return focusRight(focus.other);
+                if (focus.dir === "left") {
+                    return focus.other
+                        ? focusRight(focus.other)
+                        : exitNode(
+                              util.limits(
+                                  focus.id,
+                                  exitedRow,
+                                  focus.other,
+                                  focus.inner,
+                              ),
+                          );
                 }
-                // TODO
-                return zipper; // fallback
+                return exitNode(
+                    util.limits(focus.id, focus.other, exitedRow, focus.inner),
+                );
             default:
                 throw new UnreachableCaseError(focus);
         }

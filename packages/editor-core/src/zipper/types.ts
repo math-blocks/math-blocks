@@ -23,18 +23,20 @@ export type ZSubSup = {
     other: types.Row | null; // what isn't being focused
 };
 
-export type ZLimit =
+export type ZLimits =
     | {
           id: number;
           type: "zlimits";
           dir: "left";
           other: types.Row | null;
+          inner: types.Node;
       }
     | {
           id: number;
           type: "zlimits";
           dir: "right";
           other: types.Row;
+          inner: types.Node;
       };
 
 export type ZRoot =
@@ -51,7 +53,7 @@ export type ZRoot =
           other: types.Row | null;
       };
 
-export type Focus = ZFrac | ZSubSup | ZLimit | ZRoot;
+export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot;
 
 export type Breadcrumb = {
     row: ZRow;
