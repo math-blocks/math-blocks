@@ -75,62 +75,65 @@ export const moveRight = (zipper: Zipper): Zipper => {
 
     if (path.length > 0) {
         const {focus, row: parentRow} = path[path.length - 1];
-        const {left, right} = focus;
-
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
-        // move between branches of the focus
-        if (right) {
-            return {
-                path: [
-                    ...path.slice(0, -1),
-                    {
-                        row: parentRow,
-                        focus: {
-                            ...focus,
-                            left: exitedRow,
-                            right: undefined, // focused
-                        },
+        const focusRight = (row: types.Row): Zipper => ({
+            path: [
+                ...path.slice(0, -1),
+                {
+                    row: parentRow,
+                    focus: {
+                        ...focus,
+                        left: exitedRow,
+                        right: undefined, // focused
                     },
-                ],
-                row: util.startRow(right),
-            };
-        }
+                },
+            ],
+            row: util.startRow(row),
+        });
 
-        // exit the focus to the right
-        else {
-            let updatedNode;
-            switch (focus.type) {
-                case "zsubsup": {
+        const exitNode = (updatedNode: types.Node): Zipper => ({
+            path: [...path.slice(0, -1)],
+            // place the subsup we exited on our left
+            row: util.insertLeft(parentRow, updatedNode),
+        });
+
+        switch (focus.type) {
+            case "zsubsup": {
+                if (focus.right) {
+                    return focusRight(focus.right);
+                }
+                return exitNode(
                     // right === null -> there is no superscript
-                    updatedNode =
-                        right === null
-                            ? util.subsup(focus.id, exitedRow, null)
-                            : util.subsup(focus.id, left ?? null, exitedRow);
-                    break;
-                }
-                case "zfrac": {
-                    updatedNode = util.frac(
-                        focus.id,
-                        left as types.Row,
-                        exitedRow,
-                    );
-                    break;
-                }
-                case "zroot": {
-                    updatedNode = util.root(focus.id, left || null, exitedRow);
-                    break;
-                }
-                case "zlimits": // TODO
-                    return zipper; // fallback
-                default:
-                    throw new UnreachableCaseError(focus);
+                    focus.right === null
+                        ? util.subsup(focus.id, exitedRow, null)
+                        : util.subsup(focus.id, focus.left || null, exitedRow),
+                );
             }
-            return {
-                path: [...path.slice(0, -1)],
-                // place the subsup we exited on our left
-                row: util.insertLeft(parentRow, updatedNode),
-            };
+            case "zfrac": {
+                if (focus.right) {
+                    return focusRight(focus.right);
+                }
+                return exitNode(
+                    util.frac(focus.id, focus.left as types.Row, exitedRow),
+                );
+            }
+            case "zroot": {
+                if (focus.right) {
+                    return focusRight(focus.right);
+                }
+                return exitNode(
+                    util.root(focus.id, focus.left || null, exitedRow),
+                );
+            }
+            case "zlimits":
+                if (focus.right) {
+                    return focusRight(focus.right);
+                }
+                // TODO
+                return zipper; // fallback
+            default:
+                throw new UnreachableCaseError(focus);
         }
     }
 

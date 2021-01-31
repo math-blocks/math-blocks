@@ -77,63 +77,65 @@ export const moveLeft = (zipper: Zipper): Zipper => {
 
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
-        // move between branches of the focus
-        if (left) {
-            return {
-                path: [
-                    ...path.slice(0, -1),
-                    {
-                        row: parentRow,
-                        focus: {
-                            ...focus,
-                            left: undefined, // focus
-                            right: exitedRow,
-                        },
+        const focusLeft = (row: types.Row): Zipper => ({
+            path: [
+                ...path.slice(0, -1),
+                {
+                    row: parentRow,
+                    focus: {
+                        ...focus,
+                        left: undefined, // focus
+                        right: exitedRow,
                     },
-                ],
-                row: util.endRow(left),
-            };
-        }
+                },
+            ],
+            row: util.endRow(row),
+        });
 
-        // exit the focus to the left
-        else {
-            let updatedNode;
-            switch (focus.type) {
-                case "zsubsup": {
-                    // left === null -> there is no subscript
-                    updatedNode =
-                        left === null
-                            ? util.subsup(focus.id, null, exitedRow)
-                            : util.subsup(focus.id, exitedRow, right ?? null);
-                    break;
+        const exitNode = (updatedNode: types.Node): Zipper => ({
+            path: [...path.slice(0, -1)],
+            // place the fraction we exited on our right
+            row: util.insertRight(parentRow, updatedNode),
+        });
+
+        switch (focus.type) {
+            case "zsubsup": {
+                if (focus.left) {
+                    return focusLeft(focus.left);
                 }
-                case "zfrac": {
-                    updatedNode = util.frac(
-                        focus.id,
-                        exitedRow,
-                        right as types.Row,
-                    );
-                    break;
-                }
-                case "zroot": {
-                    const [newLeft, newRight] =
-                        left === null
-                            ? [null, exitedRow]
-                            : [exitedRow, right as types.Row];
-                    updatedNode = util.root(focus.id, newLeft, newRight);
-                    break;
-                }
-                case "zlimits": // TODO
-                    return zipper; // fallback
-                default:
-                    throw new UnreachableCaseError(focus);
+                // left === null -> there is no subscript
+                return exitNode(
+                    left === null
+                        ? util.subsup(focus.id, null, exitedRow)
+                        : util.subsup(focus.id, exitedRow, right || null),
+                );
             }
-
-            return {
-                path: [...path.slice(0, -1)],
-                // place the fraction we exited on our right
-                row: util.insertRight(parentRow, updatedNode),
-            };
+            case "zfrac": {
+                if (focus.left) {
+                    return focusLeft(focus.left);
+                }
+                return exitNode(
+                    util.frac(focus.id, exitedRow, right as types.Row),
+                );
+            }
+            case "zroot": {
+                if (focus.left) {
+                    return focusLeft(focus.left);
+                }
+                return exitNode(
+                    left === null
+                        ? util.root(focus.id, null, exitedRow)
+                        : util.root(focus.id, exitedRow, right as types.Row),
+                );
+            }
+            case "zlimits":
+                if (focus.left) {
+                    return focusLeft(focus.left);
+                }
+                // TODO
+                return zipper; // fallback
+            default:
+                throw new UnreachableCaseError(focus);
         }
     }
 
