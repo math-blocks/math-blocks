@@ -278,12 +278,12 @@ const lex = (node: types.Node, path: number[], offset: number): Node => {
             };
         }
         case "root": {
-            const [radicand, index] = node.children;
+            const [index, radicand] = node.children;
             return {
                 type: "root",
                 children: [
-                    lexRow(radicand, [...path, offset, 0]),
                     index ? lexRow(index, [...path, offset, 1]) : null,
+                    lexRow(radicand, [...path, offset, 0]),
                 ],
                 loc: location(path, offset, offset + 1),
             };

@@ -387,7 +387,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root :radicand b :index 2))
+              (root :radicand 2 :index b))
         `);
 
         expect(ast.loc).toEqual({
@@ -433,8 +433,8 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root :radicand b :index 2)
-              (root :radicand c :index 3))
+              (root :radicand 2 :index b)
+              (root :radicand 3 :index c))
         `);
     });
 
@@ -445,8 +445,8 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand b :index 2)
-              (root :radicand c :index 3))
+              (root :radicand 2 :index b)
+              (root :radicand 3 :index c))
         `);
     });
 
@@ -494,7 +494,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               (root :radicand 2 :index 2)
-              (root :radicand 3 :index 2))
+              (root :radicand 2 :index 3))
         `);
     });
 

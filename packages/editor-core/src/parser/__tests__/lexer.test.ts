@@ -157,8 +157,8 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (root@[]:0:1 atom (row 
-                    (num@[0,0]:0:3 123)) (row 
-                    (ident@[0,1]:0:1 n))))
+                    (ident@[0,0]:0:1 n)) (row 
+                    (num@[0,1]:0:3 123))))
             `);
         });
 
