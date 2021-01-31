@@ -23,8 +23,8 @@ export const frac = (num: string, den: string): types.Frac =>
 
 export const sqrt = (radicand: string): types.Root =>
     builders.root(
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
         null,
+        radicand.split("").map((glyph) => builders.glyph(glyph)),
     );
 
 export const root = (radicand: string, index: string): types.Root =>

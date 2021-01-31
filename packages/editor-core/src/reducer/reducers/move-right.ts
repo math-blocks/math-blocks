@@ -116,7 +116,7 @@ export const moveRight = (
         }
 
         if (nextNode && nextNode.type === "root" && !selecting) {
-            const radicand = nextNode.children[0];
+            const radicand = nextNode.children[RADICAND];
             // TODO: handle navigating into the index
             return enterFromLeft(cursor, radicand, RADICAND);
         } else if (nextNode && nextNode.type === "frac" && !selecting) {

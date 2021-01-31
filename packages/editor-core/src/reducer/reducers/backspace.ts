@@ -1,4 +1,5 @@
 import * as builders from "../../builders";
+import {RADICAND, INDEX} from "../constants";
 
 import {State} from "../row-reducer";
 import {
@@ -231,10 +232,10 @@ export const backspace = (currentNode: HasChildren, draft: State): void => {
 
             let newChildren = grandparent.children;
             if (index !== -1) {
-                if (parent.children[0] && !parent.children[1]) {
+                if (parent.children[RADICAND] && !parent.children[INDEX]) {
                     newChildren = [
                         ...grandparent.children.slice(0, index),
-                        ...parent.children[0].children,
+                        ...parent.children[RADICAND].children,
                         ...grandparent.children.slice(index + 1),
                     ];
                 } else {

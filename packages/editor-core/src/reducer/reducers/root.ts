@@ -17,7 +17,7 @@ export const root = (currentNode: HasChildren, draft: State): void => {
             selectionStart,
         );
 
-        currentNode.children = [...head, builders.root(body, null), ...tail];
+        currentNode.children = [...head, builders.root(null, body), ...tail];
         draft.cursor = {
             path: [...cursor.path, head.length, RADICAND],
             prev: body.length > 0 ? body.length - 1 : -Infinity,
@@ -38,7 +38,7 @@ export const root = (currentNode: HasChildren, draft: State): void => {
     const newNode: types.Root = {
         id: getId(),
         type: "root",
-        children: [radicand, null /* index */],
+        children: [null /* index */, radicand],
     };
 
     currentNode.children = insertBeforeChildWithIndex(

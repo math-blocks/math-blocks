@@ -51,7 +51,7 @@ export const root = (
     return {
         id,
         type: "root",
-        children: [radicand, index],
+        children: [index, radicand],
     };
 };
 

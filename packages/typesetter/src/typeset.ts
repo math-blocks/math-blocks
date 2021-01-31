@@ -7,6 +7,8 @@ import {Context, Options} from "./types";
 
 const DEBUG = typeof jest === "undefined";
 
+const RADICAND = 1;
+
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
     node: Editor.types.Node,
@@ -567,7 +569,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return frac;
         }
         case "root": {
-            const radicand = typesetRow(node.children[0], context);
+            const radicand = typesetRow(node.children[RADICAND], context);
             const Eheight = 50;
             radicand.width = Math.max(radicand.width, 30 * multiplier);
             radicand.height = Math.max(radicand.height, Eheight * multiplier);

@@ -119,7 +119,7 @@ export const moveLeft = (
         }
 
         if (prevNode && prevNode.type === "root" && !selecting) {
-            const radicand = prevNode.children[0];
+            const radicand = prevNode.children[RADICAND];
             return enterFromRight(cursor, radicand, RADICAND);
         } else if (prevNode && prevNode.type === "frac" && !selecting) {
             // enter fraction (denominator)

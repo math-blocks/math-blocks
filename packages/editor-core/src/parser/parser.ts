@@ -96,14 +96,14 @@ const getPrefixParselet = (
         case "root":
             return {
                 parse: () => {
-                    const [arg, index] = token.children;
+                    const [index, radicand] = token.children;
                     return index === null
                         ? Parser.builders.sqrt(
-                              editorParser.parse(arg.children),
+                              editorParser.parse(radicand.children),
                               token.loc,
                           )
                         : Parser.builders.root(
-                              editorParser.parse(arg.children),
+                              editorParser.parse(radicand.children),
                               editorParser.parse(index.children),
                               token.loc,
                           );
@@ -198,15 +198,15 @@ const parseNaryArgs = (
         }
     } else if (token.type === "root") {
         parser.consume();
-        const [arg, index] = token.children;
+        const [index, radicand] = token.children;
         const expr =
             index === null
                 ? Parser.builders.sqrt(
-                      editorParser.parse(arg.children),
+                      editorParser.parse(radicand.children),
                       token.loc,
                   )
                 : Parser.builders.root(
-                      editorParser.parse(arg.children),
+                      editorParser.parse(radicand.children),
                       editorParser.parse(index.children),
                       token.loc,
                   );
