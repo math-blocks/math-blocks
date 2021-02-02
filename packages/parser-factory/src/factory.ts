@@ -15,6 +15,7 @@ export interface IParser<T, N, O> {
 
 type Associativity = "right" | "left";
 
+// TODO: add support for postfix parselets, e.g. 5!
 export function parserFactory<T extends {readonly type: string}, N, O>(
     getPrefixParselet: (token: T) => PrefixParselet<T, N, O>,
     getInfixParselet: (token: T) => InfixParselet<T, N, O> | null,
@@ -41,6 +42,8 @@ export function parserFactory<T extends {readonly type: string}, N, O>(
             const parselet = getInfixParselet(token);
             if (parselet) {
                 const precedence = getOpPrecedence(parselet.op);
+                // TODO: we probably should be adding 0.1 since the operator
+                // precedence numbers are only separated by 1.
                 return associativity === "left" ? precedence : precedence + 1;
             }
             return 0;
