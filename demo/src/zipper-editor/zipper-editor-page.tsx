@@ -6,7 +6,24 @@ import * as Editor from "@math-blocks/editor-core";
 
 // import EditingPanel from "./editing-panel";
 
-const startingValue = Editor.util.row("2x+5=10");
+// const startingValue = Editor.util.row("2x+5=10");
+const startingValue = Editor.builders.row([
+    Editor.builders.glyph("2"),
+    Editor.builders.glyph("+"),
+    Editor.builders.frac(
+        [Editor.builders.glyph("1")],
+        [
+            Editor.builders.glyph("x"),
+            Editor.builders.glyph("+"),
+            Editor.builders.frac(
+                [Editor.builders.glyph("1")],
+                [Editor.builders.glyph("x")],
+            ),
+        ],
+    ),
+    Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("y"),
+]);
 
 const zipper: Editor.Zipper = {
     path: [],
@@ -20,7 +37,14 @@ const zipper: Editor.Zipper = {
 
 const EditorPage: React.FunctionComponent = () => (
     <div>
-        <ZipperEditor readonly={false} zipper={zipper} focus={true} />
+        <ZipperEditor
+            readonly={false}
+            zipper={zipper}
+            focus={true}
+            onChange={(value) => {
+                console.log(value);
+            }}
+        />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
             {/* <EditingPanel /> */}
             <div className={css(styles.separator)} />

@@ -61,10 +61,12 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 }
             } else {
                 // TODO: create a zipper reducer
+                console.log(action);
                 const value: Editor.Zipper = Editor.zipperReducer(
                     zipper,
                     action,
                 );
+                console.log(JSON.stringify(value, null, 4));
                 setZipper(value);
                 if (
                     props.onChange &&

@@ -1,7 +1,7 @@
 import * as Editor from "@math-blocks/editor-core";
 
-import * as Layout from "../layout";
-import {processBox, Group, Point} from "../scene-graph";
+import * as Layout from "./layout";
+import {processBox, Group, Point} from "./scene-graph";
 import {Context} from "../types";
 
 // Dedupe this with editor/src/util.ts
@@ -57,7 +57,7 @@ const typesetChildren = (
 
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
     const box = Layout.hpackNat(
-        typesetChildren(row.children, context),
+        [typesetChildren(row.children, context)],
         context.multiplier,
     );
     box.id = row.id;
@@ -78,7 +78,7 @@ const withOperatorPadding = (
     // for binary operators below.  This is so that we don't get extra space
     // when adding/subtracting something just to the right of an "=" in the above
     return Layout.hpackNat(
-        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
+        [[Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)]],
         multiplier,
     );
 };
@@ -199,31 +199,43 @@ const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const nodes: Layout.Node[] = [];
-
     const [crumb, ...restCrumbs] = zipper.path;
 
-    const row = crumb?.row || zipper.row;
+    if (crumb) {
+        const row = crumb.row;
+        const nodes: Layout.Node[] = [];
 
-    for (const child of row.left) {
-        nodes.push(_typeset(child, context));
+        for (const child of row.left) {
+            nodes.push(_typeset(child, context));
+        }
+
+        if (crumb) {
+            // TODO: handle crubme && restCrumbs.length === 0
+            const nextZipper = {...zipper, path: restCrumbs};
+            nodes.push(typesetFocus(crumb.focus, nextZipper, context));
+        }
+
+        for (const child of row.right) {
+            nodes.push(_typeset(child, context));
+        }
+
+        const box = Layout.hpackNat([nodes]);
+        box.id = row.id;
+        box.color = context?.colorMap?.get(box.id);
+
+        return box;
+    } else {
+        const row = zipper.row;
+
+        const left = row.left.map((child) => _typeset(child, context));
+        const right = row.right.map((child) => _typeset(child, context));
+
+        const box = Layout.hpackNat([left, right]);
+        box.id = row.id;
+        box.color = context?.colorMap?.get(box.id);
+
+        return box;
     }
-
-    if (crumb && restCrumbs.length > 0) {
-        // TODO: handle crubme && restCrumbs.length === 0
-        const nextZipper = {...zipper, path: restCrumbs};
-        nodes.push(typesetFocus(crumb.focus, nextZipper, context));
-    }
-
-    for (const child of row.right) {
-        nodes.push(_typeset(child, context));
-    }
-
-    const box = Layout.hpackNat(nodes);
-    box.id = row.id;
-    box.color = context?.colorMap?.get(box.id);
-
-    return box;
 };
 
 type Options = {
