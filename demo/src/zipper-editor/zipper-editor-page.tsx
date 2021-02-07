@@ -22,6 +22,7 @@ const startingValue = Editor.builders.row([
         ],
     ),
     Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("\u2212"),
     Editor.builders.glyph("y"),
 ]);
 

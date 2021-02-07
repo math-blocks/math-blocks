@@ -10,54 +10,9 @@ export const isGlyph = (
     char: string,
 ): node is Editor.types.Atom => node.type === "atom" && node.value.char == char;
 
-// Adds appropriate padding around operators where appropriate
-const typesetChildren = (
-    children: Editor.types.Node[],
-    context: Context,
-    column = false, // isSingleChildColumn?
-): Layout.Node[] => {
-    return children.map((child, index) => {
-        if (child.type === "atom") {
-            const {value} = child;
-
-            const prevChild = index > 0 ? children[index - 1] : undefined;
-            const unary =
-                /[+\u2212]/.test(value.char) &&
-                (prevChild
-                    ? prevChild.type === "atom" &&
-                      /[+\u2212<>\u2260=\u2264\u2265\u00B1(]/.test(
-                          prevChild.value.char,
-                      )
-                    : true);
-            const glyph = _typeset(child, context);
-
-            if (unary && !column) {
-                glyph.id = child.id;
-                return glyph;
-            } else if (
-                /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
-            ) {
-                const box = context.cramped
-                    ? glyph
-                    : withOperatorPadding(glyph, context);
-                box.id = child.id;
-                return box;
-            } else {
-                glyph.id = child.id;
-                if (glyph.type === "Glyph") {
-                    glyph.pending = child.value.pending;
-                }
-                return glyph;
-            }
-        } else {
-            return _typeset(child, context);
-        }
-    });
-};
-
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
     const box = Layout.hpackNat(
-        [typesetChildren(row.children, context)],
+        [_typesetChildren(row.children, context)],
         context.multiplier,
     );
     box.id = row.id;
@@ -195,6 +150,39 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
     throw new Error(`_typeset: we don't handle "${node.type}" node type yet`);
 };
 
+const _typesetChildren = (
+    children: Editor.types.Node[],
+    context: Context,
+    prevChild?: Editor.types.Node | Editor.Focus,
+): Layout.Node[] => {
+    return children.map((child, index) => {
+        prevChild = index > 0 ? children[index - 1] : prevChild;
+
+        if (child.type === "atom") {
+            const glyph = _typeset(child, context);
+            const {value} = child;
+            const unary =
+                /[+\u2212]/.test(value.char) &&
+                (prevChild
+                    ? prevChild.type === "atom" &&
+                      /[+\u2212<>\u2260=\u2264\u2265\u00B1(]/.test(
+                          prevChild.value.char,
+                      )
+                    : true);
+            if (
+                !unary &&
+                /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
+            ) {
+                return withOperatorPadding(glyph, context);
+            } else {
+                return glyph;
+            }
+        } else {
+            return _typeset(child, context);
+        }
+    });
+};
+
 const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
@@ -205,19 +193,10 @@ const _typesetZipper = (
         const row = crumb.row;
         const nodes: Layout.Node[] = [];
 
-        for (const child of row.left) {
-            nodes.push(_typeset(child, context));
-        }
-
-        if (crumb) {
-            // TODO: handle crubme && restCrumbs.length === 0
-            const nextZipper = {...zipper, path: restCrumbs};
-            nodes.push(typesetFocus(crumb.focus, nextZipper, context));
-        }
-
-        for (const child of row.right) {
-            nodes.push(_typeset(child, context));
-        }
+        nodes.push(..._typesetChildren(row.left, context));
+        const nextZipper = {...zipper, path: restCrumbs};
+        nodes.push(typesetFocus(crumb.focus, nextZipper, context));
+        nodes.push(..._typesetChildren(row.right, context, crumb.focus));
 
         const box = Layout.hpackNat([nodes]);
         box.id = row.id;
@@ -227,8 +206,12 @@ const _typesetZipper = (
     } else {
         const row = zipper.row;
 
-        const left = row.left.map((child) => _typeset(child, context));
-        const right = row.right.map((child) => _typeset(child, context));
+        const left = _typesetChildren(row.left, context);
+        const right = _typesetChildren(
+            row.right,
+            context,
+            row.left[row.left.length - 1],
+        );
 
         const box = Layout.hpackNat([left, right]);
         box.id = row.id;
