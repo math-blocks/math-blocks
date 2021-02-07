@@ -1,3 +1,5 @@
+import {getId} from "@math-blocks/core";
+
 import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits} from "./types";
 import * as types from "../types";
 
@@ -202,3 +204,10 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
         children: [...zrow.left, ...zrow.right],
     };
 };
+
+export const newZRow = (): ZRow => ({
+    id: getId(),
+    type: "zrow",
+    left: [],
+    right: [],
+});

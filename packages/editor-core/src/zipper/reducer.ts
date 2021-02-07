@@ -2,6 +2,9 @@ import {backspace} from "./backspace";
 import {insertChar} from "./insert-char";
 import {moveLeft} from "./move-left";
 import {moveRight} from "./move-right";
+import {root} from "./root";
+import {subsup} from "./subsup";
+
 import {Zipper} from "./types";
 
 export type State = Zipper;
@@ -33,6 +36,16 @@ export const zipperReducer = (
         }
         case "Backspace": {
             return backspace(state);
+        }
+        case "^": {
+            return subsup(state, "right");
+        }
+        case "_": {
+            return subsup(state, "left");
+        }
+        // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
+        case "\u221A": {
+            return root(state, false);
         }
         // We don't handle any other actions yet so ignore them and return the
         // current state.
