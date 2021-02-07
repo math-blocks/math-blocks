@@ -13,12 +13,21 @@ const startingValue = Editor.builders.row([
     Editor.builders.frac(
         [Editor.builders.glyph("1")],
         [
-            Editor.builders.glyph("x"),
-            Editor.builders.glyph("+"),
-            Editor.builders.frac(
-                [Editor.builders.glyph("1")],
-                [Editor.builders.glyph("x")],
-            ),
+            Editor.builders.root(null, [
+                Editor.builders.glyph("x"),
+                Editor.builders.subsup(undefined, [Editor.builders.glyph("2")]),
+                Editor.builders.glyph("+"),
+                Editor.builders.frac(
+                    [Editor.builders.glyph("1")],
+                    [
+                        Editor.builders.glyph("a"),
+                        Editor.builders.subsup(
+                            [Editor.builders.glyph("n")],
+                            undefined,
+                        ),
+                    ],
+                ),
+            ]),
         ],
     ),
     Editor.builders.glyph("\u2212"),
