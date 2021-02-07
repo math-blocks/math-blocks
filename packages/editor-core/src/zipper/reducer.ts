@@ -15,6 +15,7 @@ const initialState: State = {
         type: "zrow",
         id: 0,
         left: [],
+        selection: [],
         right: [],
     },
     path: [],
@@ -30,10 +31,10 @@ export const zipperReducer = (
 ): State => {
     switch (action.type) {
         case "ArrowLeft": {
-            return moveLeft(state);
+            return moveLeft(state, !!action.shift);
         }
         case "ArrowRight": {
-            return moveRight(state);
+            return moveRight(state, !!action.shift);
         }
         case "Backspace": {
             return backspace(state);

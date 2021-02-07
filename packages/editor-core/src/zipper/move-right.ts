@@ -4,15 +4,39 @@ import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 
-export const moveRight = (zipper: Zipper): Zipper => {
+export const moveRight = (zipper: Zipper, selecting: boolean): Zipper => {
     // the only time we ever have to deal with zipper.path is when we get to
     // the end of zipper.row
     const {row: currentRow, path} = zipper;
 
-    const {left, right} = currentRow;
+    const {left, selection, right} = currentRow;
 
     if (right.length > 0) {
         const next = right[0]; // right.head
+
+        // widen selection to the right
+        if (selecting) {
+            return {
+                ...zipper,
+                row: {
+                    ...currentRow,
+                    selection: [...selection, next],
+                    right: right.slice(1),
+                },
+            };
+        }
+
+        // exit the selection to the right
+        if (selection.length > 0) {
+            return {
+                ...zipper,
+                row: {
+                    ...currentRow,
+                    left: [...left, ...selection],
+                    selection: [],
+                },
+            };
+        }
 
         // move right
         if (next.type === "atom") {
@@ -119,6 +143,19 @@ export const moveRight = (zipper: Zipper): Zipper => {
             default:
                 throw new UnreachableCaseError(focus);
         }
+    }
+
+    // TODO: dedupe with above
+    // exit the selection to the right
+    if (!selecting && selection.length > 0) {
+        return {
+            ...zipper,
+            row: {
+                ...currentRow,
+                left: [...left, ...selection],
+                selection: [],
+            },
+        };
     }
 
     return zipper;

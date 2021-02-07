@@ -603,13 +603,18 @@ const _typesetZipper = (
         const row = zipper.row;
 
         const left = _typesetChildren(row.left, context);
-        const right = _typesetChildren(
-            row.right,
+        const selection = _typesetChildren(
+            row.selection,
             context,
             row.left[row.left.length - 1],
         );
+        const prevLastChild =
+            row.selection.length > 0
+                ? row.selection[row.selection.length - 1]
+                : row.left[row.left.length - 1];
+        const right = _typesetChildren(row.right, context, prevLastChild);
 
-        const box = Layout.hpackNat([left, right]);
+        const box = Layout.hpackNat([left, selection, right]);
         box.id = row.id;
         box.color = context?.colorMap?.get(box.id);
 

@@ -4,6 +4,7 @@ export type ZRow = {
     id: number;
     type: "zrow";
     left: types.Node[];
+    selection: types.Node[];
     right: types.Node[];
 };
 

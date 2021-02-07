@@ -41,6 +41,7 @@ const zipper: Editor.Zipper = {
         id: startingValue.id,
         type: "zrow",
         left: [],
+        selection: [],
         right: startingValue.children,
     },
 };

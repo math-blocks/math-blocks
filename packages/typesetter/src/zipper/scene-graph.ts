@@ -129,16 +129,21 @@ const processHBox = ({
 
     // set up arrays to track state of each cancel region being processed
     const cancelBoxes: Rect[][] = currentCancelRegions.map(() => []);
+    const selectionBoxes: Rect[] = [];
 
     const editorLayer: Node[] = [];
     const nonEditorLayer: Node[] = [];
     const belowLayer: Node[] = [];
     const aboveLayer: Node[] = [];
 
+    const hasSelection = box.content.length === 3 && box.content[1].length > 0;
+
     box.content.forEach((section, index) => {
+        const isSelection = hasSelection && index === 1;
+
         // There should only be two sections max.  If there are two sections
         // then we should draw a cursor in between the two of them.
-        if (index === 1) {
+        if (index === 1 && !hasSelection) {
             // Draw the cursor.
             belowLayer.push({
                 type: "rect",
@@ -183,6 +188,26 @@ const processHBox = ({
                 }
             });
 
+            if (isSelection) {
+                const yMin = -Math.max(
+                    Layout.getHeight(node),
+                    64 * 0.85 * multiplier,
+                );
+
+                const height = Math.max(
+                    Layout.getHeight(node) + Layout.getDepth(node),
+                    64 * multiplier,
+                );
+
+                selectionBoxes.push({
+                    type: "rect",
+                    x: pen.x,
+                    y: yMin,
+                    width: Layout.getWidth(node),
+                    height: height,
+                });
+            }
+
             const advance = Layout.getWidth(node);
 
             switch (node.type) {
@@ -221,6 +246,14 @@ const processHBox = ({
             y1: box.y,
             x2: box.x,
             y2: box.y + box.height,
+        });
+    }
+
+    // Draw the selection.
+    for (const selectionBox of selectionBoxes) {
+        belowLayer.unshift({
+            ...selectionBox,
+            fill: "rgba(0,64,255,0.3)",
         });
     }
 
