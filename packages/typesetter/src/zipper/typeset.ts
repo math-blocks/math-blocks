@@ -546,6 +546,7 @@ const _typesetChildren = (
         prevChild = index > 0 ? children[index - 1] : prevChild;
 
         if (child.type === "atom") {
+            // TODO: Create a separate function for typesetting glyphs
             const glyph = _typeset(child, context);
             const {value} = child;
             const unary =
@@ -560,8 +561,16 @@ const _typesetChildren = (
                 !unary &&
                 /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
             ) {
-                return withOperatorPadding(glyph, context);
+                const box = context.cramped
+                    ? glyph
+                    : withOperatorPadding(glyph, context);
+                box.id = child.id;
+                return box;
             } else {
+                glyph.id = child.id;
+                if (glyph.type === "Glyph") {
+                    glyph.pending = child.value.pending;
+                }
                 return glyph;
             }
         } else {

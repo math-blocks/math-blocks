@@ -6,34 +6,34 @@ import * as Editor from "@math-blocks/editor-core";
 
 // import EditingPanel from "./editing-panel";
 
-// const startingValue = Editor.util.row("2x+5=10");
-const startingValue = Editor.builders.row([
-    Editor.builders.glyph("2"),
-    Editor.builders.glyph("+"),
-    Editor.builders.frac(
-        [Editor.builders.glyph("1")],
-        [
-            Editor.builders.root(null, [
-                Editor.builders.glyph("x"),
-                Editor.builders.subsup(undefined, [Editor.builders.glyph("2")]),
-                Editor.builders.glyph("+"),
-                Editor.builders.frac(
-                    [Editor.builders.glyph("1")],
-                    [
-                        Editor.builders.glyph("a"),
-                        Editor.builders.subsup(
-                            [Editor.builders.glyph("n")],
-                            undefined,
-                        ),
-                    ],
-                ),
-            ]),
-        ],
-    ),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("y"),
-]);
+const startingValue = Editor.util.row("2x+5=10");
+// const startingValue = Editor.builders.row([
+//     Editor.builders.glyph("2"),
+//     Editor.builders.glyph("+"),
+//     Editor.builders.frac(
+//         [Editor.builders.glyph("1")],
+//         [
+//             Editor.builders.root(null, [
+//                 Editor.builders.glyph("x"),
+//                 Editor.builders.subsup(undefined, [Editor.builders.glyph("2")]),
+//                 Editor.builders.glyph("+"),
+//                 Editor.builders.frac(
+//                     [Editor.builders.glyph("1")],
+//                     [
+//                         Editor.builders.glyph("a"),
+//                         Editor.builders.subsup(
+//                             [Editor.builders.glyph("n")],
+//                             undefined,
+//                         ),
+//                     ],
+//                 ),
+//             ]),
+//         ],
+//     ),
+//     Editor.builders.glyph("\u2212"),
+//     Editor.builders.glyph("\u2212"),
+//     Editor.builders.glyph("y"),
+// ]);
 
 const zipper: Editor.Zipper = {
     path: [],
