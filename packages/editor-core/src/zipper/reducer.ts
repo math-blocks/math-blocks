@@ -1,3 +1,5 @@
+import {backspace} from "./backspace";
+import {insertChar} from "./insert-char";
 import {moveLeft} from "./move-left";
 import {moveRight} from "./move-right";
 import {Zipper} from "./types";
@@ -29,9 +31,21 @@ export const zipperReducer = (
         case "ArrowRight": {
             return moveRight(state);
         }
+        case "Backspace": {
+            return backspace(state);
+        }
         // We don't handle any other actions yet so ignore them and return the
         // current state.
         default: {
+            if (action.type.length === 1 && action.type.charCodeAt(0) >= 32) {
+                let char = action.type;
+                if (char === "*") {
+                    char = "\u00B7";
+                } else if (char === "-") {
+                    char = "\u2212";
+                }
+                return insertChar(state, char);
+            }
             return state;
         }
     }
