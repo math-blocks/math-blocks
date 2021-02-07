@@ -1,50 +1,47 @@
 import * as builders from "../builders";
 
 import {Zipper} from "./types";
+import {Node} from "../types";
+
+const isPending = (node: Node | undefined, char: string): boolean => {
+    return Boolean(
+        node?.type === "atom" && node.value.char === char && node.value.pending,
+    );
+};
 
 export const parens = (zipper: Zipper, dir: "left" | "right"): Zipper => {
-    const leftParen = builders.glyph("(");
-    const rightParen = builders.glyph(")");
-
     const {left, right} = zipper.row;
 
     // TODO: iterate over all of the glyphs in the row to ensure that we're
     // removing the correct matching paren.
     // Get rid of matching pending paren when inserting a matching paren for real.
-    if (dir === "right") {
-        const last = right[right.length - 1];
-        if (
-            last &&
-            last.type === "atom" &&
-            last.value.char === ")" &&
-            last.value.pending
-        ) {
+    if (dir === "left") {
+        const first = left[0];
+        if (isPending(first, "(")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left, rightParen],
-                    right: right.slice(0, -1),
+                    left: [...left.slice(1), builders.glyph("(")],
                 },
             };
         }
     } else {
-        const first = left[0];
-        if (
-            first &&
-            first.type === "atom" &&
-            first.value.char === "(" &&
-            first.value.pending
-        ) {
+        const last = right[right.length - 1];
+        if (isPending(last, ")")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left.slice(1), leftParen],
+                    left: [...left, builders.glyph(")")],
+                    right: right.slice(0, -1),
                 },
             };
         }
     }
+
+    const leftParen = builders.glyph("(");
+    const rightParen = builders.glyph(")");
 
     if (dir === "left") {
         rightParen.value.pending = true;

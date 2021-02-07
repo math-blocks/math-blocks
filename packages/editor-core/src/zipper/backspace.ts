@@ -10,6 +10,8 @@ export const backspace = (zipper: Zipper): Zipper => {
         // 1 + [2 + 3] + 4 -> 1 + [(2 + 3] + 4 -> 1 + [(2 + 3)] + 4
         // If we're deleting a paren, then delete the matching pending paren
         // if there is one.
+        // TODO: when deleting one paren, make the matching paren pending if it
+        // wasn't already so.
         if (prev.type === "atom") {
             if (prev.value.char === "(") {
                 const last = right[right.length - 1];
