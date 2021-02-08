@@ -7,6 +7,7 @@ const newZRow = (): ZRow => ({
     id: getId(),
     type: "zrow",
     left: [],
+    selection: null,
     right: [],
 });
 

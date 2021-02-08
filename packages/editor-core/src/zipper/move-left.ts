@@ -4,7 +4,7 @@ import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 
-export const moveLeft = (zipper: Zipper, selecting: boolean): Zipper => {
+export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
     // the only time we ever have to deal with zipper.path is when we get to
     // the end of zipper.row
     const {row: currentRow, path} = zipper;

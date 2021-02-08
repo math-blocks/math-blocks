@@ -8,6 +8,7 @@ export const startRow = (row: types.Row): ZRow => {
         id: row.id,
         type: "zrow",
         left: [], // we're at the start because there are no nodes to the left
+        selection: null,
         right: row.children,
     };
 };
@@ -17,6 +18,7 @@ export const endRow = (row: types.Row): ZRow => {
         id: row.id,
         type: "zrow",
         left: row.children,
+        selection: null,
         right: [], // we're at the end because there are no nodes to the right
     };
 };
@@ -209,5 +211,6 @@ export const newZRow = (): ZRow => ({
     id: getId(),
     type: "zrow",
     left: [],
+    selection: null,
     right: [],
 });
