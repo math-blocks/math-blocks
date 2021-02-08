@@ -7,7 +7,7 @@ export type Row<A, C> = C & {
 
 export type SubSup<A, C> = C & {
     type: "subsup";
-    children: readonly [Row<A, C> | null, Row<A, C> | null]; // sub, sup
+    children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
 };
 
 export type Limits<A, C> = C & {
@@ -23,9 +23,7 @@ export type Frac<A, C> = C & {
 
 export type Root<A, C> = C & {
     type: "root";
-    // TODO: reverse the order so that we can enter the index from the left
-    // when there is one
-    children: readonly [Row<A, C> | null, Row<A, C>]; // radicand, index
+    children: readonly [Row<A, C> | null, Row<A, C>]; // index, radicand
 };
 
 export type Atom<A, C> = C & {
