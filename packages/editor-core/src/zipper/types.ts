@@ -1,10 +1,15 @@
 import * as types from "../types";
 
+type Selection = {
+    dir: "left" | "right";
+    nodes: types.Node[];
+};
+
 export type ZRow = {
     id: number;
     type: "zrow";
     left: types.Node[];
-    selection: types.Node[];
+    selection: Selection | null;
     right: types.Node[];
 };
 

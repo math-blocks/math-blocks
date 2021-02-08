@@ -15,7 +15,7 @@ const initialState: State = {
         type: "zrow",
         id: 0,
         left: [],
-        selection: [],
+        selection: null,
         right: [],
     },
     path: [],

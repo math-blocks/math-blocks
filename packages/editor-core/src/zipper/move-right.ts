@@ -16,24 +16,62 @@ export const moveRight = (zipper: Zipper, selecting: boolean): Zipper => {
 
         // widen selection to the right
         if (selecting) {
-            return {
-                ...zipper,
-                row: {
-                    ...currentRow,
-                    selection: [...selection, next],
-                    right: right.slice(1),
-                },
-            };
+            if (selection) {
+                if (selection.dir === "right") {
+                    // widen the selection
+                    return {
+                        ...zipper,
+                        row: {
+                            ...currentRow,
+                            selection: {
+                                ...selection,
+                                nodes: [...selection.nodes, next],
+                            },
+                            right: right.slice(1),
+                        },
+                    };
+                } else {
+                    // narrow the selection
+                    const newNodes = selection.nodes.slice(1);
+                    return {
+                        ...zipper,
+                        row: {
+                            ...currentRow,
+                            selection:
+                                newNodes.length > 0
+                                    ? {
+                                          ...selection,
+                                          nodes: newNodes,
+                                      }
+                                    : null,
+                            left: [...left, selection.nodes[0]],
+                        },
+                    };
+                }
+            } else {
+                // start the selection
+                return {
+                    ...zipper,
+                    row: {
+                        ...currentRow,
+                        selection: {
+                            dir: "right",
+                            nodes: [next],
+                        },
+                        right: right.slice(1),
+                    },
+                };
+            }
         }
 
         // exit the selection to the right
-        if (selection.length > 0) {
+        if (selection && selection.nodes.length > 0) {
             return {
                 ...zipper,
                 row: {
                     ...currentRow,
-                    left: [...left, ...selection],
-                    selection: [],
+                    left: [...left, ...selection.nodes],
+                    selection: null,
                 },
             };
         }
@@ -147,13 +185,13 @@ export const moveRight = (zipper: Zipper, selecting: boolean): Zipper => {
 
     // TODO: dedupe with above
     // exit the selection to the right
-    if (!selecting && selection.length > 0) {
+    if (!selecting && selection && selection.nodes.length > 0) {
         return {
             ...zipper,
             row: {
                 ...currentRow,
-                left: [...left, ...selection],
-                selection: [],
+                left: [...left, ...selection.nodes],
+                selection: null,
             },
         };
     }

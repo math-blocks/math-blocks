@@ -14,26 +14,66 @@ export const moveLeft = (zipper: Zipper, selecting: boolean): Zipper => {
     if (left.length > 0) {
         const prev = left[left.length - 1];
 
-        // widen selection to the left
         if (selecting) {
-            return {
-                ...zipper,
-                row: {
-                    ...currentRow,
-                    left: left.slice(0, -1),
-                    selection: [prev, ...selection],
-                },
-            };
+            if (selection) {
+                if (selection.dir === "left") {
+                    // widen the selection
+                    return {
+                        ...zipper,
+                        row: {
+                            ...currentRow,
+                            left: left.slice(0, -1),
+                            selection: {
+                                ...selection,
+                                nodes: [prev, ...selection.nodes],
+                            },
+                        },
+                    };
+                } else {
+                    // narrow the selection
+                    const newNodes = selection.nodes.slice(0, -1);
+                    return {
+                        ...zipper,
+                        row: {
+                            ...currentRow,
+                            selection:
+                                newNodes.length > 0
+                                    ? {
+                                          ...selection,
+                                          nodes: newNodes,
+                                      }
+                                    : null,
+                            right: [
+                                selection.nodes[selection.nodes.length - 1],
+                                ...right,
+                            ],
+                        },
+                    };
+                }
+            } else {
+                // start the selection
+                return {
+                    ...zipper,
+                    row: {
+                        ...currentRow,
+                        left: left.slice(0, -1),
+                        selection: {
+                            dir: "left",
+                            nodes: [prev],
+                        },
+                    },
+                };
+            }
         }
 
         // exit the selection to the left
-        if (selection.length > 0) {
+        if (selection && selection.nodes.length > 0) {
             return {
                 ...zipper,
                 row: {
                     ...currentRow,
-                    selection: [],
-                    right: [...selection, ...right],
+                    selection: null,
+                    right: [...selection.nodes, ...right],
                 },
             };
         }
@@ -153,13 +193,13 @@ export const moveLeft = (zipper: Zipper, selecting: boolean): Zipper => {
 
     // TODO: dedupe with above
     // exit the selection to the left
-    if (!selecting && selection.length > 0) {
+    if (!selecting && selection && selection.nodes.length > 0) {
         return {
             ...zipper,
             row: {
                 ...currentRow,
-                selection: [],
-                right: [...selection, ...right],
+                selection: null,
+                right: [...selection.nodes, ...right],
             },
         };
     }
