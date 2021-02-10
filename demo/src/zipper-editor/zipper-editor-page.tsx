@@ -6,7 +6,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 // import EditingPanel from "./editing-panel";
 
-const startingValue = Editor.util.row("2x+5=10");
+// const startingValue = Editor.util.row("2x+5=10");
 // const startingValue = Editor.builders.row([
 //     Editor.builders.glyph("2"),
 //     Editor.builders.glyph("+"),
@@ -34,6 +34,21 @@ const startingValue = Editor.util.row("2x+5=10");
 //     Editor.builders.glyph("\u2212"),
 //     Editor.builders.glyph("y"),
 // ]);
+const startingValue = Editor.builders.row([
+    Editor.builders.glyph("2"),
+    Editor.builders.glyph("+"),
+    Editor.builders.frac(
+        [
+            Editor.builders.glyph("x"),
+            Editor.builders.glyph("+"),
+            Editor.builders.glyph("1"),
+        ],
+        [Editor.builders.glyph("1")],
+    ),
+    Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("y"),
+]);
 
 const zipper: Editor.Zipper = {
     path: [],

@@ -587,18 +587,55 @@ const _typesetZipper = (
 
     if (crumb) {
         const row = crumb.row;
-        const nodes: Layout.Node[] = [];
 
-        nodes.push(..._typesetChildren(row.left, context));
-        const nextZipper = {...zipper, path: restCrumbs};
-        nodes.push(typesetFocus(crumb.focus, nextZipper, context));
-        nodes.push(..._typesetChildren(row.right, context, crumb.focus));
+        if (row.selection) {
+            const left = _typesetChildren(row.left, context);
+            const nextZipper = {...zipper, path: restCrumbs};
+            const selection =
+                row.selection.dir === "left"
+                    ? [
+                          ..._typesetChildren(
+                              row.selection.nodes,
+                              context,
+                              row.left[row.left.length - 1],
+                          ),
+                          typesetFocus(crumb.focus, nextZipper, context),
+                      ]
+                    : [
+                          typesetFocus(crumb.focus, nextZipper, context),
+                          ..._typesetChildren(
+                              row.selection.nodes,
+                              context,
+                              crumb.focus,
+                          ),
+                      ];
+            const right = _typesetChildren(
+                row.right,
+                context,
+                row.selection.dir === "left" || row.selection.nodes.length === 0
+                    ? crumb.focus
+                    : row.selection.nodes[row.selection.nodes.length - 1],
+            );
 
-        const box = Layout.hpackNat([nodes]);
-        box.id = row.id;
-        box.color = context?.colorMap?.get(box.id);
+            const box = Layout.hpackNat([left, selection, right]);
+            box.id = row.id;
+            box.color = context?.colorMap?.get(box.id);
 
-        return box;
+            return box;
+        } else {
+            const nodes: Layout.Node[] = [];
+
+            nodes.push(..._typesetChildren(row.left, context));
+            const nextZipper = {...zipper, path: restCrumbs};
+            nodes.push(typesetFocus(crumb.focus, nextZipper, context));
+            nodes.push(..._typesetChildren(row.right, context, crumb.focus));
+
+            const box = Layout.hpackNat([nodes]);
+            box.id = row.id;
+            box.color = context?.colorMap?.get(box.id);
+
+            return box;
+        }
     } else {
         const row = zipper.row;
 
