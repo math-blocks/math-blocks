@@ -4,65 +4,13 @@ import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 
-export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
-    // the only time we ever have to deal with zipper.path is when we get to
-    // the end of zipper.row
+const cursorRight = (zipper: Zipper): Zipper => {
     const {row: currentRow, path} = zipper;
 
     const {left, selection, right} = currentRow;
 
     if (right.length > 0) {
         const next = right[0]; // right.head
-
-        // widen selection to the right
-        if (selecting) {
-            if (selection) {
-                if (selection.dir === "right") {
-                    // widen the selection
-                    return {
-                        ...zipper,
-                        row: {
-                            ...currentRow,
-                            selection: {
-                                ...selection,
-                                nodes: [...selection.nodes, next],
-                            },
-                            right: right.slice(1),
-                        },
-                    };
-                } else {
-                    // narrow the selection
-                    const newNodes = selection.nodes.slice(1);
-                    return {
-                        ...zipper,
-                        row: {
-                            ...currentRow,
-                            selection:
-                                newNodes.length > 0
-                                    ? {
-                                          ...selection,
-                                          nodes: newNodes,
-                                      }
-                                    : null,
-                            left: [...left, selection.nodes[0]],
-                        },
-                    };
-                }
-            } else {
-                // start the selection
-                return {
-                    ...zipper,
-                    row: {
-                        ...currentRow,
-                        selection: {
-                            dir: "right",
-                            nodes: [next],
-                        },
-                        right: right.slice(1),
-                    },
-                };
-            }
-        }
 
         // exit the selection to the right
         if (selection && selection.nodes.length > 0) {
@@ -139,38 +87,6 @@ export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
     if (path.length > 0) {
         const {focus, row: parentRow} = path[path.length - 1];
 
-        if (selecting) {
-            // TODO: handle if selection.dir === "left"
-            // TODO: check if (left.length === 0) and if it is, go up a level
-
-            const {selection, right} = parentRow;
-            const next = right[0];
-
-            return {
-                row: currentRow,
-                path: [
-                    ...path.slice(0, -1),
-                    {
-                        focus: focus,
-                        row: {
-                            ...parentRow,
-                            selection:
-                                selection === null
-                                    ? {
-                                          dir: "right",
-                                          nodes: [next],
-                                      }
-                                    : {
-                                          ...selection,
-                                          nodes: [...selection.nodes, next],
-                                      },
-                            right: right.slice(1),
-                        },
-                    },
-                ],
-            };
-        }
-
         const exitedRow: types.Row = util.zrowToRow(currentRow);
 
         const focusRight = (row: types.Row): Zipper => ({
@@ -218,7 +134,7 @@ export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
 
     // TODO: dedupe with above
     // exit the selection to the right
-    if (!selecting && selection && selection.nodes.length > 0) {
+    if (selection && selection.nodes.length > 0) {
         return {
             ...zipper,
             row: {
@@ -230,4 +146,110 @@ export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
     }
 
     return zipper;
+};
+
+const selectionRight = (zipper: Zipper): Zipper => {
+    // Cases to handle:
+    // - start a selection
+    // - expand a selection (possibly moving out to a yet to be selected focus)
+    // - contract a selection (possible moving in to an already selected focus)
+
+    const {row: currentRow, path} = zipper;
+
+    const {left, selection, right} = currentRow;
+
+    if (right.length > 0) {
+        const next = right[0]; // right.head
+
+        // widen selection to the right
+        if (selection) {
+            if (selection.dir === "right") {
+                // widen the selection
+                return {
+                    ...zipper,
+                    row: {
+                        ...currentRow,
+                        selection: {
+                            ...selection,
+                            nodes: [...selection.nodes, next],
+                        },
+                        right: right.slice(1),
+                    },
+                };
+            } else {
+                // narrow the selection
+                const newNodes = selection.nodes.slice(1);
+                return {
+                    ...zipper,
+                    row: {
+                        ...currentRow,
+                        selection:
+                            newNodes.length > 0
+                                ? {
+                                      ...selection,
+                                      nodes: newNodes,
+                                  }
+                                : null,
+                        left: [...left, selection.nodes[0]],
+                    },
+                };
+            }
+        } else {
+            // start the selection
+            return {
+                ...zipper,
+                row: {
+                    ...currentRow,
+                    selection: {
+                        dir: "right",
+                        nodes: [next],
+                    },
+                    right: right.slice(1),
+                },
+            };
+        }
+
+        // fallback behavior
+        return zipper;
+    }
+
+    if (path.length > 0) {
+        const {focus, row: parentRow} = path[path.length - 1];
+
+        // TODO: handle if selection.dir === "left"
+        // TODO: check if (left.length === 0) and if it is, go up a level
+
+        const {selection, right} = parentRow;
+        const next = right[0];
+
+        return {
+            row: currentRow,
+            path: [
+                ...path.slice(0, -1),
+                {
+                    focus: focus,
+                    row: {
+                        ...parentRow,
+                        selection:
+                            selection === null
+                                ? {
+                                      dir: "right",
+                                      nodes: [next],
+                                  }
+                                : {
+                                      ...selection,
+                                      nodes: [...selection.nodes, next],
+                                  },
+                        right: right.slice(1),
+                    },
+                },
+            ],
+        };
+    }
+
+    return zipper;
+};
+
+export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
+    return selecting ? selectionRight(zipper) : cursorRight(zipper);
 };
