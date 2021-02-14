@@ -1,8 +1,9 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Breadcrumb, Focus, Zipper, ZRow} from "./types";
+import {Breadcrumb, Focus, Zipper} from "./types";
 import * as types from "../types";
 import * as util from "./util";
+import {crumbMoveRight, startSelection, stopSelection} from "./selection-util";
 
 const replaceItem = <T>(
     items: T[] | TwoOrMore<T>,
@@ -17,22 +18,55 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
     const {left, selection, right} = currentRow;
 
-    // TODO: handle dropping a selection
-
-    if (right.length > 0) {
-        const next = right[0]; // right.head
-
-        // exit the selection to the right
-        if (selection && selection.nodes.length > 0) {
+    if (selection) {
+        // TODO: handle dropping a selection from one of the breadcrumbs
+        const index = path.findIndex((crumb) => crumb.row.selection !== null);
+        if (index !== -1) {
+            const topCrumb = zipper.path[zipper.path.length - 1];
+            const restCrumbs = zipper.path.slice(0, -1);
+            const unfocusedNode = util.focusToNode(
+                topCrumb.focus,
+                util.zrowToRow(zipper.row),
+            );
+            // we have to work our way down from the top.
             return {
                 ...zipper,
                 row: {
-                    ...currentRow,
-                    left: [...left, ...selection.nodes],
+                    id: topCrumb.row.id,
+                    type: "zrow",
+                    left:
+                        selection.dir === "right"
+                            ? [
+                                  ...topCrumb.row.left,
+                                  unfocusedNode,
+                                  // selection to the right of the focus node
+                                  ...(topCrumb.row.selection?.nodes || []),
+                              ]
+                            : [
+                                  ...topCrumb.row.left,
+                                  // selection to the left of the focus node
+                                  ...(topCrumb.row.selection?.nodes || []),
+                                  unfocusedNode,
+                              ],
                     selection: null,
+                    right: topCrumb.row.right,
                 },
+                path: restCrumbs,
             };
         }
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: [...left, ...selection.nodes],
+                selection: null,
+            },
+        };
+    }
+
+    if (right.length > 0) {
+        const next = right[0]; // right.head
 
         // move right
         if (next.type === "atom") {
@@ -142,76 +176,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
         }
     }
 
-    // TODO: dedupe with above
-    // exit the selection to the right
-    if (selection && selection.nodes.length > 0) {
-        return {
-            ...zipper,
-            row: {
-                ...currentRow,
-                left: [...left, ...selection.nodes],
-                selection: null,
-            },
-        };
-    }
-
     return zipper;
-};
-
-const startSelection = <T extends {row: ZRow}>(
-    crumb: T,
-    dir: "left" | "right",
-): T => {
-    return {
-        ...crumb,
-        row: {
-            ...crumb.row,
-            selection: {
-                dir: dir,
-                nodes: [],
-            },
-        },
-    };
-};
-
-const crumbMoveRight = <T extends {row: ZRow}>(crumb: T): T => {
-    const {row} = crumb;
-    const {left, selection, right} = row;
-    // TODO: bounds check
-    const next = right[0];
-
-    if (!selection) {
-        return crumb;
-    }
-
-    if (selection.dir === "right") {
-        return {
-            ...crumb,
-            row: {
-                ...row,
-                selection: {
-                    ...selection,
-                    nodes: [...selection.nodes, next],
-                },
-                right: right.slice(1),
-            },
-        };
-    } else {
-        // TODO: bounds check
-        const prev = selection.nodes[0];
-
-        return {
-            ...crumb,
-            row: {
-                ...row,
-                left: [...left, prev],
-                selection: {
-                    ...selection,
-                    nodes: selection.nodes.slice(1),
-                },
-            },
-        };
-    }
 };
 
 const selectionRight = (zipper: Zipper): Zipper => {
@@ -273,13 +238,7 @@ const selectionRight = (zipper: Zipper): Zipper => {
                 const result = crumbMoveRight(zipper);
                 if (result.row.selection?.nodes.length === 0) {
                     // we're back at original cursor position, stop selecting
-                    return {
-                        ...result,
-                        row: {
-                            ...result.row,
-                            selection: null,
-                        },
-                    };
+                    return stopSelection(result);
                 } else {
                     return result;
                 }
@@ -287,13 +246,8 @@ const selectionRight = (zipper: Zipper): Zipper => {
                 // This should never happen since we drop the selection if the
                 // number of nodes reaches 0.
                 // we're back at original cursor position, stop selecting
-                return {
-                    ...zipper,
-                    row: {
-                        ...currentRow,
-                        selection: null,
-                    },
-                };
+                // This might happen if we started our selection at the edge
+                return stopSelection(zipper);
             }
         } else {
             return zipper;
@@ -335,18 +289,22 @@ const selectionRight = (zipper: Zipper): Zipper => {
                     path: replaceItem(path, updatedCrumb, index),
                 };
             } else {
-                const updatedCrumb: Breadcrumb = {
-                    ...crumb,
-                    row: {
-                        ...crumb.row,
-                        selection: null,
-                    },
-                };
-
-                return {
+                const updatedCrumb: Breadcrumb = stopSelection(crumb);
+                const result = {
                     ...zipper,
                     path: replaceItem(path, updatedCrumb, index),
                 };
+                // If there are no selections in any of the breadcrumbs and the
+                // selection in the result.row is empty then clear the selection
+                // there as well.
+                if (
+                    result.path.every((crumb) => crumb.row.selection === null)
+                ) {
+                    if (result.row.selection?.nodes.length === 0) {
+                        return stopSelection(result);
+                    }
+                }
+                return result;
             }
         } else {
             return zipper;
