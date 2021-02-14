@@ -1,8 +1,16 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Breadcrumb, Focus, Zipper} from "./types";
+import {Breadcrumb, Focus, Zipper, ZRow} from "./types";
 import * as types from "../types";
 import * as util from "./util";
+
+const replaceItem = <T>(
+    items: T[] | TwoOrMore<T>,
+    newItem: T,
+    index: number,
+): T[] => {
+    return [...items.slice(0, index), newItem, ...items.slice(index + 1)];
+};
 
 const cursorRight = (zipper: Zipper): Zipper => {
     const {row: currentRow, path} = zipper;
@@ -148,6 +156,44 @@ const cursorRight = (zipper: Zipper): Zipper => {
     return zipper;
 };
 
+const startSelection = <T extends {row: ZRow}>(
+    crumb: T,
+    dir: "left" | "right",
+): T => {
+    return {
+        ...crumb,
+        row: {
+            ...crumb.row,
+            selection: {
+                dir: dir,
+                nodes: [],
+            },
+        },
+    };
+};
+
+const crumbMoveRight = <T extends {row: ZRow}>(crumb: T): T => {
+    const {row} = crumb;
+    const {selection, right} = row;
+    const next = right[0];
+
+    if (!selection) {
+        return crumb;
+    }
+
+    return {
+        ...crumb,
+        row: {
+            ...row,
+            selection: {
+                ...selection,
+                nodes: [...selection.nodes, next],
+            },
+            right: right.slice(1),
+        },
+    };
+};
+
 const selectionRight = (zipper: Zipper): Zipper => {
     // Cases to handle:
     // - start a selection
@@ -156,98 +202,84 @@ const selectionRight = (zipper: Zipper): Zipper => {
 
     const {row: currentRow, path} = zipper;
 
-    const {left, selection, right} = currentRow;
+    const rowsWithSelections = path
+        .map((crumb) => crumb.row)
+        .filter((row) => row.selection);
+    if (currentRow.selection) {
+        rowsWithSelections.push(currentRow);
+    }
+    rowsWithSelections.reverse();
 
-    if (right.length > 0) {
-        const next = right[0]; // right.head
+    if (rowsWithSelections.length === 0) {
+        const {row} = zipper;
 
-        // widen selection to the right
-        if (selection) {
-            if (selection.dir === "right") {
-                // widen the selection
-                return {
-                    ...zipper,
-                    row: {
-                        ...currentRow,
-                        selection: {
-                            ...selection,
-                            nodes: [...selection.nodes, next],
-                        },
-                        right: right.slice(1),
-                    },
-                };
-            } else {
-                // narrow the selection
-                const newNodes = selection.nodes.slice(1);
-                return {
-                    ...zipper,
-                    row: {
-                        ...currentRow,
-                        selection:
-                            newNodes.length > 0
-                                ? {
-                                      ...selection,
-                                      nodes: newNodes,
-                                  }
-                                : null,
-                        left: [...left, selection.nodes[0]],
-                    },
-                };
-            }
+        // We haven't started selecting anything yet.
+        if (row.right.length > 0) {
+            // Create a new selection to the left and move left.
+            return crumbMoveRight(startSelection(zipper, "right"));
         } else {
-            // start the selection
+            // Create an empty selection and them move outward.
+            const index = zipper.path.length - 1;
+            const crumb = zipper.path[index];
+            const updatedCrumb = startSelection(crumb, "right");
+
             return {
-                ...zipper,
-                row: {
-                    ...currentRow,
-                    selection: {
-                        dir: "right",
-                        nodes: [next],
-                    },
-                    right: right.slice(1),
-                },
+                ...startSelection(zipper, "right"),
+                path: replaceItem(path, updatedCrumb, index),
             };
         }
+    } else if (rowsWithSelections.length === 1) {
+        // our selection is in the current row (top of zipper)
+        const index = 0;
+        const row = rowsWithSelections[index];
+        const {right} = row;
 
-        // fallback behavior
-        return zipper;
+        // TODO: check the direction of the selection
+        if (right.length > 0) {
+            return crumbMoveRight(zipper);
+        } else {
+            const index = zipper.path.length - 1;
+            const crumb = zipper.path[index];
+            const updatedCrumb = startSelection(crumb, "right");
+
+            // move out to start a selection in the parent crumb
+            return {
+                ...zipper,
+                path: replaceItem(path, updatedCrumb, index),
+            };
+        }
+    } else {
+        // our selection is in the one of the breadcrumb rows
+
+        // TODO: check the direction of the selection
+        const index = zipper.path.length - rowsWithSelections.length + 1;
+        const crumb = zipper.path[index];
+        const {row} = crumb;
+
+        if (row.right.length > 0) {
+            // TODO: check the direction of the selection
+            const updatedCrumb = crumbMoveRight(crumb);
+            return {
+                ...zipper,
+                path: replaceItem(path, updatedCrumb, index),
+            };
+        } else {
+            // TODO: check the direction of the selection
+            // move out to start a selection in the parent crumb
+            const index = zipper.path.length - rowsWithSelections.length;
+            if (index < 0) {
+                return zipper;
+            }
+
+            const crumb = zipper.path[index];
+            const updatedCrumb = startSelection(crumb, "right");
+
+            return {
+                ...zipper,
+                path: replaceItem(path, updatedCrumb, index),
+            };
+        }
     }
-
-    if (path.length > 0) {
-        const {focus, row: parentRow} = path[path.length - 1];
-
-        // TODO: handle if selection.dir === "left"
-        // TODO: check if (left.length === 0) and if it is, go up a level
-
-        const {selection, right} = parentRow;
-        const next = right[0];
-
-        return {
-            row: currentRow,
-            path: [
-                ...path.slice(0, -1),
-                {
-                    focus: focus,
-                    row: {
-                        ...parentRow,
-                        selection:
-                            selection === null
-                                ? {
-                                      dir: "right",
-                                      nodes: [next],
-                                  }
-                                : {
-                                      ...selection,
-                                      nodes: [...selection.nodes, next],
-                                  },
-                        right: right.slice(1),
-                    },
-                },
-            ],
-        };
-    }
-
-    return zipper;
 };
 
 export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {

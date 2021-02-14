@@ -35,19 +35,28 @@ import * as Editor from "@math-blocks/editor-core";
 //     Editor.builders.glyph("y"),
 // ]);
 const startingValue = Editor.builders.row([
-    Editor.builders.glyph("2"),
+    Editor.builders.glyph("a"),
     Editor.builders.glyph("+"),
     Editor.builders.frac(
         [
-            Editor.builders.glyph("x"),
+            Editor.builders.glyph("2"),
             Editor.builders.glyph("+"),
-            Editor.builders.glyph("1"),
+            Editor.builders.frac(
+                [
+                    Editor.builders.glyph("x"),
+                    Editor.builders.glyph("+"),
+                    Editor.builders.glyph("1"),
+                ],
+                [Editor.builders.glyph("1")],
+            ),
+            Editor.builders.glyph("\u2212"),
+            Editor.builders.glyph("\u2212"),
+            Editor.builders.glyph("y"),
         ],
         [Editor.builders.glyph("1")],
     ),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("y"),
+    Editor.builders.glyph("-"),
+    Editor.builders.glyph("b"),
 ]);
 
 const zipper: Editor.Zipper = {
@@ -68,7 +77,7 @@ const EditorPage: React.FunctionComponent = () => (
             zipper={zipper}
             focus={true}
             onChange={(value) => {
-                console.log(value);
+                // console.log(value);
             }}
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
