@@ -220,21 +220,15 @@ const crumbMoveLeft = <T extends {row: ZRow}>(crumb: T): T => {
 };
 
 const selectionLeft = (zipper: Zipper): Zipper => {
+    // INVARIANT: selections in crumbs can only exist from last crumb (top) back
+    // to the first crumb (bottom), there can be no gaps either
+
     // Cases to handle:
     // - start a selection
     // - expand a selection (possibly moving out to a yet to be selected focus)
     // - contract a selection (possible moving in to an already selected focus)
 
     const {row: currentRow, path} = zipper;
-
-    // TODO: determine which row we're currently selecting in
-    // - we can do this by look at each row (breadcrumbs + zipper.row) to see
-    //   which have non-empty selection arrays
-    // - once we know which row we're selecting in, we can take the appropriate
-    //   action
-
-    // INVARIANT: selections in crumbs can only exist from last crumb (top) back
-    // to the first crumb (bottom), there can be no gaps either
 
     const rowsWithSelections = path
         .map((crumb) => crumb.row)
@@ -312,7 +306,6 @@ const selectionLeft = (zipper: Zipper): Zipper => {
     } else {
         // our selection is in the one of the breadcrumb rows
 
-        // TODO: check the direction of the selection
         let index = zipper.path.length - rowsWithSelections.length + 1;
         const crumb = zipper.path[index];
         const {row} = crumb;

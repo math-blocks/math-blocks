@@ -215,6 +215,9 @@ const crumbMoveRight = <T extends {row: ZRow}>(crumb: T): T => {
 };
 
 const selectionRight = (zipper: Zipper): Zipper => {
+    // INVARIANT: selections in crumbs can only exist from last crumb (top) back
+    // to the first crumb (bottom), there can be no gaps either
+
     // Cases to handle:
     // - start a selection
     // - expand a selection (possibly moving out to a yet to be selected focus)
@@ -298,21 +301,18 @@ const selectionRight = (zipper: Zipper): Zipper => {
     } else {
         // our selection is in the one of the breadcrumb rows
 
-        // TODO: check the direction of the selection
         const index = zipper.path.length - rowsWithSelections.length + 1;
         const crumb = zipper.path[index];
         const {row} = crumb;
 
         if (row.selection?.dir === "right") {
             if (row.right.length > 0) {
-                // TODO: check the direction of the selection
                 const updatedCrumb = crumbMoveRight(crumb);
                 return {
                     ...zipper,
                     path: replaceItem(path, updatedCrumb, index),
                 };
             } else {
-                // TODO: check the direction of the selection
                 // move out to start a selection in the parent crumb
                 const index = zipper.path.length - rowsWithSelections.length;
                 if (index < 0) {
