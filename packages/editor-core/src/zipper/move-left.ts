@@ -15,45 +15,44 @@ const cursorLeft = (zipper: Zipper): Zipper => {
     if (selection) {
         const index = path.findIndex((crumb) => crumb.row.selection !== null);
 
-        if (index !== -1) {
-            const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
-            // We need to process these from top to bottom (reverse order)
-            topCrumbs.reverse();
-
-            // Collapse each crumb in `topCrumbs` into `row`.
-            const row = topCrumbs.reduce((row, crumb): ZRow => {
-                const unfocusedNode = util.focusToNode(
-                    crumb.focus,
-                    util.zrowToRow(row),
-                );
-                let selectionNodes = crumb.row.selection?.nodes || [];
-                selectionNodes =
-                    selection.dir === "right"
-                        ? [unfocusedNode, ...selectionNodes]
-                        : [...selectionNodes, unfocusedNode];
-                return {
-                    id: crumb.row.id,
-                    type: "zrow",
-                    left: crumb.row.left,
-                    selection: null,
-                    right: [...selectionNodes, ...crumb.row.right],
-                };
-            }, zipper.row);
-
+        // The selection is completely within the `zipper.row`.
+        if (index === -1) {
             return {
                 ...zipper,
-                row: row,
-                path: restCrumbs,
+                row: {
+                    ...zipper.row,
+                    selection: null,
+                    right: [...selection.nodes, ...right],
+                },
             };
         }
 
+        // The selection is in one of the breadcrumbs.
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+        // We need to process these from top to bottom (reverse order)
+        topCrumbs.reverse();
+
+        // Collapse each crumb in `topCrumbs` into `row`.
+        const row = topCrumbs.reduce((row, crumb): ZRow => {
+            const unfocusedNode = util.focusToNode(
+                crumb.focus,
+                util.zrowToRow(row),
+            );
+            const selectionNodes =
+                selection.dir === "right"
+                    ? [unfocusedNode, ...(crumb.row.selection?.nodes || [])]
+                    : [...(crumb.row.selection?.nodes || []), unfocusedNode];
+            return {
+                ...crumb.row,
+                selection: null,
+                right: [...selectionNodes, ...crumb.row.right],
+            };
+        }, zipper.row);
+
         return {
             ...zipper,
-            row: {
-                ...zipper.row,
-                selection: null,
-                right: [...selection.nodes, ...right],
-            },
+            row: row,
+            path: restCrumbs,
         };
     }
 
