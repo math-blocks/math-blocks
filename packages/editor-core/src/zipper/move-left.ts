@@ -1,56 +1,48 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Breadcrumb, Focus, Zipper} from "./types";
+import {Breadcrumb, Focus, Zipper, ZRow} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 import {crumbMoveLeft, startSelection, stopSelection} from "./selection-util";
-
-const replaceItem = <T>(
-    items: T[] | TwoOrMore<T>,
-    newItem: T,
-    index: number,
-): T[] => {
-    return [...items.slice(0, index), newItem, ...items.slice(index + 1)];
-};
+import {replaceItem, splitArrayAt} from "./array-util";
 
 const cursorLeft = (zipper: Zipper): Zipper => {
     const {row: currentRow, path} = zipper;
 
     const {left, selection, right} = currentRow;
 
+    // Exit the selection to the left
     if (selection) {
-        // TODO: handle dropping a selection from one of the breadcrumbs
         const index = path.findIndex((crumb) => crumb.row.selection !== null);
+
         if (index !== -1) {
-            const topCrumb = zipper.path[zipper.path.length - 1];
-            const restCrumbs = zipper.path.slice(0, -1);
-            const unfocusedNode = util.focusToNode(
-                topCrumb.focus,
-                util.zrowToRow(zipper.row),
-            );
-            // we have to work our way down from the top.
+            const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+            // We need to process these from top to bottom (reverse order)
+            topCrumbs.reverse();
+
+            // Collapse each crumb in `topCrumbs` into `row`.
+            const row = topCrumbs.reduce((row, crumb): ZRow => {
+                const unfocusedNode = util.focusToNode(
+                    crumb.focus,
+                    util.zrowToRow(row),
+                );
+                let selectionNodes = crumb.row.selection?.nodes || [];
+                selectionNodes =
+                    selection.dir === "right"
+                        ? [unfocusedNode, ...selectionNodes]
+                        : [...selectionNodes, unfocusedNode];
+                return {
+                    id: crumb.row.id,
+                    type: "zrow",
+                    left: crumb.row.left,
+                    selection: null,
+                    right: [...selectionNodes, ...crumb.row.right],
+                };
+            }, zipper.row);
+
             return {
                 ...zipper,
-                row: {
-                    id: topCrumb.row.id,
-                    type: "zrow",
-                    left: [...topCrumb.row.left],
-                    selection: null,
-                    right:
-                        selection.dir === "left"
-                            ? [
-                                  // selection to the left of the focus node
-                                  ...(topCrumb.row.selection?.nodes || []),
-                                  unfocusedNode,
-                                  ...topCrumb.row.right,
-                              ]
-                            : [
-                                  unfocusedNode,
-                                  // selection to the right of the focus node
-                                  ...(topCrumb.row.selection?.nodes || []),
-                                  ...topCrumb.row.right,
-                              ],
-                },
+                row: row,
                 path: restCrumbs,
             };
         }
