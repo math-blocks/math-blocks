@@ -3,6 +3,8 @@ import * as builders from "../builders";
 import {Zipper} from "./types";
 import {Node} from "../types";
 
+// TODO: write tests
+
 const isPending = (node: Node | undefined, char: string): boolean => {
     return Boolean(
         node?.type === "atom" && node.value.char === char && node.value.pending,
