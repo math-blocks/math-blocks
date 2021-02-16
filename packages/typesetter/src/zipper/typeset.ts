@@ -1,10 +1,11 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor-core";
 
-import {Context} from "../types";
-
 import * as Layout from "./layout";
-import {processBox, Group, Point} from "./scene-graph";
+import {processBox} from "./scene-graph";
+
+import type {Context} from "../types";
+import type {Group, Point} from "./scene-graph";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (

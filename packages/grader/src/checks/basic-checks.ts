@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import type {Step} from "@math-blocks/step-utils";
 
-import {Check, Result, Mistake, Context} from "../types";
+import type {Check, Result, Mistake, Context} from "../types";
 
 export const numberCheck: Check = (prev, next, context): Result | undefined => {
     if (

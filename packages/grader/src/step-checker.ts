@@ -1,16 +1,17 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {
+import {MISTAKE_PRIORITIES} from "./constants";
+import {ALL_CHECKS} from "./all-checks";
+import {first} from "./strategies";
+
+import type {
     IStepChecker,
     Options,
     Context,
     Check,
     Mistake,
     Result,
-    MISTAKE_PRIORITIES,
 } from "./types";
-import {ALL_CHECKS} from "./all-checks";
-import {first} from "./strategies";
 
 const defaultOptions: Options = {
     skipEvalChecker: false,

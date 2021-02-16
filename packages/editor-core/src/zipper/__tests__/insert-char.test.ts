@@ -1,11 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {insertChar} from "../insert-char";
-import {row} from "../test-util";
 import * as builders from "../../builders";
 import * as types from "../../types";
 
-import {Zipper, Dir} from "../types";
+import {insertChar} from "../insert-char";
+import {row} from "../test-util";
+import {Dir} from "../constants";
+import type {Zipper} from "../types";
 
 const toEqualEditorNodes = (
     received: types.Node[],

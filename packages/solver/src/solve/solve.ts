@@ -5,7 +5,7 @@ import {divBothSides} from "./transforms/div-both-sides";
 import {mulBothSides} from "./transforms/mul-both-sides";
 import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
-import {Transform} from "./types";
+import type {Transform} from "./types";
 
 /**
  * Solve an equation for a given variable.

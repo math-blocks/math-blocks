@@ -1,7 +1,8 @@
 import {getId} from "@math-blocks/core";
 
 import * as util from "./util";
-import {Zipper, ZRow, Dir} from "./types";
+import {Dir} from "./constants";
+import {Zipper, ZRow} from "./types";
 
 const newZRow = (): ZRow => ({
     id: getId(),

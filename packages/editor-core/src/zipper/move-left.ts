@@ -1,6 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Breadcrumb, Focus, Zipper, ZRow, ZRowWithSelection, Dir} from "./types";
+import {Dir} from "./constants";
+import type {Breadcrumb, Focus, Zipper, ZRow, ZRowWithSelection} from "./types";
 import * as types from "../types";
 import * as util from "./util";
 import {crumbMoveLeft, startSelection, stopSelection} from "./selection-util";

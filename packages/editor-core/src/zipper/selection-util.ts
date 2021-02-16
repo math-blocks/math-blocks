@@ -1,4 +1,5 @@
-import {ZRow, Dir} from "./types";
+import {Dir} from "./constants";
+import type {ZRow} from "./types";
 
 export const startSelection = <T extends {row: ZRow}>(
     crumb: T,

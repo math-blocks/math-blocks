@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, Correction, Result} from "../types";
 import {MistakeId} from "../enums";
+import type {Check, Correction, Result} from "../types";
 
 import {correctResult} from "./util";
 

@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 import {Step, applySteps} from "@math-blocks/step-utils";
 
-import {Context, Result} from "../types";
+import type {Context, Result} from "../types";
 
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): number[] => {
