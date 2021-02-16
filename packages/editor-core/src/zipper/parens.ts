@@ -1,6 +1,6 @@
 import * as builders from "../builders";
 
-import {Zipper} from "./types";
+import {Zipper, Dir} from "./types";
 import {Node} from "../types";
 
 // TODO: write tests
@@ -11,13 +11,13 @@ const isPending = (node: Node | undefined, char: string): boolean => {
     );
 };
 
-export const parens = (zipper: Zipper, dir: "left" | "right"): Zipper => {
+export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     const {left, right} = zipper.row;
 
     // TODO: iterate over all of the glyphs in the row to ensure that we're
     // removing the correct matching paren.
     // Get rid of matching pending paren when inserting a matching paren for real.
-    if (dir === "left") {
+    if (dir === Dir.Left) {
         const first = left[0];
         if (isPending(first, "(")) {
             return {
@@ -45,7 +45,7 @@ export const parens = (zipper: Zipper, dir: "left" | "right"): Zipper => {
     const leftParen = builders.glyph("(");
     const rightParen = builders.glyph(")");
 
-    if (dir === "left") {
+    if (dir === Dir.Left) {
         rightParen.value.pending = true;
     } else {
         leftParen.value.pending = true;
@@ -54,7 +54,7 @@ export const parens = (zipper: Zipper, dir: "left" | "right"): Zipper => {
     return {
         ...zipper,
         row:
-            dir === "left"
+            dir === Dir.Left
                 ? {
                       ...zipper.row,
                       left: [...left, leftParen],

@@ -4,7 +4,7 @@ import {backspace} from "../backspace";
 import {row} from "../test-util";
 import * as types from "../../types";
 
-import {Zipper} from "../types";
+import {Zipper, Dir} from "../types";
 
 const toEqualEditorNodes = (
     received: types.Node[],
@@ -112,7 +112,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: "left", // the numerator is focused
+                            dir: Dir.Left, // the numerator is focused
                             other: row("3"), // denominator
                         },
                     },
@@ -146,7 +146,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: "right", // the denominator is focused
+                            dir: Dir.Right, // the denominator is focused
                             other: row("2"), // numerator
                         },
                     },
@@ -186,7 +186,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: "left", // the subscript is focused
+                            dir: Dir.Left, // the subscript is focused
                             other: null, // no superscript
                         },
                     },
@@ -220,7 +220,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: "left", // the subscript is focused
+                            dir: Dir.Left, // the subscript is focused
                             other: row("2"), // superscript
                         },
                     },
@@ -254,7 +254,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: "right", // the superscript is focused
+                            dir: Dir.Right, // the superscript is focused
                             other: null, // no subscript
                         },
                     },
@@ -288,7 +288,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: "right", // the superscript is focused
+                            dir: Dir.Right, // the superscript is focused
                             other: row("n"), // subscript
                         },
                     },
@@ -327,7 +327,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: "right", // the radicand is focused
+                            dir: Dir.Right, // the radicand is focused
                             other: null, // no index
                         },
                     },
@@ -361,7 +361,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: "right", // the radicand is focused
+                            dir: Dir.Right, // the radicand is focused
                             other: row("3"), // index
                         },
                     },
@@ -395,7 +395,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: "left", // the index is focused
+                            dir: Dir.Left, // the index is focused
                             other: row("27"), // radicand
                         },
                     },
@@ -434,7 +434,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: "left", // the lower bound is focused
+                            dir: Dir.Left, // the lower bound is focused
                             other: null, // no upper bound
                             inner: row("lim"),
                         },
@@ -469,7 +469,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: "left", // the lower bound is focused
+                            dir: Dir.Left, // the lower bound is focused
                             other: row("n"), // upper bound
                             inner: row("sum"),
                         },
@@ -504,7 +504,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: "right", // the upper bound is focused
+                            dir: Dir.Right, // the upper bound is focused
                             other: row("i=0"), // lower bound
                             inner: row("sum"),
                         },
