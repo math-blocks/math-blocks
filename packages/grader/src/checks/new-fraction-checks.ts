@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 import {getId} from "@math-blocks/core";
 
-import {Check, Result} from "../types";
+import type {Check, Result} from "../types";
 
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";

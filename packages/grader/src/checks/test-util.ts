@@ -3,7 +3,7 @@ import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
 
 import {checkStep as _checkStep} from "../step-checker";
-import {Result, Mistake} from "../types";
+import type {Result, Mistake} from "../types";
 
 export const checkStep = (
     prev: string,

@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {backspace} from "../backspace";
-import {row} from "../test-util";
 import * as types from "../../types";
 
-import {Zipper, Dir} from "../types";
+import {backspace} from "../backspace";
+import {row} from "../test-util";
+import {Dir} from "../enums";
+import type {Zipper} from "../types";
 
 const toEqualEditorNodes = (
     received: types.Node[],

@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Check, Result, Context} from "./types";
+import type {Check, Result, Context} from "./types";
 
 /**
  * Returns a Check that runs all checks until one returns a result.

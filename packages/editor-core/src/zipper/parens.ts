@@ -1,7 +1,9 @@
 import * as builders from "../builders";
 
-import {Zipper, Dir} from "./types";
 import {Node} from "../types";
+
+import {Dir} from "./enums";
+import type {Zipper} from "./types";
 
 // TODO: write tests
 

@@ -2,8 +2,10 @@ import * as Editor from "@math-blocks/editor-core";
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
-import {processBox, Group} from "./scene-graph";
-import {Context, Options} from "./types";
+import {processBox} from "./scene-graph";
+
+import type {Group} from "./scene-graph";
+import type {Context, Options} from "./types";
 
 const DEBUG = typeof jest === "undefined";
 

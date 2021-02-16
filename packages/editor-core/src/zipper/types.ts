@@ -1,9 +1,5 @@
 import * as types from "../types";
-
-export enum Dir {
-    Left = "left",
-    Right = "right",
-}
+import {Dir} from "./enums";
 
 type Selection = {
     dir: Dir;

@@ -1,5 +1,6 @@
-import {Dir, Zipper} from "./types";
+import {Dir} from "./enums";
 import {splitArrayAt} from "./array-util";
+import type {Zipper} from "./types";
 
 export const backspace = (zipper: Zipper): Zipper => {
     const {selection} = zipper.row;

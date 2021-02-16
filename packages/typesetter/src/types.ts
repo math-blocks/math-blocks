@@ -1,5 +1,5 @@
-import {FontMetrics} from "./metrics";
-import {LayoutCursor, Point} from "./scene-graph";
+import type {FontMetrics} from "./metrics";
+import type {LayoutCursor, Point} from "./scene-graph";
 
 export type Context = {
     fontMetrics: FontMetrics;

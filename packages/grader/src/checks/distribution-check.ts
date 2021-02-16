@@ -1,6 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Result, Check} from "../types";
+import type {Result, Check} from "../types";
+
 import {correctResult} from "./util";
 
 const replaceItem = <T>(
