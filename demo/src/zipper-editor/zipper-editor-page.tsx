@@ -62,7 +62,7 @@ const nestedFractions = Editor.builders.row([
 ]);
 
 const zipper: Editor.Zipper = {
-    path: [],
+    breadcrumbs: [],
     row: {
         id: nestedFractions.id,
         type: "zrow",

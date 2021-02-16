@@ -46,7 +46,7 @@ describe("insertChar", () => {
                 selection: null,
                 right: [],
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = insertChar(zipper, "2");
@@ -64,7 +64,7 @@ describe("insertChar", () => {
                 left: [],
                 right: row("+2").children,
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = insertChar(zipper, "1");
@@ -82,7 +82,7 @@ describe("insertChar", () => {
                 selection: null,
                 right: [builders.glyph("2")],
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = insertChar(zipper, "+");
@@ -104,7 +104,7 @@ describe("insertChar", () => {
                     },
                     right: [builders.glyph("2")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = insertChar(zipper, "\u2122");
@@ -125,7 +125,7 @@ describe("insertChar", () => {
                     },
                     right: [],
                 },
-                path: [
+                breadcrumbs: [
                     {
                         focus: {
                             id: 0,
@@ -149,7 +149,7 @@ describe("insertChar", () => {
 
             const result = insertChar(zipper, "2");
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes(row("1+2").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
         });

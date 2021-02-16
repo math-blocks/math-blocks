@@ -8,7 +8,7 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
     const newNode = builders.glyph(char);
 
     if (selection) {
-        const index = zipper.path.findIndex(
+        const index = zipper.breadcrumbs.findIndex(
             (crumb) => crumb.row.selection !== null,
         );
 
@@ -23,7 +23,7 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
             };
         }
 
-        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
 
         return {
             ...zipper,
@@ -32,7 +32,7 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
                 selection: null,
                 left: [...topCrumbs[0].row.left, newNode],
             },
-            path: restCrumbs,
+            breadcrumbs: restCrumbs,
         };
     }
 

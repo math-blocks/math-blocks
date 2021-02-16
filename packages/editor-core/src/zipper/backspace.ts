@@ -5,7 +5,7 @@ export const backspace = (zipper: Zipper): Zipper => {
     const {selection} = zipper.row;
 
     if (selection) {
-        const index = zipper.path.findIndex(
+        const index = zipper.breadcrumbs.findIndex(
             (crumb) => crumb.row.selection !== null,
         );
 
@@ -19,7 +19,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             };
         }
 
-        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
 
         return {
             ...zipper,
@@ -27,7 +27,7 @@ export const backspace = (zipper: Zipper): Zipper => {
                 ...topCrumbs[0].row,
                 selection: null,
             },
-            path: restCrumbs,
+            breadcrumbs: restCrumbs,
         };
     }
 
@@ -86,13 +86,13 @@ export const backspace = (zipper: Zipper): Zipper => {
         };
     }
 
-    const {path} = zipper;
+    const {breadcrumbs} = zipper;
 
-    if (path.length === 0) {
+    if (breadcrumbs.length === 0) {
         return zipper;
     }
 
-    const parent = path[path.length - 1];
+    const parent = breadcrumbs[breadcrumbs.length - 1];
 
     const {focus, row} = parent;
 
@@ -100,7 +100,7 @@ export const backspace = (zipper: Zipper): Zipper => {
 
     if (focus.dir === "left") {
         return {
-            path: path.slice(0, -1),
+            breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
                 ...row,
                 right: [...zipper.row.right, ...children, ...row.right],
@@ -108,7 +108,7 @@ export const backspace = (zipper: Zipper): Zipper => {
         };
     } else {
         return {
-            path: path.slice(0, -1),
+            breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
                 ...row,
                 left: [...row.left, ...children],

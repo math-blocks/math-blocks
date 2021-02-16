@@ -18,7 +18,7 @@ const initialState: State = {
         selection: null,
         right: [],
     },
-    path: [],
+    breadcrumbs: [],
 };
 
 type Action = {type: string; shift?: boolean};

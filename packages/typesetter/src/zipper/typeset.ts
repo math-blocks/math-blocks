@@ -583,14 +583,17 @@ const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const [crumb, ...restCrumbs] = zipper.path;
+    const [crumb, ...restCrumbs] = zipper.breadcrumbs;
 
     if (crumb) {
         const row = crumb.row;
 
         if (row.selection) {
             const left = _typesetChildren(row.left, context);
-            const nextZipper = {...zipper, path: restCrumbs};
+            const nextZipper: Editor.Zipper = {
+                ...zipper,
+                breadcrumbs: restCrumbs,
+            };
             const selection =
                 row.selection.dir === "left"
                     ? [
@@ -626,7 +629,10 @@ const _typesetZipper = (
             const nodes: Layout.Node[] = [];
 
             nodes.push(..._typesetChildren(row.left, context));
-            const nextZipper = {...zipper, path: restCrumbs};
+            const nextZipper: Editor.Zipper = {
+                ...zipper,
+                breadcrumbs: restCrumbs,
+            };
             nodes.push(typesetFocus(crumb.focus, nextZipper, context));
             nodes.push(..._typesetChildren(row.right, context, crumb.focus));
 

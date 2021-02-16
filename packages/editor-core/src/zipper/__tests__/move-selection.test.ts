@@ -18,7 +18,7 @@ describe("moveRight w/ selecting = true", () => {
                     selection: null,
                     right: row("1+2").children,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper, true);
@@ -38,7 +38,7 @@ describe("moveRight w/ selecting = true", () => {
                     selection: null,
                     right: row("1+2").children,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(zipper, true), true);
@@ -58,7 +58,7 @@ describe("moveRight w/ selecting = true", () => {
                     selection: null,
                     right: row("1+2").children,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -87,7 +87,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper), true), true);
@@ -95,10 +95,10 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("right");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
@@ -114,7 +114,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)), true);
@@ -122,10 +122,10 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(1);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(0);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("right");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
 
         test("selecting to the right from the first breadcrumb", () => {
@@ -141,7 +141,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -152,10 +152,10 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("right");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(1); // focus is selected
-            expect(result.path[0].row.right).toHaveLength(1);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
+            expect(result.breadcrumbs[0].row.right).toHaveLength(1);
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
@@ -171,7 +171,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -185,10 +185,10 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("right");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
@@ -204,7 +204,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -221,8 +221,8 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("move back to the starting location", () => {
@@ -238,7 +238,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -282,7 +282,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -293,11 +293,11 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("right");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[1].row.right).toHaveLength(2);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[1].row.right).toHaveLength(2);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("expanding selection out of the outer fraction", () => {
@@ -320,7 +320,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -340,12 +340,12 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("right");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.path[1].row.right).toHaveLength(0);
-            expect(result.path[0].row.selection?.dir).toEqual("right");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[1].row.right).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
         });
 
         test("constricting selection in from the outer fraction", () => {
@@ -368,7 +368,7 @@ describe("moveRight w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -391,11 +391,11 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("right");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("right");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.path[1].row.right).toHaveLength(0);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[1].row.right).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
     });
 });
@@ -411,7 +411,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper, true);
@@ -431,7 +431,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(zipper, true), true);
@@ -451,7 +451,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -480,7 +480,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper), true), true);
@@ -488,10 +488,10 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("left");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.left).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
@@ -507,7 +507,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)), true);
@@ -515,10 +515,10 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.right).toHaveLength(1);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(0);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("left");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.left).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
 
         test("selecting to the right from the first breadcrumb", () => {
@@ -534,7 +534,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -545,10 +545,10 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("left");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(1); // focus is selected
-            expect(result.path[0].row.left).toHaveLength(1);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
+            expect(result.breadcrumbs[0].row.left).toHaveLength(1);
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
@@ -564,7 +564,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -578,10 +578,10 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection?.dir).toEqual("left");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[0].row.left).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
@@ -597,7 +597,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -614,8 +614,8 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("move back to the starting location", () => {
@@ -631,7 +631,7 @@ describe("moveLeft w/ selecting = true", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -675,7 +675,7 @@ describe("moveLeft w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -686,11 +686,11 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("left");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.path[1].row.left).toHaveLength(2);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs[1].row.left).toHaveLength(2);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("expanding selection out of the outer fraction", () => {
@@ -713,7 +713,7 @@ describe("moveLeft w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
@@ -733,12 +733,12 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("left");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.path[1].row.left).toHaveLength(0);
-            expect(result.path[0].row.selection?.dir).toEqual("left");
-            expect(result.path[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[1].row.left).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
         });
 
         test("constricting selection in from the outer fraction", () => {
@@ -761,7 +761,7 @@ describe("moveLeft w/ selecting = true", () => {
                     ]).children,
                     selection: null,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
@@ -784,11 +784,11 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.row.left).toHaveLength(0);
             expect(result.row.selection?.dir).toEqual("left");
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.path).toHaveLength(2);
-            expect(result.path[1].row.selection?.dir).toEqual("left");
-            expect(result.path[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.path[1].row.left).toHaveLength(0);
-            expect(result.path[0].row.selection).toBeNull();
+            expect(result.breadcrumbs).toHaveLength(2);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[1].row.left).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
     });
 });

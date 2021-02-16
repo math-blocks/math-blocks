@@ -17,7 +17,7 @@ describe("moveRight", () => {
                     selection: null,
                     right: row("1+2").children,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
@@ -35,7 +35,7 @@ describe("moveRight", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
@@ -56,13 +56,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [f, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
                 dir: "left",
@@ -83,13 +83,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [f, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
                 dir: "right",
@@ -110,14 +110,14 @@ describe("moveRight", () => {
                     selection: null,
                     right: [f, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
                 moveRight(moveRight(moveRight(moveRight(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(f); // fraction should be unchanged
@@ -135,13 +135,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "left",
@@ -162,13 +162,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "right",
@@ -189,14 +189,14 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
                 moveRight(moveRight(moveRight(moveRight(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(ss); // subsup should be unchanged
@@ -214,13 +214,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "left",
@@ -241,12 +241,12 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(ss); // sub should be unchanged
@@ -264,13 +264,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "right",
@@ -291,12 +291,12 @@ describe("moveRight", () => {
                     selection: null,
                     right: [ss, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(ss); // sup should be unchanged
@@ -314,13 +314,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [r, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "left",
@@ -341,13 +341,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [r, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "right",
@@ -368,14 +368,14 @@ describe("moveRight", () => {
                     selection: null,
                     right: [r, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
                 moveRight(moveRight(moveRight(moveRight(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(r); // root should be unchanged
@@ -393,13 +393,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [r, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "right",
@@ -420,12 +420,12 @@ describe("moveRight", () => {
                     selection: null,
                     right: [r, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(r); // root should be unchanged
@@ -457,13 +457,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [lim, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
                 dir: "left",
@@ -499,12 +499,12 @@ describe("moveRight", () => {
                     selection: null,
                     right: [lim, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(lim); // lim should be unchanged
@@ -537,13 +537,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [sum, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
                 dir: "left",
@@ -580,13 +580,13 @@ describe("moveRight", () => {
                     selection: null,
                     right: [sum, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(moveRight(moveRight(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
                 dir: "right",
@@ -623,14 +623,14 @@ describe("moveRight", () => {
                     selection: null,
                     right: [sum, builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveRight(
                 moveRight(moveRight(moveRight(moveRight(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.row.left[1]).toEqual(sum); // sum should be unchanged
@@ -649,7 +649,7 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
@@ -667,7 +667,7 @@ describe("moveLeft", () => {
                     selection: null,
                     right: row("1+2").children,
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
@@ -688,13 +688,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
                 dir: "right",
@@ -715,13 +715,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
                 dir: "left",
@@ -742,14 +742,14 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
                 moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(f); // frac should be unchanged
@@ -767,13 +767,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "right",
@@ -794,13 +794,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "left",
@@ -821,14 +821,14 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
                 moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(ss); // subsup should be unchanged
@@ -846,13 +846,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "right",
@@ -873,12 +873,12 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(ss); // sup should be unchanged
@@ -896,13 +896,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
                 dir: "left",
@@ -923,12 +923,12 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(ss); // sub should be unchanged
@@ -946,13 +946,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "right",
@@ -973,13 +973,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "left",
@@ -1000,14 +1000,14 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
                 moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(r); // root should be unchanged
@@ -1025,13 +1025,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
                 dir: "right",
@@ -1052,12 +1052,12 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right[0]).toEqual(r); // root should be unchanged
@@ -1089,13 +1089,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
                 dir: "left",
@@ -1131,12 +1131,12 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.right[0]).toEqual(lim); // lim should be unchanged
@@ -1169,13 +1169,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(zipper);
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
                 dir: "right",
@@ -1212,13 +1212,13 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(moveLeft(moveLeft(zipper)));
 
-            expect(result.path).toHaveLength(1);
-            expect(result.path[0].focus).toEqual({
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
                 dir: "left",
@@ -1255,14 +1255,14 @@ describe("moveLeft", () => {
                     selection: null,
                     right: [builders.glyph("d")],
                 },
-                path: [],
+                breadcrumbs: [],
             };
 
             const result = moveLeft(
                 moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
             );
 
-            expect(result.path).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.row.right[0]).toEqual(sum); // sum should be unchanged

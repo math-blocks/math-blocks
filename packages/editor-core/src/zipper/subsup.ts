@@ -12,7 +12,7 @@ const newZRow = (): ZRow => ({
 });
 
 export const subsup = (zipper: Zipper, dir: "left" | "right"): Zipper => {
-    const {row, path} = zipper;
+    const {row, breadcrumbs} = zipper;
 
     if (row.right.length > 0) {
         const [next, ...rest] = row.right;
@@ -22,8 +22,8 @@ export const subsup = (zipper: Zipper, dir: "left" | "right"): Zipper => {
 
             return {
                 ...zipper,
-                path: [
-                    ...path,
+                breadcrumbs: [
+                    ...breadcrumbs,
                     {
                         row: {
                             ...row,
@@ -51,8 +51,8 @@ export const subsup = (zipper: Zipper, dir: "left" | "right"): Zipper => {
 
     return {
         ...zipper,
-        path: [
-            ...zipper.path,
+        breadcrumbs: [
+            ...zipper.breadcrumbs,
             {
                 row: zipper.row,
                 focus: {

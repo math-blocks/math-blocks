@@ -11,7 +11,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
     // Exit the selection to the right
     if (selection) {
-        const index = zipper.path.findIndex(
+        const index = zipper.breadcrumbs.findIndex(
             (crumb) => crumb.row.selection !== null,
         );
 
@@ -28,7 +28,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
         }
 
         // The selection is in one of the breadcrumbs.
-        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
         // We need to process these from top to bottom (reverse order)
         topCrumbs.reverse();
 
@@ -52,7 +52,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
         return {
             ...zipper,
             row: row,
-            path: restCrumbs,
+            breadcrumbs: restCrumbs,
         };
     }
 
@@ -111,7 +111,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
             }
 
             return {
-                path: [...zipper.path, breadcrumb],
+                breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
                 row: util.startRow(focusedRow), // [] [1, 2, ...]
             };
         }
@@ -121,14 +121,16 @@ const cursorRight = (zipper: Zipper): Zipper => {
     }
 
     // Move out of the current row.
-    if (zipper.path.length > 0) {
-        const {focus, row: parentRow} = zipper.path[zipper.path.length - 1];
+    if (zipper.breadcrumbs.length > 0) {
+        const {focus, row: parentRow} = zipper.breadcrumbs[
+            zipper.breadcrumbs.length - 1
+        ];
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
         const focusRight = (row: types.Row): Zipper => ({
-            path: [
-                ...zipper.path.slice(0, -1),
+            breadcrumbs: [
+                ...zipper.breadcrumbs.slice(0, -1),
                 {
                     row: parentRow,
                     focus: {
@@ -142,7 +144,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
         });
 
         const exitNode = (updatedNode: types.Node): Zipper => ({
-            path: zipper.path.slice(0, -1),
+            breadcrumbs: zipper.breadcrumbs.slice(0, -1),
             // place the subsup we exited on our left
             row: util.insertLeft(parentRow, updatedNode),
         });
@@ -181,7 +183,7 @@ const selectionRight = (zipper: Zipper): Zipper => {
     // - expand a selection (possibly moving out to a yet to be selected focus)
     // - contract a selection (possible moving in to an already selected focus)
 
-    const rowsWithSelections = zipper.path
+    const rowsWithSelections = zipper.breadcrumbs
         .map((crumb) => crumb.row)
         .filter((row) => row.selection);
     if (zipper.row.selection) {
@@ -198,13 +200,17 @@ const selectionRight = (zipper: Zipper): Zipper => {
             return crumbMoveRight(startSelection(zipper, "right"));
         } else {
             // Create an empty selection and them move outward.
-            const index = zipper.path.length - 1;
-            const crumb = zipper.path[index];
+            const index = zipper.breadcrumbs.length - 1;
+            const crumb = zipper.breadcrumbs[index];
             const updatedCrumb = startSelection(crumb, "right");
 
             return {
                 ...startSelection(zipper, "right"),
-                path: replaceItem(zipper.path, updatedCrumb, index),
+                breadcrumbs: replaceItem(
+                    zipper.breadcrumbs,
+                    updatedCrumb,
+                    index,
+                ),
             };
         }
     } else if (rowsWithSelections.length === 1) {
@@ -214,14 +220,18 @@ const selectionRight = (zipper: Zipper): Zipper => {
             if (zipper.row.right.length > 0) {
                 return crumbMoveRight(zipper);
             } else {
-                const index = zipper.path.length - 1;
-                const crumb = zipper.path[index];
+                const index = zipper.breadcrumbs.length - 1;
+                const crumb = zipper.breadcrumbs[index];
                 const updatedCrumb = startSelection(crumb, "right");
 
                 // move out to start a selection in the parent crumb
                 return {
                     ...zipper,
-                    path: replaceItem(zipper.path, updatedCrumb, index),
+                    breadcrumbs: replaceItem(
+                        zipper.breadcrumbs,
+                        updatedCrumb,
+                        index,
+                    ),
                 };
             }
         } else if (zipper.row.selection?.dir === "left") {
@@ -246,8 +256,8 @@ const selectionRight = (zipper: Zipper): Zipper => {
     } else {
         // our selection is in the one of the breadcrumb rows
 
-        const index = zipper.path.length - rowsWithSelections.length + 1;
-        const crumb = zipper.path[index];
+        const index = zipper.breadcrumbs.length - rowsWithSelections.length + 1;
+        const crumb = zipper.breadcrumbs[index];
         const {row} = crumb;
 
         if (row.selection?.dir === "right") {
@@ -255,21 +265,30 @@ const selectionRight = (zipper: Zipper): Zipper => {
                 const updatedCrumb = crumbMoveRight(crumb);
                 return {
                     ...zipper,
-                    path: replaceItem(zipper.path, updatedCrumb, index),
+                    breadcrumbs: replaceItem(
+                        zipper.breadcrumbs,
+                        updatedCrumb,
+                        index,
+                    ),
                 };
             } else {
                 // move out to start a selection in the parent crumb
-                const index = zipper.path.length - rowsWithSelections.length;
+                const index =
+                    zipper.breadcrumbs.length - rowsWithSelections.length;
                 if (index < 0) {
                     return zipper;
                 }
 
-                const crumb = zipper.path[index];
+                const crumb = zipper.breadcrumbs[index];
                 const updatedCrumb = startSelection(crumb, "right");
 
                 return {
                     ...zipper,
-                    path: replaceItem(zipper.path, updatedCrumb, index),
+                    breadcrumbs: replaceItem(
+                        zipper.breadcrumbs,
+                        updatedCrumb,
+                        index,
+                    ),
                 };
             }
         } else if (row.selection?.dir === "left") {
@@ -277,19 +296,29 @@ const selectionRight = (zipper: Zipper): Zipper => {
                 const updatedCrumb = crumbMoveRight(crumb);
                 return {
                     ...zipper,
-                    path: replaceItem(zipper.path, updatedCrumb, index),
+                    breadcrumbs: replaceItem(
+                        zipper.breadcrumbs,
+                        updatedCrumb,
+                        index,
+                    ),
                 };
             } else {
-                const updatedCrumb: Breadcrumb = stopSelection(crumb);
-                const result = {
+                const updatedCrumb = stopSelection(crumb);
+                const result: Zipper = {
                     ...zipper,
-                    path: replaceItem(zipper.path, updatedCrumb, index),
+                    breadcrumbs: replaceItem(
+                        zipper.breadcrumbs,
+                        updatedCrumb,
+                        index,
+                    ),
                 };
                 // If there are no selections in any of the breadcrumbs and the
                 // selection in the result.row is empty then clear the selection
                 // there as well.
                 if (
-                    result.path.every((crumb) => crumb.row.selection === null)
+                    result.breadcrumbs.every(
+                        (crumb) => crumb.row.selection === null,
+                    )
                 ) {
                     if (result.row.selection?.nodes.length === 0) {
                         return stopSelection(result);

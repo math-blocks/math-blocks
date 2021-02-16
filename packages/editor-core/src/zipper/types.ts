@@ -69,6 +69,6 @@ export type Breadcrumb = {
 export type Zipper = {
     row: ZRow;
     // TODO: Consider making this a linked list where the "head" is the node
-    // nearest to zipper.row in the path.
-    path: Breadcrumb[]; // any ZRow in here should have a non-null `focus`
+    // nearest to zipper.row in the breadrcumbs.
+    breadcrumbs: Breadcrumb[]; // any ZRow in here should have a non-null `focus`
 };

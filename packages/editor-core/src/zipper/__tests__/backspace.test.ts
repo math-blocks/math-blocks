@@ -45,7 +45,7 @@ describe("backspace", () => {
                 selection: null,
                 right: [],
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = backspace(zipper);
@@ -63,7 +63,7 @@ describe("backspace", () => {
                 selection: null,
                 right: row("2").children,
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = backspace(zipper);
@@ -81,7 +81,7 @@ describe("backspace", () => {
                 selection: null,
                 right: row("1+2").children,
             },
-            path: [],
+            breadcrumbs: [],
         };
 
         const result = backspace(zipper);
@@ -100,7 +100,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("2").children, // numerator
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -134,7 +134,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("3").children, // denominator
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -174,7 +174,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("n").children, // subscript
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -208,7 +208,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("n").children, // sbuscript
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -242,7 +242,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("2").children, // superscript
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -276,7 +276,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("2").children, // superscript
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -315,7 +315,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("27").children, // index
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -349,7 +349,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("27").children, // index
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -383,7 +383,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("3").children,
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -422,7 +422,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("x->0").children, // lower bound
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -457,7 +457,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("i=0").children, // lower bound
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,
@@ -492,7 +492,7 @@ describe("backspace", () => {
                     selection: null,
                     right: row("n").children, // upper bound
                 },
-                path: [
+                breadcrumbs: [
                     {
                         row: {
                             id: 0,

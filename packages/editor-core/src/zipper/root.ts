@@ -7,8 +7,8 @@ import {Zipper} from "./types";
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
     return {
         ...zipper,
-        path: [
-            ...zipper.path,
+        breadcrumbs: [
+            ...zipper.breadcrumbs,
             {
                 row: zipper.row,
                 focus: withIndex
