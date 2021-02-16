@@ -5,7 +5,7 @@ import {row} from "../test-util";
 import * as builders from "../../builders";
 import * as types from "../../types";
 
-import {Zipper} from "../types";
+import {Zipper, Dir} from "../types";
 
 const toEqualEditorNodes = (
     received: types.Node[],
@@ -99,7 +99,7 @@ describe("insertChar", () => {
                     type: "zrow",
                     left: [builders.glyph("1")],
                     selection: {
-                        dir: "right",
+                        dir: Dir.Right,
                         nodes: [builders.glyph("+")],
                     },
                     right: [builders.glyph("2")],
@@ -120,7 +120,7 @@ describe("insertChar", () => {
                     type: "zrow",
                     left: [],
                     selection: {
-                        dir: "left",
+                        dir: Dir.Left,
                         nodes: [builders.glyph("2")],
                     },
                     right: [],
@@ -130,7 +130,7 @@ describe("insertChar", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: "right",
+                            dir: Dir.Right,
                             other: builders.row([builders.glyph("3")]),
                         },
                         row: {
@@ -138,7 +138,7 @@ describe("insertChar", () => {
                             type: "zrow",
                             left: [builders.glyph("1"), builders.glyph("+")],
                             selection: {
-                                dir: "left",
+                                dir: Dir.Left,
                                 nodes: [],
                             },
                             right: [],

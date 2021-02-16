@@ -2,7 +2,7 @@ import {getId} from "@math-blocks/core";
 
 import * as builders from "../builders";
 import * as util from "./util";
-import {Zipper} from "./types";
+import {Dir, Zipper} from "./types";
 
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
     return {
@@ -15,13 +15,13 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
                     ? {
                           id: getId(),
                           type: "zroot",
-                          dir: "left",
+                          dir: Dir.Left,
                           other: builders.row([]),
                       }
                     : {
                           id: getId(),
                           type: "zroot",
-                          dir: "right",
+                          dir: Dir.Right,
                           other: null,
                       },
             },

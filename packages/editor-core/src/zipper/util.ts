@@ -1,6 +1,6 @@
 import {getId, UnreachableCaseError} from "@math-blocks/core";
 
-import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
+import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus, Dir} from "./types";
 import * as types from "../types";
 
 export const startRow = (row: types.Row): ZRow => {
@@ -24,7 +24,7 @@ export const endRow = (row: types.Row): ZRow => {
 };
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
-    if (focus.dir === "left") {
+    if (focus.dir === Dir.Left) {
         return {
             id: focus.id,
             type: "frac",
@@ -39,12 +39,12 @@ export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
     }
 };
 
-export const zfrac = (node: types.Frac, dir: "left" | "right"): ZFrac => {
+export const zfrac = (node: types.Frac, dir: Dir): ZFrac => {
     return {
         id: node.id,
         type: "zfrac",
         dir,
-        other: dir === "left" ? node.children[1] : node.children[0],
+        other: dir === Dir.Left ? node.children[1] : node.children[0],
     };
 };
 
@@ -52,7 +52,7 @@ export const subsup = (
     focus: ZSubSup,
     replacement: types.Row,
 ): types.SubSup => {
-    if (focus.dir === "left") {
+    if (focus.dir === Dir.Left) {
         return {
             id: focus.id,
             type: "subsup",
@@ -67,17 +67,17 @@ export const subsup = (
     }
 };
 
-export const zsubsup = (node: types.SubSup, dir: "left" | "right"): ZSubSup => {
+export const zsubsup = (node: types.SubSup, dir: Dir): ZSubSup => {
     return {
         id: node.id,
         type: "zsubsup",
         dir,
-        other: dir === "left" ? node.children[1] : node.children[0],
+        other: dir === Dir.Left ? node.children[1] : node.children[0],
     };
 };
 
 export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
-    if (focus.dir === "left") {
+    if (focus.dir === Dir.Left) {
         return {
             id: focus.id,
             type: "root",
@@ -92,8 +92,8 @@ export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
     }
 };
 
-export const zroot = (node: types.Root, dir: "left" | "right"): ZRoot => {
-    if (dir === "left") {
+export const zroot = (node: types.Root, dir: Dir): ZRoot => {
+    if (dir === Dir.Left) {
         return {
             id: node.id,
             type: "zroot",
@@ -114,7 +114,7 @@ export const limits = (
     focus: ZLimits,
     replacement: types.Row,
 ): types.Limits => {
-    if (focus.dir === "left") {
+    if (focus.dir === Dir.Left) {
         return {
             id: focus.id,
             type: "limits",
@@ -131,8 +131,8 @@ export const limits = (
     }
 };
 
-export const zlimits = (node: types.Limits, dir: "left" | "right"): ZLimits => {
-    if (dir === "left") {
+export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
+    if (dir === Dir.Left) {
         return {
             id: node.id,
             type: "zlimits",

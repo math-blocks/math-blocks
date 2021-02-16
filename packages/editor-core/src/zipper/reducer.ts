@@ -6,7 +6,7 @@ import {parens} from "./parens";
 import {root} from "./root";
 import {subsup} from "./subsup";
 
-import {Zipper} from "./types";
+import {Zipper, Dir} from "./types";
 
 export type State = Zipper;
 
@@ -40,16 +40,16 @@ export const zipperReducer = (
             return backspace(state);
         }
         case "_": {
-            return subsup(state, "left");
+            return subsup(state, Dir.Left);
         }
         case "^": {
-            return subsup(state, "right");
+            return subsup(state, Dir.Right);
         }
         case "(": {
-            return parens(state, "left");
+            return parens(state, Dir.Left);
         }
         case ")": {
-            return parens(state, "right");
+            return parens(state, Dir.Right);
         }
         // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
         case "\u221A": {

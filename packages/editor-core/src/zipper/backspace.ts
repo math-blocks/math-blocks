@@ -1,4 +1,4 @@
-import {Zipper} from "./types";
+import {Dir, Zipper} from "./types";
 import {splitArrayAt} from "./array-util";
 
 export const backspace = (zipper: Zipper): Zipper => {
@@ -98,7 +98,7 @@ export const backspace = (zipper: Zipper): Zipper => {
 
     const children = focus.other ? focus.other.children : [];
 
-    if (focus.dir === "left") {
+    if (focus.dir === Dir.Left) {
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {

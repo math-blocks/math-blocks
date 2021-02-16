@@ -1,8 +1,8 @@
-import {ZRow} from "./types";
+import {ZRow, Dir} from "./types";
 
 export const startSelection = <T extends {row: ZRow}>(
     crumb: T,
-    dir: "left" | "right",
+    dir: Dir,
 ): T => {
     return {
         ...crumb,
@@ -36,7 +36,7 @@ export const crumbMoveLeft = <T extends {row: ZRow}>(crumb: T): T => {
         return crumb;
     }
 
-    if (selection.dir === "left") {
+    if (selection.dir === Dir.Left) {
         return {
             ...crumb,
             row: {
@@ -76,7 +76,7 @@ export const crumbMoveRight = <T extends {row: ZRow}>(crumb: T): T => {
         return crumb;
     }
 
-    if (selection.dir === "right") {
+    if (selection.dir === Dir.Right) {
         return {
             ...crumb,
             row: {

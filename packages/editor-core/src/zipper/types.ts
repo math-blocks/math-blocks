@@ -1,7 +1,12 @@
 import * as types from "../types";
 
+export enum Dir {
+    Left = "left",
+    Right = "right",
+}
+
 type Selection = {
-    dir: "left" | "right";
+    dir: Dir;
     nodes: types.Node[];
 };
 
@@ -26,7 +31,7 @@ export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
 export type ZFrac = {
     id: number;
     type: "zfrac";
-    dir: "left" | "right"; // what is focused, left = 0, right = 1
+    dir: Dir; // what is focused, left = 0, right = 1
     other: types.Row; // what isn't being focused
 };
 
@@ -35,7 +40,7 @@ export type ZFrac = {
 export type ZSubSup = {
     id: number;
     type: "zsubsup";
-    dir: "left" | "right";
+    dir: Dir;
     other: types.Row | null; // what isn't being focused
 };
 
@@ -43,14 +48,14 @@ export type ZLimits =
     | {
           id: number;
           type: "zlimits";
-          dir: "left";
+          dir: Dir.Left;
           other: types.Row | null;
           inner: types.Node;
       }
     | {
           id: number;
           type: "zlimits";
-          dir: "right";
+          dir: Dir.Right;
           other: types.Row;
           inner: types.Node;
       };
@@ -59,13 +64,13 @@ export type ZRoot =
     | {
           id: number;
           type: "zroot";
-          dir: "left";
+          dir: Dir.Left;
           other: types.Row;
       }
     | {
           id: number;
           type: "zroot";
-          dir: "right";
+          dir: Dir.Right;
           other: types.Row | null;
       };
 
