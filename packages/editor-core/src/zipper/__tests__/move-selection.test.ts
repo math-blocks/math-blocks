@@ -158,6 +158,42 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.breadcrumbs[0].row.right).toHaveLength(1);
         });
 
+        test("selecting to the right edge of the bottom breadcrumb", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [],
+                    right: builders.row([
+                        frac("1", "2"),
+                        builders.glyph("+"),
+                        builders.glyph("3"),
+                    ]).children,
+                    selection: null,
+                },
+                breadcrumbs: [],
+            };
+
+            const result = moveRight(
+                moveRight(
+                    moveRight(
+                        moveRight(moveRight(moveRight(zipper), true), true),
+                        true,
+                    ),
+                    true,
+                ),
+                true,
+            );
+
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.selection?.dir).toEqual("right");
+            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("right");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[0].row.right).toHaveLength(0);
+        });
+
         test("constricting the selection to the left from the first breadcrumb", () => {
             const zipper: Zipper = {
                 row: {
@@ -521,7 +557,7 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
 
-        test("selecting to the right from the first breadcrumb", () => {
+        test("selecting to the left from the first breadcrumb", () => {
             const zipper: Zipper = {
                 row: {
                     id: 0,
@@ -549,6 +585,39 @@ describe("moveLeft w/ selecting = true", () => {
             expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(1);
+        });
+
+        test("selecting to the left edge of the bottom breadcrumb", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: builders.row([
+                        builders.glyph("1"),
+                        builders.glyph("+"),
+                        frac("2", "3"),
+                    ]).children,
+                    selection: null,
+                    right: [],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = moveLeft(
+                moveLeft(
+                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)), true), true),
+                    true,
+                ),
+                true,
+            );
+
+            expect(result.row.right).toHaveLength(1);
+            expect(result.row.selection?.dir).toEqual("left");
+            expect(result.row.selection?.nodes).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual("left");
+            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
+            expect(result.breadcrumbs[0].row.left).toHaveLength(0);
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {

@@ -5,13 +5,23 @@ type Selection = {
     nodes: types.Node[];
 };
 
-export type ZRow = {
+export type ZRowWithoutSelection = {
     id: number;
     type: "zrow";
     left: types.Node[];
-    selection: Selection | null;
+    selection: null;
     right: types.Node[];
 };
+
+export type ZRowWithSelection = {
+    id: number;
+    type: "zrow";
+    left: types.Node[];
+    selection: Selection;
+    right: types.Node[];
+};
+
+export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
 
 export type ZFrac = {
     id: number;
