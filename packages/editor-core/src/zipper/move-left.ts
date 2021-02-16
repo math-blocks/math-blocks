@@ -1,89 +1,71 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Breadcrumb, Focus, Zipper} from "./types";
+import {Breadcrumb, Focus, Zipper, ZRow} from "./types";
 import * as types from "../types";
 import * as util from "./util";
+import {crumbMoveLeft, startSelection, stopSelection} from "./selection-util";
+import {replaceItem, splitArrayAt} from "./array-util";
 
-export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
-    // the only time we ever have to deal with zipper.path is when we get to
-    // the end of zipper.row
-    const {row: currentRow, path} = zipper;
+const cursorLeft = (zipper: Zipper): Zipper => {
+    const {left, selection, right} = zipper.row;
 
-    const {left, selection, right} = currentRow;
+    // Exit the selection to the left
+    if (selection) {
+        const index = zipper.path.findIndex(
+            (crumb) => crumb.row.selection !== null,
+        );
 
-    if (left.length > 0) {
-        const prev = left[left.length - 1];
-
-        if (selecting) {
-            if (selection) {
-                if (selection.dir === "left") {
-                    // widen the selection
-                    return {
-                        ...zipper,
-                        row: {
-                            ...currentRow,
-                            left: left.slice(0, -1),
-                            selection: {
-                                ...selection,
-                                nodes: [prev, ...selection.nodes],
-                            },
-                        },
-                    };
-                } else {
-                    // narrow the selection
-                    const newNodes = selection.nodes.slice(0, -1);
-                    return {
-                        ...zipper,
-                        row: {
-                            ...currentRow,
-                            selection:
-                                newNodes.length > 0
-                                    ? {
-                                          ...selection,
-                                          nodes: newNodes,
-                                      }
-                                    : null,
-                            right: [
-                                selection.nodes[selection.nodes.length - 1],
-                                ...right,
-                            ],
-                        },
-                    };
-                }
-            } else {
-                // start the selection
-                return {
-                    ...zipper,
-                    row: {
-                        ...currentRow,
-                        left: left.slice(0, -1),
-                        selection: {
-                            dir: "left",
-                            nodes: [prev],
-                        },
-                    },
-                };
-            }
-        }
-
-        // exit the selection to the left
-        if (selection && selection.nodes.length > 0) {
+        // The selection is completely within the `zipper.row`.
+        if (index === -1) {
             return {
                 ...zipper,
                 row: {
-                    ...currentRow,
+                    ...zipper.row,
                     selection: null,
                     right: [...selection.nodes, ...right],
                 },
             };
         }
 
+        // The selection is in one of the breadcrumbs.
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+        // We need to process these from top to bottom (reverse order)
+        topCrumbs.reverse();
+
+        // Collapse each crumb in `topCrumbs` into `row`.
+        const row = topCrumbs.reduce((row, crumb): ZRow => {
+            const unfocusedNode = util.focusToNode(
+                crumb.focus,
+                util.zrowToRow(row),
+            );
+            const selectionNodes =
+                selection.dir === "right"
+                    ? [unfocusedNode, ...(crumb.row.selection?.nodes || [])]
+                    : [...(crumb.row.selection?.nodes || []), unfocusedNode];
+            return {
+                ...crumb.row,
+                selection: null,
+                right: [...selectionNodes, ...crumb.row.right],
+            };
+        }, zipper.row);
+
+        return {
+            ...zipper,
+            row: row,
+            path: restCrumbs,
+        };
+    }
+
+    // Move the cursor left within the current row.
+    if (left.length > 0) {
+        const prev = left[left.length - 1];
+
         // move left
         if (prev.type === "atom") {
             return {
                 ...zipper,
                 row: {
-                    ...currentRow,
+                    ...zipper.row,
                     left: left.slice(0, -1),
                     right: [prev, ...right],
                 },
@@ -121,7 +103,7 @@ export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
             }
 
             const breadcrumb: Breadcrumb = {
-                row: util.delLeft(currentRow),
+                row: util.delLeft(zipper.row),
                 focus: focus,
             };
 
@@ -131,7 +113,7 @@ export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
             }
 
             return {
-                path: [...path, breadcrumb],
+                path: [...zipper.path, breadcrumb],
                 row: util.endRow(focusedRow), // [1, 2, ...] []
             };
         }
@@ -140,14 +122,15 @@ export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
         return zipper;
     }
 
-    if (path.length > 0) {
-        const {focus, row: parentRow} = path[path.length - 1];
+    // Move out of the current row.
+    if (zipper.path.length > 0) {
+        const {focus, row: parentRow} = zipper.path[zipper.path.length - 1];
 
-        const exitedRow: types.Row = util.zrowToRow(currentRow);
+        const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
         const focusLeft = (row: types.Row): Zipper => ({
             path: [
-                ...path.slice(0, -1),
+                ...zipper.path.slice(0, -1),
                 {
                     row: parentRow,
                     focus: {
@@ -161,7 +144,7 @@ export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
         });
 
         const exitNode = (updatedNode: types.Node): Zipper => ({
-            path: [...path.slice(0, -1)],
+            path: zipper.path.slice(0, -1),
             // place the fraction we exited on our right
             row: util.insertRight(parentRow, updatedNode),
         });
@@ -191,18 +174,140 @@ export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
         }
     }
 
-    // TODO: dedupe with above
-    // exit the selection to the left
-    if (!selecting && selection && selection.nodes.length > 0) {
-        return {
-            ...zipper,
-            row: {
-                ...currentRow,
-                selection: null,
-                right: [...selection.nodes, ...right],
-            },
-        };
-    }
-
     return zipper;
+};
+
+const selectionLeft = (zipper: Zipper): Zipper => {
+    // INVARIANT: selections in crumbs can only exist from last crumb (top) back
+    // to the first crumb (bottom), there can be no gaps either
+
+    // Cases to handle:
+    // - start a selection
+    // - expand a selection (possibly moving out to a yet to be selected focus)
+    // - contract a selection (possible moving in to an already selected focus)
+
+    const rowsWithSelections = zipper.path
+        .map((crumb) => crumb.row)
+        .filter((row) => row.selection);
+    if (zipper.row.selection) {
+        rowsWithSelections.push(zipper.row);
+    }
+    rowsWithSelections.reverse();
+
+    if (rowsWithSelections.length === 0) {
+        const {row} = zipper;
+
+        // We haven't started selecting anything yet.
+        if (row.left.length > 0) {
+            // Create a new selection to the left and move left.
+            return crumbMoveLeft(startSelection(zipper, "left"));
+        } else {
+            // Create an empty selection and them move outward.
+            const index = zipper.path.length - 1;
+            const crumb = zipper.path[index];
+            const updatedCrumb = startSelection(crumb, "left");
+
+            return {
+                ...startSelection(zipper, "left"),
+                path: replaceItem(zipper.path, updatedCrumb, index),
+            };
+        }
+    } else if (rowsWithSelections.length === 1) {
+        // our selection is in the current row (top of zipper)
+
+        if (zipper.row.selection?.dir === "left") {
+            if (zipper.row.left.length > 0) {
+                return crumbMoveLeft(zipper);
+            } else {
+                const index = zipper.path.length - 1;
+                const crumb = zipper.path[index];
+                const updatedCrumb = startSelection(crumb, "left");
+
+                // move out to start a selection in the parent crumb
+                return {
+                    ...zipper,
+                    path: replaceItem(zipper.path, updatedCrumb, index),
+                };
+            }
+        } else if (zipper.row.selection?.dir === "right") {
+            if (zipper.row.selection.nodes.length > 0) {
+                const result = crumbMoveLeft(zipper);
+                if (result.row.selection?.nodes.length === 0) {
+                    // we're back at original cursor position, stop selecting
+                    return stopSelection(result);
+                } else {
+                    return result;
+                }
+            } else {
+                // This should never happen since we drop the selection if the
+                // number of nodes reaches 0.
+                // we're back at original cursor position, stop selecting
+                // This might happen if we started our selection at the edge
+                return stopSelection(zipper);
+            }
+        } else {
+            return zipper;
+        }
+    } else {
+        // our selection is in the one of the breadcrumb rows
+
+        let index = zipper.path.length - rowsWithSelections.length + 1;
+        const crumb = zipper.path[index];
+        const {row} = crumb;
+
+        if (row.selection?.dir === "left") {
+            if (row.left.length > 0) {
+                const updatedCrumb = crumbMoveLeft(crumb);
+                return {
+                    ...zipper,
+                    path: replaceItem(zipper.path, updatedCrumb, index),
+                };
+            } else {
+                // move out to start a selection in the parent crumb
+                index = index - 1;
+                if (index < 0) {
+                    return zipper;
+                }
+
+                const crumb = zipper.path[index];
+                const updatedCrumb = startSelection(crumb, "left");
+
+                return {
+                    ...zipper,
+                    path: replaceItem(zipper.path, updatedCrumb, index),
+                };
+            }
+        } else if (row.selection?.dir === "right") {
+            if (row.selection.nodes.length > 0) {
+                const updatedCrumb = crumbMoveLeft(crumb);
+                return {
+                    ...zipper,
+                    path: replaceItem(zipper.path, updatedCrumb, index),
+                };
+            } else {
+                const updatedCrumb: Breadcrumb = stopSelection(crumb);
+                const result = {
+                    ...zipper,
+                    path: replaceItem(zipper.path, updatedCrumb, index),
+                };
+                // If there are no selections in any of the breadcrumbs and the
+                // selection in the result.row is empty then clear the selection
+                // there as well.
+                if (
+                    result.path.every((crumb) => crumb.row.selection === null)
+                ) {
+                    if (result.row.selection?.nodes.length === 0) {
+                        return stopSelection(result);
+                    }
+                }
+                return result;
+            }
+        } else {
+            return zipper;
+        }
+    }
+};
+
+export const moveLeft = (zipper: Zipper, selecting?: boolean): Zipper => {
+    return selecting ? selectionLeft(zipper) : cursorLeft(zipper);
 };

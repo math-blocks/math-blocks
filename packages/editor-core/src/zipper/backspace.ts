@@ -1,6 +1,36 @@
 import {Zipper} from "./types";
+import {splitArrayAt} from "./array-util";
 
 export const backspace = (zipper: Zipper): Zipper => {
+    const {selection} = zipper.row;
+
+    if (selection) {
+        const index = zipper.path.findIndex(
+            (crumb) => crumb.row.selection !== null,
+        );
+
+        if (index === -1) {
+            return {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    selection: null,
+                },
+            };
+        }
+
+        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.path, index);
+
+        return {
+            ...zipper,
+            row: {
+                ...topCrumbs[0].row,
+                selection: null,
+            },
+            path: restCrumbs,
+        };
+    }
+
     if (zipper.row.left.length > 0) {
         const {left, right} = zipper.row;
         const prev = left[left.length - 1];

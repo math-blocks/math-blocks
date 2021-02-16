@@ -16,7 +16,7 @@ export type ZRow = {
 export type ZFrac = {
     id: number;
     type: "zfrac";
-    dir: "left" | "right";
+    dir: "left" | "right"; // what is focused, left = 0, right = 1
     other: types.Row; // what isn't being focused
 };
 

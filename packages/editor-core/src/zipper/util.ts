@@ -1,6 +1,6 @@
-import {getId} from "@math-blocks/core";
+import {getId, UnreachableCaseError} from "@math-blocks/core";
 
-import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits} from "./types";
+import {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
 import * as types from "../types";
 
 export const startRow = (row: types.Row): ZRow => {
@@ -151,6 +151,25 @@ export const zlimits = (node: types.Limits, dir: "left" | "right"): ZLimits => {
     }
 };
 
+export const focusToNode = (
+    focus: Focus,
+    replacement: types.Row,
+): types.Node => {
+    switch (focus.type) {
+        case "zfrac":
+            return frac(focus, replacement);
+        case "zsubsup":
+            return subsup(focus, replacement);
+        case "zlimits":
+            return limits(focus, replacement);
+        case "zroot":
+            return root(focus, replacement);
+        default: {
+            throw new UnreachableCaseError(focus);
+        }
+    }
+};
+
 export const insertRight = <
     T extends {left: types.Node[]; right: types.Node[]}
 >(
@@ -203,7 +222,11 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
     return {
         id: zrow.id,
         type: "row",
-        children: [...zrow.left, ...zrow.right],
+        children: [
+            ...zrow.left,
+            ...(zrow.selection?.nodes || []),
+            ...zrow.right,
+        ],
     };
 };
 
