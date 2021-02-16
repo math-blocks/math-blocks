@@ -4,7 +4,7 @@ import * as builders from "../../builders";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac, root, subsup} from "../test-util";
-import {Dir} from "../constants";
+import {Dir} from "../enums";
 import type {Zipper} from "../types";
 
 describe("moveRight", () => {

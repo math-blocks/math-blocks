@@ -4,7 +4,7 @@ import * as types from "../../types";
 
 import {backspace} from "../backspace";
 import {row} from "../test-util";
-import {Dir} from "../constants";
+import {Dir} from "../enums";
 import type {Zipper} from "../types";
 
 const toEqualEditorNodes = (

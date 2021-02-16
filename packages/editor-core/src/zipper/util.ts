@@ -2,7 +2,7 @@ import {getId, UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
-import {Dir} from "./constants";
+import {Dir} from "./enums";
 import type {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
 
 export const startRow = (row: types.Row): ZRow => {

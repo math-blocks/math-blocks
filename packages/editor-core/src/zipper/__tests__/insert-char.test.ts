@@ -5,7 +5,7 @@ import * as types from "../../types";
 
 import {insertChar} from "../insert-char";
 import {row} from "../test-util";
-import {Dir} from "../constants";
+import {Dir} from "../enums";
 import type {Zipper} from "../types";
 
 const toEqualEditorNodes = (

@@ -1,7 +1,7 @@
 import * as builders from "../builders";
 
-import {Zipper} from "./types";
 import {splitArrayAt} from "./array-util";
+import type {Zipper} from "./types";
 
 export const insertChar = (zipper: Zipper, char: string): Zipper => {
     const {left, selection} = zipper.row;

@@ -5,7 +5,7 @@ import {moveRight} from "./move-right";
 import {parens} from "./parens";
 import {root} from "./root";
 import {subsup} from "./subsup";
-import {Dir} from "./constants";
+import {Dir} from "./enums";
 import type {Zipper} from "./types";
 
 export type State = Zipper;

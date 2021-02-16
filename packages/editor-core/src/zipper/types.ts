@@ -1,5 +1,5 @@
 import * as types from "../types";
-import {Dir} from "./constants";
+import {Dir} from "./enums";
 
 type Selection = {
     dir: Dir;

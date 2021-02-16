@@ -2,7 +2,7 @@ import {getId} from "@math-blocks/core";
 
 import * as builders from "../builders";
 import * as util from "./util";
-import {Dir} from "./constants";
+import {Dir} from "./enums";
 import type {Zipper} from "./types";
 
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {

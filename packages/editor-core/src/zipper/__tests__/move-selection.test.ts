@@ -3,7 +3,7 @@ import * as builders from "../../builders";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
-import {Dir} from "../constants";
+import {Dir} from "../enums";
 import type {Zipper} from "../types";
 
 // TODO: add a serializer or custom matcher to help with assertions

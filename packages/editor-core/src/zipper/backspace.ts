@@ -1,4 +1,4 @@
-import {Dir} from "./constants";
+import {Dir} from "./enums";
 import {splitArrayAt} from "./array-util";
 import type {Zipper} from "./types";
 
