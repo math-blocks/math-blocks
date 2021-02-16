@@ -3,8 +3,6 @@ import * as builders from "../builders";
 import {Zipper} from "./types";
 import {splitArrayAt} from "./array-util";
 
-// TODO: write tests
-
 export const insertChar = (zipper: Zipper, char: string): Zipper => {
     const {left, selection} = zipper.row;
     const newNode = builders.glyph(char);

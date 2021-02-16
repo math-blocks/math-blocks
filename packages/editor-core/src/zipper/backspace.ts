@@ -1,8 +1,6 @@
 import {Zipper} from "./types";
 import {splitArrayAt} from "./array-util";
 
-// TODO: write tests
-
 export const backspace = (zipper: Zipper): Zipper => {
     const {selection} = zipper.row;
 
