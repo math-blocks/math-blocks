@@ -1,5 +1,6 @@
 const path = require("path");
-var HtmlWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     mode: "development",
@@ -21,6 +22,22 @@ module.exports = {
                     loader: "babel-loader",
                 },
             },
+            {
+                test: /\.css$/i,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: "css-loader",
+                        options: {
+                            importLoaders: 1,
+                            modules: true,
+                        },
+                    },
+                    {
+                        loader: "postcss-loader",
+                    },
+                ],
+            },
         ],
     },
     plugins: [
@@ -28,6 +45,7 @@ module.exports = {
             template: "index.html",
             title: "math-toolbox",
         }),
+        new MiniCssExtractPlugin(),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts", ".tsx"],

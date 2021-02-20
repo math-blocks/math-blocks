@@ -1,5 +1,4 @@
 import * as React from "react";
-import {StyleSheet, css} from "aphrodite";
 
 import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
@@ -15,7 +14,7 @@ const EditorPage: React.FunctionComponent = () => (
         <MathEditor readonly={false} rows={[startingValue]} focus={true} />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
             <EditingPanel />
-            <div className={css(styles.separator)} />
+            <div style={{height: 8}} />
             <MathKeypad />
         </div>
         <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
@@ -37,9 +36,3 @@ const EditorPage: React.FunctionComponent = () => (
 );
 
 export default EditorPage;
-
-const styles = StyleSheet.create({
-    separator: {
-        height: 8,
-    },
-});

@@ -1,11 +1,10 @@
-// @flow
 import * as React from "react";
-import {css, StyleSheet} from "aphrodite";
 
 import * as Editor from "@math-blocks/editor-core";
 import {typeset, typesetWithWork} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
+import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
@@ -118,7 +117,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             ref={containerRef}
             onFocus={() => setActive(true)}
             onBlur={() => setActive(false)}
-            className={css(styles.container)}
+            className={styles.container}
             style={style}
             role="textbox"
         >
@@ -130,18 +129,5 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 MathEditor.defaultProps = {
     style: {},
 };
-
-const styles = StyleSheet.create({
-    container: {
-        display: "inline-block",
-        border: "solid 1px gray",
-        outline: "none",
-        borderRadius: 4,
-        ":focus": {
-            border: "solid 1px blue",
-        },
-        lineHeight: 0,
-    },
-});
 
 export default MathEditor;
