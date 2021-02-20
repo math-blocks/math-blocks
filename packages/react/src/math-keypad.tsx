@@ -1,5 +1,6 @@
 import * as React from "react";
-import {css, StyleSheet} from "aphrodite";
+
+import styles from "./keypad.module.css";
 
 type Button = {
     char: string;
@@ -40,10 +41,10 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
     };
 
     return (
-        <div className={css(styles.container)}>
+        <div className={styles.container}>
             {buttons.map((button) => (
                 <div
-                    className={css(styles.item)}
+                    className={styles.item}
                     key={button.name}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleClick(button)}
@@ -54,31 +55,5 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
         </div>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        display: "grid",
-        gridTemplateColumns: "auto auto auto auto",
-        gridAutoRows: 60,
-        fontFamily: "comic sans ms",
-        fontSize: 28,
-        gridColumnGap: 1,
-        gridRowGap: 1,
-        backgroundColor: "white",
-        border: "solid 1px white",
-        width: 240,
-    },
-    item: {
-        textAlign: "center",
-        verticalAlign: "middle",
-        backgroundColor: "#CCC",
-        lineHeight: "60px",
-        cursor: "pointer",
-        userSelect: "none",
-        ":hover": {
-            backgroundColor: "#AAA",
-        },
-    },
-});
 
 export default MathKeypad;

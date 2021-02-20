@@ -1,5 +1,4 @@
 import * as React from "react";
-import {StyleSheet, css} from "aphrodite";
 
 import {ZipperEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
@@ -84,16 +83,10 @@ const EditorPage: React.FunctionComponent = () => (
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>
             {/* <EditingPanel /> */}
-            <div className={css(styles.separator)} />
+            <div style={{height: 8}} />
             <MathKeypad />
         </div>
     </div>
 );
 
 export default EditorPage;
-
-const styles = StyleSheet.create({
-    separator: {
-        height: 8,
-    },
-});

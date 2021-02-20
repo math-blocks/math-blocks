@@ -1,0 +1,25 @@
+.container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-auto-rows: 60px;
+    font-family: comic sans ms;
+    font-size: 28px;
+    grid-column-gap: 1px;
+    grid-row-gap: 1px;
+    background-color: white;
+    border: solid 1px white;
+    width: 240px;
+}
+
+.item {
+    text-align: center;
+    vertical-align: middle;
+    background-color: #CCC;
+    line-height: 60px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.item:hover {
+    background-color: #AAA;
+}

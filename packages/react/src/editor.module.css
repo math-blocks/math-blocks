@@ -1,0 +1,11 @@
+.container {
+    display: inline-block;
+    border: solid 1px gray;
+    outline: none;
+    border-radius: 4px;
+    line-height: 0;
+}
+
+.container:focus {
+    border: solid 1px blue;
+}
