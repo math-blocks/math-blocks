@@ -14,12 +14,12 @@
 .item {
     text-align: center;
     vertical-align: middle;
-    background-color: #CCC;
+    background-color: #ccc;
     line-height: 60px;
     cursor: pointer;
     user-select: none;
 }
 
 .item:hover {
-    background-color: #AAA;
+    background-color: #aaa;
 }
