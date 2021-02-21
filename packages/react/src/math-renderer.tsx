@@ -97,8 +97,8 @@ const MathRenderer: React.FunctionComponent<Props> = (props) => {
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox={viewBox}
-            width={width}
-            height={height + CURSOR_WIDTH}
+            width={width + CURSOR_WIDTH}
+            height={height}
             style={style}
         >
             <Group {...scene} />

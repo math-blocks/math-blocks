@@ -81,6 +81,10 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
+// TODO: get font size from options
+const FONT_SIZE = 64;
+const CURSOR_WIDTH = 2;
+
 const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     const pen = {x: 0, y: 0};
     const {multiplier} = box;
@@ -110,10 +114,10 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
             // Draw the cursor.
             belowLayer.push({
                 type: "rect",
-                x: pen.x,
-                y: pen.y - 64 * 0.85 * multiplier,
-                width: 2,
-                height: 64 * multiplier,
+                x: pen.x - CURSOR_WIDTH / 2,
+                y: pen.y - FONT_SIZE * 0.85 * multiplier,
+                width: CURSOR_WIDTH,
+                height: FONT_SIZE * multiplier,
             });
         }
 
@@ -126,12 +130,12 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
             if (isSelection) {
                 const yMin = -Math.max(
                     Layout.getHeight(node),
-                    64 * 0.85 * multiplier,
+                    FONT_SIZE * 0.85 * multiplier,
                 );
 
                 const height = Math.max(
                     Layout.getHeight(node) + Layout.getDepth(node),
-                    64 * multiplier,
+                    FONT_SIZE * multiplier,
                 );
 
                 selectionBoxes.push({
@@ -289,5 +293,13 @@ const _processBox = (box: Layout.Box, loc: Point, options: Options): Group => {
 export const processBox = (box: Layout.Box, options: Options = {}): Group => {
     const loc = {x: 0, y: Layout.getHeight(box)};
 
-    return _processBox(box, loc, options);
+    const scene = _processBox(box, loc, options);
+
+    const y = Math.max(scene.y, FONT_SIZE * 0.85);
+    const height = Math.max(scene.height, FONT_SIZE);
+
+    scene.y = y;
+    scene.height = height;
+
+    return scene;
 };
