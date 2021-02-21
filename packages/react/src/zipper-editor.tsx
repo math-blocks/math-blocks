@@ -89,7 +89,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         colorMap: props.colorMap,
     };
 
-    const options = {};
+    const options = {showCursor: active};
 
     const scene = typesetZipper(zipper, context, options);
 
