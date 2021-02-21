@@ -12,4 +12,5 @@ export {parse} from "./parser/parser";
 export {isEqual, layoutCursorFromState} from "./reducer/util"; // TODO: dedupe methods in editor and util
 
 export {zipperReducer} from "./zipper/reducer";
+export {Dir} from "./zipper/enums";
 export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./zipper/types";

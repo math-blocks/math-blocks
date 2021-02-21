@@ -44,36 +44,6 @@ export type Rect = {
 
 export type Node = Group | Glyph | Line | Rect;
 
-const unionRect = (rects: Rect[]): Rect => {
-    let xMin = Infinity;
-    let yMin = Infinity;
-    let xMax = -Infinity;
-    let yMax = -Infinity;
-
-    rects.forEach((rect) => {
-        if (rect.x < xMin) {
-            xMin = rect.x;
-        }
-        if (rect.y < yMin) {
-            yMin = rect.y;
-        }
-        if (rect.x + rect.width > xMax) {
-            xMax = rect.x + rect.width;
-        }
-        if (rect.y + rect.height > yMax) {
-            yMax = rect.y + rect.height;
-        }
-    });
-
-    return {
-        type: "rect",
-        x: xMin,
-        y: yMin,
-        width: xMax - xMin,
-        height: yMax - yMin,
-    };
-};
-
 export type Point = {
     x: number;
     y: number;
@@ -111,39 +81,32 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
-const processHBox = ({
-    box,
-    cancelRegions,
-    loc,
-}: {
-    box: Layout.Box;
-    cancelRegions?: LayoutCursor[];
-    loc: Point;
-}): Group => {
+const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     const pen = {x: 0, y: 0};
     const {multiplier} = box;
 
-    const currentCancelRegions = (cancelRegions || []).filter(
-        (region) => region.parent === box.id,
-    );
-
-    // set up arrays to track state of each cancel region being processed
-    const cancelBoxes: Rect[][] = currentCancelRegions.map(() => []);
     const selectionBoxes: Rect[] = [];
-
     const editorLayer: Node[] = [];
     const nonEditorLayer: Node[] = [];
     const belowLayer: Node[] = [];
     const aboveLayer: Node[] = [];
 
-    const hasSelection = box.content.length === 3 && box.content[1].length > 0;
+    const hasSelection =
+        !options.inSelection &&
+        box.content.length === 3 &&
+        box.content[1].length > 0;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
 
         // There should only be two sections max.  If there are two sections
         // then we should draw a cursor in between the two of them.
-        if (index === 1 && !hasSelection) {
+        if (
+            index === 1 &&
+            !hasSelection &&
+            !options.inSelection &&
+            options.showCursor
+        ) {
             // Draw the cursor.
             belowLayer.push({
                 type: "rect",
@@ -159,34 +122,6 @@ const processHBox = ({
             // node was directly derived from an editor node.
             const layer =
                 typeof node.id === "number" ? editorLayer : nonEditorLayer;
-
-            currentCancelRegions.forEach((region, regionIndex) => {
-                if (
-                    layer === editorLayer &&
-                    region.prev < editorLayer.length &&
-                    region.next > editorLayer.length
-                ) {
-                    const yMin = -Math.max(
-                        Layout.getHeight(node),
-                        64 * 0.85 * multiplier,
-                    );
-
-                    const height = Math.max(
-                        Layout.getHeight(node) + Layout.getDepth(node),
-                        64 * multiplier,
-                    );
-
-                    // TODO: union cancel boxes as we go instead of doing it later
-                    // this will allow us to avoid having an array of an array.
-                    cancelBoxes[regionIndex].push({
-                        type: "rect",
-                        x: pen.x,
-                        y: yMin,
-                        width: Layout.getWidth(node),
-                        height: height,
-                    });
-                }
-            });
 
             if (isSelection) {
                 const yMin = -Math.max(
@@ -213,11 +148,15 @@ const processHBox = ({
             switch (node.type) {
                 case "Box":
                     layer.push(
-                        processBox({
-                            box: node,
-                            cancelRegions,
-                            loc: {x: pen.x, y: pen.y + node.shift},
-                        }),
+                        _processBox(
+                            node,
+                            {x: pen.x, y: pen.y + node.shift},
+                            {
+                                ...options,
+                                inSelection:
+                                    options.inSelection || hasSelection,
+                            },
+                        ),
                     );
                     break;
                 case "HRule":
@@ -237,17 +176,6 @@ const processHBox = ({
             pen.x += advance;
         });
     });
-
-    for (const boxes of cancelBoxes) {
-        const box = unionRect(boxes);
-        aboveLayer.push({
-            type: "line",
-            x1: box.x + box.width,
-            y1: box.y,
-            x2: box.x,
-            y2: box.y + box.height,
-        });
-    }
 
     // Draw the selection.
     for (const selectionBox of selectionBoxes) {
@@ -269,15 +197,7 @@ const processHBox = ({
     };
 };
 
-const processVBox = ({
-    box,
-    cancelRegions,
-    loc,
-}: {
-    box: Layout.Box;
-    cancelRegions?: LayoutCursor[];
-    loc: Point;
-}): Group => {
+const processVBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
@@ -313,11 +233,11 @@ const processVBox = ({
                         debugger;
                     }
                     layer.push(
-                        processBox({
-                            box: node,
-                            cancelRegions,
-                            loc: {x: pen.x + node.shift, y: pen.y},
-                        }),
+                        _processBox(
+                            node,
+                            {x: pen.x + node.shift, y: pen.y},
+                            options,
+                        ),
                     );
                     pen.y += Layout.getDepth({...node, shift: 0});
                     break;
@@ -352,26 +272,22 @@ const processVBox = ({
     };
 };
 
-export const processBox = ({
-    box,
-    cancelRegions,
-    loc,
-}: {
-    box: Layout.Box;
-    cancelRegions?: LayoutCursor[];
-    loc?: Point;
-}): Group => {
-    // If we weren't passed a location then this is the top-level call, in which
-    // case we set the location based on box being passed in.  Setting loc.y to
-    // the height of the box shifts the box into view.
-    if (!loc) {
-        loc = {x: 0, y: Layout.getHeight(box)};
-    }
+type Options = {
+    showCursor?: boolean;
+    inSelection?: boolean;
+};
 
+const _processBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     switch (box.kind) {
         case "hbox":
-            return processHBox({box, cancelRegions, loc});
+            return processHBox(box, loc, options);
         case "vbox":
-            return processVBox({box, cancelRegions, loc});
+            return processVBox(box, loc, options);
     }
+};
+
+export const processBox = (box: Layout.Box, options: Options = {}): Group => {
+    const loc = {x: 0, y: Layout.getHeight(box)};
+
+    return _processBox(box, loc, options);
 };

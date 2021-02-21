@@ -1,4 +1,6 @@
 const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
 const webpackConfig = require(path.resolve(__dirname, "../webpack.config.js"));
 
 module.exports = {
@@ -15,6 +17,8 @@ module.exports = {
             config.resolve.alias,
             webpackConfig.resolve.alias,
         );
+        config.module.rules = webpackConfig.module.rules;
+        config.plugins.push(new MiniCssExtractPlugin());
         return config;
     },
     babel: async (config, options) => {

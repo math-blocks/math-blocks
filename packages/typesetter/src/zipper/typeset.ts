@@ -5,7 +5,7 @@ import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 
 import type {Context} from "../types";
-import type {Group, Point} from "./scene-graph";
+import type {Group} from "./scene-graph";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -305,8 +305,8 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
 
     switch (node.type) {
         case "row": {
-            // ignore
-            throw new Error("we shouldn't be processing rows here");
+            // The only time this can happen is if limits.inner is a row
+            return typesetRow(node, context);
         }
         case "frac": {
             const newMultiplier = cramped ? 0.5 : 1.0;
@@ -668,9 +668,7 @@ const _typesetZipper = (
 };
 
 type Options = {
-    // cursor?: LayoutCursor | undefined;
-    // cancelRegions?: LayoutCursor[] | undefined;
-    loc?: Point | undefined;
+    showCursor?: boolean;
 };
 
 export const typesetZipper = (
@@ -679,5 +677,5 @@ export const typesetZipper = (
     options: Options = {},
 ): Group => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
-    return processBox({box, ...options});
+    return processBox(box, options);
 };
