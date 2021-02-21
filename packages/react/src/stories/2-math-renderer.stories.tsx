@@ -212,7 +212,16 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         glyph("1"),
         glyph("0"),
     ]);
-    const zipper = zipperFromRow(math);
+    const zipper: Editor.Zipper = {
+        row: {
+            type: "zrow",
+            id: math.id,
+            left: math.children.slice(0, 1),
+            right: math.children.slice(1),
+            selection: null,
+        },
+        breadcrumbs: [],
+    };
 
     const fontSize = 60;
     const context = {
