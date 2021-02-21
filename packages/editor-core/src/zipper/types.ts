@@ -70,11 +70,21 @@ export type ZRoot =
           other: types.Row | null;
       };
 
-export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot;
+// TODO: we need some way to convert this to a non-zippered node, right now we
+// don't have a "columns" type as part of Editor.types.  Once we have a "columns"
+// we'll also need a way for the parser to parse that to a regular expression.
+export type ZColumns = {
+    id: number;
+    type: "zcolumns";
+    left: types.Row[];
+    right: types.Row[];
+};
+
+export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot; // | ZColumns;
 
 export type Breadcrumb = {
     row: ZRow;
-    focus: Focus; // How does focus differ from selection?
+    focus: Focus; // The item from the row that the cursor is inside of
 };
 
 export type Zipper = {
@@ -83,3 +93,39 @@ export type Zipper = {
     // nearest to zipper.row in the breadrcumbs.
     breadcrumbs: Breadcrumb[]; // any ZRow in here should have a non-null `focus`
 };
+
+// For columns we could do this:
+// const zipper: Zipper = {
+//     row: {
+//         type: "zrow",
+//         id: 0,
+//         left: [],
+//         right: [], // "=",
+//         selection: null,
+//     },
+//     breadcrumbs: [{
+//         row: {
+//             type: "zrow",
+//             id: 1,
+//             left: [],
+//             right: [],
+//             selection: null,
+//         },
+//         focus: {
+//             type: "zcolumns",
+//             id: 2,
+//             left: [{
+//                 id: 3,
+//                 type: "row",
+//                 children: [], // "2", "x", "+", "5",
+//             }],
+//             right: [{
+//                 id: 4,
+//                 type: "row",
+//                 children: [], // "1", "0",
+//             }],
+//         },
+//     }],
+// };
+
+// console.log(zipper);

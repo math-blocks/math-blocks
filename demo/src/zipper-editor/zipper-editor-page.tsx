@@ -78,7 +78,7 @@ const EditorPage: React.FunctionComponent = () => (
             zipper={zipper}
             focus={true}
             onChange={(value) => {
-                // console.log(value);
+                console.log(value);
             }}
         />
         <div style={{position: "fixed", bottom: 0, left: 0}}>

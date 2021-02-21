@@ -4,6 +4,7 @@ import {moveLeft} from "./move-left";
 import {moveRight} from "./move-right";
 import {parens} from "./parens";
 import {root} from "./root";
+import {slash} from "./slash";
 import {subsup} from "./subsup";
 import {Dir} from "./enums";
 import type {Zipper} from "./types";
@@ -50,6 +51,9 @@ export const zipperReducer = (
         }
         case ")": {
             return parens(state, Dir.Right);
+        }
+        case "/": {
+            return slash(state);
         }
         // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
         case "\u221A": {

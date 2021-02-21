@@ -2,7 +2,7 @@ import {hot} from "react-hot-loader/root";
 import * as React from "react";
 import {useSelector, useDispatch} from "react-redux";
 
-import {MathKeypad, MathEditor} from "@math-blocks/react";
+import {MathKeypad, ZipperEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
@@ -29,14 +29,25 @@ const Tutor: React.FunctionComponent = () => {
     const isComplete = state.status === ProblemStatus.Complete;
     const pairs = getPairs(state.steps);
 
+    const zipper: Editor.Zipper = {
+        breadcrumbs: [],
+        row: {
+            id: state.steps[0].value.id,
+            type: "zrow",
+            left: [],
+            selection: null,
+            right: state.steps[0].value.children,
+        },
+    };
+
     return (
         <div style={{margin: "auto"}}>
             <VStack>
                 <HStack>
-                    <MathEditor
+                    <ZipperEditor
                         key={`question`}
                         readonly={false}
-                        rows={[state.steps[0].value]}
+                        zipper={zipper}
                         stepChecker={true}
                         focus={mode === "edit"}
                         style={{marginTop: 8, flexGrow: 1}}

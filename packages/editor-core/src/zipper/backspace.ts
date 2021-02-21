@@ -10,6 +10,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             (crumb) => crumb.row.selection !== null,
         );
 
+        // Cursor is at the same level of the top-most selection
         if (index === -1) {
             return {
                 ...zipper,
@@ -20,6 +21,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             };
         }
 
+        // Cursor started deeper than the top-most selection
         const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
 
         return {
