@@ -6,7 +6,7 @@ import {zipperToRow} from "./convert";
 import type {Zipper, Focus} from "./types";
 
 export const slash = (zipper: Zipper): Zipper => {
-    const {selection} = zipper.row;
+    const {left, selection} = zipper.row;
 
     if (selection) {
         const index = zipper.breadcrumbs.findIndex(
@@ -97,6 +97,43 @@ export const slash = (zipper: Zipper): Zipper => {
         };
     }
 
+    // We don't include unary +/- in the numerator.  This mimic's mathquill's
+    // behavior.
+    const splitChars = [
+        "+",
+        "\u2212",
+        "\u00B7",
+        "=",
+        "<",
+        ">",
+        "\u2264",
+        "\u2265",
+    ];
+
+    let index = left.length - 1;
+    let parenCount = 0;
+    while (index >= 0) {
+        const child = left[index];
+        if (child.type === "atom" && child.value.char === ")") {
+            parenCount++;
+        }
+        if (child.type === "atom" && child.value.char === "(") {
+            parenCount--;
+        }
+        if (parenCount < 0) {
+            break;
+        }
+
+        if (
+            child.type === "atom" &&
+            parenCount === 0 &&
+            splitChars.includes(child.value.char)
+        ) {
+            break;
+        }
+        index--;
+    }
+
     const focus: Focus = {
         type: "zfrac",
         id: getId(),
@@ -104,7 +141,7 @@ export const slash = (zipper: Zipper): Zipper => {
         other: {
             id: getId(),
             type: "row",
-            children: [], // TODO: populate this with nodes from zipper.row.left
+            children: left.slice(index + 1),
         },
     };
 
@@ -120,7 +157,10 @@ export const slash = (zipper: Zipper): Zipper => {
         breadcrumbs: [
             ...zipper.breadcrumbs,
             {
-                row: zipper.row,
+                row: {
+                    ...zipper.row,
+                    left: left.slice(0, index + 1),
+                },
                 focus,
             },
         ],
