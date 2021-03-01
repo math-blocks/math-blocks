@@ -2,7 +2,7 @@ import * as React from "react";
 import {useDispatch} from "react-redux";
 
 import * as Editor from "@math-blocks/editor-core";
-import {MathEditor} from "@math-blocks/react";
+import {ZipperEditor} from "@math-blocks/react";
 import {
     MistakeId,
     Mistake,
@@ -328,6 +328,17 @@ const Step: React.FunctionComponent<Props> = (props) => {
         }
     };
 
+    const zipper: Editor.Zipper = {
+        breadcrumbs: [],
+        row: {
+            id: step.value.id,
+            type: "zrow",
+            left: [],
+            selection: null,
+            right: step.value.children,
+        },
+    };
+
     return (
         <VStack>
             <HStack
@@ -336,13 +347,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     marginTop: 8,
                 }}
             >
-                <MathEditor
+                <ZipperEditor
                     // HACK: whenever we apply a correction to a step, the value
                     // gets a new id.  Using that id as a the `key` will trigger
                     // a re-render.
                     key={step.value.id}
                     readonly={readonly}
-                    rows={[step.value]}
+                    zipper={zipper}
                     stepChecker={true}
                     focus={focus}
                     onSubmit={handleCheckStep}

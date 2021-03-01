@@ -11,14 +11,15 @@ import useEventListener from "./use-event-listener";
 const {useEffect, useState, useRef} = React;
 
 type Props = {
+    // The initial value for the editor
     zipper: Editor.Zipper;
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.Zipper) => unknown;
-    onChange?: (value: Editor.Zipper) => unknown;
+    onSubmit?: (value: Editor.types.Row) => unknown;
+    onChange?: (value: Editor.types.Row) => unknown;
 
     /**
      * Style
@@ -54,7 +55,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             };
             if (e.key === "Enter" && props.onSubmit) {
                 // TODO: submit all rows
-                const success = props.onSubmit(zipper);
+                const success = props.onSubmit(Editor.zipperToRow(zipper));
                 if (success) {
                     setActive(false);
                 }
@@ -72,7 +73,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     e.keyCode !== 40
                 ) {
                     // TODO: communicate all rows when sending this event
-                    props.onChange(value);
+                    props.onChange(Editor.zipperToRow(value));
                 }
             }
         }
