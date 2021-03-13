@@ -31,6 +31,7 @@ type Ident = {kind: "identifier"; name: string};
 type Num = {kind: "number"; value: string};
 type Plus = {kind: "plus"};
 type Minus = {kind: "minus"};
+type PlusMinus = {kind: "plusminus"};
 type Times = {kind: "times"};
 type Equal = {kind: "eq"};
 type LParens = {kind: "lparens"};
@@ -61,6 +62,9 @@ export const plus = (loc: SourceLocation): Atom => atom({kind: "plus"}, loc);
 
 export const minus = (loc: SourceLocation): Atom => atom({kind: "minus"}, loc);
 
+export const plusminus = (loc: SourceLocation): Atom =>
+    atom({kind: "plusminus"}, loc);
+
 export const times = (loc: SourceLocation): Atom => atom({kind: "times"}, loc);
 
 export const lparens = (loc: SourceLocation): Atom =>
@@ -79,6 +83,7 @@ export type Token =
     | Num
     | Plus
     | Minus
+    | PlusMinus
     | Times
     | Equal
     | LParens
@@ -89,7 +94,7 @@ export type Token =
     | Lim
     | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
@@ -138,6 +143,9 @@ const processGlyphs = (
                         break;
                     case "\u2212":
                         tokens.push(minus(loc));
+                        break;
+                    case "\u00B1":
+                        tokens.push(plusminus(loc));
                         break;
                     case "...":
                         tokens.push(ellipsis(loc));

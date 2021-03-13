@@ -12,6 +12,7 @@ type Token = Node;
 type Operator =
     | "add"
     | "sub"
+    | "plusminus"
     | "mul.exp"
     | "div"
     | "mul.imp"
@@ -20,7 +21,7 @@ type Operator =
     | "supsub"
     | "nul";
 
-type NAryOperator = "add" | "sub" | "mul.exp" | "mul.imp" | "eq";
+type NAryOperator = "add" | "sub" | "plusminus" | "mul.exp" | "mul.imp" | "eq";
 
 type EditorParser = Parser.IParser<Token, Parser.types.Node, Operator>;
 
@@ -50,6 +51,14 @@ const getPrefixParselet = (
                             const neg = parser.parseWithOperator("neg");
                             const loc = locFromRange(token.loc, neg.loc);
                             return Parser.builders.neg(neg, false, loc);
+                        },
+                    };
+                case "plusminus":
+                    return {
+                        parse: (parser) => {
+                            const neg = parser.parseWithOperator("plusminus");
+                            const loc = locFromRange(token.loc, neg.loc);
+                            return Parser.builders.plusminus(neg, "unary", loc);
                         },
                     };
                 case "lparens":
@@ -140,6 +149,7 @@ const parseNaryInfix = (op: NAryOperator) => (
     switch (op) {
         case "add":
         case "sub":
+        case "plusminus":
             return Parser.builders.add([left, right, ...rest], loc);
         case "mul.imp":
             return Parser.builders.mul([left, right, ...rest], true, loc);
@@ -175,16 +185,30 @@ const parseNaryArgs = (
             const loc = locFromRange(token.loc, expr.loc);
             expr = Parser.builders.neg(expr, true, loc);
         }
+        if (op === "plusminus") {
+            const loc = locFromRange(token.loc, expr.loc);
+            expr = Parser.builders.plusminus(expr, "binary", loc);
+        }
         const nextToken = parser.peek();
         if (nextToken.type !== "atom") {
             throw new Error("atom expected");
         }
         const nextAtom = nextToken.value;
         if (
-            (op === "add" || op === "sub") &&
-            (nextAtom.kind === "plus" || nextAtom.kind === "minus")
+            (op === "add" || op === "sub" || op === "plusminus") &&
+            (nextAtom.kind === "plus" ||
+                nextAtom.kind === "minus" ||
+                nextAtom.kind === "plusminus")
         ) {
-            op = nextAtom.kind === "minus" ? "sub" : "add";
+            if (nextAtom.kind === "plus") {
+                op = "add";
+            } else if (nextAtom.kind === "minus") {
+                op = "sub";
+            } else if (nextAtom.kind === "plusminus") {
+                op = "plusminus";
+            } else {
+                throw new Error("unexpected value for nextAtom.kind");
+            }
             return [expr, ...parseNaryArgs(parser, op)];
         } else if (op === "mul.exp" && nextAtom.kind === "times") {
             return [expr, ...parseNaryArgs(parser, op)];
@@ -253,6 +277,11 @@ const getInfixParselet = (
                     return {op: "add", parse: parseNaryInfix("add")};
                 case "minus":
                     return {op: "add", parse: parseNaryInfix("sub")};
+                case "plusminus":
+                    return {
+                        op: "plusminus",
+                        parse: parseNaryInfix("plusminus"),
+                    };
                 case "times":
                     return {op: "mul.exp", parse: parseNaryInfix("mul.exp")};
                 case "eq":
@@ -363,8 +392,8 @@ const getOpPrecedence = (op: Operator): number => {
         case "eq":
             return 2;
         case "add":
-            return 3;
         case "sub":
+        case "plusminus":
             return 3;
         case "mul.exp":
             return 5;

@@ -38,6 +38,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
             fill={glyph.color || "currentcolor"}
             id={id}
             style={{opacity: glyph.pending ? 0.5 : 1.0}}
+            aria-hidden="true"
         >
             {glyph.char}
         </text>
@@ -87,7 +88,7 @@ type Props = {
     style?: React.CSSProperties;
 };
 
-const MathRenderer: React.FunctionComponent<Props> = (props) => {
+const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
     const {scene, style} = props;
     const {width, height} = scene;
     const padding = CURSOR_WIDTH / 2;
@@ -100,10 +101,13 @@ const MathRenderer: React.FunctionComponent<Props> = (props) => {
             width={width + CURSOR_WIDTH}
             height={height}
             style={style}
+            ref={ref}
         >
             <Group {...scene} />
         </svg>
     );
-};
+});
+
+MathRenderer.displayName = "MathRenderer";
 
 export default MathRenderer;

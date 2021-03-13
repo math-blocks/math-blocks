@@ -4,6 +4,7 @@ import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
 
 import EditorPage from "./editor/editor-page";
 import ZipperEditorPage from "./zipper-editor/zipper-editor-page";
+import MathmlPage from "./mathml/mathml-page";
 import HandwritingPage from "./handwriting/handwriting-page";
 import SolverPage from "./solver/solver-page";
 import TutorPage from "./tutor/tutor-page";
@@ -20,7 +21,10 @@ ReactDOM.render(
             <Route path="/zipper-editor">
                 <ZipperEditorPage />
             </Route>
-            <Route path="/editor-test">
+            <Route path="/mathml">
+                <MathmlPage />
+            </Route>
+            <Route path="/multirow-editor-test">
                 <EditorPage />
             </Route>
             <Route path="/handwriting">
@@ -39,7 +43,12 @@ ReactDOM.render(
                         <Link to="/zipper-editor">Zipper Editor</Link>
                     </li>
                     <li>
-                        <Link to="/editor-test">Editor test</Link>
+                        <Link to="/mathml">Mathml</Link>
+                    </li>
+                    <li>
+                        <Link to="/multirow-editor-test">
+                            Multi-row Editor test
+                        </Link>
                     </li>
                     <li>
                         <Link to="/handwriting">Handwriting input</Link>

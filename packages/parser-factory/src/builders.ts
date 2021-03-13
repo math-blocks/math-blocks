@@ -76,6 +76,18 @@ export const neg = (
     loc,
 });
 
+export const plusminus = (
+    arg: types.Node,
+    arity: "unary" | "binary",
+    loc?: types.SourceLocation,
+): types.PlusMinus => ({
+    type: "plusminus",
+    id: getId(),
+    arg,
+    arity,
+    loc,
+});
+
 export const div = (
     num: types.Node,
     den: types.Node,
