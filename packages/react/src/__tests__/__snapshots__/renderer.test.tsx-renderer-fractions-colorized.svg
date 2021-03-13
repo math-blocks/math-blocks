@@ -3,17 +3,17 @@
     <g transform="translate(0,76.51171875)" id="8">
         <g transform="translate(0,-22)" style="color:darkcyan" id="5">
             <g transform="translate(10.6904296875,-7.490234375)" id="6">
-                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1" aria-hidden="true">
                     1
                 </text>
             </g>
             <g transform="translate(0,76.158203125)" style="color:orange" id="7">
-                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1" aria-hidden="true">
                     2
                 </text>
                 <g transform="translate(36.62109375,-10)" id="3">
                     <g transform="translate(0,-22.2431640625)" style="color:pink" id="4">
-                        <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="2" style="opacity:1">
+                        <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="2" style="opacity:1" aria-hidden="true">
                             i
                         </text>
                     </g>

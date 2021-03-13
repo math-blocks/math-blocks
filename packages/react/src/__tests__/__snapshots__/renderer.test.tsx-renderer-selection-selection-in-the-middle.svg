@@ -5,29 +5,29 @@
         <rect type="rect" x="130.869140625" y="-54.4" width="36.62109375" height="64" fill="rgba(0,64,255,0.3)"></rect>
         <rect type="rect" x="72.041015625" y="-54.4" width="58.828125" height="64" fill="rgba(0,64,255,0.3)"></rect>
         <rect type="rect" x="36.62109375" y="-54.4" width="35.419921875" height="64" fill="rgba(0,64,255,0.3)"></rect>
-        <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1">
+        <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1" aria-hidden="true">
             2
         </text>
-        <text x="36.62109375" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1">
+        <text x="36.62109375" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1" aria-hidden="true">
             x
         </text>
         <g transform="translate(72.041015625,0)" id="2">
-            <text x="15" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="2" style="opacity:1">
+            <text x="15" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="2" style="opacity:1" aria-hidden="true">
                 +
             </text>
         </g>
-        <text x="130.869140625" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="3" style="opacity:1">
+        <text x="130.869140625" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="3" style="opacity:1" aria-hidden="true">
             5
         </text>
         <g transform="translate(167.490234375,0)" id="4">
-            <text x="15" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="4" style="opacity:1">
+            <text x="15" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="4" style="opacity:1" aria-hidden="true">
                 =
             </text>
         </g>
-        <text x="228.10546875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="5" style="opacity:1">
+        <text x="228.10546875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="5" style="opacity:1" aria-hidden="true">
             1
         </text>
-        <text x="255.1171875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="6" style="opacity:1">
+        <text x="255.1171875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="6" style="opacity:1" aria-hidden="true">
             0
         </text>
     </g>
