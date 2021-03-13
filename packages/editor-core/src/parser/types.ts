@@ -7,11 +7,13 @@ export type SourceLocation = {
 
 import * as sharedTypes from "../shared-types";
 
+// TODO: dedupe with lexer.ts
 export type Token =
     | {kind: "identifier"; name: string}
     | {kind: "number"; value: string}
     | {kind: "plus"}
     | {kind: "minus"}
+    | {kind: "plusminus"}
     | {kind: "times"}
     | {kind: "eq"}
     | {kind: "lparens"}

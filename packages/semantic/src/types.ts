@@ -18,6 +18,8 @@ export type NumericNode =
     | Pow
     | Log
     | Neg
+    | PlusMinus
+    | MinusPlus
     | Abs
     | Parens
     | Sum
@@ -72,7 +74,19 @@ export type Mul = Common & {
 export type Neg = Common & {
     type: "neg";
     arg: NumericNode;
-    subtraction: boolean;
+    subtraction: boolean; // TODO: change this to `arity: "unary" | "binary";`
+};
+
+export type PlusMinus = Common & {
+    type: "plusminus";
+    arg: NumericNode;
+    arity: "unary" | "binary";
+};
+
+export type MinusPlus = Common & {
+    type: "minusplus";
+    arg: NumericNode;
+    arity: "unary" | "binary";
 };
 
 /**

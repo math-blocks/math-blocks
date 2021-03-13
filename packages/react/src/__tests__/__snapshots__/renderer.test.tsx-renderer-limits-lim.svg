@@ -3,34 +3,34 @@
     <g transform="translate(0,54.4)" id="11">
         <g transform="translate(0,0)" id="8">
             <g transform="translate(0,40.5478515625)" id="9">
-                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="4" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="4" style="opacity:1" aria-hidden="true">
                     x
                 </text>
-                <text x="24.7939453125" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="5" style="opacity:1">
+                <text x="24.7939453125" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="5" style="opacity:1" aria-hidden="true">
                     —
                 </text>
-                <text x="61.8720703125" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="6" style="opacity:1">
+                <text x="61.8720703125" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="6" style="opacity:1" aria-hidden="true">
                     &gt;
                 </text>
-                <text x="77.888671875" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="7" style="opacity:1">
+                <text x="77.888671875" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="7" style="opacity:1" aria-hidden="true">
                     0
                 </text>
             </g>
             <g transform="translate(0,0)" id="undefined">
                 <g transform="translate(11.830078125,0)" id="3">
-                    <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1">
+                    <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1" aria-hidden="true">
                         l
                     </text>
-                    <text x="16.435546875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1">
+                    <text x="16.435546875" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="1" style="opacity:1" aria-hidden="true">
                         i
                     </text>
-                    <text x="33.251953125" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="2" style="opacity:1">
+                    <text x="33.251953125" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="2" style="opacity:1" aria-hidden="true">
                         m
                     </text>
                 </g>
             </g>
         </g>
-        <text x="103.5234375" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="10" style="opacity:1">
+        <text x="103.5234375" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="10" style="opacity:1" aria-hidden="true">
             x
         </text>
     </g>

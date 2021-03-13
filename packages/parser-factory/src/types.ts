@@ -23,6 +23,8 @@ export type NumericNode =
     | Pow
     | Log
     | Neg
+    | PlusMinus
+    | MinusPlus
     | Abs
     | Parens
     | Sum
@@ -77,7 +79,19 @@ export type Mul = Common & {
 export type Neg = Common & {
     type: "neg";
     arg: Node;
-    subtraction: boolean;
+    subtraction: boolean; // TODO: change this to `arity: "unary" | "binary";`
+};
+
+export type PlusMinus = Common & {
+    type: "plusminus";
+    arg: Node;
+    arity: "unary" | "binary";
+};
+
+export type MinusPlus = Common & {
+    type: "minusplus";
+    arg: Node;
+    arity: "unary" | "binary";
 };
 
 /**
@@ -541,7 +555,7 @@ export interface Common {
     source?: string;
 }
 
-// TODO: dedup with editor-core and semantic
+// TODO: dedupe with editor-core and parser-factory
 export interface SourceLocation {
     path: readonly number[];
     start: number;

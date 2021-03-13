@@ -3,40 +3,40 @@
     <g transform="translate(0,95.71875)" id="16">
         <g transform="translate(0,0)" id="5">
             <g transform="translate(11.84326171875,-62.8037109375)" id="7">
-                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="4" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="4" style="opacity:1" aria-hidden="true">
                     ∞
                 </text>
             </g>
             <g transform="translate(0,37.7060546875)" id="6">
-                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="1" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="1" style="opacity:1" aria-hidden="true">
                     i
                 </text>
-                <text x="11.771484375" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="2" style="opacity:1">
+                <text x="11.771484375" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="2" style="opacity:1" aria-hidden="true">
                     =
                 </text>
-                <text x="33.2021484375" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="3" style="opacity:1">
+                <text x="33.2021484375" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="3" style="opacity:1" aria-hidden="true">
                     0
                 </text>
             </g>
             <g transform="translate(0,0)" id="undefined">
-                <text x="7.00634765625" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1">
+                <text x="7.00634765625" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1" aria-hidden="true">
                     Σ
                 </text>
             </g>
         </g>
         <g transform="translate(58.8369140625,-22)" id="13">
             <g transform="translate(10.6904296875,-7.490234375)" id="14">
-                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="8" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="8" style="opacity:1" aria-hidden="true">
                     1
                 </text>
             </g>
             <g transform="translate(0,76.158203125)" id="15">
-                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="9" style="opacity:1">
+                <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="9" style="opacity:1" aria-hidden="true">
                     2
                 </text>
                 <g transform="translate(36.62109375,-10)" id="11">
                     <g transform="translate(0,-22.2431640625)" id="12">
-                        <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="10" style="opacity:1">
+                        <text x="0" y="0" font-family="comic sans ms" font-size="42" fill="currentcolor" id="10" style="opacity:1" aria-hidden="true">
                             i
                         </text>
                     </g>
