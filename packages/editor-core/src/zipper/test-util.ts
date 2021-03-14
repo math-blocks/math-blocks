@@ -1,3 +1,5 @@
+import * as Semantic from "@math-blocks/semantic";
+
 import * as types from "../types";
 import * as builders from "../builders";
 
@@ -46,3 +48,20 @@ export const subsup = (sub: string | null, sup: string | null): types.SubSup =>
         sub ? sub.split("").map((glyph) => builders.glyph(glyph)) : undefined,
         sup ? sup.split("").map((glyph) => builders.glyph(glyph)) : undefined,
     );
+
+export const toEqualEditorNodes = (
+    received: readonly types.Node[],
+    actual: readonly types.Node[],
+): {message: () => string; pass: boolean} => {
+    const message = "Editor nodes didn't match";
+    if (Semantic.util.deepEquals(received, actual)) {
+        return {
+            message: () => message,
+            pass: true,
+        };
+    }
+    return {
+        message: () => message,
+        pass: false,
+    };
+};

@@ -1,30 +1,11 @@
-import * as Semantic from "@math-blocks/semantic";
-
 import * as builders from "../../builders";
-import * as types from "../../types";
 
 import {Dir} from "../enums";
 import {slash} from "../slash";
 import {moveLeft} from "../move-left";
-import {row} from "../test-util";
-import type {Zipper} from "../types";
+import {row, toEqualEditorNodes} from "../test-util";
 
-const toEqualEditorNodes = (
-    received: types.Node[],
-    actual: types.Node[],
-): {message: () => string; pass: boolean} => {
-    const message = "Editor nodes didn't match";
-    if (Semantic.util.deepEquals(received, actual)) {
-        return {
-            message: () => message,
-            pass: true,
-        };
-    }
-    return {
-        message: () => message,
-        pass: false,
-    };
-};
+import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
