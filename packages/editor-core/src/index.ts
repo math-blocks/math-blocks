@@ -1,6 +1,6 @@
 import * as builders from "./builders";
 import * as types from "./types";
-import * as util from "./util"; // split this into `util` and `builders`
+import * as util from "./util";
 
 export {builders, types, util};
 
