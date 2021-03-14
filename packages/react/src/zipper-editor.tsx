@@ -31,7 +31,7 @@ type Props = {
     colorMap?: Map<number, string>;
 };
 
-export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
+export const ZipperEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
@@ -109,8 +109,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     );
 };
 
-MathEditor.defaultProps = {
+ZipperEditor.defaultProps = {
     style: {},
 };
 
-export default MathEditor;
+export default ZipperEditor;

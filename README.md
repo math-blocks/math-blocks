@@ -24,7 +24,7 @@ the mistake for the user.
 A set of React components for rendering and editing math expressions.
 
 - `MathRenderer`
-- `MathEditor`
+- `ZipperEditor`
 
 ### [@math-blocks/solver](packages/solver/README.md)
 

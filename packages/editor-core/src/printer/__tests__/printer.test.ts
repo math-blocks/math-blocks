@@ -2,10 +2,10 @@ import * as Semantic from "@math-blocks/semantic";
 
 import * as builders from "../../builders";
 import * as types from "../../types";
-import * as Util from "../../reducer/util";
+import * as Util from "../../util";
+import {toEqualMath} from "../../test-util";
 
 import {print} from "../printer";
-import {toEqualMath} from "../../reducer/test-util";
 
 expect.extend({toEqualMath});
 

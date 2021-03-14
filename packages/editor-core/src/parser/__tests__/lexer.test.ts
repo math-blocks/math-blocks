@@ -1,5 +1,5 @@
 import {row, glyph, frac, subsup, limits} from "../../builders";
-import * as util from "../../reducer/util";
+import * as util from "../../util";
 
 import * as Lexer from "../lexer";
 import {serializer} from "../test-util";

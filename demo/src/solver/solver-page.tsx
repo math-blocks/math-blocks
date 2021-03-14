@@ -2,11 +2,11 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
-import {MathEditor, MathRenderer} from "@math-blocks/react";
+import {ZipperEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
-import {typeset} from "@math-blocks/typesetter";
+import {typesetZipper} from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";
 
@@ -23,7 +23,7 @@ const question: Editor.types.Row = Editor.util.row("2x+5=10");
 
 const SolverPage: React.FunctionComponent = () => {
     const [input, setInput] = React.useState(question);
-    const [solution, setSolution] = React.useState<Editor.types.Node | null>(
+    const [solution, setSolution] = React.useState<Editor.types.Row | null>(
         null,
     );
     const [step, setStep] = React.useState<Step | null>(null);
@@ -73,13 +73,34 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const scene = typeset(solution, context);
+            const zipper: Editor.Zipper = {
+                breadcrumbs: [],
+                row: {
+                    id: solution.id,
+                    type: "zrow",
+                    left: [],
+                    selection: null,
+                    right: solution.children,
+                },
+            };
+            const scene = typesetZipper(zipper, context);
             return <MathRenderer scene={scene} />;
         }
         return null;
     };
 
     const showSolution = solution != null;
+
+    const zipper: Editor.Zipper = {
+        breadcrumbs: [],
+        row: {
+            id: input.id,
+            type: "zrow",
+            left: [],
+            selection: null,
+            right: input.children,
+        },
+    };
 
     return (
         <div style={styles.container}>
@@ -89,9 +110,9 @@ const SolverPage: React.FunctionComponent = () => {
                 <button onClick={handleSolve}>Solve</button>
             </div>
             <div>
-                <MathEditor
+                <ZipperEditor
                     readonly={false}
-                    rows={[input]}
+                    zipper={zipper}
                     stepChecker={true}
                     focus={true}
                     onChange={(value: Editor.types.Row) => setInput(value)}

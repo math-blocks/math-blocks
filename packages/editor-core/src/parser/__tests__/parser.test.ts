@@ -1,7 +1,7 @@
 import * as Testing from "@math-blocks/testing";
 
 import {row, glyph, subsup} from "../../builders";
-import * as util from "../../reducer/util";
+import * as util from "../../util";
 
 import * as parser from "../parser";
 
