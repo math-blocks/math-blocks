@@ -3,13 +3,13 @@ import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor-core";
 
-import ZipperEditor from "../zipper-editor";
+import MathEditor from "../math-editor";
 
 const {row, glyph} = Editor.builders;
 
 export default {
-    title: "ZipperEditor",
-    component: ZipperEditor,
+    title: "MathEditor",
+    component: MathEditor,
 };
 
 type EmptyProps = Record<string, never>;
@@ -38,7 +38,7 @@ export const Editable: React.FunctionComponent<EmptyProps> = () => {
     };
 
     return (
-        <ZipperEditor
+        <MathEditor
             readonly={false}
             zipper={zipper}
             focus={true}
@@ -71,5 +71,5 @@ export const Readonly: React.FunctionComponent<EmptyProps> = () => {
         },
     };
 
-    return <ZipperEditor readonly={true} zipper={zipper} focus={false} />;
+    return <MathEditor readonly={true} zipper={zipper} focus={false} />;
 };

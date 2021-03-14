@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
-import {typesetZipper} from "@math-blocks/typesetter";
+import {typesetZipper, typeset} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
@@ -15,19 +15,6 @@ export default {
 };
 
 type EmptyProps = Record<string, never>;
-
-const zipperFromRow = (row: Editor.types.Row): Editor.Zipper => {
-    return {
-        row: {
-            type: "zrow",
-            id: row.id,
-            left: [],
-            right: row.children,
-            selection: null,
-        },
-        breadcrumbs: [],
-    };
-};
 
 export const Small: React.FunctionComponent<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
@@ -47,7 +34,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const scene = typesetZipper(zipperFromRow(math), context);
+    const scene = typeset(math, context);
 
     return <MathRenderer scene={scene} />;
 };
@@ -70,7 +57,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         multiplier: 1.0,
         cramped: false,
     };
-    const scene = typesetZipper(zipperFromRow(math), context);
+    const scene = typeset(math, context);
 
     return <MathRenderer scene={scene} />;
 };
@@ -158,19 +145,17 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const pythagoras = typesetZipper(
-        zipperFromRow(
-            row([
-                glyph("a"),
-                Editor.util.sup("2"),
-                glyph("+"),
-                glyph("b"),
-                Editor.util.sup("2"),
-                glyph("="),
-                glyph("c"),
-                Editor.util.sup("2"),
-            ]),
-        ),
+    const pythagoras = typeset(
+        row([
+            glyph("a"),
+            Editor.util.sup("2"),
+            glyph("+"),
+            glyph("b"),
+            Editor.util.sup("2"),
+            glyph("="),
+            glyph("c"),
+            Editor.util.sup("2"),
+        ]),
         context,
     );
 
@@ -186,29 +171,28 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const quadraticEquation = typesetZipper(
-        zipperFromRow(
-            row([
-                glyph("x"),
-                glyph("="),
-                frac(
-                    [
-                        glyph("\u2212"),
+    const quadraticEquation = typeset(
+        row([
+            glyph("x"),
+            glyph("="),
+            frac(
+                [
+                    glyph("\u2212"),
+                    glyph("b"),
+                    glyph("\u00B1"),
+                    root(null, [
                         glyph("b"),
-                        glyph("\u00B1"),
-                        root(null, [
-                            glyph("b"),
-                            Editor.util.sup("2"),
-                            glyph("\u2212"),
-                            glyph("4"),
-                            glyph("a"),
-                            glyph("c"),
-                        ]),
-                    ],
-                    [glyph("2"), glyph("a")],
-                ),
-            ]),
-        ),
+                        Editor.util.sup("2"),
+                        glyph("\u2212"),
+                        glyph("4"),
+                        glyph("a"),
+                        glyph("c"),
+                    ]),
+                ],
+                [glyph("2"), glyph("a")],
+            ),
+        ]),
+
         context,
     );
 
@@ -224,18 +208,16 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const lim = typesetZipper(
-        zipperFromRow(
-            row([
-                limits(row([glyph("l"), glyph("i"), glyph("m")]), [
-                    glyph("x"),
-                    glyph("—"),
-                    glyph(">"),
-                    glyph("0"),
-                ]),
+    const lim = typeset(
+        row([
+            limits(row([glyph("l"), glyph("i"), glyph("m")]), [
                 glyph("x"),
+                glyph("—"),
+                glyph(">"),
+                glyph("0"),
             ]),
-        ),
+            glyph("x"),
+        ]),
         context,
     );
 
@@ -251,17 +233,15 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
     };
 
-    const sum = typesetZipper(
-        zipperFromRow(
-            row([
-                limits(
-                    glyph("\u03a3"),
-                    [glyph("i"), glyph("="), glyph("0")],
-                    [glyph("\u221e")],
-                ),
-                frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
-            ]),
-        ),
+    const sum = typeset(
+        row([
+            limits(
+                glyph("\u03a3"),
+                [glyph("i"), glyph("="), glyph("0")],
+                [glyph("\u221e")],
+            ),
+            frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
+        ]),
         context,
     );
 
@@ -288,7 +268,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         colorMap.set(subsup.children[1].id, "pink");
     }
 
-    const sum = typesetZipper(zipperFromRow(row([fracNode])), context);
+    const sum = typeset(row([fracNode]), context);
 
     return <MathRenderer scene={sum} />;
 };
@@ -323,7 +303,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typesetZipper(zipperFromRow(editNode), context);
+    const prod = typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };
@@ -358,7 +338,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typesetZipper(zipperFromRow(editNode), context);
+    const prod = typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };
@@ -399,7 +379,7 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typesetZipper(zipperFromRow(editNode), context);
+    const prod = typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };

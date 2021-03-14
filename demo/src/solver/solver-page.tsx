@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
-import {ZipperEditor, MathRenderer} from "@math-blocks/react";
+import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
@@ -110,7 +110,7 @@ const SolverPage: React.FunctionComponent = () => {
                 <button onClick={handleSolve}>Solve</button>
             </div>
             <div>
-                <ZipperEditor
+                <MathEditor
                     readonly={false}
                     zipper={zipper}
                     stepChecker={true}

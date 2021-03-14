@@ -1,7 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import type {FontMetrics} from "../metrics";
-import type {Context} from "../types";
+import type {FontMetrics} from "./metrics";
+import type {Context} from "./types";
 
 type Dist = number;
 

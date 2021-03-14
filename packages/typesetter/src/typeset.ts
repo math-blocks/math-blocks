@@ -4,7 +4,7 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 
-import type {Context} from "../types";
+import type {Context} from "./types";
 import type {Group} from "./scene-graph";
 
 // Dedupe this with editor/src/util.ts
@@ -677,5 +677,14 @@ export const typesetZipper = (
     options: Options = {},
 ): Group => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
+    return processBox(box, options);
+};
+
+export const typeset = (
+    node: Editor.types.Node,
+    context: Context,
+    options: Options = {},
+): Group => {
+    const box = _typeset(node, context) as Layout.Box;
     return processBox(box, options);
 };
