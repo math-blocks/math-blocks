@@ -214,6 +214,54 @@ describe("slash", () => {
                 row("x=").children,
             );
         });
+
+        test("after limits", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: builders.row([
+                        builders.glyph("1"),
+                        builders.glyph("+"),
+                        builders.limits(
+                            builders.glyph("\u03a3"), // \sum
+                            [],
+                            [],
+                        ),
+                        builders.glyph("2"),
+                    ]).children,
+                    selection: null,
+                    right: [],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = slash(zipper);
+
+            expect(result.row.left).toEqualEditorNodes(row("").children);
+            expect(result.row.right).toEqualEditorNodes(row("").children);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
+            expect(
+                result.breadcrumbs[0].focus.other?.children,
+            ).toEqualEditorNodes(row("2").children);
+
+            expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
+                row("").children,
+            );
+            expect(result.breadcrumbs[0].row.left).toEqualEditorNodes(
+                builders.row([
+                    builders.glyph("1"),
+                    builders.glyph("+"),
+                    builders.limits(
+                        builders.glyph("\u03a3"), // \sum
+                        [],
+                        [],
+                    ),
+                ]).children,
+            );
+        });
     });
 
     describe("with selection", () => {

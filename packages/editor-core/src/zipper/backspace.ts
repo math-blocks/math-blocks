@@ -1,36 +1,18 @@
 import {Dir} from "./enums";
-import {splitArrayAt} from "./array-util";
+import {rezipSelection} from "./util";
 import type {Zipper} from "./types";
 
 export const backspace = (zipper: Zipper): Zipper => {
+    zipper = rezipSelection(zipper);
     const {selection} = zipper.row;
 
     if (selection) {
-        const index = zipper.breadcrumbs.findIndex(
-            (crumb) => crumb.row.selection !== null,
-        );
-
-        // Cursor is at the same level of the top-most selection
-        if (index === -1) {
-            return {
-                ...zipper,
-                row: {
-                    ...zipper.row,
-                    selection: null,
-                },
-            };
-        }
-
-        // Cursor started deeper than the top-most selection
-        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
-
         return {
             ...zipper,
             row: {
-                ...topCrumbs[0].row,
+                ...zipper.row,
                 selection: null,
             },
-            breadcrumbs: restCrumbs,
         };
     }
 

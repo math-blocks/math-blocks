@@ -31,7 +31,7 @@ declare global {
     /* eslint-disable */
     namespace jest {
         interface Matchers<R, T> {
-            toEqualEditorNodes(actual: types.Node[]): R;
+            toEqualEditorNodes(actual: readonly types.Node[]): R;
         }
     }
     /* eslint-enable */
@@ -90,6 +90,30 @@ describe("insertChar", () => {
 
         expect(result.row.left).toEqualEditorNodes(row("1+").children);
         expect(result.row.right).toEqualEditorNodes(row("2").children);
+    });
+
+    test("it inserts 'limits' characters", () => {
+        const zipper: Zipper = {
+            row: {
+                id: 0,
+                type: "zrow",
+                left: row("1+").children,
+                selection: null,
+                right: [],
+            },
+            breadcrumbs: [],
+        };
+
+        const result = insertChar(zipper, "\u03a3"); // \sum
+
+        expect(result.row.left).toEqualEditorNodes(
+            builders.row([
+                builders.glyph("1"),
+                builders.glyph("+"),
+                builders.limits(builders.glyph("\u03a3"), [], []),
+            ]).children,
+        );
+        expect(result.row.right).toEqualEditorNodes(row("").children);
     });
 
     describe("selections", () => {
@@ -153,6 +177,33 @@ describe("insertChar", () => {
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes(row("1+2").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
+        });
+
+        test("inserts 'limits' characte before selection", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("1")],
+                    selection: {
+                        dir: Dir.Right,
+                        nodes: [builders.glyph("+")],
+                    },
+                    right: [builders.glyph("2")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = insertChar(zipper, "\u03a3"); // \sum
+
+            expect(result.row.left).toEqualEditorNodes(
+                builders.row([
+                    builders.glyph("1"),
+                    builders.limits(builders.glyph("\u03a3"), [], []),
+                    builders.glyph("+"),
+                ]).children,
+            );
+            expect(result.row.right).toEqualEditorNodes(row("2").children);
         });
     });
 });

@@ -539,7 +539,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
 };
 
 const _typesetChildren = (
-    children: Editor.types.Node[],
+    children: readonly Editor.types.Node[],
     context: Context,
     prevChild?: Editor.types.Node | Editor.Focus,
 ): Layout.Node[] => {

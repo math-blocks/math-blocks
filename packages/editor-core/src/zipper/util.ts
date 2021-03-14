@@ -1,5 +1,7 @@
 import {getId, UnreachableCaseError} from "@math-blocks/core";
 
+import type {Zipper} from "./types";
+
 import * as types from "../types";
 
 import {Dir} from "./enums";
@@ -173,7 +175,7 @@ export const focusToNode = (
 };
 
 export const insertRight = <
-    T extends {left: types.Node[]; right: types.Node[]}
+    T extends {left: readonly types.Node[]; right: readonly types.Node[]}
 >(
     zrow: T,
     node: types.Node,
@@ -184,7 +186,9 @@ export const insertRight = <
     };
 };
 
-export const insertLeft = <T extends {left: types.Node[]; right: types.Node[]}>(
+export const insertLeft = <
+    T extends {left: readonly types.Node[]; right: readonly types.Node[]}
+>(
     zrow: T,
     node: types.Node,
 ): T => {
@@ -198,7 +202,9 @@ export const insertLeft = <T extends {left: types.Node[]; right: types.Node[]}>(
  * Removes the first item in zrow.right.
  * @param zrow {ZRow}
  */
-export const delRight = <T extends {left: types.Node[]; right: types.Node[]}>(
+export const delRight = <
+    T extends {left: readonly types.Node[]; right: readonly types.Node[]}
+>(
     zrow: T,
 ): T => {
     return {
@@ -211,7 +217,9 @@ export const delRight = <T extends {left: types.Node[]; right: types.Node[]}>(
  * Removes the last item in zrow.left.
  * @param zrow {ZRow}
  */
-export const delLeft = <T extends {left: types.Node[]; right: types.Node[]}>(
+export const delLeft = <
+    T extends {left: readonly types.Node[]; right: readonly types.Node[]}
+>(
     zrow: T,
 ): T => {
     return {
@@ -239,3 +247,48 @@ export const newZRow = (): ZRow => ({
     selection: null,
     right: [],
 });
+
+/**
+ * Rezips a zipper with a selection until the selection is completely contained
+ * within the zipper.row.
+ *
+ * If this is already the case or the zipper contains no selection, then the
+ * original zipper is returned.
+ */
+export const rezipSelection = (zipper: Zipper): Zipper => {
+    const {breadcrumbs, row} = zipper;
+
+    if (breadcrumbs.length === 0) {
+        return zipper;
+    }
+
+    const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
+    const restCrumbs = breadcrumbs.slice(0, -1);
+
+    const node = focusToNode(lastCrumb.focus, zrowToRow(row));
+
+    if (lastCrumb.row.selection) {
+        const newSelectionNodes =
+            lastCrumb.row.selection.dir === Dir.Left
+                ? [...lastCrumb.row.selection.nodes, node]
+                : [node, ...lastCrumb.row.selection.nodes];
+
+        const newRow: ZRow = {
+            ...lastCrumb.row,
+            selection: {
+                ...lastCrumb.row.selection,
+                nodes: newSelectionNodes,
+            },
+        };
+
+        const newZipper: Zipper = {
+            row: newRow,
+            breadcrumbs: restCrumbs,
+        };
+
+        return rezipSelection(newZipper);
+    }
+
+    // If there's no selection do nothing
+    return zipper;
+};

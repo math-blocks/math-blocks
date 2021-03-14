@@ -1,14 +1,7 @@
 import * as React from "react";
 
-import {
-    ZipperEditor,
-    MathKeypad,
-    MathmlRenderer,
-    MathRenderer,
-} from "@math-blocks/react";
+import {ZipperEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
-import {typesetZipper} from "@math-blocks/typesetter";
-import fontMetrics from "@math-blocks/metrics";
 
 // import EditingPanel from "./editing-panel";
 
@@ -80,55 +73,16 @@ const zipper: Editor.Zipper = {
 };
 
 const EditorPage: React.FunctionComponent = () => {
-    const [value, setValue] = React.useState(nestedFractions);
-    let node = null;
-    try {
-        node = Editor.parse(value);
-        console.log(node);
-    } catch (e) {
-        // drop the error
-    }
-
-    const fontSize = 64;
-    const context = {
-        fontMetrics,
-        baseFontSize: fontSize,
-        multiplier: 1.0,
-        cramped: false,
-        colorMap: undefined,
-    };
-
-    const options = {showCursor: false};
-
-    const scene = typesetZipper(zipper, context, options);
-
     return (
         <div>
-            <div style={{display: "flex", alignItems: "center"}}>
-                <ZipperEditor
-                    readonly={false}
-                    zipper={zipper}
-                    focus={true}
-                    onChange={(value) => {
-                        // console.log(value);
-                        setValue(value);
-                    }}
-                />
-                <div style={{position: "relative"}}>
-                    <MathRenderer scene={scene} />
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: 0,
-                            top: 0,
-                            transform:
-                                "scale(1.13, 1.18) translate(25px, 12px)",
-                        }}
-                    >
-                        <MathmlRenderer math={node} />
-                    </div>
-                </div>
-            </div>
+            <ZipperEditor
+                readonly={false}
+                zipper={zipper}
+                focus={true}
+                onChange={(value) => {
+                    console.log(value);
+                }}
+            />
             <div style={{position: "fixed", bottom: 0, left: 0}}>
                 {/* <EditingPanel /> */}
                 <div style={{height: 8}} />

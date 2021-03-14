@@ -12,22 +12,25 @@ export const zipperToRow = (zipper: Zipper): Row => {
     const crumb = zipper.breadcrumbs[zipper.breadcrumbs.length - 1];
     const restCrumbs = zipper.breadcrumbs.slice(0, -1);
 
-    const selection: Node[] = crumb.row.selection?.nodes ?? [];
+    const selection: readonly Node[] = crumb.row.selection?.nodes ?? [];
     const focusedNode = focusToNode(crumb.focus, zrowToRow(zipper.row));
-    if (crumb.row.selection?.dir === Dir.Left) {
-        selection.push(focusedNode);
-    } else if (crumb.row.selection?.dir === Dir.Right) {
-        selection.unshift(focusedNode);
-    } else {
-        selection.push(focusedNode);
-    }
+
+    const newRight =
+        crumb.row.selection?.dir === Dir.Right
+            ? [...crumb.row.left, focusedNode, ...selection, ...crumb.row.right]
+            : [
+                  ...crumb.row.left,
+                  ...selection,
+                  focusedNode,
+                  ...crumb.row.right,
+              ];
 
     const row: ZRow = {
         id: crumb.row.id,
         type: "zrow",
         left: [], // We don't care where the cursor is since this ZRow is temporary
         selection: null,
-        right: [...crumb.row.left, ...selection, ...crumb.row.right],
+        right: newRight,
     };
 
     return zipperToRow({

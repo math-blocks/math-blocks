@@ -324,7 +324,7 @@ export const matchesGlyphs = (
     node.type === "atom" && chars.includes(node.value.char);
 
 export const nextIndex = (
-    children: types.Node[],
+    children: readonly types.Node[],
     childIndex: number,
 ): number => {
     if (childIndex === -Infinity) {
@@ -337,7 +337,7 @@ export const nextIndex = (
 };
 
 export const prevIndex = (
-    children: types.Node[],
+    children: readonly types.Node[],
     childIndex: number,
 ): number => {
     if (childIndex === Infinity) {
@@ -350,19 +350,19 @@ export const prevIndex = (
 };
 
 export const removeChildWithIndex = <T extends Identifiable>(
-    children: T[],
+    children: readonly T[],
     index: number,
-): T[] => {
+): readonly T[] => {
     return index === -1
         ? children
         : [...children.slice(0, index), ...children.slice(index + 1)];
 };
 
 export const insertBeforeChildWithIndex = <T extends Identifiable>(
-    children: T[],
+    children: readonly T[],
     index: number,
     newChild: T,
-): T[] => {
+): readonly T[] => {
     if (index === Infinity) {
         return [...children, newChild];
     }
