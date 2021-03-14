@@ -1,4 +1,4 @@
-export const getPairs = <T>(array: T[]): [T, T][] => {
+export const getPairs = <T>(array: readonly T[]): readonly [T, T][] => {
     if (array.length < 2) {
         return [];
     }

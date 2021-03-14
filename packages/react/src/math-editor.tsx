@@ -11,7 +11,7 @@ import useEventListener from "./use-event-listener";
 const {useEffect, useState, useRef} = React;
 
 type Props = {
-    rows: Editor.types.Row[];
+    rows: readonly Editor.types.Row[];
     readonly: boolean;
 
     // TODO: figure out a better way of handling focus

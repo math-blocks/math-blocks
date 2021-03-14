@@ -14,7 +14,7 @@ export type Group = {
     y: number;
     width: number;
     height: number;
-    layers: Node[][];
+    layers: readonly Node[][];
 } & Common;
 
 export type Glyph = {

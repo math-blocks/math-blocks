@@ -69,7 +69,7 @@ const filterMistakes = (
     mistakes: Mistake[],
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
-): Mistake[] => {
+): readonly Mistake[] => {
     const prevIds: number[] = [];
     const nextIds: number[] = [];
 
@@ -117,7 +117,7 @@ export const checkStep = (
 ): {
     result?: Result;
     successfulChecks: Set<string>;
-    mistakes: Mistake[];
+    mistakes: readonly Mistake[];
 } => {
     const successfulChecks = new Set<string>();
     const context: Context = {

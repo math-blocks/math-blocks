@@ -3,6 +3,6 @@ declare namespace jest {
     interface Matchers<R, T> {
         toParseLike(math: string): R;
         toHaveStepsLike(steps: [string, string][]): R;
-        toHaveMessages(messages: string[]): R;
+        toHaveMessages(messages: readonly string[]): R;
     }
 }

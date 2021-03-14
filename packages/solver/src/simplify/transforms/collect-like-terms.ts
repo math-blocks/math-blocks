@@ -37,7 +37,7 @@ export const collectLikeTerms: Transform = (node): Step | undefined => {
 
 type Groups = Map<
     Semantic.types.NumericNode | null,
-    Semantic.types.NumericNode[]
+    readonly Semantic.types.NumericNode[]
 >;
 
 /**

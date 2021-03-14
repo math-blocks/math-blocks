@@ -5,10 +5,10 @@ import type {Result, Check} from "../types";
 import {correctResult} from "./util";
 
 const replaceItem = <T>(
-    items: T[] | TwoOrMore<T>,
+    items: readonly T[] | TwoOrMore<T>,
     newItem: T,
     index: number,
-): T[] => {
+): readonly T[] => {
     return [...items.slice(0, index), newItem, ...items.slice(index + 1)];
 };
 

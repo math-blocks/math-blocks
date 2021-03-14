@@ -22,7 +22,10 @@ export const checkStep = (
     };
 };
 
-export const checkMistake = (prev: string, next: string): Mistake[] => {
+export const checkMistake = (
+    prev: string,
+    next: string,
+): readonly Mistake[] => {
     const {result, mistakes} = _checkStep(
         Testing.parse(prev),
         Testing.parse(next),
@@ -61,7 +64,7 @@ export const toParseLike = (
 export function toHaveMessages(
     this: any,
     received: Result,
-    expected: string[],
+    expected: readonly string[],
 ): {message: () => string; pass: boolean} {
     if (this.isNot) {
         expect(received.steps.map((step) => step.message)).not.toEqual(
@@ -79,7 +82,7 @@ export function toHaveMessages(
 
 export const toHaveStepsLike = (
     received: Result,
-    expected: [string, string][],
+    expected: readonly [string, string][],
 ): {message: () => string; pass: boolean} => {
     if (received.steps.length !== expected.length) {
         return {

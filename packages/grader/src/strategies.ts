@@ -5,10 +5,14 @@ import type {Check, Result, Context} from "./types";
 /**
  * Returns a Check that runs all checks until one returns a result.
  *
- * @param {Check[]} checks
+ * @param {readonly Check[]} checks
  * @returns {Check}
  */
-export const first = (checks: Check[]): Check => (prev, next, context) => {
+export const first = (checks: readonly Check[]): Check => (
+    prev,
+    next,
+    context,
+) => {
     for (const check of checks) {
         const result = runCheck(check, prev, next, context);
         if (result) {
@@ -22,11 +26,15 @@ export const first = (checks: Check[]): Check => (prev, next, context) => {
 /**
  * Returns a Check that runs all checks and returns the shortest result.
  *
- * @param {Check[]} checks
+ * @param {readonly Check[]} checks
  * @returns {Check}
  */
-export const shortest = (checks: Check[]): Check => (prev, next, context) => {
-    const results: Result[] = checks
+export const shortest = (checks: readonly Check[]): Check => (
+    prev,
+    next,
+    context,
+) => {
+    const results: readonly Result[] = checks
         .map((check) => runCheck(check, prev, next, context))
         .filter(notUndefined);
 

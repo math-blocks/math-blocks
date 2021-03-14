@@ -51,7 +51,7 @@ export type Node = Box | Glyph | Kern | HRule;
 export const makeBox = (
     kind: BoxKind,
     dim: Dim,
-    content: Node[][],
+    content: readonly (readonly Node[])[],
     multiplier: number,
 ): Box => ({
     type: "Box",
@@ -220,17 +220,22 @@ export const vsize = (node: Node): number => {
 
 const add = (a: number, b: number): number => a + b;
 const zero = 0;
-const sum = (values: number[]): number => values.reduce(add, zero);
-const max = (values: number[]): number => Math.max(...values);
+const sum = (values: readonly number[]): number => values.reduce(add, zero);
+const max = (values: readonly number[]): number => Math.max(...values);
 
-export const hlistWidth = (nodes: Node[]): number => sum(nodes.map(getWidth));
-const hlistHeight = (nodes: Node[]): number => max(nodes.map(getHeight));
-const hlistDepth = (nodes: Node[]): number => max(nodes.map(getDepth));
+export const hlistWidth = (nodes: readonly Node[]): number =>
+    sum(nodes.map(getWidth));
+const hlistHeight = (nodes: readonly Node[]): number =>
+    max(nodes.map(getHeight));
+const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const vlistWidth = (nodes: Node[]): number => max(nodes.map(vwidth));
-const vlistVsize = (nodes: Node[]): number => sum(nodes.map(vsize));
+const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
+const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (nl: Node[][], multiplier = 1): Box => {
+export const hpackNat = (
+    nl: readonly (readonly Node[])[],
+    multiplier = 1,
+): Box => {
     const dim = {
         width: sum(nl.map(hlistWidth)),
         height: max(nl.map(hlistHeight)),
@@ -242,8 +247,8 @@ export const hpackNat = (nl: Node[][], multiplier = 1): Box => {
 export const makeVBox = (
     width: Dist,
     node: Node,
-    upList: Node[],
-    dnList: Node[],
+    upList: readonly Node[],
+    dnList: readonly Node[],
     multiplier = 1,
 ): Box => {
     const dim = {
@@ -251,11 +256,16 @@ export const makeVBox = (
         depth: vlistVsize(dnList) + getDepth(node),
         height: vlistVsize(upList) + getHeight(node),
     };
-    const nodeList = [...upList.reverse(), node, ...dnList];
+    const upListCopy = [...upList];
+    // TODO: get rid of the need to reverse the uplist
+    const nodeList = [...upListCopy.reverse(), node, ...dnList];
     return makeBox("vbox", dim, [nodeList], multiplier);
 };
 
-const makeList = (size: Dist, box: Box): Node[] => [makeKern(size), box];
+const makeList = (size: Dist, box: Box): readonly Node[] => [
+    makeKern(size),
+    box,
+];
 
 // TODO: compute width from numBox and denBox
 export const makeFract = (

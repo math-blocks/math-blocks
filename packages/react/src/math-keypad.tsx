@@ -7,7 +7,7 @@ type Button = {
     name: string;
 };
 
-const buttons: Button[] = [
+const buttons: readonly Button[] = [
     {name: "pm", char: "\u00B1"},
     {name: "infinity", char: "\u221E"},
     {name: "sqrt", char: "\u221A"},

@@ -6,7 +6,7 @@ declare namespace jest {
         ): {message: () => string; pass: boolean};
         toHaveFullStepsLike(expected: {
             steps: readonly Step[];
-            expressions: string[];
+            expressions: readonly string[];
         }): {message: () => string; pass: boolean};
     }
 }

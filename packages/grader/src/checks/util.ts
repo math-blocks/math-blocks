@@ -4,7 +4,7 @@ import {Step, applySteps} from "@math-blocks/step-utils";
 import type {Context, Result} from "../types";
 
 // TODO: handle negative numbers
-export const primeDecomp = (n: number): number[] => {
+export const primeDecomp = (n: number): readonly number[] => {
     if (!Number.isInteger(n)) {
         return [];
     }

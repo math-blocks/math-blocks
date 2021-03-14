@@ -11,6 +11,6 @@ export type Context = {
 
 export type Options = {
     cursor?: LayoutCursor | undefined;
-    cancelRegions?: LayoutCursor[] | undefined;
+    cancelRegions?: readonly LayoutCursor[] | undefined;
     loc?: Point | undefined;
 };

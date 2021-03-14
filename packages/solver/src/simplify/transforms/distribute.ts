@@ -8,7 +8,7 @@ import {simplifyMul} from "../util";
 const distSub = (
     node: Semantic.types.Neg,
     substeps: Step[],
-): Semantic.types.NumericNode[] | undefined => {
+): readonly Semantic.types.NumericNode[] | undefined => {
     const add = node.arg;
     const mulNegOne = Semantic.builders.mul(
         [Semantic.builders.number("-1"), add],
@@ -64,7 +64,7 @@ const negToSub = (
 const distMul = (
     node: Readonly<Semantic.types.Mul>,
     substeps: Step[],
-): Semantic.types.NumericNode[] | undefined => {
+): readonly Semantic.types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
         if (node.args[1].type === "add") {
@@ -219,7 +219,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
             return [node];
         }
 
-        let newTerms: Semantic.types.NumericNode[] | undefined;
+        let newTerms: readonly Semantic.types.NumericNode[] | undefined;
         if (node.type === "neg") {
             newTerms = distSub(node, substeps);
         } else if (node.type === "mul") {

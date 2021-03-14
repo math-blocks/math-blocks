@@ -22,7 +22,7 @@ const typesetChildren = (
     children: readonly Editor.types.Node[],
     context: Context,
     column = false, // isSingleChildColumn?
-): Layout.Node[] => {
+): readonly Layout.Node[] => {
     return children.map((child, index) => {
         if (child.type === "atom") {
             const {value} = child;
@@ -74,10 +74,10 @@ const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
 };
 
 const typesetColumn = (
-    columns: Column[],
+    columns: readonly Column[],
     colIndex: number,
     context: Context,
-): Layout.Node[] => {
+): readonly Layout.Node[] => {
     const col = columns[colIndex];
     return col.nodes.map((child, index) => {
         if (child.type === "atom") {
@@ -173,8 +173,8 @@ export const splitRow = (row: Editor.types.Row): Column[] => {
 const colToLayout = (
     row: Editor.types.Row,
     columns: Column[],
-    columnLayouts: Layout.Node[][],
-    columnWidths: number[],
+    columnLayouts: (readonly Layout.Node[])[],
+    columnWidths: readonly number[],
     context: Context,
 ): Layout.Node => {
     const output = [];

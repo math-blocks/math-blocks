@@ -14,7 +14,7 @@ export type Group = {
     y: number;
     width: number;
     height: number;
-    layers: Node[][];
+    layers: readonly Node[][];
 } & Common;
 
 export type Glyph = {
@@ -44,7 +44,7 @@ export type Rect = {
 
 export type Node = Group | Glyph | Line | Rect;
 
-const unionRect = (rects: Rect[]): Rect => {
+const unionRect = (rects: readonly Rect[]): Rect => {
     let xMin = Infinity;
     let yMin = Infinity;
     let xMax = -Infinity;
@@ -137,7 +137,7 @@ const processHBox = ({
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
-    cancelRegions?: LayoutCursor[];
+    cancelRegions?: readonly LayoutCursor[];
     loc: Point;
 }): Group => {
     const pen = {x: 0, y: 0};
@@ -333,7 +333,7 @@ const processVBox = ({
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
-    cancelRegions?: LayoutCursor[];
+    cancelRegions?: readonly LayoutCursor[];
     loc: Point;
 }): Group => {
     const pen = {x: 0, y: 0};
@@ -417,7 +417,7 @@ export const processBox = ({
 }: {
     box: Layout.Box;
     cursor?: LayoutCursor;
-    cancelRegions?: LayoutCursor[];
+    cancelRegions?: readonly LayoutCursor[];
     loc?: Point;
 }): Group => {
     // If we weren't passed a location then this is the top-level call, in which

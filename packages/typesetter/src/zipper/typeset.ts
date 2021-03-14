@@ -542,7 +542,7 @@ const _typesetChildren = (
     children: readonly Editor.types.Node[],
     context: Context,
     prevChild?: Editor.types.Node | Editor.Focus,
-): Layout.Node[] => {
+): readonly Layout.Node[] => {
     return children.map((child, index) => {
         prevChild = index > 0 ? children[index - 1] : prevChild;
 

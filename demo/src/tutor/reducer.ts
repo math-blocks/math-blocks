@@ -26,7 +26,7 @@ export type Step =
     | {
           status: StepStatus.Incorrect;
           value: Editor.types.Row;
-          mistakes: Mistake[];
+          mistakes: readonly Mistake[];
       };
 
 export enum ProblemStatus {
@@ -35,7 +35,7 @@ export enum ProblemStatus {
 }
 
 export type State = {
-    steps: Step[];
+    steps: readonly Step[];
     status: ProblemStatus;
 };
 
@@ -46,7 +46,7 @@ export type Action =
       }
     | {
           type: "wrong";
-          mistakes: Mistake[];
+          mistakes: readonly Mistake[];
       }
     | {
           type: "duplicate";
@@ -57,7 +57,7 @@ export type Action =
       }
     | {
           type: "set";
-          steps: Step[];
+          steps: readonly Step[];
       }
     | {
           type: "complete";
