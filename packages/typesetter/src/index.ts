@@ -1,4 +1,4 @@
-import * as SceneGraph from "./zipper/scene-graph";
+import * as SceneGraph from "./scene-graph";
 
 export {SceneGraph};
-export {typesetZipper} from "./zipper/typeset";
+export {typeset, typesetZipper} from "./typeset";

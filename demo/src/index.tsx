@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
 
-import ZipperEditorPage from "./zipper-editor/zipper-editor-page";
+import EditorPage from "./editor/editor-page";
 import MathmlPage from "./mathml/mathml-page";
 import HandwritingPage from "./handwriting/handwriting-page";
 import SolverPage from "./solver/solver-page";
@@ -17,8 +17,8 @@ if (document.body) {
 ReactDOM.render(
     <Router>
         <Switch>
-            <Route path="/zipper-editor">
-                <ZipperEditorPage />
+            <Route path="/editor">
+                <EditorPage />
             </Route>
             <Route path="/mathml">
                 <MathmlPage />
@@ -36,7 +36,7 @@ ReactDOM.render(
                 <h1>MathBlocks Demos</h1>
                 <ul>
                     <li>
-                        <Link to="/zipper-editor">Zipper Editor</Link>
+                        <Link to="/editor">Editor</Link>
                     </li>
                     <li>
                         <Link to="/mathml">Mathml</Link>

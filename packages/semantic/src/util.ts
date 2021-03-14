@@ -208,6 +208,8 @@ export const evalNode = (
  * Traverse supports in place mutation of nodes within the tree.  If an `exit`
  * callback is provided that returns a value, the return value will replace
  * the node that was passed to it.
+ *
+ * TODO: make this non-mutating
  */
 export const traverse = (
     node: types.Node,

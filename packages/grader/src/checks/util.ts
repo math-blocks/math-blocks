@@ -87,8 +87,8 @@ export const findNodeById = (
 };
 
 // TODO: make this a more general function and then create a wrapper for it
-// TODO: create a version of this that doesn't mutate things for when we're not
-// using immer
+// TODO: create a version of this that doesn't mutate things
+// TODO: use Semantic.util.traverse, once it's non-mutating
 export const replaceNodeWithId = (
     root: Semantic.types.Node,
     id: number,

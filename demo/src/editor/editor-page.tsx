@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {ZipperEditor, MathKeypad} from "@math-blocks/react";
+import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 
 // import EditingPanel from "./editing-panel";
@@ -75,7 +75,7 @@ const zipper: Editor.Zipper = {
 const EditorPage: React.FunctionComponent = () => {
     return (
         <div>
-            <ZipperEditor
+            <MathEditor
                 readonly={false}
                 zipper={zipper}
                 focus={true}

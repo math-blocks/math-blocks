@@ -7,7 +7,7 @@ export {builders, types, util};
 export {print} from "./printer/printer";
 export {parse} from "./parser/parser";
 
-export {zipperReducer} from "./zipper/reducer";
-export {zipperToRow} from "./zipper/convert";
-export {Dir} from "./zipper/enums";
-export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./zipper/types";
+export {zipperReducer} from "./reducer/reducer";
+export {zipperToRow} from "./reducer/convert";
+export {Dir} from "./reducer/enums";
+export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./reducer/types";

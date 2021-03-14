@@ -2,7 +2,7 @@ import * as React from "react";
 
 import {MathmlRenderer, MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
-import {typesetZipper} from "@math-blocks/typesetter";
+import {typeset} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 type Props = {
@@ -11,17 +11,6 @@ type Props = {
 
 const AccessibleMath: React.FC<Props> = (props) => {
     const {math} = props;
-
-    const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-            id: math.id,
-            type: "zrow",
-            left: [],
-            selection: null,
-            right: math.children,
-        },
-    };
 
     const fontSize = 64;
     const context = {
@@ -34,7 +23,7 @@ const AccessibleMath: React.FC<Props> = (props) => {
 
     const options = {showCursor: false};
 
-    const scene = typesetZipper(zipper, context, options);
+    const scene = typeset(math, context, options);
     const node = Editor.parse(math);
     console.log(node);
 
