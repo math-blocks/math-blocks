@@ -176,7 +176,7 @@ const processGlyphs = (
     return tokens;
 };
 
-const lexChildren = (nodes: types.Node[], path: number[]): Node[] => {
+const lexChildren = (nodes: readonly types.Node[], path: number[]): Node[] => {
     // TODO: assert that nodes.length > 0
 
     const tokens: Node[] = [];

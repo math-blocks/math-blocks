@@ -3,23 +3,23 @@ import {Dir} from "./enums";
 
 type Selection = {
     dir: Dir;
-    nodes: types.Node[];
+    nodes: readonly types.Node[];
 };
 
 export type ZRowWithoutSelection = {
     id: number;
     type: "zrow";
-    left: types.Node[];
+    left: readonly types.Node[];
     selection: null;
-    right: types.Node[];
+    right: readonly types.Node[];
 };
 
 export type ZRowWithSelection = {
     id: number;
     type: "zrow";
-    left: types.Node[];
+    left: readonly types.Node[];
     selection: Selection;
-    right: types.Node[];
+    right: readonly types.Node[];
 };
 
 export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
@@ -76,8 +76,8 @@ export type ZRoot =
 export type ZColumns = {
     id: number;
     type: "zcolumns";
-    left: types.Row[];
-    right: types.Row[];
+    left: readonly types.Row[];
+    right: readonly types.Row[];
 };
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot; // | ZColumns;
@@ -91,41 +91,5 @@ export type Zipper = {
     row: ZRow;
     // TODO: Consider making this a linked list where the "head" is the node
     // nearest to zipper.row in the breadrcumbs.
-    breadcrumbs: Breadcrumb[]; // any ZRow in here should have a non-null `focus`
+    breadcrumbs: readonly Breadcrumb[]; // any ZRow in here should have a non-null `focus`
 };
-
-// For columns we could do this:
-// const zipper: Zipper = {
-//     row: {
-//         type: "zrow",
-//         id: 0,
-//         left: [],
-//         right: [], // "=",
-//         selection: null,
-//     },
-//     breadcrumbs: [{
-//         row: {
-//             type: "zrow",
-//             id: 1,
-//             left: [],
-//             right: [],
-//             selection: null,
-//         },
-//         focus: {
-//             type: "zcolumns",
-//             id: 2,
-//             left: [{
-//                 id: 3,
-//                 type: "row",
-//                 children: [], // "2", "x", "+", "5",
-//             }],
-//             right: [{
-//                 id: 4,
-//                 type: "row",
-//                 children: [], // "1", "0",
-//             }],
-//         },
-//     }],
-// };
-
-// console.log(zipper);

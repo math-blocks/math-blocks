@@ -2,7 +2,7 @@
 // C = Common type
 export type Row<A, C> = C & {
     type: "row";
-    children: Node<A, C>[];
+    children: readonly Node<A, C>[];
 };
 
 export type SubSup<A, C> = C & {

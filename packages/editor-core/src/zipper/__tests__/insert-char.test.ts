@@ -31,7 +31,7 @@ declare global {
     /* eslint-disable */
     namespace jest {
         interface Matchers<R, T> {
-            toEqualEditorNodes(actual: types.Node[]): R;
+            toEqualEditorNodes(actual: readonly types.Node[]): R;
         }
     }
     /* eslint-enable */

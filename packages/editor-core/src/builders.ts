@@ -2,7 +2,7 @@ import {getId} from "@math-blocks/core";
 
 import * as types from "./types";
 
-export function row(children: types.Node[]): types.Row {
+export function row(children: readonly types.Node[]): types.Row {
     return {
         id: getId(),
         type: "row",
@@ -32,8 +32,8 @@ export function limits(
 }
 
 export function frac(
-    numerator: types.Node[],
-    denominator: types.Node[],
+    numerator: readonly types.Node[],
+    denominator: readonly types.Node[],
 ): types.Frac {
     return {
         id: getId(),

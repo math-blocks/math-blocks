@@ -19,7 +19,7 @@ export const isGlyph = (
 
 // Adds appropriate padding around operators where appropriate
 const typesetChildren = (
-    children: Editor.types.Node[],
+    children: readonly Editor.types.Node[],
     context: Context,
     column = false, // isSingleChildColumn?
 ): Layout.Node[] => {

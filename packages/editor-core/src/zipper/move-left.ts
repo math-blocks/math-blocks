@@ -6,55 +6,21 @@ import {Dir} from "./enums";
 import type {Breadcrumb, Focus, Zipper, ZRow, ZRowWithSelection} from "./types";
 import * as util from "./util";
 import {crumbMoveLeft, startSelection, stopSelection} from "./selection-util";
-import {replaceItem, splitArrayAt} from "./array-util";
+import {replaceItem} from "./array-util";
 
 const cursorLeft = (zipper: Zipper): Zipper => {
+    zipper = util.rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the left
     if (selection) {
-        const index = zipper.breadcrumbs.findIndex(
-            (crumb) => crumb.row.selection !== null,
-        );
-
-        // The selection is completely within the `zipper.row`.
-        if (index === -1) {
-            return {
-                ...zipper,
-                row: {
-                    ...zipper.row,
-                    selection: null,
-                    right: [...selection.nodes, ...right],
-                },
-            };
-        }
-
-        // The selection is in one of the breadcrumbs.
-        const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
-        // We need to process these from top to bottom (reverse order)
-        topCrumbs.reverse();
-
-        // Collapse each crumb in `topCrumbs` into `row`.
-        const row = topCrumbs.reduce((row, crumb): ZRow => {
-            const unfocusedNode = util.focusToNode(
-                crumb.focus,
-                util.zrowToRow(row),
-            );
-            const selectionNodes =
-                selection.dir === Dir.Right
-                    ? [unfocusedNode, ...(crumb.row.selection?.nodes || [])]
-                    : [...(crumb.row.selection?.nodes || []), unfocusedNode];
-            return {
-                ...crumb.row,
-                selection: null,
-                right: [...selectionNodes, ...crumb.row.right],
-            };
-        }, zipper.row);
-
         return {
             ...zipper,
-            row: row,
-            breadcrumbs: restCrumbs,
+            row: {
+                ...zipper.row,
+                selection: null,
+                right: [...selection.nodes, ...right],
+            },
         };
     }
 

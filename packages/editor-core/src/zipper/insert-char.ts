@@ -1,6 +1,6 @@
 import * as builders from "../builders";
 
-import {canonicalizeSelection} from "./util";
+import {rezipSelection} from "./util";
 import type {Zipper} from "./types";
 
 // TODO: place cursor in lower limits
@@ -12,6 +12,7 @@ const LIMIT_CHARS = [
 ];
 
 export const insertChar = (zipper: Zipper, char: string): Zipper => {
+    zipper = rezipSelection(zipper);
     const {left, selection} = zipper.row;
     let newNode;
     if (LIMIT_CHARS.includes(char)) {
@@ -21,30 +22,20 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
     }
 
     if (selection) {
-        const canonZipper = canonicalizeSelection(zipper);
-        const {left, selection} = canonZipper.row;
+        // When inserting limits, we move the current selection to the right
+        // of the new node.
+        const newLeft = LIMIT_CHARS.includes(char)
+            ? [...left, newNode, ...selection.nodes]
+            : [...left, newNode];
 
-        if (selection) {
-            if (LIMIT_CHARS.includes(char)) {
-                return {
-                    ...canonZipper,
-                    row: {
-                        ...canonZipper.row,
-                        selection: null,
-                        left: [...left, newNode, ...selection.nodes],
-                    },
-                };
-            } else {
-                return {
-                    ...canonZipper,
-                    row: {
-                        ...canonZipper.row,
-                        selection: null,
-                        left: [...left, newNode],
-                    },
-                };
-            }
-        }
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                selection: null,
+                left: newLeft,
+            },
+        };
     }
 
     return {

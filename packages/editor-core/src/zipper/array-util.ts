@@ -1,5 +1,5 @@
 export const replaceItem = <T>(
-    items: T[] | TwoOrMore<T>,
+    items: readonly T[] | TwoOrMore<T>,
     newItem: T,
     index: number,
 ): T[] => {
