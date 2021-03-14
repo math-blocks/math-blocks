@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
-import {typesetZipper, typesetWithWork} from "@math-blocks/typesetter";
+import {typesetZipper} from "@math-blocks/typesetter";
 import fontMetrics from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
@@ -73,133 +73,6 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
     const scene = typesetZipper(zipperFromRow(math), context);
 
     return <MathRenderer scene={scene} />;
-};
-
-const rowsToState = (rows: Editor.types.Row[]): Editor.State => {
-    return {
-        rows: rows.map((row) => ({
-            math: row,
-            cursor: {
-                path: [],
-                prev: -Infinity,
-                next: 0,
-            },
-        })),
-        rowIndex: 0,
-    };
-};
-
-export const ShowingWork: React.FunctionComponent<EmptyProps> = () => {
-    const fontSize = 60;
-    const context = {
-        fontMetrics: fontMetrics,
-        baseFontSize: fontSize,
-        multiplier: 1.0,
-        cramped: false,
-    };
-
-    const scene = typesetWithWork(
-        rowsToState([
-            Editor.util.row(
-                "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
-            ),
-            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
-        ]),
-        context,
-    );
-
-    return <MathRenderer scene={scene} />;
-};
-
-export const LinearEquations: React.FunctionComponent<EmptyProps> = () => {
-    const fontSize = 60;
-    const context = {
-        fontMetrics: fontMetrics,
-        baseFontSize: fontSize,
-        multiplier: 1.0,
-        cramped: false,
-    };
-
-    const above1 = Editor.util.row(
-        "\u00082x\u0008+\u00085\u0008=\u0008\u000810\u0008",
-    );
-    const below1 = Editor.util.row(
-        "\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008",
-    );
-
-    const cursor: Editor.types.Cursor = {
-        path: [],
-        prev: 0,
-        next: 1,
-    };
-
-    // TODO: render paren wrapped negatives, like (-5) with the correct kerning
-    const linearEquation = typesetWithWork(
-        rowsToState([above1, below1]),
-        context,
-        {
-            cursor: Editor.layoutCursorFromState({
-                math: below1,
-                cursor: cursor,
-            }),
-        },
-    );
-
-    const linearEquation2 = typesetWithWork(
-        rowsToState([
-            Editor.util.row(
-                "\u00082x\u0008+\u000810\u0008=\u0008\u000820\u0008",
-            ),
-            Editor.util.row("\u0008\u0008-\u00085\u0008\u0008-\u00085\u0008"),
-        ]),
-        context,
-    );
-
-    const linearEquation3 = typesetWithWork(
-        rowsToState([
-            Editor.util.row(
-                "\u0008(2x+1)\u0008+\u00085\u0008-\u0008y\u0008=\u0008\u000810\u0008",
-            ),
-            Editor.util.row(
-                "\u0008\u0008+\u0008123\u0008\u0008\u0008\u0008+\u00085\u0008",
-            ),
-        ]),
-        context,
-    );
-
-    const linearEquation4 = typesetWithWork(
-        rowsToState([
-            Editor.util.row(
-                "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
-            ),
-            Editor.util.row(
-                "\u0008-\u00085\u0008\u0008\u0008\u0008-\u00085\u0008",
-            ),
-        ]),
-        context,
-    );
-
-    const linearEquation5 = typesetWithWork(
-        rowsToState([
-            Editor.util.row(
-                "\u0008\u00085\u0008+\u00082x\u0008=\u0008\u000810\u0008",
-            ),
-            Editor.util.row(
-                "\u0008+\u0008(-5)\u0008\u0008\u0008\u0008+\u0008(-5)\u0008",
-            ),
-        ]),
-        context,
-    );
-
-    return (
-        <div style={{display: "flex", flexDirection: "column"}}>
-            <MathRenderer scene={linearEquation} />
-            <MathRenderer scene={linearEquation2} />
-            <MathRenderer scene={linearEquation3} />
-            <MathRenderer scene={linearEquation4} />
-            <MathRenderer scene={linearEquation5} />
-        </div>
-    );
 };
 
 export const Cursor: React.FunctionComponent<EmptyProps> = () => {

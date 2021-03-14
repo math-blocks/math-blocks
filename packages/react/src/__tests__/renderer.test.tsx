@@ -5,7 +5,7 @@ import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
 
 import * as Core from "@math-blocks/core";
-import {typeset} from "@math-blocks/typesetter";
+import {typesetZipper} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
 import fontMetrics from "@math-blocks/metrics";
 
@@ -16,7 +16,6 @@ import {
     Limit,
     Pythagoras,
     QuadraticEquation,
-    ShowingWork,
     Summation,
     Cursor,
     Selection,
@@ -139,19 +138,29 @@ describe("renderer", () => {
         });
 
         test("subscripts", () => {
-            const scene = typeset(
-                row([
-                    glyph("a"),
-                    Editor.util.sup("n"),
-                    glyph("="),
-                    glyph("a"),
-                    subsup([glyph("n"), glyph("\u2212"), glyph("1")]),
-                    glyph("+"),
-                    glyph("a"),
-                    subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
-                ]),
-                context,
-            );
+            const node = row([
+                glyph("a"),
+                Editor.util.sup("n"),
+                glyph("="),
+                glyph("a"),
+                subsup([glyph("n"), glyph("\u2212"), glyph("1")]),
+                glyph("+"),
+                glyph("a"),
+                subsup([glyph("n"), glyph("\u2212"), glyph("2")]),
+            ]);
+
+            const zipper: Editor.Zipper = {
+                breadcrumbs: [],
+                row: {
+                    id: node.id,
+                    type: "zrow",
+                    left: [],
+                    selection: null,
+                    right: node.children,
+                },
+            };
+
+            const scene = typesetZipper(zipper, context);
 
             expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
@@ -164,12 +173,6 @@ describe("renderer", () => {
 
         test("sum", () => {
             expect(<Summation />).toMatchSVGSnapshot();
-        });
-    });
-
-    describe("showing work", () => {
-        test("subtracting from both sides", () => {
-            expect(<ShowingWork />).toMatchSVGSnapshot();
         });
     });
 

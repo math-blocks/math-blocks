@@ -5,7 +5,7 @@ import fontMetrics from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
 import {Step, applyStep} from "@math-blocks/step-utils";
-import {typeset} from "@math-blocks/typesetter";
+import {typesetZipper} from "@math-blocks/typesetter";
 
 type Props = {
     // Prefix to start numbering from, e.g. 1.2.3
@@ -35,7 +35,19 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                 const before = current;
 
                 const after = applyStep(before, substep);
-                const afterScene = typeset(Editor.print(after), context);
+                const afterRow = Editor.print(after);
+                const afterZipper: Editor.Zipper = {
+                    breadcrumbs: [],
+                    row: {
+                        id: afterRow.id,
+                        type: "zrow",
+                        left: [],
+                        selection: null,
+                        right: afterRow.children,
+                    },
+                };
+
+                const afterScene = typesetZipper(afterZipper, context);
 
                 current = after;
 

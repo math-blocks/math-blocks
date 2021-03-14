@@ -4,7 +4,7 @@ A set of React components for rendering and editing math expressions.
 
 ## MathRenderer
 
-## MathEditor
+## ZipperEditor
 
 TODO:
 - Selection

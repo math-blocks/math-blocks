@@ -2,7 +2,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
 
-import EditorPage from "./editor/editor-page";
 import ZipperEditorPage from "./zipper-editor/zipper-editor-page";
 import MathmlPage from "./mathml/mathml-page";
 import HandwritingPage from "./handwriting/handwriting-page";
@@ -24,9 +23,6 @@ ReactDOM.render(
             <Route path="/mathml">
                 <MathmlPage />
             </Route>
-            <Route path="/multirow-editor-test">
-                <EditorPage />
-            </Route>
             <Route path="/handwriting">
                 <HandwritingPage />
             </Route>
@@ -44,11 +40,6 @@ ReactDOM.render(
                     </li>
                     <li>
                         <Link to="/mathml">Mathml</Link>
-                    </li>
-                    <li>
-                        <Link to="/multirow-editor-test">
-                            Multi-row Editor test
-                        </Link>
                     </li>
                     <li>
                         <Link to="/handwriting">Handwriting input</Link>
