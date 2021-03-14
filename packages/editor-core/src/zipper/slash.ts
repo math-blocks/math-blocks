@@ -101,13 +101,14 @@ export const slash = (zipper: Zipper): Zipper => {
     // behavior.
     const splitChars = [
         "+",
-        "\u2212",
-        "\u00B7",
+        "\u2212", // \minus
+        "\u00B1", // \pm
+        "\u00B7", // \times
         "=",
         "<",
         ">",
-        "\u2264",
-        "\u2265",
+        "\u2264", // \leq
+        "\u2265", // \geq
     ];
 
     let index = left.length - 1;
@@ -131,6 +132,11 @@ export const slash = (zipper: Zipper): Zipper => {
         ) {
             break;
         }
+
+        if (child.type === "limits") {
+            break;
+        }
+
         index--;
     }
 

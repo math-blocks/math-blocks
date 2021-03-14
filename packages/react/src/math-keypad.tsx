@@ -18,7 +18,7 @@ const buttons: Button[] = [
     {name: "gte", char: "\u2265"},
     {name: "theta", char: "\u03B8"},
     {name: "pi", char: "\u03C0"},
-    {name: "PI", char: "\u03A0"},
+    {name: "Pi", char: "\u03A0"},
     {name: "Sigma", char: "\u03A3"},
     {name: "Delta", char: "\u0394"},
     {name: "int", char: "\u222B"},

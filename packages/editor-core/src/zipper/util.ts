@@ -1,9 +1,20 @@
 import {getId, UnreachableCaseError} from "@math-blocks/core";
 
+import {splitArrayAt} from "./array-util";
+import type {Zipper} from "./types";
+
 import * as types from "../types";
 
 import {Dir} from "./enums";
-import type {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
+import type {
+    ZRow,
+    ZFrac,
+    ZSubSup,
+    ZRoot,
+    ZLimits,
+    Focus,
+    Breadcrumb,
+} from "./types";
 
 export const startRow = (row: types.Row): ZRow => {
     return {
@@ -239,3 +250,55 @@ export const newZRow = (): ZRow => ({
     selection: null,
     right: [],
 });
+
+// TODO: instead of passing crumbs and row separately, pass a Zipper instead
+// along with the number of levels to rezip and have it return a Zipper instead
+const rezipSelection = (crumbs: Breadcrumb[], row: ZRow): ZRow => {
+    if (crumbs.length === 0) {
+        return row;
+    }
+
+    const lastCrumb = crumbs[crumbs.length - 1];
+    const restCrumbs = crumbs.slice(0, -1);
+
+    const node = focusToNode(lastCrumb.focus, zrowToRow(row));
+
+    if (lastCrumb.row.selection) {
+        const newSelectionNodes =
+            lastCrumb.row.selection.dir === Dir.Left
+                ? [...lastCrumb.row.selection.nodes, node]
+                : [node, ...lastCrumb.row.selection.nodes];
+
+        const newRow: ZRow = {
+            ...lastCrumb.row,
+            selection: {
+                ...lastCrumb.row.selection,
+                nodes: newSelectionNodes,
+            },
+        };
+
+        return rezipSelection(restCrumbs, newRow);
+    }
+
+    // If there's no selection do nothing
+    return row;
+};
+
+// TODO: use this when exiting a selection
+export const canonicalizeSelection = (zipper: Zipper): Zipper => {
+    const index = zipper.breadcrumbs.findIndex(
+        (crumb) => crumb.row.selection !== null,
+    );
+
+    if (index === -1) {
+        return zipper;
+    }
+
+    const [restCrumbs, topCrumbs] = splitArrayAt(zipper.breadcrumbs, index);
+
+    return {
+        ...zipper,
+        row: rezipSelection(topCrumbs, zipper.row),
+        breadcrumbs: restCrumbs,
+    };
+};
