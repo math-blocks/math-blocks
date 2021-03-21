@@ -38,6 +38,12 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.otf$/i,
+                use: {
+                    loader: "file-loader",
+                },
+            },
         ],
     },
     plugins: [
