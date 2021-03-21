@@ -12,7 +12,7 @@ import Substeps from "./substeps";
 
 const {parse} = Editor;
 
-const question: Editor.types.Row = Editor.util.row("2x+5=10");
+const question: Editor.types.Row = Editor.util.row("3(x-1)=x-(2x+5)");
 
 // TODO:
 // - show error messages in the UI

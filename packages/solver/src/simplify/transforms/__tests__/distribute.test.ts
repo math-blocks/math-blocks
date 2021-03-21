@@ -408,4 +408,91 @@ describe("distribution", () => {
             ],
         });
     });
+
+    test("0 - (2x+5) -> 0 - 2x - 5", () => {
+        const ast = Testing.parse("0 - (2x+5)");
+
+        const step = distribute(ast);
+
+        expect(step.message).toEqual("distribute");
+        expect(Testing.print(step.after)).toEqual("0 - 2x - 5");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "0 - 2x - 5",
+        );
+
+        expect(step.substeps.map((substep) => substep.message)).toEqual([
+            "negation is the same as multipyling by one",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
+            "multiplying a negative by a positive is negative",
+            "adding the negative is the same as subtraction",
+            "adding the negative is the same as subtraction",
+        ]);
+
+        expect(step).toHaveSubstepsLike([
+            ["-(2x + 5)", "-1(2x + 5)"], // subtraction -> add inverse
+            ["-1(2x + 5)", "-1(2x) + (-1)(5)"],
+            ["-1(2x)", "-2x"],
+            ["(-1)(5)", "-5"],
+            // These look bad on their own, but should be okay when highlighted
+            // within the larger expression
+            ["-2x", "-2x"],
+            ["-5", "-5"],
+        ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "0 - (2x + 5)",
+                "0 + -1(2x + 5)",
+                "0 + -1(2x) + (-1)(5)",
+                "0 + -2x + (-1)(5)",
+                "0 + -2x + -5",
+                "0 - 2x + -5",
+                "0 - 2x - 5",
+            ],
+        });
+    });
+
+    test("-(2x+5) -> -2x - 5", () => {
+        const ast = Testing.parse("-(2x+5)");
+
+        const step = distribute(ast);
+
+        expect(step.message).toEqual("distribute");
+        expect(Testing.print(step.after)).toEqual("-2x - 5");
+        expect(Testing.print(applySteps(ast, step.substeps))).toEqual(
+            "-2x - 5",
+        );
+
+        expect(step.substeps.map((substep) => substep.message)).toEqual([
+            "negation is the same as multipyling by one",
+            "multiply each term",
+            "multiplying a negative by a positive is negative",
+            "multiplying a negative by a positive is negative",
+            "adding the negative is the same as subtraction",
+        ]);
+
+        expect(step).toHaveSubstepsLike([
+            ["-(2x + 5)", "-1(2x + 5)"], // subtraction -> add inverse
+            ["-1(2x + 5)", "-1(2x) + (-1)(5)"],
+            ["-1(2x)", "-2x"],
+            ["(-1)(5)", "-5"],
+            // This looks bad on its own, but should be okay when highlighted
+            // within the larger expression
+            ["-5", "-5"],
+        ]);
+
+        expect(ast).toHaveFullStepsLike({
+            steps: step.substeps,
+            expressions: [
+                "-(2x + 5)",
+                "-1(2x + 5)",
+                "-1(2x) + (-1)(5)",
+                "-2x + (-1)(5)",
+                "-2x + -5",
+                "-2x - 5",
+            ],
+        });
+    });
 });
