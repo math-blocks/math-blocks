@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="color-scheme" content="dark light">
     <style>
       html, body {
         /* overflow: hidden; */
@@ -11,6 +12,25 @@
       }
       div {
         touch-action: none;
+      }
+
+      a { 
+        font-family: sans-serif;
+        color: navy;
+      }
+      body {
+        background-color: #FFF;
+        color: #1f1f1f;
+      }
+      @media screen and (prefers-color-scheme: dark) {
+        body {
+          background-color: #1f1f1f;
+          color: #e0e0e0;
+        }
+
+        a {
+          color:lightskyblue;
+        }
       }
     </style>
   </head>

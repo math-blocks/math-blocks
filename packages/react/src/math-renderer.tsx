@@ -23,7 +23,7 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
     id,
     ...props
 }) => {
-    return <rect {...props} fill={fill} />;
+    return <rect {...props} fill={fill || "currentcolor"} />;
 };
 
 const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {

@@ -246,10 +246,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     let buttonsOrIcon = (
         <HStack>
             <button
-                style={{
-                    fontSize: 30,
-                    borderRadius: 4,
-                }}
+                style={{fontSize: 30}}
                 onClick={handleCheckStep}
                 onMouseDown={(e) => {
                     e.preventDefault();
@@ -260,10 +257,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 Check
             </button>
             <button
-                style={{
-                    fontSize: 30,
-                    borderRadius: 4,
-                }}
+                style={{fontSize: 30}}
                 onClick={handleGetHint}
                 onMouseDown={(e) => {
                     e.preventDefault();

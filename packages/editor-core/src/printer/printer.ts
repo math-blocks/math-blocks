@@ -99,6 +99,9 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 if (arg.type === "div" && expr.implicit && index > 0) {
                     return true;
                 }
+                if (arg.type === "mul" && expr.implicit) {
+                    return true;
+                }
                 return false;
             });
 

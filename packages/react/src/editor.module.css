@@ -4,8 +4,19 @@
     outline: none;
     border-radius: 4px;
     line-height: 0;
+    padding: 4px;
 }
 
 .container:focus {
-    border: solid 1px blue;
+    border: solid 1px rgb(87, 87, 87);
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    .container:focus {
+        border: solid 1px #e0e0e0;
+    }
+
+    .container {
+        border: solid 1px rgb(87, 87, 87);
+    }
 }

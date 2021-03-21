@@ -42,7 +42,7 @@ const Tutor: React.FunctionComponent = () => {
 
     return (
         <div style={{margin: "auto"}}>
-            <VStack>
+            <VStack style={{marginLeft: 242}}>
                 <HStack>
                     <MathEditor
                         key={`question`}
