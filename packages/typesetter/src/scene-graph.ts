@@ -185,7 +185,7 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     for (const selectionBox of selectionBoxes) {
         belowLayer.unshift({
             ...selectionBox,
-            fill: "rgba(0,64,255,0.3)",
+            fill: "rgba(0,144,255,0.5)",
         });
     }
 

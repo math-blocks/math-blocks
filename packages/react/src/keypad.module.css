@@ -6,8 +6,8 @@
     font-size: 28px;
     grid-column-gap: 1px;
     grid-row-gap: 1px;
-    background-color: white;
-    border: solid 1px white;
+    background-color: #e0e0e0;
+    border: solid 1px #e0e0e0;
     width: 240px;
 }
 
@@ -22,4 +22,20 @@
 
 .item:hover {
     background-color: #aaa;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    .item {
+        background-color: #333;
+        color: #ccc;
+    }
+
+    .item:hover {
+        background-color: #272727;
+    }
+
+    .container {
+        background-color: #1f1f1f;
+        border: solid 1px #1f1f1f;
+    }
 }
