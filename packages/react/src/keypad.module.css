@@ -25,17 +25,17 @@
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  .item {
-    background-color: #333;
-    color: #CCC;
-  }
+    .item {
+        background-color: #333;
+        color: #ccc;
+    }
 
-  .item:hover {
-    background-color: #272727;
-  }
+    .item:hover {
+        background-color: #272727;
+    }
 
-  .container {
-    background-color: #1f1f1f;
-    border: solid 1px #1f1f1f;
-  }
+    .container {
+        background-color: #1f1f1f;
+        border: solid 1px #1f1f1f;
+    }
 }
