@@ -3,17 +3,17 @@ import * as Semantic from "@math-blocks/semantic";
 import * as builders from "../../builders";
 import * as types from "../../types";
 import * as Util from "../../util";
-import {toEqualMath} from "../../test-util";
+import {toEqualEditorNode} from "../../test-util";
 
 import {print} from "../printer";
 
-expect.extend({toEqualMath});
+expect.extend({toEqualEditorNode});
 
 declare global {
     /* eslint-disable */
     namespace jest {
         interface Matchers<R, T> {
-            toEqualMath(actual: types.Node): R;
+            toEqualEditorNode(actual: types.Node): R;
         }
     }
     /* eslint-enable */
@@ -25,7 +25,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("123"));
+        expect(node).toEqualEditorNode(Util.row("123"));
     });
 
     test("1", () => {
@@ -33,7 +33,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("1"));
+        expect(node).toEqualEditorNode(Util.row("1"));
     });
 
     test("1+2+3", () => {
@@ -45,7 +45,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("1+2+3"));
+        expect(node).toEqualEditorNode(Util.row("1+2+3"));
     });
 
     test("12+34", () => {
@@ -56,7 +56,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("12+34"));
+        expect(node).toEqualEditorNode(Util.row("12+34"));
     });
 
     test("a*b*c", () => {
@@ -71,7 +71,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a\u00B7b\u00B7c"));
+        expect(node).toEqualEditorNode(Util.row("a\u00B7b\u00B7c"));
     });
 
     test("abc", () => {
@@ -86,7 +86,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("abc"));
+        expect(node).toEqualEditorNode(Util.row("abc"));
     });
 
     test("5y", () => {
@@ -97,7 +97,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("5y"));
+        expect(node).toEqualEditorNode(Util.row("5y"));
     });
 
     test("abc+123", () => {
@@ -115,7 +115,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("abc+123"));
+        expect(node).toEqualEditorNode(Util.row("abc+123"));
     });
 
     test("a(x+y)", () => {
@@ -132,7 +132,29 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a(x+y)"));
+        expect(node).toEqualEditorNode(Util.row("a(x+y)"));
+    });
+
+    test("-1(2x)", () => {
+        const ast = Semantic.builders.mul(
+            [
+                Semantic.builders.neg(Semantic.builders.number("1")),
+                Semantic.builders.mul(
+                    [
+                        Semantic.builders.number("2"),
+                        Semantic.builders.identifier("x"),
+                    ],
+                    true,
+                ),
+            ],
+            true,
+        );
+
+        const node = print(ast);
+
+        expect(
+            Semantic.util.deepEquals(node, Util.row("(-1)(2x)")),
+        ).toBeTruthy();
     });
 
     test("(1)(2)(3)", () => {
@@ -147,7 +169,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("(1)(2)(3)"));
+        expect(node).toEqualEditorNode(Util.row("(1)(2)(3)"));
     });
 
     test("(-a)(-b)", () => {
@@ -161,7 +183,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("(-a)(-b)"));
+        expect(node).toEqualEditorNode(Util.row("(-a)(-b)"));
     });
 
     test("(a/b)(c/d)", () => {
@@ -181,7 +203,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([
                 builders.glyph("("),
                 Util.frac("a", "b"),
@@ -210,7 +232,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([
                 Util.frac("a", "b"),
                 builders.glyph("\u00B7"),
@@ -224,7 +246,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("-1.2"));
+        expect(node).toEqualEditorNode(Util.row("-1.2"));
     });
 
     test("x-y", () => {
@@ -238,7 +260,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("x-y"));
+        expect(node).toEqualEditorNode(Util.row("x-y"));
     });
 
     test("a+(b+c)", () => {
@@ -252,7 +274,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a+(b+c)"));
+        expect(node).toEqualEditorNode(Util.row("a+(b+c)"));
     });
 
     test("a-(b+c)", () => {
@@ -269,7 +291,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a-(b+c)"));
+        expect(node).toEqualEditorNode(Util.row("a-(b+c)"));
     });
 
     test("a/b", () => {
@@ -280,7 +302,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(builders.row([Util.frac("a", "b")]));
+        expect(node).toEqualEditorNode(builders.row([Util.frac("a", "b")]));
     });
 
     test("(a+b)/(x+y)", () => {
@@ -297,7 +319,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(builders.row([Util.frac("a+b", "x+y")]));
+        expect(node).toEqualEditorNode(builders.row([Util.frac("a+b", "x+y")]));
     });
 
     test("a + -a", () => {
@@ -308,7 +330,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a+-a"));
+        expect(node).toEqualEditorNode(Util.row("a+-a"));
     });
 
     test("a + --b", () => {
@@ -322,7 +344,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a+--b"));
+        expect(node).toEqualEditorNode(Util.row("a+--b"));
     });
 
     test("-1(a + b)", () => {
@@ -339,7 +361,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("-1(a+b)"));
+        expect(node).toEqualEditorNode(Util.row("-1(a+b)"));
     });
 
     test("leading subtraction", () => {
@@ -357,7 +379,7 @@ describe("print", () => {
             ],
         } as const;
 
-        expect(print(ast)).toEqualMath(Util.row("-a+b"));
+        expect(print(ast)).toEqualEditorNode(Util.row("-a+b"));
     });
 
     test("(a)(b)(1)", () => {
@@ -372,7 +394,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("(a)(b)(1)"));
+        expect(node).toEqualEditorNode(Util.row("(a)(b)(1)"));
     });
 
     test("a*b*1", () => {
@@ -387,7 +409,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("a\u00B7b\u00B71"));
+        expect(node).toEqualEditorNode(Util.row("a\u00B7b\u00B71"));
     });
 
     test("y = x + 1", () => {
@@ -401,7 +423,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("y=x+1"));
+        expect(node).toEqualEditorNode(Util.row("y=x+1"));
     });
 
     test("x^2", () => {
@@ -412,7 +434,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([builders.glyph("x"), Util.sup("2")]),
         );
     });
@@ -425,7 +447,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([builders.glyph("1"), Util.sup("n")]),
         );
     });
@@ -441,7 +463,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([builders.glyph("e"), Util.sup("x+y")]),
         );
     });
@@ -457,7 +479,7 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(
+        expect(node).toEqualEditorNode(
             builders.row([
                 builders.glyph("("),
                 builders.glyph("x"),
@@ -474,6 +496,6 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualMath(Util.row("(x)"));
+        expect(node).toEqualEditorNode(Util.row("(x)"));
     });
 });
