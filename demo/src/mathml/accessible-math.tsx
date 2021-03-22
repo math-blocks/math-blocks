@@ -3,7 +3,7 @@ import * as React from "react";
 import {MathmlRenderer, MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 import {typeset} from "@math-blocks/typesetter";
-import fontMetrics from "@math-blocks/metrics";
+import {FontMetricsContext} from "@math-blocks/metrics";
 
 type Props = {
     math: Editor.types.Row;
@@ -11,6 +11,8 @@ type Props = {
 
 const AccessibleMath: React.FC<Props> = (props) => {
     const {math} = props;
+
+    const fontMetrics = React.useContext(FontMetricsContext);
 
     const fontSize = 64;
     const context = {

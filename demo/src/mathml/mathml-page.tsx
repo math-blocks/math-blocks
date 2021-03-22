@@ -1,9 +1,11 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-const {row, glyph, frac, root} = Editor.builders;
+import {FontMetricsContext, comicSans} from "@math-blocks/metrics";
 
 import AccessibleMath from "./accessible-math";
+
+const {row, glyph, frac, root} = Editor.builders;
 
 const MathmlPage: React.FunctionComponent = () => {
     const linearEquation = Editor.util.row("2x+5=10");
@@ -40,7 +42,7 @@ const MathmlPage: React.FunctionComponent = () => {
     const factoring = Editor.util.row("(x-1)(x+1)=0");
 
     return (
-        <div>
+        <FontMetricsContext.Provider value={comicSans}>
             <h1>MathML Test Page</h1>
             <div
                 style={{
@@ -58,7 +60,7 @@ const MathmlPage: React.FunctionComponent = () => {
                 <h2>Factoring</h2>
                 <AccessibleMath math={factoring} />
             </div>
-        </div>
+        </FontMetricsContext.Provider>
     );
 };
 

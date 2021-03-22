@@ -47,8 +47,8 @@ const typesetFocus = (
     context: Context,
 ): Layout.Box => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
-    const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
     switch (focus.type) {
         case "zfrac": {
@@ -300,8 +300,8 @@ const typesetFocus = (
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
     const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
-    const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
     switch (node.type) {
         case "row": {

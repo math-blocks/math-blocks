@@ -2,6 +2,7 @@ import * as React from "react";
 
 import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
+import {FontMetricsContext, comicSans} from "@math-blocks/metrics";
 
 // import EditingPanel from "./editing-panel";
 
@@ -74,7 +75,7 @@ const zipper: Editor.Zipper = {
 
 const EditorPage: React.FunctionComponent = () => {
     return (
-        <div>
+        <FontMetricsContext.Provider value={comicSans}>
             <MathEditor
                 readonly={false}
                 zipper={zipper}
@@ -88,7 +89,7 @@ const EditorPage: React.FunctionComponent = () => {
                 <div style={{height: 8}} />
                 <MathKeypad />
             </div>
-        </div>
+        </FontMetricsContext.Provider>
     );
 };
 

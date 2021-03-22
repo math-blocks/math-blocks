@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
+import type {FontMetrics} from "@math-blocks/metrics";
 
-import type {FontMetrics} from "./metrics";
 import type {Context} from "./types";
 
 type Dist = number;
@@ -88,8 +88,7 @@ export const makeGlyph = (char: string, context: Context): Glyph => {
 export const getCharAdvance = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
-    const glyphMetrics = fontMetrics.glyphMetrics;
-    const metrics = glyphMetrics[charCode];
+    const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
@@ -99,8 +98,7 @@ export const getCharAdvance = (glyph: Glyph): number => {
 export const getCharBearingX = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
-    const glyphMetrics = fontMetrics.glyphMetrics;
-    const metrics = glyphMetrics[charCode];
+    const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
@@ -110,8 +108,7 @@ export const getCharBearingX = (glyph: Glyph): number => {
 export const getCharWidth = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
-    const glyphMetrics = fontMetrics.glyphMetrics;
-    const metrics = glyphMetrics[charCode];
+    const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
@@ -121,8 +118,7 @@ export const getCharWidth = (glyph: Glyph): number => {
 export const getCharHeight = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
-    const glyphMetrics = fontMetrics.glyphMetrics;
-    const metrics = glyphMetrics[charCode];
+    const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
@@ -132,8 +128,7 @@ export const getCharHeight = (glyph: Glyph): number => {
 export const getCharDepth = (glyph: Glyph): number => {
     const charCode = glyph.char.charCodeAt(0);
     const fontMetrics = glyph.metrics;
-    const glyphMetrics = fontMetrics.glyphMetrics;
-    const metrics = glyphMetrics[charCode];
+    const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }

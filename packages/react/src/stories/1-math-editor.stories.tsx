@@ -2,6 +2,7 @@ import React from "react";
 import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor-core";
+import {comicSans, FontMetricsContext} from "@math-blocks/metrics";
 
 import MathEditor from "../math-editor";
 
@@ -38,13 +39,15 @@ export const Editable: React.FunctionComponent<EmptyProps> = () => {
     };
 
     return (
-        <MathEditor
-            readonly={false}
-            zipper={zipper}
-            focus={true}
-            onChange={action("onChange")}
-            onSubmit={action("onSubmit")}
-        />
+        <FontMetricsContext.Provider value={comicSans}>
+            <MathEditor
+                readonly={false}
+                zipper={zipper}
+                focus={true}
+                onChange={action("onChange")}
+                onSubmit={action("onSubmit")}
+            />
+        </FontMetricsContext.Provider>
     );
 };
 
@@ -71,5 +74,9 @@ export const Readonly: React.FunctionComponent<EmptyProps> = () => {
         },
     };
 
-    return <MathEditor readonly={true} zipper={zipper} focus={false} />;
+    return (
+        <FontMetricsContext.Provider value={comicSans}>
+            <MathEditor readonly={true} zipper={zipper} focus={false} />
+        </FontMetricsContext.Provider>
+    );
 };

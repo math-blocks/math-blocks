@@ -10,5 +10,6 @@ export type FontMetrics = {
     unitsPerEm: number;
     ascender: number;
     descender: number;
+    getGlyphMetrics: (charCode: number) => GlyphMetrics | null;
     glyphMetrics: Record<number, GlyphMetrics>;
 };

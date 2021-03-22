@@ -3,7 +3,7 @@ import * as React from "react";
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
 import {typesetZipper, typeset} from "@math-blocks/typesetter";
-import {comicsSans} from "@math-blocks/metrics";
+import {comicSans} from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
 
@@ -29,7 +29,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
     ]);
     const fontSize = 20;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -52,7 +52,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
     ]);
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -85,7 +85,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -125,7 +125,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -139,7 +139,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -165,7 +165,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
 export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -202,7 +202,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
 export const Limit: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -227,7 +227,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
 export const Summation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -252,7 +252,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -297,7 +297,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -332,7 +332,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -373,7 +373,7 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicsSans,
+        fontMetrics: comicSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
