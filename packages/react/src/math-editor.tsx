@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import {typesetZipper} from "@math-blocks/typesetter";
-import fontMetrics from "@math-blocks/metrics";
+import {comicsSans} from "@math-blocks/metrics";
 
 import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
@@ -83,7 +83,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const fontSize = 64;
     const context = {
-        fontMetrics,
+        fontMetrics: comicsSans,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,

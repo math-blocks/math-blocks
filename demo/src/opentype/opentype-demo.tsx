@@ -3,12 +3,6 @@ import * as opentype from "opentype.js";
 
 import stix2 from "./STIX2Math.otf";
 
-console.log(stix2);
-
-opentype.load(stix2, (err, font) => {
-    console.log(font);
-});
-
 const getPath = (glyph: opentype.Glyph): string => {
     let result = "";
 
@@ -113,6 +107,9 @@ const OpenTypeDemo: React.FC = () => {
     React.useEffect(() => {
         opentype.load(stix2, (err, font) => {
             if (font) {
+                console.log(font);
+                const A = font.glyphs.get(3);
+                console.log(A.getMetrics());
                 setFont(font);
             }
         });
@@ -188,45 +185,45 @@ const OpenTypeDemo: React.FC = () => {
 
         return (
             <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
-                <path transform="translate(100, 150)" d={intPath} />
-                <path
-                    transform="translate(150, 150)"
-                    d={getPath(font.glyphs.get(3354))}
-                />
-                <path
-                    transform="translate(200, 150)"
-                    d={getPath(font.glyphs.get(3329))}
-                />
-                <path
-                    transform="translate(250, 150)"
-                    d={getPath(font.glyphs.get(1679))}
-                />
-                <g fill="blue" transform="translate(15, 512)">
-                    {children}
+                <g fill="currentcolor">
+                    <path transform="translate(100, 150)" d={intPath} />
+                    <path
+                        transform="translate(150, 150)"
+                        d={getPath(font.glyphs.get(3354))}
+                    />
+                    <path
+                        transform="translate(200, 150)"
+                        d={getPath(font.glyphs.get(3329))}
+                    />
+                    <path
+                        transform="translate(250, 150)"
+                        d={getPath(font.glyphs.get(1679))}
+                    />
+                    <g fill="blue" transform="translate(15, 512)">
+                        {children}
+                    </g>
+                    <g fill="red" transform="translate(30, 512)">
+                        {lerpChildren}
+                    </g>
+                    <g transform="translate(15, 800)">{surdChildren}</g>
+                    <path
+                        transform="translate(500, 1000)"
+                        d={getPath(font.glyphs.get(1661))}
+                    />
+                    <path
+                        transform="translate(500, 800)"
+                        d={getPath(font.glyphs.get(1662))}
+                    />
+                    <path
+                        transform="translate(500, 850)"
+                        d={getPath(font.glyphs.get(1664))}
+                    />
+                    {/* uni221A.var is a variant for sqrt without overbar */}
+                    <path
+                        transform="translate(600, 1000)"
+                        d={getPath(font.glyphs.get(1663))}
+                    />
                 </g>
-                <g fill="red" transform="translate(30, 512)">
-                    {lerpChildren}
-                </g>
-                <g fill="black" transform="translate(15, 800)">
-                    {surdChildren}
-                </g>
-                <path
-                    transform="translate(500, 1000)"
-                    d={getPath(font.glyphs.get(1661))}
-                />
-                <path
-                    transform="translate(500, 800)"
-                    d={getPath(font.glyphs.get(1662))}
-                />
-                <path
-                    transform="translate(500, 850)"
-                    d={getPath(font.glyphs.get(1664))}
-                />
-                {/* uni221A.var is a variant for sqrt without overbar */}
-                <path
-                    transform="translate(600, 1000)"
-                    d={getPath(font.glyphs.get(1663))}
-                />
             </svg>
         );
     }

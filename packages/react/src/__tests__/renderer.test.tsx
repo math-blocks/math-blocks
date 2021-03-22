@@ -7,7 +7,7 @@ import format from "xml-formatter";
 import * as Core from "@math-blocks/core";
 import {typesetZipper} from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
-import fontMetrics from "@math-blocks/metrics";
+import {comicsSans} from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
 import {
@@ -25,7 +25,7 @@ const {glyph, row, subsup} = Editor.builders;
 
 const fontSize = 60;
 const context = {
-    fontMetrics: fontMetrics,
+    fontMetrics: comicsSans,
     baseFontSize: fontSize,
     multiplier: 1.0,
     cramped: false,

@@ -34,7 +34,7 @@ opentype.load(filename, (err, font) => {
           bearingY: glyph.yMax,
           width: glyph.xMax - glyph.xMin,
           height: glyph.yMax - glyph.yMin,
-        }
+        },
       };
     }, {}),
   };
