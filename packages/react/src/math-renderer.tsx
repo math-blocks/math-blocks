@@ -33,7 +33,12 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
         <text
             x={x}
             y={y}
-            fontFamily="comic sans ms"
+            // TODO: include the fontFamily as part of the value provided by
+            // FontMetricsContext and rename to FontDataContext since we'll
+            // probably want to include additional non-metrics data such as
+            // font outlines and of course which font family to use for a specific
+            // glyph
+            fontFamily="STIX2"
             fontSize={glyph.size}
             fill={glyph.color || "currentcolor"}
             id={id}

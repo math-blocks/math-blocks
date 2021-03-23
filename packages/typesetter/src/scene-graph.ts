@@ -23,6 +23,7 @@ export type Glyph = {
     y: number;
     width: number;
     glyph: Layout.Glyph;
+    // TODO: include the fontFamily to use
 } & Common;
 
 export type Line = {

@@ -4049,14 +4049,11 @@ const glyphMetrics: Record<number, GlyphMetrics> = {
     },
 };
 
-const metrics: FontMetrics = {
+export const comicSans: FontMetrics = {
     unitsPerEm: 2048,
     ascender: 2257,
     descender: -597,
     getGlyphMetrics: (charCode: number): GlyphMetrics => {
         return glyphMetrics[charCode];
     },
-    glyphMetrics: glyphMetrics,
 };
-
-export default metrics;

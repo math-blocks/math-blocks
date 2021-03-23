@@ -1,5 +1,4 @@
-import comicSans from "./comic-sans";
-
 export {FontMetricsContext} from "./font-metrics-context";
-export {comicSans};
+export {getFontMetrics} from "./get-font-metrics";
+export {comicSans} from "./comic-sans";
 export * from "./types";

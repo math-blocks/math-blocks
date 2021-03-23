@@ -7,7 +7,6 @@ const placeholderMetrics: FontMetrics = {
     ascender: 850,
     descender: 150,
     getGlyphMetrics: (charCode: number) => null,
-    glyphMetrics: {},
 };
 
 export const FontMetricsContext = React.createContext<FontMetrics>(

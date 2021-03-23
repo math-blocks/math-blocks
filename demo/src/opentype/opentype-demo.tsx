@@ -1,8 +1,6 @@
 import * as React from "react";
 import * as opentype from "opentype.js";
 
-import stix2 from "./STIX2Math.otf";
-
 const getPath = (glyph: opentype.Glyph): string => {
     let result = "";
 
@@ -105,7 +103,7 @@ const OpenTypeDemo: React.FC = () => {
     const [font, setFont] = React.useState<opentype.Font | null>(null);
 
     React.useEffect(() => {
-        opentype.load(stix2, (err, font) => {
+        opentype.load("/STIX2Math.otf", (err, font) => {
             if (font) {
                 console.log(font);
                 const A = font.glyphs.get(3);
