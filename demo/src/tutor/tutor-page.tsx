@@ -10,9 +10,14 @@ console.log(store);
 console.log(store.getState());
 
 const TutorPage: React.FunctionComponent = () => {
+    const fontData = {
+        fontMetrics: comicSans,
+        fontFamily: "comic sans ms",
+    };
+
     return (
         <Provider store={store}>
-            <FontMetricsContext.Provider value={comicSans}>
+            <FontMetricsContext.Provider value={fontData}>
                 <Tutor />
             </FontMetricsContext.Provider>
         </Provider>

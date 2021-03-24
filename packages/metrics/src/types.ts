@@ -417,3 +417,8 @@ export type MathConstants = {
      */
     radicalDegreeBottomRaisePercent: number;
 };
+
+export type FontData = {
+    fontMetrics: FontMetrics;
+    fontFamily: string; // e.g. "Comic Sans", "STIX2", etc.
+};

@@ -40,9 +40,13 @@ const MathmlPage: React.FunctionComponent = () => {
         ),
     ]);
     const factoring = Editor.util.row("(x-1)(x+1)=0");
+    const fontData = {
+        fontMetrics: comicSans,
+        fontFamily: "comic sans ms",
+    };
 
     return (
-        <FontMetricsContext.Provider value={comicSans}>
+        <FontMetricsContext.Provider value={fontData}>
             <h1>MathML Test Page</h1>
             <div
                 style={{

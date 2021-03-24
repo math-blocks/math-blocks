@@ -2,6 +2,8 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
 
+import type {FontData} from "@math-blocks/metrics";
+
 type Common = {
     id?: number;
     color?: string;
@@ -23,7 +25,7 @@ export type Glyph = {
     y: number;
     width: number;
     glyph: Layout.Glyph;
-    // TODO: include the fontFamily to use
+    fontFamily: string;
 } & Common;
 
 export type Line = {
@@ -63,7 +65,11 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
     };
 };
 
-const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
+const processGlyph = (
+    glyph: Layout.Glyph,
+    loc: Point,
+    fontFamily: string,
+): Node => {
     return {
         type: "glyph",
         x: loc.x,
@@ -72,6 +78,7 @@ const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
         glyph: glyph,
         color: glyph.color,
         id: glyph.id,
+        fontFamily,
     };
 };
 
@@ -86,7 +93,12 @@ export type LayoutCursor = {
 const FONT_SIZE = 64;
 const CURSOR_WIDTH = 2;
 
-const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
+const processHBox = (
+    box: Layout.Box,
+    loc: Point,
+    fontData: FontData,
+    options: Options,
+): Group => {
     const pen = {x: 0, y: 0};
     const {multiplier} = box;
 
@@ -100,6 +112,11 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
         !options.inSelection &&
         box.content.length === 3 &&
         box.content[1].length > 0;
+
+    const {fontMetrics} = fontData;
+    const ascent =
+        (FONT_SIZE * multiplier * fontMetrics.ascender) /
+        fontMetrics.unitsPerEm;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
@@ -116,7 +133,7 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
             belowLayer.push({
                 type: "rect",
                 x: pen.x - CURSOR_WIDTH / 2,
-                y: pen.y - FONT_SIZE * 0.85 * multiplier,
+                y: pen.y - ascent,
                 width: CURSOR_WIDTH,
                 height: FONT_SIZE * multiplier,
             });
@@ -129,10 +146,7 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
                 typeof node.id === "number" ? editorLayer : nonEditorLayer;
 
             if (isSelection) {
-                const yMin = -Math.max(
-                    Layout.getHeight(node),
-                    FONT_SIZE * 0.85 * multiplier,
-                );
+                const yMin = -Math.max(Layout.getHeight(node), ascent);
 
                 const height = Math.max(
                     Layout.getHeight(node) + Layout.getDepth(node),
@@ -156,6 +170,7 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
                         _processBox(
                             node,
                             {x: pen.x, y: pen.y + node.shift},
+                            fontData,
                             {
                                 ...options,
                                 inSelection:
@@ -168,7 +183,7 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
                     layer.push(processHRule(node, pen));
                     break;
                 case "Glyph":
-                    layer.push(processGlyph(node, pen));
+                    layer.push(processGlyph(node, pen, fontData.fontFamily));
                     break;
                 case "Kern":
                     // We don't need to include kerns in the output since we include
@@ -202,7 +217,12 @@ const processHBox = (box: Layout.Box, loc: Point, options: Options): Group => {
     };
 };
 
-const processVBox = (box: Layout.Box, loc: Point, options: Options): Group => {
+const processVBox = (
+    box: Layout.Box,
+    loc: Point,
+    fontData: FontData,
+    options: Options,
+): Group => {
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
@@ -241,6 +261,7 @@ const processVBox = (box: Layout.Box, loc: Point, options: Options): Group => {
                         _processBox(
                             node,
                             {x: pen.x + node.shift, y: pen.y},
+                            fontData,
                             options,
                         ),
                     );
@@ -253,7 +274,7 @@ const processVBox = (box: Layout.Box, loc: Point, options: Options): Group => {
                     break;
                 case "Glyph":
                     pen.y += height;
-                    layer.push(processGlyph(node, pen));
+                    layer.push(processGlyph(node, pen, fontData.fontFamily));
                     pen.y += depth;
                     break;
                 case "Kern":
@@ -282,24 +303,34 @@ type Options = {
     inSelection?: boolean;
 };
 
-const _processBox = (box: Layout.Box, loc: Point, options: Options): Group => {
+const _processBox = (
+    box: Layout.Box,
+    loc: Point,
+    fontData: FontData,
+    options: Options,
+): Group => {
     switch (box.kind) {
         case "hbox":
-            return processHBox(box, loc, options);
+            return processHBox(box, loc, fontData, options);
         case "vbox":
-            return processVBox(box, loc, options);
+            return processVBox(box, loc, fontData, options);
     }
 };
 
-export const processBox = (box: Layout.Box, options: Options = {}): Group => {
+export const processBox = (
+    box: Layout.Box,
+    fontData: FontData,
+    options: Options = {},
+): Group => {
     const loc = {x: 0, y: Layout.getHeight(box)};
 
-    const scene = _processBox(box, loc, options);
+    const scene = _processBox(box, loc, fontData, options);
 
-    const y = Math.max(scene.y, FONT_SIZE * 0.85);
     const height = Math.max(scene.height, FONT_SIZE);
 
-    scene.y = y;
+    const {fontMetrics} = fontData;
+    const ascent = (FONT_SIZE * fontMetrics.ascender) / fontMetrics.unitsPerEm;
+    scene.y = Math.max(scene.y, ascent);
     scene.height = height;
 
     return scene;

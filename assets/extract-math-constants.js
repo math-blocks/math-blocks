@@ -1,6 +1,6 @@
 /**
  * Extracts math constants from .ttx file.
- * 
+ *
  * To generate a .ttx file run the following command:
  * ttx -t MATH -s STIX2Math.otf
  */

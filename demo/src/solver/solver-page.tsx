@@ -65,7 +65,10 @@ const SolverPage: React.FunctionComponent = () => {
 
     const fontSize = 64;
     const context = {
-        fontMetrics,
+        fontData: {
+            fontMetrics,
+            fontFamily: "comic sans ms",
+        },
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -94,7 +97,7 @@ const SolverPage: React.FunctionComponent = () => {
     };
 
     return (
-        <FontMetricsContext.Provider value={comicSans}>
+        <FontMetricsContext.Provider value={context.fontData}>
             <div style={styles.container}>
                 <div>
                     <div style={styles.label}>Question:</div>

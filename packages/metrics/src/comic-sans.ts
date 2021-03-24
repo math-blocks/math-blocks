@@ -4051,8 +4051,11 @@ const glyphMetrics: Record<number, GlyphMetrics> = {
 
 export const comicSans: FontMetrics = {
     unitsPerEm: 2048,
-    ascender: 2257,
-    descender: -597,
+    // ascender - descender = 2257 - -597 = 2854 which is larger than the em box
+    // this makes the cursor and selection rect much taller than we'd like it to
+    // be.
+    ascender: 1741, // 2257,
+    descender: 307, // -597,
     getGlyphMetrics: (charCode: number): GlyphMetrics => {
         return glyphMetrics[charCode];
     },

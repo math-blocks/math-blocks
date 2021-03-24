@@ -74,7 +74,8 @@ export const makeHRule = (thickness: number, width: number): HRule => ({
 });
 
 export const makeGlyph = (char: string, context: Context): Glyph => {
-    const {fontMetrics, baseFontSize, multiplier} = context;
+    const {fontData, baseFontSize, multiplier} = context;
+    const {fontMetrics} = fontData;
     const fontSize = multiplier * baseFontSize;
 
     return {

@@ -16,6 +16,11 @@ export default {
 
 type EmptyProps = Record<string, never>;
 
+const fontData = {
+    fontMetrics: comicSans,
+    fontFamily: "comic sans ms",
+};
+
 export const Small: React.FunctionComponent<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
@@ -29,7 +34,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
     ]);
     const fontSize = 20;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -52,7 +57,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
     ]);
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -85,7 +90,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -125,7 +130,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -139,7 +144,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -165,7 +170,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
 export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -202,7 +207,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
 export const Limit: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -227,7 +232,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
 export const Summation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -252,7 +257,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -297,7 +302,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -332,7 +337,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -373,7 +378,7 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
 
     const fontSize = 60;
     const context = {
-        fontMetrics: comicSans,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,

@@ -1,14 +1,15 @@
 import * as React from "react";
 
-import type {FontMetrics} from "./types";
+import type {FontData} from "./types";
 
-const placeholderMetrics: FontMetrics = {
-    unitsPerEm: 1000,
-    ascender: 850,
-    descender: 150,
-    getGlyphMetrics: (charCode: number) => null,
+const placeholder: FontData = {
+    fontMetrics: {
+        unitsPerEm: 1000,
+        ascender: 850,
+        descender: 150,
+        getGlyphMetrics: (charCode: number) => null,
+    },
+    fontFamily: "",
 };
 
-export const FontMetricsContext = React.createContext<FontMetrics>(
-    placeholderMetrics,
-);
+export const FontDataContext = React.createContext<FontData>(placeholder);

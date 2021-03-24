@@ -38,8 +38,13 @@ export const Editable: React.FunctionComponent<EmptyProps> = () => {
         },
     };
 
+    const fontData = {
+        fontMetrics: comicSans,
+        fontFamily: "comic sans ms",
+    };
+
     return (
-        <FontMetricsContext.Provider value={comicSans}>
+        <FontMetricsContext.Provider value={fontData}>
             <MathEditor
                 readonly={false}
                 zipper={zipper}
@@ -74,8 +79,13 @@ export const Readonly: React.FunctionComponent<EmptyProps> = () => {
         },
     };
 
+    const fontData = {
+        fontMetrics: comicSans,
+        fontFamily: "comic sans ms",
+    };
+
     return (
-        <FontMetricsContext.Provider value={comicSans}>
+        <FontMetricsContext.Provider value={fontData}>
             <MathEditor readonly={true} zipper={zipper} focus={false} />
         </FontMetricsContext.Provider>
     );

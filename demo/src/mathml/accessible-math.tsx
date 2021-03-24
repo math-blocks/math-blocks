@@ -12,11 +12,11 @@ type Props = {
 const AccessibleMath: React.FC<Props> = (props) => {
     const {math} = props;
 
-    const fontMetrics = React.useContext(FontMetricsContext);
+    const fontData = React.useContext(FontMetricsContext);
 
     const fontSize = 64;
     const context = {
-        fontMetrics,
+        fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,

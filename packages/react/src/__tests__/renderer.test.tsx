@@ -24,8 +24,12 @@ import {
 const {glyph, row, subsup} = Editor.builders;
 
 const fontSize = 60;
-const context = {
+const fontData = {
     fontMetrics: comicSans,
+    fontFamily: "comic sans ms",
+};
+const context = {
+    fontData: fontData,
     baseFontSize: fontSize,
     multiplier: 1.0,
     cramped: false,

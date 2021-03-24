@@ -46,7 +46,9 @@ const typesetFocus = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const {fontMetrics, baseFontSize, multiplier, cramped} = context;
+    const {fontData, baseFontSize, multiplier, cramped} = context;
+    console.log(fontData);
+    const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
@@ -299,7 +301,8 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {fontMetrics, baseFontSize, multiplier, cramped} = context;
+    const {fontData, baseFontSize, multiplier, cramped} = context;
+    const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
@@ -677,7 +680,7 @@ export const typesetZipper = (
     options: Options = {},
 ): Group => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
-    return processBox(box, options);
+    return processBox(box, context.fontData, options);
 };
 
 export const typeset = (
@@ -686,5 +689,5 @@ export const typeset = (
     options: Options = {},
 ): Group => {
     const box = _typeset(node, context) as Layout.Box;
-    return processBox(box, options);
+    return processBox(box, context.fontData, options);
 };

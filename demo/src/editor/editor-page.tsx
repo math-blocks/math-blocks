@@ -3,7 +3,7 @@ import * as opentype from "opentype.js";
 
 import {MathEditor, MathKeypad} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
-import {FontMetricsContext, getFontMetrics} from "@math-blocks/metrics";
+import {FontMetricsContext, getFontData} from "@math-blocks/metrics";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const simpleRow = Editor.util.row("2x+5=10");
@@ -90,10 +90,10 @@ const EditorPage: React.FunctionComponent = () => {
         return null;
     }
 
-    const fontMetrics = getFontMetrics(font);
+    const fontData = getFontData(font, "STIX2");
 
     return (
-        <FontMetricsContext.Provider value={fontMetrics}>
+        <FontMetricsContext.Provider value={fontData}>
             <MathEditor
                 readonly={false}
                 zipper={zipper}

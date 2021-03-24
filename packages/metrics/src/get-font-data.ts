@@ -1,9 +1,9 @@
 import type {Font} from "opentype.js";
 
-import type {FontMetrics, GlyphMetrics} from "./types";
+import type {FontData, GlyphMetrics} from "./types";
 
-export const getFontMetrics = (font: Font): FontMetrics => {
-    return {
+export const getFontData = (font: Font, fontFamily: string): FontData => {
+    const fontMetrics = {
         unitsPerEm: font.tables["head"].unitsPerEm,
         ascender: font.tables["hhea"].ascender,
         descender: font.tables["hhea"].descender,
@@ -19,5 +19,10 @@ export const getFontMetrics = (font: Font): FontMetrics => {
                 height: metrics.yMax - metrics.yMin,
             };
         },
+    };
+
+    return {
+        fontMetrics: fontMetrics,
+        fontFamily: fontFamily,
     };
 };

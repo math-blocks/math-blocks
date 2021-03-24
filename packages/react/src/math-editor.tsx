@@ -35,7 +35,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
-    const fontMetrics = useContext(FontMetricsContext);
+    const fontData = useContext(FontMetricsContext);
 
     useEffect(() => {
         if (props.focus && containerRef.current) {
@@ -84,7 +84,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const fontSize = 64;
     const context = {
-        fontMetrics: fontMetrics,
+        fontData: fontData,
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,

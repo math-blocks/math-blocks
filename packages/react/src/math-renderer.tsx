@@ -26,7 +26,12 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
     return <rect {...props} fill={fill || "currentcolor"} />;
 };
 
-const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
+const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
+    x,
+    y,
+    glyph,
+    fontFamily,
+}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
     return (
@@ -38,7 +43,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
             // probably want to include additional non-metrics data such as
             // font outlines and of course which font family to use for a specific
             // glyph
-            fontFamily="STIX2"
+            fontFamily={fontFamily}
             fontSize={glyph.size}
             fill={glyph.color || "currentcolor"}
             id={id}
