@@ -7,7 +7,8 @@ const placeholder: FontData = {
         unitsPerEm: 1000,
         ascender: 850,
         descender: 150,
-        getGlyphMetrics: (charCode: number) => null,
+        getGlyphMetrics: (codePoint: number | undefined) => null,
+        hasChar: (char: string) => false,
     },
     fontFamily: "",
 };

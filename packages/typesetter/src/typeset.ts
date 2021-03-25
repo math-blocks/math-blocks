@@ -7,6 +7,15 @@ import {processBox} from "./scene-graph";
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
 
+import {constants} from "./math-constants";
+
+console.log(
+    `numeratorShiftUp = ${constants.fractionNumeratorDisplayStyleShiftUp}`,
+);
+console.log(
+    `denominatorShiftDown = ${constants.fractionDenominatorDisplayStyleShiftDown}`,
+);
+
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
     node: Editor.types.Node,
@@ -91,10 +100,10 @@ const typesetFocus = (
             }
 
             const frac = Layout.makeFract(
-                multiplier,
-                5,
                 numerator,
                 denominator,
+                context,
+                constants,
             );
             frac.id = focus.id;
             frac.color = context?.colorMap?.get(focus.id);
@@ -322,6 +331,18 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             const numerator = typesetRow(num, childContext);
             const denominator = typesetRow(den, childContext);
 
+            // const descent =
+            //     (newMultiplier * baseFontSize * fontMetrics.descender) /
+            //     fontMetrics.unitsPerEm;
+
+            // numerator.depth = Math.max(numerator.depth, descent);
+
+            // const ascent =
+            //     (newMultiplier * baseFontSize * fontMetrics.ascender) /
+            //     fontMetrics.unitsPerEm;
+
+            // denominator.height = Math.max(numerator.height, ascent);
+
             // TODO: try to reuse getCharDepth
             if (jmetrics) {
                 const jDepth =
@@ -343,10 +364,10 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             }
 
             const frac = Layout.makeFract(
-                multiplier,
-                5,
                 numerator,
                 denominator,
+                context,
+                constants,
             );
             frac.id = node.id;
             frac.color = context?.colorMap?.get(node.id);
@@ -531,7 +552,18 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
         }
         case "atom": {
             const {value} = node;
-            const glyph = Layout.makeGlyph(value.char, context);
+            let glyph = Layout.makeGlyph(value.char, context);
+
+            // Convert individual glyphs to italic glyphs if they exist in the
+            // current font.
+            if (/[a-z]/.test(value.char)) {
+                const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
+                const char = String.fromCodePoint(0x1d44e + offset);
+                if (fontMetrics.hasChar(char)) {
+                    glyph = Layout.makeGlyph(char, context);
+                }
+            }
+
             glyph.id = node.id;
             glyph.color = context.colorMap?.get(node.id);
             return glyph;

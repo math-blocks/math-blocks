@@ -34,6 +34,7 @@ export type Line = {
     y1: number;
     x2: number;
     y2: number;
+    thickness: number;
 } & Common;
 
 export type Rect = {
@@ -60,6 +61,7 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
         y1: loc.y,
         x2: loc.x + advance,
         y2: loc.y,
+        thickness: hrule.thickness,
         color: hrule.color,
         id: hrule.id,
     };

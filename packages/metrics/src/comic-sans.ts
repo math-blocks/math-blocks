@@ -4056,7 +4056,18 @@ export const comicSans: FontMetrics = {
     // be.
     ascender: 1741, // 2257,
     descender: 307, // -597,
-    getGlyphMetrics: (charCode: number): GlyphMetrics => {
-        return glyphMetrics[charCode];
+    getGlyphMetrics: (codePoint: number | undefined): GlyphMetrics | null => {
+        if (!codePoint) {
+            return null;
+        }
+        return glyphMetrics[codePoint];
+    },
+    hasChar: (char: string): boolean => {
+        const codePoint = char.codePointAt(0);
+        if (codePoint === undefined) {
+            return false;
+        }
+
+        return codePoint < 0xffff;
     },
 };

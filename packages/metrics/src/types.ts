@@ -10,7 +10,8 @@ export type FontMetrics = {
     unitsPerEm: number;
     ascender: number;
     descender: number;
-    getGlyphMetrics: (charCode: number) => GlyphMetrics | null;
+    getGlyphMetrics: (codePoint: number | undefined) => GlyphMetrics | null;
+    hasChar: (char: string) => boolean;
 };
 
 /**

@@ -6,14 +6,15 @@ import {SceneGraph} from "@math-blocks/typesetter";
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
     color,
+    thickness,
     ...props
 }) => {
     return (
         <line
             {...props}
             stroke={color || "currentColor"}
-            strokeWidth={5}
-            strokeLinecap="round"
+            strokeWidth={thickness}
+            strokeLinecap="butt"
         />
     );
 };

@@ -7,8 +7,13 @@ export const getFontData = (font: Font, fontFamily: string): FontData => {
         unitsPerEm: font.tables["head"].unitsPerEm,
         ascender: font.tables["hhea"].ascender,
         descender: font.tables["hhea"].descender,
-        getGlyphMetrics: (charCode: number): GlyphMetrics => {
-            const glyph = font.charToGlyph(String.fromCharCode(charCode));
+        getGlyphMetrics: (
+            codePoint: number | undefined,
+        ): GlyphMetrics | null => {
+            if (codePoint === undefined) {
+                return null;
+            }
+            const glyph = font.charToGlyph(String.fromCodePoint(codePoint));
             const metrics = glyph.getMetrics();
 
             return {
@@ -18,6 +23,9 @@ export const getFontData = (font: Font, fontFamily: string): FontData => {
                 width: metrics.xMax - metrics.xMin,
                 height: metrics.yMax - metrics.yMin,
             };
+        },
+        hasChar: (char: string): boolean => {
+            return font.hasChar(char);
         },
     };
 

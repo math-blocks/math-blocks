@@ -1,5 +1,5 @@
 import {UnreachableCaseError} from "@math-blocks/core";
-import type {FontMetrics} from "@math-blocks/metrics";
+import type {FontMetrics, MathConstants} from "@math-blocks/metrics";
 
 import type {Context} from "./types";
 
@@ -77,6 +77,10 @@ export const makeGlyph = (char: string, context: Context): Glyph => {
     const {fontData, baseFontSize, multiplier} = context;
     const {fontMetrics} = fontData;
     const fontSize = multiplier * baseFontSize;
+    if (char === "1") {
+        const glyphMetrics = fontMetrics.getGlyphMetrics("1".codePointAt(0));
+        console.log(glyphMetrics);
+    }
 
     return {
         type: "Glyph",
@@ -87,7 +91,7 @@ export const makeGlyph = (char: string, context: Context): Glyph => {
 };
 
 export const getCharAdvance = (glyph: Glyph): number => {
-    const charCode = glyph.char.charCodeAt(0);
+    const charCode = glyph.char.codePointAt(0);
     const fontMetrics = glyph.metrics;
     const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
@@ -97,7 +101,7 @@ export const getCharAdvance = (glyph: Glyph): number => {
 };
 
 export const getCharBearingX = (glyph: Glyph): number => {
-    const charCode = glyph.char.charCodeAt(0);
+    const charCode = glyph.char.codePointAt(0);
     const fontMetrics = glyph.metrics;
     const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
@@ -107,7 +111,7 @@ export const getCharBearingX = (glyph: Glyph): number => {
 };
 
 export const getCharWidth = (glyph: Glyph): number => {
-    const charCode = glyph.char.charCodeAt(0);
+    const charCode = glyph.char.codePointAt(0);
     const fontMetrics = glyph.metrics;
     const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
@@ -117,7 +121,7 @@ export const getCharWidth = (glyph: Glyph): number => {
 };
 
 export const getCharHeight = (glyph: Glyph): number => {
-    const charCode = glyph.char.charCodeAt(0);
+    const charCode = glyph.char.codePointAt(0);
     const fontMetrics = glyph.metrics;
     const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
@@ -127,7 +131,7 @@ export const getCharHeight = (glyph: Glyph): number => {
 };
 
 export const getCharDepth = (glyph: Glyph): number => {
-    const charCode = glyph.char.charCodeAt(0);
+    const charCode = glyph.char.codePointAt(0);
     const fontMetrics = glyph.metrics;
     const metrics = fontMetrics.getGlyphMetrics(charCode);
     if (!metrics) {
@@ -265,32 +269,60 @@ const makeList = (size: Dist, box: Box): readonly Node[] => [
 
 // TODO: compute width from numBox and denBox
 export const makeFract = (
-    multiplier: number,
-    thickness: Dist,
     numBox: Box,
     denBox: Box,
+    context: Context,
+    constants: MathConstants,
 ): Box => {
+    const {baseFontSize, multiplier} = context;
+    const fontSize = multiplier * baseFontSize;
+    const thickness = (fontSize * constants.fractionRuleThickness) / 1000;
+    const shift = (fontSize * constants.axisHeight) / 1000;
+
+    // If useDisplayStyle is false then we need to reduce the font size of
+    // numerators and denominators
+    const useDisplayStyle = true;
+
+    const numeratorShift = useDisplayStyle
+        ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000
+        : (fontSize * constants.fractionNumeratorShiftUp) / 1000;
+
+    const denominatorShift = useDisplayStyle
+        ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown) / 1000
+        : (fontSize * constants.fractionDenominatorShiftDown) / 1000;
+
+    const minDenGap = useDisplayStyle
+        ? (fontSize * constants.fractionDenomDisplayStyleGapMin) / 1000
+        : (fontSize * constants.fractionDenominatorGapMin) / 1000;
+
+    const minNumGap = useDisplayStyle
+        ? (fontSize * constants.fractionNumDisplayStyleGapMin) / 1000
+        : (fontSize * constants.fractionNumeratorGapMin) / 1000;
+
     const width = Math.max(
         Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
-        30 * multiplier,
+        30 * multiplier, // empty numerator/denominator width
     );
-    const stroke = hpackNat([
-        [makeHRule(thickness * multiplier, width - thickness)],
-    ]);
-    stroke.shift = thickness / 2;
+    const stroke = hpackNat([[makeHRule(thickness, width - thickness)]]);
 
-    // TODO: try to figure out the baseline and use that to space this our right
-    const upList = makeList(-10 * multiplier, numBox);
-    const dnList = makeList(6 * multiplier, denBox);
+    const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
+    const denGap = Math.max(
+        shift + denominatorShift - denBox.height,
+        minDenGap,
+    );
+
+    const upList = makeList(numGap, numBox);
+    const dnList = makeList(denGap, denBox);
 
     const fracBox = makeVBox(width, stroke, upList, dnList);
-    // TODO: calculate this based on current font size
-    fracBox.shift = -22 * multiplier;
+    fracBox.shift = -shift;
 
+    // center the numerator
     if (getWidth(numBox) < width) {
         numBox.shift = (width - getWidth(numBox)) / 2;
     }
 
+    // center the denominator
     if (getWidth(denBox) < width) {
         denBox.shift = (width - getWidth(denBox)) / 2;
     }

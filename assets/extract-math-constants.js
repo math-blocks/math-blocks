@@ -29,7 +29,7 @@ parseString(data, (err, data) => {
 
     for (const [key, value] of Object.entries(constants)) {
         const name = key[0].toLowerCase() + key.slice(1);
-        result[name] = unwrapValue(value);
+        result[name] = parseInt(unwrapValue(value));
     }
 
     fs.writeFileSync(
