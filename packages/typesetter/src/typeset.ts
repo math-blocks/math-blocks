@@ -96,8 +96,8 @@ const typesetFrac = (
 };
 
 const typesetSubsup = (
-    subBox: Layout.Box | undefined,
-    supBox: Layout.Box | undefined,
+    subBox: Layout.Box | null,
+    supBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
     const {fontData, baseFontSize, mathStyle} = context;
@@ -244,7 +244,7 @@ const typesetRoot = (
 const typesetLimits = (
     inner: Layout.Node,
     lowerBox: Layout.Box,
-    upperBox: Layout.Box | undefined,
+    upperBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
     const {fontData, baseFontSize, mathStyle} = context;
@@ -319,26 +319,70 @@ const typesetLimits = (
     return limits;
 };
 
+const childContextForFrac = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Text,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+    };
+
+    return childContext;
+};
+
+const childContextForSubsup = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
+const childContextForLimits = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
 const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const {mathStyle} = context;
-
     switch (focus.type) {
         case "zfrac": {
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Text,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
-
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-            };
+            const childContext = childContextForFrac(context);
 
             const numerator =
                 focus.dir === "left"
@@ -358,18 +402,7 @@ const typesetFocus = (
             return frac;
         }
         case "zsubsup": {
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Script,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
-
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-                cramped: true,
-            };
+            const childContext = childContextForSubsup(context);
 
             const [sub, sup] =
                 focus.dir === "left"
@@ -377,18 +410,18 @@ const typesetFocus = (
                     : [focus.other, zipper.row];
 
             // TODO: document this better so I know what's going on here.
-            const subBox = sub
-                ? sub.type === "row"
+            const subBox =
+                sub &&
+                (sub.type === "row"
                     ? typesetRow(sub, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             // TODO: document this better so I know what's going on here.
-            const supBox = sup
-                ? sup.type === "row"
+            const supBox =
+                sup &&
+                (sup.type === "row"
                     ? typesetRow(sup, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             const parentBox = typesetSubsup(subBox, supBox, context);
             parentBox.id = focus.id;
@@ -427,33 +460,23 @@ const typesetFocus = (
             return root;
         }
         case "zlimits": {
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Script,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
+            const childContext = childContextForLimits(context);
 
             const [lower, upper] =
                 focus.dir === "left"
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-                cramped: true,
-            };
 
             const lowerBox =
                 lower.type === "row"
                     ? typesetRow(lower, childContext)
                     : _typesetZipper(zipper, childContext);
 
-            const upperBox = upper
-                ? upper.type === "row"
+            const upperBox =
+                upper &&
+                (upper.type === "row"
                     ? typesetRow(upper, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             const inner = _typeset(focus.inner, context);
             inner.id = focus.inner.id;
@@ -470,8 +493,9 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {fontData, mathStyle} = context;
-    const {fontMetrics} = fontData;
+    const {
+        fontData: {fontMetrics},
+    } = context;
 
     switch (node.type) {
         case "row": {
@@ -479,17 +503,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return typesetRow(node, context);
         }
         case "frac": {
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Text,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
-
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-            };
+            const childContext = childContextForFrac(context);
 
             const [num, den] = node.children;
             const numerator = typesetRow(num, childContext);
@@ -503,23 +517,12 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return frac;
         }
         case "subsup": {
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Script,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
-
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-                cramped: true,
-            };
+            const childContext = childContextForSubsup(context);
 
             const [sub, sup] = node.children;
 
-            const subBox = sub ? typesetRow(sub, childContext) : undefined;
-            const supBox = sup ? typesetRow(sup, childContext) : undefined;
+            const subBox = sub && typesetRow(sub, childContext);
+            const supBox = sup && typesetRow(sup, childContext);
 
             const parentBox = typesetSubsup(subBox, supBox, context);
 
@@ -550,24 +553,12 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
         case "limits": {
             // TODO: render as a subsup if mathStyle isn't MathStyle.Display
 
-            const childMathStyle = {
-                [MathStyle.Display]: MathStyle.Script,
-                [MathStyle.Text]: MathStyle.Script,
-                [MathStyle.Script]: MathStyle.ScriptScript,
-                [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-            }[mathStyle];
+            const childContext = childContextForLimits(context);
 
             const [lower, upper] = node.children;
-            const childContext: Context = {
-                ...context,
-                mathStyle: childMathStyle,
-                cramped: true,
-            };
 
             const lowerBox = typesetRow(lower, childContext);
-            const upperBox = upper
-                ? typesetRow(upper, childContext)
-                : undefined;
+            const upperBox = upper && typesetRow(upper, childContext);
 
             const inner = _typeset(node.inner, context);
             inner.id = node.inner.id;

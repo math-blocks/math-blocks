@@ -331,8 +331,8 @@ export const makeFract = (
 export const makeSubSup = (
     // TODO: pass in a MathStyle instead of a multiplier
     multiplier: number,
-    subBox?: Box,
-    supBox?: Box,
+    subBox: Box | null,
+    supBox: Box | null,
 ): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
