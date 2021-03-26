@@ -23,7 +23,6 @@ export type Box = {
     kind: BoxKind;
     shift: Dist;
     content: readonly (readonly Node[])[];
-    multiplier: number;
 } & Common &
     Dim;
 
@@ -52,14 +51,12 @@ export const makeBox = (
     kind: BoxKind,
     dim: Dim,
     content: readonly (readonly Node[])[],
-    multiplier: number,
 ): Box => ({
     type: "Box",
     kind,
     ...dim,
     shift: 0,
     content,
-    multiplier,
 });
 
 export const makeKern = (size: Dist): Kern => ({
@@ -77,10 +74,6 @@ export const makeGlyph = (char: string, context: Context): Glyph => {
     const {fontData, baseFontSize, multiplier} = context;
     const {fontMetrics} = fontData;
     const fontSize = multiplier * baseFontSize;
-    if (char === "1") {
-        const glyphMetrics = fontMetrics.getGlyphMetrics("1".codePointAt(0));
-        console.log(glyphMetrics);
-    }
 
     return {
         type: "Glyph",
@@ -232,16 +225,13 @@ const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
 const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
 const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (
-    nl: readonly (readonly Node[])[],
-    multiplier = 1,
-): Box => {
+export const hpackNat = (nl: readonly (readonly Node[])[]): Box => {
     const dim = {
         width: sum(nl.map(hlistWidth)),
         height: max(nl.map(hlistHeight)),
         depth: max(nl.map(hlistDepth)),
     };
-    return makeBox("hbox", dim, nl, multiplier);
+    return makeBox("hbox", dim, nl);
 };
 
 export const makeVBox = (
@@ -249,17 +239,22 @@ export const makeVBox = (
     node: Node,
     upList: readonly Node[],
     dnList: readonly Node[],
-    multiplier = 1,
 ): Box => {
     const dim = {
         width,
-        depth: vlistVsize(dnList) + getDepth(node),
-        height: vlistVsize(upList) + getHeight(node),
+        depth:
+            dnList.length > 0
+                ? vlistVsize(dnList) + getDepth(node)
+                : getDepth(node),
+        height:
+            upList.length > 0
+                ? vlistVsize(upList) + getHeight(node)
+                : getHeight(node),
     };
     const upListCopy = [...upList];
     // TODO: get rid of the need to reverse the uplist
     const nodeList = [...upListCopy.reverse(), node, ...dnList];
-    return makeBox("vbox", dim, [nodeList], multiplier);
+    return makeBox("vbox", dim, [nodeList]);
 };
 
 const makeList = (size: Dist, box: Box): readonly Node[] => [

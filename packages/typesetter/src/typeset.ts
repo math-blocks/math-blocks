@@ -9,13 +9,6 @@ import type {Group} from "./scene-graph";
 
 import {constants} from "./math-constants";
 
-console.log(
-    `numeratorShiftUp = ${constants.fractionNumeratorDisplayStyleShiftUp}`,
-);
-console.log(
-    `denominatorShiftDown = ${constants.fractionDenominatorDisplayStyleShiftDown}`,
-);
-
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
     node: Editor.types.Node,
@@ -23,10 +16,7 @@ export const isGlyph = (
 ): node is Editor.types.Atom => node.type === "atom" && node.value.char == char;
 
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
-    const box = Layout.hpackNat(
-        [_typesetChildren(row.children, context)],
-        context.multiplier,
-    );
+    const box = Layout.hpackNat([_typesetChildren(row.children, context)]);
     box.id = row.id;
     box.color = context?.colorMap?.get(row.id);
 
@@ -44,10 +34,248 @@ const withOperatorPadding = (
     // We need to tweak this loic so that we only add padding on the right side
     // for binary operators below.  This is so that we don't get extra space
     // when adding/subtracting something just to the right of an "=" in the above
-    return Layout.hpackNat(
-        [[Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)]],
-        multiplier,
+    return Layout.hpackNat([
+        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
+    ]);
+};
+
+const typesetFrac = (
+    numerator: Layout.Box,
+    denominator: Layout.Box,
+    context: Context,
+): Layout.Box => {
+    const {fontData, baseFontSize, cramped} = context;
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+
+    const newMultiplier = cramped ? 0.5 : 1.0;
+
+    // TODO: Use the commented out code when render static math content
+
+    // const descent =
+    //     (newMultiplier * baseFontSize * fontMetrics.descender) /
+    //     fontMetrics.unitsPerEm;
+
+    // numerator.depth = Math.max(numerator.depth, descent);
+
+    // const ascent =
+    //     (newMultiplier * baseFontSize * fontMetrics.ascender) /
+    //     fontMetrics.unitsPerEm;
+
+    // denominator.height = Math.max(numerator.height, ascent);
+
+    // TODO: try to reuse getCharDepth
+
+    // This code is only for rendering editable math content
+    if (jmetrics) {
+        const jDepth =
+            (baseFontSize *
+                newMultiplier *
+                (jmetrics.height - jmetrics.bearingY)) /
+            fontMetrics.unitsPerEm;
+        numerator.depth = Math.max(numerator.depth, jDepth);
+        denominator.depth = Math.max(denominator.depth, jDepth);
+    }
+
+    // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+    if (Emetrics) {
+        const EHeight =
+            (baseFontSize * newMultiplier * Emetrics.bearingY) /
+            fontMetrics.unitsPerEm;
+        numerator.height = Math.max(numerator.height, EHeight);
+        denominator.height = Math.max(denominator.height, EHeight);
+    }
+
+    const frac = Layout.makeFract(numerator, denominator, context, constants);
+
+    return frac;
+};
+
+const typesetSubsup = (
+    subBox: Layout.Box | undefined,
+    supBox: Layout.Box | undefined,
+    context: Context,
+): Layout.Box => {
+    const {fontData, baseFontSize, multiplier} = context;
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+
+    const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+
+    if (subBox) {
+        // TODO: try to reuse getCharDepth
+        if (jmetrics) {
+            const jDepth =
+                (baseFontSize *
+                    newMultiplier *
+                    (jmetrics.height - jmetrics.bearingY)) /
+                fontMetrics.unitsPerEm;
+            subBox.depth = Math.max(subBox.depth, jDepth);
+        }
+
+        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+        if (Emetrics) {
+            const EHeight =
+                (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                fontMetrics.unitsPerEm;
+            subBox.height = Math.max(subBox.height, EHeight);
+        }
+    }
+
+    if (supBox) {
+        // TODO: try to reuse getCharDepth
+        if (jmetrics) {
+            const jDepth =
+                (baseFontSize *
+                    newMultiplier *
+                    (jmetrics.height - jmetrics.bearingY)) /
+                fontMetrics.unitsPerEm;
+            supBox.depth = Math.max(supBox.depth, jDepth);
+        }
+
+        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+        if (Emetrics) {
+            const EHeight =
+                (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                fontMetrics.unitsPerEm;
+            supBox.height = Math.max(supBox.height, EHeight);
+        }
+    }
+
+    return Layout.makeSubSup(multiplier, subBox, supBox);
+};
+
+const typesetRoot = (
+    indexBox: Layout.Box | null,
+    radicand: Layout.Box,
+    context: Context,
+): Layout.Box => {
+    const {fontData, baseFontSize, multiplier} = context;
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+
+    radicand.width = Math.max(radicand.width, 30 * multiplier);
+    if (Emetrics) {
+        const EHeight =
+            (baseFontSize * multiplier * Emetrics.bearingY) /
+            fontMetrics.unitsPerEm;
+        radicand.height = Math.max(radicand.height, EHeight);
+    }
+    if (jmetrics) {
+        const jDepth =
+            (baseFontSize *
+                multiplier *
+                (jmetrics.height - jmetrics.bearingY)) /
+            fontMetrics.unitsPerEm;
+        radicand.depth = Math.max(radicand.depth, jDepth);
+    }
+
+    // TODO: make the surd stretchy
+    const surd = Layout.hpackNat([[Layout.makeGlyph("\u221A", context)]]);
+    let surdBox;
+    if (indexBox) {
+        // TODO: get this constant from the MATH table constants
+        surd.shift = Math.max(0, indexBox.width - 36);
+        surdBox = Layout.makeVBox(
+            surd.width + Math.max(0, indexBox.width - 36),
+            surd,
+            // TODO: get this constant from the MATH table constants
+            [Layout.makeKern(-30), indexBox],
+            [],
+        );
+    } else {
+        surdBox = Layout.makeVBox(surd.width, surd, [], []);
+    }
+
+    const fontSize = multiplier * baseFontSize;
+    const thickness = (fontSize * constants.fractionRuleThickness) / 1000;
+    const stroke = Layout.makeHRule(thickness, radicand.width);
+
+    const vbox = Layout.makeVBox(
+        radicand.width,
+        radicand,
+        [Layout.makeKern(6), stroke],
+        [],
     );
+    surdBox.shift = surdBox.height - vbox.height;
+
+    const root = Layout.hpackNat([[surdBox, vbox]]);
+
+    return root;
+};
+
+const typesetLimits = (
+    inner: Layout.Node,
+    lowerBox: Layout.Box,
+    upperBox: Layout.Box | undefined,
+    context: Context,
+): Layout.Box => {
+    const {fontData, baseFontSize, multiplier} = context;
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+
+    const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+
+    // TODO: try to reuse getCharDepth
+    if (jmetrics) {
+        const jDepth =
+            (baseFontSize *
+                newMultiplier *
+                (jmetrics.height - jmetrics.bearingY)) /
+            fontMetrics.unitsPerEm;
+        lowerBox.depth = Math.max(lowerBox.depth, jDepth);
+        if (upperBox) {
+            upperBox.depth = Math.max(upperBox.depth, jDepth);
+        }
+    }
+
+    // TODO: grab the max bearingY of all of [0-9a-zA-Z]
+    if (Emetrics) {
+        const EHeight =
+            (baseFontSize * newMultiplier * Emetrics.bearingY) /
+            fontMetrics.unitsPerEm;
+        lowerBox.height = Math.max(lowerBox.height, EHeight);
+        if (upperBox) {
+            upperBox.height = Math.max(upperBox.height, EHeight);
+        }
+    }
+
+    const innerWidth = Layout.getWidth(inner);
+    const width = Math.max(
+        innerWidth,
+        lowerBox.width || 0,
+        upperBox?.width || 0,
+    );
+
+    const newInner =
+        innerWidth < width
+            ? Layout.hpackNat([
+                  [
+                      Layout.makeKern((width - innerWidth) / 2),
+                      inner,
+                      Layout.makeKern((width - innerWidth) / 2),
+                  ],
+              ])
+            : inner;
+    if (lowerBox.width < width) {
+        lowerBox.shift = (width - lowerBox.width) / 2;
+    }
+    if (upperBox && upperBox.width < width) {
+        upperBox.shift = (width - upperBox.width) / 2;
+    }
+
+    const limits = Layout.makeVBox(
+        width,
+        newInner,
+        upperBox ? [Layout.makeKern(6), upperBox] : [],
+        [Layout.makeKern(4), lowerBox],
+    );
+
+    return limits;
 };
 
 const typesetFocus = (
@@ -55,11 +283,7 @@ const typesetFocus = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, multiplier, cramped} = context;
-    console.log(fontData);
-    const {fontMetrics} = fontData;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+    const {multiplier, cramped} = context;
 
     switch (focus.type) {
         case "zfrac": {
@@ -79,32 +303,8 @@ const typesetFocus = (
                     ? typesetRow(focus.other, childContext)
                     : _typesetZipper(zipper, childContext);
 
-            // TODO: try to reuse getCharDepth
-            if (jmetrics) {
-                const jDepth =
-                    (baseFontSize *
-                        newMultiplier *
-                        (jmetrics.height - jmetrics.bearingY)) /
-                    fontMetrics.unitsPerEm;
-                numerator.depth = Math.max(numerator.depth, jDepth);
-                denominator.depth = Math.max(denominator.depth, jDepth);
-            }
+            const frac = typesetFrac(numerator, denominator, context);
 
-            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-            if (Emetrics) {
-                const EHeight =
-                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                    fontMetrics.unitsPerEm;
-                numerator.height = Math.max(numerator.height, EHeight);
-                denominator.height = Math.max(denominator.height, EHeight);
-            }
-
-            const frac = Layout.makeFract(
-                numerator,
-                denominator,
-                context,
-                constants,
-            );
             frac.id = focus.id;
             frac.color = context?.colorMap?.get(focus.id);
 
@@ -123,94 +323,49 @@ const typesetFocus = (
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
 
-            let subBox: Layout.Box | undefined;
             // TODO: document this better so I know what's going on here.
-            if (sub) {
-                subBox =
-                    sub.type === "row"
-                        ? typesetRow(sub, childContext)
-                        : _typesetZipper(zipper, childContext);
+            const subBox = sub
+                ? sub.type === "row"
+                    ? typesetRow(sub, childContext)
+                    : _typesetZipper(zipper, childContext)
+                : undefined;
 
-                // TODO: try to reuse getCharDepth
-                if (jmetrics) {
-                    const jDepth =
-                        (baseFontSize *
-                            newMultiplier *
-                            (jmetrics.height - jmetrics.bearingY)) /
-                        fontMetrics.unitsPerEm;
-                    subBox.depth = Math.max(subBox.depth, jDepth);
-                }
-
-                // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-                if (Emetrics) {
-                    const EHeight =
-                        (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                        fontMetrics.unitsPerEm;
-                    subBox.height = Math.max(subBox.height, EHeight);
-                }
-            }
-
-            let supBox: Layout.Box | undefined;
             // TODO: document this better so I know what's going on here.
-            if (sup) {
-                supBox =
-                    sup.type === "row"
-                        ? typesetRow(sup, childContext)
-                        : _typesetZipper(zipper, childContext);
+            const supBox = sup
+                ? sup.type === "row"
+                    ? typesetRow(sup, childContext)
+                    : _typesetZipper(zipper, childContext)
+                : undefined;
 
-                // TODO: try to reuse getCharDepth
-                if (jmetrics) {
-                    const jDepth =
-                        (baseFontSize *
-                            newMultiplier *
-                            (jmetrics.height - jmetrics.bearingY)) /
-                        fontMetrics.unitsPerEm;
-                    supBox.depth = Math.max(supBox.depth, jDepth);
-                }
-
-                // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-                if (Emetrics) {
-                    const EHeight =
-                        (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                        fontMetrics.unitsPerEm;
-                    supBox.height = Math.max(supBox.height, EHeight);
-                }
-            }
-
-            const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
+            const parentBox = typesetSubsup(subBox, supBox, context);
             parentBox.id = focus.id;
 
             return parentBox;
         }
         case "zroot": {
-            const radicand =
+            const [ind, rad] =
                 focus.dir === "left"
-                    ? typesetRow(focus.other, context)
+                    ? [zipper.row, focus.other]
+                    : [focus.other, zipper.row];
+
+            const radicand =
+                rad.type === "row"
+                    ? typesetRow(rad, context)
                     : _typesetZipper(zipper, context);
-            const Eheight = 50;
-            radicand.width = Math.max(radicand.width, 30 * multiplier);
-            radicand.height = Math.max(radicand.height, Eheight * multiplier);
-            radicand.depth = Math.max(radicand.depth, 0);
 
-            // TODO: make the surd stretchy
-            const surd = Layout.hpackNat(
-                [[Layout.makeGlyph("\u221A", context)]],
-                multiplier,
-            );
-            const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
-            const vbox = Layout.makeVBox(
-                radicand.width,
-                radicand,
-                [Layout.makeKern(6), stroke],
-                [],
-                multiplier,
-            );
-            surd.shift = surd.height - vbox.height;
+            const indexContext = {
+                ...context,
+                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
+            };
 
-            const root = Layout.hpackNat(
-                [[surd, Layout.makeKern(-10), vbox]],
-                multiplier,
-            );
+            const index = ind
+                ? ind.type === "row"
+                    ? typesetRow(ind, indexContext)
+                    : _typesetZipper(zipper, indexContext)
+                : null;
+
+            const root = typesetRoot(index, radicand, context);
+
             root.id = focus.id;
             root.color = context?.colorMap?.get(root.id);
 
@@ -239,68 +394,12 @@ const typesetFocus = (
                     : _typesetZipper(zipper, childContext)
                 : undefined;
 
-            // TODO: try to reuse getCharDepth
-            if (jmetrics) {
-                const jDepth =
-                    (baseFontSize *
-                        newMultiplier *
-                        (jmetrics.height - jmetrics.bearingY)) /
-                    fontMetrics.unitsPerEm;
-                lowerBox.depth = Math.max(lowerBox.depth, jDepth);
-                if (upperBox) {
-                    upperBox.depth = Math.max(upperBox.depth, jDepth);
-                }
-            }
-
-            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-            if (Emetrics) {
-                const EHeight =
-                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                    fontMetrics.unitsPerEm;
-                lowerBox.height = Math.max(lowerBox.height, EHeight);
-                if (upperBox) {
-                    upperBox.height = Math.max(upperBox.height, EHeight);
-                }
-            }
-
             const inner = _typeset(focus.inner, context);
             inner.id = focus.inner.id;
             inner.color = context?.colorMap?.get(inner.id);
 
-            const innerWidth = Layout.getWidth(inner);
-            const width = Math.max(
-                innerWidth,
-                lowerBox.width || 0,
-                upperBox?.width || 0,
-            );
+            const limits = typesetLimits(inner, lowerBox, upperBox, context);
 
-            const newInner =
-                innerWidth < width
-                    ? Layout.hpackNat(
-                          [
-                              [
-                                  Layout.makeKern((width - innerWidth) / 2),
-                                  inner,
-                                  Layout.makeKern((width - innerWidth) / 2),
-                              ],
-                          ],
-                          multiplier,
-                      )
-                    : inner;
-            if (lowerBox.width < width) {
-                lowerBox.shift = (width - lowerBox.width) / 2;
-            }
-            if (upperBox && upperBox.width < width) {
-                upperBox.shift = (width - upperBox.width) / 2;
-            }
-
-            const limits = Layout.makeVBox(
-                width,
-                newInner,
-                upperBox ? [Layout.makeKern(6), upperBox] : [],
-                [Layout.makeKern(4), lowerBox],
-                multiplier,
-            );
             limits.id = focus.id;
             limits.color = context?.colorMap?.get(limits.id);
 
@@ -310,10 +409,8 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {fontData, baseFontSize, multiplier, cramped} = context;
+    const {fontData, multiplier, cramped} = context;
     const {fontMetrics} = fontData;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
     switch (node.type) {
         case "row": {
@@ -321,160 +418,63 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return typesetRow(node, context);
         }
         case "frac": {
-            const newMultiplier = cramped ? 0.5 : 1.0;
             const childContext = {
                 ...context,
-                multiplier: newMultiplier,
+                multiplier: cramped ? 0.5 : 1.0,
             };
 
             const [num, den] = node.children;
             const numerator = typesetRow(num, childContext);
             const denominator = typesetRow(den, childContext);
 
-            // const descent =
-            //     (newMultiplier * baseFontSize * fontMetrics.descender) /
-            //     fontMetrics.unitsPerEm;
+            const frac = typesetFrac(numerator, denominator, context);
 
-            // numerator.depth = Math.max(numerator.depth, descent);
-
-            // const ascent =
-            //     (newMultiplier * baseFontSize * fontMetrics.ascender) /
-            //     fontMetrics.unitsPerEm;
-
-            // denominator.height = Math.max(numerator.height, ascent);
-
-            // TODO: try to reuse getCharDepth
-            if (jmetrics) {
-                const jDepth =
-                    (baseFontSize *
-                        newMultiplier *
-                        (jmetrics.height - jmetrics.bearingY)) /
-                    fontMetrics.unitsPerEm;
-                numerator.depth = Math.max(numerator.depth, jDepth);
-                denominator.depth = Math.max(denominator.depth, jDepth);
-            }
-
-            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-            if (Emetrics) {
-                const EHeight =
-                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                    fontMetrics.unitsPerEm;
-                numerator.height = Math.max(numerator.height, EHeight);
-                denominator.height = Math.max(denominator.height, EHeight);
-            }
-
-            const frac = Layout.makeFract(
-                numerator,
-                denominator,
-                context,
-                constants,
-            );
             frac.id = node.id;
             frac.color = context?.colorMap?.get(node.id);
 
             return frac;
         }
         case "subsup": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const childContext = {
                 ...context,
-                multiplier: newMultiplier,
+                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
                 cramped: true,
             };
 
             const [sub, sup] = node.children;
 
-            let subBox: Layout.Box | undefined;
-            // TODO: document this better so I know what's going on here.
-            if (sub) {
-                subBox = typesetRow(sub, childContext);
+            const subBox = sub ? typesetRow(sub, childContext) : undefined;
+            const supBox = sup ? typesetRow(sup, childContext) : undefined;
 
-                // TODO: try to reuse getCharDepth
-                if (jmetrics) {
-                    const jDepth =
-                        (baseFontSize *
-                            newMultiplier *
-                            (jmetrics.height - jmetrics.bearingY)) /
-                        fontMetrics.unitsPerEm;
-                    subBox.depth = Math.max(subBox.depth, jDepth);
-                }
+            const parentBox = typesetSubsup(subBox, supBox, context);
 
-                // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-                if (Emetrics) {
-                    const EHeight =
-                        (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                        fontMetrics.unitsPerEm;
-                    subBox.height = Math.max(subBox.height, EHeight);
-                }
-            }
-
-            let supBox: Layout.Box | undefined;
-            // TODO: document this better so I know what's going on here.
-            if (sup) {
-                supBox = typesetRow(sup, childContext);
-
-                // TODO: try to reuse getCharDepth
-                if (jmetrics) {
-                    const jDepth =
-                        (baseFontSize *
-                            newMultiplier *
-                            (jmetrics.height - jmetrics.bearingY)) /
-                        fontMetrics.unitsPerEm;
-                    supBox.depth = Math.max(supBox.depth, jDepth);
-                }
-
-                // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-                if (Emetrics) {
-                    const EHeight =
-                        (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                        fontMetrics.unitsPerEm;
-                    supBox.height = Math.max(supBox.height, EHeight);
-                }
-            }
-
-            const parentBox = Layout.makeSubSup(multiplier, subBox, supBox);
             parentBox.id = node.id;
 
             return parentBox;
         }
         case "root": {
-            const [, rad] = node.children;
+            const [ind, rad] = node.children;
+
             const radicand = typesetRow(rad, context);
-            const Eheight = 50;
-            radicand.width = Math.max(radicand.width, 30 * multiplier);
-            radicand.height = Math.max(radicand.height, Eheight * multiplier);
-            radicand.depth = Math.max(radicand.depth, 0);
 
-            // TODO: make the surd stretchy
-            const surd = Layout.hpackNat(
-                [[Layout.makeGlyph("\u221A", context)]],
-                multiplier,
-            );
-            const stroke = Layout.makeHRule(6.5 * multiplier, radicand.width);
-            const vbox = Layout.makeVBox(
-                radicand.width,
-                radicand,
-                [Layout.makeKern(6), stroke],
-                [],
-                multiplier,
-            );
-            surd.shift = surd.height - vbox.height;
+            const indexContext = {
+                ...context,
+                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
+            };
+            const index = ind && typesetRow(ind, indexContext);
 
-            const root = Layout.hpackNat(
-                [[surd, Layout.makeKern(-10), vbox]],
-                multiplier,
-            );
+            const root = typesetRoot(index, radicand, context);
+
             root.id = node.id;
             root.color = context?.colorMap?.get(root.id);
 
             return root;
         }
         case "limits": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
             const [lower, upper] = node.children;
             const childContext = {
                 ...context,
-                multiplier: newMultiplier,
+                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
                 cramped: true,
             };
 
@@ -483,68 +483,12 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
                 ? typesetRow(upper, childContext)
                 : undefined;
 
-            // TODO: try to reuse getCharDepth
-            if (jmetrics) {
-                const jDepth =
-                    (baseFontSize *
-                        newMultiplier *
-                        (jmetrics.height - jmetrics.bearingY)) /
-                    fontMetrics.unitsPerEm;
-                lowerBox.depth = Math.max(lowerBox.depth, jDepth);
-                if (upperBox) {
-                    upperBox.depth = Math.max(upperBox.depth, jDepth);
-                }
-            }
-
-            // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-            if (Emetrics) {
-                const EHeight =
-                    (baseFontSize * newMultiplier * Emetrics.bearingY) /
-                    fontMetrics.unitsPerEm;
-                lowerBox.height = Math.max(lowerBox.height, EHeight);
-                if (upperBox) {
-                    upperBox.height = Math.max(upperBox.height, EHeight);
-                }
-            }
-
             const inner = _typeset(node.inner, context);
             inner.id = node.inner.id;
             inner.color = context?.colorMap?.get(inner.id);
 
-            const innerWidth = Layout.getWidth(inner);
-            const width = Math.max(
-                innerWidth,
-                lowerBox.width || 0,
-                upperBox?.width || 0,
-            );
+            const limits = typesetLimits(inner, lowerBox, upperBox, context);
 
-            const newInner =
-                innerWidth < width
-                    ? Layout.hpackNat(
-                          [
-                              [
-                                  Layout.makeKern((width - innerWidth) / 2),
-                                  inner,
-                                  Layout.makeKern((width - innerWidth) / 2),
-                              ],
-                          ],
-                          multiplier,
-                      )
-                    : inner;
-            if (lowerBox.width < width) {
-                lowerBox.shift = (width - lowerBox.width) / 2;
-            }
-            if (upperBox && upperBox.width < width) {
-                upperBox.shift = (width - upperBox.width) / 2;
-            }
-
-            const limits = Layout.makeVBox(
-                width,
-                newInner,
-                upperBox ? [Layout.makeKern(6), upperBox] : [],
-                [Layout.makeKern(4), lowerBox],
-                multiplier,
-            );
             limits.id = node.id;
             limits.color = context?.colorMap?.get(limits.id);
 
