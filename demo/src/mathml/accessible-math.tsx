@@ -2,7 +2,7 @@ import * as React from "react";
 
 import {MathmlRenderer, MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
-import {typeset} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 import {FontMetricsContext} from "@math-blocks/metrics";
 
 type Props = {
@@ -15,17 +15,17 @@ const AccessibleMath: React.FC<Props> = (props) => {
     const fontData = React.useContext(FontMetricsContext);
 
     const fontSize = 64;
-    const context = {
+    const context: Typesetter.Context = {
         fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: undefined,
     };
 
     const options = {showCursor: false};
 
-    const scene = typeset(math, context, options);
+    const scene = Typesetter.typeset(math, context, options);
     const node = Editor.parse(math);
     console.log(node);
 

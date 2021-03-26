@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
-import {typesetZipper, typeset} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 import {comicSans} from "@math-blocks/metrics";
 
 import MathRenderer from "../math-renderer";
@@ -33,13 +33,13 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
     const fontSize = 20;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
-    const scene = typeset(math, context);
+    const scene = Typesetter.typeset(math, context);
 
     return <MathRenderer scene={scene} />;
 };
@@ -56,13 +56,13 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         glyph("0"),
     ]);
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
-    const scene = typeset(math, context);
+    const scene = Typesetter.typeset(math, context);
 
     return <MathRenderer scene={scene} />;
 };
@@ -89,17 +89,17 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
     };
 
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
     const options = {
         showCursor: true,
     };
 
-    const scene = typesetZipper(zipper, context, options);
+    const scene = Typesetter.typesetZipper(zipper, context, options);
 
     return <MathRenderer scene={scene} />;
 };
@@ -129,28 +129,28 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
     };
 
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
 
-    const scene = typesetZipper(zipper, context);
+    const scene = Typesetter.typesetZipper(zipper, context);
 
     return <MathRenderer scene={scene} />;
 };
 
 export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
 
-    const pythagoras = typeset(
+    const pythagoras = Typesetter.typeset(
         row([
             glyph("a"),
             Editor.util.sup("2"),
@@ -169,14 +169,14 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
 
 export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
 
-    const quadraticEquation = typeset(
+    const quadraticEquation = Typesetter.typeset(
         row([
             glyph("x"),
             glyph("="),
@@ -206,14 +206,14 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
 
 export const Limit: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
 
-    const lim = typeset(
+    const lim = Typesetter.typeset(
         row([
             limits(row([glyph("l"), glyph("i"), glyph("m")]), [
                 glyph("x"),
@@ -231,14 +231,14 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
 
 export const Summation: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
     };
 
-    const sum = typeset(
+    const sum = Typesetter.typeset(
         row([
             limits(
                 glyph("\u03a3"),
@@ -256,10 +256,10 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
 export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: colorMap,
     };
@@ -273,7 +273,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         colorMap.set(subsup.children[1].id, "pink");
     }
 
-    const sum = typeset(row([fracNode]), context);
+    const sum = Typesetter.typeset(row([fracNode]), context);
 
     return <MathRenderer scene={sum} />;
 };
@@ -301,14 +301,14 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     }
 
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context);
+    const prod = Typesetter.typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };
@@ -336,14 +336,14 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     }
 
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context);
+    const prod = Typesetter.typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };
@@ -377,14 +377,14 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     }
 
     const fontSize = 60;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: colorMap,
     };
-    const prod = typeset(editNode, context);
+    const prod = Typesetter.typeset(editNode, context);
 
     return <MathRenderer scene={prod} />;
 };

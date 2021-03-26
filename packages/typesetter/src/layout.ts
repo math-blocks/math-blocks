@@ -1,6 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 import type {FontMetrics, MathConstants} from "@math-blocks/metrics";
 
+import {multiplierForMathStyle} from "./utils";
 import type {Context} from "./types";
 
 type Dist = number;
@@ -71,8 +72,9 @@ export const makeHRule = (thickness: number, width: number): HRule => ({
 });
 
 export const makeGlyph = (char: string, context: Context): Glyph => {
-    const {fontData, baseFontSize, multiplier} = context;
+    const {fontData, baseFontSize, mathStyle} = context;
     const {fontMetrics} = fontData;
+    const multiplier = multiplierForMathStyle(mathStyle);
     const fontSize = multiplier * baseFontSize;
 
     return {
@@ -269,7 +271,8 @@ export const makeFract = (
     context: Context,
     constants: MathConstants,
 ): Box => {
-    const {baseFontSize, multiplier} = context;
+    const {baseFontSize, mathStyle} = context;
+    const multiplier = multiplierForMathStyle(mathStyle);
     const fontSize = multiplier * baseFontSize;
     const thickness = (fontSize * constants.fractionRuleThickness) / 1000;
     const shift = (fontSize * constants.axisHeight) / 1000;
@@ -326,6 +329,7 @@ export const makeFract = (
 };
 
 export const makeSubSup = (
+    // TODO: pass in a MathStyle instead of a multiplier
     multiplier: number,
     subBox?: Box,
     supBox?: Box,
@@ -338,6 +342,9 @@ export const makeSubSup = (
         supBox ? getWidth(supBox) : 0,
         subBox ? getWidth(subBox) : 0,
     );
+
+    // TODO: use constants from MATH table for these shift contants
+
     const upList = supBox ? makeList(10 * multiplier, supBox) : [];
     // TODO: make the shift depend on the height of the subscript
     const dnList = subBox ? makeList(0 * multiplier, subBox) : [];

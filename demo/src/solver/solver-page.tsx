@@ -6,7 +6,7 @@ import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
-import {typeset} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";
 
@@ -64,20 +64,20 @@ const SolverPage: React.FunctionComponent = () => {
     };
 
     const fontSize = 64;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: {
             fontMetrics,
             fontFamily: "comic sans ms",
         },
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         // colorMap: props.colorMap,
     };
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const scene = typeset(solution, context);
+            const scene = Typesetter.typeset(solution, context);
             return <MathRenderer scene={scene} />;
         }
         return null;

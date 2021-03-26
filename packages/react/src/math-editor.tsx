@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import {typesetZipper} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 import {FontMetricsContext} from "@math-blocks/metrics";
 
 import styles from "./editor.module.css";
@@ -83,17 +83,17 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const {style} = props;
 
     const fontSize = 64;
-    const context = {
+    const context: Typesetter.Context = {
         fontData: fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: props.colorMap,
     };
 
     const options = {showCursor: active};
 
-    const scene = typesetZipper(zipper, context, options);
+    const scene = Typesetter.typesetZipper(zipper, context, options);
 
     return (
         <div

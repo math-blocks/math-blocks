@@ -5,7 +5,7 @@ import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
 
 import * as Core from "@math-blocks/core";
-import {typesetZipper} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
 import {comicSans} from "@math-blocks/metrics";
 
@@ -28,10 +28,10 @@ const fontData = {
     fontMetrics: comicSans,
     fontFamily: "comic sans ms",
 };
-const context = {
+const context: Typesetter.Context = {
     fontData: fontData,
     baseFontSize: fontSize,
-    multiplier: 1.0,
+    mathStyle: Typesetter.MathStyle.Display,
     cramped: false,
 };
 
@@ -164,7 +164,7 @@ describe("renderer", () => {
                 },
             };
 
-            const scene = typesetZipper(zipper, context);
+            const scene = Typesetter.typesetZipper(zipper, context);
 
             expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
