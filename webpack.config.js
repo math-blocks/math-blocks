@@ -38,6 +38,12 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.otf$/i,
+                use: {
+                    loader: "file-loader",
+                },
+            },
         ],
     },
     plugins: [
@@ -96,7 +102,7 @@ module.exports = {
     devServer: {
         hot: true,
         liveReload: false,
-        contentBase: path.join(__dirname, "dist"),
+        contentBase: path.join(__dirname, "assets"),
         compress: true,
         port: 9000,
         host: "0.0.0.0",

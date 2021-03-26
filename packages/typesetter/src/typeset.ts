@@ -7,6 +7,15 @@ import {processBox} from "./scene-graph";
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
 
+import {constants} from "./math-constants";
+
+console.log(
+    `numeratorShiftUp = ${constants.fractionNumeratorDisplayStyleShiftUp}`,
+);
+console.log(
+    `denominatorShiftDown = ${constants.fractionDenominatorDisplayStyleShiftDown}`,
+);
+
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
     node: Editor.types.Node,
@@ -46,9 +55,11 @@ const typesetFocus = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
-    const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
+    const {fontData, baseFontSize, multiplier, cramped} = context;
+    console.log(fontData);
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
     switch (focus.type) {
         case "zfrac": {
@@ -89,10 +100,10 @@ const typesetFocus = (
             }
 
             const frac = Layout.makeFract(
-                multiplier,
-                5,
                 numerator,
                 denominator,
+                context,
+                constants,
             );
             frac.id = focus.id;
             frac.color = context?.colorMap?.get(focus.id);
@@ -299,9 +310,10 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {fontMetrics, baseFontSize, multiplier, cramped} = context;
-    const jmetrics = fontMetrics.glyphMetrics["j".charCodeAt(0)];
-    const Emetrics = fontMetrics.glyphMetrics["E".charCodeAt(0)];
+    const {fontData, baseFontSize, multiplier, cramped} = context;
+    const {fontMetrics} = fontData;
+    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
+    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
     switch (node.type) {
         case "row": {
@@ -318,6 +330,18 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             const [num, den] = node.children;
             const numerator = typesetRow(num, childContext);
             const denominator = typesetRow(den, childContext);
+
+            // const descent =
+            //     (newMultiplier * baseFontSize * fontMetrics.descender) /
+            //     fontMetrics.unitsPerEm;
+
+            // numerator.depth = Math.max(numerator.depth, descent);
+
+            // const ascent =
+            //     (newMultiplier * baseFontSize * fontMetrics.ascender) /
+            //     fontMetrics.unitsPerEm;
+
+            // denominator.height = Math.max(numerator.height, ascent);
 
             // TODO: try to reuse getCharDepth
             if (jmetrics) {
@@ -340,10 +364,10 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             }
 
             const frac = Layout.makeFract(
-                multiplier,
-                5,
                 numerator,
                 denominator,
+                context,
+                constants,
             );
             frac.id = node.id;
             frac.color = context?.colorMap?.get(node.id);
@@ -528,7 +552,18 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
         }
         case "atom": {
             const {value} = node;
-            const glyph = Layout.makeGlyph(value.char, context);
+            let glyph = Layout.makeGlyph(value.char, context);
+
+            // Convert individual glyphs to italic glyphs if they exist in the
+            // current font.
+            if (/[a-z]/.test(value.char)) {
+                const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
+                const char = String.fromCodePoint(0x1d44e + offset);
+                if (fontMetrics.hasChar(char)) {
+                    glyph = Layout.makeGlyph(char, context);
+                }
+            }
+
             glyph.id = node.id;
             glyph.color = context.colorMap?.get(node.id);
             return glyph;
@@ -677,7 +712,7 @@ export const typesetZipper = (
     options: Options = {},
 ): Group => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
-    return processBox(box, options);
+    return processBox(box, context.fontData, options);
 };
 
 export const typeset = (
@@ -686,5 +721,5 @@ export const typeset = (
     options: Options = {},
 ): Group => {
     const box = _typeset(node, context) as Layout.Box;
-    return processBox(box, options);
+    return processBox(box, context.fontData, options);
 };

@@ -1,12 +1,12 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import fontMetrics from "@math-blocks/metrics";
+import {comicSans, FontMetricsContext} from "@math-blocks/metrics";
 import {MathEditor, MathRenderer} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
-import {typesetZipper} from "@math-blocks/typesetter";
+import {typeset} from "@math-blocks/typesetter";
 
 import Substeps from "./substeps";
 
@@ -22,6 +22,7 @@ const question: Editor.types.Row = Editor.util.row("2x+5=10");
 // - update MathRenderer to do the typesetting
 
 const SolverPage: React.FunctionComponent = () => {
+    const fontMetrics = comicSans;
     const [input, setInput] = React.useState(question);
     const [solution, setSolution] = React.useState<Editor.types.Row | null>(
         null,
@@ -64,7 +65,10 @@ const SolverPage: React.FunctionComponent = () => {
 
     const fontSize = 64;
     const context = {
-        fontMetrics,
+        fontData: {
+            fontMetrics,
+            fontFamily: "comic sans ms",
+        },
         baseFontSize: fontSize,
         multiplier: 1.0,
         cramped: false,
@@ -73,17 +77,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (solution != null) {
-            const zipper: Editor.Zipper = {
-                breadcrumbs: [],
-                row: {
-                    id: solution.id,
-                    type: "zrow",
-                    left: [],
-                    selection: null,
-                    right: solution.children,
-                },
-            };
-            const scene = typesetZipper(zipper, context);
+            const scene = typeset(solution, context);
             return <MathRenderer scene={scene} />;
         }
         return null;
@@ -103,30 +97,32 @@ const SolverPage: React.FunctionComponent = () => {
     };
 
     return (
-        <div style={styles.container}>
-            <div>
-                <div style={styles.label}>Question:</div>
-                <button onClick={handleSimplify}>Simplify</button>
-                <button onClick={handleSolve}>Solve</button>
+        <FontMetricsContext.Provider value={context.fontData}>
+            <div style={styles.container}>
+                <div>
+                    <div style={styles.label}>Question:</div>
+                    <button onClick={handleSimplify}>Simplify</button>
+                    <button onClick={handleSolve}>Solve</button>
+                </div>
+                <div>
+                    <MathEditor
+                        readonly={false}
+                        zipper={zipper}
+                        stepChecker={true}
+                        focus={true}
+                        onChange={(value: Editor.types.Row) => setInput(value)}
+                    />
+                </div>
+                <div style={styles.gap}></div>
+                <div style={styles.gap}></div>
+                {showSolution && <div style={styles.label}>Steps:</div>}
+                {showSolution && step && (
+                    <Substeps start={step.before} step={step} />
+                )}
+                {showSolution && <div style={styles.label}>Answer:</div>}
+                {showSolution && maybeRenderSolution()}
             </div>
-            <div>
-                <MathEditor
-                    readonly={false}
-                    zipper={zipper}
-                    stepChecker={true}
-                    focus={true}
-                    onChange={(value: Editor.types.Row) => setInput(value)}
-                />
-            </div>
-            <div style={styles.gap}></div>
-            <div style={styles.gap}></div>
-            {showSolution && <div style={styles.label}>Steps:</div>}
-            {showSolution && step && (
-                <Substeps start={step.before} step={step} />
-            )}
-            {showSolution && <div style={styles.label}>Answer:</div>}
-            {showSolution && maybeRenderSolution()}
-        </div>
+        </FontMetricsContext.Provider>
     );
 };
 

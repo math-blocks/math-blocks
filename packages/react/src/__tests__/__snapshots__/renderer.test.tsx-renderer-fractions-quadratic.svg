@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 465.935546875 160.66015625" width="465.935546875" height="160.66015625">
-    <g transform="translate(0,107.1484375)" id="20">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 465.935546875 181.74015625" width="465.935546875" height="181.74015625">
+    <g transform="translate(0,121.66843750000001)" id="20">
         <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="0" style="opacity:1" aria-hidden="true">
             x
         </text>
@@ -9,8 +9,8 @@
                 =
             </text>
         </g>
-        <g transform="translate(96.03515625,-22)" id="17">
-            <g transform="translate(0,-7.490234375)" id="18">
+        <g transform="translate(96.03515625,-15.48)" id="17">
+            <g transform="translate(0,-28.530234375000006)" id="18">
                 <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="2" style="opacity:1" aria-hidden="true">
                     −
                 </text>
@@ -55,11 +55,11 @@
                                 c
                             </text>
                         </g>
-                        <line type="line" x1="0" y1="-74.408203125" x2="218.203125" y2="-74.408203125" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
+                        <line type="line" x1="0" y1="-74.408203125" x2="218.203125" y2="-74.408203125" stroke="currentColor" stroke-width="6.5" stroke-linecap="butt"></line>
                     </g>
                 </g>
             </g>
-            <g transform="translate(150.2880859375,58.021484375)" id="19">
+            <g transform="translate(150.2880859375,58.06148437499999)" id="19">
                 <text x="0" y="0" font-family="comic sans ms" font-size="60" fill="currentcolor" id="15" style="opacity:1" aria-hidden="true">
                     2
                 </text>
@@ -67,8 +67,8 @@
                     a
                 </text>
             </g>
-            <g transform="translate(2.5,2.5)" id="undefined">
-                <line type="line" x1="0" y1="0" x2="362.900390625" y2="0" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
+            <g transform="translate(0,-6.217248937900877e-15)" id="undefined">
+                <line type="line" x1="0" y1="0" x2="363.820390625" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
             </g>
         </g>
     </g>

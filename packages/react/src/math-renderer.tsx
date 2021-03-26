@@ -6,14 +6,15 @@ import {SceneGraph} from "@math-blocks/typesetter";
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
     color,
+    thickness,
     ...props
 }) => {
     return (
         <line
             {...props}
             stroke={color || "currentColor"}
-            strokeWidth={5}
-            strokeLinecap="round"
+            strokeWidth={thickness}
+            strokeLinecap="butt"
         />
     );
 };
@@ -26,14 +27,24 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
     return <rect {...props} fill={fill || "currentcolor"} />;
 };
 
-const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
+const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
+    x,
+    y,
+    glyph,
+    fontFamily,
+}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
     return (
         <text
             x={x}
             y={y}
-            fontFamily="comic sans ms"
+            // TODO: include the fontFamily as part of the value provided by
+            // FontMetricsContext and rename to FontDataContext since we'll
+            // probably want to include additional non-metrics data such as
+            // font outlines and of course which font family to use for a specific
+            // glyph
+            fontFamily={fontFamily}
             fontSize={glyph.size}
             fill={glyph.color || "currentcolor"}
             id={id}

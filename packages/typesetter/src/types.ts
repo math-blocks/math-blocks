@@ -1,8 +1,9 @@
-import type {FontMetrics} from "./metrics";
+import type {FontData} from "@math-blocks/metrics";
+
 import type {LayoutCursor, Point} from "./scene-graph";
 
 export type Context = {
-    fontMetrics: FontMetrics;
+    fontData: FontData;
     baseFontSize: number;
     multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
     cramped: boolean;
