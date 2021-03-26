@@ -14,26 +14,58 @@ const allNodeTypes = Editor.builders.row([
     Editor.builders.frac(
         [Editor.builders.glyph("1")],
         [
-            Editor.builders.root(null, [
-                Editor.builders.glyph("x"),
-                Editor.builders.subsup(undefined, [Editor.builders.glyph("2")]),
-                Editor.builders.glyph("+"),
-                Editor.builders.frac(
-                    [Editor.builders.glyph("1")],
-                    [
-                        Editor.builders.glyph("a"),
-                        Editor.builders.subsup(
-                            [Editor.builders.glyph("n")],
-                            undefined,
-                        ),
-                    ],
-                ),
-            ]),
+            Editor.builders.root(
+                [
+                    Editor.builders.glyph("1"),
+                    Editor.builders.glyph("2"),
+                    Editor.builders.glyph("3"),
+                ],
+                [
+                    Editor.builders.glyph("x"),
+                    Editor.builders.subsup(undefined, [
+                        Editor.builders.glyph("2"),
+                    ]),
+                    Editor.builders.glyph("+"),
+                    Editor.builders.frac(
+                        [Editor.builders.glyph("1")],
+                        [
+                            Editor.builders.glyph("a"),
+                            Editor.builders.subsup(
+                                [Editor.builders.glyph("n")],
+                                undefined,
+                            ),
+                        ],
+                    ),
+                ],
+            ),
         ],
     ),
     Editor.builders.glyph("\u2212"),
     Editor.builders.glyph("\u2212"),
     Editor.builders.glyph("y"),
+    Editor.builders.glyph("+"),
+    Editor.builders.limits(
+        Editor.builders.row([
+            Editor.builders.glyph("l"),
+            Editor.builders.glyph("i"),
+            Editor.builders.glyph("m"),
+        ]),
+        [
+            Editor.builders.glyph("x"),
+            Editor.builders.glyph("\u2192"), // \rightarrow
+            Editor.builders.glyph("0"),
+        ],
+    ),
+    Editor.builders.glyph("+"),
+    Editor.builders.limits(
+        Editor.builders.glyph("\u2211"), // \sum
+        [
+            Editor.builders.glyph("i"),
+            Editor.builders.glyph("="),
+            Editor.builders.glyph("0"),
+        ],
+        [Editor.builders.glyph("\u221E")], // \infty
+    ),
 ]);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const nestedFractions = Editor.builders.row([
@@ -64,11 +96,11 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: nestedFractions.id,
+        id: allNodeTypes.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: nestedFractions.children,
+        right: allNodeTypes.children,
     },
 };
 

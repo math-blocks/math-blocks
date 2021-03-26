@@ -102,7 +102,6 @@ const processHBox = (
     options: Options,
 ): Group => {
     const pen = {x: 0, y: 0};
-    const {multiplier} = box;
 
     const selectionBoxes: Rect[] = [];
     const editorLayer: Node[] = [];
@@ -116,9 +115,7 @@ const processHBox = (
         box.content[1].length > 0;
 
     const {fontMetrics} = fontData;
-    const ascent =
-        (FONT_SIZE * multiplier * fontMetrics.ascender) /
-        fontMetrics.unitsPerEm;
+    const ascent = (FONT_SIZE * fontMetrics.ascender) / fontMetrics.unitsPerEm;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
@@ -137,7 +134,7 @@ const processHBox = (
                 x: pen.x - CURSOR_WIDTH / 2,
                 y: pen.y - ascent,
                 width: CURSOR_WIDTH,
-                height: FONT_SIZE * multiplier,
+                height: FONT_SIZE,
             });
         }
 
@@ -152,7 +149,7 @@ const processHBox = (
 
                 const height = Math.max(
                     Layout.getHeight(node) + Layout.getDepth(node),
-                    FONT_SIZE * multiplier,
+                    FONT_SIZE,
                 );
 
                 selectionBoxes.push({
