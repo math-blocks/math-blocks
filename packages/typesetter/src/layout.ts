@@ -293,6 +293,7 @@ export const makeFract = (
     // TODO: fix this code once we have debugging outlines in place, right now
     // gap between the fraction bar and the numerator/denominator is too big
     // when the font has been scaled.
+    // Check context.renderMode === RenderMode.Static when doing so.
 
     // const numeratorShift = useDisplayStyle
     //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000

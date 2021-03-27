@@ -32,6 +32,7 @@ const context: Typesetter.Context = {
     fontData: fontData,
     baseFontSize: fontSize,
     mathStyle: Typesetter.MathStyle.Display,
+    renderMode: Typesetter.RenderMode.Static,
     cramped: false,
 };
 

@@ -37,6 +37,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
     const scene = Typesetter.typeset(math, context);
@@ -60,6 +61,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
     const scene = Typesetter.typeset(math, context);
@@ -93,6 +95,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
         cramped: false,
     };
     const options = {
@@ -133,6 +136,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
         cramped: false,
     };
 
@@ -147,6 +151,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
 
@@ -173,6 +178,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
 
@@ -210,6 +216,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
 
@@ -235,6 +242,7 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
     };
 
@@ -260,6 +268,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         colorMap: colorMap,
     };
@@ -305,6 +314,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         colorMap: colorMap,
     };
@@ -340,6 +350,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         colorMap: colorMap,
     };
@@ -381,6 +392,7 @@ export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         colorMap: colorMap,
     };

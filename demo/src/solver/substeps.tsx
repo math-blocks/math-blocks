@@ -27,6 +27,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
         fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         // colorMap: props.colorMap,
     };
