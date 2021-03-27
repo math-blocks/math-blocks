@@ -5,7 +5,7 @@ import {FontMetricsContext} from "@math-blocks/metrics";
 import {MathRenderer} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
 import {Step, applyStep} from "@math-blocks/step-utils";
-import {typeset} from "@math-blocks/typesetter";
+import * as Typesetter from "@math-blocks/typesetter";
 
 type Props = {
     // Prefix to start numbering from, e.g. 1.2.3
@@ -23,10 +23,10 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
     let current = start;
 
     const fontSize = 64;
-    const context = {
+    const context: Typesetter.Context = {
         fontData,
         baseFontSize: fontSize,
-        multiplier: 1.0,
+        mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         // colorMap: props.colorMap,
     };
@@ -38,7 +38,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
 
                 const after = applyStep(before, substep);
                 const afterRow = Editor.print(after);
-                const afterScene = typeset(afterRow, context);
+                const afterScene = Typesetter.typeset(afterRow, context);
 
                 current = after;
 

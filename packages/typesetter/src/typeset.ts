@@ -3,6 +3,8 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
+import {MathStyle} from "./enums";
+import {multiplierForMathStyle} from "./utils";
 
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
@@ -28,7 +30,8 @@ const withOperatorPadding = (
     node: Layout.Node,
     context: Context,
 ): Layout.Node => {
-    const {baseFontSize, multiplier} = context;
+    const {baseFontSize, mathStyle} = context;
+    const multiplier = multiplierForMathStyle(mathStyle);
     const fontSize = multiplier * baseFontSize;
 
     // We need to tweak this loic so that we only add padding on the right side
@@ -44,12 +47,13 @@ const typesetFrac = (
     denominator: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, cramped} = context;
+    const {fontData, baseFontSize} = context;
     const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
-    const newMultiplier = cramped ? 0.5 : 1.0;
+    const childMathStyle = childContextForFrac(context).mathStyle;
+    const childMultiplier = multiplierForMathStyle(childMathStyle);
 
     // TODO: Use the commented out code when render static math content
 
@@ -71,7 +75,7 @@ const typesetFrac = (
     if (jmetrics) {
         const jDepth =
             (baseFontSize *
-                newMultiplier *
+                childMultiplier *
                 (jmetrics.height - jmetrics.bearingY)) /
             fontMetrics.unitsPerEm;
         numerator.depth = Math.max(numerator.depth, jDepth);
@@ -81,7 +85,7 @@ const typesetFrac = (
     // TODO: grab the max bearingY of all of [0-9a-zA-Z]
     if (Emetrics) {
         const EHeight =
-            (baseFontSize * newMultiplier * Emetrics.bearingY) /
+            (baseFontSize * childMultiplier * Emetrics.bearingY) /
             fontMetrics.unitsPerEm;
         numerator.height = Math.max(numerator.height, EHeight);
         denominator.height = Math.max(denominator.height, EHeight);
@@ -93,23 +97,30 @@ const typesetFrac = (
 };
 
 const typesetSubsup = (
-    subBox: Layout.Box | undefined,
-    supBox: Layout.Box | undefined,
+    subBox: Layout.Box | null,
+    supBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, multiplier} = context;
+    const {fontData, baseFontSize, mathStyle} = context;
     const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
-    const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childMultiplier = multiplierForMathStyle(childMathStyle);
 
     if (subBox) {
         // TODO: try to reuse getCharDepth
         if (jmetrics) {
             const jDepth =
                 (baseFontSize *
-                    newMultiplier *
+                    childMultiplier *
                     (jmetrics.height - jmetrics.bearingY)) /
                 fontMetrics.unitsPerEm;
             subBox.depth = Math.max(subBox.depth, jDepth);
@@ -118,7 +129,7 @@ const typesetSubsup = (
         // TODO: grab the max bearingY of all of [0-9a-zA-Z]
         if (Emetrics) {
             const EHeight =
-                (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                (baseFontSize * childMultiplier * Emetrics.bearingY) /
                 fontMetrics.unitsPerEm;
             subBox.height = Math.max(subBox.height, EHeight);
         }
@@ -129,7 +140,7 @@ const typesetSubsup = (
         if (jmetrics) {
             const jDepth =
                 (baseFontSize *
-                    newMultiplier *
+                    childMultiplier *
                     (jmetrics.height - jmetrics.bearingY)) /
                 fontMetrics.unitsPerEm;
             supBox.depth = Math.max(supBox.depth, jDepth);
@@ -138,13 +149,13 @@ const typesetSubsup = (
         // TODO: grab the max bearingY of all of [0-9a-zA-Z]
         if (Emetrics) {
             const EHeight =
-                (baseFontSize * newMultiplier * Emetrics.bearingY) /
+                (baseFontSize * childMultiplier * Emetrics.bearingY) /
                 fontMetrics.unitsPerEm;
             supBox.height = Math.max(supBox.height, EHeight);
         }
     }
 
-    return Layout.makeSubSup(multiplier, subBox, supBox);
+    return Layout.makeSubSup(subBox, supBox, context, constants);
 };
 
 const typesetRoot = (
@@ -152,10 +163,12 @@ const typesetRoot = (
     radicand: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, multiplier} = context;
+    const {fontData, baseFontSize, mathStyle} = context;
     const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+
+    const multiplier = multiplierForMathStyle(mathStyle);
 
     radicand.width = Math.max(radicand.width, 30 * multiplier);
     if (Emetrics) {
@@ -173,17 +186,38 @@ const typesetRoot = (
         radicand.depth = Math.max(radicand.depth, jDepth);
     }
 
+    // TODO: change how we do the index to the following:
+    // [index, negative kern, surd, radicand]
+
     // TODO: make the surd stretchy
     const surd = Layout.hpackNat([[Layout.makeGlyph("\u221A", context)]]);
     let surdBox;
     if (indexBox) {
+        const indexMultiplier = multiplierForMathStyle(MathStyle.ScriptScript);
+        if (Emetrics) {
+            const EHeight =
+                (baseFontSize * indexMultiplier * Emetrics.bearingY) /
+                fontMetrics.unitsPerEm;
+            indexBox.height = Math.max(indexBox.height, EHeight);
+        }
+        if (jmetrics) {
+            const jDepth =
+                (baseFontSize *
+                    indexMultiplier *
+                    (jmetrics.height - jmetrics.bearingY)) /
+                fontMetrics.unitsPerEm;
+            indexBox.depth = Math.max(indexBox.depth, jDepth);
+        }
+
         // TODO: get this constant from the MATH table constants
         surd.shift = Math.max(0, indexBox.width - 36);
         surdBox = Layout.makeVBox(
             surd.width + Math.max(0, indexBox.width - 36),
             surd,
             // TODO: get this constant from the MATH table constants
-            [Layout.makeKern(-30), indexBox],
+            // TODO: fix how we handle negative kerns, right now we just subtract
+            // them from the dimension of the container which isn't right
+            [Layout.makeKern(-31.4), indexBox],
             [],
         );
     } else {
@@ -210,21 +244,28 @@ const typesetRoot = (
 const typesetLimits = (
     inner: Layout.Node,
     lowerBox: Layout.Box,
-    upperBox: Layout.Box | undefined,
+    upperBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, multiplier} = context;
+    const {fontData, baseFontSize, mathStyle} = context;
     const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
-    const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const multiplier = multiplierForMathStyle(childMathStyle);
 
     // TODO: try to reuse getCharDepth
     if (jmetrics) {
         const jDepth =
             (baseFontSize *
-                newMultiplier *
+                multiplier *
                 (jmetrics.height - jmetrics.bearingY)) /
             fontMetrics.unitsPerEm;
         lowerBox.depth = Math.max(lowerBox.depth, jDepth);
@@ -236,7 +277,7 @@ const typesetLimits = (
     // TODO: grab the max bearingY of all of [0-9a-zA-Z]
     if (Emetrics) {
         const EHeight =
-            (baseFontSize * newMultiplier * Emetrics.bearingY) /
+            (baseFontSize * multiplier * Emetrics.bearingY) /
             fontMetrics.unitsPerEm;
         lowerBox.height = Math.max(lowerBox.height, EHeight);
         if (upperBox) {
@@ -278,20 +319,70 @@ const typesetLimits = (
     return limits;
 };
 
+const childContextForFrac = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Text,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+    };
+
+    return childContext;
+};
+
+const childContextForSubsup = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
+const childContextForLimits = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
 const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
-    const {multiplier, cramped} = context;
-
     switch (focus.type) {
         case "zfrac": {
-            const newMultiplier = cramped ? 0.5 : 1.0;
-            const childContext = {
-                ...context,
-                multiplier: newMultiplier,
-            };
+            const childContext = childContextForFrac(context);
 
             const numerator =
                 focus.dir === "left"
@@ -311,12 +402,7 @@ const typesetFocus = (
             return frac;
         }
         case "zsubsup": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
-            const childContext = {
-                ...context,
-                multiplier: newMultiplier,
-                cramped: true,
-            };
+            const childContext = childContextForSubsup(context);
 
             const [sub, sup] =
                 focus.dir === "left"
@@ -324,18 +410,18 @@ const typesetFocus = (
                     : [focus.other, zipper.row];
 
             // TODO: document this better so I know what's going on here.
-            const subBox = sub
-                ? sub.type === "row"
+            const subBox =
+                sub &&
+                (sub.type === "row"
                     ? typesetRow(sub, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             // TODO: document this better so I know what's going on here.
-            const supBox = sup
-                ? sup.type === "row"
+            const supBox =
+                sup &&
+                (sup.type === "row"
                     ? typesetRow(sup, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             const parentBox = typesetSubsup(subBox, supBox, context);
             parentBox.id = focus.id;
@@ -353,9 +439,11 @@ const typesetFocus = (
                     ? typesetRow(rad, context)
                     : _typesetZipper(zipper, context);
 
-            const indexContext = {
+            const indexContext: Context = {
                 ...context,
-                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
+                // It doesn't matter what the mathStyle is of the parent, we
+                // always use ScriptScript for root indicies.
+                mathStyle: MathStyle.ScriptScript,
             };
 
             const index = ind
@@ -372,27 +460,23 @@ const typesetFocus = (
             return root;
         }
         case "zlimits": {
-            const newMultiplier = multiplier === 1.0 ? 0.7 : 0.5;
+            const childContext = childContextForLimits(context);
+
             const [lower, upper] =
                 focus.dir === "left"
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
-            const childContext = {
-                ...context,
-                multiplier: newMultiplier,
-                cramped: true,
-            };
 
             const lowerBox =
                 lower.type === "row"
                     ? typesetRow(lower, childContext)
                     : _typesetZipper(zipper, childContext);
 
-            const upperBox = upper
-                ? upper.type === "row"
+            const upperBox =
+                upper &&
+                (upper.type === "row"
                     ? typesetRow(upper, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : undefined;
+                    : _typesetZipper(zipper, childContext));
 
             const inner = _typeset(focus.inner, context);
             inner.id = focus.inner.id;
@@ -409,8 +493,9 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {fontData, multiplier, cramped} = context;
-    const {fontMetrics} = fontData;
+    const {
+        fontData: {fontMetrics},
+    } = context;
 
     switch (node.type) {
         case "row": {
@@ -418,10 +503,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return typesetRow(node, context);
         }
         case "frac": {
-            const childContext = {
-                ...context,
-                multiplier: cramped ? 0.5 : 1.0,
-            };
+            const childContext = childContextForFrac(context);
 
             const [num, den] = node.children;
             const numerator = typesetRow(num, childContext);
@@ -435,16 +517,12 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return frac;
         }
         case "subsup": {
-            const childContext = {
-                ...context,
-                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
-                cramped: true,
-            };
+            const childContext = childContextForSubsup(context);
 
             const [sub, sup] = node.children;
 
-            const subBox = sub ? typesetRow(sub, childContext) : undefined;
-            const supBox = sup ? typesetRow(sup, childContext) : undefined;
+            const subBox = sub && typesetRow(sub, childContext);
+            const supBox = sup && typesetRow(sup, childContext);
 
             const parentBox = typesetSubsup(subBox, supBox, context);
 
@@ -457,9 +535,11 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
 
             const radicand = typesetRow(rad, context);
 
-            const indexContext = {
+            const indexContext: Context = {
                 ...context,
-                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
+                // It doesn't matter what the mathStyle is of the parent, we
+                // always use ScriptScript for root indicies.
+                mathStyle: MathStyle.ScriptScript,
             };
             const index = ind && typesetRow(ind, indexContext);
 
@@ -471,17 +551,14 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return root;
         }
         case "limits": {
+            // TODO: render as a subsup if mathStyle isn't MathStyle.Display
+
+            const childContext = childContextForLimits(context);
+
             const [lower, upper] = node.children;
-            const childContext = {
-                ...context,
-                multiplier: multiplier === 1.0 ? 0.7 : 0.5,
-                cramped: true,
-            };
 
             const lowerBox = typesetRow(lower, childContext);
-            const upperBox = upper
-                ? typesetRow(upper, childContext)
-                : undefined;
+            const upperBox = upper && typesetRow(upper, childContext);
 
             const inner = _typeset(node.inner, context);
             inner.id = node.inner.id;

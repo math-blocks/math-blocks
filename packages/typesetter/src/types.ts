@@ -1,11 +1,12 @@
-import type {FontData} from "@math-blocks/metrics";
+import {MathStyle} from "./enums";
 
+import type {FontData} from "@math-blocks/metrics";
 import type {LayoutCursor, Point} from "./scene-graph";
 
 export type Context = {
     fontData: FontData;
     baseFontSize: number;
-    multiplier: number; // roughly maps to display, text, script, and scriptscript in LaTeX
+    mathStyle: MathStyle;
     cramped: boolean;
     colorMap?: Map<number, string>;
 };
