@@ -29,12 +29,12 @@ export const backspace = (zipper: Zipper): Zipper => {
         const {left, right} = zipper.row;
         const prev = left[left.length - 1];
 
-        // TODO: iterate over the whole row so that we're placing the matching
+        // Iterate over the whole row so that we're placing the matching
         // pending parent in the correct place, e.g.
         // 1 + [2 + 3] + 4 -> 1 + [(2 + 3] + 4 -> 1 + [(2 + 3)] + 4
         // If we're deleting a paren, then delete the matching pending paren
         // if there is one.
-        // TODO: when deleting one paren, make the matching paren pending if it
+        // when deleting one paren, make the matching paren pending if it
         // wasn't already so.
         if (prev.type === "atom") {
             let index;

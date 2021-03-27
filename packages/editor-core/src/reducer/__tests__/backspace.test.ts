@@ -1,9 +1,10 @@
 import {backspace} from "../backspace";
 import {row, frac, subsup, root, toEqualEditorNodes} from "../test-util";
 import {Dir} from "../enums";
-import type {Zipper} from "../types";
 import * as builders from "../../builders";
 import * as types from "../../types";
+
+import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -708,17 +709,170 @@ describe("backspace", () => {
 
     describe("parens", () => {
         describe("no pending parens", () => {
-            test.todo("deleting the right paren should change it to pending");
-            test.todo("deleting the left paren should change it to pending");
+            test("deleting the right paren should change it to pending", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: row("(2x+5)").children,
+                        selection: null,
+                        right: [],
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes(
+                    row("(2x+5").children,
+                );
+                expect(result.row.right).toEqualEditorNodes([
+                    builders.glyph(")", true),
+                ]);
+            });
+
+            test("deleting the left paren should change it to pending", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: [builders.glyph("(")],
+                        selection: null,
+                        right: row("2x+5)").children,
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes([
+                    builders.glyph("(", true),
+                ]);
+                expect(result.row.right).toEqualEditorNodes(
+                    row("2x+5)").children,
+                );
+            });
+        });
+
+        describe("no pending parens inside existing parens", () => {
+            test("deleting the right paren should change it to pending", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: row("(2(x+5)").children,
+                        selection: null,
+                        right: row("=10)").children,
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes(
+                    row("(2(x+5").children,
+                );
+                expect(result.row.right).toEqualEditorNodes([
+                    ...row("=10").children,
+                    builders.glyph(")", true),
+                    builders.glyph(")"),
+                ]);
+            });
+
+            test("deleting the left paren should change it to pending", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: row("(2(").children,
+                        selection: null,
+                        right: row("x+5)=10)").children,
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes([
+                    builders.glyph("("),
+                    builders.glyph("(", true),
+                    builders.glyph("2"),
+                ]);
+                expect(result.row.right).toEqualEditorNodes([
+                    ...row("x+5)=10)").children,
+                ]);
+            });
         });
 
         describe("pending parens", () => {
-            test.todo(
-                "deleting the right non-pending paren should delete both parens",
-            );
-            test.todo(
-                "deleting the left non-pending paren should delete both parens",
-            );
+            test("deleting the right non-pending paren should delete both parens", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: [
+                            builders.glyph("(", true),
+                            ...row("2x+5)").children,
+                        ],
+                        selection: null,
+                        right: [],
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes(
+                    row("2x+5").children,
+                );
+                expect(result.row.right).toEqualEditorNodes([]);
+            });
+            test("deleting the left non-pending paren should delete both parens", () => {
+                const zipper: Zipper = {
+                    row: {
+                        id: 0,
+                        type: "zrow",
+                        left: row("(").children,
+
+                        selection: null,
+                        right: [
+                            ...row("2x+5").children,
+                            builders.glyph(")", true),
+                        ],
+                    },
+                    breadcrumbs: [],
+                };
+
+                const result = backspace(zipper);
+
+                expect(result.row.left).toEqualEditorNodes([]);
+                expect(result.row.right).toEqualEditorNodes(
+                    row("2x+5").children,
+                );
+            });
+        });
+    });
+
+    describe("with selection", () => {
+        test("it should deleting it", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: row("2x").children,
+                    selection: {
+                        dir: Dir.Left,
+                        nodes: row("+5").children,
+                    },
+                    right: row("=10").children,
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.row.left).toEqualEditorNodes(row("2x").children);
+            expect(result.row.right).toEqualEditorNodes(row("=10").children);
         });
     });
 });

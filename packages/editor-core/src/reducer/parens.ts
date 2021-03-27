@@ -10,8 +10,6 @@ import {
 
 import type {Zipper} from "./types";
 
-// TODO: write tests
-
 export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     zipper = rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
@@ -20,15 +18,26 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     const rightParen = builders.glyph(")");
 
     if (selection) {
-        console.log(selection);
-        return {
-            ...zipper,
-            row: {
-                ...zipper.row,
-                left: [...left, leftParen, ...selection.nodes, rightParen],
-                selection: null,
-            },
-        };
+        if (dir === Dir.Left) {
+            return {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    left: [...left, leftParen],
+                    right: [...selection.nodes, rightParen, ...right],
+                    selection: null,
+                },
+            };
+        } else {
+            return {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    left: [...left, leftParen, ...selection.nodes, rightParen],
+                    selection: null,
+                },
+            };
+        }
     }
 
     // TODO: iterate over all of the glyphs in the row to ensure that we're
