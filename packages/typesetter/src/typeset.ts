@@ -47,12 +47,13 @@ const typesetFrac = (
     denominator: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, cramped} = context;
+    const {fontData, baseFontSize} = context;
     const {fontMetrics} = fontData;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
-    const newMultiplier = cramped ? 0.5 : 1.0;
+    const childMathStyle = childContextForFrac(context).mathStyle;
+    const childMultiplier = multiplierForMathStyle(childMathStyle);
 
     // TODO: Use the commented out code when render static math content
 
@@ -74,7 +75,7 @@ const typesetFrac = (
     if (jmetrics) {
         const jDepth =
             (baseFontSize *
-                newMultiplier *
+                childMultiplier *
                 (jmetrics.height - jmetrics.bearingY)) /
             fontMetrics.unitsPerEm;
         numerator.depth = Math.max(numerator.depth, jDepth);
@@ -84,7 +85,7 @@ const typesetFrac = (
     // TODO: grab the max bearingY of all of [0-9a-zA-Z]
     if (Emetrics) {
         const EHeight =
-            (baseFontSize * newMultiplier * Emetrics.bearingY) /
+            (baseFontSize * childMultiplier * Emetrics.bearingY) /
             fontMetrics.unitsPerEm;
         numerator.height = Math.max(numerator.height, EHeight);
         denominator.height = Math.max(denominator.height, EHeight);
@@ -154,8 +155,7 @@ const typesetSubsup = (
         }
     }
 
-    const multiplier = multiplierForMathStyle(mathStyle);
-    return Layout.makeSubSup(multiplier, subBox, supBox);
+    return Layout.makeSubSup(subBox, supBox, context, constants);
 };
 
 const typesetRoot = (

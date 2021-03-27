@@ -3,6 +3,7 @@ import type {FontMetrics, MathConstants} from "@math-blocks/metrics";
 
 import {multiplierForMathStyle} from "./utils";
 import type {Context} from "./types";
+import {MathStyle} from "./enums";
 
 type Dist = number;
 
@@ -279,15 +280,7 @@ export const makeFract = (
 
     // If useDisplayStyle is false then we need to reduce the font size of
     // numerators and denominators
-    const useDisplayStyle = true;
-
-    const numeratorShift = useDisplayStyle
-        ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000
-        : (fontSize * constants.fractionNumeratorShiftUp) / 1000;
-
-    const denominatorShift = useDisplayStyle
-        ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown) / 1000
-        : (fontSize * constants.fractionDenominatorShiftDown) / 1000;
+    const useDisplayStyle = mathStyle === MathStyle.Display;
 
     const minDenGap = useDisplayStyle
         ? (fontSize * constants.fractionDenomDisplayStyleGapMin) / 1000
@@ -297,20 +290,32 @@ export const makeFract = (
         ? (fontSize * constants.fractionNumDisplayStyleGapMin) / 1000
         : (fontSize * constants.fractionNumeratorGapMin) / 1000;
 
+    // TODO: fix this code once we have debugging outlines in place, right now
+    // gap between the fraction bar and the numerator/denominator is too big
+    // when the font has been scaled.
+
+    // const numeratorShift = useDisplayStyle
+    //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000
+    //     : (fontSize * constants.fractionNumeratorShiftUp) / 1000;
+
+    // const denominatorShift = useDisplayStyle
+    //     ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown) / 1000
+    //     : (fontSize * constants.fractionDenominatorShiftDown) / 1000;
+
+    // const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
+    // const denGap = Math.max(
+    //     shift + denominatorShift - denBox.height,
+    //     minDenGap,
+    // );
+
     const width = Math.max(
         Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
         30 * multiplier, // empty numerator/denominator width
     );
     const stroke = hpackNat([[makeHRule(thickness, width - thickness)]]);
 
-    const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
-    const denGap = Math.max(
-        shift + denominatorShift - denBox.height,
-        minDenGap,
-    );
-
-    const upList = makeList(numGap, numBox);
-    const dnList = makeList(denGap, denBox);
+    const upList = makeList(minNumGap, numBox);
+    const dnList = makeList(minDenGap, denBox);
 
     const fracBox = makeVBox(width, stroke, upList, dnList);
     fracBox.shift = -shift;
@@ -330,9 +335,10 @@ export const makeFract = (
 
 export const makeSubSup = (
     // TODO: pass in a MathStyle instead of a multiplier
-    multiplier: number,
     subBox: Box | null,
     supBox: Box | null,
+    context: Context,
+    constants: MathConstants,
 ): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
@@ -342,6 +348,9 @@ export const makeSubSup = (
         supBox ? getWidth(supBox) : 0,
         subBox ? getWidth(subBox) : 0,
     );
+
+    const {mathStyle} = context;
+    const multiplier = multiplierForMathStyle(mathStyle);
 
     // TODO: use constants from MATH table for these shift contants
 
