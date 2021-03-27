@@ -1,19 +1,16 @@
 import * as builders from "../builders";
 
-import {Node} from "../types";
-
 import {Dir} from "./enums";
 import {rezipSelection} from "./util";
+import {
+    isPending,
+    indexOfLastUnmatchedOpener,
+    indexOfFirstUnmatchedCloser,
+} from "./parens-util";
 
 import type {Zipper} from "./types";
 
 // TODO: write tests
-
-const isPending = (node: Node | undefined, char: string): boolean => {
-    return Boolean(
-        node?.type === "atom" && node.value.char === char && node.value.pending,
-    );
-};
 
 export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     zipper = rezipSelection(zipper);
@@ -38,25 +35,34 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     // removing the correct matching paren.
     // Get rid of matching pending paren when inserting a matching paren for real.
     if (dir === Dir.Left) {
-        const first = left[0];
-        if (isPending(first, "(")) {
+        const index = indexOfLastUnmatchedOpener(left);
+
+        if (isPending(left[index], "(")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left.slice(1), builders.glyph("(")],
+                    left: [
+                        ...left.slice(0, index),
+                        ...left.slice(index + 1),
+                        builders.glyph("("),
+                    ],
                 },
             };
         }
     } else {
-        const last = right[right.length - 1];
-        if (isPending(last, ")")) {
+        const index = indexOfFirstUnmatchedCloser(right);
+
+        if (isPending(right[index], ")")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
                     left: [...left, builders.glyph(")")],
-                    right: right.slice(0, -1),
+                    right: [
+                        ...right.slice(0, index),
+                        ...right.slice(index + 1),
+                    ],
                 },
             };
         }
@@ -64,22 +70,43 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
 
     if (dir === Dir.Left) {
         rightParen.value.pending = true;
+
+        const index = indexOfFirstUnmatchedCloser(right);
+
+        const newRight =
+            index !== -1
+                ? [...right.slice(0, index), rightParen, ...right.slice(index)]
+                : [...right, rightParen];
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: [...left, leftParen],
+                right: newRight,
+            },
+        };
     } else {
         leftParen.value.pending = true;
-    }
 
-    return {
-        ...zipper,
-        row:
-            dir === Dir.Left
-                ? {
-                      ...zipper.row,
-                      left: [...left, leftParen],
-                      right: [...right, rightParen],
-                  }
-                : {
-                      ...zipper.row,
-                      left: [leftParen, ...left, rightParen],
-                  },
-    };
+        const index = indexOfLastUnmatchedOpener(left);
+
+        const newLeft =
+            index !== -1
+                ? [
+                      ...left.slice(0, index + 1),
+                      leftParen,
+                      ...left.slice(index + 1),
+                      rightParen,
+                  ]
+                : [leftParen, ...left, rightParen];
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: newLeft,
+            },
+        };
+    }
 };

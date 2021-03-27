@@ -1,6 +1,14 @@
+import {glyph} from "../builders";
+
 import {Dir} from "./enums";
 import {rezipSelection} from "./util";
 import {moveLeft} from "./move-left";
+import {
+    isPending,
+    indexOfLastUnmatchedOpener,
+    indexOfFirstUnmatchedCloser,
+} from "./parens-util";
+
 import type {Zipper} from "./types";
 
 export const backspace = (zipper: Zipper): Zipper => {
@@ -29,37 +37,88 @@ export const backspace = (zipper: Zipper): Zipper => {
         // TODO: when deleting one paren, make the matching paren pending if it
         // wasn't already so.
         if (prev.type === "atom") {
+            let index;
+
             if (prev.value.char === "(") {
-                const last = right[right.length - 1];
-                if (
-                    last.type === "atom" &&
-                    last.value.char === ")" &&
-                    last.value.pending
-                ) {
+                // Find the nearest ')' to the right of the cursor and check if
+                // it's pending.
+                index = indexOfFirstUnmatchedCloser(right);
+
+                if (isPending(right[index], ")")) {
                     return {
                         ...zipper,
                         row: {
                             ...zipper.row,
                             left: left.slice(0, -1),
-                            right: right.slice(0, -1),
+                            right: [
+                                ...right.slice(0, index),
+                                ...right.slice(index + 1),
+                            ],
                         },
                     };
                 }
+
+                // left.slice(0, -1) deletes the '(' just before the cursor
+                index = indexOfLastUnmatchedOpener(left.slice(0, -1));
+                const newLeft =
+                    index !== -1
+                        ? // find nearest '(' to the left of the cursor and
+                          // insert the new '(' after it.
+                          [
+                              ...left.slice(0, index + 1),
+                              glyph("(", true),
+                              ...left.slice(index + 1, -1),
+                          ]
+                        : [glyph("(", true), ...left.slice(0, -1)];
+
+                return {
+                    ...zipper,
+                    row: {
+                        ...zipper.row,
+                        left: newLeft,
+                    },
+                };
             } else if (prev.value.char === ")") {
-                const first = left[0];
-                if (
-                    first.type === "atom" &&
-                    first.value.char === "(" &&
-                    first.value.pending
-                ) {
+                // Find the nearest '(' to the left of the cursor and check if
+                // it's pending.
+                // We use left.slice(0, -1) to skip over the closing paren that
+                // we might be deleting.
+                index = indexOfLastUnmatchedOpener(left.slice(0, -1));
+                console.log(`index = ${index}`);
+
+                if (isPending(left[index], "(")) {
                     return {
                         ...zipper,
                         row: {
                             ...zipper.row,
-                            left: left.slice(1, -1),
+                            left: [
+                                ...left.slice(0, index),
+                                ...left.slice(index + 1, -1),
+                            ],
                         },
                     };
                 }
+
+                // Find nearest ')' to the right of the cursor and insert the
+                // new ')' before it.
+                index = indexOfFirstUnmatchedCloser(right);
+                const newRight =
+                    index !== -1
+                        ? [
+                              ...right.slice(0, index),
+                              glyph(")", true),
+                              ...right.slice(index),
+                          ]
+                        : [...right, glyph(")", true)];
+
+                return {
+                    ...zipper,
+                    row: {
+                        ...zipper.row,
+                        left: left.slice(0, -1),
+                        right: newRight,
+                    },
+                };
             }
         } else {
             return moveLeft(zipper);
@@ -100,11 +159,14 @@ export const backspace = (zipper: Zipper): Zipper => {
                 breadcrumbs: breadcrumbs.slice(0, -1),
                 row: {
                     ...row,
-                    left: [...row.left, {
-                        id: focus.id,
-                        type: "subsup",
-                        children: [focus.other, null],
-                    }],
+                    left: [
+                        ...row.left,
+                        {
+                            id: focus.id,
+                            type: "subsup",
+                            children: [focus.other, null],
+                        },
+                    ],
                     right: [...zipper.row.right, ...row.right],
                 },
             };
