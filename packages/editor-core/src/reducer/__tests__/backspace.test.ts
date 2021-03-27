@@ -1,7 +1,9 @@
 import {backspace} from "../backspace";
-import {row, toEqualEditorNodes} from "../test-util";
+import {row, frac, subsup, root, toEqualEditorNodes} from "../test-util";
 import {Dir} from "../enums";
 import type {Zipper} from "../types";
+import * as builders from "../../builders";
+import * as types from "../../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -129,9 +131,32 @@ describe("backspace", () => {
             expect(result.row.right).toEqualEditorNodes(row("3").children);
         });
 
-        test.todo(
-            "deleting from the right of the fraction moves into the denonominator",
-        );
+        test("deleting from the right of the fraction moves into the denonominator", () => {
+            const f = frac("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), f],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: f.id,
+                type: "zfrac",
+                dir: Dir.Right,
+                other: f.children[0],
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(f.children[1].children[0]);
+        });
     });
 
     describe("subsup", () => {
@@ -267,12 +292,68 @@ describe("backspace", () => {
 
             const result = backspace(zipper);
 
-            expect(result.row.left).toEqualEditorNodes(row("xn").children);
+            expect(result.row.left).toEqualEditorNodes(
+                builders.row([
+                    builders.glyph("x"),
+                    builders.subsup([builders.glyph("n")], undefined),
+                ]).children,
+            );
             expect(result.row.right).toEqualEditorNodes(row("2").children);
         });
 
-        test.todo("deleting from the right of a subscript");
-        test.todo("deleting from the right of a superscript");
+        test("deleting from the right of a subscript", () => {
+            const ss = subsup("b", null);
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), ss],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: ss.id,
+                type: "zsubsup",
+                dir: Dir.Left,
+                other: null,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(ss.children[0]?.children[0]);
+        });
+
+        test("deleting from the right of a superscript", () => {
+            const ss = subsup(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), ss],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: ss.id,
+                type: "zsubsup",
+                dir: Dir.Right,
+                other: null,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(ss.children[1]?.children[0]);
+        });
     });
 
     describe("roots", () => {
@@ -378,8 +459,59 @@ describe("backspace", () => {
             expect(result.row.right).toEqualEditorNodes(row("327").children);
         });
 
-        test.todo("deleting from the right of a root w/o an index");
-        test.todo("deleting from the right of a root with an index");
+        test("deleting from the right of a root w/o an index", () => {
+            const r = root(null, "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                dir: Dir.Right,
+                other: null,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(r.children[1]?.children[0]);
+        });
+
+        test("deleting from the right of a root with an index", () => {
+            const r = root("b", "c");
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), r],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: r.id,
+                type: "zroot",
+                dir: Dir.Right,
+                other: r.children[0],
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(r.children[1]?.children[0]);
+        });
     });
 
     describe("limits", () => {
@@ -488,12 +620,90 @@ describe("backspace", () => {
             expect(result.row.right).toEqualEditorNodes(row("ni").children);
         });
 
-        test.todo(
-            "deleting from the right of a limits node w/o an upper bound",
-        );
-        test.todo(
-            "deleting from the right of a limits node with an upper bound",
-        );
+        test("deleting from the right of a limits node w/o an upper bound", () => {
+            const lower: types.Row = row("b");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const lim: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, null],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), lim],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: lim.id,
+                type: "zlimits",
+                dir: Dir.Left,
+                other: null,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(lower.children[0]);
+        });
+
+        test("deleting from the right of a limits node with an upper bound", () => {
+            const lower: types.Row = row("b");
+            const upper: types.Row = row("c");
+            const inner: types.Atom = {
+                id: 0,
+                type: "atom",
+                value: {
+                    kind: "glyph",
+                    char: "l",
+                },
+            };
+            const sum: types.Limits = {
+                id: 0,
+                type: "limits",
+                children: [lower, upper],
+                inner: inner,
+            };
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [builders.glyph("a"), sum],
+                    selection: null,
+                    right: [builders.glyph("d")],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = backspace(zipper);
+
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].focus).toEqual({
+                id: sum.id,
+                type: "zlimits",
+                dir: Dir.Right,
+                other: lower,
+                inner: inner,
+            });
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.row.left[0]).toEqual(upper.children[0]);
+        });
     });
 
     describe("parens", () => {
