@@ -1,5 +1,6 @@
 import {Dir} from "./enums";
 import {rezipSelection} from "./util";
+import {moveLeft} from "./move-left";
 import type {Zipper} from "./types";
 
 export const backspace = (zipper: Zipper): Zipper => {
@@ -60,6 +61,8 @@ export const backspace = (zipper: Zipper): Zipper => {
                     };
                 }
             }
+        } else {
+            return moveLeft(zipper);
         }
 
         return {
@@ -92,6 +95,21 @@ export const backspace = (zipper: Zipper): Zipper => {
             },
         };
     } else {
+        if (focus.type === "zsubsup" && focus.other) {
+            return {
+                breadcrumbs: breadcrumbs.slice(0, -1),
+                row: {
+                    ...row,
+                    left: [...row.left, {
+                        id: focus.id,
+                        type: "subsup",
+                        children: [focus.other, null],
+                    }],
+                    right: [...zipper.row.right, ...row.right],
+                },
+            };
+        }
+
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
