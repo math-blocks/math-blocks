@@ -89,6 +89,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: props.colorMap,
+        renderMode: Typesetter.RenderMode.Dynamic,
     };
 
     const options = {showCursor: active};

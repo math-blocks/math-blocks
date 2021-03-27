@@ -4,3 +4,8 @@ export enum MathStyle {
     Script = "S",
     ScriptScript = "SS",
 }
+
+export enum RenderMode {
+    Static = "static",
+    Dynamic = "dynamic",
+}

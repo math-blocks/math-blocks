@@ -1,4 +1,4 @@
-import {MathStyle} from "./enums";
+import {MathStyle, RenderMode} from "./enums";
 
 import type {FontData} from "@math-blocks/metrics";
 import type {LayoutCursor, Point} from "./scene-graph";
@@ -9,6 +9,7 @@ export type Context = {
     mathStyle: MathStyle;
     cramped: boolean;
     colorMap?: Map<number, string>;
+    renderMode: RenderMode;
 };
 
 export type Options = {

@@ -19,6 +19,7 @@ const AccessibleMath: React.FC<Props> = (props) => {
         fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
         cramped: false,
         colorMap: undefined,
     };

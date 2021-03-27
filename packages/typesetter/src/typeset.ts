@@ -3,7 +3,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
-import {MathStyle} from "./enums";
+import {MathStyle, RenderMode} from "./enums";
 import {multiplierForMathStyle} from "./utils";
 
 import type {Context} from "./types";
@@ -21,6 +21,10 @@ const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
     const box = Layout.hpackNat([_typesetChildren(row.children, context)]);
     box.id = row.id;
     box.color = context?.colorMap?.get(row.id);
+
+    if (context.renderMode === RenderMode.Dynamic) {
+        ensureMinDepthAndHeight(box, context);
+    }
 
     return box;
 };
@@ -42,58 +46,43 @@ const withOperatorPadding = (
     ]);
 };
 
-const typesetFrac = (
-    numerator: Layout.Box,
-    denominator: Layout.Box,
-    context: Context,
-): Layout.Box => {
-    const {fontData, baseFontSize} = context;
-    const {fontMetrics} = fontData;
+// NOTE: This function mutates `box`.
+const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
+    const {
+        fontData: {fontMetrics},
+        baseFontSize,
+        mathStyle,
+    } = context;
     const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
     const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
 
-    const childMathStyle = childContextForFrac(context).mathStyle;
-    const childMultiplier = multiplierForMathStyle(childMathStyle);
-
-    // TODO: Use the commented out code when render static math content
-
-    // const descent =
-    //     (newMultiplier * baseFontSize * fontMetrics.descender) /
-    //     fontMetrics.unitsPerEm;
-
-    // numerator.depth = Math.max(numerator.depth, descent);
-
-    // const ascent =
-    //     (newMultiplier * baseFontSize * fontMetrics.ascender) /
-    //     fontMetrics.unitsPerEm;
-
-    // denominator.height = Math.max(numerator.height, ascent);
+    const multiplier = multiplierForMathStyle(mathStyle);
 
     // TODO: try to reuse getCharDepth
-
-    // This code is only for rendering editable math content
     if (jmetrics) {
         const jDepth =
             (baseFontSize *
-                childMultiplier *
+                multiplier *
                 (jmetrics.height - jmetrics.bearingY)) /
             fontMetrics.unitsPerEm;
-        numerator.depth = Math.max(numerator.depth, jDepth);
-        denominator.depth = Math.max(denominator.depth, jDepth);
+        box.depth = Math.max(box.depth, jDepth);
     }
 
     // TODO: grab the max bearingY of all of [0-9a-zA-Z]
     if (Emetrics) {
         const EHeight =
-            (baseFontSize * childMultiplier * Emetrics.bearingY) /
+            (baseFontSize * multiplier * Emetrics.bearingY) /
             fontMetrics.unitsPerEm;
-        numerator.height = Math.max(numerator.height, EHeight);
-        denominator.height = Math.max(denominator.height, EHeight);
+        box.height = Math.max(box.height, EHeight);
     }
+};
 
-    const frac = Layout.makeFract(numerator, denominator, context, constants);
-
-    return frac;
+const typesetFrac = (
+    numerator: Layout.Box,
+    denominator: Layout.Box,
+    context: Context,
+): Layout.Box => {
+    return Layout.makeFract(numerator, denominator, context, constants);
 };
 
 const typesetSubsup = (
@@ -101,60 +90,6 @@ const typesetSubsup = (
     supBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, mathStyle} = context;
-    const {fontMetrics} = fontData;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childMultiplier = multiplierForMathStyle(childMathStyle);
-
-    if (subBox) {
-        // TODO: try to reuse getCharDepth
-        if (jmetrics) {
-            const jDepth =
-                (baseFontSize *
-                    childMultiplier *
-                    (jmetrics.height - jmetrics.bearingY)) /
-                fontMetrics.unitsPerEm;
-            subBox.depth = Math.max(subBox.depth, jDepth);
-        }
-
-        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-        if (Emetrics) {
-            const EHeight =
-                (baseFontSize * childMultiplier * Emetrics.bearingY) /
-                fontMetrics.unitsPerEm;
-            subBox.height = Math.max(subBox.height, EHeight);
-        }
-    }
-
-    if (supBox) {
-        // TODO: try to reuse getCharDepth
-        if (jmetrics) {
-            const jDepth =
-                (baseFontSize *
-                    childMultiplier *
-                    (jmetrics.height - jmetrics.bearingY)) /
-                fontMetrics.unitsPerEm;
-            supBox.depth = Math.max(supBox.depth, jDepth);
-        }
-
-        // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-        if (Emetrics) {
-            const EHeight =
-                (baseFontSize * childMultiplier * Emetrics.bearingY) /
-                fontMetrics.unitsPerEm;
-            supBox.height = Math.max(supBox.height, EHeight);
-        }
-    }
-
     return Layout.makeSubSup(subBox, supBox, context, constants);
 };
 
@@ -163,28 +98,12 @@ const typesetRoot = (
     radicand: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, mathStyle} = context;
-    const {fontMetrics} = fontData;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+    const {baseFontSize, mathStyle} = context;
 
     const multiplier = multiplierForMathStyle(mathStyle);
 
+    // Give the radicand a minimal width in case it's empty
     radicand.width = Math.max(radicand.width, 30 * multiplier);
-    if (Emetrics) {
-        const EHeight =
-            (baseFontSize * multiplier * Emetrics.bearingY) /
-            fontMetrics.unitsPerEm;
-        radicand.height = Math.max(radicand.height, EHeight);
-    }
-    if (jmetrics) {
-        const jDepth =
-            (baseFontSize *
-                multiplier *
-                (jmetrics.height - jmetrics.bearingY)) /
-            fontMetrics.unitsPerEm;
-        radicand.depth = Math.max(radicand.depth, jDepth);
-    }
 
     // TODO: change how we do the index to the following:
     // [index, negative kern, surd, radicand]
@@ -193,22 +112,6 @@ const typesetRoot = (
     const surd = Layout.hpackNat([[Layout.makeGlyph("\u221A", context)]]);
     let surdBox;
     if (indexBox) {
-        const indexMultiplier = multiplierForMathStyle(MathStyle.ScriptScript);
-        if (Emetrics) {
-            const EHeight =
-                (baseFontSize * indexMultiplier * Emetrics.bearingY) /
-                fontMetrics.unitsPerEm;
-            indexBox.height = Math.max(indexBox.height, EHeight);
-        }
-        if (jmetrics) {
-            const jDepth =
-                (baseFontSize *
-                    indexMultiplier *
-                    (jmetrics.height - jmetrics.bearingY)) /
-                fontMetrics.unitsPerEm;
-            indexBox.depth = Math.max(indexBox.depth, jDepth);
-        }
-
         // TODO: get this constant from the MATH table constants
         surd.shift = Math.max(0, indexBox.width - 36);
         surdBox = Layout.makeVBox(
@@ -247,44 +150,6 @@ const typesetLimits = (
     upperBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
-    const {fontData, baseFontSize, mathStyle} = context;
-    const {fontMetrics} = fontData;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const multiplier = multiplierForMathStyle(childMathStyle);
-
-    // TODO: try to reuse getCharDepth
-    if (jmetrics) {
-        const jDepth =
-            (baseFontSize *
-                multiplier *
-                (jmetrics.height - jmetrics.bearingY)) /
-            fontMetrics.unitsPerEm;
-        lowerBox.depth = Math.max(lowerBox.depth, jDepth);
-        if (upperBox) {
-            upperBox.depth = Math.max(upperBox.depth, jDepth);
-        }
-    }
-
-    // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-    if (Emetrics) {
-        const EHeight =
-            (baseFontSize * multiplier * Emetrics.bearingY) /
-            fontMetrics.unitsPerEm;
-        lowerBox.height = Math.max(lowerBox.height, EHeight);
-        if (upperBox) {
-            upperBox.height = Math.max(upperBox.height, EHeight);
-        }
-    }
-
     const innerWidth = Layout.getWidth(inner);
     const width = Math.max(
         innerWidth,
@@ -681,6 +546,10 @@ const _typesetZipper = (
             box.id = row.id;
             box.color = context?.colorMap?.get(box.id);
 
+            if (context.renderMode === RenderMode.Dynamic) {
+                ensureMinDepthAndHeight(box, context);
+            }
+
             return box;
         } else {
             const nodes: Layout.Node[] = [];
@@ -696,6 +565,10 @@ const _typesetZipper = (
             const box = Layout.hpackNat([nodes]);
             box.id = row.id;
             box.color = context?.colorMap?.get(box.id);
+
+            if (context.renderMode === RenderMode.Dynamic) {
+                ensureMinDepthAndHeight(box, context);
+            }
 
             return box;
         }
@@ -718,6 +591,10 @@ const _typesetZipper = (
         const box = Layout.hpackNat([left, selection, right]);
         box.id = row.id;
         box.color = context?.colorMap?.get(box.id);
+
+        if (context.renderMode === RenderMode.Dynamic) {
+            ensureMinDepthAndHeight(box, context);
+        }
 
         return box;
     }
