@@ -1,85 +1,110 @@
 import * as builders from "../builders";
 
-import {Node} from "../types";
-
 import {Dir} from "./enums";
+import {deleteIndex, insertAfterIndex, insertBeforeIndex} from "./array-util";
 import {rezipSelection} from "./util";
+import {
+    isPending,
+    indexOfLastUnmatchedOpener,
+    indexOfFirstUnmatchedCloser,
+} from "./parens-util";
 
 import type {Zipper} from "./types";
-
-// TODO: write tests
-
-const isPending = (node: Node | undefined, char: string): boolean => {
-    return Boolean(
-        node?.type === "atom" && node.value.char === char && node.value.pending,
-    );
-};
 
 export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     zipper = rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
-    const leftParen = builders.glyph("(");
-    const rightParen = builders.glyph(")");
+    const openParen = builders.glyph("(");
+    const closeParen = builders.glyph(")");
 
     if (selection) {
-        console.log(selection);
-        return {
-            ...zipper,
-            row: {
-                ...zipper.row,
-                left: [...left, leftParen, ...selection.nodes, rightParen],
-                selection: null,
-            },
-        };
+        if (dir === Dir.Left) {
+            return {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    left: [...left, openParen],
+                    right: [...selection.nodes, closeParen, ...right],
+                    selection: null,
+                },
+            };
+        } else {
+            return {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    left: [...left, openParen, ...selection.nodes, closeParen],
+                    selection: null,
+                },
+            };
+        }
     }
 
     // TODO: iterate over all of the glyphs in the row to ensure that we're
     // removing the correct matching paren.
     // Get rid of matching pending paren when inserting a matching paren for real.
     if (dir === Dir.Left) {
-        const first = left[0];
-        if (isPending(first, "(")) {
+        const index = indexOfLastUnmatchedOpener(left);
+
+        if (isPending(left[index], "(")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left.slice(1), builders.glyph("(")],
+                    left: [...deleteIndex(left, index), builders.glyph("(")],
                 },
             };
         }
     } else {
-        const last = right[right.length - 1];
-        if (isPending(last, ")")) {
+        const index = indexOfFirstUnmatchedCloser(right);
+
+        if (isPending(right[index], ")")) {
             return {
                 ...zipper,
                 row: {
                     ...zipper.row,
                     left: [...left, builders.glyph(")")],
-                    right: right.slice(0, -1),
+                    right: deleteIndex(right, index),
                 },
             };
         }
     }
 
     if (dir === Dir.Left) {
-        rightParen.value.pending = true;
-    } else {
-        leftParen.value.pending = true;
-    }
+        closeParen.value.pending = true;
 
-    return {
-        ...zipper,
-        row:
-            dir === Dir.Left
-                ? {
-                      ...zipper.row,
-                      left: [...left, leftParen],
-                      right: [...right, rightParen],
-                  }
-                : {
-                      ...zipper.row,
-                      left: [leftParen, ...left, rightParen],
-                  },
-    };
+        const index = indexOfFirstUnmatchedCloser(right);
+
+        const newRight =
+            index !== -1
+                ? insertBeforeIndex(right, closeParen, index)
+                : [...right, closeParen];
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: [...left, openParen],
+                right: newRight,
+            },
+        };
+    } else {
+        openParen.value.pending = true;
+
+        const index = indexOfLastUnmatchedOpener(left);
+
+        const newLeft =
+            index !== -1
+                ? [...insertAfterIndex(left, openParen, index), closeParen]
+                : [openParen, ...left, closeParen];
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: newLeft,
+            },
+        };
+    }
 };

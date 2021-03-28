@@ -96,11 +96,11 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: allNodeTypes.id,
+        id: simpleRow.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: allNodeTypes.children,
+        right: simpleRow.children,
     },
 };
 
