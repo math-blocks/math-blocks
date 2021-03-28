@@ -1,6 +1,7 @@
 import * as builders from "../builders";
 
 import {Dir} from "./enums";
+import {deleteIndex, insertAfterIndex, insertBeforeIndex} from "./array-util";
 import {rezipSelection} from "./util";
 import {
     isPending,
@@ -14,8 +15,8 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
     zipper = rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
-    const leftParen = builders.glyph("(");
-    const rightParen = builders.glyph(")");
+    const openParen = builders.glyph("(");
+    const closeParen = builders.glyph(")");
 
     if (selection) {
         if (dir === Dir.Left) {
@@ -23,8 +24,8 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left, leftParen],
-                    right: [...selection.nodes, rightParen, ...right],
+                    left: [...left, openParen],
+                    right: [...selection.nodes, closeParen, ...right],
                     selection: null,
                 },
             };
@@ -33,7 +34,7 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left, leftParen, ...selection.nodes, rightParen],
+                    left: [...left, openParen, ...selection.nodes, closeParen],
                     selection: null,
                 },
             };
@@ -51,11 +52,7 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [
-                        ...left.slice(0, index),
-                        ...left.slice(index + 1),
-                        builders.glyph("("),
-                    ],
+                    left: [...deleteIndex(left, index), builders.glyph("(")],
                 },
             };
         }
@@ -68,47 +65,39 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
                 row: {
                     ...zipper.row,
                     left: [...left, builders.glyph(")")],
-                    right: [
-                        ...right.slice(0, index),
-                        ...right.slice(index + 1),
-                    ],
+                    right: deleteIndex(right, index),
                 },
             };
         }
     }
 
     if (dir === Dir.Left) {
-        rightParen.value.pending = true;
+        closeParen.value.pending = true;
 
         const index = indexOfFirstUnmatchedCloser(right);
 
         const newRight =
             index !== -1
-                ? [...right.slice(0, index), rightParen, ...right.slice(index)]
-                : [...right, rightParen];
+                ? insertBeforeIndex(right, closeParen, index)
+                : [...right, closeParen];
 
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: [...left, leftParen],
+                left: [...left, openParen],
                 right: newRight,
             },
         };
     } else {
-        leftParen.value.pending = true;
+        openParen.value.pending = true;
 
         const index = indexOfLastUnmatchedOpener(left);
 
         const newLeft =
             index !== -1
-                ? [
-                      ...left.slice(0, index + 1),
-                      leftParen,
-                      ...left.slice(index + 1),
-                      rightParen,
-                  ]
-                : [leftParen, ...left, rightParen];
+                ? [...insertAfterIndex(left, openParen, index), closeParen]
+                : [openParen, ...left, closeParen];
 
         return {
             ...zipper,

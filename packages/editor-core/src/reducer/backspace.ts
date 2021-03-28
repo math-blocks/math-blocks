@@ -1,6 +1,7 @@
 import {glyph} from "../builders";
 
 import {Dir} from "./enums";
+import {insertAfterIndex, insertBeforeIndex, deleteIndex} from "./array-util";
 import {rezipSelection} from "./util";
 import {moveLeft} from "./move-left";
 import {
@@ -43,33 +44,29 @@ export const backspace = (zipper: Zipper): Zipper => {
                 // Find the nearest ')' to the right of the cursor and check if
                 // it's pending.
                 index = indexOfFirstUnmatchedCloser(right);
+                const leftWithoutPrevChar = left.slice(0, -1);
 
                 if (isPending(right[index], ")")) {
                     return {
                         ...zipper,
                         row: {
                             ...zipper.row,
-                            left: left.slice(0, -1),
-                            right: [
-                                ...right.slice(0, index),
-                                ...right.slice(index + 1),
-                            ],
+                            left: leftWithoutPrevChar,
+                            right: deleteIndex(right, index),
                         },
                     };
                 }
 
-                // left.slice(0, -1) deletes the '(' just before the cursor
-                index = indexOfLastUnmatchedOpener(left.slice(0, -1));
+                index = indexOfLastUnmatchedOpener(leftWithoutPrevChar);
+                const pendingOpenParen = glyph("(", true);
                 const newLeft =
                     index !== -1
-                        ? // find nearest '(' to the left of the cursor and
-                          // insert the new '(' after it.
-                          [
-                              ...left.slice(0, index + 1),
-                              glyph("(", true),
-                              ...left.slice(index + 1, -1),
-                          ]
-                        : [glyph("(", true), ...left.slice(0, -1)];
+                        ? insertAfterIndex(
+                              leftWithoutPrevChar,
+                              pendingOpenParen,
+                              index,
+                          )
+                        : [pendingOpenParen, ...leftWithoutPrevChar];
 
                 return {
                     ...zipper,
@@ -79,22 +76,17 @@ export const backspace = (zipper: Zipper): Zipper => {
                     },
                 };
             } else if (prev.value.char === ")") {
+                const leftWithoutPrevChar = left.slice(0, -1);
                 // Find the nearest '(' to the left of the cursor and check if
                 // it's pending.
-                // We use left.slice(0, -1) to skip over the closing paren that
-                // we might be deleting.
-                index = indexOfLastUnmatchedOpener(left.slice(0, -1));
-                console.log(`index = ${index}`);
+                index = indexOfLastUnmatchedOpener(leftWithoutPrevChar);
 
                 if (isPending(left[index], "(")) {
                     return {
                         ...zipper,
                         row: {
                             ...zipper.row,
-                            left: [
-                                ...left.slice(0, index),
-                                ...left.slice(index + 1, -1),
-                            ],
+                            left: deleteIndex(leftWithoutPrevChar, index),
                         },
                     };
                 }
@@ -102,20 +94,17 @@ export const backspace = (zipper: Zipper): Zipper => {
                 // Find nearest ')' to the right of the cursor and insert the
                 // new ')' before it.
                 index = indexOfFirstUnmatchedCloser(right);
+                const pendingCloseParen = glyph(")", true);
                 const newRight =
                     index !== -1
-                        ? [
-                              ...right.slice(0, index),
-                              glyph(")", true),
-                              ...right.slice(index),
-                          ]
-                        : [...right, glyph(")", true)];
+                        ? insertBeforeIndex(right, pendingCloseParen, index)
+                        : [...right, pendingCloseParen];
 
                 return {
                     ...zipper,
                     row: {
                         ...zipper.row,
-                        left: left.slice(0, -1),
+                        left: leftWithoutPrevChar,
                         right: newRight,
                     },
                 };
