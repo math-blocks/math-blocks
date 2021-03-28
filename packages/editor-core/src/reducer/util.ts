@@ -1,6 +1,6 @@
 import {getId, UnreachableCaseError} from "@math-blocks/core";
 
-import type {Zipper} from "./types";
+import type {ZDelimited, Zipper} from "./types";
 
 import * as types from "../types";
 
@@ -104,13 +104,15 @@ export const zroot = (node: types.Root, dir: Dir): ZRoot => {
             dir,
             other: node.children[1],
         };
-    } else {
+    } else if (dir === Dir.Right) {
         return {
             id: node.id,
             type: "zroot",
             dir,
             other: node.children[0],
         };
+    } else {
+        throw new Error("dir cannot be Dir.None for zlimits");
     }
 };
 
@@ -144,7 +146,7 @@ export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
             other: node.children[1],
             inner: node.inner,
         };
-    } else {
+    } else if (dir === Dir.Right) {
         return {
             id: node.id,
             type: "zlimits",
@@ -152,7 +154,33 @@ export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
             other: node.children[0],
             inner: node.inner,
         };
+    } else {
+        throw new Error("dir cannot be Dir.None for zlimits");
     }
+};
+
+export const delimited = (
+    focus: ZDelimited,
+    replacement: types.Row,
+): types.Delimited => {
+    return {
+        id: focus.id,
+        type: "delimited",
+        children: [replacement],
+        leftDelim: focus.leftDelim,
+        rightDelim: focus.rightDelim,
+    };
+};
+
+export const zdelimited = (node: types.Delimited): ZDelimited => {
+    return {
+        id: node.id,
+        type: "zdelimited",
+        dir: Dir.None,
+        other: null,
+        leftDelim: node.leftDelim,
+        rightDelim: node.rightDelim,
+    };
 };
 
 export const focusToNode = (
@@ -168,6 +196,8 @@ export const focusToNode = (
             return limits(focus, replacement);
         case "zroot":
             return root(focus, replacement);
+        case "zdelimited":
+            return delimited(focus, replacement);
         default: {
             throw new UnreachableCaseError(focus);
         }

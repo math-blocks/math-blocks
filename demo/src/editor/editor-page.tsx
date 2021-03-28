@@ -8,6 +8,20 @@ import {FontMetricsContext, getFontData} from "@math-blocks/metrics";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const simpleRow = Editor.util.row("2x+5=10");
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const delimiters = Editor.builders.row([
+    Editor.builders.glyph("x"),
+    Editor.builders.glyph("+"),
+    Editor.builders.delimited(
+        [
+            Editor.builders.glyph("y"),
+            Editor.builders.glyph("\u2212"),
+            Editor.builders.glyph("1"),
+        ],
+        Editor.builders.glyph("("),
+        Editor.builders.glyph(")"),
+    ),
+]);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const allNodeTypes = Editor.builders.row([
     Editor.builders.glyph("2"),
     Editor.builders.glyph("+"),
@@ -96,11 +110,11 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: simpleRow.id,
+        id: delimiters.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: simpleRow.children,
+        right: delimiters.children,
     },
 };
 

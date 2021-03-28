@@ -1,3 +1,4 @@
+import {UnreachableCaseError} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
@@ -98,10 +99,6 @@ const getPrefixParselet = (
                     );
                 },
             };
-        case "subsup":
-            throw new Error(`Unexpected 'subsup' token`);
-        case "row":
-            throw new Error(`Unexpected 'row' token`);
         case "root":
             return {
                 parse: () => {
@@ -118,9 +115,24 @@ const getPrefixParselet = (
                           );
                 },
             };
+        case "delimited":
+            return {
+                parse: (parser) => {
+                    const result = parser.parse();
+                    // TODO: what should `loc` be here?
+                    return Parser.builders.parens(result);
+                },
+            };
+        // TODO: Handle subsup at the start of a row, useful in Chemistry
+        case "subsup":
+            throw new Error(`Unexpected 'subsup' token`);
+        // TODO: Handle limits at the start of a row
+        case "limits":
+            throw new Error(`Unexpected 'limits' token`);
+        case "row":
+            throw new Error(`Unexpected 'row' token`);
         default:
-            token as never;
-            throw new Error("unexpected token");
+            throw new UnreachableCaseError(token);
     }
 };
 
@@ -380,8 +392,26 @@ const getInfixParselet = (
                 },
             };
         }
+        case "delimited": {
+            return {
+                // TODO: figure out how to return a different value for 'op' if
+                // the delimited node stands for something else like function
+                // arguments.
+                op: "mul.imp",
+                parse: (parser, left): Parser.types.Node => {
+                    const parselet = parseNaryInfix("mul.imp");
+                    // TODO: check the left.type can be implicitly multiplied
+                    // with parens.
+                    return parselet(parser, left);
+                },
+            };
+        }
+        case "limits":
+            throw new Error(`Unexpected 'limits' token`);
+        case "row":
+            throw new Error(`Unexpected 'row' token`);
         default:
-            return null;
+            throw new UnreachableCaseError(token);
     }
 };
 

@@ -354,6 +354,22 @@ const typesetFocus = (
 
             return limits;
         }
+        case "zdelimited": {
+            const row = _typesetZipper(zipper, context);
+
+            row.id = focus.id;
+            row.color = context?.colorMap?.get(row.id);
+
+            return Layout.hpackNat([
+                [
+                    Layout.makeGlyph(focus.leftDelim.value.char, context),
+                    row,
+                    Layout.makeGlyph(focus.rightDelim.value.char, context),
+                ],
+            ]);
+        }
+        default:
+            throw new UnreachableCaseError(focus);
     }
 };
 
@@ -435,6 +451,22 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             limits.color = context?.colorMap?.get(limits.id);
 
             return limits;
+        }
+        case "delimited": {
+            const row = typesetRow(node.children[0], context);
+
+            row.id = node.id;
+            row.color = context?.colorMap?.get(row.id);
+
+            // TODO: update makeGlyph to accept an editor Glyph type instead of
+            // a char
+            const open = Layout.makeGlyph(node.leftDelim.value.char, context);
+            const close = Layout.makeGlyph(node.rightDelim.value.char, context);
+
+            open.pending = node.leftDelim.value.pending;
+            close.pending = node.rightDelim.value.pending;
+
+            return Layout.hpackNat([[open, row, close]]);
         }
         case "atom": {
             const {value} = node;

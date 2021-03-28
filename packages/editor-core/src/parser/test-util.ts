@@ -1,3 +1,5 @@
+import {UnreachableCaseError} from "@math-blocks/core";
+
 import {Token} from "./lexer";
 import {locFromRange} from "./util";
 import {Node, Row, SubSup, Frac, Root, Atom, SourceLocation} from "./types";
@@ -127,6 +129,17 @@ const print = (
                 index ? print(index, serialize, indent) : "_"
             })`;
         }
+        case "delimited": {
+            const inner = print(ast.children[0], serialize, indent);
+            const open = print(ast.leftDelim, serialize, indent);
+            const close = print(ast.rightDelim, serialize, indent);
+
+            return `(delimited@[${loc.path.map(String).join(",")}]:${
+                loc.start
+            }:${loc.end} ${open} ${inner} ${close})`;
+        }
+        default:
+            throw new UnreachableCaseError(ast);
     }
 };
 

@@ -6,8 +6,9 @@
  * - identifiers
  * - symbols
  */
-import * as types from "../types";
 import {UnreachableCaseError} from "@math-blocks/core";
+
+import * as types from "../types";
 
 import {Node, Row, Atom, SourceLocation} from "./types";
 
@@ -293,6 +294,17 @@ const lex = (node: types.Node, path: number[], offset: number): Node => {
                     index ? lexRow(index, [...path, offset, 1]) : null,
                     lexRow(radicand, [...path, offset, 0]),
                 ],
+                loc: location(path, offset, offset + 1),
+            };
+        }
+        case "delimited": {
+            const leftDelim = lparens(location(path, offset, offset));
+            const rightDelim = rparens(location(path, offset, offset));
+            return {
+                type: "delimited",
+                children: [lexRow(node.children[0])],
+                leftDelim: leftDelim,
+                rightDelim: rightDelim,
                 loc: location(path, offset, offset + 1),
             };
         }

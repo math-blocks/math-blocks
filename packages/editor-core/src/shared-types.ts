@@ -5,6 +5,14 @@ export type Row<A, C> = C & {
     children: readonly Node<A, C>[];
 };
 
+export type Delimited<A, C> = C & {
+    type: "delimited";
+    // How do we limit what can be used as a delimiter?
+    leftDelim: Atom<A, C>;
+    children: readonly [Row<A, C>];
+    rightDelim: Atom<A, C>;
+};
+
 export type SubSup<A, C> = C & {
     type: "subsup";
     children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
@@ -33,6 +41,7 @@ export type Atom<A, C> = C & {
 
 export type Node<A, C> =
     | Row<A, C>
+    | Delimited<A, C>
     | SubSup<A, C>
     | Limits<A, C>
     | Frac<A, C>
