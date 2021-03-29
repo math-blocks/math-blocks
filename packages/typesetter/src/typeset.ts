@@ -360,13 +360,18 @@ const typesetFocus = (
             row.id = focus.id;
             row.color = context?.colorMap?.get(row.id);
 
-            return Layout.hpackNat([
-                [
-                    Layout.makeGlyph(focus.leftDelim.value.char, context),
-                    row,
-                    Layout.makeGlyph(focus.rightDelim.value.char, context),
-                ],
-            ]);
+            // TODO: update makeGlyph to accept an editor Glyph type instead of
+            // a char
+            const open = Layout.makeGlyph(focus.leftDelim.value.char, context);
+            const close = Layout.makeGlyph(
+                focus.rightDelim.value.char,
+                context,
+            );
+
+            open.pending = focus.leftDelim.value.pending;
+            close.pending = focus.rightDelim.value.pending;
+
+            return Layout.hpackNat([[open, row, close]]);
         }
         default:
             throw new UnreachableCaseError(focus);

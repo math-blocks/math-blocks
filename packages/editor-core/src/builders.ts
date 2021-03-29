@@ -56,7 +56,7 @@ export function root(
 }
 
 export function delimited(
-    inner: types.Node[],
+    inner: readonly types.Node[],
     leftDelim: types.Atom,
     rightDelim: types.Atom,
 ): types.Delimited {
