@@ -1,5 +1,7 @@
 import {STANDARD_STRINGS} from "./standard-strings";
 
+import type {Glyph, GlyphData, Path} from "./types";
+
 type Index = {
     count: number; // Card16 (uint16)
     offSize: number; // OffSize (1 - 4)
@@ -11,7 +13,6 @@ const parseIndex = async (
     blob: Blob,
     offset: number,
 ): Promise<[Index, number]> => {
-    console.log(`blob.slice(${offset}, ${offset + 5})`);
     let buffer = await blob.slice(offset, offset + 3).arrayBuffer();
     let view = new DataView(buffer);
 
@@ -22,10 +23,7 @@ const parseIndex = async (
         .slice(offset + 3, offset + 3 + (count + 1) * offSize)
         .arrayBuffer();
     view = new DataView(buffer);
-    console.log(`count = ${count}`);
-    console.log(`offSize = ${offSize}`);
 
-    // TODO: handle offsetSize === 3 by using shift left
     const offsets: number[] = [];
     for (let i = 0; i < count + 1; i += 1) {
         let value = 0;
@@ -35,8 +33,6 @@ const parseIndex = async (
         }
         offsets.push(value);
     }
-
-    console.log(offsets);
 
     const nameIndex: Index = {
         count: count,
@@ -57,6 +53,8 @@ const parseIndex = async (
         ),
     };
 
+    // offsets are 1-indexed so we ahve to subtract one from the value of the
+    // last offset.
     const size = 3 + offsets.length * offSize + offsets[offsets.length - 1] - 1;
 
     return [nameIndex, size];
@@ -325,46 +323,7 @@ const parseTopDictData = (
     }
 };
 
-type Command =
-    | {
-          type: "M";
-          x: number;
-          y: number;
-      }
-    | {
-          type: "L";
-          x: number;
-          y: number;
-      }
-    | {
-          type: "Q";
-          x1: number;
-          y1: number;
-          x: number;
-          y: number;
-      }
-    | {
-          type: "C";
-          x1: number;
-          y1: number;
-          x2: number;
-          y2: number;
-          x: number;
-          y: number;
-      }
-    | {
-          type: "Z";
-      };
-
-type Path = Command[];
-
-type Glyph = {
-    path: Path;
-    advanceWidth: number;
-    // TODO: include other metrics
-};
-
-const parseCharstring = (data: Uint8Array, topDict: TopDict): Glyph => {
+const parseCharstring = (data: Uint8Array, topDict: TopDict): GlyphData => {
     let i = 0;
     const stack: number[] = [];
 
@@ -863,15 +822,58 @@ const parseCharstring = (data: Uint8Array, topDict: TopDict): Glyph => {
         }
     }
 
-    const glyph: Glyph = {
+    const glyphData: GlyphData = {
         path,
         advanceWidth: width,
     };
 
-    return glyph;
+    return glyphData;
 };
 
-export const parseCFF = async (blob: Blob): Promise<void> => {
+const parseCharset = async (
+    blob: Blob,
+    topDict: TopDict,
+    nGlyphs: number,
+): Promise<Record<number, number>> => {
+    // NOTE: FDSelect (optional) can appear between Charsets and CharStrings
+    // index.  It's okay if it does since we only parse the available number
+    // of glyphs based on CharStrings index's `count` property.
+    const charsetData = await blob
+        .slice(topDict.charset, topDict.CharStrings)
+        .arrayBuffer();
+
+    const view = new DataView(charsetData);
+    const format = view.getUint8(0);
+
+    if (format !== 2) {
+        throw new Error(`Can't parse charset format ${format} yet`);
+    }
+
+    // Charset is a mapping between GID and SID.  The SID can then be used to
+    // get the name of a glyph.
+    let gid = 1;
+    let i = 1;
+    const charset: Record<number, number> = {};
+    while (gid < nGlyphs) {
+        const first = view.getUint16(i);
+        const nLeft = view.getUint16(i + 2);
+        i += 4;
+
+        for (let j = 0; j <= nLeft; j++) {
+            const sid = first + j;
+            charset[gid] = sid;
+            gid += 1;
+        }
+    }
+
+    return charset;
+};
+
+type CFFResult = {
+    getGlyph: (gid: number) => Glyph;
+};
+
+export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
     let offset = 0;
 
     const headerBuffer = await blob.slice(offset, offset + 4).arrayBuffer();
@@ -910,73 +912,66 @@ export const parseCFF = async (blob: Blob): Promise<void> => {
         );
         parseTopDictData(privateDictData, topDict, stringIndex);
     }
+    // TODO: should we expose any of this data publicly?
     console.log("topDict = ", topDict);
 
-    if (topDict.CharStrings && topDict.charset) {
-        console.log(`CharStrings = ${topDict.CharStrings}`);
-        const [charStringsIndex] = await parseIndex(blob, topDict.CharStrings);
-        console.log("charStringsIndex = ", charStringsIndex);
-
-        // only useful for Format 0
-        const nGlyphs = charStringsIndex.count;
-
-        const charsetData = await blob
-            .slice(
-                topDict.charset,
-                topDict.CharStrings, // NOTE: we can only do this because there's no FDSelect
-            )
-            .arrayBuffer();
-        const view = new DataView(charsetData);
-        const format = view.getUint8(0);
-        console.log(`format = ${format}`);
-        console.log(charsetData.byteLength);
-
-        // Charset is a mapping between GID and SID
-        let gid = 1;
-        let i = 1;
-        const charset: Record<number, number> = {};
-        while (gid < nGlyphs) {
-            const first = view.getUint16(i);
-            const nLeft = view.getUint16(i + 2);
-            i += 4;
-
-            for (let j = 0; j <= nLeft; j++) {
-                const sid = first + j;
-                charset[gid] = sid;
-                gid += 1;
-            }
-        }
-
-        let name = getString(charset[1064], stringIndex);
-        console.log(`charset[1064] = ${charset[1064]} (${name})`);
-        name = getString(charset[1301], stringIndex);
-        console.log(`charset[1301] = ${charset[1301]} (${name})`);
-
-        // Charset provides a mapping from GID to SID which allows us to get
-        // string names for each of the glyphs.
-
-        // We don't bother with the Encoding provide by the CFF and instead use
-        // 'cmap' instead which provides complete coverage.  The encoding maps
-        // unicode code to GID.
-
-        // There are some GIDs in the Charset whcih don't have unicode codes
-        // associated with them in the encoding from 'cmap'.  These are things
-        // like variants and extended forms.  This are handled by the MATH table.
-
-        // TODO: parse CharStrings
-        // let's get the data for parenleft which has GID 1064
-        const start = charStringsIndex.offsets[1064] - 1;
-        const end = charStringsIndex.offsets[1064 + 1] - 1;
-        const glyphData = charStringsIndex.data.slice(start, end);
-
-        console.log("glyphData = ", glyphData);
-        console.log("parsed data = ", parseCharstring(glyphData, topDict));
-
-        // There needs to be a two step process:
-        // 1: convert bytes to charstring numbers
-        // 2: interpret charstring numbers operators as drawing commands
+    if (!topDict.CharStrings) {
+        throw new Error("CharStrings missing in Top Dict");
     }
 
-    console.log("parenleft?");
-    console.log(getString(9, stringIndex));
+    if (!topDict.charset) {
+        throw new Error("charset missing in Top Dict");
+    }
+
+    console.log(`CharStrings = ${topDict.CharStrings}`);
+    const [charStringsIndex] = await parseIndex(blob, topDict.CharStrings);
+    console.log("charStringsIndex = ", charStringsIndex);
+
+    const nGlyphs = charStringsIndex.count; // only useful for Format 2
+    const charset = await parseCharset(blob, topDict, nGlyphs);
+
+    // We don't bother with the Encoding provide by the CFF and instead use
+    // 'cmap' instead which provides complete coverage.  The encoding maps
+    // unicode code to GID.
+
+    const glyphDict: Record<number, Glyph> = {};
+
+    const getGlyph = (gid: number): Glyph => {
+        if (glyphDict[gid]) {
+            return glyphDict[gid];
+        }
+
+        const start = charStringsIndex.offsets[gid] - 1;
+        const end = charStringsIndex.offsets[gid + 1] - 1;
+
+        const glyphData = charStringsIndex.data.slice(start, end);
+        const {path, advanceWidth} = parseCharstring(glyphData, topDict);
+
+        const sid = charset[gid];
+        const name = getString(sid, stringIndex);
+
+        const glyph: Glyph = {
+            name,
+            path,
+            metrics: {
+                advance: advanceWidth,
+            },
+        };
+
+        glyphDict[gid] = glyph;
+
+        return glyph;
+    };
+
+    // TODO: add a method to get metrics for a glyph
+    // - start by copying the method from opentype.js and using it to render
+    //   a bounding box around some common glyphs
+    // - refactor it find the min/max of quadratic and cubic bezier curves in
+    //   x and y directions
+
+    const result: CFFResult = {
+        getGlyph,
+    };
+
+    return result;
 };

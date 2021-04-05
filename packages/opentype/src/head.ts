@@ -1,6 +1,4 @@
-import type {TableRecord} from "./types";
-
-type HeaderTable = {
+export type HeaderTable = {
     majorVersion: number; // uint16
     minorVersion: number; // uint16
     fontRevision: number; // signed fixed-point number 16.16
@@ -21,14 +19,8 @@ type HeaderTable = {
     glyphDataFormat: number; // int16
 };
 
-export const parseHead = async (
-    blob: Blob,
-    tableRecord: TableRecord,
-): Promise<HeaderTable> => {
-    const size = 54;
-    const buffer = await blob
-        .slice(tableRecord.offset, tableRecord.offset + size)
-        .arrayBuffer();
+export const parseHead = async (blob: Blob): Promise<HeaderTable> => {
+    const buffer = await blob.arrayBuffer();
     const view = new DataView(buffer);
 
     const table: HeaderTable = {

@@ -3,6 +3,7 @@ import {parseCmap} from "./cmap";
 import {parseMATH} from "./math";
 import {parseHead} from "./head";
 
+import type {Font} from "./font";
 import type {TableRecord, TableDirectory} from "./types";
 
 const parseTag = (view: DataView, offset = 0): string => {
@@ -20,24 +21,26 @@ const parseTableRecords = async (
     blob: Blob,
     offset: number,
     numTables: number,
-): Promise<TableRecord[]> => {
-    const size = 4 + 4 + 4 + 4;
+): Promise<Record<string, TableRecord>> => {
+    const RECORD_SIZE = 4 + 4 + 4 + 4;
 
     const buffer = await blob
-        .slice(offset, offset + numTables * size)
+        .slice(offset, offset + numTables * RECORD_SIZE)
         .arrayBuffer();
     const view = new DataView(buffer);
 
-    const result: TableRecord[] = [];
+    const result: Record<string, TableRecord> = {};
 
     for (let i = 0; i < numTables; i++) {
-        const offset = i * size;
-        result.push({
+        const offset = i * RECORD_SIZE;
+        const tag = parseTag(view, offset);
+
+        result[tag] = {
             tableTag: parseTag(view, offset),
             checksum: view.getUint32(offset + 4),
             offset: view.getUint32(offset + 8),
             length: view.getUint32(offset + 12),
-        });
+        };
     }
 
     return result;
@@ -63,41 +66,61 @@ const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
     return dir;
 };
 
-export const parse = async (url: string): Promise<void> => {
+export const parse = async (url: string): Promise<Font> => {
     const res = await fetch(url);
     const blob = await res.blob();
 
     const dir = await parseDirectory(blob);
 
-    const cmapTableRecord = dir.tableRecords.find((r) => r.tableTag === "cmap");
-    if (cmapTableRecord) {
-        const glyphIndexMap = await parseCmap(blob, cmapTableRecord);
-        console.log("glyphIndexMap = ", glyphIndexMap);
+    // TODO: move the blob for each table record into the parseDirector result
+    const cmapTableRecord = dir.tableRecords["cmap"];
+    if (!cmapTableRecord) {
+        throw new Error("No TableRecord for 'cmap' table");
     }
+    const cmapBlob = blob.slice(
+        cmapTableRecord.offset,
+        cmapTableRecord.offset + cmapTableRecord.length,
+    );
+    const glyphIndexMap = await parseCmap(cmapBlob);
 
-    const mathTableRecord = dir.tableRecords.find((r) => r.tableTag === "MATH");
-    if (mathTableRecord) {
-        const result = await parseMATH(blob, mathTableRecord);
-        console.log("MATH = ", result);
+    const mathTableRecord = dir.tableRecords["MATH"];
+    if (!mathTableRecord) {
+        throw new Error("No TableRecord for 'MATH' table");
     }
+    const mathBlob = blob.slice(
+        mathTableRecord.offset,
+        mathTableRecord.offset + mathTableRecord.length,
+    );
+    const math = await parseMATH(mathBlob);
 
-    const headTableRecord = dir.tableRecords.find((r) => r.tableTag === "head");
-    if (headTableRecord) {
-        const result = await parseHead(blob, headTableRecord);
-        console.log("head = ", result);
+    const headTableRecord = dir.tableRecords["head"];
+    if (!headTableRecord) {
+        throw new Error("No TableRecord for 'head' table");
     }
+    const headBlob = blob.slice(
+        headTableRecord.offset,
+        headTableRecord.offset + headTableRecord.length,
+    );
+    const head = await parseHead(headBlob);
 
-    const cffTableRecord = dir.tableRecords.find((r) => r.tableTag === "CFF ");
-    console.log("cffTableRecord = ", cffTableRecord);
-    console.log(blob.size);
-    if (cffTableRecord) {
-        const cffBlob = blob.slice(
-            cffTableRecord.offset,
-            cffTableRecord.offset + cffTableRecord.length,
-        );
-        const result = await parseCFF(cffBlob);
-        console.log("CFF = ", result);
+    const cffTableRecord = dir.tableRecords["CFF "];
+    if (!cffTableRecord) {
+        throw new Error("No TableRecord for 'CFF ' table");
     }
+    const cffBlob = blob.slice(
+        cffTableRecord.offset,
+        cffTableRecord.offset + cffTableRecord.length,
+    );
+    const cff = await parseCFF(cffBlob);
+
+    const font: Font = {
+        head,
+        math,
+        glyphIndexMap,
+        getGlyph: cff.getGlyph,
+    };
 
     console.log(dir);
+
+    return font;
 };

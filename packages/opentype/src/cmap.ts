@@ -1,5 +1,3 @@
-import type {TableRecord} from "./types";
-
 type EncodingRecord = {
     platformID: number; // uint16
     encodingID: number; // uint16
@@ -19,7 +17,7 @@ const parseEncodingRecords = async (
 ): Promise<EncodingRecord[]> => {
     const size = 2 + 2 + 4;
     const buffer = await blob
-        .slice(offset, (numTables + 1) * size)
+        .slice(offset, offset + numTables * size)
         .arrayBuffer();
     const view = new DataView(buffer);
 
@@ -46,8 +44,8 @@ const parseCmapHeader = async (blob: Blob): Promise<CmapHeader> => {
     const version = view.getUint16(0);
     const numTables = view.getUint16(2);
 
-    const size = 2 + 2 + 4;
-    buffer = await blob.slice(4, numTables * size).arrayBuffer();
+    const encodingRecordSize = 2 + 2 + 4;
+    buffer = await blob.slice(4, numTables * encodingRecordSize).arrayBuffer();
     view = new DataView(buffer);
 
     return {
@@ -63,6 +61,7 @@ type SequentialMapGroup = {
     startGlyphID: number; // uint32
 };
 
+// Returns a map between character codes and GID.
 const getGlyphIndexMap = (
     groups: SequentialMapGroup[],
 ): Record<number, number> => {
@@ -75,9 +74,6 @@ const getGlyphIndexMap = (
             charCode++, i++
         ) {
             const glyphId = group.startGlyphID + i;
-            if (glyphId > 1300 && glyphId < 1400) {
-                console.log(`glyphId = ${glyphId}`);
-            }
             result[charCode] = glyphId;
         }
     }
@@ -87,62 +83,59 @@ const getGlyphIndexMap = (
 
 export const parseCmap = async (
     blob: Blob,
-    cmapTableRecord: TableRecord,
-): Promise<Record<number, number> | void> => {
-    const cmapData = blob.slice(
-        cmapTableRecord.offset,
-        cmapTableRecord.offset + cmapTableRecord.length,
-    );
-
-    console.log(blob);
-    console.log(cmapData);
-    const cmap = await parseCmapHeader(cmapData);
+): Promise<Record<number, number>> => {
+    const cmap = await parseCmapHeader(blob);
 
     const encodingRecord = cmap.encodingRecords.find(
         (record) => record.platformID === 3 && record.encodingID === 10,
     );
 
-    if (encodingRecord) {
-        const format12size = 2 + 2 + 4 + 4 + 4;
-
-        const subtableHeader = cmapData.slice(
-            encodingRecord.subtableOffset,
-            encodingRecord.subtableOffset + format12size,
+    if (!encodingRecord) {
+        throw new Error(
+            "Missing encoding record for platformID = 3, encodingID = 10",
         );
-
-        const buffer = await subtableHeader.arrayBuffer();
-        const view = new DataView(buffer);
-
-        const format12Header = {
-            format: view.getUint16(0),
-            reserved: view.getUint16(2),
-            length: view.getUint32(4),
-            language: view.getUint32(8),
-            numGroups: view.getUint32(12),
-        };
-
-        const subtableBlob = cmapData.slice(
-            encodingRecord.subtableOffset,
-            encodingRecord.subtableOffset + format12Header.length,
-        );
-
-        const groups: SequentialMapGroup[] = [];
-
-        const subtableBuffer = await subtableBlob.arrayBuffer();
-        const array = new DataView(subtableBuffer);
-
-        const headerSize = 16;
-        const groupSize = 12;
-
-        for (let i = 0; i < format12Header.numGroups; i++) {
-            const offset = headerSize + i * groupSize;
-            groups.push({
-                startCharCode: array.getUint32(offset + 0),
-                endCharCode: array.getUint32(offset + 4),
-                startGlyphID: array.getUint32(offset + 8),
-            });
-        }
-
-        return getGlyphIndexMap(groups);
     }
+
+    const format12size = 2 + 2 + 4 + 4 + 4;
+
+    const subtableHeader = blob.slice(
+        encodingRecord.subtableOffset,
+        encodingRecord.subtableOffset + format12size,
+    );
+
+    const buffer = await subtableHeader.arrayBuffer();
+    const view = new DataView(buffer);
+
+    // TODO: create a separate function for parser format 12
+    const format12Header = {
+        format: view.getUint16(0),
+        reserved: view.getUint16(2),
+        length: view.getUint32(4),
+        language: view.getUint32(8),
+        numGroups: view.getUint32(12),
+    };
+
+    const subtableBlob = blob.slice(
+        encodingRecord.subtableOffset,
+        encodingRecord.subtableOffset + format12Header.length,
+    );
+
+    const subtableBuffer = await subtableBlob.arrayBuffer();
+    const array = new DataView(subtableBuffer);
+
+    const HEADER_SIZE = 16;
+    const GROUP_SIZE = 12;
+
+    const groups: SequentialMapGroup[] = [];
+
+    for (let i = 0; i < format12Header.numGroups; i++) {
+        const offset = HEADER_SIZE + i * GROUP_SIZE;
+        groups.push({
+            startCharCode: array.getUint32(offset + 0),
+            endCharCode: array.getUint32(offset + 4),
+            startGlyphID: array.getUint32(offset + 8),
+        });
+    }
+
+    return getGlyphIndexMap(groups);
 };

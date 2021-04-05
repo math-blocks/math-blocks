@@ -11,5 +11,53 @@ export type TableDirectory = {
     searchRange: number; // uint16
     entrySelector: number; // uint16
     rangeShift: number; // uint16
-    tableRecords: TableRecord[];
+    tableRecords: Record<string, TableRecord>;
+};
+
+type Command =
+    | {
+          type: "M";
+          x: number;
+          y: number;
+      }
+    | {
+          type: "L";
+          x: number;
+          y: number;
+      }
+    | {
+          type: "Q";
+          x1: number;
+          y1: number;
+          x: number;
+          y: number;
+      }
+    | {
+          type: "C";
+          x1: number;
+          y1: number;
+          x2: number;
+          y2: number;
+          x: number;
+          y: number;
+      }
+    | {
+          type: "Z";
+      };
+
+export type Path = Command[];
+
+export type GlyphData = {
+    path: Path;
+    advanceWidth: number;
+};
+
+type Metrics = {
+    advance: number;
+};
+
+export type Glyph = {
+    path: Path;
+    metrics: Metrics;
+    name: string;
 };

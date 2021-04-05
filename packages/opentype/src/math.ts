@@ -1,5 +1,3 @@
-import type {TableRecord} from "./types";
-
 // FWORD - int16 that describes a quantity in font design units
 // UFWORD - uint16 that describes a quantity in font design units
 
@@ -8,7 +6,7 @@ type MathValueRecord = {
     deviceOffset: number; // Offset16
 };
 
-type MathConstants = {
+export type MathConstants = {
     scriptPercentScaleDown: number; // int16
     scriptScriptPercentScaleDown: number; // int16
     delimitedSubFormulatMinHeight: number; // UFWORD
@@ -38,6 +36,7 @@ type MathConstants = {
     stackGapMin: MathValueRecord;
     stackDisplayStyleGapMin: MathValueRecord;
     stretchStackTopShiftUp: MathValueRecord;
+    stretchStackBottomShiftDown: MathValueRecord;
     stretchStackGapAboveMin: MathValueRecord;
     stretchStackGapBelowMin: MathValueRecord;
     fractionNumeratorShiftUp: MathValueRecord;
@@ -63,13 +62,10 @@ type MathConstants = {
     radicalExtraAscender: MathValueRecord;
     radicalKernBeforeDegree: MathValueRecord;
     radicalKernAfterDegree: MathValueRecord;
-    radicalDegreeBottomRaisePercent: MathValueRecord;
+    radicalDegreeBottomRaisePercent: number; // int16
 };
 
-export const parseMATH = async (
-    blob: Blob,
-    tableRecord: TableRecord,
-): Promise<MathConstants> => {
+export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
     // TODO: check that tableRecord.tableTag === "MATH" before proceeding
 
     type MathHeader = {
@@ -82,9 +78,7 @@ export const parseMATH = async (
 
     const headerByteCount = 5 * 2;
 
-    const headerBuffer = await blob
-        .slice(tableRecord.offset, tableRecord.offset + headerByteCount)
-        .arrayBuffer();
+    const headerBuffer = await blob.slice(0, headerByteCount).arrayBuffer();
     const headerView = new DataView(headerBuffer);
 
     const header: MathHeader = {
@@ -96,10 +90,7 @@ export const parseMATH = async (
     };
 
     const constantsBuffer = await blob
-        .slice(
-            tableRecord.offset + header.mathConstantsOffset,
-            tableRecord.offset + header.mathGlyphInfoOffset,
-        )
+        .slice(header.mathConstantsOffset, header.mathGlyphInfoOffset)
         .arrayBuffer();
     const constantsView = new DataView(constantsBuffer);
 
@@ -109,6 +100,11 @@ export const parseMATH = async (
             deviceOffset: constantsView.getUint16(offset + 2), // Offset16
         };
     };
+
+    console.log(
+        "math constants size = " +
+            (header.mathConstantsOffset - header.mathGlyphInfoOffset),
+    );
 
     const mathConstants: MathConstants = {
         scriptPercentScaleDown: constantsView.getInt16(0), // int16
@@ -140,32 +136,33 @@ export const parseMATH = async (
         stackGapMin: getMathValueRecord(96),
         stackDisplayStyleGapMin: getMathValueRecord(100),
         stretchStackTopShiftUp: getMathValueRecord(104),
-        stretchStackGapAboveMin: getMathValueRecord(108),
-        stretchStackGapBelowMin: getMathValueRecord(112),
-        fractionNumeratorShiftUp: getMathValueRecord(116),
-        fractionNumeratorDisplayStyleShiftUp: getMathValueRecord(120),
-        fractionDenominatorShiftDown: getMathValueRecord(124),
-        fractionDenominatorDisplayStyleShiftDown: getMathValueRecord(128),
-        fractionNumeratorGapMin: getMathValueRecord(132),
-        fractionNumDispalyStyleGapMin: getMathValueRecord(136),
-        fractionRuleThickness: getMathValueRecord(140),
-        fractionDenominatorGapMin: getMathValueRecord(144),
-        fractionDenomDisplayStyleGapMin: getMathValueRecord(148),
-        skewedFractionHorizontalGap: getMathValueRecord(152),
-        skewedFractionVerticalGap: getMathValueRecord(156),
-        overbarVerticalGap: getMathValueRecord(160),
-        overbarRuleThickness: getMathValueRecord(164),
-        overbarExtraAscender: getMathValueRecord(168),
-        underbarVerticalGap: getMathValueRecord(172),
-        underbarRuleThickness: getMathValueRecord(176),
-        underbarExtraDescender: getMathValueRecord(180),
-        radicalVerticalGap: getMathValueRecord(184),
-        radicalDisplayStyleVerticalGap: getMathValueRecord(188),
-        radicalRuleThickness: getMathValueRecord(192),
-        radicalExtraAscender: getMathValueRecord(196),
-        radicalKernBeforeDegree: getMathValueRecord(200),
-        radicalKernAfterDegree: getMathValueRecord(204),
-        radicalDegreeBottomRaisePercent: getMathValueRecord(208),
+        stretchStackBottomShiftDown: getMathValueRecord(108),
+        stretchStackGapAboveMin: getMathValueRecord(112),
+        stretchStackGapBelowMin: getMathValueRecord(116),
+        fractionNumeratorShiftUp: getMathValueRecord(120),
+        fractionNumeratorDisplayStyleShiftUp: getMathValueRecord(124),
+        fractionDenominatorShiftDown: getMathValueRecord(128),
+        fractionDenominatorDisplayStyleShiftDown: getMathValueRecord(132),
+        fractionNumeratorGapMin: getMathValueRecord(136),
+        fractionNumDispalyStyleGapMin: getMathValueRecord(140),
+        fractionRuleThickness: getMathValueRecord(144),
+        fractionDenominatorGapMin: getMathValueRecord(148),
+        fractionDenomDisplayStyleGapMin: getMathValueRecord(152),
+        skewedFractionHorizontalGap: getMathValueRecord(156),
+        skewedFractionVerticalGap: getMathValueRecord(160),
+        overbarVerticalGap: getMathValueRecord(164),
+        overbarRuleThickness: getMathValueRecord(168),
+        overbarExtraAscender: getMathValueRecord(172),
+        underbarVerticalGap: getMathValueRecord(176),
+        underbarRuleThickness: getMathValueRecord(180),
+        underbarExtraDescender: getMathValueRecord(184),
+        radicalVerticalGap: getMathValueRecord(188),
+        radicalDisplayStyleVerticalGap: getMathValueRecord(192),
+        radicalRuleThickness: getMathValueRecord(196),
+        radicalExtraAscender: getMathValueRecord(200),
+        radicalKernBeforeDegree: getMathValueRecord(204),
+        radicalKernAfterDegree: getMathValueRecord(208),
+        radicalDegreeBottomRaisePercent: constantsView.getInt16(212),
     };
 
     // TODO: parse coverage tables

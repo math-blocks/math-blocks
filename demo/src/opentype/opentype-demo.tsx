@@ -2,7 +2,7 @@ import * as React from "react";
 import * as opentype from "opentype.js";
 import {parse} from "@math-blocks/opentype";
 
-parse("/STIX2Math.otf");
+import type {Font} from "@math-blocks/opentype";
 
 // TODO:
 // draw bounding boxes around glyphs based on getMetrics() values
@@ -107,6 +107,7 @@ const lerpPath = (
 
 const OpenTypeDemo: React.FC = () => {
     const [font, setFont] = React.useState<opentype.Font | null>(null);
+    const [font2, setFont2] = React.useState<Font | null>(null);
 
     React.useEffect(() => {
         opentype.load("/STIX2Math.otf", (err, font) => {
@@ -117,9 +118,14 @@ const OpenTypeDemo: React.FC = () => {
                 setFont(font);
             }
         });
+
+        parse("/STIX2Math.otf").then((font) => {
+            console.log(font);
+            setFont2(font);
+        });
     }, []);
 
-    if (font) {
+    if (font && font2) {
         const children = [];
 
         const glyphs = {
@@ -187,6 +193,27 @@ const OpenTypeDemo: React.FC = () => {
             0.5,
         );
 
+        const parenLeftS2 = font2.getGlyph(1302);
+
+        let parenPath = "";
+        for (const cmd of parenLeftS2.path) {
+            if (cmd.type === "M") {
+                parenPath += `M ${cmd.x},${cmd.y} `;
+            } else if (cmd.type === "L") {
+                parenPath += `L ${cmd.x},${cmd.y} `;
+            } else if (cmd.type === "C") {
+                parenPath += `C ${cmd.x1},${cmd.y1} ${cmd.x2},${cmd.y2} ${cmd.x},${cmd.y}`;
+            } else if (cmd.type === "Q") {
+                parenPath += `Q ${cmd.x1},${cmd.y1} ${cmd.x},${cmd.y}`;
+            } else {
+                parenPath += "Z";
+            }
+        }
+
+        console.log("parenleft.s2 = ", parenLeftS2);
+        const fontSize = 60;
+        const scale = fontSize / font2.head.unitsPerEm;
+
         return (
             <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
                 <g fill="currentcolor">
@@ -226,6 +253,10 @@ const OpenTypeDemo: React.FC = () => {
                     <path
                         transform="translate(600, 1000)"
                         d={getPath(font.glyphs.get(1663))}
+                    />
+                    <path
+                        transform={`translate(400, 125) scale(${scale}, ${scale})`}
+                        d={parenPath}
                     />
                 </g>
             </svg>
