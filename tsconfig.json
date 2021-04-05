@@ -6,6 +6,7 @@
     {"path": "./packages/editor-core"},
     {"path": "./packages/grader"},
     {"path": "./packages/metrics"},
+    {"path": "./packages/opentype"},
     {"path": "./packages/parser-factory"},
     {"path": "./packages/react"},
     {"path": "./packages/semantic"},

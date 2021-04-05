@@ -1,5 +1,11 @@
 import * as React from "react";
 import * as opentype from "opentype.js";
+import {parse} from "@math-blocks/opentype";
+
+parse("/STIX2Math.otf");
+
+// TODO:
+// draw bounding boxes around glyphs based on getMetrics() values
 
 const getPath = (glyph: opentype.Glyph): string => {
     let result = "";

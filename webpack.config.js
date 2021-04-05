@@ -77,6 +77,10 @@ module.exports = {
                 __dirname,
                 "./packages/metrics/src",
             ),
+            "@math-blocks/opentype": path.join(
+                __dirname,
+                "./packages/opentype/src",
+            ),
             "@math-blocks/parser-factory": path.join(
                 __dirname,
                 "./packages/parser-factory/src",
