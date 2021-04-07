@@ -1,7 +1,9 @@
-import {parseCFF} from "./cff";
-import {parseCmap} from "./cmap";
-import {parseMATH} from "./math";
-import {parseHead} from "./head";
+import {parseCFF} from "./tables/cff";
+import {parseCmap} from "./tables/cmap";
+import {parseMATH} from "./tables/math";
+import {parseHead} from "./tables/head";
+
+import {getGlyphMetrics} from "./util";
 
 import type {Font} from "./font";
 import type {TableRecord, TableDirectory} from "./types";
@@ -118,6 +120,10 @@ export const parse = async (url: string): Promise<Font> => {
         math,
         glyphIndexMap,
         getGlyph: cff.getGlyph,
+        getGlyphMetrics: (gid: number) => {
+            const glyph = cff.getGlyph(gid);
+            return getGlyphMetrics(glyph);
+        },
     };
 
     console.log(dir);

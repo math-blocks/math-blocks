@@ -61,3 +61,11 @@ export type Glyph = {
     metrics: Metrics;
     name: string;
 };
+
+export type GlyphMetrics = {
+    advance: number;
+    bearingX: number;
+    bearingY: number;
+    width: number;
+    height: number;
+};

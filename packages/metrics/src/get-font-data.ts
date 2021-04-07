@@ -19,7 +19,7 @@ export const getFontData = (font: Font, fontFamily: string): FontData => {
             return {
                 advance: glyph.advanceWidth,
                 bearingX: metrics.xMin,
-                bearingY: metrics.yMax,
+                bearingY: metrics.yMax, // invert the y-axis
                 width: metrics.xMax - metrics.xMin,
                 height: metrics.yMax - metrics.yMin,
             };

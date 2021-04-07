@@ -1,6 +1,10 @@
-import {STANDARD_STRINGS} from "./standard-strings";
+import {STANDARD_STRINGS} from "./cff-standard-strings";
 
-import type {Glyph, GlyphData, Path} from "./types";
+import type {Glyph, GlyphData, Path} from "../types";
+
+// TODO: handle parsing operands that are real numbers
+// Thus, the value –2.25 is encoded by the byte sequence (1e e2 a2 5f) and the
+// value 0.140541E–3 by the sequence (1e 0a 14 05 41 c3 ff).
 
 type Index = {
     count: number; // Card16 (uint16)

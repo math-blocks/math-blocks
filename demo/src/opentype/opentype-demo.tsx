@@ -193,10 +193,11 @@ const OpenTypeDemo: React.FC = () => {
             0.5,
         );
 
-        const parenLeftS2 = font2.getGlyph(1302);
+        const gid = 3354;
+        const glyph = font2.getGlyph(gid);
 
         let parenPath = "";
-        for (const cmd of parenLeftS2.path) {
+        for (const cmd of glyph.path) {
             if (cmd.type === "M") {
                 parenPath += `M ${cmd.x},${cmd.y} `;
             } else if (cmd.type === "L") {
@@ -210,9 +211,14 @@ const OpenTypeDemo: React.FC = () => {
             }
         }
 
-        console.log("parenleft.s2 = ", parenLeftS2);
-        const fontSize = 60;
+        const fontSize = 72;
         const scale = fontSize / font2.head.unitsPerEm;
+
+        const metrics = font2.getGlyphMetrics(gid);
+        metrics.bearingX *= scale;
+        metrics.bearingY *= scale;
+        metrics.width *= scale;
+        metrics.height *= scale;
 
         return (
             <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
@@ -254,10 +260,22 @@ const OpenTypeDemo: React.FC = () => {
                         transform="translate(600, 1000)"
                         d={getPath(font.glyphs.get(1663))}
                     />
+                    <rect
+                        x={150 + metrics.bearingX}
+                        // bearingY is the distance up from the origin, but SVG
+                        // has the y-axis pointing down whereas fonts have the
+                        // y-axis pointing up.
+                        y={200 - metrics.bearingY}
+                        width={metrics.width}
+                        height={metrics.height}
+                        fill="transparent"
+                        stroke="orange"
+                    />
                     <path
-                        transform={`translate(400, 125) scale(${scale}, ${scale})`}
+                        transform={`translate(150, 200) scale(${scale}, ${-scale})`}
                         d={parenPath}
                     />
+                    <ellipse cx={150} cy={200} rx={3} ry={3} fill="blue" />
                 </g>
             </svg>
         );
