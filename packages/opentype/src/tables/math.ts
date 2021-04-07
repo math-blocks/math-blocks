@@ -9,7 +9,7 @@ type MathValueRecord = {
 export type MathConstants = {
     scriptPercentScaleDown: number; // int16
     scriptScriptPercentScaleDown: number; // int16
-    delimitedSubFormulatMinHeight: number; // UFWORD
+    delimitedSubFormulaMinHeight: number; // UFWORD
     displayOperatorMinHeight: number; // UFWORD
     mathLeading: MathValueRecord;
     axisHeight: MathValueRecord;
@@ -44,7 +44,7 @@ export type MathConstants = {
     fractionDenominatorShiftDown: MathValueRecord;
     fractionDenominatorDisplayStyleShiftDown: MathValueRecord;
     fractionNumeratorGapMin: MathValueRecord;
-    fractionNumDispalyStyleGapMin: MathValueRecord;
+    fractionNumDisplayStyleGapMin: MathValueRecord;
     fractionRuleThickness: MathValueRecord;
     fractionDenominatorGapMin: MathValueRecord;
     fractionDenomDisplayStyleGapMin: MathValueRecord;
@@ -109,7 +109,7 @@ export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
     const mathConstants: MathConstants = {
         scriptPercentScaleDown: constantsView.getInt16(0), // int16
         scriptScriptPercentScaleDown: constantsView.getInt16(2), // int16
-        delimitedSubFormulatMinHeight: constantsView.getUint16(4), // UFWORD
+        delimitedSubFormulaMinHeight: constantsView.getUint16(4), // UFWORD
         displayOperatorMinHeight: constantsView.getUint16(6), // UFWORD
         mathLeading: getMathValueRecord(8),
         axisHeight: getMathValueRecord(12),
@@ -144,7 +144,7 @@ export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
         fractionDenominatorShiftDown: getMathValueRecord(128),
         fractionDenominatorDisplayStyleShiftDown: getMathValueRecord(132),
         fractionNumeratorGapMin: getMathValueRecord(136),
-        fractionNumDispalyStyleGapMin: getMathValueRecord(140),
+        fractionNumDisplayStyleGapMin: getMathValueRecord(140),
         fractionRuleThickness: getMathValueRecord(144),
         fractionDenominatorGapMin: getMathValueRecord(148),
         fractionDenomDisplayStyleGapMin: getMathValueRecord(152),

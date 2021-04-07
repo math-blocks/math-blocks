@@ -69,3 +69,16 @@ export type GlyphMetrics = {
     width: number;
     height: number;
 };
+
+export type FontMetrics = {
+    unitsPerEm: number;
+    ascender: number;
+    descender: number;
+    getGlyphMetrics: (codePoint: number | undefined) => GlyphMetrics | null;
+    hasChar: (char: string) => boolean;
+};
+
+export type FontData = {
+    fontMetrics: FontMetrics;
+    fontFamily: string; // e.g. "Comic Sans", "STIX2", etc.
+};

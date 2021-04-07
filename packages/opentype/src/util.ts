@@ -1,4 +1,5 @@
-import type {Glyph, GlyphMetrics} from "./types";
+import type {Glyph, GlyphMetrics, FontData} from "./types";
+import type {Font} from "./font";
 
 export const getGlyphMetrics = (glyph: Glyph): GlyphMetrics => {
     const commands = glyph.path;
@@ -41,4 +42,36 @@ export const getGlyphMetrics = (glyph: Glyph): GlyphMetrics => {
     };
 
     return glyphMetrics;
+};
+
+export const getFontData = (font: Font, fontFamily: string): FontData => {
+    const fontMetrics = {
+        unitsPerEm: font.head.unitsPerEm,
+        ascender: 850, // font.tables["hhea"].ascender,
+        descender: 150, // font.tables["hhea"].descender,
+        getGlyphMetrics: (
+            codePoint: number | undefined,
+        ): GlyphMetrics | null => {
+            if (codePoint === undefined) {
+                return null;
+            }
+            const gid = font.glyphIndexMap[codePoint];
+            const glyph = font.getGlyph(gid);
+            const metrics = getGlyphMetrics(glyph);
+
+            return metrics;
+        },
+        hasChar: (char: string): boolean => {
+            const codePoint = char.codePointAt(0);
+            if (codePoint === undefined) {
+                return false;
+            }
+            return codePoint in font.glyphIndexMap;
+        },
+    };
+
+    return {
+        fontMetrics: fontMetrics,
+        fontFamily: fontFamily,
+    };
 };

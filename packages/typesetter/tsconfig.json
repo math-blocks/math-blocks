@@ -8,6 +8,7 @@
   "references": [
     {"path": "../core"},
     {"path": "../editor-core"},
-    {"path": "../metrics"}
+    {"path": "../metrics"},
+    {"path": "../opentype"}
   ]
 }

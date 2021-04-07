@@ -1,5 +1,5 @@
 import {UnreachableCaseError} from "@math-blocks/core";
-import type {FontMetrics, MathConstants} from "@math-blocks/metrics";
+import type {FontMetrics, MathConstants} from "@math-blocks/opentype";
 
 import {multiplierForMathStyle} from "./utils";
 import type {Context} from "./types";
@@ -275,20 +275,20 @@ export const makeFract = (
     const {baseFontSize, mathStyle} = context;
     const multiplier = multiplierForMathStyle(mathStyle);
     const fontSize = multiplier * baseFontSize;
-    const thickness = (fontSize * constants.fractionRuleThickness) / 1000;
-    const shift = (fontSize * constants.axisHeight) / 1000;
+    const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
+    const shift = (fontSize * constants.axisHeight.value) / 1000;
 
     // If useDisplayStyle is false then we need to reduce the font size of
     // numerators and denominators
     const useDisplayStyle = mathStyle === MathStyle.Display;
 
     const minDenGap = useDisplayStyle
-        ? (fontSize * constants.fractionDenomDisplayStyleGapMin) / 1000
-        : (fontSize * constants.fractionDenominatorGapMin) / 1000;
+        ? (fontSize * constants.fractionDenomDisplayStyleGapMin.value) / 1000
+        : (fontSize * constants.fractionDenominatorGapMin.value) / 1000;
 
     const minNumGap = useDisplayStyle
-        ? (fontSize * constants.fractionNumDisplayStyleGapMin) / 1000
-        : (fontSize * constants.fractionNumeratorGapMin) / 1000;
+        ? (fontSize * constants.fractionNumDisplayStyleGapMin.value) / 1000
+        : (fontSize * constants.fractionNumeratorGapMin.value) / 1000;
 
     // TODO: fix this code once we have debugging outlines in place, right now
     // gap between the fraction bar and the numerator/denominator is too big

@@ -1,8 +1,9 @@
 import * as React from "react";
 import {Provider} from "react-redux";
 
-import {comicSans, FontMetricsContext} from "@math-blocks/metrics";
+import {FontDataContext} from "@math-blocks/react";
 
+import {comicSans} from "../comic-sans";
 import {store} from "./store";
 import Tutor from "./tutor";
 
@@ -17,9 +18,9 @@ const TutorPage: React.FunctionComponent = () => {
 
     return (
         <Provider store={store}>
-            <FontMetricsContext.Provider value={fontData}>
+            <FontDataContext.Provider value={fontData}>
                 <Tutor />
-            </FontMetricsContext.Provider>
+            </FontDataContext.Provider>
         </Provider>
     );
 };

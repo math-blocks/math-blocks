@@ -1,0 +1,5 @@
+{
+    "name": "@math-blocks/opentype",
+    "version": "0.0.1",
+    "main": "./out/index.js"
+}

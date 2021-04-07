@@ -1,9 +1,10 @@
 import * as React from "react";
-import * as opentype from "opentype.js";
 
-import {MathEditor, MathKeypad} from "@math-blocks/react";
+import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
-import {FontMetricsContext, getFontData} from "@math-blocks/metrics";
+import {parse, getFontData} from "@math-blocks/opentype";
+
+import type {Font} from "@math-blocks/opentype";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const simpleRow = Editor.util.row("2x+5=10");
@@ -96,25 +97,21 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: simpleRow.id,
+        id: allNodeTypes.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: simpleRow.children,
+        right: allNodeTypes.children,
     },
 };
 
 const EditorPage: React.FunctionComponent = () => {
-    const [font, setFont] = React.useState<opentype.Font | null>(null);
+    const [font, setFont] = React.useState<Font | null>(null);
 
     React.useEffect(() => {
-        opentype.load("/STIX2Math.otf", (err, font) => {
-            if (font) {
-                console.log(font);
-                const A = font.glyphs.get(3);
-                console.log(A.getMetrics());
-                setFont(font);
-            }
+        parse("/STIX2Math.otf").then((font) => {
+            console.log(font);
+            setFont(font);
         });
     }, []);
 
@@ -125,7 +122,7 @@ const EditorPage: React.FunctionComponent = () => {
     const fontData = getFontData(font, "STIX2");
 
     return (
-        <FontMetricsContext.Provider value={fontData}>
+        <FontDataContext.Provider value={fontData}>
             <MathEditor
                 readonly={false}
                 zipper={zipper}
@@ -139,7 +136,7 @@ const EditorPage: React.FunctionComponent = () => {
                 <div style={{height: 8}} />
                 <MathKeypad />
             </div>
-        </FontMetricsContext.Provider>
+        </FontDataContext.Provider>
     );
 };
 

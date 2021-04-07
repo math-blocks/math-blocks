@@ -7,8 +7,8 @@ import format from "xml-formatter";
 import * as Core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
-import {comicSans} from "@math-blocks/metrics";
 
+import {comicSans} from "../comic-sans";
 import MathRenderer from "../math-renderer";
 import {
     ColorizedFraction,
