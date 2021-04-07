@@ -1,6 +1,6 @@
 import {MathStyle, RenderMode} from "./enums";
 
-import type {FontData} from "@math-blocks/metrics";
+import type {FontData} from "@math-blocks/opentype";
 import type {LayoutCursor, Point} from "./scene-graph";
 
 export type Context = {

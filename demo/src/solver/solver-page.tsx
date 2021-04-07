@@ -1,13 +1,13 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import {comicSans, FontMetricsContext} from "@math-blocks/metrics";
-import {MathEditor, MathRenderer} from "@math-blocks/react";
+import {MathEditor, MathRenderer, FontDataContext} from "@math-blocks/react";
 import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
 import * as Typesetter from "@math-blocks/typesetter";
 
+import {comicSans} from "../comic-sans";
 import Substeps from "./substeps";
 
 const {parse} = Editor;
@@ -98,7 +98,7 @@ const SolverPage: React.FunctionComponent = () => {
     };
 
     return (
-        <FontMetricsContext.Provider value={context.fontData}>
+        <FontDataContext.Provider value={context.fontData}>
             <div style={styles.container}>
                 <div>
                     <div style={styles.label}>Question:</div>
@@ -123,7 +123,7 @@ const SolverPage: React.FunctionComponent = () => {
                 {showSolution && <div style={styles.label}>Answer:</div>}
                 {showSolution && maybeRenderSolution()}
             </div>
-        </FontMetricsContext.Provider>
+        </FontDataContext.Provider>
     );
 };
 

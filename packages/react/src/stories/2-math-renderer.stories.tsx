@@ -3,8 +3,8 @@ import * as React from "react";
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
 import * as Typesetter from "@math-blocks/typesetter";
-import {comicSans} from "@math-blocks/metrics";
 
+import {comicSans} from "../comic-sans";
 import MathRenderer from "../math-renderer";
 
 const {row, glyph, frac, limits, root} = Editor.builders;

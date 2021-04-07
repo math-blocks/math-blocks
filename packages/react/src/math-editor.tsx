@@ -2,8 +2,8 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Typesetter from "@math-blocks/typesetter";
-import {FontMetricsContext} from "@math-blocks/metrics";
 
+import {FontDataContext} from "./font-data-context";
 import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
@@ -35,7 +35,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
-    const fontData = useContext(FontMetricsContext);
+    const fontData = useContext(FontDataContext);
 
     useEffect(() => {
         if (props.focus && containerRef.current) {
