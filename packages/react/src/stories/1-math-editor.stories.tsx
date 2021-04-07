@@ -5,7 +5,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import {comicSans} from "../comic-sans";
 import MathEditor from "../math-editor";
-import {FontDataContext} from "../font-metrics-context";
+import {FontDataContext} from "../font-data-context";
 
 const {row, glyph} = Editor.builders;
 

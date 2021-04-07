@@ -3,7 +3,7 @@ import * as React from "react";
 import * as Editor from "@math-blocks/editor-core";
 import * as Typesetter from "@math-blocks/typesetter";
 
-import {FontDataContext} from "./font-metrics-context";
+import {FontDataContext} from "./font-data-context";
 import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";

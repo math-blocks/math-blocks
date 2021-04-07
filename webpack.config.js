@@ -71,10 +71,6 @@ module.exports = {
                 __dirname,
                 "./packages/grader/src",
             ),
-            "@math-blocks/metrics": path.join(
-                __dirname,
-                "./packages/metrics/src",
-            ),
             "@math-blocks/opentype": path.join(
                 __dirname,
                 "./packages/opentype/src",
