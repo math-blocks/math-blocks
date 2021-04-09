@@ -80,6 +80,12 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         }
     });
 
+    // We need to update the state.zipper when props.zipper changes otherwise
+    // it looks like fast-refresh is broken.
+    React.useEffect(() => {
+        setZipper(props.zipper);
+    }, [props.zipper]);
+
     const {style} = props;
 
     const fontSize = 64;
