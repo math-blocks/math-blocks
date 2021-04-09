@@ -1,7 +1,7 @@
 {
     "name": "@math-blocks/solver",
     "version": "0.0.1",
-    "main": "./out/src/index.js",
+    "main": "./out/index.js",
     "dependencies": {
         "@math-blocks/semantic": "0.0.1",
         "@math-blocks/step-utils": "0.0.1",

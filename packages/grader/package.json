@@ -1,7 +1,7 @@
 {
     "name": "@math-blocks/grader",
     "version": "0.0.1",
-    "main": "./out/src/index.js",
+    "main": "./out/index.js",
     "dependencies": {
         "@math-blocks/core": "0.0.1",
         "@math-blocks/editor-core": "0.0.1",
