@@ -1,9 +1,9 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
+import {comicSans} from "@math-blocks/opentype";
 import {FontDataContext} from "@math-blocks/react";
 
-import {comicSans} from "../comic-sans";
 import AccessibleMath from "./accessible-math";
 
 const {row, glyph, frac, root} = Editor.builders;

@@ -2,6 +2,7 @@ import React from "react";
 import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor-core";
+import {comicSans} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 
 import MathEditor from "../math-editor";
@@ -9,26 +10,19 @@ import {FontDataContext} from "../font-data-context";
 
 const {row, glyph} = Editor.builders;
 
-const fontLoader = async (): Promise<FontData> => {
-    const {comicSans} = await import("../../../../demo/src/comic-sans");
-    return {
-        fontMetrics: comicSans,
-        fontFamily: "comic sans ms",
-    };
+const fontData: FontData = {
+    fontMetrics: comicSans,
+    fontFamily: "comic sans ms",
 };
 
 export default {
     title: "MathEditor",
     component: MathEditor,
-    loaders: [fontLoader],
 };
 
 type EmptyProps = Record<string, never>;
 
-export const Editable: React.FunctionComponent<EmptyProps> = (
-    args,
-    {loaded: fontData},
-) => {
+export const Editable: React.FunctionComponent<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
         glyph("2"),
@@ -64,10 +58,7 @@ export const Editable: React.FunctionComponent<EmptyProps> = (
     );
 };
 
-export const Readonly: React.FunctionComponent<EmptyProps> = (
-    args,
-    {loaded: fontData},
-) => {
+export const Readonly: React.FunctionComponent<EmptyProps> = () => {
     // TODO: how to convert
     const math = row([
         glyph("2"),

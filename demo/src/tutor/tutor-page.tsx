@@ -3,7 +3,7 @@ import {Provider} from "react-redux";
 
 import {FontDataContext} from "@math-blocks/react";
 
-import {comicSans} from "../comic-sans";
+import {comicSans} from "@math-blocks/opentype";
 import {store} from "./store";
 import Tutor from "./tutor";
 

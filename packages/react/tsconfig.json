@@ -10,7 +10,6 @@
     {"path": "../editor-core"},
     {"path": "../opentype"},
     {"path": "../semantic"},
-    {"path": "../typesetter"},
-    {"path": "../../demo"}
+    {"path": "../typesetter"}
   ]
 }

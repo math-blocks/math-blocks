@@ -8,8 +8,8 @@ import type {Story, StoryContext} from "@storybook/react";
 import * as Core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
+import {comicSans} from "@math-blocks/opentype";
 
-import {comicSans} from "../../../../demo/src/comic-sans";
 import MathRenderer from "../math-renderer";
 import * as stories from "../stories/2-math-renderer.stories";
 import storyMeta from "../stories/2-math-renderer.stories";
@@ -34,10 +34,12 @@ const storyToComponent = async function <T>(
 ): Promise<React.FC> {
     const loaded = {};
 
-    for (const value of await Promise.all(
-        storyMeta.loaders.map((loader) => loader()),
-    )) {
-        Object.assign(loaded, value);
+    if (storyMeta.loaders) {
+        for (const value of await Promise.all(
+            storyMeta.loaders.map((loader) => loader()),
+        )) {
+            Object.assign(loaded, value);
+        }
     }
 
     return () => {

@@ -7,7 +7,7 @@ import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
 import * as Typesetter from "@math-blocks/typesetter";
 
-import {comicSans} from "../comic-sans";
+import {comicSans} from "@math-blocks/opentype";
 import Substeps from "./substeps";
 
 const {parse} = Editor;
