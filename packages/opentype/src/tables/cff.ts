@@ -141,7 +141,7 @@ const topDictDefaults: TopDict = {
     nominalWidthX: 0,
 };
 
-const decoder = new TextDecoder();
+let decoder: TextDecoder | null = null;
 
 const getString = (operand: number, stringIndex: Index): string => {
     if (operand < 391) {
@@ -153,6 +153,10 @@ const getString = (operand: number, stringIndex: Index): string => {
     const index = operand - 391;
     const start = offsets[index] - 1;
     const end = offsets[index + 1] - 1;
+
+    if (decoder === null) {
+        decoder = new TextDecoder();
+    }
 
     return decoder.decode(data.slice(start, end));
 };

@@ -1,4 +1,4 @@
-import type {FontMetrics, GlyphMetrics} from "@math-blocks/opentype";
+import type {FontMetrics, GlyphMetrics} from "./types";
 
 const glyphMetrics: Record<number, GlyphMetrics> = {
     "32": {

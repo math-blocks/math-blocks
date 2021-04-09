@@ -1,27 +1,32 @@
 import * as React from "react";
+import type {Story, Meta} from "@storybook/react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
 import * as Typesetter from "@math-blocks/typesetter";
+import {comicSans} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
-import {comicSans} from "../comic-sans";
 import MathRenderer from "../math-renderer";
 
 const {row, glyph, frac, limits, root} = Editor.builders;
 
-export default {
-    title: "MathRenderer",
-    component: MathRenderer,
-};
-
-type EmptyProps = Record<string, never>;
-
-const fontData = {
+const fontData: FontData = {
     fontMetrics: comicSans,
     fontFamily: "comic sans ms",
 };
 
-export const Small: React.FunctionComponent<EmptyProps> = () => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Loader = () => Promise<any>;
+
+export default {
+    title: "MathRenderer",
+    component: MathRenderer,
+} as Meta & {loaders?: Loader[]};
+
+type EmptyProps = Record<string, never>;
+
+export const Small: Story<EmptyProps> = () => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
         glyph("2"),
@@ -45,7 +50,7 @@ export const Small: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Equation: React.FunctionComponent<EmptyProps> = () => {
+export const Equation: Story<EmptyProps> = () => {
     // TODO: how to convert
     const math = row([
         glyph("2"),
@@ -69,7 +74,7 @@ export const Equation: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Cursor: React.FunctionComponent<EmptyProps> = () => {
+export const Cursor: Story<EmptyProps> = () => {
     const math = row([
         glyph("2"),
         glyph("x"),
@@ -107,7 +112,7 @@ export const Cursor: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Selection: React.FunctionComponent<EmptyProps> = () => {
+export const Selection: Story<EmptyProps> = () => {
     const math = row([
         glyph("2"),
         glyph("x"),
@@ -145,7 +150,7 @@ export const Selection: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
+export const Pythagoras: Story<EmptyProps> = () => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -172,7 +177,7 @@ export const Pythagoras: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={pythagoras} />;
 };
 
-export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
+export const QuadraticEquation: Story<EmptyProps> = () => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -210,7 +215,7 @@ export const QuadraticEquation: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={quadraticEquation} />;
 };
 
-export const Limit: React.FunctionComponent<EmptyProps> = () => {
+export const Limit: Story<EmptyProps> = () => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -236,7 +241,7 @@ export const Limit: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={lim} />;
 };
 
-export const Summation: React.FunctionComponent<EmptyProps> = () => {
+export const Summation: Story<EmptyProps> = () => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -261,7 +266,7 @@ export const Summation: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={sum} />;
 };
 
-export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
+export const ColorizedFraction: Story<EmptyProps> = () => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
     const context: Typesetter.Context = {
@@ -287,7 +292,7 @@ export const ColorizedFraction: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={sum} />;
 };
 
-export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
+export const ColorizedSum: Story<EmptyProps> = () => {
     const editNode = Editor.util.row("8+10+12+14");
 
     const semNode = Editor.parse(editNode) as Semantic.types.Add;
@@ -323,7 +328,7 @@ export const ColorizedSum: React.FunctionComponent<EmptyProps> = () => {
     return <MathRenderer scene={prod} />;
 };
 
-export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
+export const SimpleSemanticColoring: Story<EmptyProps> = () => {
     const editNode = Editor.util.row("(11+x)(12-y)");
 
     const semNode = Editor.parse(editNode) as Semantic.types.Mul;
@@ -359,7 +364,7 @@ export const SimpleSemanticColoring: React.FunctionComponent<EmptyProps> = () =>
     return <MathRenderer scene={prod} />;
 };
 
-export const NestedSemanticColoring: React.FunctionComponent<EmptyProps> = () => {
+export const NestedSemanticColoring: Story<EmptyProps> = () => {
     const editNode = Editor.builders.row([Editor.util.frac("11+x", "12-y")]);
 
     const semNode = Editor.parse(editNode) as Semantic.types.Div;

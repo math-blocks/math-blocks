@@ -2,12 +2,18 @@ import React from "react";
 import {action} from "@storybook/addon-actions";
 
 import * as Editor from "@math-blocks/editor-core";
+import {comicSans} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
-import {comicSans} from "../comic-sans";
 import MathEditor from "../math-editor";
 import {FontDataContext} from "../font-data-context";
 
 const {row, glyph} = Editor.builders;
+
+const fontData: FontData = {
+    fontMetrics: comicSans,
+    fontFamily: "comic sans ms",
+};
 
 export default {
     title: "MathEditor",
@@ -37,11 +43,6 @@ export const Editable: React.FunctionComponent<EmptyProps> = () => {
             selection: null,
             right: math.children,
         },
-    };
-
-    const fontData = {
-        fontMetrics: comicSans,
-        fontFamily: "comic sans ms",
     };
 
     return (
@@ -78,11 +79,6 @@ export const Readonly: React.FunctionComponent<EmptyProps> = () => {
             selection: null,
             right: math.children,
         },
-    };
-
-    const fontData = {
-        fontMetrics: comicSans,
-        fontFamily: "comic sans ms",
     };
 
     return (
