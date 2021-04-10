@@ -41,7 +41,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         if (props.focus && containerRef.current) {
             containerRef.current.focus();
         }
-    }, ["hot"]);
+    }, [props.focus]);
 
     // update state to match props
     if (!props.focus && active) {
