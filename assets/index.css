@@ -1,0 +1,35 @@
+@font-face {
+    font-family: STIX2;
+    src: url(/STIX2Math.otf);
+}
+
+html,
+body {
+    /* overflow: hidden; */
+    touch-action: none;
+}
+canvas {
+    touch-action: none;
+}
+div {
+    touch-action: none;
+}
+
+a {
+    font-family: sans-serif;
+    color: navy;
+}
+body {
+    background-color: #fff;
+    color: #1f1f1f;
+}
+@media screen and (prefers-color-scheme: dark) {
+    body {
+        background-color: #1f1f1f;
+        color: #e0e0e0;
+    }
+
+    a {
+        color: lightskyblue;
+    }
+}

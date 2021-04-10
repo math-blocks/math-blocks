@@ -2,7 +2,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
 
-import type {FontData} from "@math-blocks/metrics";
+import type {FontData} from "@math-blocks/opentype";
 
 type Common = {
     id?: number;

@@ -1,5 +1,11 @@
 import * as React from "react";
 import * as opentype from "opentype.js";
+import {parse} from "@math-blocks/opentype";
+
+import type {Font} from "@math-blocks/opentype";
+
+// TODO:
+// draw bounding boxes around glyphs based on getMetrics() values
 
 const getPath = (glyph: opentype.Glyph): string => {
     let result = "";
@@ -101,6 +107,7 @@ const lerpPath = (
 
 const OpenTypeDemo: React.FC = () => {
     const [font, setFont] = React.useState<opentype.Font | null>(null);
+    const [font2, setFont2] = React.useState<Font | null>(null);
 
     React.useEffect(() => {
         opentype.load("/STIX2Math.otf", (err, font) => {
@@ -111,9 +118,14 @@ const OpenTypeDemo: React.FC = () => {
                 setFont(font);
             }
         });
+
+        parse("/STIX2Math.otf").then((font) => {
+            console.log(font);
+            setFont2(font);
+        });
     }, []);
 
-    if (font) {
+    if (font && font2) {
         const children = [];
 
         const glyphs = {
@@ -181,6 +193,33 @@ const OpenTypeDemo: React.FC = () => {
             0.5,
         );
 
+        const gid = 3354;
+        const glyph = font2.getGlyph(gid);
+
+        let parenPath = "";
+        for (const cmd of glyph.path) {
+            if (cmd.type === "M") {
+                parenPath += `M ${cmd.x},${cmd.y} `;
+            } else if (cmd.type === "L") {
+                parenPath += `L ${cmd.x},${cmd.y} `;
+            } else if (cmd.type === "C") {
+                parenPath += `C ${cmd.x1},${cmd.y1} ${cmd.x2},${cmd.y2} ${cmd.x},${cmd.y}`;
+            } else if (cmd.type === "Q") {
+                parenPath += `Q ${cmd.x1},${cmd.y1} ${cmd.x},${cmd.y}`;
+            } else {
+                parenPath += "Z";
+            }
+        }
+
+        const fontSize = 72;
+        const scale = fontSize / font2.head.unitsPerEm;
+
+        const metrics = font2.getGlyphMetrics(gid);
+        metrics.bearingX *= scale;
+        metrics.bearingY *= scale;
+        metrics.width *= scale;
+        metrics.height *= scale;
+
         return (
             <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
                 <g fill="currentcolor">
@@ -221,6 +260,22 @@ const OpenTypeDemo: React.FC = () => {
                         transform="translate(600, 1000)"
                         d={getPath(font.glyphs.get(1663))}
                     />
+                    <rect
+                        x={150 + metrics.bearingX}
+                        // bearingY is the distance up from the origin, but SVG
+                        // has the y-axis pointing down whereas fonts have the
+                        // y-axis pointing up.
+                        y={200 - metrics.bearingY}
+                        width={metrics.width}
+                        height={metrics.height}
+                        fill="transparent"
+                        stroke="orange"
+                    />
+                    <path
+                        transform={`translate(150, 200) scale(${scale}, ${-scale})`}
+                        d={parenPath}
+                    />
+                    <ellipse cx={150} cy={200} rx={3} ry={3} fill="blue" />
                 </g>
             </svg>
         );

@@ -128,7 +128,7 @@ const typesetRoot = (
     }
 
     const fontSize = multiplier * baseFontSize;
-    const thickness = (fontSize * constants.fractionRuleThickness) / 1000;
+    const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
     const stroke = Layout.makeHRule(thickness, radicand.width);
 
     const vbox = Layout.makeVBox(

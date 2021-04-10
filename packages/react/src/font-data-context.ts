@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type {FontData} from "./types";
+import type {FontData} from "@math-blocks/opentype";
 
 const placeholder: FontData = {
     fontMetrics: {

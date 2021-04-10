@@ -52,10 +52,9 @@ Provides a bunch of related parts for building interactive math editors.
 - `builders`: builders for each of the editor node types
 - `utils`: other helpers
 
-### [@math-blocks/metrics](packages/metrics/README.md)
+### [@math-blocks/opentype](packages/opentype/README.md)
 
-Provides font and glyph metrics for Comic Sans MS.  The plan is to add metrics
-for more fonts in the future.
+Library for parsing OpenType font files that contain a MATH table.
 
 ### [@math-blocks/parser-factory](packages/parser-factory/README.md)
 

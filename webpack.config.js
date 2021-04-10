@@ -1,7 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     mode: "development",
@@ -34,9 +34,6 @@ module.exports = {
                             modules: true,
                         },
                     },
-                    {
-                        loader: "postcss-loader",
-                    },
                 ],
             },
             {
@@ -54,9 +51,7 @@ module.exports = {
         }),
         new MiniCssExtractPlugin(),
         new CopyWebpackPlugin({
-            patterns: [
-                { from: "assets" },
-            ],
+            patterns: [{from: "assets"}],
         }),
     ],
     resolve: {
@@ -73,9 +68,9 @@ module.exports = {
                 __dirname,
                 "./packages/grader/src",
             ),
-            "@math-blocks/metrics": path.join(
+            "@math-blocks/opentype": path.join(
                 __dirname,
-                "./packages/metrics/src",
+                "./packages/opentype/src",
             ),
             "@math-blocks/parser-factory": path.join(
                 __dirname,

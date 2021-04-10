@@ -1,7 +1,8 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import {FontMetricsContext, comicSans} from "@math-blocks/metrics";
+import {comicSans} from "@math-blocks/opentype";
+import {FontDataContext} from "@math-blocks/react";
 
 import AccessibleMath from "./accessible-math";
 
@@ -46,7 +47,7 @@ const MathmlPage: React.FunctionComponent = () => {
     };
 
     return (
-        <FontMetricsContext.Provider value={fontData}>
+        <FontDataContext.Provider value={fontData}>
             <h1>MathML Test Page</h1>
             <div
                 style={{
@@ -64,7 +65,7 @@ const MathmlPage: React.FunctionComponent = () => {
                 <h2>Factoring</h2>
                 <AccessibleMath math={factoring} />
             </div>
-        </FontMetricsContext.Provider>
+        </FontDataContext.Provider>
     );
 };
 

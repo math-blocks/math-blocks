@@ -3,23 +3,16 @@ import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
+import type {Story, StoryContext} from "@storybook/react";
 
 import * as Core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
-import {comicSans} from "@math-blocks/metrics";
+import {comicSans} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
-import {
-    ColorizedFraction,
-    Equation,
-    Limit,
-    Pythagoras,
-    QuadraticEquation,
-    Summation,
-    Cursor,
-    Selection,
-} from "../stories/2-math-renderer.stories";
+import * as stories from "../stories/2-math-renderer.stories";
+import storyMeta from "../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor.builders;
 
@@ -34,6 +27,35 @@ const context: Typesetter.Context = {
     mathStyle: Typesetter.MathStyle.Display,
     renderMode: Typesetter.RenderMode.Static,
     cramped: false,
+};
+
+const storyToComponent = async function <T>(
+    story: Story<T>,
+): Promise<React.FC> {
+    const loaded = {};
+
+    if (storyMeta.loaders) {
+        for (const value of await Promise.all(
+            storyMeta.loaders.map((loader) => loader()),
+        )) {
+            Object.assign(loaded, value);
+        }
+    }
+
+    return () => {
+        const context: StoryContext = {
+            id: "",
+            kind: "",
+            name: "",
+            parameters: {},
+            args: {},
+            argTypes: {},
+            globals: {},
+            loaded: loaded,
+        };
+        // @ts-expect-error: story expects T instead of Partial<T> | undefined
+        return story(story.args, context);
+    };
 };
 
 declare global {
@@ -123,22 +145,30 @@ describe("renderer", () => {
         });
     });
 
-    test("equation", () => {
+    test("equation", async () => {
+        const Equation = await storyToComponent(stories.Equation);
         expect(<Equation />).toMatchSVGSnapshot();
     });
 
     describe("fractions", () => {
-        test("colorized", () => {
+        test("colorized", async () => {
+            const ColorizedFraction = await storyToComponent(
+                stories.ColorizedFraction,
+            );
             expect(<ColorizedFraction />).toMatchSVGSnapshot();
         });
 
-        test("quadratic", () => {
+        test("quadratic", async () => {
+            const QuadraticEquation = await storyToComponent(
+                stories.QuadraticEquation,
+            );
             expect(<QuadraticEquation />).toMatchSVGSnapshot();
         });
     });
 
     describe("subsup", () => {
-        test("pythagoras", () => {
+        test("pythagoras", async () => {
+            const Pythagoras = await storyToComponent(stories.Pythagoras);
             expect(<Pythagoras />).toMatchSVGSnapshot();
         });
 
@@ -172,23 +202,27 @@ describe("renderer", () => {
     });
 
     describe("limits", () => {
-        test("lim", () => {
+        test("lim", async () => {
+            const Limit = await storyToComponent(stories.Limit);
             expect(<Limit />).toMatchSVGSnapshot();
         });
 
-        test("sum", () => {
+        test("sum", async () => {
+            const Summation = await storyToComponent(stories.Summation);
             expect(<Summation />).toMatchSVGSnapshot();
         });
     });
 
     describe("cursor", () => {
-        test("cursor in the middle", () => {
+        test("cursor in the middle", async () => {
+            const Cursor = await storyToComponent(stories.Cursor);
             expect(<Cursor />).toMatchSVGSnapshot();
         });
     });
 
     describe("selection", () => {
-        test("selection in the middle", () => {
+        test("selection in the middle", async () => {
+            const Selection = await storyToComponent(stories.Selection);
             expect(<Selection />).toMatchSVGSnapshot();
         });
     });

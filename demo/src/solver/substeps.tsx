@@ -1,8 +1,7 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import {FontMetricsContext} from "@math-blocks/metrics";
-import {MathRenderer} from "@math-blocks/react";
+import {MathRenderer, FontDataContext} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
 import {Step, applyStep} from "@math-blocks/step-utils";
 import * as Typesetter from "@math-blocks/typesetter";
@@ -18,7 +17,7 @@ type Props = {
 };
 
 const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
-    const fontData = React.useContext(FontMetricsContext);
+    const fontData = React.useContext(FontDataContext);
 
     let current = start;
 
