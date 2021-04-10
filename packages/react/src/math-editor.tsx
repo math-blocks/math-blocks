@@ -77,6 +77,10 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     props.onChange(Editor.zipperToRow(value));
                 }
             }
+
+            // Prevent StoryBook from capturing '/' and shifting focus to its
+            // search field.
+            e.stopPropagation();
         }
     });
 

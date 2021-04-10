@@ -27,12 +27,16 @@ export default function useEventListener(
             const eventListener = (event: KeyboardEvent): void =>
                 savedHandler.current(event);
 
+            // This allows us to call e.stopPropagation() before StoryBook
+            // steals the focus when '/' is pressed.
+            const options = {capture: true};
+
             // Add event listener
-            element.addEventListener(eventName, eventListener);
+            element.addEventListener(eventName, eventListener, options);
 
             // Remove event listener on cleanup
             return () => {
-                element.removeEventListener(eventName, eventListener);
+                element.removeEventListener(eventName, eventListener, options);
             };
         },
         [eventName, element], // Re-run if eventName or element changes
