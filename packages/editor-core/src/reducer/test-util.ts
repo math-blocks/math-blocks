@@ -49,6 +49,13 @@ export const subsup = (sub: string | null, sup: string | null): types.SubSup =>
         sup ? sup.split("").map((glyph) => builders.glyph(glyph)) : undefined,
     );
 
+export const delimited = (children: string): types.Delimited =>
+    builders.delimited(
+        children.split("").map((glyph) => builders.glyph(glyph)),
+        builders.glyph("("),
+        builders.glyph(")"),
+    );
+
 export const toEqualEditorNodes = (
     received: readonly types.Node[],
     actual: readonly types.Node[],

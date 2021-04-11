@@ -23,31 +23,46 @@ export const backspace = (zipper: Zipper): Zipper => {
         const prev = left[left.length - 1];
 
         if (prev.type === "delimited") {
-            const crumb: Breadcrumb = {
-                row: zrow(zipper.row.id, left.slice(0, -1), []),
-                focus: {
-                    ...zdelimited(prev),
-                    rightDelim: {
-                        ...prev.rightDelim,
-                        value: {
-                            ...prev.rightDelim.value,
-                            pending: true,
+            if (prev.leftDelim.value.pending) {
+                const newZipper: Zipper = {
+                    ...zipper,
+                    row: {
+                        ...zipper.row,
+                        left: [
+                            ...left.slice(0, -1),
+                            ...prev.children[0].children,
+                        ],
+                    },
+                };
+
+                return newZipper;
+            } else {
+                const crumb: Breadcrumb = {
+                    row: zrow(zipper.row.id, left.slice(0, -1), []),
+                    focus: {
+                        ...zdelimited(prev),
+                        rightDelim: {
+                            ...prev.rightDelim,
+                            value: {
+                                ...prev.rightDelim.value,
+                                pending: true,
+                            },
                         },
                     },
-                },
-            };
+                };
 
-            const newZipper: Zipper = {
-                ...zipper,
-                breadcrumbs: [...zipper.breadcrumbs, crumb],
-                row: zrow(
-                    prev.children[0].id,
-                    prev.children[0].children,
-                    right,
-                ),
-            };
+                const newZipper: Zipper = {
+                    ...zipper,
+                    breadcrumbs: [...zipper.breadcrumbs, crumb],
+                    row: zrow(
+                        prev.children[0].id,
+                        prev.children[0].children,
+                        right,
+                    ),
+                };
 
-            return newZipper;
+                return newZipper;
+            }
         } else if (prev.type !== "atom") {
             return moveLeft(zipper);
         }

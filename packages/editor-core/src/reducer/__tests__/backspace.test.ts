@@ -1,5 +1,14 @@
 import {backspace} from "../backspace";
-import {row, frac, subsup, root, toEqualEditorNodes} from "../test-util";
+import {moveLeft} from "../move-left";
+import {moveRight} from "../move-right";
+import {
+    row,
+    frac,
+    subsup,
+    root,
+    delimited,
+    toEqualEditorNodes,
+} from "../test-util";
 import {Dir} from "../enums";
 import * as builders from "../../builders";
 import * as types from "../../types";
@@ -714,7 +723,7 @@ describe("backspace", () => {
                     row: {
                         id: 0,
                         type: "zrow",
-                        left: row("(2x+5)").children,
+                        left: [delimited("2x+5")],
                         selection: null,
                         right: [],
                     },
@@ -724,32 +733,37 @@ describe("backspace", () => {
                 const result = backspace(zipper);
 
                 expect(result.row.left).toEqualEditorNodes(
-                    row("(2x+5").children,
+                    row("2x+5").children,
                 );
-                expect(result.row.right).toEqualEditorNodes([
-                    builders.glyph(")", true),
-                ]);
+                expect(result.row.right).toEqualEditorNodes([]);
+                expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[0].focus.leftDelim.value.pending,
+                ).toBeFalsy();
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[0].focus.rightDelim.value.pending,
+                ).toBeTruthy();
             });
 
-            test("deleting the left paren should change it to pending", () => {
+            test("deleting the left paren should remove the parens", () => {
                 const zipper: Zipper = {
                     row: {
                         id: 0,
                         type: "zrow",
-                        left: [builders.glyph("(")],
+                        left: [],
                         selection: null,
-                        right: row("2x+5)").children,
+                        right: [delimited("2x+5")],
                     },
                     breadcrumbs: [],
                 };
 
-                const result = backspace(zipper);
+                const result = backspace(moveRight(zipper));
 
-                expect(result.row.left).toEqualEditorNodes([
-                    builders.glyph("(", true),
-                ]);
+                expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(
-                    row("2x+5)").children,
+                    row("2x+5").children,
                 );
             });
         });
@@ -760,47 +774,90 @@ describe("backspace", () => {
                     row: {
                         id: 0,
                         type: "zrow",
-                        left: row("(2(x+5)").children,
+                        left: [
+                            builders.delimited(
+                                [
+                                    builders.glyph("2"),
+                                    builders.delimited(
+                                        row("x+5").children,
+                                        builders.glyph("("),
+                                        builders.glyph(")"),
+                                    ),
+                                    builders.glyph("="),
+                                    builders.glyph("1"),
+                                    builders.glyph("0"),
+                                ],
+                                builders.glyph("("),
+                                builders.glyph(")"),
+                            ),
+                        ],
                         selection: null,
-                        right: row("=10)").children,
+                        right: [],
                     },
                     breadcrumbs: [],
                 };
 
-                const result = backspace(zipper);
-
-                expect(result.row.left).toEqualEditorNodes(
-                    row("(2(x+5").children,
+                const result = backspace(
+                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
                 );
-                expect(result.row.right).toEqualEditorNodes([
-                    ...row("=10").children,
-                    builders.glyph(")", true),
-                    builders.glyph(")"),
-                ]);
+
+                expect(result.row.left).toEqualEditorNodes(row("x+5").children);
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[1].focus.leftDelim.value.pending,
+                ).toBeFalsy();
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[1].focus.rightDelim.value.pending,
+                ).toBeTruthy();
             });
 
-            test("deleting the left paren should change it to pending", () => {
+            test("deleting the left paren should remove the parens", () => {
                 const zipper: Zipper = {
                     row: {
                         id: 0,
                         type: "zrow",
-                        left: row("(2(").children,
+                        left: [],
                         selection: null,
-                        right: row("x+5)=10)").children,
+                        right: [
+                            builders.delimited(
+                                [
+                                    builders.glyph("2"),
+                                    builders.delimited(
+                                        row("x+5").children,
+                                        builders.glyph("("),
+                                        builders.glyph(")"),
+                                    ),
+                                    builders.glyph("="),
+                                    builders.glyph("1"),
+                                    builders.glyph("0"),
+                                ],
+                                builders.glyph("("),
+                                builders.glyph(")"),
+                            ),
+                        ],
                     },
                     breadcrumbs: [],
                 };
 
-                const result = backspace(zipper);
+                const result = backspace(
+                    moveRight(moveRight(moveRight(zipper))),
+                );
 
-                expect(result.row.left).toEqualEditorNodes([
-                    builders.glyph("("),
-                    builders.glyph("(", true),
-                    builders.glyph("2"),
-                ]);
-                expect(result.row.right).toEqualEditorNodes([
-                    ...row("x+5)=10)").children,
-                ]);
+                expect(result.row.left).toEqualEditorNodes(row("2").children);
+                expect(result.row.right).toEqualEditorNodes(
+                    row("x+5=10").children,
+                );
+                expect(result.breadcrumbs).toHaveLength(1);
+                expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[0].focus.leftDelim.value.pending,
+                ).toBeFalsy();
+                expect(
+                    // @ts-expect-error: not bothering to refine this type
+                    result.breadcrumbs[0].focus.rightDelim.value.pending,
+                ).toBeFalsy();
             });
         });
 
@@ -811,8 +868,11 @@ describe("backspace", () => {
                         id: 0,
                         type: "zrow",
                         left: [
-                            builders.glyph("(", true),
-                            ...row("2x+5)").children,
+                            builders.delimited(
+                                row("2x+5").children,
+                                builders.glyph("(", true),
+                                builders.glyph(")"),
+                            ),
                         ],
                         selection: null,
                         right: [],
@@ -832,18 +892,21 @@ describe("backspace", () => {
                     row: {
                         id: 0,
                         type: "zrow",
-                        left: row("(").children,
+                        left: [],
 
                         selection: null,
                         right: [
-                            ...row("2x+5").children,
-                            builders.glyph(")", true),
+                            builders.delimited(
+                                row("2x+5").children,
+                                builders.glyph("(", true),
+                                builders.glyph(")"),
+                            ),
                         ],
                     },
                     breadcrumbs: [],
                 };
 
-                const result = backspace(zipper);
+                const result = backspace(moveRight(zipper));
 
                 expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(
