@@ -2,7 +2,7 @@ module.exports = {
     mount: {
         assets: {url: "/", static: true},
         demo: {url: "/demo"},
-        packages: {url: "/packages"},
+        packages: {url: "/math-blocks"},
     },
     plugins: [
         // "@snowpack/plugin-dotenv",

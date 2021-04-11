@@ -1,7 +1,7 @@
-import type {Zipper, ZRow} from "./types";
+import type {Zipper} from "./types";
 import type {Row, Node} from "../types";
 
-import {focusToNode, zrowToRow} from "./util";
+import {focusToNode, zrowToRow, zrow} from "./util";
 import {Dir} from "./enums";
 
 export const zipperToRow = (zipper: Zipper): Row => {
@@ -25,13 +25,7 @@ export const zipperToRow = (zipper: Zipper): Row => {
                   ...crumb.row.right,
               ];
 
-    const row: ZRow = {
-        id: crumb.row.id,
-        type: "zrow",
-        left: [], // We don't care where the cursor is since this ZRow is temporary
-        selection: null,
-        right: newRight,
-    };
+    const row = zrow(crumb.row.id, [], newRight);
 
     return zipperToRow({
         row,

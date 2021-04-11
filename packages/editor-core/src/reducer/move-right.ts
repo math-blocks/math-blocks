@@ -84,7 +84,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.startRow(focusedRow), // [] [1, 2, ...]
+                row: util.zrow(focusedRow.id, [], focusedRow.children),
             };
         }
 
@@ -122,7 +122,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.startRow(row),
+            row: util.zrow(row.id, [], row.children),
         });
 
         switch (focus.type) {

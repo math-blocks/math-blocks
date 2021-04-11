@@ -86,7 +86,7 @@ const cursorLeft = (zipper: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.endRow(focusedRow), // [1, 2, ...] []
+                row: util.zrow(focusedRow.id, focusedRow.children, []),
             };
         }
 
@@ -124,7 +124,7 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.endRow(row),
+            row: util.zrow(row.id, row.children, []),
         });
 
         switch (focus.type) {

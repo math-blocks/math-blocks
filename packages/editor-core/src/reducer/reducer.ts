@@ -1,3 +1,5 @@
+import {getId} from "@math-blocks/core";
+
 import {backspace} from "./backspace";
 import {insertChar} from "./insert-char";
 import {moveLeft} from "./move-left";
@@ -7,18 +9,13 @@ import {root} from "./root";
 import {slash} from "./slash";
 import {subsup} from "./subsup";
 import {Dir} from "./enums";
+import {zrow} from "./util";
 import type {Zipper} from "./types";
 
 export type State = Zipper;
 
 const initialState: State = {
-    row: {
-        type: "zrow",
-        id: 0,
-        left: [],
-        selection: null,
-        right: [],
-    },
+    row: zrow(getId(), [], []),
     breadcrumbs: [],
 };
 

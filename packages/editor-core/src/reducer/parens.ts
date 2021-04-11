@@ -138,7 +138,7 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
             ) {
                 // Move everything to the right of the cursor outside the
                 // "delimited" node.
-                return {
+                const newZipper: Zipper = {
                     ...zipper,
                     breadcrumbs: [
                         ...breadcrumbs.slice(0, -1),
@@ -170,10 +170,12 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
                         right: [],
                     },
                 };
+
+                return moveRight(newZipper);
             }
         }
 
-        // If we're immediately to the right of a "delimted" node where then
+        // If we're immediately to the right of a "delimited" node where then
         // rightDelim is pending.  Make the delim non-pending and move into
         // the "delimited" node.
         const prev = left[left.length - 1];

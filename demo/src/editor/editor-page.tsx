@@ -21,6 +21,8 @@ const delimiters = Editor.builders.row([
         Editor.builders.glyph("("),
         Editor.builders.glyph(")"),
     ),
+    Editor.builders.glyph("+"),
+    Editor.builders.glyph("z"),
 ]);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const allNodeTypes = Editor.builders.row([
@@ -111,11 +113,11 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: allNodeTypes.id,
+        id: delimiters.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: allNodeTypes.children,
+        right: delimiters.children,
     },
 };
 

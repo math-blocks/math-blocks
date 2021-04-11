@@ -2,15 +2,7 @@ import {getId} from "@math-blocks/core";
 
 import * as util from "./util";
 import {Dir} from "./enums";
-import type {Zipper, ZRow} from "./types";
-
-const newZRow = (): ZRow => ({
-    id: getId(),
-    type: "zrow",
-    left: [],
-    selection: null,
-    right: [],
-});
+import type {Zipper} from "./types";
 
 export const subsup = (zipper: Zipper, dir: Dir): Zipper => {
     const {row, breadcrumbs} = zipper;
@@ -41,11 +33,11 @@ export const subsup = (zipper: Zipper, dir: Dir): Zipper => {
                 row:
                     dir === Dir.Left
                         ? sub
-                            ? util.startRow(sub)
-                            : newZRow()
+                            ? util.zrow(sub.id, [], sub.children)
+                            : util.zrow(getId(), [], [])
                         : sup
-                        ? util.startRow(sup)
-                        : newZRow(),
+                        ? util.zrow(sup.id, [], sup.children)
+                        : util.zrow(getId(), [], []),
             };
         }
     }
@@ -64,6 +56,6 @@ export const subsup = (zipper: Zipper, dir: Dir): Zipper => {
                 },
             },
         ],
-        row: newZRow(),
+        row: util.zrow(getId(), [], []),
     };
 };

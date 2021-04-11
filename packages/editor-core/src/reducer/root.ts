@@ -4,7 +4,7 @@ import * as builders from "../builders";
 
 import * as util from "./util";
 import {Dir} from "./enums";
-import type {Zipper, ZRow, Focus} from "./types";
+import type {Zipper, Focus} from "./types";
 
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
     zipper = util.rezipSelection(zipper);
@@ -25,13 +25,7 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
           };
 
     if (selection) {
-        const radicand: ZRow = {
-            id: getId(),
-            type: "zrow",
-            left: selection.nodes,
-            selection: null,
-            right: [],
-        };
+        const radicand = util.zrow(getId(), selection.nodes, []);
 
         return {
             ...zipper,
@@ -58,6 +52,6 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
                 focus,
             },
         ],
-        row: util.newZRow(),
+        row: util.zrow(getId(), [], []),
     };
 };

@@ -1,31 +1,18 @@
-import {getId, UnreachableCaseError} from "@math-blocks/core";
-
-import type {ZDelimited, Zipper} from "./types";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
 import {Dir} from "./enums";
-import type {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
-
-export const startRow = (row: types.Row): ZRow => {
-    return {
-        id: row.id,
-        type: "zrow",
-        left: [], // we're at the start because there are no nodes to the left
-        selection: null,
-        right: row.children,
-    };
-};
-
-export const endRow = (row: types.Row): ZRow => {
-    return {
-        id: row.id,
-        type: "zrow",
-        left: row.children,
-        selection: null,
-        right: [], // we're at the end because there are no nodes to the right
-    };
-};
+import type {
+    ZRow,
+    ZFrac,
+    ZSubSup,
+    ZRoot,
+    ZLimits,
+    ZDelimited,
+    Zipper,
+    Focus,
+} from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
     if (focus.dir === Dir.Left) {
@@ -270,12 +257,16 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
     };
 };
 
-export const newZRow = (): ZRow => ({
-    id: getId(),
+export const zrow = (
+    id: number,
+    left: readonly types.Node[],
+    right: readonly types.Node[],
+): ZRow => ({
+    id: id,
     type: "zrow",
-    left: [],
+    left,
     selection: null,
-    right: [],
+    right,
 });
 
 /**

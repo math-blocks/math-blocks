@@ -1,21 +1,10 @@
-import {useEffect, useRef} from "react";
+import {useEffect} from "react";
 
 export default function useEventListener(
     eventName: "keypress" | "keydown" | "keyup",
     handler: (event: KeyboardEvent) => void,
     element: WindowProxy = window,
 ): void {
-    // Create a ref that stores handler
-    const savedHandler = useRef<(event: KeyboardEvent) => void>(handler);
-
-    // Update ref.current value if handler changes.
-    // This allows our effect below to always get latest handler ...
-    // ... without us needing to pass it in effect deps array ...
-    // ... and potentially cause effect to re-run every render.
-    useEffect(() => {
-        savedHandler.current = handler;
-    }, [handler]);
-
     useEffect(
         () => {
             // Make sure element supports addEventListener
@@ -23,22 +12,18 @@ export default function useEventListener(
             const isSupported = element?.addEventListener;
             if (!isSupported) return;
 
-            // Create event listener that calls handler function stored in ref
-            const eventListener = (event: KeyboardEvent): void =>
-                savedHandler.current(event);
-
             // This allows us to call e.stopPropagation() before StoryBook
             // steals the focus when '/' is pressed.
             const options = {capture: true};
 
             // Add event listener
-            element.addEventListener(eventName, eventListener, options);
+            element.addEventListener(eventName, handler, options);
 
             // Remove event listener on cleanup
             return () => {
-                element.removeEventListener(eventName, eventListener, options);
+                element.removeEventListener(eventName, handler, options);
             };
         },
-        [eventName, element], // Re-run if eventName or element changes
+        [eventName, element, handler], // Re-run if eventName or element changes
     );
 }

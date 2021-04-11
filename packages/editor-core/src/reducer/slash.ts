@@ -1,7 +1,7 @@
 import {getId} from "@math-blocks/core";
 
 import {Dir} from "./enums";
-import {rezipSelection} from "./util";
+import {rezipSelection, zrow} from "./util";
 import type {Zipper, Focus} from "./types";
 
 export const slash = (zipper: Zipper): Zipper => {
@@ -22,13 +22,7 @@ export const slash = (zipper: Zipper): Zipper => {
 
         return {
             ...zipper,
-            row: {
-                type: "zrow",
-                id: getId(),
-                left: [],
-                selection: null,
-                right: [],
-            },
+            row: zrow(getId(), [], []),
             breadcrumbs: [
                 ...zipper.breadcrumbs,
                 {
@@ -98,13 +92,7 @@ export const slash = (zipper: Zipper): Zipper => {
 
     return {
         ...zipper,
-        row: {
-            id: getId(),
-            type: "zrow",
-            left: [],
-            selection: null,
-            right: [],
-        },
+        row: zrow(getId(), [], []),
         breadcrumbs: [
             ...zipper.breadcrumbs,
             {

@@ -48,41 +48,46 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         setActive(false);
     }
 
-    useEventListener("keydown", (e: KeyboardEvent) => {
-        if (active && !props.readonly) {
-            const action = {
-                type: e.key,
-                shift: e.shiftKey,
-            };
-            if (e.key === "Enter" && props.onSubmit) {
-                // TODO: submit all rows
-                const success = props.onSubmit(Editor.zipperToRow(zipper));
-                if (success) {
-                    setActive(false);
+    const callback = React.useCallback(
+        (e: KeyboardEvent): void => {
+            if (active && !props.readonly) {
+                const action = {
+                    type: e.key,
+                    shift: e.shiftKey,
+                };
+                if (e.key === "Enter" && props.onSubmit) {
+                    // TODO: submit all rows
+                    const success = props.onSubmit(Editor.zipperToRow(zipper));
+                    if (success) {
+                        setActive(false);
+                    }
+                } else {
+                    const value: Editor.Zipper = Editor.zipperReducer(
+                        zipper,
+                        action,
+                    );
+                    setZipper(value);
+                    if (
+                        props.onChange &&
+                        e.keyCode !== 37 &&
+                        e.keyCode !== 38 &&
+                        e.keyCode !== 39 &&
+                        e.keyCode !== 40
+                    ) {
+                        // TODO: communicate all rows when sending this event
+                        props.onChange(Editor.zipperToRow(value));
+                    }
                 }
-            } else {
-                const value: Editor.Zipper = Editor.zipperReducer(
-                    zipper,
-                    action,
-                );
-                setZipper(value);
-                if (
-                    props.onChange &&
-                    e.keyCode !== 37 &&
-                    e.keyCode !== 38 &&
-                    e.keyCode !== 39 &&
-                    e.keyCode !== 40
-                ) {
-                    // TODO: communicate all rows when sending this event
-                    props.onChange(Editor.zipperToRow(value));
-                }
-            }
 
-            // Prevent StoryBook from capturing '/' and shifting focus to its
-            // search field.
-            e.stopPropagation();
-        }
-    });
+                // Prevent StoryBook from capturing '/' and shifting focus to its
+                // search field.
+                e.stopPropagation();
+            }
+        },
+        [zipper, props, active],
+    );
+
+    useEventListener("keydown", callback);
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
