@@ -1,29 +1,28 @@
 import * as React from "react";
-import * as opentype from "opentype.js";
 import {parse} from "@math-blocks/opentype";
 
-import type {Font} from "@math-blocks/opentype";
+import type {Font, Glyph, Path} from "@math-blocks/opentype";
 
-// TODO:
-// draw bounding boxes around glyphs based on getMetrics() values
-
-const getPath = (glyph: opentype.Glyph): string => {
+const getPath = (glyph: Glyph): string => {
     let result = "";
 
     // fontSize defaults to 72
-    const path = glyph.getPath(0, 0, 72);
+    const path = glyph.path;
+    const scale = 72 / 1000;
 
-    // console.log(path.commands);
-
-    for (const cmd of path.commands) {
+    for (const cmd of path) {
         if (cmd.type === "M") {
-            result += `M ${cmd.x},${cmd.y} `;
+            result += `M ${cmd.x * scale},${cmd.y * scale} `;
         } else if (cmd.type === "L") {
-            result += `L ${cmd.x},${cmd.y} `;
+            result += `L ${cmd.x * scale},${cmd.y * scale} `;
         } else if (cmd.type === "C") {
-            result += `C ${cmd.x1},${cmd.y1} ${cmd.x2},${cmd.y2} ${cmd.x},${cmd.y}`;
+            result += `C ${cmd.x1 * scale},${cmd.y1 * scale} ${
+                cmd.x2 * scale
+            },${cmd.y2 * scale} ${cmd.x * scale},${cmd.y * scale}`;
         } else if (cmd.type === "Q") {
-            result += `Q ${cmd.x1},${cmd.y1} ${cmd.x},${cmd.y}`;
+            result += `Q ${cmd.x1 * scale},${cmd.y1 * scale} ${cmd.x * scale},${
+                cmd.y * scale
+            }`;
         } else {
             result += "Z";
         }
@@ -36,16 +35,12 @@ const lerp = (a: number, b: number, amount: number): number => {
     return amount * b + (1 - amount) * a;
 };
 
-const lerpPath = (
-    path1: opentype.Path,
-    path2: opentype.Path,
-    amount: number,
-): string => {
-    const commands: opentype.PathCommand[] = [];
+const lerpPath = (path1: Path, path2: Path, amount: number): string => {
+    const commands: Path = [];
 
-    for (let i = 0; i < path1.commands.length; i++) {
-        const cmd1 = path1.commands[i];
-        const cmd2 = path2.commands[i];
+    for (let i = 0; i < path1.length; i++) {
+        const cmd1 = path1[i];
+        const cmd2 = path2[i];
 
         if (cmd1.type === "M" && cmd2.type === "M") {
             commands.push({
@@ -87,16 +82,21 @@ const lerpPath = (
     }
 
     let result = "";
+    const scale = 72 / 1000;
 
     for (const cmd of commands) {
         if (cmd.type === "M") {
-            result += `M ${cmd.x},${cmd.y} `;
+            result += `M ${cmd.x * scale},${cmd.y * scale} `;
         } else if (cmd.type === "L") {
-            result += `L ${cmd.x},${cmd.y} `;
+            result += `L ${cmd.x * scale},${cmd.y * scale} `;
         } else if (cmd.type === "C") {
-            result += `C ${cmd.x1},${cmd.y1} ${cmd.x2},${cmd.y2} ${cmd.x},${cmd.y}`;
+            result += `C ${cmd.x1 * scale},${cmd.y1 * scale} ${
+                cmd.x2 * scale
+            },${cmd.y2 * scale} ${cmd.x * scale},${cmd.y * scale}`;
         } else if (cmd.type === "Q") {
-            result += `Q ${cmd.x1},${cmd.y1} ${cmd.x},${cmd.y}`;
+            result += `Q ${cmd.x1 * scale},${cmd.y1 * scale} ${cmd.x * scale},${
+                cmd.y * scale
+            }`;
         } else {
             result += "Z";
         }
@@ -106,26 +106,16 @@ const lerpPath = (
 };
 
 const OpenTypeDemo: React.FC = () => {
-    const [font, setFont] = React.useState<opentype.Font | null>(null);
-    const [font2, setFont2] = React.useState<Font | null>(null);
+    const [font, setFont] = React.useState<Font | null>(null);
 
     React.useEffect(() => {
-        opentype.load("/STIX2Math.otf", (err, font) => {
-            if (font) {
-                console.log(font);
-                const A = font.glyphs.get(3);
-                console.log(A.getMetrics());
-                setFont(font);
-            }
-        });
-
         parse("/STIX2Math.otf").then((font) => {
             console.log(font);
-            setFont2(font);
+            setFont(font);
         });
     }, []);
 
-    if (font && font2) {
+    if (font) {
         const children = [];
 
         const glyphs = {
@@ -144,7 +134,7 @@ const OpenTypeDemo: React.FC = () => {
         const end = start + count;
 
         for (let i = 0; i <= count; i++) {
-            const d = getPath(font.glyphs.get(start + i));
+            const d = getPath(font.getGlyph(start + i));
             children.push(
                 <path
                     key={start + i}
@@ -156,11 +146,11 @@ const OpenTypeDemo: React.FC = () => {
 
         const lerpChildren = [];
 
-        const d1 = font.glyphs.get(start);
-        const d12 = font.glyphs.get(end);
+        const d1 = font.getGlyph(start);
+        const d12 = font.getGlyph(end);
 
         for (let i = 0; i <= count + 5; i++) {
-            const d = lerpPath(d1.getPath(), d12.getPath(), i / count);
+            const d = lerpPath(d1.path, d12.path, i / count);
             lerpChildren.push(
                 <path
                     key={start + i}
@@ -172,12 +162,12 @@ const OpenTypeDemo: React.FC = () => {
 
         const surdChildren = [];
 
-        const surd = font.glyphs.get(1657);
-        const surd4 = font.glyphs.get(1660);
+        const surd = font.getGlyph(1657);
+        const surd4 = font.getGlyph(1660);
 
         // overshoot by twice
         for (let i = 0; i <= 12 + 12; i++) {
-            const d = lerpPath(surd.getPath(), surd4.getPath(), i / 12);
+            const d = lerpPath(surd.path, surd4.path, i / 12);
             surdChildren.push(
                 <path
                     key={start + i}
@@ -188,13 +178,13 @@ const OpenTypeDemo: React.FC = () => {
         }
 
         const intPath = lerpPath(
-            font.glyphs.get(1701).getPath(),
-            font.glyphs.get(1702).getPath(),
+            font.getGlyph(1701).path,
+            font.getGlyph(1702).path,
             0.5,
         );
 
         const gid = 3354;
-        const glyph = font2.getGlyph(gid);
+        const glyph = font.getGlyph(gid);
 
         let parenPath = "";
         for (const cmd of glyph.path) {
@@ -212,9 +202,9 @@ const OpenTypeDemo: React.FC = () => {
         }
 
         const fontSize = 72;
-        const scale = fontSize / font2.head.unitsPerEm;
+        const scale = fontSize / font.head.unitsPerEm;
 
-        const metrics = font2.getGlyphMetrics(gid);
+        const metrics = font.getGlyphMetrics(gid);
         metrics.bearingX *= scale;
         metrics.bearingY *= scale;
         metrics.width *= scale;
@@ -223,42 +213,47 @@ const OpenTypeDemo: React.FC = () => {
         return (
             <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
                 <g fill="currentcolor">
-                    <path transform="translate(100, 150)" d={intPath} />
                     <path
-                        transform="translate(150, 150)"
-                        d={getPath(font.glyphs.get(3354))}
+                        transform="translate(100, 150) scale(1, -1)"
+                        d={intPath}
                     />
                     <path
-                        transform="translate(200, 150)"
-                        d={getPath(font.glyphs.get(3329))}
+                        transform="translate(150, 150) scale(1, -1)"
+                        d={getPath(font.getGlyph(3354))}
                     />
                     <path
-                        transform="translate(250, 150)"
-                        d={getPath(font.glyphs.get(1679))}
+                        transform="translate(200, 150) scale(1, -1)"
+                        d={getPath(font.getGlyph(3329))}
                     />
-                    <g fill="blue" transform="translate(15, 512)">
+                    <path
+                        transform="translate(250, 150) scale(1, -1)"
+                        d={getPath(font.getGlyph(1679))}
+                    />
+                    <g fill="blue" transform="translate(15, 512) scale(1, -1)">
                         {children}
                     </g>
-                    <g fill="red" transform="translate(30, 512)">
+                    <g fill="red" transform="translate(30, 512) scale(1, -1)">
                         {lerpChildren}
                     </g>
-                    <g transform="translate(15, 800)">{surdChildren}</g>
+                    <g transform="translate(15, 800) scale(1, -1)">
+                        {surdChildren}
+                    </g>
                     <path
-                        transform="translate(500, 1000)"
-                        d={getPath(font.glyphs.get(1661))}
+                        transform="translate(500, 1000) scale(1, -1)"
+                        d={getPath(font.getGlyph(1661))}
                     />
                     <path
-                        transform="translate(500, 800)"
-                        d={getPath(font.glyphs.get(1662))}
+                        transform="translate(500, 800) scale(1, -1)"
+                        d={getPath(font.getGlyph(1662))}
                     />
                     <path
-                        transform="translate(500, 850)"
-                        d={getPath(font.glyphs.get(1664))}
+                        transform="translate(500, 850) scale(1, -1)"
+                        d={getPath(font.getGlyph(1664))}
                     />
                     {/* uni221A.var is a variant for sqrt without overbar */}
                     <path
-                        transform="translate(600, 1000)"
-                        d={getPath(font.glyphs.get(1663))}
+                        transform="translate(600, 1000) scale(1, -1)"
+                        d={getPath(font.getGlyph(1663))}
                     />
                     <rect
                         x={150 + metrics.bearingX}
