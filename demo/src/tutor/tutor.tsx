@@ -29,16 +29,7 @@ const Tutor: React.FunctionComponent = () => {
     const isComplete = state.status === ProblemStatus.Complete;
     const pairs = getPairs(state.steps);
 
-    const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-            id: state.steps[0].value.id,
-            type: "zrow",
-            left: [],
-            selection: null,
-            right: state.steps[0].value.children,
-        },
-    };
+    const zipper: Editor.Zipper = state.steps[0].value;
 
     return (
         <div style={{margin: "auto"}}>
@@ -51,13 +42,13 @@ const Tutor: React.FunctionComponent = () => {
                         stepChecker={true}
                         focus={mode === "edit"}
                         style={{marginTop: 8, flexGrow: 1}}
-                        onChange={(value: Editor.types.Row) => {
+                        onChange={(zipper: Editor.Zipper) => {
                             dispatch({
                                 type: "set",
                                 steps: [
                                     {
                                         status: StepStatus.Correct,
-                                        value: value,
+                                        value: zipper,
                                         hint: "none",
                                     },
                                 ],
@@ -76,8 +67,8 @@ const Tutor: React.FunctionComponent = () => {
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}
-                            onChange={(value: Editor.types.Row) => {
-                                dispatch({type: "update", value});
+                            onChange={(zipper: Editor.Zipper) => {
+                                dispatch({type: "update", value: zipper});
                             }}
                         />
                     );
