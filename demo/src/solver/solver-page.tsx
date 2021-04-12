@@ -13,6 +13,16 @@ import Substeps from "./substeps";
 const {parse} = Editor;
 
 const question: Editor.types.Row = Editor.util.row("2x+5=10");
+const questionZipper: Editor.Zipper = {
+    breadcrumbs: [],
+    row: {
+        id: question.id,
+        type: "zrow",
+        left: [],
+        selection: null,
+        right: question.children,
+    },
+};
 
 // TODO:
 // - show error messages in the UI
@@ -23,7 +33,7 @@ const question: Editor.types.Row = Editor.util.row("2x+5=10");
 
 const SolverPage: React.FunctionComponent = () => {
     const fontMetrics = comicSans;
-    const [input, setInput] = React.useState(question);
+    const [input, setInput] = React.useState<Editor.Zipper>(questionZipper);
     const [solution, setSolution] = React.useState<Editor.types.Row | null>(
         null,
     );
@@ -31,7 +41,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const handleSimplify = (): void => {
         console.log("SIMPLIFY");
-        const ast = parse(input);
+        const ast = parse(Editor.zipperToRow(input));
         const result = simplify(ast, []);
         if (result) {
             console.log(result);
@@ -46,7 +56,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const handleSolve = (): void => {
         console.log("SOLVE");
-        const ast = parse(input);
+        const ast = parse(Editor.zipperToRow(input));
         if (ast.type === "eq") {
             const result = solve(ast, builders.identifier("x"));
             if (result) {
@@ -86,17 +96,6 @@ const SolverPage: React.FunctionComponent = () => {
 
     const showSolution = solution != null;
 
-    const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-            id: input.id,
-            type: "zrow",
-            left: [],
-            selection: null,
-            right: input.children,
-        },
-    };
-
     return (
         <FontDataContext.Provider value={context.fontData}>
             <div style={styles.container}>
@@ -108,10 +107,10 @@ const SolverPage: React.FunctionComponent = () => {
                 <div>
                     <MathEditor
                         readonly={false}
-                        zipper={zipper}
+                        zipper={input}
                         stepChecker={true}
                         focus={true}
-                        onChange={(value: Editor.types.Row) => setInput(value)}
+                        onChange={(value: Editor.Zipper) => setInput(value)}
                     />
                 </div>
                 <div style={styles.gap}></div>
