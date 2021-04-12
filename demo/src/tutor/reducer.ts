@@ -12,20 +12,20 @@ export enum StepStatus {
 export type Step =
     | {
           status: StepStatus.Correct;
-          value: Editor.types.Row;
+          value: Editor.Zipper;
           hint: "none" | "text" | "showme";
       }
     | {
           status: StepStatus.Duplicate;
-          value: Editor.types.Row;
+          value: Editor.Zipper;
       }
     | {
           status: StepStatus.Pending;
-          value: Editor.types.Row;
+          value: Editor.Zipper;
       }
     | {
           status: StepStatus.Incorrect;
-          value: Editor.types.Row;
+          value: Editor.Zipper;
           mistakes: readonly Mistake[];
       };
 
@@ -53,7 +53,7 @@ export type Action =
       }
     | {
           type: "update";
-          value: Editor.types.Row;
+          value: Editor.Zipper;
       }
     | {
           type: "set";

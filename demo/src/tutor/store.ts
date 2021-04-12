@@ -4,18 +4,32 @@ import * as Editor from "@math-blocks/editor-core";
 
 import {reducer, State, StepStatus, ProblemStatus} from "./reducer";
 
+const clone = <T>(obj: T): T => {
+    return JSON.parse(JSON.stringify(obj));
+};
+
 const question: Editor.types.Row = Editor.util.row("2x+5=10");
+const zipper: Editor.Zipper = {
+    breadcrumbs: [],
+    row: {
+        id: question.id,
+        type: "zrow",
+        left: [],
+        selection: null,
+        right: question.children,
+    },
+};
 
 const initialState: State = {
     steps: [
         {
             status: StepStatus.Correct,
-            value: question,
+            value: zipper,
             hint: "none",
         },
         {
             status: StepStatus.Duplicate,
-            value: JSON.parse(JSON.stringify(question)),
+            value: clone(zipper),
         },
     ],
     status: ProblemStatus.Incomplete,

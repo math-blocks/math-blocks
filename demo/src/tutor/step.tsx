@@ -25,7 +25,7 @@ type Props = {
     prevStep: _Step;
     step: _Step;
 
-    onChange: (value: Editor.types.Row) => unknown;
+    onChange: (value: Editor.Zipper) => unknown;
 };
 
 const MistakeMessages: Record<MistakeId, string> = {
@@ -169,8 +169,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const [showed, setShowed] = React.useState<boolean>(false);
 
     const handleCheckStep = (): boolean => {
-        const parsedPrev = Editor.parse(prevStep.value);
-        const parsedNext = Editor.parse(step.value);
+        const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+        const parsedNext = Editor.parse(Editor.zipperToRow(step.value));
 
         parsedNextRef.current = parsedNext;
 
@@ -198,7 +198,9 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleGetHint = (): void => {
         // TODO: check that we're solving an equations
-        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+        const parsedPrev = Editor.parse(
+            Editor.zipperToRow(prevStep.value),
+        ) as Semantic.types.Eq;
 
         const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
 
@@ -219,7 +221,9 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleShowMe = (): void => {
         // TODO: check that we're solving an equations
-        const parsedPrev = Editor.parse(prevStep.value) as Semantic.types.Eq;
+        const parsedPrev = Editor.parse(
+            Editor.zipperToRow(prevStep.value),
+        ) as Semantic.types.Eq;
 
         const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
 
@@ -232,11 +236,23 @@ const Step: React.FunctionComponent<Props> = (props) => {
             setHint("showme");
             setShowed(true);
 
+            const row = Editor.print(next);
+            const zipper: Editor.Zipper = {
+                breadcrumbs: [],
+                row: {
+                    id: row.id,
+                    type: "zrow",
+                    left: [],
+                    selection: null,
+                    right: row.children,
+                },
+            };
+
             // NOTE: Some steps will have their own sub-steps which we may want
             // to apply to help students better understand what the hint is doing.
             dispatch({
                 type: "update",
-                value: Editor.print(next),
+                value: zipper,
             });
         } else {
             throw new Error("no solution");
@@ -293,7 +309,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     if (step.status === StepStatus.Incorrect && parsedNextRef.current) {
         for (const mistake of step.mistakes) {
             highlightMistake(
-                step.value,
+                Editor.zipperToRow(step.value),
                 parsedNextRef.current,
                 mistake,
                 colorMap,
@@ -314,24 +330,26 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     correction.replacement,
                 );
                 const corrected = Editor.print(parsedNextRef.current);
+                const zipper: Editor.Zipper = {
+                    breadcrumbs: [],
+                    row: {
+                        id: corrected.id,
+                        type: "zrow",
+                        left: [],
+                        selection: null,
+                        right: corrected.children,
+                    },
+                };
+
                 dispatch({
                     type: "update",
-                    value: corrected,
+                    value: zipper,
                 });
             }
         }
     };
 
-    const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-            id: step.value.id,
-            type: "zrow",
-            left: [],
-            selection: null,
-            right: step.value.children,
-        },
-    };
+    const zipper: Editor.Zipper = step.value;
 
     return (
         <VStack>
@@ -345,7 +363,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     // HACK: whenever we apply a correction to a step, the value
                     // gets a new id.  Using that id as a the `key` will trigger
                     // a re-render.
-                    key={step.value.id}
+                    key={zipper.row.id}
                     readonly={readonly}
                     zipper={zipper}
                     stepChecker={true}

@@ -18,8 +18,8 @@ type Props = {
     // TODO: figure out a better way of handling focus
     focus?: boolean;
 
-    onSubmit?: (value: Editor.types.Row) => unknown;
-    onChange?: (value: Editor.types.Row) => unknown;
+    onSubmit?: (zipper: Editor.Zipper) => unknown;
+    onChange?: (zipper: Editor.Zipper) => unknown;
 
     /**
      * Style
@@ -57,7 +57,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 };
                 if (e.key === "Enter" && props.onSubmit) {
                     // TODO: submit all rows
-                    const success = props.onSubmit(Editor.zipperToRow(zipper));
+                    const success = props.onSubmit(zipper);
                     if (success) {
                         setActive(false);
                     }
@@ -75,7 +75,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         e.keyCode !== 40
                     ) {
                         // TODO: communicate all rows when sending this event
-                        props.onChange(Editor.zipperToRow(value));
+                        props.onChange(value);
                     }
                 }
 
