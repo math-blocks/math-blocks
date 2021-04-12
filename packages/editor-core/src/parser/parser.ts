@@ -1,3 +1,4 @@
+import {UnreachableCaseError} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 
@@ -61,24 +62,6 @@ const getPrefixParselet = (
                             return Parser.builders.plusminus(neg, "unary", loc);
                         },
                     };
-                case "lparens":
-                    return {
-                        parse: (parser) => {
-                            const result = parser.parse();
-                            const nextToken = parser.consume();
-                            if (
-                                nextToken.type === "atom" &&
-                                nextToken.value.kind === "rparens"
-                            ) {
-                                const loc = locFromRange(
-                                    token.loc,
-                                    nextToken.loc,
-                                );
-                                return Parser.builders.parens(result, loc);
-                            }
-                            throw new Error("unmatched left paren");
-                        },
-                    };
                 case "ellipsis":
                     return {
                         parse: () => Parser.builders.ellipsis(token.loc),
@@ -98,10 +81,6 @@ const getPrefixParselet = (
                     );
                 },
             };
-        case "subsup":
-            throw new Error(`Unexpected 'subsup' token`);
-        case "row":
-            throw new Error(`Unexpected 'row' token`);
         case "root":
             return {
                 parse: () => {
@@ -118,9 +97,25 @@ const getPrefixParselet = (
                           );
                 },
             };
+        case "delimited":
+            return {
+                parse: () => {
+                    const [inner] = token.children;
+                    const result = editorParser.parse(inner.children);
+                    // TODO: what should `loc` be here?
+                    return Parser.builders.parens(result);
+                },
+            };
+        // TODO: Handle subsup at the start of a row, useful in Chemistry
+        case "subsup":
+            throw new Error(`Unexpected 'subsup' token`);
+        // TODO: Handle limits at the start of a row
+        case "limits":
+            throw new Error(`Unexpected 'limits' token`);
+        case "row":
+            throw new Error(`Unexpected 'row' token`);
         default:
-            token as never;
-            throw new Error("unexpected token");
+            throw new UnreachableCaseError(token);
     }
 };
 
@@ -191,6 +186,9 @@ const parseNaryArgs = (
         }
         const nextToken = parser.peek();
         if (nextToken.type !== "atom") {
+            op; // ?
+            token; // ?
+            nextToken.type; // ?
             throw new Error("atom expected");
         }
         const nextAtom = nextToken.value;
@@ -249,21 +247,20 @@ const parseNaryArgs = (
             token.loc,
         );
         return [expr];
+    } else if (token.type === "delimited") {
+        parser.consume();
+        const [inner] = token.children;
+        // TODO: make 'eol' its own token type instead of a co-opting 'atom'
+        const nextToken = parser.peek();
+        const expr = Parser.builders.parens(editorParser.parse(inner.children));
+
+        return nextToken.type === "delimited"
+            ? [expr, ...parseNaryArgs(parser, op)]
+            : [expr];
     } else {
         throw new Error(`we don't handle ${token.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.
     }
-};
-
-const parseMulByParen = (
-    parser: EditorParser,
-): OneOrMore<Parser.types.Node> => {
-    const expr = parser.parseWithOperator("mul.imp");
-    const nextToken = parser.peek();
-    if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
-        return [expr, ...parseMulByParen(parser)];
-    }
-    return [expr];
 };
 
 const getInfixParselet = (
@@ -290,32 +287,6 @@ const getInfixParselet = (
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
                 case "number":
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
-                case "lparens":
-                    return {
-                        op: "mul.imp",
-                        parse: (parser, left): Parser.types.Mul => {
-                            const [right, ...rest] = parseMulByParen(parser);
-                            const loc = locFromRange(
-                                left.loc,
-                                rest.length > 0
-                                    ? rest[rest.length - 1].loc
-                                    : right.loc,
-                            );
-
-                            return Parser.builders.mul(
-                                [left, right, ...rest],
-                                true, // implicit
-                                loc,
-                            );
-                        },
-                    };
-                case "rparens":
-                    return {
-                        op: "nul",
-                        parse: (): Parser.types.Node => {
-                            throw new Error("mismatched parens");
-                        },
-                    };
                 default:
                     return null;
             }
@@ -380,8 +351,26 @@ const getInfixParselet = (
                 },
             };
         }
+        case "delimited": {
+            return {
+                // TODO: figure out how to return a different value for 'op' if
+                // the delimited node stands for something else like function
+                // arguments.
+                op: "mul.imp",
+                parse: (parser, left): Parser.types.Node => {
+                    const parselet = parseNaryInfix("mul.imp");
+                    // TODO: check the left.type can be implicitly multiplied
+                    // with parens.
+                    return parselet(parser, left);
+                },
+            };
+        }
+        case "limits":
+            throw new Error(`Unexpected 'limits' token`);
+        case "row":
+            throw new Error(`Unexpected 'row' token`);
         default:
-            return null;
+            throw new UnreachableCaseError(token);
     }
 };
 

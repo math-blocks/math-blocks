@@ -1,31 +1,18 @@
-import {getId, UnreachableCaseError} from "@math-blocks/core";
-
-import type {Zipper} from "./types";
+import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
 import {Dir} from "./enums";
-import type {ZRow, ZFrac, ZSubSup, ZRoot, ZLimits, Focus} from "./types";
-
-export const startRow = (row: types.Row): ZRow => {
-    return {
-        id: row.id,
-        type: "zrow",
-        left: [], // we're at the start because there are no nodes to the left
-        selection: null,
-        right: row.children,
-    };
-};
-
-export const endRow = (row: types.Row): ZRow => {
-    return {
-        id: row.id,
-        type: "zrow",
-        left: row.children,
-        selection: null,
-        right: [], // we're at the end because there are no nodes to the right
-    };
-};
+import type {
+    ZRow,
+    ZFrac,
+    ZSubSup,
+    ZRoot,
+    ZLimits,
+    ZDelimited,
+    Zipper,
+    Focus,
+} from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
     if (focus.dir === Dir.Left) {
@@ -104,13 +91,15 @@ export const zroot = (node: types.Root, dir: Dir): ZRoot => {
             dir,
             other: node.children[1],
         };
-    } else {
+    } else if (dir === Dir.Right) {
         return {
             id: node.id,
             type: "zroot",
             dir,
             other: node.children[0],
         };
+    } else {
+        throw new Error("dir cannot be Dir.None for zlimits");
     }
 };
 
@@ -144,7 +133,7 @@ export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
             other: node.children[1],
             inner: node.inner,
         };
-    } else {
+    } else if (dir === Dir.Right) {
         return {
             id: node.id,
             type: "zlimits",
@@ -152,7 +141,33 @@ export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
             other: node.children[0],
             inner: node.inner,
         };
+    } else {
+        throw new Error("dir cannot be Dir.None for zlimits");
     }
+};
+
+export const delimited = (
+    focus: ZDelimited,
+    replacement: types.Row,
+): types.Delimited => {
+    return {
+        id: focus.id,
+        type: "delimited",
+        children: [replacement],
+        leftDelim: focus.leftDelim,
+        rightDelim: focus.rightDelim,
+    };
+};
+
+export const zdelimited = (node: types.Delimited): ZDelimited => {
+    return {
+        id: node.id,
+        type: "zdelimited",
+        dir: Dir.None,
+        other: null,
+        leftDelim: node.leftDelim,
+        rightDelim: node.rightDelim,
+    };
 };
 
 export const focusToNode = (
@@ -168,6 +183,8 @@ export const focusToNode = (
             return limits(focus, replacement);
         case "zroot":
             return root(focus, replacement);
+        case "zdelimited":
+            return delimited(focus, replacement);
         default: {
             throw new UnreachableCaseError(focus);
         }
@@ -240,12 +257,16 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
     };
 };
 
-export const newZRow = (): ZRow => ({
-    id: getId(),
+export const zrow = (
+    id: number,
+    left: readonly types.Node[],
+    right: readonly types.Node[],
+): ZRow => ({
+    id: id,
     type: "zrow",
-    left: [],
+    left,
     selection: null,
-    right: [],
+    right,
 });
 
 /**

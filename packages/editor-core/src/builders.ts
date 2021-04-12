@@ -55,6 +55,20 @@ export function root(
     };
 }
 
+export function delimited(
+    inner: readonly types.Node[],
+    leftDelim: types.Atom,
+    rightDelim: types.Atom,
+): types.Delimited {
+    return {
+        id: getId(),
+        type: "delimited",
+        children: [row(inner)],
+        leftDelim: leftDelim,
+        rightDelim: rightDelim,
+    };
+}
+
 export function atom(value: types.Glyph): types.Atom {
     return {
         id: getId(),

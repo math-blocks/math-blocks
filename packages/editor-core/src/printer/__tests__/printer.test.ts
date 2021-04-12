@@ -132,7 +132,20 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("a(x+y)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.glyph("a"),
+                builders.delimited(
+                    [
+                        builders.glyph("x"),
+                        builders.glyph("+"),
+                        builders.glyph("y"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("-1(2x)", () => {
@@ -153,7 +166,21 @@ describe("print", () => {
         const node = print(ast);
 
         expect(
-            Semantic.util.deepEquals(node, Util.row("(-1)(2x)")),
+            Semantic.util.deepEquals(
+                node,
+                builders.row([
+                    builders.delimited(
+                        [builders.glyph("\u2212"), builders.glyph("1")],
+                        builders.glyph("("),
+                        builders.glyph(")"),
+                    ),
+                    builders.delimited(
+                        [builders.glyph("2"), builders.glyph("x")],
+                        builders.glyph("("),
+                        builders.glyph(")"),
+                    ),
+                ]),
+            ),
         ).toBeTruthy();
     });
 
@@ -169,7 +196,25 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("(1)(2)(3)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.delimited(
+                    [builders.glyph("1")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [builders.glyph("2")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [builders.glyph("3")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("(-a)(-b)", () => {
@@ -183,7 +228,20 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("(-a)(-b)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.delimited(
+                    [builders.glyph("\u2212"), builders.glyph("a")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [builders.glyph("\u2212"), builders.glyph("b")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("(a/b)(c/d)", () => {
@@ -205,12 +263,16 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("("),
-                Util.frac("a", "b"),
-                builders.glyph(")"),
-                builders.glyph("("),
-                Util.frac("c", "d"),
-                builders.glyph(")"),
+                builders.delimited(
+                    [Util.frac("a", "b")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [Util.frac("c", "d")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
             ]),
         );
     });
@@ -274,7 +336,21 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("a+(b+c)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.glyph("a"),
+                builders.glyph("+"),
+                builders.delimited(
+                    [
+                        builders.glyph("b"),
+                        builders.glyph("+"),
+                        builders.glyph("c"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("a-(b+c)", () => {
@@ -291,7 +367,21 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("a-(b+c)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.glyph("a"),
+                builders.glyph("\u2212"),
+                builders.delimited(
+                    [
+                        builders.glyph("b"),
+                        builders.glyph("+"),
+                        builders.glyph("c"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("a/b", () => {
@@ -361,7 +451,21 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("-1(a+b)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.glyph("\u2212"),
+                builders.glyph("1"),
+                builders.delimited(
+                    [
+                        builders.glyph("a"),
+                        builders.glyph("+"),
+                        builders.glyph("b"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("leading subtraction", () => {
@@ -394,7 +498,25 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("(a)(b)(1)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.delimited(
+                    [builders.glyph("a")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [builders.glyph("b")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+                builders.delimited(
+                    [builders.glyph("1")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 
     test("a*b*1", () => {
@@ -481,11 +603,15 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("("),
-                builders.glyph("x"),
-                builders.glyph("+"),
-                builders.glyph("1"),
-                builders.glyph(")"),
+                builders.delimited(
+                    [
+                        builders.glyph("x"),
+                        builders.glyph("+"),
+                        builders.glyph("1"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
                 Util.sup("2"),
             ]),
         );
@@ -496,6 +622,14 @@ describe("print", () => {
 
         const node = print(ast);
 
-        expect(node).toEqualEditorNode(Util.row("(x)"));
+        expect(node).toEqualEditorNode(
+            builders.row([
+                builders.delimited(
+                    [builders.glyph("x")],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]),
+        );
     });
 });

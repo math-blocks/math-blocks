@@ -1,13 +1,8 @@
 import * as builders from "../builders";
 
 import {Dir} from "./enums";
-import {deleteIndex, insertAfterIndex, insertBeforeIndex} from "./array-util";
 import {rezipSelection} from "./util";
-import {
-    isPending,
-    indexOfLastUnmatchedOpener,
-    indexOfFirstUnmatchedCloser,
-} from "./parens-util";
+import {moveRight} from "./move-right";
 
 import type {Zipper} from "./types";
 
@@ -41,69 +36,187 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
         }
     }
 
-    // TODO: iterate over all of the glyphs in the row to ensure that we're
-    // removing the correct matching paren.
-    // Get rid of matching pending paren when inserting a matching paren for real.
     if (dir === Dir.Left) {
-        const index = indexOfLastUnmatchedOpener(left);
+        // If we're inside a row inside of a "delimited" node, check if the
+        // opening paren is pending, if it is, re-adjust the size of the
+        // "delimited" node and make the opening paren non-pending
+        const {breadcrumbs} = zipper;
+        if (breadcrumbs.length > 0) {
+            const last = breadcrumbs[breadcrumbs.length - 1];
+            if (
+                last.focus.type === "zdelimited" &&
+                last.focus.leftDelim.value.pending
+            ) {
+                // Move everything to the left of the cursor outside the
+                // "delimited" node.
+                return {
+                    ...zipper,
+                    breadcrumbs: [
+                        ...breadcrumbs.slice(0, -1),
+                        {
+                            ...last,
+                            row: {
+                                ...last.row,
+                                // update last.row.left
+                                left: [...last.row.left, ...zipper.row.left],
+                            },
+                            // set last.focus.leftDelim.value.pending = false;
+                            focus: {
+                                ...last.focus,
+                                leftDelim: {
+                                    ...last.focus.leftDelim,
+                                    value: {
+                                        ...last.focus.leftDelim.value,
+                                        pending: false,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                    row: {
+                        ...zipper.row,
+                        left: [],
+                    },
+                };
+            }
+        }
 
-        if (isPending(left[index], "(")) {
-            return {
+        // If we're immediately to the left of a "delimted" node where then
+        // leftDelim is pending.  Make the delim non-pending and move into
+        // the "delimited" node.
+        const next = right[0];
+        if (next?.type === "delimited" && next.leftDelim.value.pending) {
+            const nonPending: Zipper = {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...deleteIndex(left, index), builders.glyph("(")],
+                    right: [
+                        {
+                            ...next,
+                            leftDelim: {
+                                ...next.leftDelim,
+                                value: {
+                                    ...next.leftDelim.value,
+                                    pending: false,
+                                },
+                            },
+                        },
+                        ...right.slice(1),
+                    ],
                 },
             };
+
+            return moveRight(nonPending);
         }
-    } else {
-        const index = indexOfFirstUnmatchedCloser(right);
 
-        if (isPending(right[index], ")")) {
-            return {
-                ...zipper,
-                row: {
-                    ...zipper.row,
-                    left: [...left, builders.glyph(")")],
-                    right: deleteIndex(right, index),
-                },
-            };
-        }
-    }
-
-    if (dir === Dir.Left) {
-        closeParen.value.pending = true;
-
-        const index = indexOfFirstUnmatchedCloser(right);
-
-        const newRight =
-            index !== -1
-                ? insertBeforeIndex(right, closeParen, index)
-                : [...right, closeParen];
-
-        return {
+        // Create a new "delimited" node
+        const withParens: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: [...left, openParen],
-                right: newRight,
+                right: [
+                    builders.delimited(
+                        right,
+                        builders.glyph("("),
+                        builders.glyph(")", true),
+                    ),
+                ],
             },
         };
+
+        return moveRight(withParens);
     } else {
-        openParen.value.pending = true;
+        // If we're inside a row inside of a "delimited" node, check if the
+        // closing paren is pending, if it is, re-adjust the size of the
+        // "delimited" node and make the closing paren non-pending.
+        const {breadcrumbs} = zipper;
+        if (breadcrumbs.length > 0) {
+            const crumb = breadcrumbs[breadcrumbs.length - 1];
+            if (
+                crumb.focus.type === "zdelimited" &&
+                crumb.focus.rightDelim.value.pending
+            ) {
+                // Move everything to the right of the cursor outside the
+                // "delimited" node.
+                const newZipper: Zipper = {
+                    ...zipper,
+                    breadcrumbs: [
+                        ...breadcrumbs.slice(0, -1),
+                        {
+                            ...crumb,
+                            row: {
+                                ...crumb.row,
+                                // update last.row.right
+                                right: [
+                                    ...zipper.row.right,
+                                    ...crumb.row.right,
+                                ],
+                            },
+                            // set last.focus.leftDelim.value.pending = false;
+                            focus: {
+                                ...crumb.focus,
+                                rightDelim: {
+                                    ...crumb.focus.rightDelim,
+                                    value: {
+                                        ...crumb.focus.rightDelim.value,
+                                        pending: false,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                    row: {
+                        ...zipper.row,
+                        right: [],
+                    },
+                };
 
-        const index = indexOfLastUnmatchedOpener(left);
+                return moveRight(newZipper);
+            }
+        }
 
-        const newLeft =
-            index !== -1
-                ? [...insertAfterIndex(left, openParen, index), closeParen]
-                : [openParen, ...left, closeParen];
+        // If we're immediately to the right of a "delimited" node where then
+        // rightDelim is pending.  Make the delim non-pending and move into
+        // the "delimited" node.
+        const prev = left[left.length - 1];
+        if (prev?.type === "delimited" && prev.rightDelim.value.pending) {
+            const nonPending: Zipper = {
+                ...zipper,
+                row: {
+                    ...zipper.row,
+                    left: [
+                        ...left.slice(0, -1),
+                        {
+                            ...prev,
+                            rightDelim: {
+                                ...prev.rightDelim,
+                                value: {
+                                    ...prev.rightDelim.value,
+                                    pending: false,
+                                },
+                            },
+                        },
+                    ],
+                },
+            };
 
+            // We're already to the right of the rightDelim so no move is
+            // necessary.
+            return nonPending;
+        }
+
+        // put everything to the left inside a Delimited node
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: newLeft,
+                left: [
+                    builders.delimited(
+                        left,
+                        builders.glyph("(", true),
+                        builders.glyph(")"),
+                    ),
+                ],
             },
         };
     }

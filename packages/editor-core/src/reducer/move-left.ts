@@ -65,6 +65,10 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                     focus = util.zlimits(prev, dir);
                     break;
                 }
+                case "delimited": {
+                    focus = util.zdelimited(prev);
+                    break;
+                }
                 default: {
                     throw new UnreachableCaseError(prev);
                 }
@@ -82,7 +86,7 @@ const cursorLeft = (zipper: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.endRow(focusedRow), // [1, 2, ...] []
+                row: util.zrow(focusedRow.id, focusedRow.children, []),
             };
         }
 
@@ -98,6 +102,16 @@ const cursorLeft = (zipper: Zipper): Zipper => {
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
+        const exitNode = (updatedNode: types.Node): Zipper => ({
+            breadcrumbs: zipper.breadcrumbs.slice(0, -1),
+            // place the fraction we exited on our right
+            row: util.insertRight(parentRow, updatedNode),
+        });
+
+        if (focus.type === "zdelimited") {
+            return exitNode(util.delimited(focus, exitedRow));
+        }
+
         const focusLeft = (row: types.Row): Zipper => ({
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),
@@ -110,13 +124,7 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.endRow(row),
-        });
-
-        const exitNode = (updatedNode: types.Node): Zipper => ({
-            breadcrumbs: zipper.breadcrumbs.slice(0, -1),
-            // place the fraction we exited on our right
-            row: util.insertRight(parentRow, updatedNode),
+            row: util.zrow(row.id, row.children, []),
         });
 
         switch (focus.type) {

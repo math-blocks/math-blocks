@@ -70,6 +70,15 @@ export type ZRoot =
           other: types.Row | null;
       };
 
+export type ZDelimited = {
+    id: number;
+    type: "zdelimited";
+    dir: Dir.None;
+    other: null;
+    leftDelim: types.Atom;
+    rightDelim: types.Atom;
+};
+
 // TODO: we need some way to convert this to a non-zippered node, right now we
 // don't have a "columns" type as part of Editor.types.  Once we have a "columns"
 // we'll also need a way for the parser to parse that to a regular expression.
@@ -80,7 +89,7 @@ export type ZColumns = {
     right: readonly types.Row[];
 };
 
-export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot; // | ZColumns;
+export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited; // | ZColumns;
 
 export type Breadcrumb = {
     row: ZRow;
