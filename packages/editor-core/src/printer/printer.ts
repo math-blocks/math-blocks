@@ -67,17 +67,22 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 // number will be encapsulated in parens.
                 const node = _print(arg, oneToOne);
                 if (node.type === "row") {
+                    const inner =
+                        arg.type === "neg" && arg.subtraction
+                            ? // strip off the leading "-"
+                              node.children.slice(1)
+                            : node.children;
+
                     if (arg.type === "add") {
-                        children.push(builders.glyph("("));
-                    }
-                    if (arg.type === "neg" && arg.subtraction) {
-                        // strip off the leading "-"
-                        children.push(...node.children.slice(1));
+                        children.push(
+                            builders.delimited(
+                                inner,
+                                builders.glyph("("),
+                                builders.glyph(")"),
+                            ),
+                        );
                     } else {
-                        children.push(...node.children);
-                    }
-                    if (arg.type === "add") {
-                        children.push(builders.glyph(")"));
+                        children.push(...inner);
                     }
                 } else {
                     children.push(node);
@@ -110,13 +115,15 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 const wrap = (wrapAll && expr.implicit) || arg.type === "add";
 
                 if (wrap) {
-                    children.push(builders.glyph("("));
-                }
-
-                children.push(...getChildren(arg, oneToOne));
-
-                if (wrap) {
-                    children.push(builders.glyph(")"));
+                    children.push(
+                        builders.delimited(
+                            getChildren(arg, oneToOne),
+                            builders.glyph("("),
+                            builders.glyph(")"),
+                        ),
+                    );
+                } else {
+                    children.push(...getChildren(arg, oneToOne));
                 }
 
                 if (!expr.implicit) {
@@ -146,9 +153,11 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             } else {
                 return builders.row([
                     builders.glyph("\u2212"),
-                    builders.glyph("("),
-                    ...getChildren(expr.arg, oneToOne),
-                    builders.glyph(")"),
+                    builders.delimited(
+                        getChildren(expr.arg, oneToOne),
+                        builders.glyph("("),
+                        builders.glyph(")"),
+                    ),
                 ]);
             }
         }
@@ -184,18 +193,22 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 ]);
             } else {
                 return builders.row([
-                    builders.glyph("("),
-                    ...getChildren(base, oneToOne),
-                    builders.glyph(")"),
+                    builders.delimited(
+                        getChildren(base, oneToOne),
+                        builders.glyph("("),
+                        builders.glyph(")"),
+                    ),
                     builders.subsup(undefined, getChildren(exp, oneToOne)),
                 ]);
             }
         }
         case "parens": {
             const children: types.Node[] = [
-                builders.glyph("("),
-                ...getChildren(expr.arg, oneToOne),
-                builders.glyph(")"),
+                builders.delimited(
+                    getChildren(expr.arg, oneToOne),
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
             ];
 
             return builders.row(children);

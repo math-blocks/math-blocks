@@ -186,6 +186,9 @@ const parseNaryArgs = (
         }
         const nextToken = parser.peek();
         if (nextToken.type !== "atom") {
+            op; // ?
+            token; // ?
+            nextToken.type; // ?
             throw new Error("atom expected");
         }
         const nextAtom = nextToken.value;
@@ -250,11 +253,10 @@ const parseNaryArgs = (
         // TODO: make 'eol' its own token type instead of a co-opting 'atom'
         const nextToken = parser.peek();
         const expr = Parser.builders.parens(editorParser.parse(inner.children));
-        if (nextToken.type === "atom" && nextToken.value.kind === "eol") {
-            return [expr];
-        } else {
-            return [expr, ...parseNaryArgs(parser, op)];
-        }
+
+        return nextToken.type === "delimited"
+            ? [expr, ...parseNaryArgs(parser, op)]
+            : [expr];
     } else {
         throw new Error(`we don't handle ${token.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.

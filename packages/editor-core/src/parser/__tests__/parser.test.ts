@@ -742,5 +742,29 @@ describe("EditorParser", () => {
                   (parens (neg b)))
             `);
         });
+
+        it("(-1)(a) + (-1)(b)", () => {
+            const input = builders.row([
+                builders.delimited(
+                    [glyph("\u2212"), glyph("a")],
+                    glyph("("),
+                    glyph(")"),
+                ),
+                glyph("+"),
+                builders.delimited(
+                    [glyph("\u2212"), glyph("b")],
+                    glyph("("),
+                    glyph(")"),
+                ),
+            ]);
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (add
+                  (parens (neg a))
+                  (parens (neg b)))
+            `);
+        });
     });
 });
