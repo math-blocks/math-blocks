@@ -62,24 +62,6 @@ const getPrefixParselet = (
                             return Parser.builders.plusminus(neg, "unary", loc);
                         },
                     };
-                case "lparens":
-                    return {
-                        parse: (parser) => {
-                            const result = parser.parse();
-                            const nextToken = parser.consume();
-                            if (
-                                nextToken.type === "atom" &&
-                                nextToken.value.kind === "rparens"
-                            ) {
-                                const loc = locFromRange(
-                                    token.loc,
-                                    nextToken.loc,
-                                );
-                                return Parser.builders.parens(result, loc);
-                            }
-                            throw new Error("unmatched left paren");
-                        },
-                    };
                 case "ellipsis":
                     return {
                         parse: () => Parser.builders.ellipsis(token.loc),
@@ -117,8 +99,9 @@ const getPrefixParselet = (
             };
         case "delimited":
             return {
-                parse: (parser) => {
-                    const result = parser.parse();
+                parse: () => {
+                    const [inner] = token.children;
+                    const result = editorParser.parse(inner.children);
                     // TODO: what should `loc` be here?
                     return Parser.builders.parens(result);
                 },
@@ -261,21 +244,21 @@ const parseNaryArgs = (
             token.loc,
         );
         return [expr];
+    } else if (token.type === "delimited") {
+        parser.consume();
+        const [inner] = token.children;
+        // TODO: make 'eol' its own token type instead of a co-opting 'atom'
+        const nextToken = parser.peek();
+        const expr = Parser.builders.parens(editorParser.parse(inner.children));
+        if (nextToken.type === "atom" && nextToken.value.kind === "eol") {
+            return [expr];
+        } else {
+            return [expr, ...parseNaryArgs(parser, op)];
+        }
     } else {
         throw new Error(`we don't handle ${token.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.
     }
-};
-
-const parseMulByParen = (
-    parser: EditorParser,
-): OneOrMore<Parser.types.Node> => {
-    const expr = parser.parseWithOperator("mul.imp");
-    const nextToken = parser.peek();
-    if (nextToken.type === "atom" && nextToken.value.kind === "lparens") {
-        return [expr, ...parseMulByParen(parser)];
-    }
-    return [expr];
 };
 
 const getInfixParselet = (
@@ -302,32 +285,6 @@ const getInfixParselet = (
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
                 case "number":
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
-                case "lparens":
-                    return {
-                        op: "mul.imp",
-                        parse: (parser, left): Parser.types.Mul => {
-                            const [right, ...rest] = parseMulByParen(parser);
-                            const loc = locFromRange(
-                                left.loc,
-                                rest.length > 0
-                                    ? rest[rest.length - 1].loc
-                                    : right.loc,
-                            );
-
-                            return Parser.builders.mul(
-                                [left, right, ...rest],
-                                true, // implicit
-                                loc,
-                            );
-                        },
-                    };
-                case "rparens":
-                    return {
-                        op: "nul",
-                        parse: (): Parser.types.Node => {
-                            throw new Error("mismatched parens");
-                        },
-                    };
                 default:
                     return null;
             }
