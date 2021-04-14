@@ -1,8 +1,9 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
-import {comicSans} from "@math-blocks/opentype";
 import {FontDataContext} from "@math-blocks/react";
+import {getFontData, parse} from "@math-blocks/opentype";
+import type {Font} from "@math-blocks/opentype";
 
 import AccessibleMath from "./accessible-math";
 
@@ -40,11 +41,36 @@ const MathmlPage: React.FunctionComponent = () => {
             [glyph("2"), glyph("a")],
         ),
     ]);
-    const factoring = Editor.util.row("(x-1)(x+1)=0");
-    const fontData = {
-        fontMetrics: comicSans,
-        fontFamily: "comic sans ms",
-    };
+
+    const factoring = Editor.builders.row([
+        Editor.builders.delimited(
+            Editor.util.row("x-1").children,
+            Editor.builders.glyph("("),
+            Editor.builders.glyph(")"),
+        ),
+        Editor.builders.delimited(
+            Editor.util.row("x+1").children,
+            Editor.builders.glyph("("),
+            Editor.builders.glyph(")"),
+        ),
+        Editor.builders.glyph("="),
+        Editor.builders.glyph("0"),
+    ]);
+
+    const [font, setFont] = React.useState<Font | null>(null);
+
+    React.useEffect(() => {
+        parse("/STIX2Math.otf").then((font) => {
+            console.log(font);
+            setFont(font);
+        });
+    }, []);
+
+    if (!font) {
+        return null;
+    }
+
+    const fontData = getFontData(font, "STIX2");
 
     return (
         <FontDataContext.Provider value={fontData}>

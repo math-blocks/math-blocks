@@ -5,8 +5,7 @@ import {parseHead} from "./tables/head";
 
 import {getGlyphMetrics} from "./util";
 
-import type {Font} from "./font";
-import type {TableRecord, TableDirectory} from "./types";
+import type {Font, TableRecord, TableDirectory} from "./types";
 
 const parseTag = (view: DataView, offset = 0): string => {
     return [

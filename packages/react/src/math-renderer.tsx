@@ -2,6 +2,7 @@ import * as React from "react";
 
 import {UnreachableCaseError} from "@math-blocks/core";
 import {SceneGraph} from "@math-blocks/typesetter";
+import * as OpenType from "@math-blocks/opentype";
 
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
@@ -27,33 +28,75 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
     return <rect {...props} fill={fill || "currentcolor"} />;
 };
 
-const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
-    x,
-    y,
-    glyph,
-    fontFamily,
-}) => {
+const getPath = (glyph: OpenType.Glyph): string => {
+    let result = "";
+
+    // The glyph's path is in font units.
+    const path = glyph.path;
+
+    for (const cmd of path) {
+        if (cmd.type === "M") {
+            result += `M ${cmd.x},${cmd.y} `;
+        } else if (cmd.type === "L") {
+            result += `L ${cmd.x},${cmd.y} `;
+        } else if (cmd.type === "C") {
+            result += `C ${cmd.x1},${cmd.y1} ${cmd.x2},${cmd.y2} ${cmd.x},${cmd.y}`;
+        } else if (cmd.type === "Q") {
+            result += `Q ${cmd.x1},${cmd.y1} ${cmd.x},${cmd.y}`;
+        } else {
+            result += "Z";
+        }
+    }
+
+    return result;
+};
+
+enum GlyphRendering {
+    Path,
+    Text,
+}
+
+const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
-    return (
-        <text
-            x={x}
-            y={y}
-            // TODO: include the fontFamily as part of the value provided by
-            // FontMetricsContext and rename to FontDataContext since we'll
-            // probably want to include additional non-metrics data such as
-            // font outlines and of course which font family to use for a specific
-            // glyph
-            fontFamily={fontFamily}
-            fontSize={glyph.size}
-            fill={glyph.color || "currentcolor"}
-            id={id}
-            style={{opacity: glyph.pending ? 0.5 : 1.0}}
-            aria-hidden="true"
-        >
-            {glyph.char}
-        </text>
-    );
+    const {font} = glyph.fontData;
+    const codePoint = glyph.char.codePointAt(0);
+    if (!codePoint) {
+        throw new Error("No code point for char");
+    }
+    const gid = font.glyphIndexMap[codePoint];
+    const scale = glyph.size / font.head.unitsPerEm;
+
+    const glyphRendering: GlyphRendering = GlyphRendering.Path;
+
+    if (glyphRendering === GlyphRendering.Path) {
+        return (
+            <path
+                fill={glyph.color || "currentcolor"}
+                id={id}
+                style={{opacity: glyph.pending ? 0.5 : 1.0}}
+                aria-hidden="true"
+                d={getPath(font.getGlyph(gid))}
+                transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+            />
+        );
+    } else {
+        const {fontFamily} = glyph.fontData;
+        return (
+            <text
+                x={x}
+                y={y}
+                fontFamily={fontFamily}
+                fontSize={glyph.size}
+                fill={glyph.color || "currentcolor"}
+                id={id}
+                style={{opacity: glyph.pending ? 0.5 : 1.0}}
+                aria-hidden="true"
+            >
+                {glyph.char}
+            </text>
+        );
+    }
 };
 
 const Group: React.FunctionComponent<SceneGraph.Group> = ({
