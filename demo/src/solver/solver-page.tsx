@@ -6,11 +6,10 @@ import {builders} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
 import * as Typesetter from "@math-blocks/typesetter";
+import {getFontData, parse} from "@math-blocks/opentype";
+import type {Font} from "@math-blocks/opentype";
 
-import {comicSans} from "@math-blocks/opentype";
 import Substeps from "./substeps";
-
-const {parse} = Editor;
 
 const question: Editor.types.Row = Editor.util.row("2x+5=10");
 const questionZipper: Editor.Zipper = {
@@ -32,7 +31,6 @@ const questionZipper: Editor.Zipper = {
 // - update MathRenderer to do the typesetting
 
 const SolverPage: React.FunctionComponent = () => {
-    const fontMetrics = comicSans;
     const [input, setInput] = React.useState<Editor.Zipper>(questionZipper);
     const [solution, setSolution] = React.useState<Editor.types.Row | null>(
         null,
@@ -41,7 +39,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const handleSimplify = (): void => {
         console.log("SIMPLIFY");
-        const ast = parse(Editor.zipperToRow(input));
+        const ast = Editor.parse(Editor.zipperToRow(input));
         const result = simplify(ast, []);
         if (result) {
             console.log(result);
@@ -56,7 +54,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const handleSolve = (): void => {
         console.log("SOLVE");
-        const ast = parse(Editor.zipperToRow(input));
+        const ast = Editor.parse(Editor.zipperToRow(input));
         if (ast.type === "eq") {
             const result = solve(ast, builders.identifier("x"));
             if (result) {
@@ -73,12 +71,27 @@ const SolverPage: React.FunctionComponent = () => {
         }
     };
 
+    const [font, setFont] = React.useState<Font | null>(null);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/STIX2Math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setFont(font);
+        };
+
+        loadFont();
+    }, []);
+
+    if (!font) {
+        return null;
+    }
+
     const fontSize = 64;
     const context: Typesetter.Context = {
-        fontData: {
-            fontMetrics,
-            fontFamily: "comic sans ms",
-        },
+        fontData: getFontData(font, "STIX2"),
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,

@@ -25,7 +25,6 @@ export type Glyph = {
     y: number;
     width: number;
     glyph: Layout.Glyph;
-    fontFamily: string;
 } & Common;
 
 export type Line = {
@@ -67,11 +66,7 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
     };
 };
 
-const processGlyph = (
-    glyph: Layout.Glyph,
-    loc: Point,
-    fontFamily: string,
-): Node => {
+const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
     return {
         type: "glyph",
         x: loc.x,
@@ -80,7 +75,6 @@ const processGlyph = (
         glyph: glyph,
         color: glyph.color,
         id: glyph.id,
-        fontFamily,
     };
 };
 
@@ -182,7 +176,7 @@ const processHBox = (
                     layer.push(processHRule(node, pen));
                     break;
                 case "Glyph":
-                    layer.push(processGlyph(node, pen, fontData.fontFamily));
+                    layer.push(processGlyph(node, pen));
                     break;
                 case "Kern":
                     // We don't need to include kerns in the output since we include
@@ -273,7 +267,7 @@ const processVBox = (
                     break;
                 case "Glyph":
                     pen.y += height;
-                    layer.push(processGlyph(node, pen, fontData.fontFamily));
+                    layer.push(processGlyph(node, pen));
                     pen.y += depth;
                     break;
                 case "Kern":

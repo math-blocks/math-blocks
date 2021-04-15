@@ -3,30 +3,36 @@ import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
+// @ts-expect-error: Blob is only available in node 15.7.0 onward
+import {Blob} from "buffer";
 import type {Story, StoryContext} from "@storybook/react";
 
 import * as Core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
-import {comicSans} from "@math-blocks/opentype";
+import {getFontData, parse} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
 import * as stories from "../stories/2-math-renderer.stories";
-import storyMeta from "../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor.builders;
 
-const fontSize = 60;
-const fontData = {
-    fontMetrics: comicSans,
-    fontFamily: "comic sans ms",
-};
-const context: Typesetter.Context = {
-    fontData: fontData,
-    baseFontSize: fontSize,
-    mathStyle: Typesetter.MathStyle.Display,
-    renderMode: Typesetter.RenderMode.Static,
-    cramped: false,
+let fontData: FontData | null = null;
+
+const fontLoader = async (): Promise<FontData> => {
+    if (fontData) {
+        return fontData;
+    }
+
+    const fontPath = path.join(__dirname, "../../../../assets/STIX2Math.otf");
+    const buffer = fs.readFileSync(fontPath);
+    const blob = new Blob([buffer]);
+
+    const font = await parse(blob);
+    fontData = getFontData(font, "STIX2");
+
+    return fontData;
 };
 
 const storyToComponent = async function <T>(
@@ -34,9 +40,13 @@ const storyToComponent = async function <T>(
 ): Promise<React.FC> {
     const loaded = {};
 
-    if (storyMeta.loaders) {
+    // We can't use the same loader since the storybook one relies on webpack's
+    // file-loader which we don't have access to here.
+    const loaders = [fontLoader];
+
+    if (loaders) {
         for (const value of await Promise.all(
-            storyMeta.loaders.map((loader) => loader()),
+            loaders.map((loader) => loader()),
         )) {
             Object.assign(loaded, value);
         }
@@ -172,7 +182,7 @@ describe("renderer", () => {
             expect(<Pythagoras />).toMatchSVGSnapshot();
         });
 
-        test("subscripts", () => {
+        test("subscripts", async () => {
             const node = row([
                 glyph("a"),
                 Editor.util.sup("n"),
@@ -193,6 +203,16 @@ describe("renderer", () => {
                     selection: null,
                     right: node.children,
                 },
+            };
+
+            const fontData = await fontLoader();
+            const fontSize = 60;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
             };
 
             const scene = Typesetter.typesetZipper(zipper, context);

@@ -1,5 +1,4 @@
-import type {Glyph, GlyphMetrics, FontData} from "./types";
-import type {Font} from "./font";
+import type {Font, Glyph, GlyphMetrics, FontData} from "./types";
 
 export const getGlyphMetrics = (glyph: Glyph): GlyphMetrics => {
     const commands = glyph.path;
@@ -71,7 +70,8 @@ export const getFontData = (font: Font, fontFamily: string): FontData => {
     };
 
     return {
-        fontMetrics: fontMetrics,
+        font: font,
         fontFamily: fontFamily,
+        fontMetrics: fontMetrics,
     };
 };

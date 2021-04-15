@@ -1,32 +1,35 @@
 import * as React from "react";
-import type {Story, Meta} from "@storybook/react";
+import type {Story} from "@storybook/react";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
 import * as Typesetter from "@math-blocks/typesetter";
-import {comicSans} from "@math-blocks/opentype";
+import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
 
+// @ts-expect-error: TypeScript doesn't know about this path
+import fontPath from "../../../../assets/STIX2Math.otf";
+
 const {row, glyph, frac, limits, root} = Editor.builders;
 
-const fontData: FontData = {
-    fontMetrics: comicSans,
-    fontFamily: "comic sans ms",
+const fontLoader = async (): Promise<FontData> => {
+    const res = await fetch(fontPath);
+    const blob = await res.blob();
+    const font = await parse(blob);
+    return getFontData(font, "STIX2");
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Loader = () => Promise<any>;
 
 export default {
     title: "MathRenderer",
     component: MathRenderer,
-} as Meta & {loaders?: Loader[]};
+    loaders: [fontLoader],
+};
 
 type EmptyProps = Record<string, never>;
 
-export const Small: Story<EmptyProps> = () => {
+export const Small: Story<EmptyProps> = (args, {loaded: fontData}) => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
         glyph("2"),
@@ -50,7 +53,7 @@ export const Small: Story<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Equation: Story<EmptyProps> = () => {
+export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
     // TODO: how to convert
     const math = row([
         glyph("2"),
@@ -74,7 +77,7 @@ export const Equation: Story<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Cursor: Story<EmptyProps> = () => {
+export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const math = row([
         glyph("2"),
         glyph("x"),
@@ -112,7 +115,7 @@ export const Cursor: Story<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Selection: Story<EmptyProps> = () => {
+export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const math = row([
         glyph("2"),
         glyph("x"),
@@ -150,7 +153,7 @@ export const Selection: Story<EmptyProps> = () => {
     return <MathRenderer scene={scene} />;
 };
 
-export const Pythagoras: Story<EmptyProps> = () => {
+export const Pythagoras: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -177,7 +180,10 @@ export const Pythagoras: Story<EmptyProps> = () => {
     return <MathRenderer scene={pythagoras} />;
 };
 
-export const QuadraticEquation: Story<EmptyProps> = () => {
+export const QuadraticEquation: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -215,7 +221,7 @@ export const QuadraticEquation: Story<EmptyProps> = () => {
     return <MathRenderer scene={quadraticEquation} />;
 };
 
-export const Limit: Story<EmptyProps> = () => {
+export const Limit: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -241,7 +247,7 @@ export const Limit: Story<EmptyProps> = () => {
     return <MathRenderer scene={lim} />;
 };
 
-export const Summation: Story<EmptyProps> = () => {
+export const Summation: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -266,7 +272,10 @@ export const Summation: Story<EmptyProps> = () => {
     return <MathRenderer scene={sum} />;
 };
 
-export const ColorizedFraction: Story<EmptyProps> = () => {
+export const ColorizedFraction: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
     const context: Typesetter.Context = {
@@ -292,7 +301,7 @@ export const ColorizedFraction: Story<EmptyProps> = () => {
     return <MathRenderer scene={sum} />;
 };
 
-export const ColorizedSum: Story<EmptyProps> = () => {
+export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const editNode = Editor.util.row("8+10+12+14");
 
     const semNode = Editor.parse(editNode) as Semantic.types.Add;
@@ -328,25 +337,46 @@ export const ColorizedSum: Story<EmptyProps> = () => {
     return <MathRenderer scene={prod} />;
 };
 
-export const SimpleSemanticColoring: Story<EmptyProps> = () => {
-    const editNode = Editor.util.row("(11+x)(12-y)");
+export const SimpleSemanticColoring: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    const editNode = Editor.builders.row([
+        Editor.builders.delimited(
+            Editor.util.row("11+x").children,
+            Editor.builders.glyph("("),
+            Editor.builders.glyph(")"),
+        ),
+        Editor.builders.delimited(
+            Editor.util.row("12-y").children,
+            Editor.builders.glyph("("),
+            Editor.builders.glyph(")"),
+        ),
+    ]);
+
+    const colorMap = new Map<number, string>();
 
     const semNode = Editor.parse(editNode) as Semantic.types.Mul;
-
     const secondTerm = semNode.args[1] as Semantic.types.Add;
-
     const num12 = secondTerm.args[0];
     const sum0 = semNode.args[0];
 
-    const colorMap = new Map<number, string>();
     if (num12.loc) {
         for (let i = num12.loc.start; i < num12.loc.end; i++) {
-            colorMap.set(editNode.children[i].id, "darkCyan");
+            colorMap.set(
+                // @ts-expect-error: we know the structure
+                editNode.children[1].children[0].children[i].id,
+                "darkCyan",
+            );
         }
     }
     if (sum0.loc) {
         for (let i = sum0.loc.start; i < sum0.loc.end; i++) {
-            colorMap.set(editNode.children[i].id, "orange");
+            colorMap.set(
+                // @ts-expect-error: we know the structure
+                editNode.children[0].children[0].children[i].id,
+                "orange",
+            );
         }
     }
 
@@ -364,7 +394,10 @@ export const SimpleSemanticColoring: Story<EmptyProps> = () => {
     return <MathRenderer scene={prod} />;
 };
 
-export const NestedSemanticColoring: Story<EmptyProps> = () => {
+export const NestedSemanticColoring: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
     const editNode = Editor.builders.row([Editor.util.frac("11+x", "12-y")]);
 
     const semNode = Editor.parse(editNode) as Semantic.types.Div;
