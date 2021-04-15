@@ -14,8 +14,12 @@ import fontPath from "../../../../assets/STIX2Math.otf";
 
 const {row, glyph} = Editor.builders;
 
-const fontLoader = async (): Promise<FontData> =>
-    parse(fontPath).then((font) => getFontData(font, "STIX2"));
+const fontLoader = async (): Promise<FontData> => {
+    const res = await fetch(fontPath);
+    const blob = await res.blob();
+    const font = await parse(blob);
+    return getFontData(font, "STIX2");
+};
 
 export default {
     title: "MathEditor",

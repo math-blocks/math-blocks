@@ -67,10 +67,7 @@ const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
     return dir;
 };
 
-export const parse = async (url: string): Promise<Font> => {
-    const res = await fetch(url);
-    const blob = await res.blob();
-
+export const parse = async (blob: Blob): Promise<Font> => {
     const dir = await parseDirectory(blob);
 
     // TODO: move the blob for each table record into the parseDirector result

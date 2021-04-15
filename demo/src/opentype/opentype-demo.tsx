@@ -99,10 +99,15 @@ const OpenTypeDemo: React.FC = () => {
     const [font, setFont] = React.useState<Font | null>(null);
 
     React.useEffect(() => {
-        parse("/STIX2Math.otf").then((font) => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/STIX2Math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
             console.log(font);
             setFont(font);
-        });
+        };
+
+        loadFont();
     }, []);
 
     if (font) {

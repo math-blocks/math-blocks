@@ -1,3 +1,3 @@
-const fetch = require("node-fetch");
+const {TextDecoder} = require("util");
 
-global.fetch = fetch;
+global.TextDecoder = TextDecoder;

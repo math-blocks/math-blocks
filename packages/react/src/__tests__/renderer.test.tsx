@@ -3,6 +3,8 @@ import path from "path";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
 import format from "xml-formatter";
+// @ts-expect-error: Blob is only available in node 15.7.0 onward
+import {Blob} from "buffer";
 import type {Story, StoryContext} from "@storybook/react";
 
 import * as Core from "@math-blocks/core";
@@ -16,22 +18,22 @@ import * as stories from "../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor.builders;
 
-// TODO: split IO from parsing
-const fontLoader = async (): Promise<FontData> => {
-    const url = path.join(__dirname, "../../../../assets/STIX2Math.otf");
-    console.log(`url = ${url}`);
-    return parse(url).then((font) => getFontData(font, "STIX2"));
-};
+let fontData: FontData | null = null;
 
-// TODO: enable this after splitting IO from parsing
-// const fontSize = 60;
-// const context: Typesetter.Context = {
-//     fontData: fontData,
-//     baseFontSize: fontSize,
-//     mathStyle: Typesetter.MathStyle.Display,
-//     renderMode: Typesetter.RenderMode.Static,
-//     cramped: false,
-// };
+const fontLoader = async (): Promise<FontData> => {
+    if (fontData) {
+        return fontData;
+    }
+
+    const fontPath = path.join(__dirname, "../../../../assets/STIX2Math.otf");
+    const buffer = fs.readFileSync(fontPath);
+    const blob = new Blob([buffer]);
+
+    const font = await parse(blob);
+    fontData = getFontData(font, "STIX2");
+
+    return fontData;
+};
 
 const storyToComponent = async function <T>(
     story: Story<T>,
@@ -180,7 +182,7 @@ describe("renderer", () => {
             expect(<Pythagoras />).toMatchSVGSnapshot();
         });
 
-        test.skip("subscripts", () => {
+        test("subscripts", async () => {
             const node = row([
                 glyph("a"),
                 Editor.util.sup("n"),
@@ -203,7 +205,16 @@ describe("renderer", () => {
                 },
             };
 
-            // @ts-expect-error: context is not defined
+            const fontData = await fontLoader();
+            const fontSize = 60;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+
             const scene = Typesetter.typesetZipper(zipper, context);
 
             expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
