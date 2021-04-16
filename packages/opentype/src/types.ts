@@ -1,5 +1,6 @@
 import type {HeaderTable} from "./tables/head";
 import type {MathConstants} from "./tables/math";
+import type {Glyph, TopDict} from "./tables/cff-types";
 
 export type TableRecord = {
     tableTag: string; // 4 bytes
@@ -15,54 +16,6 @@ export type TableDirectory = {
     entrySelector: number; // uint16
     rangeShift: number; // uint16
     tableRecords: Record<string, TableRecord>;
-};
-
-type Command =
-    | {
-          type: "M";
-          x: number;
-          y: number;
-      }
-    | {
-          type: "L";
-          x: number;
-          y: number;
-      }
-    | {
-          type: "Q";
-          x1: number;
-          y1: number;
-          x: number;
-          y: number;
-      }
-    | {
-          type: "C";
-          x1: number;
-          y1: number;
-          x2: number;
-          y2: number;
-          x: number;
-          y: number;
-      }
-    | {
-          type: "Z";
-      };
-
-export type Path = Command[];
-
-export type GlyphData = {
-    path: Path;
-    advanceWidth: number;
-};
-
-type Metrics = {
-    advance: number;
-};
-
-export type Glyph = {
-    path: Path;
-    metrics: Metrics;
-    name: string;
 };
 
 export type GlyphMetrics = {
@@ -82,6 +35,10 @@ export type FontMetrics = {
 };
 
 export type Font = {
+    cff: {
+        name: string;
+        topDict: TopDict;
+    };
     head: HeaderTable;
     math: MathConstants;
     glyphIndexMap: Record<number, number>;

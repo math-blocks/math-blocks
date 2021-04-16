@@ -1,0 +1,376 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse CFF  topDict 1`] = `
+Object {
+  "BlueFuzz": 1,
+  "BlueScale": 0.039625,
+  "BlueShift": 6,
+  "BlueValues": Array [
+    -15,
+    15,
+    469,
+    16,
+    25,
+    20,
+    73,
+    13,
+    14,
+    17,
+    8,
+    13,
+    36,
+    15,
+  ],
+  "CharStrings": 56085,
+  "CharstringType": 2,
+  "Copyright": "Arie de Ruiter, who in 1995 was Head of Information Technology Development at Elsevier Science, made a proposal to the STI Pub group, an informal group of publishers consisting of representatives from the American Chemical Society \\\\(ACS\\\\), American Institute of Physics \\\\(AIP\\\\), American Mathematical Society \\\\(AMS\\\\), American Physical Society \\\\(APS\\\\), Elsevier, and Institute of Electrical and Electronics Engineers \\\\(IEEE\\\\). De Ruiter encouraged the members to consider development of a series of Web fonts, which he proposed should be called the Scientific and Technical Information eXchange, or STIX, Fonts. All STI Pub member organizations enthusiastically endorsed this proposal, and the STI Pub group agreed to embark on what has become a twelve-year project. The goal of the project was to identify all alphabetic, symbolic, and other special characters used in any facet of scientific publishing and to create a set of Unicode-based fonts that would be distributed free to every scientist, student, and other interested party worldwide. The fonts would be consistent with the emerging Unicode standard, and would permit universal representation of every character. With the release of the STIX fonts, de Ruiter's vision has been realized.",
+  "Encoding": 0,
+  "ExpansionFactor": 0.06,
+  "FamilyName": "STIX Two Math",
+  "FontBBox": Array [
+    -978,
+    -1641,
+    3072,
+    2627,
+  ],
+  "ForceBold": false,
+  "FullName": "STIX Two Math",
+  "ItalicAngle": 0,
+  "LanguageGroup": 0,
+  "Notice": "Copyright \\\\(c\\\\) 2001-2016 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physics, the American Mathematical Society, the American Physical Society, Elsevier, Inc., and The Institute of Electrical and Electronic Engineers, Inc.  Portions copyright \\\\(c\\\\) 1998-2003 by MicroPress, Inc.  Portions copyright \\\\(c\\\\) 1990 by Elsevier, Inc.  All rights reserved.  Portions copyright \\\\(c\\\\) Copyright 2010, 2012, 2014 Adobe Systems Incorporated.",
+  "OtherBlues": Array [
+    -235,
+    15,
+  ],
+  "PaintType": 0,
+  "Private": Array [
+    691667,
+    41,
+  ],
+  "StdHW": 29,
+  "StdVW": 83,
+  "StemSnapH": Array [
+    29,
+    12,
+  ],
+  "StemSnapV": Array [
+    83,
+    9,
+  ],
+  "StrokeWidth": 0,
+  "UnderlinePosition": -103,
+  "UnderlineThickness": 51,
+  "Weight": "Normal",
+  "charset": 55096,
+  "defaultWidthX": 701,
+  "fontMatrix": Array [
+    0.001,
+    0,
+    0,
+    0.001,
+    0,
+    0,
+  ],
+  "initialRandomSee": 0,
+  "isFixedPitch": false,
+  "nominalWidthX": 571,
+  "version": "001.001",
+}
+`;
+
+exports[`parse math constants 1`] = `
+Object {
+  "accentBaseHeight": Object {
+    "deviceOffset": 0,
+    "value": 480,
+  },
+  "axisHeight": Object {
+    "deviceOffset": 0,
+    "value": 258,
+  },
+  "delimitedSubFormulaMinHeight": 1325,
+  "displayOperatorMinHeight": 1800,
+  "flattenedAccentBaseHeight": Object {
+    "deviceOffset": 0,
+    "value": 656,
+  },
+  "fractionDenomDisplayStyleGapMin": Object {
+    "deviceOffset": 0,
+    "value": 150,
+  },
+  "fractionDenominatorDisplayStyleShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 640,
+  },
+  "fractionDenominatorGapMin": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "fractionDenominatorShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 585,
+  },
+  "fractionNumDisplayStyleGapMin": Object {
+    "deviceOffset": 0,
+    "value": 150,
+  },
+  "fractionNumeratorDisplayStyleShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 640,
+  },
+  "fractionNumeratorGapMin": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "fractionNumeratorShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 585,
+  },
+  "fractionRuleThickness": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "lowerLimitBaselineDropMin": Object {
+    "deviceOffset": 0,
+    "value": 670,
+  },
+  "lowerLimitGapMin": Object {
+    "deviceOffset": 0,
+    "value": 135,
+  },
+  "mathLeading": Object {
+    "deviceOffset": 0,
+    "value": 150,
+  },
+  "overbarExtraAscender": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "overbarRuleThickness": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "overbarVerticalGap": Object {
+    "deviceOffset": 0,
+    "value": 175,
+  },
+  "radicalDegreeBottomRaisePercent": 55,
+  "radicalDisplayStyleVerticalGap": Object {
+    "deviceOffset": 0,
+    "value": 170,
+  },
+  "radicalExtraAscender": Object {
+    "deviceOffset": 0,
+    "value": 78,
+  },
+  "radicalKernAfterDegree": Object {
+    "deviceOffset": 0,
+    "value": -335,
+  },
+  "radicalKernBeforeDegree": Object {
+    "deviceOffset": 0,
+    "value": 65,
+  },
+  "radicalRuleThickness": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "radicalVerticalGap": Object {
+    "deviceOffset": 0,
+    "value": 85,
+  },
+  "scriptPercentScaleDown": 70,
+  "scriptScriptPercentScaleDown": 55,
+  "skewedFractionHorizontalGap": Object {
+    "deviceOffset": 0,
+    "value": 350,
+  },
+  "skewedFractionVerticalGap": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "spaceAfterScript": Object {
+    "deviceOffset": 0,
+    "value": 40,
+  },
+  "stackBottomDisplayStyleShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 690,
+  },
+  "stackBottomShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 385,
+  },
+  "stackDisplayStyleGapMin": Object {
+    "deviceOffset": 0,
+    "value": 300,
+  },
+  "stackGapMin": Object {
+    "deviceOffset": 0,
+    "value": 150,
+  },
+  "stackTopDisplayStyleShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 780,
+  },
+  "stackTopShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 470,
+  },
+  "stretchStackBottomShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 590,
+  },
+  "stretchStackGapAboveMin": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "stretchStackGapBelowMin": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "stretchStackTopShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 800,
+  },
+  "subSuperscriptGapMin": Object {
+    "deviceOffset": 0,
+    "value": 150,
+  },
+  "subscriptBaselineDropMin": Object {
+    "deviceOffset": 0,
+    "value": 160,
+  },
+  "subscriptShiftDown": Object {
+    "deviceOffset": 0,
+    "value": 210,
+  },
+  "subscriptTopMax": Object {
+    "deviceOffset": 0,
+    "value": 368,
+  },
+  "superscriptBaselineDropMax": Object {
+    "deviceOffset": 0,
+    "value": 230,
+  },
+  "superscriptBottomMaxWithSubscript": Object {
+    "deviceOffset": 0,
+    "value": 380,
+  },
+  "superscriptBottomMin": Object {
+    "deviceOffset": 0,
+    "value": 120,
+  },
+  "superscriptShiftUp": Object {
+    "deviceOffset": 0,
+    "value": 360,
+  },
+  "superscriptShiftUpCramped": Object {
+    "deviceOffset": 0,
+    "value": 252,
+  },
+  "underbarExtraDescender": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "underbarRuleThickness": Object {
+    "deviceOffset": 0,
+    "value": 68,
+  },
+  "underbarVerticalGap": Object {
+    "deviceOffset": 0,
+    "value": 175,
+  },
+  "upperLimitBaselineRiseMin": Object {
+    "deviceOffset": 0,
+    "value": 300,
+  },
+  "upperLimitGapMin": Object {
+    "deviceOffset": 0,
+    "value": 135,
+  },
+}
+`;
+
+exports[`parseDirectory tableRecords 1`] = `
+Object {
+  "CFF ": Object {
+    "checksum": 2978540771,
+    "length": 691708,
+    "offset": 220,
+    "tableTag": "CFF ",
+  },
+  "GDEF": Object {
+    "checksum": 356002236,
+    "length": 66,
+    "offset": 691928,
+    "tableTag": "GDEF",
+  },
+  "GPOS": Object {
+    "checksum": 2118371111,
+    "length": 23252,
+    "offset": 691996,
+    "tableTag": "GPOS",
+  },
+  "GSUB": Object {
+    "checksum": 2636999998,
+    "length": 7360,
+    "offset": 715248,
+    "tableTag": "GSUB",
+  },
+  "MATH": Object {
+    "checksum": 4056928493,
+    "length": 23292,
+    "offset": 722608,
+    "tableTag": "MATH",
+  },
+  "OS/2": Object {
+    "checksum": 1836143976,
+    "length": 96,
+    "offset": 745900,
+    "tableTag": "OS/2",
+  },
+  "cmap": Object {
+    "checksum": 3520504363,
+    "length": 29314,
+    "offset": 745996,
+    "tableTag": "cmap",
+  },
+  "head": Object {
+    "checksum": 348148424,
+    "length": 54,
+    "offset": 775312,
+    "tableTag": "head",
+  },
+  "hhea": Object {
+    "checksum": 203759218,
+    "length": 36,
+    "offset": 775368,
+    "tableTag": "hhea",
+  },
+  "hmtx": Object {
+    "checksum": 2942074728,
+    "length": 22166,
+    "offset": 775404,
+    "tableTag": "hmtx",
+  },
+  "maxp": Object {
+    "checksum": 363286528,
+    "length": 6,
+    "offset": 797572,
+    "tableTag": "maxp",
+  },
+  "name": Object {
+    "checksum": 1587078982,
+    "length": 10608,
+    "offset": 797580,
+    "tableTag": "name",
+  },
+  "post": Object {
+    "checksum": 4290052147,
+    "length": 32,
+    "offset": 808188,
+    "tableTag": "post",
+  },
+}
+`;

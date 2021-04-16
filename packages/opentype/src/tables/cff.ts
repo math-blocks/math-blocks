@@ -1,6 +1,6 @@
 import {STANDARD_STRINGS} from "./cff-standard-strings";
 
-import type {Glyph, GlyphData, Path} from "../types";
+import type {Glyph, GlyphData, Path, TopDict} from "./cff-types";
 
 // TODO: handle parsing operands that are real numbers
 // Thus, the value –2.25 is encoded by the byte sequence (1e e2 a2 5f) and the
@@ -62,58 +62,6 @@ const parseIndex = async (
     const size = 3 + offsets.length * offSize + offsets[offsets.length - 1] - 1;
 
     return [nameIndex, size];
-};
-
-type TopDict = {
-    version?: string;
-    Notice?: string;
-    Copyright?: string;
-    FullName?: string;
-    FamilyName?: string;
-    Weight?: string;
-    isFixedPitch: boolean; // default: false
-    ItalicAngle: number; // default: 0
-    UnderlinePosition: number; // default: -100
-    UnderlineThickness: number; // default: 5
-    PaintType: number; // default: 0
-    CharstringType: number; // default: 2
-    fontMatrix: number[]; // default: 0.001, 0, 0, 0.001, 0, 0
-    UniqueID?: number;
-    FontBBox: number[]; // default: [0, 0, 0, 0]; [xMin, yMin, xMax, yMax]
-    StrokeWidth: number; // default: 0
-    XUID?: number[];
-    charset: number; // default: 0, charset offset (0)
-    Encoding: number; // default: 0, encoding offset (0)
-    CharStrings?: number;
-    Private?: [number, number]; // private DICT size and offset (0)
-    SyntheticBase?: number;
-    PostScript?: string; // notes: embedded PostScript language code
-    BaseFontName?: string;
-    BaseFontBlend?: number;
-
-    // Private DICT values
-    BlueValues?: number[]; // delta: encoded
-    OtherBlues?: number[]; // delta: encoded
-    FamilyBlues?: number[]; // delta: encoded
-    FamilyOtherBlues?: number[]; // delta encoded
-    BlueScale: number; // default: 0.039625
-    BlueShift: number; // default: 7
-    BlueFuzz: number; // default: 1
-    StdHW?: number;
-    StdVW?: number;
-    StemSnapH?: number[]; // delta encoded
-    StemSnapV?: number[]; // delta encoded
-    ForceBold: boolean; // default: false
-    LanguageGroup: number; // default: 0
-    ExpansionFactor: number; // default: 0.06
-    initialRandomSee: number; // default: 0
-    Subrs?: number;
-
-    // If the char width matches the defaultWidthX, it can be omitted.
-    defaultWidthX: number; // default: 0
-
-    // If not, then the char width is the charstring width plus nominalWidthX.
-    nominalWidthX: number; // default: 0
 };
 
 const topDictDefaults: TopDict = {
@@ -843,9 +791,10 @@ const parseCharset = async (
     topDict: TopDict,
     nGlyphs: number,
 ): Promise<Record<number, number>> => {
-    // NOTE: FDSelect (optional) can appear between Charsets and CharStrings
-    // index.  It's okay if it does since we only parse the available number
-    // of glyphs based on CharStrings index's `count` property.
+    // NOTE: We grab all of the data here until the start of CharStrings.  If
+    // FDSelect (optional) is present then the slice will also include FDSelect.
+    // This is okay, since we use the `count` property from the CharStrings index
+    // to know how many glyphs are available to be parsed.
     const charsetData = await blob
         .slice(topDict.charset, topDict.CharStrings)
         .arrayBuffer();
@@ -878,6 +827,8 @@ const parseCharset = async (
 };
 
 type CFFResult = {
+    name: string;
+    topDict: TopDict;
     getGlyph: (gid: number) => Glyph;
 };
 
@@ -886,29 +837,23 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const headerBuffer = await blob.slice(offset, offset + 4).arrayBuffer();
     const headerView = new DataView(headerBuffer);
-
     const header = {
         major: headerView.getUint8(0),
         minor: headerView.getUint8(1),
         hdrSize: headerView.getUint8(2),
         offSize: headerView.getUint8(3),
     };
-    console.log(`header = `, header);
-
     offset += header.hdrSize;
 
     const [nameIndex, nameIndexSize] = await parseIndex(blob, offset);
-    console.log("nameIndex = ", nameIndex);
-    console.log("name = " + new TextDecoder().decode(nameIndex.data));
+    const name = new TextDecoder().decode(nameIndex.data);
     offset += nameIndexSize;
 
     const [topDictIndex, topDictIndexSize] = await parseIndex(blob, offset);
-    console.log("topDictIndex = ", topDictIndex);
     const topDictData = topDictIndex.data;
     offset += topDictIndexSize;
 
     const [stringIndex, stringIndexSize] = await parseIndex(blob, offset);
-    console.log("stringIndex = ", stringIndex);
     offset += stringIndexSize;
 
     const topDict: TopDict = {...topDictDefaults};
@@ -920,8 +865,6 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
         );
         parseTopDictData(privateDictData, topDict, stringIndex);
     }
-    // TODO: should we expose any of this data publicly?
-    console.log("topDict = ", topDict);
 
     if (!topDict.CharStrings) {
         throw new Error("CharStrings missing in Top Dict");
@@ -931,9 +874,7 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
         throw new Error("charset missing in Top Dict");
     }
 
-    console.log(`CharStrings = ${topDict.CharStrings}`);
     const [charStringsIndex] = await parseIndex(blob, topDict.CharStrings);
-    console.log("charStringsIndex = ", charStringsIndex);
 
     const nGlyphs = charStringsIndex.count; // only useful for Format 2
     const charset = await parseCharset(blob, topDict, nGlyphs);
@@ -971,13 +912,9 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
         return glyph;
     };
 
-    // TODO: add a method to get metrics for a glyph
-    // - start by copying the method from opentype.js and using it to render
-    //   a bounding box around some common glyphs
-    // - refactor it find the min/max of quadratic and cubic bezier curves in
-    //   x and y directions
-
     const result: CFFResult = {
+        name,
+        topDict,
         getGlyph,
     };
 

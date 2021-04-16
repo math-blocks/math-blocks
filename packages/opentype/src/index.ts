@@ -1,12 +1,6 @@
 export {parse} from "./parser";
 export {getFontData} from "./util";
 
-export type {
-    Glyph,
-    GlyphMetrics,
-    FontData,
-    FontMetrics,
-    Path,
-    Font,
-} from "./types";
+export type {GlyphMetrics, FontData, FontMetrics, Font} from "./types";
+export type {Glyph, Path} from "./tables/cff-types";
 export type {MathConstants} from "./tables/math";
