@@ -1,4 +1,5 @@
-import type {Font, Glyph, GlyphMetrics, FontData} from "./types";
+import type {Glyph} from "./tables/cff-types";
+import type {Font, GlyphMetrics, FontData} from "./types";
 
 export const getGlyphMetrics = (glyph: Glyph): GlyphMetrics => {
     const commands = glyph.path;

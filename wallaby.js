@@ -1,6 +1,8 @@
 module.exports = function (wallaby) {
     return {
         files: [
+            "assets/STIX2Math.otf",
+            "jest.setup.js",
             "packages/**/*.js",
             "packages/**/*.ts",
             "packages/**/*.tsx",

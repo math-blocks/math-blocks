@@ -101,11 +101,6 @@ export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
         };
     };
 
-    console.log(
-        "math constants size = " +
-            (header.mathConstantsOffset - header.mathGlyphInfoOffset),
-    );
-
     const mathConstants: MathConstants = {
         scriptPercentScaleDown: constantsView.getInt16(0), // int16
         scriptScriptPercentScaleDown: constantsView.getInt16(2), // int16
@@ -166,7 +161,6 @@ export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
     };
 
     // TODO: parse coverage tables
-
     // TODO: parse glyph outlines
     // TODO: parse MathVariants
     // we don't need to parse the whole MathVariants table, we can parse on demand

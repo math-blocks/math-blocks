@@ -47,7 +47,7 @@ const parseTableRecords = async (
     return result;
 };
 
-const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
+export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
     const byteCount = 4 + 8;
 
     const buffer = await blob.slice(0, byteCount).arrayBuffer();
@@ -112,6 +112,10 @@ export const parse = async (blob: Blob): Promise<Font> => {
     const cff = await parseCFF(cffBlob);
 
     const font: Font = {
+        cff: {
+            name: cff.name,
+            topDict: cff.topDict,
+        },
         head,
         math,
         glyphIndexMap,
@@ -121,8 +125,6 @@ export const parse = async (blob: Blob): Promise<Font> => {
             return getGlyphMetrics(glyph);
         },
     };
-
-    console.log(dir);
 
     return font;
 };
