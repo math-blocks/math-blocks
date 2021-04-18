@@ -233,6 +233,15 @@ describe("renderer", () => {
         });
     });
 
+    describe("tall delimiters", () => {
+        test("no selection", async () => {
+            const TallDelimiters = await storyToComponent(
+                stories.TallDelimiters,
+            );
+            expect(<TallDelimiters />).toMatchSVGSnapshot();
+        });
+    });
+
     describe("cursor", () => {
         test("cursor in the middle", async () => {
             const Cursor = await storyToComponent(stories.Cursor);

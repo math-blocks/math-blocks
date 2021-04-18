@@ -18,17 +18,15 @@ export const multiplierForMathStyle = (mathStyle: MathStyle): number => {
     }
 };
 
-/**
- * Returns the smallest delimiter whose depth and height exceed the that of the
- * box passed in.
- *
- * @param {string} char
- * @param {Layout.Box} box layout encompassed by the delimiter
- * @returns {number} glyphID
- */
-export const getDelimiter = (
+type ThresholdOptions = {
+    value: "both" | "sum";
+    strict: boolean;
+};
+
+const getDelimiter = (
     char: string,
     box: Layout.Box,
+    thresholdOptions: ThresholdOptions,
     context: Context,
 ): number => {
     const {font} = context.fontData;
@@ -52,10 +50,25 @@ export const getDelimiter = (
             ((glyphMetrics.height - glyphMetrics.bearingY) * fontSize) /
             font.head.unitsPerEm;
 
+        const compare = thresholdOptions.strict
+            ? (a: number, b: number) => a > b
+            : (a: number, b: number) => a >= b;
+
         // TODO: add an option to configure whether these inequalities are
         // strict or not.
-        if (height > box.height && depth > box.depth) {
-            return record.variantGlyph;
+        switch (thresholdOptions.value) {
+            case "both": {
+                if (compare(height, box.height) && compare(depth, box.depth)) {
+                    return record.variantGlyph;
+                }
+                break;
+            }
+            case "sum": {
+                if (compare(height + depth, box.height + box.depth)) {
+                    return record.variantGlyph;
+                }
+                break;
+            }
         }
     }
 
@@ -70,50 +83,22 @@ export const getDelimiter = (
 };
 
 /**
- * Returns the smallest surd whose vsize (depth + height) exceed the that of the
- * box passed in.
+ * Returns the smallest delimiter whose depth and height exceed the that of the
+ * box passed in.  `thresholdOptions` controls how this comparison is made.
  *
  * @param {string} char
  * @param {Layout.Box} box layout encompassed by the delimiter
- * @returns {number} glyphID
+ * @param {ThresholdOptions} options
+ * @param {Context} context
+ * @returns {Layout.Glyph}
  */
-export const getSurd = (
+export const makeDelimiter = (
     char: string,
     box: Layout.Box,
+    thresholdOptions: ThresholdOptions,
     context: Context,
-): number => {
-    const {font} = context.fontData;
+): Layout.Glyph => {
+    const glyphID = getDelimiter(char, box, thresholdOptions, context);
 
-    const glyphID = font.getGlyphID(char);
-    const construction = font.math.variants.getVertGlyphConstruction(glyphID);
-
-    if (!construction) {
-        return glyphID;
-    }
-
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
-
-    for (const record of construction.mathGlyphVariantRecords) {
-        const glyphMetrics = font.getGlyphMetrics(record.variantGlyph);
-        const height =
-            (glyphMetrics.bearingY * fontSize) / font.head.unitsPerEm;
-        const depth =
-            ((glyphMetrics.height - glyphMetrics.bearingY) * fontSize) /
-            font.head.unitsPerEm;
-
-        if (height + depth > box.height + box.depth) {
-            return record.variantGlyph;
-        }
-    }
-
-    if (construction.mathGlyphVariantRecords.length > 0) {
-        // TODO: return a glyph assembly layout instead of the tallest delim
-        return construction.mathGlyphVariantRecords[
-            construction.mathGlyphVariantRecords.length - 1
-        ].variantGlyph;
-    }
-
-    return glyphID;
+    return Layout.makeGlyph(char, glyphID, context);
 };

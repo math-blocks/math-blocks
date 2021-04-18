@@ -438,3 +438,27 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
 
     return <MathRenderer scene={prod} />;
 };
+
+export const TallDelimiters: Story<EmptyProps> = (args, {loaded: fontData}) => {
+    const editNode = Editor.builders.row([
+        Editor.builders.delimited(
+            [frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")])],
+            glyph("("),
+            glyph(")"),
+        ),
+        glyph("+"),
+        root(null, [frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")])]),
+    ]);
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(editNode, context);
+
+    return <MathRenderer scene={prod} />;
+};

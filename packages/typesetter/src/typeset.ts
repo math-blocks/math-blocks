@@ -4,7 +4,7 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode} from "./enums";
-import {multiplierForMathStyle, getDelimiter, getSurd} from "./utils";
+import {multiplierForMathStyle, makeDelimiter} from "./utils";
 
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
@@ -108,18 +108,25 @@ const typesetRoot = (
     // TODO: change how we do the index to the following:
     // [index, negative kern, surd, radicand]
 
-    // TODO: make the surd stretchy
-    const glyphID = getSurd("\u221A", radicand, context);
-    const surd = Layout.hpackNat([
-        [Layout.makeGlyph("\u221A", glyphID, context)],
-    ]);
-    let surdBox;
+    const thresholdOptions = {
+        value: "sum" as const,
+        strict: true,
+    };
+    const surdGlyph = makeDelimiter(
+        "\u221A",
+        radicand,
+        thresholdOptions,
+        context,
+    );
+    const surdHBox = Layout.hpackNat([[surdGlyph]]);
+
+    let surdVBox;
     if (indexBox) {
         // TODO: get this constant from the MATH table constants
-        surd.shift = Math.max(0, indexBox.width - 36);
-        surdBox = Layout.makeVBox(
-            surd.width + Math.max(0, indexBox.width - 36),
-            surd,
+        surdHBox.shift = Math.max(0, indexBox.width - 36);
+        surdVBox = Layout.makeVBox(
+            surdHBox.width + Math.max(0, indexBox.width - 36),
+            surdHBox,
             // TODO: get this constant from the MATH table constants
             // TODO: fix how we handle negative kerns, right now we just subtract
             // them from the dimension of the container which isn't right
@@ -127,7 +134,7 @@ const typesetRoot = (
             [],
         );
     } else {
-        surdBox = Layout.makeVBox(surd.width, surd, [], []);
+        surdVBox = Layout.makeVBox(surdHBox.width, surdHBox, [], []);
     }
 
     const fontSize = multiplier * baseFontSize;
@@ -140,9 +147,9 @@ const typesetRoot = (
         [Layout.makeKern(6), stroke],
         [],
     );
-    surdBox.shift = surdBox.height - vbox.height;
+    surdVBox.shift = surdVBox.height - vbox.height;
 
-    const root = Layout.hpackNat([[surdBox, vbox]]);
+    const root = Layout.hpackNat([[surdVBox, vbox]]);
 
     return root;
 };
@@ -363,15 +370,22 @@ const typesetFocus = (
             row.id = focus.id;
             row.color = context?.colorMap?.get(row.id);
 
-            const open = Layout.makeGlyph(
+            const thresholdOptions = {
+                value: "both" as const,
+                strict: true,
+            };
+
+            const open = makeDelimiter(
                 focus.leftDelim.value.char,
-                getDelimiter(focus.leftDelim.value.char, row, context),
+                row,
+                thresholdOptions,
                 context,
             );
 
-            const close = Layout.makeGlyph(
+            const close = makeDelimiter(
                 focus.rightDelim.value.char,
-                getDelimiter(focus.rightDelim.value.char, row, context),
+                row,
+                thresholdOptions,
                 context,
             );
 
@@ -468,15 +482,22 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             row.id = node.id;
             row.color = context?.colorMap?.get(row.id);
 
-            const open = Layout.makeGlyph(
+            const thresholdOptions = {
+                value: "both" as const,
+                strict: true,
+            };
+
+            const open = makeDelimiter(
                 node.leftDelim.value.char,
-                getDelimiter(node.leftDelim.value.char, row, context),
+                row,
+                thresholdOptions,
                 context,
             );
 
-            const close = Layout.makeGlyph(
+            const close = makeDelimiter(
                 node.rightDelim.value.char,
-                getDelimiter(node.rightDelim.value.char, row, context),
+                row,
+                thresholdOptions,
                 context,
             );
 
