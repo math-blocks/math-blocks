@@ -65,33 +65,17 @@ export type MathConstants = {
     radicalDegreeBottomRaisePercent: number; // int16
 };
 
-export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
-    // TODO: check that tableRecord.tableTag === "MATH" before proceeding
+export type MathResult = {
+    constants: MathConstants;
+    variants: VariantsTable;
+};
 
-    type MathHeader = {
-        majorVersion: number; // uint16
-        minorVersion: number; // uint16
-        mathConstantsOffset: number; // uint16
-        mathGlyphInfoOffset: number; // uint16
-        mathVariantsOffset: number; // uint16
-    };
-
-    const headerByteCount = 5 * 2;
-
-    const headerBuffer = await blob.slice(0, headerByteCount).arrayBuffer();
-    const headerView = new DataView(headerBuffer);
-
-    const header: MathHeader = {
-        majorVersion: headerView.getUint16(0),
-        minorVersion: headerView.getUint16(2),
-        mathConstantsOffset: headerView.getUint16(4),
-        mathGlyphInfoOffset: headerView.getUint16(6),
-        mathVariantsOffset: headerView.getUint16(8),
-    };
-
-    const constantsBuffer = await blob
-        .slice(header.mathConstantsOffset, header.mathGlyphInfoOffset)
-        .arrayBuffer();
+const parseConstants = async (
+    blob: Blob,
+    start: number,
+    end: number,
+): Promise<MathConstants> => {
+    const constantsBuffer = await blob.slice(start, end).arrayBuffer();
     const constantsView = new DataView(constantsBuffer);
 
     const getMathValueRecord = (offset: number): MathValueRecord => {
@@ -160,12 +144,278 @@ export const parseMATH = async (blob: Blob): Promise<MathConstants> => {
         radicalDegreeBottomRaisePercent: constantsView.getInt16(212),
     };
 
-    // TODO: parse coverage tables
-    // TODO: parse glyph outlines
-    // TODO: parse MathVariants
-    // we don't need to parse the whole MathVariants table, we can parse on demand
-    // the coverage tables should be parsed up front since we need to look through
-    // the table to know which glyphs are handled.
-
     return mathConstants;
+};
+
+type GlyphVariantRecord = {
+    variantGlyph: number; // Glyph ID
+    advanceMeasurement: number; // UFWORD (uint16 in design units)
+};
+
+type GlyphPartRecord = {
+    glyphID: number; // uint16
+    startConnectorLength: number; // UFWORD (uint16 in design units)
+    endConnectorLength: number; // UFWORD (uint16 in design units)
+    fullAdvance: number; // UFWORD (uint16 in design units)
+    partsFlags: number; // uint16
+};
+
+type GlyphAssembly = {
+    italicsCorrection: MathValueRecord;
+    partRecords: GlyphPartRecord[];
+};
+
+type GlyphConstruction = {
+    glyphAssembly: GlyphAssembly | null;
+    mathGlyphVariantRecords: GlyphVariantRecord[];
+};
+
+export type VariantsTable = {
+    minConnectorOverlap: number; // UFWORD (uint16 in design units)
+    vertGlyphCoverageOffset: number; // Offset16 (uint16)
+    horizGlyphCoverageOffset: number; // Offset16 (uint16)
+    vertGlyphCount: number; // uint16
+    horizGlyphCount: number; // uint16
+    getVertGlyphConstruction: (
+        glyphID: number,
+    ) => Promise<GlyphConstruction | null>;
+    getHorizGlyphConstruction: (
+        glyphID: number,
+    ) => Promise<GlyphConstruction | null>;
+};
+
+type CoverageTable = number[]; // Glyph IDs
+
+const parseCovergeTable = async (
+    blob: Blob,
+    offset: number,
+): Promise<CoverageTable> => {
+    const buffer = await blob.slice(offset, offset + 4).arrayBuffer();
+    const view = new DataView(buffer);
+
+    const coverageFormat = view.getUint16(0);
+    if (coverageFormat !== 2) {
+        throw new Error(`We don't handle coverageFormat = ${coverageFormat}`);
+    }
+    const rangeCount = view.getUint16(2);
+
+    const rangeRecordsBuffer = await blob
+        .slice(offset + 4, offset + 4 + rangeCount * 6)
+        .arrayBuffer();
+    const rangeRecordsView = new DataView(rangeRecordsBuffer);
+
+    const result: CoverageTable = [];
+
+    for (let i = 0; i < rangeCount; i++) {
+        const startGlyphID = rangeRecordsView.getUint16(i * 6 + 0);
+        const endGlyphID = rangeRecordsView.getUint16(i * 6 + 2);
+        const startCoverageIndex = rangeRecordsView.getUint16(i * 6 + 4);
+
+        for (
+            let gid = startGlyphID, index = startCoverageIndex;
+            gid <= endGlyphID;
+            gid++, index++
+        ) {
+            result[index] = gid;
+        }
+    }
+
+    return result;
+};
+
+const parseGlyphAssembly = async (
+    blob: Blob,
+    offset: number,
+): Promise<GlyphAssembly> => {
+    const buffer = await blob.slice(offset, offset + 6).arrayBuffer();
+    const view = new DataView(buffer);
+
+    const getMathValueRecord = (offset: number): MathValueRecord => {
+        return {
+            value: view.getInt16(offset + 0), // FWORD
+            deviceOffset: view.getUint16(offset + 2), // Offset16
+        };
+    };
+
+    const italicsCorrection = getMathValueRecord(0);
+    const partCount = view.getUint16(4);
+
+    const partSize = 5 * 2; // 5 * sizeof(uint16)
+    const glyphPartsBuffer = await blob
+        .slice(offset + 6, offset + 6 + partCount * partSize)
+        .arrayBuffer();
+    const glyphPartsView = new DataView(glyphPartsBuffer);
+
+    const partRecords: GlyphPartRecord[] = [];
+    for (let i = 0; i < partCount; i++) {
+        partRecords.push({
+            glyphID: glyphPartsView.getUint16(i * partSize + 0),
+            startConnectorLength: glyphPartsView.getUint16(i * partSize + 2),
+            endConnectorLength: glyphPartsView.getUint16(i * partSize + 4),
+            fullAdvance: glyphPartsView.getUint16(i * partSize + 6),
+            partsFlags: glyphPartsView.getUint16(i * partSize + 8),
+        });
+    }
+
+    return {
+        italicsCorrection,
+        partRecords,
+    };
+};
+
+const parseGlyphConstruction = async (
+    blob: Blob,
+    offset: number,
+): Promise<GlyphConstruction> => {
+    const buffer = await blob.slice(offset, offset + 4).arrayBuffer();
+    const view = new DataView(buffer);
+
+    // TODO: parse the assembly as well
+    const glyphAssemblyOffset = view.getUint16(0);
+    const variantCount = view.getUint16(2);
+
+    const mathGlyphVariantRecords: GlyphVariantRecord[] = [];
+
+    // TODO: we could probably avoid creating this array buffer if we can
+    // compute the entire size of this construction beforehand.
+    const recordSize = 4; // sizeof(uint16) + sizeof(UFWORD)
+    const recordsBuffer = await blob
+        .slice(offset + 4, offset + 4 + variantCount * recordSize)
+        .arrayBuffer();
+    const recordsView = new DataView(recordsBuffer);
+
+    for (let i = 0; i < variantCount; i++) {
+        mathGlyphVariantRecords.push({
+            variantGlyph: recordsView.getUint16(i * recordSize + 0),
+            advanceMeasurement: recordsView.getUint16(i * recordSize + 2),
+        });
+    }
+
+    const glyphAssembly = glyphAssemblyOffset
+        ? await parseGlyphAssembly(blob, offset + glyphAssemblyOffset)
+        : null;
+
+    return {
+        glyphAssembly,
+        mathGlyphVariantRecords,
+    };
+};
+
+const parseVariants = async (
+    blob: Blob,
+    start: number,
+    end: number,
+): Promise<VariantsTable> => {
+    const buffer = await blob.slice(start, end).arrayBuffer();
+    const view = new DataView(buffer);
+
+    // These offsets are from the start of the MathVariants tabls
+    const vertGlyphCoverageOffset = view.getUint16(2);
+    const horizGlyphCoverageOffset = view.getUint16(4);
+    const vertGlyphCount = view.getUint16(6);
+    const horizGlyphCount = view.getUint16(8);
+
+    const vertGlyphCoverageTable = await parseCovergeTable(
+        blob,
+        start + vertGlyphCoverageOffset,
+    );
+    const horizGlyphCoverageTable = await parseCovergeTable(
+        blob,
+        start + horizGlyphCoverageOffset,
+    );
+
+    const vertGlyphConstructionDict: Record<number, GlyphConstruction> = {};
+    const horizGlyphConstructionDict: Record<number, GlyphConstruction> = {};
+
+    const variants: VariantsTable = {
+        minConnectorOverlap: view.getUint16(0),
+        vertGlyphCoverageOffset,
+        horizGlyphCoverageOffset,
+        vertGlyphCount,
+        horizGlyphCount,
+        getVertGlyphConstruction: async (glyphID: number) => {
+            const index = vertGlyphCoverageTable.indexOf(glyphID);
+            if (index === -1) {
+                return null;
+            }
+
+            if (vertGlyphConstructionDict[glyphID]) {
+                return vertGlyphConstructionDict[glyphID];
+            }
+
+            // offset is from the start of the MathVariants Table
+            const offset = view.getUint16(10 + index * 2);
+            const construction = await parseGlyphConstruction(
+                blob,
+                start + offset,
+            );
+            vertGlyphConstructionDict[glyphID] = construction;
+            return construction;
+        },
+        getHorizGlyphConstruction: async (glyphID: number) => {
+            const index = horizGlyphCoverageTable.indexOf(glyphID);
+            if (index === -1) {
+                return null;
+            }
+
+            if (horizGlyphConstructionDict[glyphID]) {
+                return horizGlyphConstructionDict[glyphID];
+            }
+
+            // offset is from the start of the MathVariants Table
+            const offset = view.getUint16(10 + vertGlyphCount * 2 + index * 2);
+            const construction = await parseGlyphConstruction(
+                blob,
+                start + offset,
+            );
+            horizGlyphConstructionDict[glyphID] = construction;
+            return construction;
+        },
+    };
+
+    return variants;
+};
+
+export const parseMATH = async (blob: Blob): Promise<MathResult> => {
+    // TODO: check that tableRecord.tableTag === "MATH" before proceeding
+
+    type MathHeader = {
+        majorVersion: number; // uint16
+        minorVersion: number; // uint16
+        mathConstantsOffset: number; // uint16
+        mathGlyphInfoOffset: number; // uint16
+        mathVariantsOffset: number; // uint16
+    };
+
+    const headerByteCount = 5 * 2; // 5 * sizeof(uint16)
+
+    const headerBuffer = await blob.slice(0, headerByteCount).arrayBuffer();
+    const headerView = new DataView(headerBuffer);
+
+    const header: MathHeader = {
+        majorVersion: headerView.getUint16(0),
+        minorVersion: headerView.getUint16(2),
+        mathConstantsOffset: headerView.getUint16(4),
+        mathGlyphInfoOffset: headerView.getUint16(6),
+        mathVariantsOffset: headerView.getUint16(8),
+    };
+
+    // TODO: parse MathGlyphInfo Table
+
+    const constants = await parseConstants(
+        blob,
+        header.mathConstantsOffset,
+        header.mathGlyphInfoOffset,
+    );
+
+    const variants = await parseVariants(
+        blob,
+        header.mathVariantsOffset,
+        blob.size,
+    );
+
+    return {
+        constants,
+        variants,
+    };
 };
