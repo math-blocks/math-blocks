@@ -85,13 +85,19 @@ describe("parse", () => {
             );
 
             expect(glyphConstruction).toMatchSnapshot();
-            if (glyphConstruction?.glyphAssembly) {
-                const {partRecords} = glyphConstruction.glyphAssembly;
-                for (const part of partRecords) {
-                    const glyph = font.getGlyph(part.glyphID);
-                    console.log(`glyph.name = ${glyph.name}`);
-                }
-            }
+        });
+
+        test("getVertGlyphConstruction is memoized", async () => {
+            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+
+            const construction1 = await font.math.variants.getVertGlyphConstruction(
+                gid,
+            );
+            const construction2 = await font.math.variants.getVertGlyphConstruction(
+                gid,
+            );
+
+            expect(construction1).toBe(construction2);
         });
 
         test("horizontal glyph construction for uni0303 (combining tilde)", async () => {
@@ -103,6 +109,19 @@ describe("parse", () => {
 
             expect(glyphConstruction).toMatchSnapshot();
         });
+
+        test("getHorizGlyphConstruction is memoized", async () => {
+            const gid = font.glyphIndexMap["u0303".charCodeAt(0)];
+
+            const construction1 = await font.math.variants.getHorizGlyphConstruction(
+                gid,
+            );
+            const construction2 = await font.math.variants.getHorizGlyphConstruction(
+                gid,
+            );
+
+            expect(construction1).toBe(construction2);
+        });
     });
 
     describe("glyphs", () => {
@@ -111,6 +130,14 @@ describe("parse", () => {
             const glyph = font.getGlyph(gid);
 
             expect(glyph.name).toEqual("parenleft");
+        });
+
+        test("getGlyph is memoized", () => {
+            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const glyph1 = font.getGlyph(gid);
+            const glyph2 = font.getGlyph(gid);
+
+            expect(glyph1).toBe(glyph2);
         });
 
         test("metrics", () => {

@@ -263,7 +263,6 @@ const parseGlyphAssembly = async (
     };
 };
 
-// TODO: memoize this
 const parseGlyphConstruction = async (
     blob: Blob,
     offset: number,
@@ -325,6 +324,9 @@ const parseVariants = async (
         start + horizGlyphCoverageOffset,
     );
 
+    const vertGlyphConstructionDict: Record<number, GlyphConstruction> = {};
+    const horizGlyphConstructionDict: Record<number, GlyphConstruction> = {};
+
     const variants: VariantsTable = {
         minConnectorOverlap: view.getUint16(0),
         vertGlyphCoverageOffset,
@@ -336,18 +338,38 @@ const parseVariants = async (
             if (index === -1) {
                 return null;
             }
+
+            if (vertGlyphConstructionDict[glyphID]) {
+                return vertGlyphConstructionDict[glyphID];
+            }
+
             // offset is from the start of the MathVariants Table
             const offset = view.getUint16(10 + index * 2);
-            return parseGlyphConstruction(blob, start + offset);
+            const construction = await parseGlyphConstruction(
+                blob,
+                start + offset,
+            );
+            vertGlyphConstructionDict[glyphID] = construction;
+            return construction;
         },
         getHorizGlyphConstruction: async (glyphID: number) => {
             const index = horizGlyphCoverageTable.indexOf(glyphID);
             if (index === -1) {
                 return null;
             }
+
+            if (horizGlyphConstructionDict[glyphID]) {
+                return horizGlyphConstructionDict[glyphID];
+            }
+
             // offset is from the start of the MathVariants Table
             const offset = view.getUint16(10 + vertGlyphCount * 2 + index * 2);
-            return parseGlyphConstruction(blob, start + offset);
+            const construction = await parseGlyphConstruction(
+                blob,
+                start + offset,
+            );
+            horizGlyphConstructionDict[glyphID] = construction;
+            return construction;
         },
     };
 
