@@ -234,11 +234,25 @@ describe("renderer", () => {
     });
 
     describe("tall delimiters", () => {
-        test("no selection", async () => {
+        test("no cursor, no selection", async () => {
             const TallDelimiters = await storyToComponent(
                 stories.TallDelimiters,
             );
             expect(<TallDelimiters />).toMatchSVGSnapshot();
+        });
+
+        test("with cursor", async () => {
+            const TallDelimitersWithCursor = await storyToComponent(
+                stories.TallDelimitersWithCursor,
+            );
+            expect(<TallDelimitersWithCursor />).toMatchSVGSnapshot();
+        });
+
+        test("with selection", async () => {
+            const TallDelimitersWithSelection = await storyToComponent(
+                stories.TallDelimitersWithSelection,
+            );
+            expect(<TallDelimitersWithSelection />).toMatchSVGSnapshot();
         });
     });
 
