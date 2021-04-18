@@ -4,6 +4,7 @@ module.exports = {
         demo: {url: "/demo"},
         packages: {url: "/math-blocks"},
     },
+    exclude: ['**/node_modules/**/*', '**/__tests__/**/*'],
     plugins: [
         // "@snowpack/plugin-dotenv",
         "@snowpack/plugin-react-refresh",

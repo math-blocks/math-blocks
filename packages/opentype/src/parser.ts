@@ -118,8 +118,20 @@ export const parse = async (blob: Blob): Promise<Font> => {
         },
         head,
         math,
-        glyphIndexMap,
         getGlyph: cff.getGlyph,
+        getGlyphID: (char: string): number => {
+            const codePoint = char.codePointAt(0);
+            if (!codePoint) {
+                throw new Error(`Invalid char: ${char}`);
+            }
+            const glyphID = glyphIndexMap[codePoint];
+            if (!glyphID) {
+                throw new Error(
+                    `No glyphID in font for given codePoint: ${codePoint}`,
+                );
+            }
+            return glyphID;
+        },
         getGlyphMetrics: (gid: number) => {
             const glyph = cff.getGlyph(gid);
             return getGlyphMetrics(glyph);
