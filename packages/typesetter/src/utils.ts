@@ -71,7 +71,7 @@ const getDelimiter = (
                 if (compare(height, box.height) && compare(depth, box.depth)) {
                     // HACK: this is to ensure that we're using the same size
                     // glyph as the row when it contains deep descenders like "y"
-                    if (i === 1) {
+                    if (i === 1 && char !== "\u221a") {
                         return glyphID;
                     }
                     return record.variantGlyph;
@@ -82,7 +82,7 @@ const getDelimiter = (
                 if (compare(height + depth, box.height + box.depth)) {
                     // HACK: this is to ensure that we're using the same size
                     // glyph as the row when it contains deep descenders like "y"
-                    if (i === 1) {
+                    if (i === 1 && char !== "\u221a") {
                         return glyphID;
                     }
                     return record.variantGlyph;
