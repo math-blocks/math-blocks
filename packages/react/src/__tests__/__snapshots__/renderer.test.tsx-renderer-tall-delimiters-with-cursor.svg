@@ -35,7 +35,7 @@
             <g transform="translate(27,0)" id="9">
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(53.37,-11.04)" id="5">
-                        <rect type="rect" x="-1" y="-54.4" width="2" height="64" fill="currentcolor"></rect>
+                        <rect type="rect" x="-1" y="-51" width="2" height="60" fill="currentcolor"></rect>
                         <path fill="currentcolor" id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                     </g>
                     <g transform="translate(0,49.38)" id="6">

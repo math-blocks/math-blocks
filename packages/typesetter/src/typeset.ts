@@ -4,7 +4,11 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode} from "./enums";
-import {multiplierForMathStyle, makeDelimiter} from "./utils";
+import {
+    multiplierForMathStyle,
+    fontSizeForContext,
+    makeDelimiter,
+} from "./utils";
 
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
@@ -18,7 +22,10 @@ export const isGlyph = (
 ): node is Editor.types.Atom => node.type === "atom" && node.value.char == char;
 
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
-    const box = Layout.hpackNat([_typesetChildren(row.children, context)]);
+    const box = Layout.hpackNat(
+        [_typesetChildren(row.children, context)],
+        context,
+    );
     box.id = row.id;
     box.color = context?.colorMap?.get(row.id);
 
@@ -34,16 +41,15 @@ const withOperatorPadding = (
     node: Layout.Node,
     context: Context,
 ): Layout.Node => {
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
+    const fontSize = fontSizeForContext(context);
 
     // We need to tweak this loic so that we only add padding on the right side
     // for binary operators below.  This is so that we don't get extra space
     // when adding/subtracting something just to the right of an "=" in the above
-    return Layout.hpackNat([
-        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
-    ]);
+    return Layout.hpackNat(
+        [[Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)]],
+        context,
+    );
 };
 
 // NOTE: This function mutates `box`.
@@ -98,9 +104,7 @@ const typesetRoot = (
     radicand: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const {baseFontSize, mathStyle} = context;
-
-    const multiplier = multiplierForMathStyle(mathStyle);
+    const multiplier = multiplierForMathStyle(context.mathStyle);
 
     // Give the radicand a minimal width in case it's empty
     radicand.width = Math.max(radicand.width, 30 * multiplier);
@@ -118,7 +122,7 @@ const typesetRoot = (
         thresholdOptions,
         context,
     );
-    const surdHBox = Layout.hpackNat([[surdGlyph]]);
+    const surdHBox = Layout.hpackNat([[surdGlyph]], context);
 
     let surdVBox;
     if (indexBox) {
@@ -132,12 +136,13 @@ const typesetRoot = (
             // them from the dimension of the container which isn't right
             [Layout.makeKern(-31.4), indexBox],
             [],
+            context,
         );
     } else {
-        surdVBox = Layout.makeVBox(surdHBox.width, surdHBox, [], []);
+        surdVBox = Layout.makeVBox(surdHBox.width, surdHBox, [], [], context);
     }
 
-    const fontSize = multiplier * baseFontSize;
+    const fontSize = fontSizeForContext(context);
     const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
     const stroke = Layout.makeHRule(thickness, radicand.width);
 
@@ -146,10 +151,11 @@ const typesetRoot = (
         radicand,
         [Layout.makeKern(6), stroke],
         [],
+        context,
     );
     surdVBox.shift = surdVBox.height - vbox.height;
 
-    const root = Layout.hpackNat([[surdVBox, vbox]]);
+    const root = Layout.hpackNat([[surdVBox, vbox]], context);
 
     return root;
 };
@@ -169,13 +175,16 @@ const typesetLimits = (
 
     const newInner =
         innerWidth < width
-            ? Layout.hpackNat([
+            ? Layout.hpackNat(
                   [
-                      Layout.makeKern((width - innerWidth) / 2),
-                      inner,
-                      Layout.makeKern((width - innerWidth) / 2),
+                      [
+                          Layout.makeKern((width - innerWidth) / 2),
+                          inner,
+                          Layout.makeKern((width - innerWidth) / 2),
+                      ],
                   ],
-              ])
+                  context,
+              )
             : inner;
     if (lowerBox.width < width) {
         lowerBox.shift = (width - lowerBox.width) / 2;
@@ -189,6 +198,7 @@ const typesetLimits = (
         newInner,
         upperBox ? [Layout.makeKern(6), upperBox] : [],
         [Layout.makeKern(4), lowerBox],
+        context,
     );
 
     return limits;
@@ -392,7 +402,7 @@ const typesetFocus = (
             open.pending = focus.leftDelim.value.pending;
             close.pending = focus.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]]);
+            return Layout.hpackNat([[open, row, close]], context);
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -504,7 +514,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             open.pending = node.leftDelim.value.pending;
             close.pending = node.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]]);
+            return Layout.hpackNat([[open, row, close]], context);
         }
         case "atom": {
             const {value} = node;
@@ -613,7 +623,7 @@ const _typesetZipper = (
                     : row.selection.nodes[row.selection.nodes.length - 1],
             );
 
-            const box = Layout.hpackNat([left, selection, right]);
+            const box = Layout.hpackNat([left, selection, right], context);
             box.id = row.id;
             box.color = context?.colorMap?.get(box.id);
 
@@ -633,7 +643,7 @@ const _typesetZipper = (
             nodes.push(typesetFocus(crumb.focus, nextZipper, context));
             nodes.push(..._typesetChildren(row.right, context, crumb.focus));
 
-            const box = Layout.hpackNat([nodes]);
+            const box = Layout.hpackNat([nodes], context);
             box.id = row.id;
             box.color = context?.colorMap?.get(box.id);
 
@@ -659,7 +669,7 @@ const _typesetZipper = (
             : row.left[row.left.length - 1];
         const right = _typesetChildren(row.right, context, prevLastChild);
 
-        const box = Layout.hpackNat([left, selection, right]);
+        const box = Layout.hpackNat([left, selection, right], context);
         box.id = row.id;
         box.color = context?.colorMap?.get(box.id);
 

@@ -18,6 +18,13 @@ export const multiplierForMathStyle = (mathStyle: MathStyle): number => {
     }
 };
 
+export const fontSizeForContext = (context: Context): number => {
+    const {baseFontSize, mathStyle} = context;
+    const multiplier = multiplierForMathStyle(mathStyle);
+    const fontSize = multiplier * baseFontSize;
+    return fontSize;
+};
+
 type ThresholdOptions = {
     value: "both" | "sum";
     strict: boolean;
@@ -38,9 +45,7 @@ const getDelimiter = (
         return glyphID;
     }
 
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
+    const fontSize = fontSizeForContext(context);
 
     for (const record of construction.mathGlyphVariantRecords) {
         const glyphMetrics = font.getGlyphMetrics(record.variantGlyph);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 464.53999999999996 115.91999999999999" width="464.53999999999996" height="115.91999999999999" style="background:white">
     <g transform="translate(0,74.94)" id="21">
-        <rect type="rect" x="190.44" y="-54.4" width="73.2" height="64" fill="rgba(0,144,255,0.5)"></rect>
+        <rect type="rect" x="190.44" y="-51" width="73.2" height="60" fill="rgba(0,144,255,0.5)"></rect>
         <rect type="rect" x="0" y="-73.38" width="190.44" height="114.35999999999999" fill="rgba(0,144,255,0.5)"></rect>
         <g transform="translate(190.44,0)" id="11">
             <path fill="currentcolor" id="11" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>

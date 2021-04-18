@@ -1,7 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 import type {MathConstants, FontData} from "@math-blocks/opentype";
 
-import {multiplierForMathStyle} from "./utils";
+import {multiplierForMathStyle, fontSizeForContext} from "./utils";
 import type {Context} from "./types";
 import {MathStyle} from "./enums";
 
@@ -25,6 +25,7 @@ export type Box = {
     kind: BoxKind;
     shift: Dist;
     content: readonly (readonly Node[])[];
+    fontSize: number;
 } & Common &
     Dim;
 
@@ -54,13 +55,17 @@ export const makeBox = (
     kind: BoxKind,
     dim: Dim,
     content: readonly (readonly Node[])[],
-): Box => ({
-    type: "Box",
-    kind,
-    ...dim,
-    shift: 0,
-    content,
-});
+    context: Context,
+): Box => {
+    return {
+        type: "Box",
+        kind,
+        ...dim,
+        shift: 0,
+        content,
+        fontSize: fontSizeForContext(context),
+    };
+};
 
 export const makeKern = (size: Dist): Kern => ({
     type: "Kern",
@@ -78,16 +83,12 @@ export const makeGlyph = (
     glyphID: number,
     context: Context,
 ): Glyph => {
-    const {fontData, baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
-
     return {
         type: "Glyph",
         char,
         glyphID,
-        size: fontSize,
-        fontData,
+        size: fontSizeForContext(context),
+        fontData: context.fontData,
     };
 };
 
@@ -230,13 +231,16 @@ const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
 const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
 const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (nl: readonly (readonly Node[])[]): Box => {
+export const hpackNat = (
+    nl: readonly (readonly Node[])[],
+    context: Context,
+): Box => {
     const dim = {
         width: sum(nl.map(hlistWidth)),
         height: max(nl.map(hlistHeight)),
         depth: max(nl.map(hlistDepth)),
     };
-    return makeBox("hbox", dim, nl);
+    return makeBox("hbox", dim, nl, context);
 };
 
 export const makeVBox = (
@@ -244,6 +248,7 @@ export const makeVBox = (
     node: Node,
     upList: readonly Node[],
     dnList: readonly Node[],
+    context: Context,
 ): Box => {
     const dim = {
         width,
@@ -259,7 +264,7 @@ export const makeVBox = (
     const upListCopy = [...upList];
     // TODO: get rid of the need to reverse the uplist
     const nodeList = [...upListCopy.reverse(), node, ...dnList];
-    return makeBox("vbox", dim, [nodeList]);
+    return makeBox("vbox", dim, [nodeList], context);
 };
 
 const makeList = (size: Dist, box: Box): readonly Node[] => [
@@ -274,9 +279,8 @@ export const makeFract = (
     context: Context,
     constants: MathConstants,
 ): Box => {
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
+    const {mathStyle} = context;
+    const fontSize = fontSizeForContext(context);
     const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
     const shift = (fontSize * constants.axisHeight.value) / 1000;
 
@@ -311,16 +315,20 @@ export const makeFract = (
     //     minDenGap,
     // );
 
+    const multiplier = multiplierForMathStyle(mathStyle);
     const width = Math.max(
         Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
         30 * multiplier, // empty numerator/denominator width
     );
-    const stroke = hpackNat([[makeHRule(thickness, width - thickness)]]);
+    const stroke = hpackNat(
+        [[makeHRule(thickness, width - thickness)]],
+        context,
+    );
 
     const upList = makeList(minNumGap, numBox);
     const dnList = makeList(minDenGap, denBox);
 
-    const fracBox = makeVBox(width, stroke, upList, dnList);
+    const fracBox = makeVBox(width, stroke, upList, dnList, context);
     fracBox.shift = -shift;
 
     // center the numerator
@@ -363,7 +371,7 @@ export const makeSubSup = (
     // we can't have a non-zero kern b/c it has no height/depth
     const gap = makeKern(0);
 
-    const subsupBox = makeVBox(width, gap, upList, dnList);
+    const subsupBox = makeVBox(width, gap, upList, dnList, context);
     // TODO: calculate this based on current font size
     subsupBox.shift = -10 * multiplier;
     return subsupBox;

@@ -85,12 +85,9 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
-// TODO: get font size from options
-const FONT_SIZE = 64;
-const CURSOR_WIDTH = 2;
-
 // TODO: replace with font.hhea.ascender
 const ASCENDER = 850;
+const CURSOR_WIDTH = 2;
 
 const processHBox = (
     box: Layout.Box,
@@ -112,7 +109,8 @@ const processHBox = (
         box.content[1].length > 0;
 
     const {font} = fontData;
-    const ascent = (FONT_SIZE * ASCENDER) / font.head.unitsPerEm;
+    const {fontSize} = box;
+    const ascent = (fontSize * ASCENDER) / font.head.unitsPerEm;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
@@ -131,7 +129,7 @@ const processHBox = (
                 x: pen.x - CURSOR_WIDTH / 2,
                 y: pen.y - ascent,
                 width: CURSOR_WIDTH,
-                height: FONT_SIZE,
+                height: fontSize,
             });
         }
 
@@ -146,7 +144,7 @@ const processHBox = (
 
                 const height = Math.max(
                     Layout.getHeight(node) + Layout.getDepth(node),
-                    FONT_SIZE,
+                    fontSize,
                 );
 
                 selectionBoxes.push({
@@ -319,13 +317,13 @@ export const processBox = (
     options: Options = {},
 ): Group => {
     const loc = {x: 0, y: Layout.getHeight(box)};
-
     const scene = _processBox(box, loc, fontData, options);
 
-    const height = Math.max(scene.height, FONT_SIZE);
+    const {fontSize} = box;
+    const height = Math.max(scene.height, fontSize);
 
     const {font} = fontData;
-    const ascent = (FONT_SIZE * ASCENDER) / font.head.unitsPerEm;
+    const ascent = (fontSize * ASCENDER) / font.head.unitsPerEm;
     scene.y = Math.max(scene.y, ascent);
     scene.height = height;
 
