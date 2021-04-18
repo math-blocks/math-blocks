@@ -60,7 +60,48 @@ describe("parse", () => {
 
     describe("math", () => {
         test("constants", () => {
-            expect(font.math).toMatchSnapshot();
+            expect(font.math.constants).toMatchSnapshot();
+        });
+
+        test("variants", async () => {
+            expect(font.math.variants).toMatchInlineSnapshot(`
+                Object {
+                  "getHorizGlyphConstruction": [Function],
+                  "getVertGlyphConstruction": [Function],
+                  "horizGlyphCount": 47,
+                  "horizGlyphCoverageOffset": 992,
+                  "minConnectorOverlap": 100,
+                  "vertGlyphCount": 118,
+                  "vertGlyphCoverageOffset": 340,
+                }
+            `);
+        });
+
+        test("vertical glyph construction for parenleft", async () => {
+            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+
+            const glyphConstruction = await font.math.variants.getVertGlyphConstruction(
+                gid,
+            );
+
+            expect(glyphConstruction).toMatchSnapshot();
+            if (glyphConstruction?.glyphAssembly) {
+                const {partRecords} = glyphConstruction.glyphAssembly;
+                for (const part of partRecords) {
+                    const glyph = font.getGlyph(part.glyphID);
+                    console.log(`glyph.name = ${glyph.name}`);
+                }
+            }
+        });
+
+        test("horizontal glyph construction for uni0303 (combining tilde)", async () => {
+            const gid = font.glyphIndexMap["\u0303".charCodeAt(0)];
+
+            const glyphConstruction = await font.math.variants.getHorizGlyphConstruction(
+                gid,
+            );
+
+            expect(glyphConstruction).toMatchSnapshot();
         });
     });
 

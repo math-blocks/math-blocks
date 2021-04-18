@@ -1,5 +1,5 @@
 import type {HeaderTable} from "./tables/head";
-import type {MathConstants} from "./tables/math";
+import type {MathConstants, VariantsTable} from "./tables/math";
 import type {Glyph, TopDict} from "./tables/cff-types";
 
 export type TableRecord = {
@@ -40,7 +40,10 @@ export type Font = {
         topDict: TopDict;
     };
     head: HeaderTable;
-    math: MathConstants;
+    math: {
+        constants: MathConstants;
+        variants: VariantsTable;
+    };
     glyphIndexMap: Record<number, number>;
 
     getGlyph: (gid: number) => Glyph;

@@ -292,6 +292,126 @@ Object {
 }
 `;
 
+exports[`parse math horizontal glyph construction for uni0303 (combining tilde) 1`] = `
+Object {
+  "glyphAssembly": null,
+  "mathGlyphVariantRecords": Array [
+    Object {
+      "advanceMeasurement": 322,
+      "variantGlyph": 742,
+    },
+    Object {
+      "advanceMeasurement": 574,
+      "variantGlyph": 1405,
+    },
+    Object {
+      "advanceMeasurement": 1003,
+      "variantGlyph": 1406,
+    },
+    Object {
+      "advanceMeasurement": 1496,
+      "variantGlyph": 1407,
+    },
+    Object {
+      "advanceMeasurement": 1932,
+      "variantGlyph": 1408,
+    },
+    Object {
+      "advanceMeasurement": 2385,
+      "variantGlyph": 1409,
+    },
+  ],
+}
+`;
+
+exports[`parse math vertical glyph construction for parenleft 1`] = `
+Object {
+  "glyphAssembly": Object {
+    "italicsCorrection": Object {
+      "deviceOffset": 0,
+      "value": 0,
+    },
+    "partRecords": Array [
+      Object {
+        "endConnectorLength": 250,
+        "fullAdvance": 1273,
+        "glyphID": 4862,
+        "partsFlags": 0,
+        "startConnectorLength": 0,
+      },
+      Object {
+        "endConnectorLength": 1000,
+        "fullAdvance": 1252,
+        "glyphID": 4861,
+        "partsFlags": 1,
+        "startConnectorLength": 1000,
+      },
+      Object {
+        "endConnectorLength": 0,
+        "fullAdvance": 1273,
+        "glyphID": 4860,
+        "partsFlags": 0,
+        "startConnectorLength": 250,
+      },
+    ],
+  },
+  "mathGlyphVariantRecords": Array [
+    Object {
+      "advanceMeasurement": 933,
+      "variantGlyph": 1064,
+    },
+    Object {
+      "advanceMeasurement": 1187,
+      "variantGlyph": 1301,
+    },
+    Object {
+      "advanceMeasurement": 1427,
+      "variantGlyph": 1302,
+    },
+    Object {
+      "advanceMeasurement": 1667,
+      "variantGlyph": 1303,
+    },
+    Object {
+      "advanceMeasurement": 1907,
+      "variantGlyph": 1304,
+    },
+    Object {
+      "advanceMeasurement": 2145,
+      "variantGlyph": 1305,
+    },
+    Object {
+      "advanceMeasurement": 2385,
+      "variantGlyph": 1306,
+    },
+    Object {
+      "advanceMeasurement": 2625,
+      "variantGlyph": 1307,
+    },
+    Object {
+      "advanceMeasurement": 2865,
+      "variantGlyph": 1308,
+    },
+    Object {
+      "advanceMeasurement": 3101,
+      "variantGlyph": 1309,
+    },
+    Object {
+      "advanceMeasurement": 3341,
+      "variantGlyph": 1310,
+    },
+    Object {
+      "advanceMeasurement": 3581,
+      "variantGlyph": 1311,
+    },
+    Object {
+      "advanceMeasurement": 3821,
+      "variantGlyph": 1312,
+    },
+  ],
+}
+`;
+
 exports[`parseDirectory tableRecords 1`] = `
 Object {
   "CFF ": Object {
