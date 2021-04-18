@@ -26,14 +26,6 @@ export type GlyphMetrics = {
     height: number;
 };
 
-export type FontMetrics = {
-    unitsPerEm: number;
-    ascender: number;
-    descender: number;
-    getGlyphMetrics: (codePoint: number | undefined) => GlyphMetrics | null;
-    hasChar: (char: string) => boolean;
-};
-
 export type Font = {
     cff: {
         name: string;
@@ -44,14 +36,12 @@ export type Font = {
         constants: MathConstants;
         variants: VariantsTable;
     };
-    glyphIndexMap: Record<number, number>;
-
-    getGlyph: (gid: number) => Glyph;
-    getGlyphMetrics: (gid: number) => GlyphMetrics;
+    getGlyphID: (char: string) => number;
+    getGlyph: (glyphID: number) => Glyph;
+    getGlyphMetrics: (glyphID: number) => GlyphMetrics;
 };
 
 export type FontData = {
     font: Font;
-    fontMetrics: FontMetrics;
     fontFamily: string; // e.g. "Comic Sans", "STIX2", etc.
 };

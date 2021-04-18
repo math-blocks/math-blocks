@@ -49,12 +49,12 @@ const withOperatorPadding = (
 // NOTE: This function mutates `box`.
 const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
     const {
-        fontData: {fontMetrics},
+        fontData: {font},
         baseFontSize,
         mathStyle,
     } = context;
-    const jmetrics = fontMetrics.getGlyphMetrics("j".charCodeAt(0));
-    const Emetrics = fontMetrics.getGlyphMetrics("E".charCodeAt(0));
+    const jmetrics = font.getGlyphMetrics(font.getGlyphID("j"));
+    const Emetrics = font.getGlyphMetrics(font.getGlyphID("E"));
 
     const multiplier = multiplierForMathStyle(mathStyle);
 
@@ -64,7 +64,7 @@ const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
             (baseFontSize *
                 multiplier *
                 (jmetrics.height - jmetrics.bearingY)) /
-            fontMetrics.unitsPerEm;
+            font.head.unitsPerEm;
         box.depth = Math.max(box.depth, jDepth);
     }
 
@@ -72,7 +72,7 @@ const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
     if (Emetrics) {
         const EHeight =
             (baseFontSize * multiplier * Emetrics.bearingY) /
-            fontMetrics.unitsPerEm;
+            font.head.unitsPerEm;
         box.height = Math.max(box.height, EHeight);
     }
 };
@@ -99,6 +99,7 @@ const typesetRoot = (
     context: Context,
 ): Layout.Box => {
     const {baseFontSize, mathStyle} = context;
+    const {font} = context.fontData;
 
     const multiplier = multiplierForMathStyle(mathStyle);
 
@@ -109,7 +110,10 @@ const typesetRoot = (
     // [index, negative kern, surd, radicand]
 
     // TODO: make the surd stretchy
-    const surd = Layout.hpackNat([[Layout.makeGlyph("\u221A", context)]]);
+    const glyphID = font.getGlyphID("\u221A");
+    const surd = Layout.hpackNat([
+        [Layout.makeGlyph("\u221A", glyphID, context)],
+    ]);
     let surdBox;
     if (indexBox) {
         // TODO: get this constant from the MATH table constants
@@ -359,12 +363,16 @@ const typesetFocus = (
 
             row.id = focus.id;
             row.color = context?.colorMap?.get(row.id);
+            const {font} = context.fontData;
 
-            // TODO: update makeGlyph to accept an editor Glyph type instead of
-            // a char
-            const open = Layout.makeGlyph(focus.leftDelim.value.char, context);
+            const open = Layout.makeGlyph(
+                focus.leftDelim.value.char,
+                font.getGlyphID(focus.leftDelim.value.char),
+                context,
+            );
             const close = Layout.makeGlyph(
                 focus.rightDelim.value.char,
+                font.getGlyphID(focus.rightDelim.value.char),
                 context,
             );
 
@@ -379,9 +387,7 @@ const typesetFocus = (
 };
 
 const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
-    const {
-        fontData: {fontMetrics},
-    } = context;
+    const {font} = context.fontData;
 
     switch (node.type) {
         case "row": {
@@ -463,10 +469,16 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             row.id = node.id;
             row.color = context?.colorMap?.get(row.id);
 
-            // TODO: update makeGlyph to accept an editor Glyph type instead of
-            // a char
-            const open = Layout.makeGlyph(node.leftDelim.value.char, context);
-            const close = Layout.makeGlyph(node.rightDelim.value.char, context);
+            const open = Layout.makeGlyph(
+                node.leftDelim.value.char,
+                font.getGlyphID(node.leftDelim.value.char),
+                context,
+            );
+            const close = Layout.makeGlyph(
+                node.rightDelim.value.char,
+                font.getGlyphID(node.rightDelim.value.char),
+                context,
+            );
 
             open.pending = node.leftDelim.value.pending;
             close.pending = node.rightDelim.value.pending;
@@ -475,16 +487,17 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
         }
         case "atom": {
             const {value} = node;
-            let glyph = Layout.makeGlyph(value.char, context);
+
+            const glyphID = font.getGlyphID(value.char);
+            let glyph = Layout.makeGlyph(value.char, glyphID, context);
 
             // Convert individual glyphs to italic glyphs if they exist in the
             // current font.
             if (/[a-z]/.test(value.char)) {
                 const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
                 const char = String.fromCodePoint(0x1d44e + offset);
-                if (fontMetrics.hasChar(char)) {
-                    glyph = Layout.makeGlyph(char, context);
-                }
+                const glyphID = font.getGlyphID(char);
+                glyph = Layout.makeGlyph(char, glyphID, context);
             }
 
             glyph.id = node.id;

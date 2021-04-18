@@ -78,7 +78,7 @@ describe("parse", () => {
         });
 
         test("vertical glyph construction for parenleft", async () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
 
             const glyphConstruction = await font.math.variants.getVertGlyphConstruction(
                 gid,
@@ -88,7 +88,7 @@ describe("parse", () => {
         });
 
         test("getVertGlyphConstruction is memoized", async () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
 
             const construction1 = await font.math.variants.getVertGlyphConstruction(
                 gid,
@@ -101,7 +101,7 @@ describe("parse", () => {
         });
 
         test("horizontal glyph construction for uni0303 (combining tilde)", async () => {
-            const gid = font.glyphIndexMap["\u0303".charCodeAt(0)];
+            const gid = font.getGlyphID("\u0303");
 
             const glyphConstruction = await font.math.variants.getHorizGlyphConstruction(
                 gid,
@@ -111,7 +111,7 @@ describe("parse", () => {
         });
 
         test("getHorizGlyphConstruction is memoized", async () => {
-            const gid = font.glyphIndexMap["u0303".charCodeAt(0)];
+            const gid = font.getGlyphID("\u0303");
 
             const construction1 = await font.math.variants.getHorizGlyphConstruction(
                 gid,
@@ -126,14 +126,14 @@ describe("parse", () => {
 
     describe("glyphs", () => {
         test("name", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyph = font.getGlyph(gid);
 
             expect(glyph.name).toEqual("parenleft");
         });
 
         test("getGlyph is memoized", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyph1 = font.getGlyph(gid);
             const glyph2 = font.getGlyph(gid);
 
@@ -141,7 +141,7 @@ describe("parse", () => {
         });
 
         test("metrics", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyph = font.getGlyph(gid);
 
             expect(glyph.metrics).toEqual({
@@ -150,7 +150,7 @@ describe("parse", () => {
         });
 
         test("getGlyphMetrics", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyphMetrics = font.getGlyphMetrics(gid);
 
             expect(glyphMetrics).toEqual({
@@ -163,7 +163,7 @@ describe("parse", () => {
         });
 
         test("metrics and glyphMetrics 'advance' match", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyphMetrics = font.getGlyphMetrics(gid);
             const glyph = font.getGlyph(gid);
 
@@ -171,7 +171,7 @@ describe("parse", () => {
         });
 
         test("path", () => {
-            const gid = font.glyphIndexMap["(".charCodeAt(0)];
+            const gid = font.getGlyphID("(");
             const glyph = font.getGlyph(gid);
 
             expect(glyph.path).toEqual([

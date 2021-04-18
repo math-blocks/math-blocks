@@ -60,11 +60,6 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
     const {font} = glyph.fontData;
-    const codePoint = glyph.char.codePointAt(0);
-    if (!codePoint) {
-        throw new Error("No code point for char");
-    }
-    const gid = font.glyphIndexMap[codePoint];
     const scale = glyph.size / font.head.unitsPerEm;
 
     const glyphRendering: GlyphRendering = GlyphRendering.Path;
@@ -76,7 +71,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
                 id={id}
                 style={{opacity: glyph.pending ? 0.5 : 1.0}}
                 aria-hidden="true"
-                d={getPath(font.getGlyph(gid))}
+                d={getPath(font.getGlyph(glyph.glyphID))}
                 transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
             />
         );

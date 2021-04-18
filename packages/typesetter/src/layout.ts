@@ -30,7 +30,8 @@ export type Box = {
 
 export type Glyph = {
     type: "Glyph";
-    char: string;
+    char?: string;
+    glyphID: number; // This is specific to the Font in FontData
     size: number;
     fontData: FontData;
     pending?: boolean;
@@ -72,7 +73,11 @@ export const makeHRule = (thickness: number, width: number): HRule => ({
     width,
 });
 
-export const makeGlyph = (char: string, context: Context): Glyph => {
+export const makeGlyph = (
+    char: string,
+    glyphID: number,
+    context: Context,
+): Glyph => {
     const {fontData, baseFontSize, mathStyle} = context;
     const multiplier = multiplierForMathStyle(mathStyle);
     const fontSize = multiplier * baseFontSize;
@@ -80,62 +85,60 @@ export const makeGlyph = (char: string, context: Context): Glyph => {
     return {
         type: "Glyph",
         char,
+        glyphID,
         size: fontSize,
         fontData,
     };
 };
 
 export const getCharAdvance = (glyph: Glyph): number => {
-    const charCode = glyph.char.codePointAt(0);
-    const {fontMetrics} = glyph.fontData;
-    const metrics = fontMetrics.getGlyphMetrics(charCode);
+    const {font} = glyph.fontData;
+    const metrics = font.getGlyphMetrics(glyph.glyphID);
+    const unitsPerEm = font.head.unitsPerEm;
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (metrics.advance * glyph.size) / fontMetrics.unitsPerEm;
+    return (metrics.advance * glyph.size) / unitsPerEm;
 };
 
 export const getCharBearingX = (glyph: Glyph): number => {
-    const charCode = glyph.char.codePointAt(0);
-    const {fontMetrics} = glyph.fontData;
-    const metrics = fontMetrics.getGlyphMetrics(charCode);
+    const {font} = glyph.fontData;
+    const metrics = font.getGlyphMetrics(glyph.glyphID);
+    const unitsPerEm = font.head.unitsPerEm;
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (metrics.bearingX * glyph.size) / fontMetrics.unitsPerEm;
+    return (metrics.bearingX * glyph.size) / unitsPerEm;
 };
 
 export const getCharWidth = (glyph: Glyph): number => {
-    const charCode = glyph.char.codePointAt(0);
-    const {fontMetrics} = glyph.fontData;
-    const metrics = fontMetrics.getGlyphMetrics(charCode);
+    const {font} = glyph.fontData;
+    const metrics = font.getGlyphMetrics(glyph.glyphID);
+    const unitsPerEm = font.head.unitsPerEm;
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (metrics.width * glyph.size) / fontMetrics.unitsPerEm;
+    return (metrics.width * glyph.size) / unitsPerEm;
 };
 
 export const getCharHeight = (glyph: Glyph): number => {
-    const charCode = glyph.char.codePointAt(0);
-    const {fontMetrics} = glyph.fontData;
-    const metrics = fontMetrics.getGlyphMetrics(charCode);
+    const {font} = glyph.fontData;
+    const metrics = font.getGlyphMetrics(glyph.glyphID);
+    const unitsPerEm = font.head.unitsPerEm;
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (metrics.bearingY * glyph.size) / fontMetrics.unitsPerEm;
+    return (metrics.bearingY * glyph.size) / unitsPerEm;
 };
 
 export const getCharDepth = (glyph: Glyph): number => {
-    const charCode = glyph.char.codePointAt(0);
-    const {fontMetrics} = glyph.fontData;
-    const metrics = fontMetrics.getGlyphMetrics(charCode);
+    const {font} = glyph.fontData;
+    const metrics = font.getGlyphMetrics(glyph.glyphID);
+    const unitsPerEm = font.head.unitsPerEm;
     if (!metrics) {
         throw new Error(`metrics do not exist for "${glyph.char}"`);
     }
-    return (
-        ((metrics.height - metrics.bearingY) * glyph.size) /
-        fontMetrics.unitsPerEm
-    );
+    return ((metrics.height - metrics.bearingY) * glyph.size) / unitsPerEm;
 };
 
 export const getWidth = (node: Node): number => {
