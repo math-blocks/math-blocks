@@ -77,46 +77,46 @@ describe("parse", () => {
             `);
         });
 
-        test("vertical glyph construction for parenleft", async () => {
+        test("vertical glyph construction for parenleft", () => {
             const gid = font.getGlyphID("(");
 
-            const glyphConstruction = await font.math.variants.getVertGlyphConstruction(
+            const glyphConstruction = font.math.variants.getVertGlyphConstruction(
                 gid,
             );
 
             expect(glyphConstruction).toMatchSnapshot();
         });
 
-        test("getVertGlyphConstruction is memoized", async () => {
+        test("getVertGlyphConstruction is memoized", () => {
             const gid = font.getGlyphID("(");
 
-            const construction1 = await font.math.variants.getVertGlyphConstruction(
+            const construction1 = font.math.variants.getVertGlyphConstruction(
                 gid,
             );
-            const construction2 = await font.math.variants.getVertGlyphConstruction(
+            const construction2 = font.math.variants.getVertGlyphConstruction(
                 gid,
             );
 
             expect(construction1).toBe(construction2);
         });
 
-        test("horizontal glyph construction for uni0303 (combining tilde)", async () => {
+        test("horizontal glyph construction for uni0303 (combining tilde)", () => {
             const gid = font.getGlyphID("\u0303");
 
-            const glyphConstruction = await font.math.variants.getHorizGlyphConstruction(
+            const glyphConstruction = font.math.variants.getHorizGlyphConstruction(
                 gid,
             );
 
             expect(glyphConstruction).toMatchSnapshot();
         });
 
-        test("getHorizGlyphConstruction is memoized", async () => {
+        test("getHorizGlyphConstruction is memoized", () => {
             const gid = font.getGlyphID("\u0303");
 
-            const construction1 = await font.math.variants.getHorizGlyphConstruction(
+            const construction1 = font.math.variants.getHorizGlyphConstruction(
                 gid,
             );
-            const construction2 = await font.math.variants.getHorizGlyphConstruction(
+            const construction2 = font.math.variants.getHorizGlyphConstruction(
                 gid,
             );
 
