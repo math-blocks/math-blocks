@@ -29,6 +29,8 @@ export default {
 
 type EmptyProps = Record<string, never>;
 
+const style = {background: "white"};
+
 export const Small: Story<EmptyProps> = (args, {loaded: fontData}) => {
     // TODO: write a function to convert a Semantic AST into an Editor AST
     const math = row([
@@ -50,7 +52,7 @@ export const Small: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
     const scene = Typesetter.typeset(math, context);
 
-    return <MathRenderer scene={scene} />;
+    return <MathRenderer scene={scene} style={style} />;
 };
 
 export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -74,7 +76,7 @@ export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
     const scene = Typesetter.typeset(math, context);
 
-    return <MathRenderer scene={scene} />;
+    return <MathRenderer scene={scene} style={style} />;
 };
 
 export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -112,7 +114,7 @@ export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     const scene = Typesetter.typesetZipper(zipper, context, options);
 
-    return <MathRenderer scene={scene} />;
+    return <MathRenderer scene={scene} style={style} />;
 };
 
 export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -150,7 +152,7 @@ export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     const scene = Typesetter.typesetZipper(zipper, context);
 
-    return <MathRenderer scene={scene} />;
+    return <MathRenderer scene={scene} style={style} />;
 };
 
 export const Pythagoras: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -177,7 +179,7 @@ export const Pythagoras: Story<EmptyProps> = (args, {loaded: fontData}) => {
         context,
     );
 
-    return <MathRenderer scene={pythagoras} />;
+    return <MathRenderer scene={pythagoras} style={style} />;
 };
 
 export const QuadraticEquation: Story<EmptyProps> = (
@@ -218,7 +220,7 @@ export const QuadraticEquation: Story<EmptyProps> = (
         context,
     );
 
-    return <MathRenderer scene={quadraticEquation} />;
+    return <MathRenderer scene={quadraticEquation} style={style} />;
 };
 
 export const Limit: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -244,7 +246,7 @@ export const Limit: Story<EmptyProps> = (args, {loaded: fontData}) => {
         context,
     );
 
-    return <MathRenderer scene={lim} />;
+    return <MathRenderer scene={lim} style={style} />;
 };
 
 export const Summation: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -269,7 +271,7 @@ export const Summation: Story<EmptyProps> = (args, {loaded: fontData}) => {
         context,
     );
 
-    return <MathRenderer scene={sum} />;
+    return <MathRenderer scene={sum} style={style} />;
 };
 
 export const ColorizedFraction: Story<EmptyProps> = (
@@ -298,7 +300,7 @@ export const ColorizedFraction: Story<EmptyProps> = (
 
     const sum = Typesetter.typeset(row([fracNode]), context);
 
-    return <MathRenderer scene={sum} />;
+    return <MathRenderer scene={sum} style={style} />;
 };
 
 export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -334,7 +336,7 @@ export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
     const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };
 
 export const SimpleSemanticColoring: Story<EmptyProps> = (
@@ -391,7 +393,7 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
     };
     const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };
 
 export const NestedSemanticColoring: Story<EmptyProps> = (
@@ -436,7 +438,7 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
     };
     const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };
 
 export const TallDelimiters: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -460,7 +462,7 @@ export const TallDelimiters: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
     const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };
 
 export const TallDelimitersWithCursor: Story<EmptyProps> = (
@@ -504,7 +506,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     };
     const prod = Typesetter.typesetZipper(zipper, context, options);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };
 
 export const TallDelimitersWithSelection: Story<EmptyProps> = (
@@ -548,5 +550,5 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     };
     const prod = Typesetter.typesetZipper(zipper, context, options);
 
-    return <MathRenderer scene={prod} />;
+    return <MathRenderer scene={prod} style={style} />;
 };

@@ -217,7 +217,9 @@ describe("renderer", () => {
 
             const scene = Typesetter.typesetZipper(zipper, context);
 
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+            expect(
+                <MathRenderer scene={scene} style={{background: "white"}} />,
+            ).toMatchSVGSnapshot();
         });
     });
 
