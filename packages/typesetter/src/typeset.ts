@@ -4,7 +4,7 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode} from "./enums";
-import {multiplierForMathStyle} from "./utils";
+import {multiplierForMathStyle, getDelimiter, getSurd} from "./utils";
 
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
@@ -99,7 +99,6 @@ const typesetRoot = (
     context: Context,
 ): Layout.Box => {
     const {baseFontSize, mathStyle} = context;
-    const {font} = context.fontData;
 
     const multiplier = multiplierForMathStyle(mathStyle);
 
@@ -110,7 +109,7 @@ const typesetRoot = (
     // [index, negative kern, surd, radicand]
 
     // TODO: make the surd stretchy
-    const glyphID = font.getGlyphID("\u221A");
+    const glyphID = getSurd("\u221A", radicand, context);
     const surd = Layout.hpackNat([
         [Layout.makeGlyph("\u221A", glyphID, context)],
     ]);
@@ -363,16 +362,16 @@ const typesetFocus = (
 
             row.id = focus.id;
             row.color = context?.colorMap?.get(row.id);
-            const {font} = context.fontData;
 
             const open = Layout.makeGlyph(
                 focus.leftDelim.value.char,
-                font.getGlyphID(focus.leftDelim.value.char),
+                getDelimiter(focus.leftDelim.value.char, row, context),
                 context,
             );
+
             const close = Layout.makeGlyph(
                 focus.rightDelim.value.char,
-                font.getGlyphID(focus.rightDelim.value.char),
+                getDelimiter(focus.rightDelim.value.char, row, context),
                 context,
             );
 
@@ -471,12 +470,13 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
 
             const open = Layout.makeGlyph(
                 node.leftDelim.value.char,
-                font.getGlyphID(node.leftDelim.value.char),
+                getDelimiter(node.leftDelim.value.char, row, context),
                 context,
             );
+
             const close = Layout.makeGlyph(
                 node.rightDelim.value.char,
-                font.getGlyphID(node.rightDelim.value.char),
+                getDelimiter(node.rightDelim.value.char, row, context),
                 context,
             );
 
