@@ -498,7 +498,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
+        renderMode: Typesetter.RenderMode.Dynamic,
         cramped: false,
     };
     const options = {
@@ -542,7 +542,88 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const options = {
+        showCursor: true,
+    };
+    const prod = Typesetter.typesetZipper(zipper, context, options);
+
+    return <MathRenderer scene={prod} style={style} />;
+};
+
+export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
+    const math = row([
+        frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")]),
+    ]);
+
+    let zipper: Editor.Zipper = {
+        row: {
+            type: "zrow",
+            id: math.id,
+            left: math.children,
+            right: [],
+            selection: null,
+        },
+        breadcrumbs: [],
+    };
+
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Text,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const options = {
+        showCursor: true,
+    };
+    const prod = Typesetter.typesetZipper(zipper, context, options);
+
+    return <MathRenderer scene={prod} style={style} />;
+};
+
+export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
+    const math = row([
+        frac(
+            [glyph("1")],
+            [
+                Editor.builders.delimited(
+                    [glyph("1"), glyph("+"), glyph("y")],
+                    glyph("("),
+                    glyph(")"),
+                ),
+            ],
+        ),
+    ]);
+
+    let zipper: Editor.Zipper = {
+        row: {
+            type: "zrow",
+            id: math.id,
+            left: math.children,
+            right: [],
+            selection: null,
+        },
+        breadcrumbs: [],
+    };
+
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft", shift: true});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft", shift: true});
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Text,
+        renderMode: Typesetter.RenderMode.Dynamic,
         cramped: false,
     };
     const options = {

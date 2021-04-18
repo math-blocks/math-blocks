@@ -52,35 +52,39 @@ const withOperatorPadding = (
     );
 };
 
-// NOTE: This function mutates `box`.
+/**
+ * This function is used to guarantee a certain depth/height for a box that is
+ * equal to the depth/height of the cursor or selection rectangle.  This is
+ * useful for typesetting while editing since it minimize changes to vertical
+ * size of the rendered math.
+ *
+ * WARNING: This function mutates `box`.
+ *
+ * TODO: add originalDepth and originalHeight so that getDelimiter can make its
+ * decisions based on the original dimensions of the box.
+ *
+ * @param {Layout.Box} box
+ * @param {Context} context
+ * @return {void}
+ */
 const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
     const {
         fontData: {font},
-        baseFontSize,
-        mathStyle,
     } = context;
-    const jmetrics = font.getGlyphMetrics(font.getGlyphID("j"));
-    const Emetrics = font.getGlyphMetrics(font.getGlyphID("E"));
+    const fontSize = fontSizeForContext(context);
+    const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
 
-    const multiplier = multiplierForMathStyle(mathStyle);
+    // This assumes that parenMetrics.height < font.head.unitsPerEm
+    const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
 
-    // TODO: try to reuse getCharDepth
-    if (jmetrics) {
-        const jDepth =
-            (baseFontSize *
-                multiplier *
-                (jmetrics.height - jmetrics.bearingY)) /
-            font.head.unitsPerEm;
-        box.depth = Math.max(box.depth, jDepth);
-    }
+    const depth =
+        ((parenMetrics.height - parenMetrics.bearingY + overshoot) * fontSize) /
+        font.head.unitsPerEm;
+    box.depth = Math.max(box.depth, depth);
 
-    // TODO: grab the max bearingY of all of [0-9a-zA-Z]
-    if (Emetrics) {
-        const EHeight =
-            (baseFontSize * multiplier * Emetrics.bearingY) /
-            font.head.unitsPerEm;
-        box.height = Math.max(box.height, EHeight);
-    }
+    const height =
+        ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
+    box.height = Math.max(box.height, height);
 };
 
 const typesetFrac = (
@@ -134,7 +138,7 @@ const typesetRoot = (
             // TODO: get this constant from the MATH table constants
             // TODO: fix how we handle negative kerns, right now we just subtract
             // them from the dimension of the container which isn't right
-            [Layout.makeKern(-31.4), indexBox],
+            [Layout.makeKern(-35.4), indexBox],
             [],
             context,
         );

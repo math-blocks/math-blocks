@@ -85,8 +85,6 @@ export type LayoutCursor = {
     selection: boolean;
 };
 
-// TODO: replace with font.hhea.ascender
-const ASCENDER = 850;
 const CURSOR_WIDTH = 2;
 
 const processHBox = (
@@ -110,7 +108,12 @@ const processHBox = (
 
     const {font} = fontData;
     const {fontSize} = box;
-    const ascent = (fontSize * ASCENDER) / font.head.unitsPerEm;
+    const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
+    // This assumes that parenMetrics.height < font.head.unitsPerEm
+    const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
+
+    const ascent =
+        ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
@@ -323,7 +326,12 @@ export const processBox = (
     const height = Math.max(scene.height, fontSize);
 
     const {font} = fontData;
-    const ascent = (fontSize * ASCENDER) / font.head.unitsPerEm;
+    const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
+    // This assumes that parenMetrics.height < font.head.unitsPerEm
+    const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
+    const ascent =
+        ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
+
     scene.y = Math.max(scene.y, ascent);
     scene.height = height;
 
