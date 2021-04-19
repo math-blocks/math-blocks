@@ -367,7 +367,7 @@ const typesetFocus = (
                     ? typesetRow(upper, childContext)
                     : _typesetZipper(zipper, childContext));
 
-            const inner = _typeset(focus.inner, context);
+            const inner = _typeset(focus.inner, {...context, operator: true});
             inner.id = focus.inner.id;
             inner.color = context?.colorMap?.get(inner.id);
 
@@ -479,7 +479,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             const lowerBox = typesetRow(lower, childContext);
             const upperBox = upper && typesetRow(upper, childContext);
 
-            const inner = _typeset(node.inner, context);
+            const inner = _typeset(node.inner, {...context, operator: true});
             inner.id = node.inner.id;
             inner.color = context?.colorMap?.get(inner.id);
 
@@ -528,7 +528,7 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
 
             // Convert individual glyphs to italic glyphs if they exist in the
             // current font.
-            if (/[a-z]/.test(value.char)) {
+            if (/[a-z]/.test(value.char) && !context.operator) {
                 const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
                 const char = String.fromCodePoint(0x1d44e + offset);
                 const glyphID = font.getGlyphID(char);

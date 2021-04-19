@@ -9,6 +9,7 @@ export type Context = {
     mathStyle: MathStyle;
     cramped: boolean;
     colorMap?: Map<number, string>;
+    operator?: boolean; // if true, doesn't use italics for latin glyphs
     renderMode: RenderMode;
 };
 
