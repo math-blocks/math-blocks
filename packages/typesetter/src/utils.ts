@@ -18,11 +18,21 @@ export const multiplierForMathStyle = (mathStyle: MathStyle): number => {
     }
 };
 
+export const fontSizeForContext = (context: Context): number => {
+    const {baseFontSize, mathStyle} = context;
+    const multiplier = multiplierForMathStyle(mathStyle);
+    const fontSize = multiplier * baseFontSize;
+    return fontSize;
+};
+
 type ThresholdOptions = {
     value: "both" | "sum";
     strict: boolean;
 };
 
+// TODO: special case how we compute the delimiters for rows including "y" or
+// other deep descenders so that we get the same font size as the rest of the
+// glyphs on that row.
 const getDelimiter = (
     char: string,
     box: Layout.Box,
@@ -38,11 +48,11 @@ const getDelimiter = (
         return glyphID;
     }
 
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
-    const fontSize = multiplier * baseFontSize;
+    const fontSize = fontSizeForContext(context);
 
-    for (const record of construction.mathGlyphVariantRecords) {
+    for (let i = 0; i < construction.mathGlyphVariantRecords.length; i++) {
+        const record = construction.mathGlyphVariantRecords[i];
+
         const glyphMetrics = font.getGlyphMetrics(record.variantGlyph);
         const height =
             (glyphMetrics.bearingY * fontSize) / font.head.unitsPerEm;
@@ -59,12 +69,22 @@ const getDelimiter = (
         switch (thresholdOptions.value) {
             case "both": {
                 if (compare(height, box.height) && compare(depth, box.depth)) {
+                    // HACK: this is to ensure that we're using the same size
+                    // glyph as the row when it contains deep descenders like "y"
+                    if (i === 1 && char !== "\u221a") {
+                        return glyphID;
+                    }
                     return record.variantGlyph;
                 }
                 break;
             }
             case "sum": {
                 if (compare(height + depth, box.height + box.depth)) {
+                    // HACK: this is to ensure that we're using the same size
+                    // glyph as the row when it contains deep descenders like "y"
+                    if (i === 1 && char !== "\u221a") {
+                        return glyphID;
+                    }
                     return record.variantGlyph;
                 }
                 break;
