@@ -3,6 +3,11 @@
     src: url(/STIX2Math.otf);
 }
 
+@font-face {
+    font-family: LM-Math;
+    src: url(/latinmodern-math.otf);
+}
+
 html,
 body {
     /* overflow: hidden; */

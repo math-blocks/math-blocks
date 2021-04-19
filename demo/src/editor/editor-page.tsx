@@ -126,7 +126,8 @@ const EditorPage: React.FunctionComponent = () => {
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
-            const res = await fetch("/STIX2Math.otf");
+            // const res = await fetch("/STIX2Math.otf");
+            const res = await fetch("/latinmodern-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
             console.log(font);
@@ -140,7 +141,8 @@ const EditorPage: React.FunctionComponent = () => {
         return null;
     }
 
-    const fontData = getFontData(font, "STIX2");
+    // const fontData = getFontData(font, "STIX2");
+    const fontData = getFontData(font, "LM-Math");
 
     return (
         <FontDataContext.Provider value={fontData}>

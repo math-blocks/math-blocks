@@ -120,10 +120,52 @@ const parseTopDictData = (
 
     const getOperand = (): number => {
         const operand = stack.pop();
-        if (!operand) {
+        if (typeof operand === "undefined") {
             throw new Error("missing operand");
         }
         return operand;
+    };
+
+    const parseFloatOperand = (): number => {
+        let s = "";
+        const eof = 15;
+        const lookup = [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            ".",
+            "E",
+            "E-",
+            null,
+            "-",
+        ];
+        // eslint-disable-next-line
+        while (true) {
+            const b = data[i++];
+            const n1 = b >> 4;
+            const n2 = b & 15;
+
+            if (n1 === eof) {
+                break;
+            }
+
+            s += lookup[n1];
+
+            if (n2 === eof) {
+                break;
+            }
+
+            s += lookup[n2];
+        }
+
+        return parseFloat(s);
     };
 
     // TODO: compute actual values from delta encoding
@@ -273,6 +315,8 @@ const parseTopDictData = (
             const b3 = data[i++];
             const b4 = data[i++];
             stack.push((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
+        } else if (b0 === 30) {
+            stack.push(parseFloatOperand());
         }
 
         // b0 is reserved, throw an error? ignore?
@@ -747,6 +791,16 @@ const parseCharstring = (data: Uint8Array, topDict: TopDict): GlyphData => {
             // TODO
 
             /**
+             * Subroutine Operators
+             */
+
+            case 10: {
+                const subr = shift();
+                console.log(`TODO: call subroutine: ${subr}`);
+                throw new Error("'callsubr' operator not implemented yet");
+            }
+
+            /**
              * Operands
              */
 
@@ -802,25 +856,37 @@ const parseCharset = async (
     const view = new DataView(charsetData);
     const format = view.getUint8(0);
 
-    if (format !== 2) {
-        throw new Error(`Can't parse charset format ${format} yet`);
-    }
-
     // Charset is a mapping between GID and SID.  The SID can then be used to
     // get the name of a glyph.
-    let gid = 1;
-    let i = 1;
     const charset: Record<number, number> = {};
-    while (gid < nGlyphs) {
-        const first = view.getUint16(i);
-        const nLeft = view.getUint16(i + 2);
-        i += 4;
 
-        for (let j = 0; j <= nLeft; j++) {
-            const sid = first + j;
+    if (format === 0) {
+        let gid = 1;
+        let i = 1;
+        while (gid < nGlyphs) {
+            const sid = view.getUint16(i);
             charset[gid] = sid;
+            i += 2;
             gid += 1;
         }
+    } else if (format === 1) {
+        throw new Error("Can't parse charset format 1 yet");
+    } else if (format === 2) {
+        let gid = 1;
+        let i = 1;
+        while (gid < nGlyphs) {
+            const first = view.getUint16(i);
+            const nLeft = view.getUint16(i + 2);
+            i += 4;
+
+            for (let j = 0; j <= nLeft; j++) {
+                const sid = first + j;
+                charset[gid] = sid;
+                gid += 1;
+            }
+        }
+    } else {
+        throw new Error(`Unrecognized charset format ${format}`);
     }
 
     return charset;
@@ -847,6 +913,7 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const [nameIndex, nameIndexSize] = await parseIndex(blob, offset);
     const name = new TextDecoder().decode(nameIndex.data);
+    console.log(`name = ${name}`);
     offset += nameIndexSize;
 
     const [topDictIndex, topDictIndexSize] = await parseIndex(blob, offset);
@@ -858,6 +925,7 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const topDict: TopDict = {...topDictDefaults};
     parseTopDictData(topDictData, topDict, stringIndex);
+    console.log(topDict);
     if (topDict.Private) {
         const [offset, size] = topDict.Private;
         const privateDictData = new Uint8Array(
@@ -878,6 +946,9 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const nGlyphs = charStringsIndex.count; // only useful for Format 2
     const charset = await parseCharset(blob, topDict, nGlyphs);
+
+    const sid = charset[5];
+    console.log(`name of glyph #5 = ${getString(sid, stringIndex)}`);
 
     // We don't bother with the Encoding provide by the CFF and instead use
     // 'cmap' instead which provides complete coverage.  The encoding maps
