@@ -100,7 +100,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const context: Typesetter.Context = {
         fontData: fontData,
-        baseFontSize: fontSize,
+        baseFontSize: fontSize || 64,
         mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: props.colorMap,
