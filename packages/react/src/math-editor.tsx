@@ -17,6 +17,7 @@ type Props = {
 
     // TODO: figure out a better way of handling focus
     focus?: boolean;
+    fontSize?: number;
 
     onSubmit?: (zipper: Editor.Zipper) => unknown;
     onChange?: (zipper: Editor.Zipper) => unknown;
@@ -95,12 +96,11 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         setZipper(props.zipper);
     }, [props.zipper]);
 
-    const {style} = props;
+    const {style, fontSize} = props;
 
-    const fontSize = 64;
     const context: Typesetter.Context = {
         fontData: fontData,
-        baseFontSize: fontSize,
+        baseFontSize: fontSize || 64,
         mathStyle: Typesetter.MathStyle.Display,
         cramped: false,
         colorMap: props.colorMap,
@@ -128,6 +128,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
 MathEditor.defaultProps = {
     style: {},
+    fontSize: 64,
 };
 
 export default MathEditor;

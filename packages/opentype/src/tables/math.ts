@@ -190,30 +190,42 @@ const parseCovergeTable = async (
     const view = new DataView(buffer);
 
     const coverageFormat = view.getUint16(0);
-    if (coverageFormat !== 2) {
-        throw new Error(`We don't handle coverageFormat = ${coverageFormat}`);
-    }
-    const rangeCount = view.getUint16(2);
-
-    const rangeRecordsBuffer = await blob
-        .slice(offset + 4, offset + 4 + rangeCount * 6)
-        .arrayBuffer();
-    const rangeRecordsView = new DataView(rangeRecordsBuffer);
-
     const result: CoverageTable = [];
 
-    for (let i = 0; i < rangeCount; i++) {
-        const startGlyphID = rangeRecordsView.getUint16(i * 6 + 0);
-        const endGlyphID = rangeRecordsView.getUint16(i * 6 + 2);
-        const startCoverageIndex = rangeRecordsView.getUint16(i * 6 + 4);
+    if (coverageFormat === 1) {
+        const glyphCount = view.getUint16(2);
 
-        for (
-            let gid = startGlyphID, index = startCoverageIndex;
-            gid <= endGlyphID;
-            gid++, index++
-        ) {
-            result[index] = gid;
+        const glyphArrayBuffer = await blob
+            .slice(offset + 4, offset + 4 + glyphCount * 2)
+            .arrayBuffer();
+        const glyphArrayView = new DataView(glyphArrayBuffer);
+
+        for (let i = 0; i < glyphCount; i++) {
+            result[i] = glyphArrayView.getUint16(i * 2);
         }
+    } else if (coverageFormat === 2) {
+        const rangeCount = view.getUint16(2);
+
+        const rangeRecordsBuffer = await blob
+            .slice(offset + 4, offset + 4 + rangeCount * 6)
+            .arrayBuffer();
+        const rangeRecordsView = new DataView(rangeRecordsBuffer);
+
+        for (let i = 0; i < rangeCount; i++) {
+            const startGlyphID = rangeRecordsView.getUint16(i * 6 + 0);
+            const endGlyphID = rangeRecordsView.getUint16(i * 6 + 2);
+            const startCoverageIndex = rangeRecordsView.getUint16(i * 6 + 4);
+
+            for (
+                let gid = startGlyphID, index = startCoverageIndex;
+                gid <= endGlyphID;
+                gid++, index++
+            ) {
+                result[index] = gid;
+            }
+        }
+    } else {
+        throw new Error(`Invalid coverageFormat = ${coverageFormat}`);
     }
 
     return result;

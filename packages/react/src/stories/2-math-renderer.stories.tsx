@@ -10,21 +10,31 @@ import type {FontData} from "@math-blocks/opentype";
 import MathRenderer from "../math-renderer";
 
 // @ts-expect-error: TypeScript doesn't know about this path
-import fontPath from "../../../../assets/STIX2Math.otf";
+import stixPath from "../../../../assets/STIX2Math.otf";
+
+// @ts-expect-error: TypeScript doesn't know about this path
+import lmPath from "../../../../assets/latinmodern-math.otf";
 
 const {row, glyph, frac, limits, root} = Editor.builders;
 
-const fontLoader = async (): Promise<FontData> => {
-    const res = await fetch(fontPath);
+const stixFontLoader = async (): Promise<FontData> => {
+    const res = await fetch(stixPath);
     const blob = await res.blob();
     const font = await parse(blob);
     return getFontData(font, "STIX2");
 };
 
+const lmFontLoader = async (): Promise<FontData> => {
+    const res = await fetch(lmPath);
+    const blob = await res.blob();
+    const font = await parse(blob);
+    return getFontData(font, "LM-Math");
+};
+
 export default {
     title: "MathRenderer",
     component: MathRenderer,
-    loaders: [fontLoader],
+    loaders: [stixFontLoader],
 };
 
 type EmptyProps = Record<string, never>;
@@ -78,6 +88,35 @@ export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     return <MathRenderer scene={scene} style={style} />;
 };
+
+export const LatinModernEquation: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    // TODO: how to convert
+    const math = row([
+        glyph("2"),
+        glyph("x"),
+        glyph("+"),
+        glyph("5"),
+        glyph("="),
+        glyph("1"),
+        glyph("0"),
+    ]);
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
+        cramped: false,
+    };
+    const scene = Typesetter.typeset(math, context);
+
+    return <MathRenderer scene={scene} style={style} />;
+};
+// @ts-expect-error: Story doesn't include 'loaders' static
+LatinModernEquation.loaders = [lmFontLoader];
 
 export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const math = row([

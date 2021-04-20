@@ -50,7 +50,7 @@ export type TopDict = {
     nominalWidthX: number; // default: 0
 };
 
-type Command =
+export type Command =
     | {
           type: "M";
           x: number;

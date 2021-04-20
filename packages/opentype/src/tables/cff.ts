@@ -120,10 +120,52 @@ const parseTopDictData = (
 
     const getOperand = (): number => {
         const operand = stack.pop();
-        if (!operand) {
+        if (typeof operand === "undefined") {
             throw new Error("missing operand");
         }
         return operand;
+    };
+
+    const parseFloatOperand = (): number => {
+        let s = "";
+        const eof = 15;
+        const lookup = [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            ".",
+            "E",
+            "E-",
+            null,
+            "-",
+        ];
+        // eslint-disable-next-line
+        while (true) {
+            const b = data[i++];
+            const n1 = b >> 4;
+            const n2 = b & 15;
+
+            if (n1 === eof) {
+                break;
+            }
+
+            s += lookup[n1];
+
+            if (n2 === eof) {
+                break;
+            }
+
+            s += lookup[n2];
+        }
+
+        return parseFloat(s);
     };
 
     // TODO: compute actual values from delta encoding
@@ -273,14 +315,19 @@ const parseTopDictData = (
             const b3 = data[i++];
             const b4 = data[i++];
             stack.push((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
+        } else if (b0 === 30) {
+            stack.push(parseFloatOperand());
         }
 
         // b0 is reserved, throw an error? ignore?
     }
 };
 
-const parseCharstring = (data: Uint8Array, topDict: TopDict): GlyphData => {
-    let i = 0;
+const parseCharstring = (
+    data: Uint8Array,
+    topDict: TopDict,
+    getSubrs: (index: number) => Uint8Array | null,
+): GlyphData => {
     const stack: number[] = [];
 
     let x = 0;
@@ -325,458 +372,486 @@ const parseCharstring = (data: Uint8Array, topDict: TopDict): GlyphData => {
         hasWidth = true;
     };
 
-    while (i < data.length) {
-        /**
-         * Notes:
-         * - "|-" at the start indicates that the operator grabs arguments
-         *   from the bottom of the stack using shift().
-         * - "|-" at the end indicates that the operator clears argument stack.
-         */
+    const parse = (data: Uint8Array): void => {
+        let i = 0;
 
-        const b0 = data[i++];
-
-        switch (b0) {
+        while (i < data.length) {
             /**
-             * Path Constructor Operators
+             * Notes:
+             * - "|-" at the start indicates that the operator grabs arguments
+             *   from the bottom of the stack using shift().
+             * - "|-" at the end indicates that the operator clears argument stack.
              */
 
-            // rmoveto: dx1 dy1 rmoveto (21)
-            case 21: {
-                if (stack.length > 2 && !hasWidth) {
-                    width = shift() + topDict.nominalWidthX;
-                    hasWidth = true;
-                }
+            const b0 = data[i++];
 
-                const dx1 = shift();
-                const dy1 = shift();
+            switch (b0) {
+                /**
+                 * Path Constructor Operators
+                 */
 
-                x += dx1;
-                y += dy1;
-
-                newContour(x, y);
-
-                break;
-            }
-
-            // hmoveto: dx1 hmoveto (22)
-            case 22: {
-                if (stack.length > 1 && !hasWidth) {
-                    width = shift() + topDict.nominalWidthX;
-                    hasWidth = true;
-                }
-
-                const dx1 = shift();
-
-                x += dx1;
-                newContour(x, y);
-                break;
-            }
-
-            // vmoveto: |- dy1 vmoveto (4) |-
-            case 4: {
-                if (stack.length > 1 && !hasWidth) {
-                    width = shift() + topDict.nominalWidthX;
-                    hasWidth = true;
-                }
-
-                const dy1 = shift();
-
-                y += dy1;
-
-                newContour(x, y);
-                break;
-            }
-
-            // rlineto: |- {dxa dya}+ rlineto (5) |-
-            case 5: {
-                while (stack.length > 0) {
-                    x += shift();
-                    y += shift();
-                    path.push({type: "L", x, y});
-                }
-                break;
-            }
-
-            // hlineto: |- dx1 {dya dxb}* hlineto (6) |-
-            //          |- {dxa dyb}+ hlineto (6) |-
-            case 6: {
-                while (stack.length > 0) {
-                    x += shift();
-                    path.push({type: "L", x, y});
-                    if (stack.length === 0) {
-                        break;
+                // rmoveto: dx1 dy1 rmoveto (21)
+                case 21: {
+                    if (stack.length > 2 && !hasWidth) {
+                        width = shift() + topDict.nominalWidthX;
+                        hasWidth = true;
                     }
-                    y += shift();
-                    path.push({type: "L", x, y});
-                }
-                break;
-            }
 
-            // vlineto: |- dy1 {dxa dyb}* vlineto (7) |-
-            //          |- {dya dxb}+ vlineto (7) |-
-            case 7: {
-                while (stack.length > 0) {
-                    y += shift();
-                    path.push({type: "L", x, y});
-                    if (stack.length === 0) {
-                        break;
-                    }
-                    x += shift();
-                    path.push({type: "L", x, y});
-                }
-                break;
-            }
-
-            // rrcurveto: {dxa dya dxb dyb dxc dyc}+ rrcurveto (8)
-            case 8: {
-                while (stack.length > 0) {
-                    const dxa = shift();
-                    const dya = shift();
-                    const dxb = shift();
-                    const dyb = shift();
-                    const dxc = shift();
-                    const dyc = shift();
-
-                    const x1 = x + dxa;
-                    const y1 = y + dya;
-                    const x2 = x1 + dxb;
-                    const y2 = y1 + dyb;
-                    x = x2 + dxc;
-                    y = y2 + dyc;
-
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
-                }
-                break;
-            }
-
-            // hhcurveto: dy1? {dxa dxb dyb dxc}+ hhcurveto (27)
-            case 27: {
-                if (stack.length % 2) {
+                    const dx1 = shift();
                     const dy1 = shift();
+
+                    x += dx1;
                     y += dy1;
+
+                    newContour(x, y);
+
+                    break;
                 }
 
-                while (stack.length > 0) {
-                    const dxa = shift();
-                    const dxb = shift();
-                    const dyb = shift();
-                    const dxc = shift();
-
-                    const x1 = x + dxa;
-                    const y1 = y;
-                    const x2 = x1 + dxb;
-                    const y2 = y1 + dyb;
-                    x = x2 + dxc;
-                    y = y2;
-
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
-                }
-
-                break;
-            }
-
-            // hvcurveto: dx1 dx2 dy2 dy3 {dya dxb dyb dxc dxd dxe dye dyf}* dxf? hcurveto (31)
-            //            {dxa dxb dyb dyc dyd dxe dye dxf}+ dyf? hcurveto (31)
-            case 31: {
-                let x1, y1, x2, y2;
-
-                while (stack.length > 0) {
-                    const dxa = shift();
-                    const dxb = shift();
-                    const dyb = shift();
-                    const dyc = shift();
-                    const dxLast = stack.length === 1 ? shift() : 0;
-
-                    x1 = x + dxa;
-                    y1 = y;
-                    x2 = x1 + dxb;
-                    y2 = y1 + dyb;
-                    x = x2 + dxLast;
-                    y = y2 + dyc;
-
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
-
-                    if (stack.length === 0) {
-                        break;
+                // hmoveto: dx1 hmoveto (22)
+                case 22: {
+                    if (stack.length > 1 && !hasWidth) {
+                        width = shift() + topDict.nominalWidthX;
+                        hasWidth = true;
                     }
 
-                    const dyd = shift();
-                    const dxe = shift();
-                    const dye = shift();
-                    const dxf = shift();
-                    const dyLast = stack.length === 1 ? shift() : 0;
+                    const dx1 = shift();
 
-                    x1 = x;
-                    y1 = y + dyd;
-                    x2 = x1 + dxe;
-                    y2 = y1 + dye;
-                    x = x2 + dxf;
-                    y = y2 + dyLast;
-
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
+                    x += dx1;
+                    newContour(x, y);
+                    break;
                 }
 
-                break;
-            }
+                // vmoveto: |- dy1 vmoveto (4) |-
+                case 4: {
+                    if (stack.length > 1 && !hasWidth) {
+                        width = shift() + topDict.nominalWidthX;
+                        hasWidth = true;
+                    }
 
-            // rcurveline: {dxa dya dxb dyb dxc dyc}+ dxd dyd rcurveline (24)
-            case 24: {
-                while (stack.length > 2) {
-                    const dxa = shift();
-                    const dya = shift();
-                    const dxb = shift();
-                    const dyb = shift();
-                    const dxc = shift();
-                    const dyc = shift();
+                    const dy1 = shift();
 
-                    const x1 = x + dxa;
-                    const y1 = y + dya;
-                    const x2 = x1 + dxb;
-                    const y2 = y1 + dyb;
-                    x = x2 + dxc;
-                    y = y2 + dyc;
+                    y += dy1;
 
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
+                    newContour(x, y);
+                    break;
                 }
 
-                const dxd = shift();
-                const dyd = shift();
-
-                x += dxd;
-                y += dyd;
-
-                path.push({type: "L", x, y});
-
-                break;
-            }
-
-            // rlinecurve: {dxa dya}+ dxb dyb dxc dyc dxd dyd rlinecurve (25)
-            case 25: {
-                while (stack.length > 6) {
-                    const dxa = shift();
-                    const dya = shift();
-
-                    x += dxa;
-                    y += dya;
-
-                    path.push({type: "L", x, y});
+                // rlineto: |- {dxa dya}+ rlineto (5) |-
+                case 5: {
+                    while (stack.length > 0) {
+                        x += shift();
+                        y += shift();
+                        path.push({type: "L", x, y});
+                    }
+                    break;
                 }
 
-                const dxb = shift();
-                const dyb = shift();
-                const dxc = shift();
-                const dyc = shift();
-                const dxd = shift();
-                const dyd = shift();
+                // hlineto: |- dx1 {dya dxb}* hlineto (6) |-
+                //          |- {dxa dyb}+ hlineto (6) |-
+                case 6: {
+                    while (stack.length > 0) {
+                        x += shift();
+                        path.push({type: "L", x, y});
+                        if (stack.length === 0) {
+                            break;
+                        }
+                        y += shift();
+                        path.push({type: "L", x, y});
+                    }
+                    break;
+                }
 
-                const x1 = x + dxb;
-                const y1 = y + dyb;
-                const x2 = x1 + dxc;
-                const y2 = y1 + dyc;
-                x = x2 + dxd;
-                y = y2 + dyd;
+                // vlineto: |- dy1 {dxa dyb}* vlineto (7) |-
+                //          |- {dya dxb}+ vlineto (7) |-
+                case 7: {
+                    while (stack.length > 0) {
+                        y += shift();
+                        path.push({type: "L", x, y});
+                        if (stack.length === 0) {
+                            break;
+                        }
+                        x += shift();
+                        path.push({type: "L", x, y});
+                    }
+                    break;
+                }
 
-                path.push({type: "C", x1, y1, x2, y2, x, y});
+                // rrcurveto: {dxa dya dxb dyb dxc dyc}+ rrcurveto (8)
+                case 8: {
+                    while (stack.length > 0) {
+                        const dxa = shift();
+                        const dya = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dxc = shift();
+                        const dyc = shift();
 
-                break;
-            }
+                        const x1 = x + dxa;
+                        const y1 = y + dya;
+                        const x2 = x1 + dxb;
+                        const y2 = y1 + dyb;
+                        x = x2 + dxc;
+                        y = y2 + dyc;
 
-            // vhcurveto: dy1 dx2 dy2 dx3 {dxa dxb dyb dyc dyd dxe dye dxf}* dyf? vhcurveto (30)
-            //            {dya dxb dyb dxc dxd dxe dye dyf}+ dxf? vhcurveto (30)
-            case 30: {
-                let x1, y1, x2, y2;
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+                    }
+                    break;
+                }
 
-                while (stack.length > 0) {
-                    const dya = shift();
-                    const dxb = shift();
-                    const dyb = shift();
-                    const dxc = shift();
-                    const dyLast = stack.length === 1 ? shift() : 0;
+                // hhcurveto: dy1? {dxa dxb dyb dxc}+ hhcurveto (27)
+                case 27: {
+                    if (stack.length % 2) {
+                        const dy1 = shift();
+                        y += dy1;
+                    }
 
-                    x1 = x;
-                    y1 = y + dya;
-                    x2 = x1 + dxb;
-                    y2 = y1 + dyb;
-                    x = x2 + dxc;
-                    y = y2 + dyLast;
+                    while (stack.length > 0) {
+                        const dxa = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dxc = shift();
 
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
+                        const x1 = x + dxa;
+                        const y1 = y;
+                        const x2 = x1 + dxb;
+                        const y2 = y1 + dyb;
+                        x = x2 + dxc;
+                        y = y2;
 
-                    if (stack.length === 0) {
-                        break;
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+                    }
+
+                    break;
+                }
+
+                // hvcurveto: dx1 dx2 dy2 dy3 {dya dxb dyb dxc dxd dxe dye dyf}* dxf? hcurveto (31)
+                //            {dxa dxb dyb dyc dyd dxe dye dxf}+ dyf? hcurveto (31)
+                case 31: {
+                    let x1, y1, x2, y2;
+
+                    while (stack.length > 0) {
+                        const dxa = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dyc = shift();
+                        const dxLast = stack.length === 1 ? shift() : 0;
+
+                        x1 = x + dxa;
+                        y1 = y;
+                        x2 = x1 + dxb;
+                        y2 = y1 + dyb;
+                        x = x2 + dxLast;
+                        y = y2 + dyc;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+
+                        if (stack.length === 0) {
+                            break;
+                        }
+
+                        const dyd = shift();
+                        const dxe = shift();
+                        const dye = shift();
+                        const dxf = shift();
+                        const dyLast = stack.length === 1 ? shift() : 0;
+
+                        x1 = x;
+                        y1 = y + dyd;
+                        x2 = x1 + dxe;
+                        y2 = y1 + dye;
+                        x = x2 + dxf;
+                        y = y2 + dyLast;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+                    }
+
+                    break;
+                }
+
+                // rcurveline: {dxa dya dxb dyb dxc dyc}+ dxd dyd rcurveline (24)
+                case 24: {
+                    while (stack.length > 2) {
+                        const dxa = shift();
+                        const dya = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dxc = shift();
+                        const dyc = shift();
+
+                        const x1 = x + dxa;
+                        const y1 = y + dya;
+                        const x2 = x1 + dxb;
+                        const y2 = y1 + dyb;
+                        x = x2 + dxc;
+                        y = y2 + dyc;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
                     }
 
                     const dxd = shift();
-                    const dxe = shift();
-                    const dye = shift();
-                    const dyf = shift();
-                    const dxLast = stack.length === 1 ? shift() : 0;
+                    const dyd = shift();
 
-                    x1 = x + dxd;
-                    y1 = y;
-                    x2 = x1 + dxe;
-                    y2 = y1 + dye;
-                    x = x2 + dxLast;
-                    y = y2 + dyf;
+                    x += dxd;
+                    y += dyd;
 
-                    path.push({type: "C", x1, y1, x2, y2, x, y});
+                    path.push({type: "L", x, y});
+
+                    break;
                 }
 
-                break;
-            }
+                // rlinecurve: {dxa dya}+ dxb dyb dxc dyc dxd dyd rlinecurve (25)
+                case 25: {
+                    while (stack.length > 6) {
+                        const dxa = shift();
+                        const dya = shift();
 
-            // vvcurveto: dx1? {dya dxb dyb dyc}+ vvcurveto (26)
-            case 26: {
-                if (stack.length % 2) {
-                    const dx1 = shift();
-                    x += dx1;
-                }
+                        x += dxa;
+                        y += dya;
 
-                while (stack.length > 0) {
-                    const dya = shift();
+                        path.push({type: "L", x, y});
+                    }
+
                     const dxb = shift();
                     const dyb = shift();
+                    const dxc = shift();
                     const dyc = shift();
+                    const dxd = shift();
+                    const dyd = shift();
 
-                    const x1 = x;
-                    const y1 = y + dya;
-                    const x2 = x1 + dxb;
-                    const y2 = y1 + dyb;
-                    x = x2;
-                    y = y2 + dyc;
+                    const x1 = x + dxb;
+                    const y1 = y + dyb;
+                    const x2 = x1 + dxc;
+                    const y2 = y1 + dyc;
+                    x = x2 + dxd;
+                    y = y2 + dyd;
 
                     path.push({type: "C", x1, y1, x2, y2, x, y});
+
+                    break;
                 }
 
-                break;
-            }
+                // vhcurveto: dy1 dx2 dy2 dx3 {dxa dxb dyb dyc dyd dxe dye dxf}* dyf? vhcurveto (30)
+                //            {dya dxb dyb dxc dxd dxe dye dyf}+ dxf? vhcurveto (30)
+                case 30: {
+                    let x1, y1, x2, y2;
 
-            case 12: {
-                const b1 = data[i++];
+                    while (stack.length > 0) {
+                        const dya = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dxc = shift();
+                        const dyLast = stack.length === 1 ? shift() : 0;
 
-                switch (b1) {
-                    // flex: dx1 dy1 dx2 dy2 dx3 dy3 dx4 dy4 dx5 dy5 dx6 dy6 fd flex (12 35)
-                    case 35: {
-                        break;
+                        x1 = x;
+                        y1 = y + dya;
+                        x2 = x1 + dxb;
+                        y2 = y1 + dyb;
+                        x = x2 + dxc;
+                        y = y2 + dyLast;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+
+                        if (stack.length === 0) {
+                            break;
+                        }
+
+                        const dxd = shift();
+                        const dxe = shift();
+                        const dye = shift();
+                        const dyf = shift();
+                        const dxLast = stack.length === 1 ? shift() : 0;
+
+                        x1 = x + dxd;
+                        y1 = y;
+                        x2 = x1 + dxe;
+                        y2 = y1 + dye;
+                        x = x2 + dxLast;
+                        y = y2 + dyf;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
                     }
 
-                    // hflex: dx1 dx2 dy2 dx3 dx4 dx5 dx6 hflex (12 34)
-                    case 34: {
-                        break;
-                    }
-
-                    // hflex1: dx1 dy1 dx2 dy2 dx3 dx4 dx5 dy5 dx6 hflex1 (12 36)
-                    case 36: {
-                        break;
-                    }
-
-                    // flex1: dx1 dy1 dx2 dy2 dy3 dx4 dy4 dx5 dy5 d6 flex1 (12 37)
-                    case 37: {
-                        break;
-                    }
-
-                    default: {
-                        throw new Error(`Unrecognized operator: 12 ${b1}`);
-                    }
+                    break;
                 }
 
-                break;
-            }
+                // vvcurveto: dx1? {dya dxb dyb dyc}+ vvcurveto (26)
+                case 26: {
+                    if (stack.length % 2) {
+                        const dx1 = shift();
+                        x += dx1;
+                    }
 
-            // endchar: endchar (14)
-            case 14: {
-                if (stack.length > 0 && !hasWidth) {
-                    width = shift() + topDict.nominalWidthX;
-                    hasWidth = true;
+                    while (stack.length > 0) {
+                        const dya = shift();
+                        const dxb = shift();
+                        const dyb = shift();
+                        const dyc = shift();
+
+                        const x1 = x;
+                        const y1 = y + dya;
+                        const x2 = x1 + dxb;
+                        const y2 = y1 + dyb;
+                        x = x2;
+                        y = y2 + dyc;
+
+                        path.push({type: "C", x1, y1, x2, y2, x, y});
+                    }
+
+                    break;
                 }
 
-                if (open) {
-                    path.push({type: "Z"});
-                    open = false;
+                case 12: {
+                    const b1 = data[i++];
+
+                    switch (b1) {
+                        // // flex: dx1 dy1 dx2 dy2 dx3 dy3 dx4 dy4 dx5 dy5 dx6 dy6 fd flex (12 35)
+                        // case 35: {
+                        //     break;
+                        // }
+
+                        // // hflex: dx1 dx2 dy2 dx3 dx4 dx5 dx6 hflex (12 34)
+                        // case 34: {
+                        //     break;
+                        // }
+
+                        // // hflex1: dx1 dy1 dx2 dy2 dx3 dx4 dx5 dy5 dx6 hflex1 (12 36)
+                        // case 36: {
+                        //     break;
+                        // }
+
+                        // // flex1: dx1 dy1 dx2 dy2 dy3 dx4 dy4 dx5 dy5 d6 flex1 (12 37)
+                        // case 37: {
+                        //     break;
+                        // }
+
+                        default: {
+                            throw new Error(`Unrecognized operator: 12 ${b1}`);
+                        }
+                    }
+
+                    break;
                 }
 
-                break;
-            }
+                // endchar: endchar (14)
+                case 14: {
+                    if (stack.length > 0 && !hasWidth) {
+                        width = shift() + topDict.nominalWidthX;
+                        hasWidth = true;
+                    }
 
-            /**
-             * Hint Operators
-             */
+                    if (open) {
+                        path.push({type: "Z"});
+                        open = false;
+                    }
 
-            // hstem: y dy {dya dyb}* hstem (1)
-            case 1: {
-                parseStems();
-                break;
-            }
+                    break;
+                }
 
-            // vstem: x dx {dxa dxb}* vstem (3)
-            case 3: {
-                parseStems();
-                break;
-            }
+                /**
+                 * Hint Operators
+                 */
 
-            // hstemhm: y dy {dya dyb}* hstemhm (18)
-            case 18: {
-                parseStems();
-                break;
-            }
+                // hstem: y dy {dya dyb}* hstem (1)
+                case 1: {
+                    parseStems();
+                    break;
+                }
 
-            // vstemhm: x dx {dxa dxb}* vstemhm (23)
-            case 23: {
-                parseStems();
-                break;
-            }
+                // vstem: x dx {dxa dxb}* vstem (3)
+                case 3: {
+                    parseStems();
+                    break;
+                }
 
-            // hintmask: hintmask (19 + mask)
-            case 19: {
-                parseStems();
-                i += (nStems + 7) >> 3;
-                break;
-            }
+                // hstemhm: y dy {dya dyb}* hstemhm (18)
+                case 18: {
+                    parseStems();
+                    break;
+                }
 
-            // cntrmask: cntrmask (20 + mask)
-            case 20: {
-                parseStems();
-                i += (nStems + 7) >> 3;
-                break;
-            }
+                // vstemhm: x dx {dxa dxb}* vstemhm (23)
+                case 23: {
+                    parseStems();
+                    break;
+                }
 
-            /**
-             * Arithmetic Operators
-             */
+                // hintmask: hintmask (19 + mask)
+                case 19: {
+                    parseStems();
+                    i += (nStems + 7) >> 3;
+                    break;
+                }
 
-            // TODO
+                // cntrmask: cntrmask (20 + mask)
+                case 20: {
+                    parseStems();
+                    i += (nStems + 7) >> 3;
+                    break;
+                }
 
-            /**
-             * Operands
-             */
+                /**
+                 * Arithmetic Operators
+                 */
 
-            default: {
-                if (b0 >= 32 && b0 <= 246) {
-                    stack.push(b0 - 139);
-                } else if (b0 >= 247 && b0 <= 250) {
-                    const b1 = data[i++];
-                    stack.push((b0 - 247) * 256 + b1 + 108);
-                } else if (b0 >= 251 && b0 <= 254) {
-                    const b1 = data[i++];
-                    stack.push(-((b0 - 251) * 256) - b1 - 108);
-                } else if (b0 === 255) {
-                    const b1 = data[i++];
-                    const b2 = data[i++];
-                    const b3 = data[i++];
-                    const b4 = data[i++];
-                    stack.push(
-                        ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) / 65536,
-                    );
-                } else if (b0 === 28) {
-                    const b1 = data[i++];
-                    const b2 = data[i++];
-                    stack.push(((b1 << 24) | (b2 << 16)) >> 16);
-                } else {
-                    throw new Error(`Unrecognized operator: ${b0}`);
+                // TODO
+
+                /**
+                 * Subroutine Operators
+                 */
+
+                // callsubr: subr# callsubr (10) -
+                case 10: {
+                    const subr = shift();
+                    const data = getSubrs(subr);
+
+                    if (!data) {
+                        throw new Error(`no data for subr = ${subr}`);
+                    }
+
+                    parse(data);
+                    break;
+                }
+
+                // return: - return (11) -
+                case 11: {
+                    return;
+                }
+
+                /**
+                 * Operands
+                 */
+
+                default: {
+                    if (b0 >= 32 && b0 <= 246) {
+                        stack.push(b0 - 139);
+                    } else if (b0 >= 247 && b0 <= 250) {
+                        const b1 = data[i++];
+                        stack.push((b0 - 247) * 256 + b1 + 108);
+                    } else if (b0 >= 251 && b0 <= 254) {
+                        const b1 = data[i++];
+                        stack.push(-((b0 - 251) * 256) - b1 - 108);
+                    } else if (b0 === 255) {
+                        const b1 = data[i++];
+                        const b2 = data[i++];
+                        const b3 = data[i++];
+                        const b4 = data[i++];
+                        stack.push(
+                            ((b1 << 24) | (b2 << 16) | (b3 << 8) | b4) / 65536,
+                        );
+                    } else if (b0 === 28) {
+                        const b1 = data[i++];
+                        const b2 = data[i++];
+                        stack.push(((b1 << 24) | (b2 << 16)) >> 16);
+                    } else {
+                        throw new Error(`Unrecognized operator: ${b0}`);
+                    }
                 }
             }
         }
-    }
+    };
+
+    parse(data);
 
     const glyphData: GlyphData = {
         path,
@@ -802,25 +877,37 @@ const parseCharset = async (
     const view = new DataView(charsetData);
     const format = view.getUint8(0);
 
-    if (format !== 2) {
-        throw new Error(`Can't parse charset format ${format} yet`);
-    }
-
     // Charset is a mapping between GID and SID.  The SID can then be used to
     // get the name of a glyph.
-    let gid = 1;
-    let i = 1;
     const charset: Record<number, number> = {};
-    while (gid < nGlyphs) {
-        const first = view.getUint16(i);
-        const nLeft = view.getUint16(i + 2);
-        i += 4;
 
-        for (let j = 0; j <= nLeft; j++) {
-            const sid = first + j;
+    if (format === 0) {
+        let gid = 1;
+        let i = 1;
+        while (gid < nGlyphs) {
+            const sid = view.getUint16(i);
             charset[gid] = sid;
+            i += 2;
             gid += 1;
         }
+    } else if (format === 1) {
+        throw new Error("Can't parse charset format 1 yet");
+    } else if (format === 2) {
+        let gid = 1;
+        let i = 1;
+        while (gid < nGlyphs) {
+            const first = view.getUint16(i);
+            const nLeft = view.getUint16(i + 2);
+            i += 4;
+
+            for (let j = 0; j <= nLeft; j++) {
+                const sid = first + j;
+                charset[gid] = sid;
+                gid += 1;
+            }
+        }
+    } else {
+        throw new Error(`Unrecognized charset format ${format}`);
     }
 
     return charset;
@@ -830,6 +917,16 @@ type CFFResult = {
     name: string;
     topDict: TopDict;
     getGlyph: (gid: number) => Glyph;
+};
+
+const getBias = (subrsIndex: Index): number => {
+    if (subrsIndex.count < 1240) {
+        return 107;
+    }
+    if (subrsIndex.count < 33900) {
+        return 1131;
+    }
+    return 32768;
 };
 
 export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
@@ -856,6 +953,8 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
     const [stringIndex, stringIndexSize] = await parseIndex(blob, offset);
     offset += stringIndexSize;
 
+    let getSubrs: (subr: number) => Uint8Array | null = (subr) => null;
+
     const topDict: TopDict = {...topDictDefaults};
     parseTopDictData(topDictData, topDict, stringIndex);
     if (topDict.Private) {
@@ -864,6 +963,22 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
             await blob.slice(offset, size + offset).arrayBuffer(),
         );
         parseTopDictData(privateDictData, topDict, stringIndex);
+
+        if (topDict.Subrs) {
+            const [subrsIndex] = await parseIndex(blob, offset + topDict.Subrs);
+            const bias = getBias(subrsIndex);
+
+            getSubrs = (subr) => {
+                const i = bias + subr;
+                if (i < 0 || i > subrsIndex.count) {
+                    return null;
+                }
+                const start = subrsIndex.offsets[i] - 1;
+                const end = subrsIndex.offsets[i + 1] - 1;
+                const data = subrsIndex.data.slice(start, end);
+                return data;
+            };
+        }
     }
 
     if (!topDict.CharStrings) {
@@ -894,7 +1009,11 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
         const end = charStringsIndex.offsets[gid + 1] - 1;
 
         const glyphData = charStringsIndex.data.slice(start, end);
-        const {path, advanceWidth} = parseCharstring(glyphData, topDict);
+        const {path, advanceWidth} = parseCharstring(
+            glyphData,
+            topDict,
+            getSubrs,
+        );
 
         const sid = charset[gid];
         const name = getString(sid, stringIndex);

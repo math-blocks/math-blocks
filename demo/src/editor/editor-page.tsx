@@ -4,7 +4,7 @@ import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 import {parse, getFontData} from "@math-blocks/opentype";
 
-import type {Font} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const simpleRow = Editor.util.row("2x+5=10");
@@ -122,7 +122,24 @@ const zipper: Editor.Zipper = {
 };
 
 const EditorPage: React.FunctionComponent = () => {
-    const [font, setFont] = React.useState<Font | null>(null);
+    const [stixFontData, setStixFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [lmFontData, setLmFontData] = React.useState<FontData | null>(null);
+    const [bonumFontData, setBonumFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [
+        pagellaFontData,
+        setPagellaFontData,
+    ] = React.useState<FontData | null>(null);
+    const [scholaFontData, setScholaFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [termesFontData, setTermesFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [fontIndex, setFontIndex] = React.useState<number>(0);
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
@@ -130,21 +147,102 @@ const EditorPage: React.FunctionComponent = () => {
             const blob = await res.blob();
             const font = await parse(blob);
             console.log(font);
-            setFont(font);
+            setStixFontData(getFontData(font, "STIX2"));
         };
 
         loadFont();
     }, []);
 
-    if (!font) {
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/latinmodern-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setLmFontData(getFontData(font, "LM-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyrebonum-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setBonumFontData(getFontData(font, "Bonum-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyrepagella-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setPagellaFontData(getFontData(font, "Pagella-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyreschola-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setScholaFontData(getFontData(font, "Schola-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyretermes-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setTermesFontData(getFontData(font, "Termes-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    if (
+        !stixFontData ||
+        !lmFontData ||
+        !bonumFontData ||
+        !pagellaFontData ||
+        !scholaFontData ||
+        !termesFontData
+    ) {
         return null;
     }
 
-    const fontData = getFontData(font, "STIX2");
+    const fonts = [
+        stixFontData,
+        lmFontData,
+        bonumFontData,
+        pagellaFontData,
+        scholaFontData,
+        termesFontData,
+    ];
+    const fontData = fonts[fontIndex];
+    const fontSize = 64;
+
+    // TODO:
+    // - render glyphs using <path> and <text> side by side to compare their size
+    // - fix radical and index positioning
 
     return (
         <FontDataContext.Provider value={fontData}>
             <MathEditor
+                fontSize={fontSize}
                 readonly={false}
                 zipper={zipper}
                 focus={true}
@@ -152,6 +250,25 @@ const EditorPage: React.FunctionComponent = () => {
                     console.log(value);
                 }}
             />
+            <br />
+            <br />
+            <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
+            <div style={{display: "flex", alignItems: "center"}}>
+                <span style={{fontFamily: "sans-serif", paddingRight: 8}}>
+                    Font:{" "}
+                </span>
+                <select
+                    onChange={(e) => setFontIndex(parseInt(e.target.value))}
+                    defaultValue={fontIndex}
+                >
+                    <option value={0}>STIX2</option>
+                    <option value={1}>Latin Modern</option>
+                    <option value={2}>Gyre Bonum</option>
+                    <option value={3}>Gyre Pagella</option>
+                    <option value={4}>Gyre Schola</option>
+                    <option value={5}>Gyre Termes</option>
+                </select>
+            </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>
                 {/* <EditingPanel /> */}
                 <div style={{height: 8}} />
