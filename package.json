@@ -81,7 +81,7 @@
     "coverage": "jest --coverage",
     "lint": "eslint 'packages/**/*.{ts,tsx}' 'demo/src/*.{ts,tsx}'",
     "start-storybook": "start-storybook -p 6006",
-    "clean": "rm -rf packages/*/out",
+    "clean": "rm -rf packages/*/out .buildcache",
     "build": "yarn webpack-build",
     "build-types": "node tools/build-types.js",
     "build-storybook": "build-storybook --no-dll",
