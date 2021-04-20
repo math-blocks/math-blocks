@@ -18,11 +18,14 @@ import * as stories from "../stories/2-math-renderer.stories";
 
 const {glyph, row, subsup} = Editor.builders;
 
-let fontData: FontData | null = null;
+let stixFontData: FontData | null = null;
+let lmFontData: FontData | null = null;
 
-const fontLoader = async (): Promise<FontData> => {
-    if (fontData) {
-        return fontData;
+// We can't use the same loader since the storybook one relies on webpack's
+// file-loader which we don't have access to here.
+const stixFontLoader = async (): Promise<FontData> => {
+    if (stixFontData) {
+        return stixFontData;
     }
 
     const fontPath = path.join(__dirname, "../../../../assets/STIX2Math.otf");
@@ -30,19 +33,34 @@ const fontLoader = async (): Promise<FontData> => {
     const blob = new Blob([buffer]);
 
     const font = await parse(blob);
-    fontData = getFontData(font, "STIX2");
+    stixFontData = getFontData(font, "STIX2");
 
-    return fontData;
+    return stixFontData;
+};
+
+const lmFontLoader = async (): Promise<FontData> => {
+    if (lmFontData) {
+        return lmFontData;
+    }
+
+    const fontPath = path.join(
+        __dirname,
+        "../../../../assets/latinmodern-math.otf",
+    );
+    const buffer = fs.readFileSync(fontPath);
+    const blob = new Blob([buffer]);
+
+    const font = await parse(blob);
+    lmFontData = getFontData(font, "LM-Math");
+
+    return lmFontData;
 };
 
 const storyToComponent = async function <T>(
     story: Story<T>,
+    loaders = [stixFontLoader],
 ): Promise<React.FC> {
     const loaded = {};
-
-    // We can't use the same loader since the storybook one relies on webpack's
-    // file-loader which we don't have access to here.
-    const loaders = [fontLoader];
 
     if (loaders) {
         for (const value of await Promise.all(
@@ -160,6 +178,13 @@ describe("renderer", () => {
         expect(<Equation />).toMatchSVGSnapshot();
     });
 
+    test("equation (latin modern)", async () => {
+        const Equation = await storyToComponent(stories.Equation, [
+            lmFontLoader,
+        ]);
+        expect(<Equation />).toMatchSVGSnapshot();
+    });
+
     describe("fractions", () => {
         test("colorized", async () => {
             const ColorizedFraction = await storyToComponent(
@@ -205,7 +230,7 @@ describe("renderer", () => {
                 },
             };
 
-            const fontData = await fontLoader();
+            const fontData = await stixFontLoader();
             const fontSize = 60;
             const context: Typesetter.Context = {
                 fontData: fontData,

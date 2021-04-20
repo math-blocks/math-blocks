@@ -385,8 +385,6 @@ const parseCharstring = (
 
             const b0 = data[i++];
 
-            // console.log(`b0 = ${b0}`);
-
             switch (b0) {
                 /**
                  * Path Constructor Operators
@@ -946,7 +944,6 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const [nameIndex, nameIndexSize] = await parseIndex(blob, offset);
     const name = new TextDecoder().decode(nameIndex.data);
-    console.log(`name = ${name}`);
     offset += nameIndexSize;
 
     const [topDictIndex, topDictIndexSize] = await parseIndex(blob, offset);
@@ -960,7 +957,6 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const topDict: TopDict = {...topDictDefaults};
     parseTopDictData(topDictData, topDict, stringIndex);
-    console.log(topDict);
     if (topDict.Private) {
         const [offset, size] = topDict.Private;
         const privateDictData = new Uint8Array(
@@ -997,9 +993,6 @@ export const parseCFF = async (blob: Blob): Promise<CFFResult> => {
 
     const nGlyphs = charStringsIndex.count; // only useful for Format 2
     const charset = await parseCharset(blob, topDict, nGlyphs);
-
-    const sid = charset[5];
-    console.log(`name of glyph #5 = ${getString(sid, stringIndex)}`);
 
     // We don't bother with the Encoding provide by the CFF and instead use
     // 'cmap' instead which provides complete coverage.  The encoding maps

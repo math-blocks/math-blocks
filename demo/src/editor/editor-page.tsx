@@ -126,6 +126,19 @@ const EditorPage: React.FunctionComponent = () => {
         null,
     );
     const [lmFontData, setLmFontData] = React.useState<FontData | null>(null);
+    const [bonumFontData, setBonumFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [
+        pagellaFontData,
+        setPagellaFontData,
+    ] = React.useState<FontData | null>(null);
+    const [scholaFontData, setScholaFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [termesFontData, setTermesFontData] = React.useState<FontData | null>(
+        null,
+    );
     const [fontIndex, setFontIndex] = React.useState<number>(0);
 
     React.useEffect(() => {
@@ -152,16 +165,84 @@ const EditorPage: React.FunctionComponent = () => {
         loadFont();
     }, []);
 
-    if (!stixFontData || !lmFontData) {
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyrebonum-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setBonumFontData(getFontData(font, "Bonum-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyrepagella-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setPagellaFontData(getFontData(font, "Pagella-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyreschola-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setScholaFontData(getFontData(font, "Schola-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/texgyretermes-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setTermesFontData(getFontData(font, "Termes-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    if (
+        !stixFontData ||
+        !lmFontData ||
+        !bonumFontData ||
+        !pagellaFontData ||
+        !scholaFontData ||
+        !termesFontData
+    ) {
         return null;
     }
 
-    const fonts = [stixFontData, lmFontData];
+    const fonts = [
+        stixFontData,
+        lmFontData,
+        bonumFontData,
+        pagellaFontData,
+        scholaFontData,
+        termesFontData,
+    ];
     const fontData = fonts[fontIndex];
+    const fontSize = 64;
+
+    // TODO:
+    // - render glyphs using <path> and <text> side by side to compare their size
+    // - fix radical and index positioning
 
     return (
         <FontDataContext.Provider value={fontData}>
             <MathEditor
+                fontSize={fontSize}
                 readonly={false}
                 zipper={zipper}
                 focus={true}
@@ -171,6 +252,7 @@ const EditorPage: React.FunctionComponent = () => {
             />
             <br />
             <br />
+            <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
             <div style={{display: "flex", alignItems: "center"}}>
                 <span style={{fontFamily: "sans-serif", paddingRight: 8}}>
                     Font:{" "}
@@ -181,6 +263,10 @@ const EditorPage: React.FunctionComponent = () => {
                 >
                     <option value={0}>STIX2</option>
                     <option value={1}>Latin Modern</option>
+                    <option value={2}>Gyre Bonum</option>
+                    <option value={3}>Gyre Pagella</option>
+                    <option value={4}>Gyre Schola</option>
+                    <option value={5}>Gyre Termes</option>
                 </select>
             </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>

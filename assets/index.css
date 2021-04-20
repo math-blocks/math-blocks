@@ -8,6 +8,26 @@
     src: url(/latinmodern-math.otf);
 }
 
+@font-face {
+    font-family: Bonum-Math;
+    src: url(/texgyrebonum-math.otf);
+}
+
+@font-face {
+    font-family: Pagella-Math;
+    src: url(/texgyrepagella-math.otf);
+}
+
+@font-face {
+    font-family: Schola-Math;
+    src: url(/texgyreschola-math.otf);
+}
+
+@font-face {
+    font-family: Termes-Math;
+    src: url(/texgyretermes-math.otf);
+}
+
 html,
 body {
     /* overflow: hidden; */
