@@ -4,7 +4,7 @@ import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 import {parse, getFontData} from "@math-blocks/opentype";
 
-import type {Font} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const simpleRow = Editor.util.row("2x+5=10");
@@ -122,27 +122,42 @@ const zipper: Editor.Zipper = {
 };
 
 const EditorPage: React.FunctionComponent = () => {
-    const [font, setFont] = React.useState<Font | null>(null);
+    const [stixFontData, setStixFontData] = React.useState<FontData | null>(
+        null,
+    );
+    const [lmFontData, setLmFontData] = React.useState<FontData | null>(null);
+    const [fontIndex, setFontIndex] = React.useState<number>(0);
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
-            // const res = await fetch("/STIX2Math.otf");
-            const res = await fetch("/latinmodern-math.otf");
+            const res = await fetch("/STIX2Math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
             console.log(font);
-            setFont(font);
+            setStixFontData(getFontData(font, "STIX2"));
         };
 
         loadFont();
     }, []);
 
-    if (!font) {
+    React.useEffect(() => {
+        const loadFont = async (): Promise<void> => {
+            const res = await fetch("/latinmodern-math.otf");
+            const blob = await res.blob();
+            const font = await parse(blob);
+            console.log(font);
+            setLmFontData(getFontData(font, "LM-Math"));
+        };
+
+        loadFont();
+    }, []);
+
+    if (!stixFontData || !lmFontData) {
         return null;
     }
 
-    // const fontData = getFontData(font, "STIX2");
-    const fontData = getFontData(font, "LM-Math");
+    const fonts = [stixFontData, lmFontData];
+    const fontData = fonts[fontIndex];
 
     return (
         <FontDataContext.Provider value={fontData}>
@@ -154,6 +169,20 @@ const EditorPage: React.FunctionComponent = () => {
                     console.log(value);
                 }}
             />
+            <br />
+            <br />
+            <div style={{display: "flex", alignItems: "center"}}>
+                <span style={{fontFamily: "sans-serif", paddingRight: 8}}>
+                    Font:{" "}
+                </span>
+                <select
+                    onChange={(e) => setFontIndex(parseInt(e.target.value))}
+                    defaultValue={fontIndex}
+                >
+                    <option value={0}>STIX2</option>
+                    <option value={1}>Latin Modern</option>
+                </select>
+            </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>
                 {/* <EditingPanel /> */}
                 <div style={{height: 8}} />
