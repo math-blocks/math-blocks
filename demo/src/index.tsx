@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {Link, Switch, Route, BrowserRouter as Router} from "react-router-dom";
+import {Link, Switch, Route, HashRouter as Router} from "react-router-dom";
 
 import EditorPage from "./editor/editor-page";
 import MathmlPage from "./mathml/mathml-page";
