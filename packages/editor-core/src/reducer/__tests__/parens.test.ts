@@ -26,12 +26,18 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Left);
+            const result = parens(zipper, "(");
 
-            expect(result.row.left).toEqualEditorNodes(row("2(").children);
-            expect(result.row.right).toEqualEditorNodes(
-                row("x+5)=10").children,
-            );
+            expect(result.row.left).toEqualEditorNodes([]);
+            expect(result.row.right).toEqualEditorNodes(row("x+5").children);
+            expect(result.breadcrumbs[0].row.left).toEqualEditorNodes([
+                builders.glyph("2"),
+            ]);
+            expect(result.breadcrumbs[0].row.right).toEqualEditorNodes([
+                builders.glyph("="),
+                builders.glyph("1"),
+                builders.glyph("0"),
+            ]);
         });
 
         test("')' wraps selection in non-pending parens", () => {
@@ -49,9 +55,20 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Right);
+            const result = parens(zipper, ")");
 
-            expect(result.row.left).toEqualEditorNodes(row("2(x+5)").children);
+            expect(result.row.left).toEqualEditorNodes([
+                builders.glyph("2"),
+                builders.delimited(
+                    [
+                        builders.glyph("x"),
+                        builders.glyph("+"),
+                        builders.glyph("5"),
+                    ],
+                    builders.glyph("("),
+                    builders.glyph(")"),
+                ),
+            ]);
             expect(result.row.right).toEqualEditorNodes(row("=10").children);
         });
     });
@@ -69,7 +86,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Left);
+            const result = parens(zipper, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes([]);
@@ -107,7 +124,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Right);
+            const result = parens(zipper, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -130,7 +147,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Left);
+            const result = parens(zipper, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);
@@ -168,7 +185,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Right);
+            const result = parens(zipper, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -192,7 +209,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(moveRight(zipper), Dir.Left);
+            const result = parens(moveRight(zipper), "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);
@@ -230,7 +247,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(moveLeft(zipper), Dir.Right);
+            const result = parens(moveLeft(zipper), ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -261,7 +278,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Left);
+            const result = parens(zipper, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes([
@@ -311,7 +328,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Right);
+            const result = parens(zipper, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -348,7 +365,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Right);
+            const result = parens(zipper, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -378,7 +395,7 @@ describe("parens", () => {
                 breadcrumbs: [],
             };
 
-            const result = parens(zipper, Dir.Left);
+            const result = parens(zipper, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);

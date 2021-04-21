@@ -1,42 +1,76 @@
 import * as builders from "../builders";
 
-import {Dir} from "./enums";
 import {rezipSelection} from "./util";
 import {moveRight} from "./move-right";
 
 import type {Zipper} from "./types";
 
-export const parens = (zipper: Zipper, dir: Dir): Zipper => {
+type Delimiters = "(" | ")" | "[" | "]" | "{" | "}";
+
+const leftGlyphMap = {
+    "(": "(",
+    ")": "(",
+    "{": "{",
+    "}": "{",
+    "[": "[",
+    "]": "[",
+};
+
+const rightGlyphMap = {
+    "(": ")",
+    ")": ")",
+    "{": "}",
+    "}": "}",
+    "[": "]",
+    "]": "]",
+};
+
+export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
     zipper = rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
-    const openParen = builders.glyph("(");
-    const closeParen = builders.glyph(")");
+    const leftParen = builders.glyph(leftGlyphMap[char]);
+    const rightParen = builders.glyph(rightGlyphMap[char]);
 
     if (selection) {
-        if (dir === Dir.Left) {
-            return {
+        if (leftParen.value.char === char) {
+            const newZipper: Zipper = {
                 ...zipper,
                 row: {
                     ...zipper.row,
-                    left: [...left, openParen],
-                    right: [...selection.nodes, closeParen, ...right],
+                    right: [
+                        builders.delimited(
+                            selection.nodes,
+                            leftParen,
+                            rightParen,
+                        ),
+                        ...right,
+                    ],
                     selection: null,
                 },
             };
-        } else {
-            return {
-                ...zipper,
-                row: {
-                    ...zipper.row,
-                    left: [...left, openParen, ...selection.nodes, closeParen],
-                    selection: null,
-                },
-            };
+
+            // This places the cursor inside the the new `delimited` node to
+            // the left of all nodes inside of it.
+            return moveRight(newZipper);
         }
+
+        const newZipper: Zipper = {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: [
+                    ...left,
+                    builders.delimited(selection.nodes, leftParen, rightParen),
+                ],
+                selection: null,
+            },
+        };
+
+        return newZipper;
     }
 
-    if (dir === Dir.Left) {
+    if (leftParen.value.char === char) {
         // If we're inside a row inside of a "delimited" node, check if the
         // opening paren is pending, if it is, re-adjust the size of the
         // "delimited" node and make the opening paren non-pending
@@ -109,18 +143,14 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
             return moveRight(nonPending);
         }
 
+        rightParen.value.pending = true;
+
         // Create a new "delimited" node
         const withParens: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
-                right: [
-                    builders.delimited(
-                        right,
-                        builders.glyph("("),
-                        builders.glyph(")", true),
-                    ),
-                ],
+                right: [builders.delimited(right, leftParen, rightParen)],
             },
         };
 
@@ -205,18 +235,14 @@ export const parens = (zipper: Zipper, dir: Dir): Zipper => {
             return nonPending;
         }
 
+        leftParen.value.pending = true;
+
         // put everything to the left inside a Delimited node
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: [
-                    builders.delimited(
-                        left,
-                        builders.glyph("(", true),
-                        builders.glyph(")"),
-                    ),
-                ],
+                left: [builders.delimited(left, leftParen, rightParen)],
             },
         };
     }
