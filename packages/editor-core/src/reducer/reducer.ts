@@ -43,11 +43,13 @@ export const zipperReducer = (
         case "^": {
             return subsup(state, Dir.Right);
         }
-        case "(": {
-            return parens(state, Dir.Left);
-        }
-        case ")": {
-            return parens(state, Dir.Right);
+        case "(":
+        case ")":
+        case "[":
+        case "]":
+        case "{":
+        case "}": {
+            return parens(state, action.type);
         }
         case "/": {
             return slash(state);
