@@ -1,4 +1,5 @@
 import * as React from "react";
+import cx from "classnames";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Typesetter from "@math-blocks/typesetter";
@@ -8,15 +9,12 @@ import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
-const {useEffect, useState, useRef, useContext} = React;
+const {useState, useRef, useContext, useCallback} = React;
 
 type Props = {
     // The initial value for the editor
     zipper: Editor.Zipper;
     readonly: boolean;
-
-    // TODO: figure out a better way of handling focus
-    focus?: boolean;
     fontSize?: number;
 
     onSubmit?: (zipper: Editor.Zipper) => unknown;
@@ -37,19 +35,9 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const [active, setActive] = useState<boolean>(false);
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
     const fontData = useContext(FontDataContext);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (props.focus && containerRef.current) {
-            containerRef.current.focus();
-        }
-    }, [props.focus]);
-
-    // update state to match props
-    if (!props.focus && active) {
-        setActive(false);
-    }
-
-    const callback = React.useCallback(
+    const callback = useCallback(
         (e: KeyboardEvent): void => {
             if (active && !props.readonly) {
                 const action = {
@@ -80,8 +68,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     }
                 }
 
-                // Prevent StoryBook from capturing '/' and shifting focus to its
-                // search field.
+                // Prevent StoryBook from capturing '/' and shifting focus to
+                // its search field.
                 e.stopPropagation();
             }
         },
@@ -89,6 +77,11 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     );
 
     useEventListener("keydown", callback);
+
+    const focusHandler = (): void => {
+        inputRef?.current?.focus();
+        setActive(true);
+    };
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
@@ -115,12 +108,27 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         <div
             tabIndex={!props.readonly ? 0 : undefined}
             ref={containerRef}
-            onFocus={() => setActive(true)}
-            onBlur={() => setActive(false)}
-            className={styles.container}
+            onClick={focusHandler}
+            className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}
             role="textbox"
         >
+            <input
+                ref={inputRef}
+                type="text"
+                style={{
+                    transform: "scale(0)",
+                    width: 0,
+                    height: 0,
+                    margin: 0,
+                    padding: 0,
+                }}
+                onBlur={() => setActive(false)}
+                autoCapitalize="off"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck="false"
+            />
             <MathRenderer scene={scene} />
         </div>
     );
