@@ -57,7 +57,6 @@ export const Editable: Story<EmptyProps> = (args, {loaded: fontData}) => {
             <MathEditor
                 readonly={false}
                 zipper={zipper}
-                focus={true}
                 onChange={action("onChange")}
                 onSubmit={action("onSubmit")}
             />
@@ -90,7 +89,7 @@ export const Readonly: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     return (
         <FontDataContext.Provider value={fontData}>
-            <MathEditor readonly={true} zipper={zipper} focus={false} />
+            <MathEditor readonly={true} zipper={zipper} />
         </FontDataContext.Provider>
     );
 };

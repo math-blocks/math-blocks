@@ -78,10 +78,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     useEventListener("keydown", callback);
 
-    const focusHandler = (): void => {
-        inputRef?.current?.focus();
-        setActive(true);
-    };
+    const focusHandler = (): void => inputRef?.current?.focus();
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
@@ -109,6 +106,13 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             tabIndex={!props.readonly ? 0 : undefined}
             ref={containerRef}
             onClick={focusHandler}
+            onMouseDown={(e) => {
+                setActive(true);
+                // prevent blurring the input
+                if (active) {
+                    e.preventDefault();
+                }
+            }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}
             role="textbox"

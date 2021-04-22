@@ -19,7 +19,6 @@ import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
 
 type Props = {
-    focus: boolean;
     readonly: boolean;
 
     prevStep: _Step;
@@ -160,7 +159,7 @@ const highlightMistake = (
 };
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {focus, readonly, prevStep, step, onChange} = props;
+    const {readonly, prevStep, step, onChange} = props;
 
     const dispatch: Dispatch = useDispatch();
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
@@ -367,7 +366,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     readonly={readonly}
                     zipper={zipper}
                     stepChecker={true}
-                    focus={focus}
                     onSubmit={handleCheckStep}
                     onChange={onChange}
                     style={{flexGrow: 1}}
