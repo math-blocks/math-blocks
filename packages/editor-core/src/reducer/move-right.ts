@@ -200,7 +200,7 @@ const selectionRight = (zipper: Zipper): Zipper => {
         if (row.selection.dir === Dir.Right) {
             if (zipper.row.right.length > 0) {
                 return crumbMoveRight(zipper);
-            } else {
+            } else if (zipper.breadcrumbs.length > 0) {
                 const index = zipper.breadcrumbs.length - 1;
                 const crumb = zipper.breadcrumbs[index];
                 const updatedCrumb = startSelection(crumb, Dir.Right);
@@ -214,6 +214,10 @@ const selectionRight = (zipper: Zipper): Zipper => {
                         index,
                     ),
                 };
+            } else {
+                // There's nowhere to go.  We're at the left-most part of the
+                // top-most row.
+                return zipper;
             }
         } else {
             if (row.selection.nodes.length > 0) {

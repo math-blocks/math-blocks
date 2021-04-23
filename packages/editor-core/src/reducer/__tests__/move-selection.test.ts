@@ -72,6 +72,46 @@ describe("moveRight w/ selecting = true", () => {
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
+
+        test("tries to select past the start", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: [],
+                    selection: null,
+                    right: row("1+2").children,
+                },
+                breadcrumbs: [],
+            };
+
+            const result = moveLeft(moveLeft(moveRight(zipper), true), true);
+
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.right).toHaveLength(2);
+        });
+
+        test("tries to select past the end", () => {
+            const zipper: Zipper = {
+                row: {
+                    id: 0,
+                    type: "zrow",
+                    left: row("1+2").children,
+                    selection: null,
+                    right: [],
+                },
+                breadcrumbs: [],
+            };
+
+            const result = moveRight(moveRight(moveLeft(zipper), true), true);
+
+            expect(result.row.left).toHaveLength(2);
+            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
+        });
     });
 
     describe("frac in a row", () => {
