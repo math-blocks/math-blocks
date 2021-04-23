@@ -389,7 +389,7 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
             Editor.builders.glyph(")"),
         ),
         Editor.builders.delimited(
-            Editor.util.row("12-y").children,
+            Editor.util.row("12\u2212y").children,
             Editor.builders.glyph("("),
             Editor.builders.glyph(")"),
         ),
@@ -439,7 +439,9 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
     args,
     {loaded: fontData},
 ) => {
-    const editNode = Editor.builders.row([Editor.util.frac("11+x", "12-y")]);
+    const editNode = Editor.builders.row([
+        Editor.util.frac("11+x", "12\u2212y"),
+    ]);
 
     const semNode = Editor.parse(editNode) as Semantic.types.Div;
     const denominator = semNode.args[1] as Semantic.types.Add;

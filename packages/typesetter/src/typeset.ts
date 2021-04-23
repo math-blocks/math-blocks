@@ -595,9 +595,11 @@ const isOperator = (char: string): boolean => {
 
 const shouldHavePadding = (
     prevNode: Editor.types.Node | Editor.Focus | undefined,
-    currentChar: string,
+    currentNode: Editor.types.Atom,
     context: Context,
 ): boolean => {
+    const currentChar = currentNode.value.char;
+
     // We only add padding around operators, so if we get a non-operator char
     // we can return early.
     if (!isOperator(currentChar)) {
@@ -636,23 +638,9 @@ const _typesetChildren = (
 
         if (child.type === "atom") {
             const glyph = _typesetAtom(child, context);
-            const {value} = child;
-
-            if (shouldHavePadding(prevChild, value.char, context)) {
-                const box = withOperatorPadding(glyph, context);
-
-                // Move `color` and `id` from `glyph` to `box`.
-                // TODO: figure out if this is necessary.  I don't think it is
-                // anymore now that we're using Zippers for cursor/selection.
-                box.id = glyph.id;
-                box.color = glyph.color;
-                delete glyph.id;
-                delete glyph.color;
-
-                return box;
-            }
-
-            return glyph;
+            return shouldHavePadding(prevChild, child, context)
+                ? withOperatorPadding(glyph, context)
+                : glyph;
         } else {
             return _typeset(child, context);
         }

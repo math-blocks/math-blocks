@@ -3,9 +3,6 @@
     <g transform="translate(0,96.60000000000001)" id="21">
         <rect type="rect" x="198.71999999999997" y="-46.2" width="73.2" height="60" fill="rgba(0,144,255,0.5)"></rect>
         <rect type="rect" x="0" y="-94.92" width="198.71999999999997" height="157.44" fill="rgba(0,144,255,0.5)"></rect>
-        <g transform="translate(198.71999999999997,0)" id="11">
-            <path fill="currentcolor" id="11" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
-        </g>
         <g transform="translate(271.91999999999996,0)" id="19">
             <g transform="translate(0,29.69999999999999)" id="undefined">
                 <g transform="translate(0,0)" id="undefined">
@@ -20,10 +17,10 @@
                         </g>
                         <g transform="translate(0,57.24)" id="18">
                             <path fill="currentcolor" id="13" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-                            <g transform="translate(29.7,0)" id="14">
+                            <path fill="currentcolor" id="15" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(102.9, 0) scale(0.06, -0.06)"></path>
+                            <g transform="translate(29.7,0)" id="undefined">
                                 <path fill="currentcolor" id="14" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
                             </g>
-                            <path fill="currentcolor" id="15" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(102.9, 0) scale(0.06, -0.06)"></path>
                         </g>
                         <g transform="translate(0,-2.6645352591003757e-15)" id="undefined">
                             <line type="line" x1="0" y1="0" x2="132.35999999999999" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
@@ -41,10 +38,10 @@
                     </g>
                     <g transform="translate(0,57.24)" id="6">
                         <path fill="currentcolor" id="1" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-                        <g transform="translate(29.7,0)" id="2">
+                        <path fill="currentcolor" id="3" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(102.9, 0) scale(0.06, -0.06)"></path>
+                        <g transform="translate(29.7,0)" id="undefined">
                             <path fill="currentcolor" id="2" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
                         </g>
-                        <path fill="currentcolor" id="3" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(102.9, 0) scale(0.06, -0.06)"></path>
                     </g>
                     <g transform="translate(0,-2.6645352591003757e-15)" id="undefined">
                         <line type="line" x1="0" y1="0" x2="132.35999999999999" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
@@ -53,6 +50,9 @@
             </g>
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 77,270 C 77,-310 247,-806 457,-1042L 486,-1020 C 288,-730 182,-246 182,270C 182,786 288,1270 486,1560L 457,1582 C 247,1346 77,850 77,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 442,270 C 442,850 272,1346 62,1582L 33,1560 C 231,1270 337,786 337,270C 337,-246 231,-730 33,-1020L 62,-1042 C 272,-806 442,-310 442,270Z" transform="translate(167.57999999999998, 0) scale(0.06, -0.06)"></path>
+        </g>
+        <g transform="translate(198.71999999999997,0)" id="undefined">
+            <path fill="currentcolor" id="11" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
         </g>
     </g>
 </svg>
