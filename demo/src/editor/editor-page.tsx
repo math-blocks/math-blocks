@@ -73,6 +73,7 @@ const allNodeTypes = Editor.builders.row([
             Editor.builders.glyph("0"),
         ],
     ),
+    Editor.builders.glyph("x"),
     Editor.builders.glyph("+"),
     Editor.builders.limits(
         Editor.builders.glyph("\u2211"), // \sum
@@ -83,6 +84,7 @@ const allNodeTypes = Editor.builders.row([
         ],
         [Editor.builders.glyph("\u221E")], // \infty
     ),
+    Editor.builders.glyph("i"),
 ]);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const nestedFractions = Editor.builders.row([

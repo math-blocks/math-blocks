@@ -109,9 +109,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             onMouseDown={(e) => {
                 setActive(true);
                 // prevent blurring the input
-                if (active) {
-                    e.preventDefault();
-                }
+                e.preventDefault();
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}

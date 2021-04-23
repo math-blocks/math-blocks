@@ -413,9 +413,33 @@ const typesetFocus = (
     }
 };
 
-const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
+const _typesetAtom = (
+    node: Editor.types.Atom,
+    context: Context,
+): Layout.Glyph => {
     const {font} = context.fontData;
 
+    const {value} = node;
+
+    const glyphID = font.getGlyphID(value.char);
+    let glyph = Layout.makeGlyph(value.char, glyphID, context);
+
+    // Convert individual glyphs to italic glyphs if they exist in the
+    // current font.
+    if (/[a-z]/.test(value.char) && !context.operator) {
+        const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
+        const char = String.fromCodePoint(0x1d44e + offset);
+        const glyphID = font.getGlyphID(char);
+        glyph = Layout.makeGlyph(char, glyphID, context);
+    }
+
+    glyph.id = node.id;
+    glyph.color = context.colorMap?.get(node.id);
+    glyph.pending = node.value.pending;
+    return glyph;
+};
+
+const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
     switch (node.type) {
         case "row": {
             // The only time this can happen is if limits.inner is a row
@@ -521,27 +545,87 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             return Layout.hpackNat([[open, row, close]], context);
         }
         case "atom": {
-            const {value} = node;
-
-            const glyphID = font.getGlyphID(value.char);
-            let glyph = Layout.makeGlyph(value.char, glyphID, context);
-
-            // Convert individual glyphs to italic glyphs if they exist in the
-            // current font.
-            if (/[a-z]/.test(value.char) && !context.operator) {
-                const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
-                const char = String.fromCodePoint(0x1d44e + offset);
-                const glyphID = font.getGlyphID(char);
-                glyph = Layout.makeGlyph(char, glyphID, context);
-            }
-
-            glyph.id = node.id;
-            glyph.color = context.colorMap?.get(node.id);
-            return glyph;
+            return _typesetAtom(node, context);
         }
         default:
             throw new UnreachableCaseError(node);
     }
+};
+
+const canBeUnary = (char: string): boolean => {
+    const unaryOperators = [
+        "+",
+        "\u2212", // \minus
+        "\u00B1", // \pm
+    ];
+
+    return unaryOperators.includes(char);
+};
+
+// TODO: dedupe with isOperator in slash.ts
+const isOperator = (char: string): boolean => {
+    // We don't include unary +/- in the numerator.  This mimic's mathquill's
+    // behavior.
+    const operators = [
+        "+",
+        "\u2212", // \minus
+        "\u00B1", // \pm
+        "\u00B7", // \times
+        "=",
+        "<",
+        ">",
+        "\u2260", // \neq
+        "\u2264", // \geq
+        "\u2265", // \leq
+    ];
+
+    if (operators.includes(char)) {
+        return true;
+    }
+
+    const charCode = char.charCodeAt(0);
+
+    // Arrows
+    if (charCode >= 0x2190 && charCode <= 0x21ff) {
+        return true;
+    }
+
+    return false;
+};
+
+const shouldHavePadding = (
+    prevNode: Editor.types.Node | Editor.Focus | undefined,
+    currentNode: Editor.types.Atom,
+    context: Context,
+): boolean => {
+    const currentChar = currentNode.value.char;
+
+    // We only add padding around operators, so if we get a non-operator char
+    // we can return early.
+    if (!isOperator(currentChar)) {
+        return false;
+    }
+
+    // No operators get padding when `cramped` is true
+    if (context.cramped) {
+        return false;
+    }
+
+    // If the currentChar can be unary we check a number of situations where it
+    // should be unary and don't give it any padding in those situations.
+    if (canBeUnary(currentChar)) {
+        if (
+            !prevNode ||
+            (prevNode.type === "atom" && isOperator(prevNode.value.char)) ||
+            prevNode.type === "limits" ||
+            prevNode.type === "zlimits"
+        ) {
+            return false;
+        }
+    }
+
+    // All other operators should have padding around them.
+    return true;
 };
 
 const _typesetChildren = (
@@ -553,33 +637,10 @@ const _typesetChildren = (
         prevChild = index > 0 ? children[index - 1] : prevChild;
 
         if (child.type === "atom") {
-            // TODO: Create a separate function for typesetting glyphs
-            const glyph = _typeset(child, context);
-            const {value} = child;
-            const unary =
-                /[+\u2212]/.test(value.char) &&
-                (prevChild
-                    ? prevChild.type === "atom" &&
-                      /[+\u2212<>\u2260=\u2264\u2265\u00B1(]/.test(
-                          prevChild.value.char,
-                      )
-                    : true);
-            if (
-                !unary &&
-                /[+\-\u00B7\u2212<>\u2260=\u2264\u2265\u00B1]/.test(value.char)
-            ) {
-                const box = context.cramped
-                    ? glyph
-                    : withOperatorPadding(glyph, context);
-                box.id = child.id;
-                return box;
-            } else {
-                glyph.id = child.id;
-                if (glyph.type === "Glyph") {
-                    glyph.pending = child.value.pending;
-                }
-                return glyph;
-            }
+            const glyph = _typesetAtom(child, context);
+            return shouldHavePadding(prevChild, child, context)
+                ? withOperatorPadding(glyph, context)
+                : glyph;
         } else {
             return _typeset(child, context);
         }

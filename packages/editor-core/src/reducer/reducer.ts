@@ -61,7 +61,8 @@ export const zipperReducer = (
         // We don't handle any other actions yet so ignore them and return the
         // current state.
         default: {
-            if (action.type.length === 1 && action.type.charCodeAt(0) >= 32) {
+            // We ignore all control characters as well the space character.
+            if (action.type.length === 1 && action.type.charCodeAt(0) > 32) {
                 let char = action.type;
                 if (char === "*") {
                     char = "\u00B7";
