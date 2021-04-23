@@ -245,7 +245,6 @@ const EditorPage: React.FunctionComponent = () => {
                 fontSize={fontSize}
                 readonly={false}
                 zipper={zipper}
-                focus={true}
                 onChange={(value) => {
                     console.log(value);
                 }}

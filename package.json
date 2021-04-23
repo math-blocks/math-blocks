@@ -89,6 +89,7 @@
     "sloc": "sloc packages demo tools -e out"
   },
   "dependencies": {
+    "classnames": "^2.3.1",
     "fraction.js": "^4.0.12",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",

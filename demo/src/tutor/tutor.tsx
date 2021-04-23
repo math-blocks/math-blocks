@@ -40,7 +40,7 @@ const Tutor: React.FunctionComponent = () => {
                         readonly={false}
                         zipper={zipper}
                         stepChecker={true}
-                        focus={mode === "edit"}
+                        // focus={mode === "edit"}
                         style={{marginTop: 8, flexGrow: 1}}
                         onChange={(zipper: Editor.Zipper) => {
                             dispatch({
@@ -63,7 +63,7 @@ const Tutor: React.FunctionComponent = () => {
                     return (
                         <Step
                             key={`step-${index}`}
-                            focus={isLast && mode === "solve"}
+                            // focus={isLast && mode === "solve"}
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}

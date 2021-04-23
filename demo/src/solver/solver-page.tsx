@@ -122,7 +122,6 @@ const SolverPage: React.FunctionComponent = () => {
                         readonly={false}
                         zipper={input}
                         stepChecker={true}
-                        focus={true}
                         onChange={(value: Editor.Zipper) => setInput(value)}
                     />
                 </div>
