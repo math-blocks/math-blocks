@@ -4,6 +4,37 @@ import {Dir} from "./enums";
 import {rezipSelection, zrow} from "./util";
 import type {Zipper, Focus} from "./types";
 
+// TODO: dedupe with isOperator in typeset.ts
+const isOperator = (char: string): boolean => {
+    // We don't include unary +/- in the numerator.  This mimic's mathquill's
+    // behavior.
+    const operators = [
+        "+",
+        "\u2212", // \minus
+        "\u00B1", // \pm
+        "\u00B7", // \times
+        "=",
+        "<",
+        ">",
+        "\u2260", // \neq
+        "\u2265", // \geq
+        "\u2264", // \leq
+    ];
+
+    if (operators.includes(char)) {
+        return true;
+    }
+
+    const charCode = char.charCodeAt(0);
+
+    // Arrows
+    if (charCode >= 0x2190 && charCode <= 0x21ff) {
+        return true;
+    }
+
+    return false;
+};
+
 export const slash = (zipper: Zipper): Zipper => {
     zipper = rezipSelection(zipper);
     const {left, selection} = zipper.row;
@@ -36,20 +67,6 @@ export const slash = (zipper: Zipper): Zipper => {
         };
     }
 
-    // We don't include unary +/- in the numerator.  This mimic's mathquill's
-    // behavior.
-    const splitChars = [
-        "+",
-        "\u2212", // \minus
-        "\u00B1", // \pm
-        "\u00B7", // \times
-        "=",
-        "<",
-        ">",
-        "\u2264", // \leq
-        "\u2265", // \geq
-    ];
-
     let index = left.length - 1;
     let parenCount = 0;
     while (index >= 0) {
@@ -67,7 +84,7 @@ export const slash = (zipper: Zipper): Zipper => {
         if (
             child.type === "atom" &&
             parenCount === 0 &&
-            splitChars.includes(child.value.char)
+            isOperator(child.value.char)
         ) {
             break;
         }
