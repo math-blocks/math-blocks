@@ -124,6 +124,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     height: 0,
                     margin: 0,
                     padding: 0,
+                    border: "none",
                 }}
                 onBlur={() => setActive(false)}
                 autoCapitalize="off"

@@ -316,14 +316,14 @@ export const makeFract = (
     // );
 
     const multiplier = multiplierForMathStyle(mathStyle);
-    const width = Math.max(
-        Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
-        30 * multiplier, // empty numerator/denominator width
-    );
-    const stroke = hpackNat(
-        [[makeHRule(thickness, width - thickness)]],
-        context,
-    );
+    const endPadding = thickness; // add extra space around the numerator and denominator
+    const width =
+        Math.max(
+            Math.max(getWidth(numBox), getWidth(denBox)), // TODO: calculate this based on current font size
+            30 * multiplier, // empty numerator/denominator width
+        ) +
+        2 * endPadding;
+    const stroke = hpackNat([[makeHRule(thickness, width)]], context);
 
     const upList = makeList(minNumGap, numBox);
     const dnList = makeList(minDenGap, denBox);
