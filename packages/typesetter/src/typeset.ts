@@ -148,7 +148,8 @@ const typesetRoot = (
 
     const fontSize = fontSizeForContext(context);
     const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
-    const stroke = Layout.makeHRule(thickness, radicand.width);
+    const endPadding = thickness; // Add extra space at the end of the radicand
+    const stroke = Layout.makeHRule(thickness, radicand.width + endPadding);
 
     const vbox = Layout.makeVBox(
         radicand.width,
@@ -160,6 +161,7 @@ const typesetRoot = (
     surdVBox.shift = surdVBox.height - vbox.height;
 
     const root = Layout.hpackNat([[surdVBox, vbox]], context);
+    root.width += endPadding;
 
     return root;
 };
