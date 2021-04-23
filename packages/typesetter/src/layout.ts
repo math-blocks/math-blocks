@@ -1,7 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
-import type {MathConstants, FontData} from "@math-blocks/opentype";
+import type {FontData} from "@math-blocks/opentype";
 
-import {multiplierForMathStyle, fontSizeForContext} from "./utils";
+import {multiplierForContext, fontSizeForContext} from "./utils";
 import type {Context} from "./types";
 import {MathStyle} from "./enums";
 
@@ -273,13 +273,10 @@ const makeList = (size: Dist, box: Box): readonly Node[] => [
 ];
 
 // TODO: compute width from numBox and denBox
-export const makeFract = (
-    numBox: Box,
-    denBox: Box,
-    context: Context,
-    constants: MathConstants,
-): Box => {
+export const makeFract = (numBox: Box, denBox: Box, context: Context): Box => {
     const {mathStyle} = context;
+    const {constants} = context.fontData.font.math;
+
     const fontSize = fontSizeForContext(context);
     const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
     const shift = (fontSize * constants.axisHeight.value) / 1000;
@@ -315,7 +312,7 @@ export const makeFract = (
     //     minDenGap,
     // );
 
-    const multiplier = multiplierForMathStyle(mathStyle);
+    const multiplier = multiplierForContext(context);
     const endPadding = thickness; // add extra space around the numerator and denominator
     const width =
         Math.max(
@@ -349,7 +346,6 @@ export const makeSubSup = (
     subBox: Box | null,
     supBox: Box | null,
     context: Context,
-    constants: MathConstants,
 ): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
@@ -360,8 +356,7 @@ export const makeSubSup = (
         subBox ? getWidth(subBox) : 0,
     );
 
-    const {mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
+    const multiplier = multiplierForContext(context);
 
     // TODO: use constants from MATH table for these shift contants
 
