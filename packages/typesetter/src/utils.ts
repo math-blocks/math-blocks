@@ -1,12 +1,13 @@
 import {MathStyle} from "./enums";
-import {constants} from "./math-constants";
 import * as Layout from "./layout";
 
 import type {Context} from "./types";
 
-// TODO: in the future pass in constants as an arg as well
 // TODO: return the font size instead of the multiplier
-export const multiplierForMathStyle = (mathStyle: MathStyle): number => {
+export const multiplierForContext = (context: Context): number => {
+    const {constants} = context.fontData.font.math;
+    const {mathStyle} = context;
+
     switch (mathStyle) {
         case MathStyle.Display:
         case MathStyle.Text:
@@ -19,8 +20,8 @@ export const multiplierForMathStyle = (mathStyle: MathStyle): number => {
 };
 
 export const fontSizeForContext = (context: Context): number => {
-    const {baseFontSize, mathStyle} = context;
-    const multiplier = multiplierForMathStyle(mathStyle);
+    const multiplier = multiplierForContext(context);
+    const {baseFontSize} = context;
     const fontSize = multiplier * baseFontSize;
     return fontSize;
 };

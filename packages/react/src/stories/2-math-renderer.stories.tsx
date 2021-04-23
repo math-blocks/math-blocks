@@ -118,6 +118,28 @@ export const LatinModernEquation: Story<EmptyProps> = (
 // @ts-expect-error: Story doesn't include 'loaders' static
 LatinModernEquation.loaders = [lmFontLoader];
 
+export const LatinModernRootAndFraction: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    const math = row([
+        root(null, [frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")])]),
+    ]);
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Static,
+        cramped: false,
+    };
+    const scene = Typesetter.typeset(math, context);
+
+    return <MathRenderer scene={scene} style={style} />;
+};
+// @ts-expect-error: Story doesn't include 'loaders' static
+LatinModernRootAndFraction.loaders = [lmFontLoader];
+
 export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const math = row([
         glyph("2"),

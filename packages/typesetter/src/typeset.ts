@@ -4,16 +4,10 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode} from "./enums";
-import {
-    multiplierForMathStyle,
-    fontSizeForContext,
-    makeDelimiter,
-} from "./utils";
+import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
 import type {Context} from "./types";
 import type {Group} from "./scene-graph";
-
-import {constants} from "./math-constants";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -92,7 +86,7 @@ const typesetFrac = (
     denominator: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    return Layout.makeFract(numerator, denominator, context, constants);
+    return Layout.makeFract(numerator, denominator, context);
 };
 
 const typesetSubsup = (
@@ -100,7 +94,7 @@ const typesetSubsup = (
     supBox: Layout.Box | null,
     context: Context,
 ): Layout.Box => {
-    return Layout.makeSubSup(subBox, supBox, context, constants);
+    return Layout.makeSubSup(subBox, supBox, context);
 };
 
 const typesetRoot = (
@@ -108,7 +102,7 @@ const typesetRoot = (
     radicand: Layout.Box,
     context: Context,
 ): Layout.Box => {
-    const multiplier = multiplierForMathStyle(context.mathStyle);
+    const multiplier = multiplierForContext(context);
 
     // Give the radicand a minimal width in case it's empty
     radicand.width = Math.max(radicand.width, 30 * multiplier);
@@ -147,7 +141,8 @@ const typesetRoot = (
     }
 
     const fontSize = fontSizeForContext(context);
-    const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
+    const {constants} = context.fontData.font.math;
+    const thickness = (fontSize * constants.radicalRuleThickness.value) / 1000;
     const endPadding = thickness; // Add extra space at the end of the radicand
     const stroke = Layout.makeHRule(thickness, radicand.width + endPadding);
 
