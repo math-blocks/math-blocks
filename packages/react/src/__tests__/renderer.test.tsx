@@ -178,11 +178,21 @@ describe("renderer", () => {
         expect(<Equation />).toMatchSVGSnapshot();
     });
 
-    test("equation (latin modern)", async () => {
-        const Equation = await storyToComponent(stories.Equation, [
-            lmFontLoader,
-        ]);
-        expect(<Equation />).toMatchSVGSnapshot();
+    describe("latin modern", () => {
+        test("equation", async () => {
+            const Equation = await storyToComponent(stories.Equation, [
+                lmFontLoader,
+            ]);
+            expect(<Equation />).toMatchSVGSnapshot();
+        });
+
+        test("tall delimiters, root, and fraction", async () => {
+            const TallDelimiters = await storyToComponent(
+                stories.TallDelimiters,
+                [lmFontLoader],
+            );
+            expect(<TallDelimiters />).toMatchSVGSnapshot();
+        });
     });
 
     describe("fractions", () => {
