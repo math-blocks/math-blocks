@@ -98,7 +98,8 @@ const typesetSubsup = (
 };
 
 const typesetRoot = (
-    indexBox: Layout.Box | null,
+    // TODO: rename all uses of radical `index` to `degree` to match this
+    degree: Layout.Box | null,
     radicand: Layout.Box,
     context: Context,
 ): Layout.Box => {
@@ -107,55 +108,81 @@ const typesetRoot = (
     // Give the radicand a minimal width in case it's empty
     radicand.width = Math.max(radicand.width, 30 * multiplier);
 
-    // TODO: change how we do the index to the following:
-    // [index, negative kern, surd, radicand]
-
     const thresholdOptions = {
         value: "sum" as const,
         strict: true,
     };
-    const surdGlyph = makeDelimiter(
-        "\u221A",
-        radicand,
-        thresholdOptions,
+
+    const surd = Layout.hpackNat(
+        [[makeDelimiter("\u221A", radicand, thresholdOptions, context)]],
         context,
     );
-    const surdHBox = Layout.hpackNat([[surdGlyph]], context);
-
-    let surdVBox;
-    if (indexBox) {
-        // TODO: get this constant from the MATH table constants
-        surdHBox.shift = Math.max(0, indexBox.width - 36);
-        surdVBox = Layout.makeVBox(
-            surdHBox.width + Math.max(0, indexBox.width - 36),
-            surdHBox,
-            // TODO: get this constant from the MATH table constants
-            // TODO: fix how we handle negative kerns, right now we just subtract
-            // them from the dimension of the container which isn't right
-            [Layout.makeKern(-35.4), indexBox],
-            [],
-            context,
-        );
-    } else {
-        surdVBox = Layout.makeVBox(surdHBox.width, surdHBox, [], [], context);
-    }
 
     const fontSize = fontSizeForContext(context);
+    const {font} = context.fontData;
     const {constants} = context.fontData.font.math;
-    const thickness = (fontSize * constants.radicalRuleThickness.value) / 1000;
+    const thickness =
+        (fontSize * constants.radicalRuleThickness.value) /
+        font.head.unitsPerEm;
     const endPadding = thickness; // Add extra space at the end of the radicand
     const stroke = Layout.makeHRule(thickness, radicand.width + endPadding);
 
-    const vbox = Layout.makeVBox(
+    const radicalWithRule = Layout.makeVBox(
         radicand.width,
         radicand,
         [Layout.makeKern(6), stroke],
         [],
         context,
     );
-    surdVBox.shift = surdVBox.height - vbox.height;
 
-    const root = Layout.hpackNat([[surdVBox, vbox]], context);
+    // Compute the shift to align the top of the surd with the radical rule
+    const shift = surd.height - radicalWithRule.height;
+
+    surd.shift = shift;
+
+    let root;
+    if (degree) {
+        const afterDegreeKern = Layout.makeKern(
+            (fontSize * constants.radicalKernAfterDegree.value) /
+                font.head.unitsPerEm,
+        );
+
+        // TODO: take into account constants.radicalKernBeforeDegree
+        const beforeDegreeKern = Layout.makeKern(
+            Math.max(0, -afterDegreeKern.size - degree.width),
+        );
+
+        // This follows the instructions from 3.3.3.3 describing the alphabetic
+        // baseline of the index.
+        // https://mathml-refresh.github.io/mathml-core/#root-with-index
+        //
+        // NOTE: This doesn't account for an index with a large descender, but
+        // neither does TeX's layout algorithm.  Most of the the time the index
+        // is a single number or `n`, neither of whcih have a descender.
+        const degreeBottomRaisePercent =
+            constants.radicalDegreeBottomRaisePercent / 100;
+        degree.shift =
+            shift + // match shift of surdHBox
+            surd.depth - // align the index to the bottom of surdHBox
+            // shift it up to the correct location
+            degreeBottomRaisePercent * Layout.vsize(surd);
+
+        root = Layout.hpackNat(
+            [
+                [
+                    beforeDegreeKern,
+                    degree,
+                    afterDegreeKern,
+                    surd,
+                    radicalWithRule,
+                ],
+            ],
+            context,
+        );
+    } else {
+        root = Layout.hpackNat([[surd, radicalWithRule]], context);
+    }
+
     root.width += endPadding;
 
     return root;

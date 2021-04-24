@@ -5,9 +5,7 @@
         <rect type="rect" x="0" y="-94.92" width="206.88" height="157.44" fill="rgba(0,144,255,0.5)"></rect>
         <g transform="translate(280.08,0)" id="19">
             <g transform="translate(0,29.69999999999999)" id="undefined">
-                <g transform="translate(0,0)" id="undefined">
-                    <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 1062,2105 L 532,-81 L 528,-81 L 216,807 L 196,807 L 30,698 L 49,669 L 153,709 L 502,-265 L 547,-265 L 1112,2037 L 1212,2037 L 1212,2105 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-                </g>
+                <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 1062,2105 L 532,-81 L 528,-81 L 216,807 L 196,807 L 30,698 L 49,669 L 153,709 L 502,-265 L 547,-265 L 1112,2037 L 1212,2037 L 1212,2105 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
             </g>
             <g transform="translate(70.62,0)" id="undefined">
                 <g transform="translate(0,1.4210854715202004e-14)" id="20">

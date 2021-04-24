@@ -195,6 +195,24 @@ describe("renderer", () => {
         });
     });
 
+    describe("radicals", () => {
+        test("with degree (dynamic, stix)", async () => {
+            const RadicalWithDegreeDynamic = await storyToComponent(
+                stories.RadicalWithDegreeDynamic,
+                [stixFontLoader],
+            );
+            expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
+        });
+
+        test("with degree (dynamic, latin modern)", async () => {
+            const RadicalWithDegreeDynamic = await storyToComponent(
+                stories.RadicalWithDegreeDynamic,
+                [lmFontLoader],
+            );
+            expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
+        });
+    });
+
     describe("fractions", () => {
         test("colorized", async () => {
             const ColorizedFraction = await storyToComponent(

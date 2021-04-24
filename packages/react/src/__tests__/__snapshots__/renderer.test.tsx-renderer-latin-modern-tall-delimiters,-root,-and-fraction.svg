@@ -3,9 +3,7 @@
     <g transform="translate(0,71.76)" id="21">
         <g transform="translate(294.12,0)" id="19">
             <g transform="translate(0,-2.760000000000005)" id="undefined">
-                <g transform="translate(0,0)" id="undefined">
-                    <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 1020,1130 C 1020,1141 1012,1150 1000,1150C 985,1150 981,1137 977,1124L 464,-500 L 249,250 L 110,87 L 126,72 L 194,152 L 424,-650 C 457,-650 458,-650 466,-626L 1015,1110 C 1020,1125 1020,1130 1020,1130Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-                </g>
+                <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 1020,1130 C 1020,1141 1012,1150 1000,1150C 985,1150 981,1137 977,1124L 464,-500 L 249,250 L 110,87 L 126,72 L 194,152 L 424,-650 C 457,-650 458,-650 466,-626L 1015,1110 C 1020,1125 1020,1130 1020,1130Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
             </g>
             <g transform="translate(60,0)" id="undefined">
                 <g transform="translate(0,7.105427357601002e-15)" id="20">
