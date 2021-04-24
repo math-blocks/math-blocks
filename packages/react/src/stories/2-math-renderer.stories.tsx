@@ -696,3 +696,46 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     return <MathRenderer scene={prod} style={style} />;
 };
+
+export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    const editNode = Editor.builders.row([root([glyph("3")], [glyph("x")])]);
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(editNode, context);
+
+    return <MathRenderer scene={prod} style={style} />;
+};
+
+export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    const editNode = Editor.builders.row([
+        frac(
+            [glyph("1")],
+            [root([glyph("1"), glyph("2"), glyph("3")], [glyph("x")])],
+        ),
+    ]);
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(editNode, context);
+
+    return <MathRenderer scene={prod} style={style} />;
+};
