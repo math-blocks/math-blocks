@@ -196,20 +196,26 @@ describe("renderer", () => {
     });
 
     describe("radicals", () => {
-        test("with degree (dynamic, stix)", async () => {
-            const RadicalWithDegreeDynamic = await storyToComponent(
-                stories.RadicalWithDegreeDynamic,
-                [stixFontLoader],
-            );
-            expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
-        });
+        describe.each`
+            fontname          | fontloader
+            ${"stix"}         | ${stixFontLoader}
+            ${"latin modern"} | ${lmFontLoader}
+        `("$fontname", ({fontloader}) => {
+            test("with degree (dynamic)", async () => {
+                const RadicalWithDegreeDynamic = await storyToComponent(
+                    stories.RadicalWithDegreeDynamic,
+                    [fontloader],
+                );
+                expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
+            });
 
-        test("with degree (dynamic, latin modern)", async () => {
-            const RadicalWithDegreeDynamic = await storyToComponent(
-                stories.RadicalWithDegreeDynamic,
-                [lmFontLoader],
-            );
-            expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
+            test("with large degree (dynamic)", async () => {
+                const RadicalWithLargeDegreeDynamic = await storyToComponent(
+                    stories.RadicalWithLargeDegreeDynamic,
+                    [fontloader],
+                );
+                expect(<RadicalWithLargeDegreeDynamic />).toMatchSVGSnapshot();
+            });
         });
     });
 
