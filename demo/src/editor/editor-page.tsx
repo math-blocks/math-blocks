@@ -3,134 +3,9 @@ import * as React from "react";
 import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 import {parse, getFontData} from "@math-blocks/opentype";
-
 import type {FontData} from "@math-blocks/opentype";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const simpleRow = Editor.util.row("2x+5=10");
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const delimiters = Editor.builders.row([
-    Editor.builders.glyph("x"),
-    Editor.builders.glyph("+"),
-    Editor.builders.delimited(
-        [
-            Editor.builders.frac(
-                [
-                    Editor.builders.glyph("y"),
-                    Editor.builders.glyph("\u2212"),
-                    Editor.builders.glyph("1"),
-                ],
-                [Editor.builders.glyph("x")],
-            ),
-        ],
-        Editor.builders.glyph("("),
-        Editor.builders.glyph(")"),
-    ),
-    Editor.builders.subsup(
-        [Editor.builders.glyph("n")],
-        [Editor.builders.glyph("2")],
-    ),
-    Editor.builders.glyph("+"),
-    Editor.builders.glyph("z"),
-]);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const allNodeTypes = Editor.builders.row([
-    Editor.builders.glyph("2"),
-    Editor.builders.glyph("+"),
-    Editor.builders.frac(
-        [Editor.builders.glyph("1")],
-        [
-            Editor.builders.root(
-                [
-                    Editor.builders.glyph("1"),
-                    Editor.builders.glyph("2"),
-                    Editor.builders.glyph("3"),
-                ],
-                [
-                    Editor.builders.glyph("x"),
-                    Editor.builders.subsup(undefined, [
-                        Editor.builders.glyph("2"),
-                    ]),
-                    Editor.builders.glyph("+"),
-                    Editor.builders.frac(
-                        [Editor.builders.glyph("1")],
-                        [
-                            Editor.builders.glyph("a"),
-                            Editor.builders.subsup(
-                                [Editor.builders.glyph("n")],
-                                undefined,
-                            ),
-                        ],
-                    ),
-                ],
-            ),
-        ],
-    ),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("y"),
-    Editor.builders.glyph("+"),
-    Editor.builders.limits(
-        Editor.builders.row([
-            Editor.builders.glyph("l"),
-            Editor.builders.glyph("i"),
-            Editor.builders.glyph("m"),
-        ]),
-        [
-            Editor.builders.glyph("x"),
-            Editor.builders.glyph("\u2192"), // \rightarrow
-            Editor.builders.glyph("0"),
-        ],
-    ),
-    Editor.builders.glyph("x"),
-    Editor.builders.glyph("+"),
-    Editor.builders.limits(
-        Editor.builders.glyph("\u2211"), // \sum
-        [
-            Editor.builders.glyph("i"),
-            Editor.builders.glyph("="),
-            Editor.builders.glyph("0"),
-        ],
-        [Editor.builders.glyph("\u221E")], // \infty
-    ),
-    Editor.builders.glyph("i"),
-]);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const nestedFractions = Editor.builders.row([
-    Editor.builders.glyph("a"),
-    Editor.builders.glyph("+"),
-    Editor.builders.frac(
-        [
-            Editor.builders.glyph("2"),
-            Editor.builders.glyph("+"),
-            Editor.builders.frac(
-                [
-                    Editor.builders.glyph("x"),
-                    Editor.builders.glyph("+"),
-                    Editor.builders.glyph("1"),
-                ],
-                [Editor.builders.glyph("1")],
-            ),
-            Editor.builders.glyph("\u2212"),
-            Editor.builders.glyph("\u2212"),
-            Editor.builders.glyph("y"),
-        ],
-        [Editor.builders.glyph("1")],
-    ),
-    Editor.builders.glyph("\u2212"),
-    Editor.builders.glyph("b"),
-]);
-
-const zipper: Editor.Zipper = {
-    breadcrumbs: [],
-    row: {
-        id: delimiters.id,
-        type: "zrow",
-        left: [],
-        selection: null,
-        right: delimiters.children,
-    },
-};
+import {examples} from "./examples";
 
 const EditorPage: React.FunctionComponent = () => {
     const [stixFontData, setStixFontData] = React.useState<FontData | null>(
@@ -151,6 +26,16 @@ const EditorPage: React.FunctionComponent = () => {
         null,
     );
     const [fontIndex, setFontIndex] = React.useState<number>(0);
+    const [zipper, setZipper] = React.useState<Editor.Zipper>({
+        breadcrumbs: [],
+        row: {
+            id: examples[0].id,
+            type: "zrow",
+            left: [],
+            selection: null,
+            right: examples[0].children,
+        },
+    });
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
@@ -252,6 +137,38 @@ const EditorPage: React.FunctionComponent = () => {
             <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
             <div style={{display: "flex", alignItems: "center"}}>
                 <span style={{fontFamily: "sans-serif", paddingRight: 8}}>
+                    Example:{" "}
+                </span>
+                <select
+                    onChange={(e) => {
+                        const index = parseInt(e.target.value);
+                        const example = examples[index];
+                        const zipper: Editor.Zipper = {
+                            breadcrumbs: [],
+                            row: {
+                                id: example.id,
+                                type: "zrow",
+                                left: [],
+                                selection: null,
+                                right: example.children,
+                            },
+                        };
+                        setZipper(zipper);
+                    }}
+                    defaultValue={0}
+                >
+                    <option value={0}>Simple Equation</option>
+                    <option value={1}>All Node Types</option>
+                    <option value={2}>Tall Delimiters</option>
+                    <option value={3}>Nested Fractions</option>
+                </select>
+                <span
+                    style={{
+                        fontFamily: "sans-serif",
+                        paddingRight: 8,
+                        marginLeft: 32,
+                    }}
+                >
                     Font:{" "}
                 </span>
                 <select
