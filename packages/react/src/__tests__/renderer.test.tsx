@@ -232,6 +232,14 @@ describe("renderer", () => {
                 );
                 expect(<SubscriptSuperscriptStressTest />).toMatchSVGSnapshot();
             });
+
+            test("on tall delimiters (dynamic)", async () => {
+                const ScriptsOnTallDelimiters = await storyToComponent(
+                    stories.ScriptsOnTallDelimiters,
+                    [fontloader],
+                );
+                expect(<ScriptsOnTallDelimiters />).toMatchSVGSnapshot();
+            });
         });
     });
 

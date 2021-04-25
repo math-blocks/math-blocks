@@ -93,8 +93,16 @@ const typesetSubsup = (
     subBox: Layout.Box | null,
     supBox: Layout.Box | null,
     context: Context,
+    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevLayoutNode?: Layout.Node,
 ): Layout.Box => {
-    return Layout.makeSubSup(subBox, supBox, context);
+    return Layout.makeSubSup(
+        subBox,
+        supBox,
+        context,
+        prevEditNode,
+        prevLayoutNode,
+    );
 };
 
 const typesetRoot = (
@@ -292,6 +300,8 @@ const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
     context: Context,
+    prevEditNode?: Editor.types.Node,
+    prevLayoutNode?: Layout.Node,
 ): Layout.Box => {
     switch (focus.type) {
         case "zfrac": {
@@ -336,7 +346,13 @@ const typesetFocus = (
                     ? typesetRow(sup, childContext)
                     : _typesetZipper(zipper, childContext));
 
-            const parentBox = typesetSubsup(subBox, supBox, context);
+            const parentBox = typesetSubsup(
+                subBox,
+                supBox,
+                context,
+                prevEditNode,
+                prevLayoutNode,
+            );
             parentBox.id = focus.id;
 
             return parentBox;
@@ -463,7 +479,12 @@ const _typesetAtom = (
     return glyph;
 };
 
-const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
+const _typeset = (
+    node: Editor.types.Node,
+    context: Context,
+    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevLayoutNode?: Layout.Node,
+): Layout.Node => {
     switch (node.type) {
         case "row": {
             // The only time this can happen is if limits.inner is a row
@@ -491,7 +512,13 @@ const _typeset = (node: Editor.types.Node, context: Context): Layout.Node => {
             const subBox = sub && typesetRow(sub, childContext);
             const supBox = sup && typesetRow(sup, childContext);
 
-            const parentBox = typesetSubsup(subBox, supBox, context);
+            const parentBox = typesetSubsup(
+                subBox,
+                supBox,
+                context,
+                prevEditNode,
+                prevLayoutNode,
+            );
 
             parentBox.id = node.id;
 
@@ -656,17 +683,22 @@ const _typesetChildren = (
     children: readonly Editor.types.Node[],
     context: Context,
     prevChild?: Editor.types.Node | Editor.Focus,
+    prevLayoutNode?: Layout.Node,
 ): readonly Layout.Node[] => {
-    return children.map((child, index) => {
-        prevChild = index > 0 ? children[index - 1] : prevChild;
-
+    return children.map((child) => {
         if (child.type === "atom") {
             const glyph = _typesetAtom(child, context);
-            return shouldHavePadding(prevChild, child, context)
+            const result = shouldHavePadding(prevChild, child, context)
                 ? withOperatorPadding(glyph, context)
                 : glyph;
+            prevLayoutNode = result;
+            prevChild = child;
+            return result;
         } else {
-            return _typeset(child, context);
+            const result = _typeset(child, context, prevChild, prevLayoutNode);
+            prevLayoutNode = result;
+            prevChild = child;
+            return result;
         }
     });
 };
@@ -675,6 +707,7 @@ const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
 ): Layout.Box => {
+    // The bottommost crumb is the outermost row
     const [crumb, ...restCrumbs] = zipper.breadcrumbs;
 
     if (crumb) {
@@ -686,6 +719,7 @@ const _typesetZipper = (
                 ...zipper,
                 breadcrumbs: restCrumbs,
             };
+            const focusBox = typesetFocus(crumb.focus, nextZipper, context);
             const selection =
                 row.selection.dir === "left"
                     ? [
@@ -694,14 +728,15 @@ const _typesetZipper = (
                               context,
                               row.left[row.left.length - 1],
                           ),
-                          typesetFocus(crumb.focus, nextZipper, context),
+                          focusBox,
                       ]
                     : [
-                          typesetFocus(crumb.focus, nextZipper, context),
+                          focusBox,
                           ..._typesetChildren(
                               row.selection.nodes,
                               context,
-                              crumb.focus,
+                              crumb.focus, // prev edit node
+                              focusBox, // prev layout node
                           ),
                       ];
             const right = _typesetChildren(
@@ -710,6 +745,7 @@ const _typesetZipper = (
                 row.selection.dir === "left" || row.selection.nodes.length === 0
                     ? crumb.focus
                     : row.selection.nodes[row.selection.nodes.length - 1],
+                selection[selection.length - 1], // previous layout node
             );
 
             const box = Layout.hpackNat([left, selection, right], context);
@@ -729,8 +765,23 @@ const _typesetZipper = (
                 ...zipper,
                 breadcrumbs: restCrumbs,
             };
-            nodes.push(typesetFocus(crumb.focus, nextZipper, context));
-            nodes.push(..._typesetChildren(row.right, context, crumb.focus));
+            nodes.push(
+                typesetFocus(
+                    crumb.focus,
+                    nextZipper,
+                    context,
+                    row.left[row.left.length - 1], // previous edit node
+                    nodes[nodes.length - 1], // previous layout node
+                ),
+            );
+            nodes.push(
+                ..._typesetChildren(
+                    row.right,
+                    context,
+                    crumb.focus, // previous edit node
+                    nodes[nodes.length - 1], // previous layout node
+                ),
+            );
 
             const box = Layout.hpackNat([nodes], context);
             box.id = row.id;
@@ -753,10 +804,20 @@ const _typesetZipper = (
                   row.left[row.left.length - 1],
               )
             : [];
-        const prevLastChild = row.selection
+
+        const prevEditNode = row.selection
             ? row.selection.nodes[row.selection.nodes.length - 1]
             : row.left[row.left.length - 1];
-        const right = _typesetChildren(row.right, context, prevLastChild);
+
+        const prevLayoutNode =
+            selection[selection.length - 1] || left[left.length - 1];
+
+        const right = _typesetChildren(
+            row.right,
+            context,
+            prevEditNode,
+            prevLayoutNode,
+        );
 
         const box = Layout.hpackNat([left, selection, right], context);
         box.id = row.id;

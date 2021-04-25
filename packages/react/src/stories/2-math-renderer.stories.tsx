@@ -770,3 +770,33 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
 
     return <MathRenderer scene={prod} style={style} />;
 };
+
+export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
+    args,
+    {loaded: fontData},
+) => {
+    const editNode = Editor.builders.row([
+        glyph("x"),
+        glyph("+"),
+        Editor.builders.delimited(
+            [frac([glyph("y"), glyph("\u2212"), glyph("1")], [glyph("x")])],
+            glyph("("),
+            glyph(")"),
+        ),
+        subsup([glyph("n")], [glyph("2")]),
+        glyph("+"),
+        glyph("z"),
+    ]);
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(editNode, context);
+
+    return <MathRenderer scene={prod} style={style} />;
+};

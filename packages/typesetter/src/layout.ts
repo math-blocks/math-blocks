@@ -1,3 +1,4 @@
+import * as Editor from "@math-blocks/editor-core";
 import {UnreachableCaseError} from "@math-blocks/core";
 import type {FontData, MathValueRecord} from "@math-blocks/opentype";
 
@@ -355,17 +356,70 @@ export const makeSubSup = (
     subBox: Box | null,
     supBox: Box | null,
     context: Context,
+    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevLayoutNode?: Node,
 ): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
     }
+
+    const {font} = context.fontData;
 
     const width = Math.max(
         supBox ? getWidth(supBox) : 0,
         subBox ? getWidth(subBox) : 0,
     );
 
-    const {font} = context.fontData;
+    // Some atoms gets wrapped in a box to add padding to them so we need to
+    // filter them out.  Anything else that's in a box is some sort of compound
+    // layout structure (frac, delimited, etc.) and should have its subscript
+    // and/or superscript positioned based on the size of the box.
+    if (prevEditNode?.type !== "atom" && prevLayoutNode?.type === "Box") {
+        const {
+            superscriptBaselineDropMax,
+            subscriptBaselineDropMin,
+        } = font.math.constants;
+
+        const baselineDropMax = getConstantValue(
+            superscriptBaselineDropMax,
+            context,
+        );
+        const baselineDropMin = getConstantValue(
+            subscriptBaselineDropMin,
+            context,
+        );
+
+        const upList = [];
+        const dnList = [];
+
+        if (supBox) {
+            const shift = prevLayoutNode.height;
+            const kernShift = shift - baselineDropMax;
+
+            upList.push(makeKern(kernShift));
+            upList.push(supBox);
+        }
+
+        if (subBox) {
+            const shift = prevLayoutNode.depth;
+            const kernSize = shift - baselineDropMin;
+
+            dnList.push(makeKern(kernSize));
+            dnList.push(subBox);
+        }
+
+        const referenceNode = makeKern(0); // empty reference node
+        const subsupBox = makeVBox(
+            width,
+            referenceNode,
+            upList,
+            dnList,
+            context,
+        );
+
+        return subsupBox;
+    }
+
     const {
         subscriptTopMax,
         superscriptBottomMin,

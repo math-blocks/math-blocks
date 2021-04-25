@@ -14,12 +14,21 @@ const delimiters = Editor.builders.row([
     Editor.builders.glyph("+"),
     Editor.builders.delimited(
         [
-            Editor.builders.glyph("y"),
-            Editor.builders.glyph("\u2212"),
-            Editor.builders.glyph("1"),
+            Editor.builders.frac(
+                [
+                    Editor.builders.glyph("y"),
+                    Editor.builders.glyph("\u2212"),
+                    Editor.builders.glyph("1"),
+                ],
+                [Editor.builders.glyph("x")],
+            ),
         ],
         Editor.builders.glyph("("),
         Editor.builders.glyph(")"),
+    ),
+    Editor.builders.subsup(
+        [Editor.builders.glyph("n")],
+        [Editor.builders.glyph("2")],
     ),
     Editor.builders.glyph("+"),
     Editor.builders.glyph("z"),
@@ -115,11 +124,11 @@ const nestedFractions = Editor.builders.row([
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
-        id: allNodeTypes.id,
+        id: delimiters.id,
         type: "zrow",
         left: [],
         selection: null,
-        right: allNodeTypes.children,
+        right: delimiters.children,
     },
 };
 
@@ -148,7 +157,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/STIX2Math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setStixFontData(getFontData(font, "STIX2"));
         };
 
@@ -160,7 +168,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/latinmodern-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setLmFontData(getFontData(font, "LM-Math"));
         };
 
@@ -172,7 +179,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/texgyrebonum-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setBonumFontData(getFontData(font, "Bonum-Math"));
         };
 
@@ -184,7 +190,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/texgyrepagella-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setPagellaFontData(getFontData(font, "Pagella-Math"));
         };
 
@@ -196,7 +201,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/texgyreschola-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setScholaFontData(getFontData(font, "Schola-Math"));
         };
 
@@ -208,7 +212,6 @@ const EditorPage: React.FunctionComponent = () => {
             const res = await fetch("/texgyretermes-math.otf");
             const blob = await res.blob();
             const font = await parse(blob);
-            console.log(font);
             setTermesFontData(getFontData(font, "Termes-Math"));
         };
 
@@ -243,14 +246,7 @@ const EditorPage: React.FunctionComponent = () => {
 
     return (
         <FontDataContext.Provider value={fontData}>
-            <MathEditor
-                fontSize={fontSize}
-                readonly={false}
-                zipper={zipper}
-                onChange={(value) => {
-                    console.log(value);
-                }}
-            />
+            <MathEditor fontSize={fontSize} readonly={false} zipper={zipper} />
             <br />
             <br />
             <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
