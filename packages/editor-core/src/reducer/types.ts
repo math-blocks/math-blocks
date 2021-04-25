@@ -97,6 +97,9 @@ export type Breadcrumb = {
 };
 
 export type Zipper = {
+    // NOTE: zipper.row.id is not stable since the current row can change as
+    // a user navigates into child rows (e.g. numerator or denominator of a
+    // fraction).
     row: ZRow;
     // TODO: Consider making this a linked list where the "head" is the node
     // nearest to zipper.row in the breadrcumbs.

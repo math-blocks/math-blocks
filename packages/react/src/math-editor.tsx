@@ -127,6 +127,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     border: "none",
                 }}
                 onBlur={() => setActive(false)}
+                onFocus={() => setActive(true)}
                 autoCapitalize="off"
                 autoCorrect="off"
                 autoComplete="off"
