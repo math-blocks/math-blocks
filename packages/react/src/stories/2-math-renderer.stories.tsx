@@ -290,14 +290,14 @@ export const Limit: Story<EmptyProps> = (args, {loaded: fontData}) => {
         fontData: fontData,
         baseFontSize: fontSize,
         mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
+        renderMode: Typesetter.RenderMode.Dynamic,
         cramped: false,
     };
 
     const lim = Typesetter.typeset(
         row([
             limits(row([glyph("l"), glyph("i"), glyph("m")]), [
-                glyph("x"),
+                glyph("y"),
                 glyph("—"),
                 glyph(">"),
                 glyph("0"),

@@ -187,6 +187,16 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 dispatch({type: "right", hint});
                 dispatch({type: "duplicate"});
             }
+
+            // Manually focus the last input which will trigger the last
+            // MathEditor to become active.  We do this in a setTimeout to
+            // allow the DOM to update.
+            setTimeout(() => {
+                const inputs = document.querySelectorAll("input");
+                const lastInput = inputs[inputs.length - 1];
+                lastInput.focus();
+            }, 0);
+
             return true;
         } else {
             dispatch({type: "wrong", mistakes});
@@ -264,6 +274,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 style={{fontSize: 30}}
                 onClick={handleCheckStep}
                 onMouseDown={(e) => {
+                    // Prevent clicking the button from blurring the MathEditor
                     e.preventDefault();
                     e.stopPropagation();
                 }}
@@ -275,6 +286,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 style={{fontSize: 30}}
                 onClick={handleGetHint}
                 onMouseDown={(e) => {
+                    // Prevent clicking the button from blurring the MathEditor
                     e.preventDefault();
                     e.stopPropagation();
                 }}
@@ -359,10 +371,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 }}
             >
                 <MathEditor
-                    // HACK: whenever we apply a correction to a step, the value
-                    // gets a new id.  Using that id as a the `key` will trigger
-                    // a re-render.
-                    key={zipper.row.id}
                     readonly={readonly}
                     zipper={zipper}
                     stepChecker={true}
