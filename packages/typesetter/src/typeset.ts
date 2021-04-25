@@ -831,7 +831,7 @@ const _typesetZipper = (
     }
 };
 
-type Options = {
+export type Options = {
     showCursor?: boolean;
 };
 
