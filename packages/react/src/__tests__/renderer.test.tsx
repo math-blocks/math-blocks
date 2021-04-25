@@ -219,6 +219,287 @@ describe("renderer", () => {
         });
     });
 
+    describe("subscript and superscripts", () => {
+        describe.each`
+            fontname          | fontloader
+            ${"stix"}         | ${stixFontLoader}
+            ${"latin modern"} | ${lmFontLoader}
+        `("$fontname", ({fontloader}) => {
+            test("stress test (dynamic)", async () => {
+                const SubscriptSuperscriptStressTest = await storyToComponent(
+                    stories.SubscriptSuperscriptStressTest,
+                    [fontloader],
+                );
+                expect(<SubscriptSuperscriptStressTest />).toMatchSVGSnapshot();
+            });
+
+            test("on tall delimiters (dynamic)", async () => {
+                const ScriptsOnTallDelimiters = await storyToComponent(
+                    stories.ScriptsOnTallDelimiters,
+                    [fontloader],
+                );
+                expect(<ScriptsOnTallDelimiters />).toMatchSVGSnapshot();
+            });
+        });
+
+        describe("cursor with tall delimiters", () => {
+            let zipper: Editor.Zipper;
+            let context: Typesetter.Context;
+            let options: Typesetter.Options;
+            beforeEach(async () => {
+                const fontData = await stixFontLoader();
+                const editNode = Editor.builders.row([
+                    Editor.builders.delimited(
+                        [
+                            Editor.builders.frac(
+                                [glyph("y"), glyph("\u2212"), glyph("1")],
+                                [glyph("x")],
+                            ),
+                        ],
+                        glyph("("),
+                        glyph(")"),
+                    ),
+                    subsup([glyph("n")], [glyph("2")]),
+                ]);
+
+                const fontSize = 60;
+                context = {
+                    fontData: fontData,
+                    baseFontSize: fontSize,
+                    mathStyle: Typesetter.MathStyle.Display,
+                    renderMode: Typesetter.RenderMode.Dynamic,
+                    cramped: false,
+                };
+                zipper = {
+                    row: {
+                        type: "zrow",
+                        id: editNode.id,
+                        left: editNode.children,
+                        right: [],
+                        selection: null,
+                    },
+                    breadcrumbs: [],
+                };
+                // TODO: update typesetZipper to default showCursor to true
+                options = {
+                    showCursor: true,
+                };
+            });
+
+            test("1 cursor at the end", () => {
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("2 cursor in superscript", () => {
+                const moveLeft = () => {
+                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                };
+                moveLeft();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("3 cursor in subscript", () => {
+                const moveLeft = () => {
+                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                };
+                moveLeft();
+                moveLeft();
+                moveLeft();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("4 cursor inside delimited", () => {
+                const moveLeft = () => {
+                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                };
+                moveLeft();
+                moveLeft();
+                moveLeft();
+                moveLeft();
+                moveLeft();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+        });
+
+        describe("selection with tall delimiters", () => {
+            let zipper: Editor.Zipper;
+            let context: Typesetter.Context;
+            let options: Typesetter.Options;
+            beforeEach(async () => {
+                const fontData = await stixFontLoader();
+                const editNode = Editor.builders.row([
+                    Editor.builders.delimited(
+                        [
+                            Editor.builders.frac(
+                                [glyph("y"), glyph("\u2212"), glyph("1")],
+                                [glyph("x")],
+                            ),
+                        ],
+                        glyph("("),
+                        glyph(")"),
+                    ),
+                    subsup([glyph("n")], [glyph("2")]),
+                ]);
+
+                const fontSize = 60;
+                context = {
+                    fontData: fontData,
+                    baseFontSize: fontSize,
+                    mathStyle: Typesetter.MathStyle.Display,
+                    renderMode: Typesetter.RenderMode.Dynamic,
+                    cramped: false,
+                };
+                zipper = {
+                    row: {
+                        type: "zrow",
+                        id: editNode.id,
+                        left: editNode.children,
+                        right: [],
+                        selection: null,
+                    },
+                    breadcrumbs: [],
+                };
+                // TODO: update typesetZipper to default showCursor to true
+                options = {
+                    showCursor: true,
+                };
+
+                const moveLeft = () => {
+                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                };
+                moveLeft(); // into subscript
+                moveLeft();
+                moveLeft(); // into superscript
+                moveLeft();
+                moveLeft(); // outside delimited
+                moveLeft(); // inside delimited
+                moveLeft(); // into denominator
+                moveLeft();
+            });
+
+            test("1 selection in denominator", () => {
+                const selectRight = () => {
+                    zipper = Editor.zipperReducer(zipper, {
+                        type: "ArrowRight",
+                        shift: true,
+                    });
+                };
+                selectRight();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("2 fraction selected", () => {
+                const selectRight = () => {
+                    zipper = Editor.zipperReducer(zipper, {
+                        type: "ArrowRight",
+                        shift: true,
+                    });
+                };
+                selectRight();
+                selectRight();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("3 delimited selected", () => {
+                const selectRight = () => {
+                    zipper = Editor.zipperReducer(zipper, {
+                        type: "ArrowRight",
+                        shift: true,
+                    });
+                };
+                selectRight();
+                selectRight();
+                selectRight();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+
+            test("4 subsup selected", () => {
+                const selectRight = () => {
+                    zipper = Editor.zipperReducer(zipper, {
+                        type: "ArrowRight",
+                        shift: true,
+                    });
+                };
+                selectRight();
+                selectRight();
+                selectRight();
+                selectRight();
+
+                expect(
+                    <MathRenderer
+                        scene={Typesetter.typesetZipper(
+                            zipper,
+                            context,
+                            options,
+                        )}
+                    />,
+                ).toMatchSVGSnapshot();
+            });
+        });
+    });
+
     describe("fractions", () => {
         test("colorized", async () => {
             const ColorizedFraction = await storyToComponent(

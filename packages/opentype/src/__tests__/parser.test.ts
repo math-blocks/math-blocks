@@ -59,68 +59,86 @@ describe("parse", () => {
     });
 
     describe("math", () => {
-        test("constants", () => {
-            expect(font.math.constants).toMatchSnapshot();
+        describe("MathContants", () => {
+            test("constants should have expected values", () => {
+                expect(font.math.constants).toMatchSnapshot();
+            });
         });
 
-        test("variants", async () => {
-            expect(font.math.variants).toMatchInlineSnapshot(`
-                Object {
-                  "getHorizGlyphConstruction": [Function],
-                  "getVertGlyphConstruction": [Function],
-                  "horizGlyphCount": 47,
-                  "horizGlyphCoverageOffset": 992,
-                  "minConnectorOverlap": 100,
-                  "vertGlyphCount": 118,
-                  "vertGlyphCoverageOffset": 340,
-                }
-            `);
+        describe("MathVariants", () => {
+            test("top-level variants properties", async () => {
+                expect(font.math.variants).toMatchInlineSnapshot(`
+                    Object {
+                      "getHorizGlyphConstruction": [Function],
+                      "getVertGlyphConstruction": [Function],
+                      "horizGlyphCount": 47,
+                      "horizGlyphCoverageOffset": 992,
+                      "minConnectorOverlap": 100,
+                      "vertGlyphCount": 118,
+                      "vertGlyphCoverageOffset": 340,
+                    }
+                `);
+            });
+
+            test("vertical glyph construction for parenleft", () => {
+                const gid = font.getGlyphID("(");
+
+                const glyphConstruction = font.math.variants.getVertGlyphConstruction(
+                    gid,
+                );
+
+                expect(glyphConstruction).toMatchSnapshot();
+            });
+
+            test("getVertGlyphConstruction is memoized", () => {
+                const gid = font.getGlyphID("(");
+
+                const construction1 = font.math.variants.getVertGlyphConstruction(
+                    gid,
+                );
+                const construction2 = font.math.variants.getVertGlyphConstruction(
+                    gid,
+                );
+
+                expect(construction1).toBe(construction2);
+            });
+
+            test("horizontal glyph construction for uni0303 (combining tilde)", () => {
+                const gid = font.getGlyphID("\u0303");
+
+                const glyphConstruction = font.math.variants.getHorizGlyphConstruction(
+                    gid,
+                );
+
+                expect(glyphConstruction).toMatchSnapshot();
+            });
+
+            test("getHorizGlyphConstruction is memoized", () => {
+                const gid = font.getGlyphID("\u0303");
+
+                const construction1 = font.math.variants.getHorizGlyphConstruction(
+                    gid,
+                );
+                const construction2 = font.math.variants.getHorizGlyphConstruction(
+                    gid,
+                );
+
+                expect(construction1).toBe(construction2);
+            });
         });
 
-        test("vertical glyph construction for parenleft", () => {
-            const gid = font.getGlyphID("(");
+        describe("MathGlyphInfo", () => {
+            test("')' should be an extended glyph", () => {
+                const gid = font.getGlyphID(")");
 
-            const glyphConstruction = font.math.variants.getVertGlyphConstruction(
-                gid,
-            );
+                expect(font.math.glyphInfo.isExtendedShape(gid)).toBe(true);
+            });
 
-            expect(glyphConstruction).toMatchSnapshot();
-        });
+            test("'+' should not be an extended glyph", () => {
+                const gid = font.getGlyphID("+");
 
-        test("getVertGlyphConstruction is memoized", () => {
-            const gid = font.getGlyphID("(");
-
-            const construction1 = font.math.variants.getVertGlyphConstruction(
-                gid,
-            );
-            const construction2 = font.math.variants.getVertGlyphConstruction(
-                gid,
-            );
-
-            expect(construction1).toBe(construction2);
-        });
-
-        test("horizontal glyph construction for uni0303 (combining tilde)", () => {
-            const gid = font.getGlyphID("\u0303");
-
-            const glyphConstruction = font.math.variants.getHorizGlyphConstruction(
-                gid,
-            );
-
-            expect(glyphConstruction).toMatchSnapshot();
-        });
-
-        test("getHorizGlyphConstruction is memoized", () => {
-            const gid = font.getGlyphID("\u0303");
-
-            const construction1 = font.math.variants.getHorizGlyphConstruction(
-                gid,
-            );
-            const construction2 = font.math.variants.getHorizGlyphConstruction(
-                gid,
-            );
-
-            expect(construction1).toBe(construction2);
+                expect(font.math.glyphInfo.isExtendedShape(gid)).toBe(false);
+            });
         });
     });
 

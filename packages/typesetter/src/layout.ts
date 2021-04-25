@@ -1,5 +1,6 @@
+import * as Editor from "@math-blocks/editor-core";
 import {UnreachableCaseError} from "@math-blocks/core";
-import type {FontData} from "@math-blocks/opentype";
+import type {FontData, MathValueRecord} from "@math-blocks/opentype";
 
 import {multiplierForContext, fontSizeForContext} from "./utils";
 import type {Context} from "./types";
@@ -341,33 +342,166 @@ export const makeFract = (numBox: Box, denBox: Box, context: Context): Box => {
     return fracBox;
 };
 
+const getConstantValue = (
+    constant: MathValueRecord,
+    context: Context,
+): number => {
+    const {font} = context.fontData;
+    const fontSize = fontSizeForContext(context);
+
+    return (constant.value * fontSize) / font.head.unitsPerEm;
+};
+
 export const makeSubSup = (
-    // TODO: pass in a MathStyle instead of a multiplier
     subBox: Box | null,
     supBox: Box | null,
     context: Context,
+    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevLayoutNode?: Node,
 ): Box => {
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
     }
+
+    const {font} = context.fontData;
 
     const width = Math.max(
         supBox ? getWidth(supBox) : 0,
         subBox ? getWidth(subBox) : 0,
     );
 
-    const multiplier = multiplierForContext(context);
+    // Some atoms gets wrapped in a box to add padding to them so we need to
+    // filter them out.  Anything else that's in a box is some sort of compound
+    // layout structure (frac, delimited, etc.) and should have its subscript
+    // and/or superscript positioned based on the size of the box.
+    if (prevEditNode?.type !== "atom" && prevLayoutNode?.type === "Box") {
+        const {
+            superscriptBaselineDropMax,
+            subscriptBaselineDropMin,
+        } = font.math.constants;
 
-    // TODO: use constants from MATH table for these shift contants
+        const baselineDropMax = getConstantValue(
+            superscriptBaselineDropMax,
+            context,
+        );
+        const baselineDropMin = getConstantValue(
+            subscriptBaselineDropMin,
+            context,
+        );
 
-    const upList = supBox ? makeList(10 * multiplier, supBox) : [];
-    // TODO: make the shift depend on the height of the subscript
-    const dnList = subBox ? makeList(0 * multiplier, subBox) : [];
-    // we can't have a non-zero kern b/c it has no height/depth
-    const gap = makeKern(0);
+        const upList = [];
+        const dnList = [];
 
-    const subsupBox = makeVBox(width, gap, upList, dnList, context);
-    // TODO: calculate this based on current font size
-    subsupBox.shift = -10 * multiplier;
+        if (supBox) {
+            const shift = prevLayoutNode.height;
+            const kernShift = shift - baselineDropMax;
+
+            upList.push(makeKern(kernShift));
+            upList.push(supBox);
+        }
+
+        if (subBox) {
+            const shift = prevLayoutNode.depth;
+            const kernSize = shift - baselineDropMin;
+
+            dnList.push(makeKern(kernSize));
+            dnList.push(subBox);
+        }
+
+        const referenceNode = makeKern(0); // empty reference node
+        const subsupBox = makeVBox(
+            width,
+            referenceNode,
+            upList,
+            dnList,
+            context,
+        );
+
+        return subsupBox;
+    }
+
+    const {
+        subscriptTopMax,
+        superscriptBottomMin,
+        subscriptShiftDown,
+        superscriptShiftUp,
+        subSuperscriptGapMin,
+        superscriptBottomMaxWithSubscript,
+    } = font.math.constants;
+
+    const bottomMin = getConstantValue(superscriptBottomMin, context);
+    const shiftUp = getConstantValue(superscriptShiftUp, context);
+    const topMax = getConstantValue(subscriptTopMax, context);
+    const shiftDown = getConstantValue(subscriptShiftDown, context);
+
+    const upList = [];
+
+    if (supBox) {
+        // compute shift in baseline of superscript
+        const shift = Math.max(shiftUp, supBox.depth + bottomMin);
+
+        // -supBox.depth is to align the baseline of the superscript with the
+        // baseline of the base.
+        // TODO: replace the up/dn list that makeVBox uses with something else
+        // that doesn't require this correction
+        const kernShift = -supBox.depth + shift;
+
+        upList.push(makeKern(kernShift));
+        upList.push(supBox);
+    }
+
+    const dnList = [];
+
+    if (subBox) {
+        // compute shift in baseline of subscript
+        let shift = Math.max(shiftDown, subBox.height - topMax);
+
+        if (supBox) {
+            const supBoxShift = Math.max(shiftUp, supBox.depth + bottomMin);
+
+            const supBottom = supBoxShift - supBox.depth;
+            const subTop = subBox.height - shift;
+
+            const gap = supBottom - subTop;
+            const gapMin = getConstantValue(subSuperscriptGapMin, context);
+
+            if (gap < gapMin) {
+                if (upList[0].type === "Kern" && upList[1].type === "Box") {
+                    // shift the superscript up to increase the gap
+                    const correction = gapMin - gap;
+                    upList[0].size += correction;
+
+                    // We can't use upList[0].size in the calculation since it
+                    // includes the initial -supBox.depth to align baselines.
+                    const supBottom =
+                        supBoxShift + correction - upList[1].depth;
+                    const supBottomMax = getConstantValue(
+                        superscriptBottomMaxWithSubscript,
+                        context,
+                    );
+
+                    if (supBottom > supBottomMax) {
+                        // shift both down to maintain to gap
+                        const correcion = supBottom - supBottomMax;
+                        upList[0].size -= correcion;
+                        shift += correcion; // down is positive for dnList
+                    }
+                }
+            }
+        }
+
+        // We start with -subBox.height to align the subscript's baseline with
+        // the baseline of the base it's attached to
+        // TODO: replace the up/dn list that makeVBox uses with something else
+        // that doesn't require this correction
+        const kernSize = -subBox.height + shift;
+
+        dnList.push(makeKern(kernSize));
+        dnList.push(subBox);
+    }
+
+    const referenceNode = makeKern(0); // empty reference node
+    const subsupBox = makeVBox(width, referenceNode, upList, dnList, context);
+
     return subsupBox;
 };
