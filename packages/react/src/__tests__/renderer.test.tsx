@@ -219,6 +219,22 @@ describe("renderer", () => {
         });
     });
 
+    describe("subscript and superscripts", () => {
+        describe.each`
+            fontname          | fontloader
+            ${"stix"}         | ${stixFontLoader}
+            ${"latin modern"} | ${lmFontLoader}
+        `("$fontname", ({fontloader}) => {
+            test("stress test (dynamic)", async () => {
+                const SubscriptSuperscriptStressTest = await storyToComponent(
+                    stories.SubscriptSuperscriptStressTest,
+                    [fontloader],
+                );
+                expect(<SubscriptSuperscriptStressTest />).toMatchSVGSnapshot();
+            });
+        });
+    });
+
     describe("fractions", () => {
         test("colorized", async () => {
             const ColorizedFraction = await storyToComponent(

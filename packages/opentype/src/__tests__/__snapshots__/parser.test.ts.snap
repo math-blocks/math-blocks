@@ -78,7 +78,7 @@ Object {
 }
 `;
 
-exports[`parse math constants 1`] = `
+exports[`parse math MathContants constants should have expected values 1`] = `
 Object {
   "accentBaseHeight": Object {
     "deviceOffset": 0,
@@ -292,7 +292,7 @@ Object {
 }
 `;
 
-exports[`parse math horizontal glyph construction for uni0303 (combining tilde) 1`] = `
+exports[`parse math MathVariants horizontal glyph construction for uni0303 (combining tilde) 1`] = `
 Object {
   "glyphAssembly": null,
   "mathGlyphVariantRecords": Array [
@@ -324,7 +324,7 @@ Object {
 }
 `;
 
-exports[`parse math vertical glyph construction for parenleft 1`] = `
+exports[`parse math MathVariants vertical glyph construction for parenleft 1`] = `
 Object {
   "glyphAssembly": Object {
     "italicsCorrection": Object {

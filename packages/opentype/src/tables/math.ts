@@ -1,7 +1,7 @@
 // FWORD - int16 that describes a quantity in font design units
 // UFWORD - uint16 that describes a quantity in font design units
 
-type MathValueRecord = {
+export type MathValueRecord = {
     value: number; // FWORD
     deviceOffset: number; // Offset16
 };
@@ -63,11 +63,6 @@ export type MathConstants = {
     radicalKernBeforeDegree: MathValueRecord;
     radicalKernAfterDegree: MathValueRecord;
     radicalDegreeBottomRaisePercent: number; // int16
-};
-
-export type MathResult = {
-    constants: MathConstants;
-    variants: VariantsTable;
 };
 
 const parseConstants = async (
@@ -286,34 +281,65 @@ const parseGlyphConstruction = (
     };
 };
 
+type MathGlyphInfo = {
+    isExtendedShape: (glyphID: number) => boolean;
+};
+
+const parseMathGlyphInfo = async (
+    blob: Blob,
+    start: number,
+    end: number,
+): Promise<MathGlyphInfo> => {
+    const mathGlyphInfoBlob = blob.slice(start, end);
+    const buffer = await mathGlyphInfoBlob.arrayBuffer();
+    const view = new DataView(buffer);
+
+    // const mathItalicsCorrectionInfoOffset = view.getUint16(0);
+    // const mathTopAccentAttachmentOffset = view.getUint16(2);
+    const extendedShapeCoverageOffset = view.getUint16(4);
+    // const mathKernInfoOffset = view.getUint16(6);
+
+    const extendedShapeCoverage = await parseCovergeTable(
+        mathGlyphInfoBlob,
+        extendedShapeCoverageOffset,
+    );
+
+    return {
+        isExtendedShape: (glyphID) =>
+            extendedShapeCoverage.indexOf(glyphID) !== -1,
+    };
+};
+
 const parseVariants = async (
     blob: Blob,
     start: number,
     end: number,
 ): Promise<VariantsTable> => {
-    const buffer = await blob.slice(start, end).arrayBuffer();
+    const variantsBlob = blob.slice(start, end);
+    const buffer = await variantsBlob.arrayBuffer();
     const view = new DataView(buffer);
 
-    // These offsets are from the start of the MathVariants tabls
+    // These offsets are from the start of the MathVariants table
+    const minConnectorOverlap = view.getUint16(0);
     const vertGlyphCoverageOffset = view.getUint16(2);
     const horizGlyphCoverageOffset = view.getUint16(4);
     const vertGlyphCount = view.getUint16(6);
     const horizGlyphCount = view.getUint16(8);
 
     const vertGlyphCoverageTable = await parseCovergeTable(
-        blob,
-        start + vertGlyphCoverageOffset,
+        variantsBlob,
+        vertGlyphCoverageOffset,
     );
     const horizGlyphCoverageTable = await parseCovergeTable(
-        blob,
-        start + horizGlyphCoverageOffset,
+        variantsBlob,
+        horizGlyphCoverageOffset,
     );
 
     const vertGlyphConstructionDict: Record<number, GlyphConstruction> = {};
     const horizGlyphConstructionDict: Record<number, GlyphConstruction> = {};
 
     const variants: VariantsTable = {
-        minConnectorOverlap: view.getUint16(0),
+        minConnectorOverlap,
         vertGlyphCoverageOffset,
         horizGlyphCoverageOffset,
         vertGlyphCount,
@@ -355,7 +381,13 @@ const parseVariants = async (
     return variants;
 };
 
-export const parseMATH = async (blob: Blob): Promise<MathResult> => {
+export type MathTable = {
+    constants: MathConstants;
+    variants: VariantsTable;
+    glyphInfo: MathGlyphInfo;
+};
+
+export const parseMATH = async (blob: Blob): Promise<MathTable> => {
     // TODO: check that tableRecord.tableTag === "MATH" before proceeding
 
     type MathHeader = {
@@ -379,12 +411,16 @@ export const parseMATH = async (blob: Blob): Promise<MathResult> => {
         mathVariantsOffset: headerView.getUint16(8),
     };
 
-    // TODO: parse MathGlyphInfo Table
-
     const constants = await parseConstants(
         blob,
         header.mathConstantsOffset,
         header.mathGlyphInfoOffset,
+    );
+
+    const glyphInfo = await parseMathGlyphInfo(
+        blob,
+        header.mathGlyphInfoOffset,
+        header.mathVariantsOffset,
     );
 
     const variants = await parseVariants(
@@ -396,5 +432,6 @@ export const parseMATH = async (blob: Blob): Promise<MathResult> => {
     return {
         constants,
         variants,
+        glyphInfo,
     };
 };
