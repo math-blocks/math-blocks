@@ -170,8 +170,10 @@ const typesetRoot = (
         const degreeBottomRaisePercent =
             constants.radicalDegreeBottomRaisePercent / 100;
 
+        // We default to MathML/Word beahavior since that's what most fonts
+        // seem to use.
         const algorithm =
-            context.radicalDegreeAlgorithm || RadicalDegreeAlgorithm.OpenType;
+            context.radicalDegreeAlgorithm ?? RadicalDegreeAlgorithm.MathML;
 
         switch (algorithm) {
             case RadicalDegreeAlgorithm.OpenType:
