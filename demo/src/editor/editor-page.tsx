@@ -4,6 +4,7 @@ import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor-core";
 import {parse, getFontData} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
+import {RadicalDegreeAlgorithm} from "@math-blocks/typesetter";
 
 import {examples} from "./examples";
 
@@ -26,6 +27,7 @@ const EditorPage: React.FunctionComponent = () => {
         null,
     );
     const [fontIndex, setFontIndex] = React.useState<number>(0);
+
     const [zipper, setZipper] = React.useState<Editor.Zipper>({
         breadcrumbs: [],
         row: {
@@ -36,6 +38,10 @@ const EditorPage: React.FunctionComponent = () => {
             right: examples[0].children,
         },
     });
+
+    const [radicalDegreeAlgorithm, setRadicalDegreeAlgorithm] = React.useState<
+        RadicalDegreeAlgorithm
+    >(RadicalDegreeAlgorithm.OpenType);
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
@@ -131,7 +137,12 @@ const EditorPage: React.FunctionComponent = () => {
 
     return (
         <FontDataContext.Provider value={fontData}>
-            <MathEditor fontSize={fontSize} readonly={false} zipper={zipper} />
+            <MathEditor
+                fontSize={fontSize}
+                readonly={false}
+                zipper={zipper}
+                radicalDegreeAlgorithm={radicalDegreeAlgorithm}
+            />
             <br />
             <br />
             <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
@@ -181,6 +192,28 @@ const EditorPage: React.FunctionComponent = () => {
                     <option value={3}>Gyre Pagella</option>
                     <option value={4}>Gyre Schola</option>
                     <option value={5}>Gyre Termes</option>
+                </select>
+                <span
+                    style={{
+                        fontFamily: "sans-serif",
+                        paddingRight: 8,
+                        marginLeft: 32,
+                    }}
+                >
+                    Radical Degree Algorithm:{" "}
+                </span>
+                <select
+                    onChange={(e) =>
+                        setRadicalDegreeAlgorithm(parseInt(e.target.value))
+                    }
+                    defaultValue={RadicalDegreeAlgorithm.OpenType}
+                >
+                    <option value={RadicalDegreeAlgorithm.OpenType}>
+                        OpenType
+                    </option>
+                    <option value={RadicalDegreeAlgorithm.MathML}>
+                        MathML/Word
+                    </option>
                 </select>
             </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>

@@ -9,3 +9,8 @@ export enum RenderMode {
     Static = "static",
     Dynamic = "dynamic",
 }
+
+export enum RadicalDegreeAlgorithm {
+    OpenType,
+    MathML,
+}
