@@ -1,69 +1,12 @@
-// FWORD - int16 that describes a quantity in font design units
-// UFWORD - uint16 that describes a quantity in font design units
-
-export type MathValueRecord = {
-    value: number; // FWORD
-    deviceOffset: number; // Offset16
-};
-
-export type MathConstants = {
-    scriptPercentScaleDown: number; // int16
-    scriptScriptPercentScaleDown: number; // int16
-    delimitedSubFormulaMinHeight: number; // UFWORD
-    displayOperatorMinHeight: number; // UFWORD
-    mathLeading: MathValueRecord;
-    axisHeight: MathValueRecord;
-    accentBaseHeight: MathValueRecord;
-    flattenedAccentBaseHeight: MathValueRecord;
-    subscriptShiftDown: MathValueRecord;
-    subscriptTopMax: MathValueRecord;
-    subscriptBaselineDropMin: MathValueRecord;
-    superscriptShiftUp: MathValueRecord;
-    superscriptShiftUpCramped: MathValueRecord;
-    superscriptBottomMin: MathValueRecord;
-    superscriptBaselineDropMax: MathValueRecord;
-    subSuperscriptGapMin: MathValueRecord;
-    superscriptBottomMaxWithSubscript: MathValueRecord;
-    spaceAfterScript: MathValueRecord;
-    upperLimitGapMin: MathValueRecord;
-    upperLimitBaselineRiseMin: MathValueRecord;
-    lowerLimitGapMin: MathValueRecord;
-    lowerLimitBaselineDropMin: MathValueRecord;
-    stackTopShiftUp: MathValueRecord;
-    stackTopDisplayStyleShiftUp: MathValueRecord;
-    stackBottomShiftDown: MathValueRecord;
-    stackBottomDisplayStyleShiftDown: MathValueRecord;
-    stackGapMin: MathValueRecord;
-    stackDisplayStyleGapMin: MathValueRecord;
-    stretchStackTopShiftUp: MathValueRecord;
-    stretchStackBottomShiftDown: MathValueRecord;
-    stretchStackGapAboveMin: MathValueRecord;
-    stretchStackGapBelowMin: MathValueRecord;
-    fractionNumeratorShiftUp: MathValueRecord;
-    fractionNumeratorDisplayStyleShiftUp: MathValueRecord;
-    fractionDenominatorShiftDown: MathValueRecord;
-    fractionDenominatorDisplayStyleShiftDown: MathValueRecord;
-    fractionNumeratorGapMin: MathValueRecord;
-    fractionNumDisplayStyleGapMin: MathValueRecord;
-    fractionRuleThickness: MathValueRecord;
-    fractionDenominatorGapMin: MathValueRecord;
-    fractionDenomDisplayStyleGapMin: MathValueRecord;
-    skewedFractionHorizontalGap: MathValueRecord;
-    skewedFractionVerticalGap: MathValueRecord;
-    overbarVerticalGap: MathValueRecord;
-    overbarRuleThickness: MathValueRecord;
-    overbarExtraAscender: MathValueRecord;
-    underbarVerticalGap: MathValueRecord;
-    underbarRuleThickness: MathValueRecord;
-    underbarExtraDescender: MathValueRecord;
-    radicalVerticalGap: MathValueRecord;
-    radicalDisplayStyleVerticalGap: MathValueRecord;
-    radicalRuleThickness: MathValueRecord;
-    radicalExtraAscender: MathValueRecord;
-    radicalKernBeforeDegree: MathValueRecord;
-    radicalKernAfterDegree: MathValueRecord;
-    radicalDegreeBottomRaisePercent: number; // int16
-};
+import type {
+    MathValueRecord,
+    MathConstants,
+    MathVariants,
+    GlyphPartRecord,
+    GlyphAssembly,
+    GlyphConstruction,
+    GlyphVariantRecord,
+} from "./math-types";
 
 const parseConstants = async (
     blob: Blob,
@@ -142,50 +85,15 @@ const parseConstants = async (
     return mathConstants;
 };
 
-type GlyphVariantRecord = {
-    variantGlyph: number; // Glyph ID
-    advanceMeasurement: number; // UFWORD (uint16 in design units)
-};
-
-type GlyphPartRecord = {
-    glyphID: number; // uint16
-    startConnectorLength: number; // UFWORD (uint16 in design units)
-    endConnectorLength: number; // UFWORD (uint16 in design units)
-    fullAdvance: number; // UFWORD (uint16 in design units)
-    partsFlags: number; // uint16
-};
-
-type GlyphAssembly = {
-    italicsCorrection: MathValueRecord;
-    partRecords: GlyphPartRecord[];
-};
-
-type GlyphConstruction = {
-    glyphAssembly: GlyphAssembly | null;
-    mathGlyphVariantRecords: GlyphVariantRecord[];
-};
-
-export type VariantsTable = {
-    minConnectorOverlap: number; // UFWORD (uint16 in design units)
-    vertGlyphCoverageOffset: number; // Offset16 (uint16)
-    horizGlyphCoverageOffset: number; // Offset16 (uint16)
-    vertGlyphCount: number; // uint16
-    horizGlyphCount: number; // uint16
-    getVertGlyphConstruction: (glyphID: number) => GlyphConstruction | null;
-    getHorizGlyphConstruction: (glyphID: number) => GlyphConstruction | null;
-};
-
-type CoverageTable = number[]; // Glyph IDs
-
 const parseCovergeTable = async (
     blob: Blob,
     offset: number,
-): Promise<CoverageTable> => {
+): Promise<number[]> => {
     const buffer = await blob.slice(offset, offset + 4).arrayBuffer();
     const view = new DataView(buffer);
 
     const coverageFormat = view.getUint16(0);
-    const result: CoverageTable = [];
+    const glyphIDs: number[] = [];
 
     if (coverageFormat === 1) {
         const glyphCount = view.getUint16(2);
@@ -196,7 +104,7 @@ const parseCovergeTable = async (
         const glyphArrayView = new DataView(glyphArrayBuffer);
 
         for (let i = 0; i < glyphCount; i++) {
-            result[i] = glyphArrayView.getUint16(i * 2);
+            glyphIDs[i] = glyphArrayView.getUint16(i * 2);
         }
     } else if (coverageFormat === 2) {
         const rangeCount = view.getUint16(2);
@@ -216,14 +124,14 @@ const parseCovergeTable = async (
                 gid <= endGlyphID;
                 gid++, index++
             ) {
-                result[index] = gid;
+                glyphIDs[index] = gid;
             }
         }
     } else {
         throw new Error(`Invalid coverageFormat = ${coverageFormat}`);
     }
 
-    return result;
+    return glyphIDs;
 };
 
 const parseGlyphAssembly = (view: DataView, offset: number): GlyphAssembly => {
@@ -314,7 +222,7 @@ const parseVariants = async (
     blob: Blob,
     start: number,
     end: number,
-): Promise<VariantsTable> => {
+): Promise<MathVariants> => {
     const variantsBlob = blob.slice(start, end);
     const buffer = await variantsBlob.arrayBuffer();
     const view = new DataView(buffer);
@@ -338,7 +246,7 @@ const parseVariants = async (
     const vertGlyphConstructionDict: Record<number, GlyphConstruction> = {};
     const horizGlyphConstructionDict: Record<number, GlyphConstruction> = {};
 
-    const variants: VariantsTable = {
+    const variants: MathVariants = {
         minConnectorOverlap,
         vertGlyphCoverageOffset,
         horizGlyphCoverageOffset,
@@ -383,7 +291,7 @@ const parseVariants = async (
 
 export type MathTable = {
     constants: MathConstants;
-    variants: VariantsTable;
+    variants: MathVariants;
     glyphInfo: MathGlyphInfo;
 };
 
