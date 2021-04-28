@@ -16,6 +16,7 @@ type Props = {
     zipper: Editor.Zipper;
     readonly: boolean;
     fontSize?: number;
+    radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
 
     onSubmit?: (zipper: Editor.Zipper) => unknown;
     onChange?: (zipper: Editor.Zipper) => unknown;
@@ -95,6 +96,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         cramped: false,
         colorMap: props.colorMap,
         renderMode: Typesetter.RenderMode.Dynamic,
+        radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     };
 
     const options = {showCursor: active};

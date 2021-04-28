@@ -3,7 +3,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
-import {MathStyle, RenderMode} from "./enums";
+import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
 import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
 import type {Context} from "./types";
@@ -169,11 +169,29 @@ const typesetRoot = (
         // is a single number or `n`, neither of whcih have a descender.
         const degreeBottomRaisePercent =
             constants.radicalDegreeBottomRaisePercent / 100;
-        degree.shift =
-            shift + // match shift of surdHBox
-            surd.depth - // align the index to the bottom of surdHBox
-            // shift it up to the correct location
-            degreeBottomRaisePercent * Layout.vsize(surd);
+
+        // We default to MathML/Word beahavior since that's what most fonts
+        // seem to use.
+        const algorithm =
+            context.radicalDegreeAlgorithm ?? RadicalDegreeAlgorithm.MathML;
+
+        switch (algorithm) {
+            case RadicalDegreeAlgorithm.OpenType:
+                degree.shift =
+                    shift - // match shift of surdHBox
+                    // The OpenType spec says `radicalDegreeBottomRaisePercent` is
+                    // with respect to the ascender of the radical glyph.
+                    degreeBottomRaisePercent * surd.height;
+                break;
+            case RadicalDegreeAlgorithm.MathML:
+                degree.shift =
+                    shift + // match shift of surdHBox
+                    surd.depth - // align the index to the bottom of surdHBox
+                    // The MathML Core spec says `radicalDegreeBottomRaisePercent`
+                    // is with respect to the height of the radical glyph.
+                    degreeBottomRaisePercent * Layout.vsize(surd);
+                break;
+        }
 
         root = Layout.hpackNat(
             [
