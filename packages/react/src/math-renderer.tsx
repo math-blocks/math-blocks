@@ -97,7 +97,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
 const Group: React.FunctionComponent<SceneGraph.Group> = ({
     x,
     y,
-    layers,
+    children,
     color,
     id,
 }) => {
@@ -105,12 +105,10 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
 
     return (
         <g transform={`translate(${x},${y})`} style={{color: color}} id={_id}>
-            {layers.flatMap((layer, i) =>
-                layer.map((child, j) => {
-                    const key = `${i}-${j}`;
-                    return <Node {...child} key={key} />;
-                }),
-            )}
+            {children.map((child, i) => {
+                const key = `${i}`;
+                return <Node {...child} key={key} />;
+            })}
         </g>
     );
 };

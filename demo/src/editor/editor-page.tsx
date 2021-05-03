@@ -31,17 +31,19 @@ const EditorPage: React.FunctionComponent = () => {
     const [zipper, setZipper] = React.useState<Editor.Zipper>({
         breadcrumbs: [],
         row: {
-            id: examples[0].id,
+            id: examples[1].id,
             type: "zrow",
             left: [],
             selection: null,
-            right: examples[0].children,
+            right: examples[1].children,
         },
     });
 
     const [radicalDegreeAlgorithm, setRadicalDegreeAlgorithm] = React.useState<
         RadicalDegreeAlgorithm
     >(RadicalDegreeAlgorithm.OpenType);
+
+    const [debug, setDebug] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
@@ -142,6 +144,7 @@ const EditorPage: React.FunctionComponent = () => {
                 readonly={false}
                 zipper={zipper}
                 radicalDegreeAlgorithm={radicalDegreeAlgorithm}
+                debug={debug}
             />
             <br />
             <br />
@@ -215,6 +218,19 @@ const EditorPage: React.FunctionComponent = () => {
                         MathML/Word
                     </option>
                 </select>
+                <span
+                    style={{
+                        fontFamily: "sans-serif",
+                        paddingRight: 8,
+                        marginLeft: 32,
+                    }}
+                >
+                    Debug
+                </span>
+                <input
+                    type="checkbox"
+                    onChange={(e) => setDebug(e.target.checked)}
+                ></input>
             </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>
                 {/* <EditingPanel /> */}
