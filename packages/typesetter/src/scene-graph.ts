@@ -16,7 +16,7 @@ export type Group = {
     y: number;
     width: number;
     height: number;
-    layers: readonly Node[][];
+    children: readonly Node[];
 } & Common;
 
 export type Glyph = {
@@ -43,6 +43,7 @@ export type Rect = {
     width: number;
     height: number;
     fill?: string;
+    stroke?: string;
 } & Common;
 
 export type Node = Group | Glyph | Line | Rect;
@@ -87,26 +88,22 @@ export type LayoutCursor = {
 
 const CURSOR_WIDTH = 2;
 
-const processHBox = (
-    box: Layout.Box,
-    loc: Point,
-    fontData: FontData,
-    options: Options,
-): Group => {
+const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     const selectionBoxes: Rect[] = [];
-    const editorLayer: Node[] = [];
-    const nonEditorLayer: Node[] = [];
-    const belowLayer: Node[] = [];
-    const aboveLayer: Node[] = [];
+
+    const children: Node[] = [];
 
     const hasSelection =
-        !options.inSelection &&
+        !context.inSelection &&
         box.content.length === 3 &&
         box.content[1].length > 0;
 
-    const {font} = fontData;
+    const {
+        layer,
+        fontData: {font},
+    } = context;
     const {fontSize} = box;
     const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
     // This assumes that parenMetrics.height < font.head.unitsPerEm
@@ -123,11 +120,11 @@ const processHBox = (
         if (
             index === 1 &&
             !hasSelection &&
-            !options.inSelection &&
-            options.showCursor
+            !context.inSelection &&
+            context.showCursor
         ) {
             // Draw the cursor.
-            belowLayer.push({
+            children.push({
                 type: "rect",
                 x: pen.x - CURSOR_WIDTH / 2,
                 y: pen.y - ascent,
@@ -137,12 +134,7 @@ const processHBox = (
         }
 
         section.forEach((node) => {
-            // We use the `id` property as an indicator that this layout
-            // node was directly derived from an editor node.
-            const layer =
-                typeof node.id === "number" ? editorLayer : nonEditorLayer;
-
-            if (isSelection) {
+            if (isSelection && layer === "bg") {
                 const yMin = -Math.max(Layout.getHeight(node), ascent);
 
                 const height = Math.max(
@@ -160,28 +152,66 @@ const processHBox = (
             }
 
             const advance = Layout.getWidth(node);
+            const height = Layout.getHeight(node);
+            const depth = Layout.getDepth(node);
 
             switch (node.type) {
-                case "Box":
-                    layer.push(
-                        _processBox(
-                            node,
-                            {x: pen.x, y: pen.y + node.shift},
-                            fontData,
-                            {
-                                ...options,
-                                inSelection:
-                                    options.inSelection || hasSelection,
-                            },
-                        ),
+                case "Box": {
+                    const child = _processBox(
+                        node,
+                        {x: pen.x, y: pen.y + node.shift},
+                        {
+                            ...context,
+                            inSelection: context.inSelection || hasSelection,
+                        },
                     );
+
+                    // We always have to include child groups regardless of the
+                    // layer.  TODO: drop this once we flatten the scene graph.
+                    children.push(child);
+
+                    if (layer === "debug") {
+                        children.push({
+                            type: "rect",
+                            x: pen.x,
+                            y: pen.y - height,
+                            width: advance,
+                            height: depth + height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     break;
-                case "HRule":
-                    layer.push(processHRule(node, pen));
+                }
+                case "HRule": {
+                    const child = processHRule(node, pen);
+                    if (layer === "fg") {
+                        children.push(child);
+                    }
                     break;
-                case "Glyph":
-                    layer.push(processGlyph(node, pen));
+                }
+                case "Glyph": {
+                    const child = processGlyph(node, pen);
+
+                    if (layer === "fg") {
+                        children.push(child);
+                    }
+
+                    if (layer === "debug") {
+                        children.push({
+                            type: "rect",
+                            x: pen.x,
+                            y: pen.y - height,
+                            width: advance,
+                            height: depth + height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     break;
+                }
                 case "Kern":
                     // We don't need to include kerns in the output since we include
                     // the cursor or select rectangle in the scene graph.
@@ -195,11 +225,13 @@ const processHBox = (
     });
 
     // Draw the selection.
-    for (const selectionBox of selectionBoxes) {
-        belowLayer.unshift({
-            ...selectionBox,
-            fill: "rgba(0,144,255,0.5)",
-        });
+    if (layer === "bg") {
+        for (const selectionBox of selectionBoxes) {
+            children.unshift({
+                ...selectionBox,
+                fill: "Highlight",
+            });
+        }
     }
 
     return {
@@ -208,37 +240,28 @@ const processHBox = (
         y: loc.y,
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
-        layers: [belowLayer, editorLayer, nonEditorLayer, aboveLayer],
+        children: children,
         color: box.color,
         id: box.id,
     };
 };
 
-const processVBox = (
-    box: Layout.Box,
-    loc: Point,
-    fontData: FontData,
-    options: Options,
-): Group => {
+const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
 
-    const editorLayer: Node[] = [];
-    const nonEditorLayer: Node[] = [];
+    const children: Node[] = [];
+    const {layer} = context;
 
     box.content.forEach((section) => {
         section.forEach((node) => {
+            const width = Layout.getWidth(node);
             const height = Layout.getHeight(node);
             const depth = Layout.getDepth(node);
 
-            // We use the `id` property as an indicator that this layout
-            // node was directly derived from an editor node.
-            const layer =
-                typeof node.id === "number" ? editorLayer : nonEditorLayer;
-
             switch (node.type) {
-                case "Box":
+                case "Box": {
                     // TODO: reconsider whether we should be taking the shift into
                     // account when computing the height, maybe we can drop this
                     // and simplify things.  The reason why we zero out the shift
@@ -248,32 +271,73 @@ const processVBox = (
                     // used depends on the parent box type.  We could pass that info
                     // to the getHeight() function... we should probably do an audit
                     // of all the callsites for getHeight()
-                    pen.y += Layout.getHeight({...node, shift: 0});
+                    const height = Layout.getHeight({...node, shift: 0});
+                    const depth = Layout.getDepth({...node, shift: 0});
+
+                    pen.y += height;
                     // TODO: see if we can get rid of this check in the future
                     if (Number.isNaN(pen.y)) {
                         // eslint-disable-next-line no-debugger
                         debugger;
                     }
-                    layer.push(
-                        _processBox(
-                            node,
-                            {x: pen.x + node.shift, y: pen.y},
-                            fontData,
-                            options,
-                        ),
+
+                    const child = _processBox(
+                        node,
+                        {x: pen.x + node.shift, y: pen.y},
+                        context,
                     );
-                    pen.y += Layout.getDepth({...node, shift: 0});
-                    break;
-                case "HRule":
-                    pen.y += height;
-                    layer.push(processHRule(node, pen));
+
+                    // We always have to include child groups regardless of the
+                    // layer.  TODO: drop this once we flatten the scene graph.
+                    children.push(child);
+
+                    if (layer === "debug") {
+                        children.push({
+                            type: "rect",
+                            x: pen.x + node.shift,
+                            y: pen.y - height,
+                            width: width,
+                            height: depth + height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     pen.y += depth;
                     break;
-                case "Glyph":
+                }
+                case "HRule": {
                     pen.y += height;
-                    layer.push(processGlyph(node, pen));
+                    const child = processHRule(node, pen);
+                    if (layer === "fg") {
+                        children.push(child);
+                    }
                     pen.y += depth;
                     break;
+                }
+                case "Glyph": {
+                    // Although there currently isn't anything that uses a glyph
+                    // in a vbox, we'll likely need it for accents.
+                    pen.y += height;
+                    const child = processGlyph(node, pen);
+
+                    if (layer === "fg") {
+                        children.push(child);
+                    }
+
+                    if (layer === "debug") {
+                        children.push({
+                            type: "rect",
+                            x: pen.x,
+                            y: pen.y,
+                            width: width,
+                            height: depth + height,
+                        });
+                    }
+
+                    pen.y += depth;
+                    break;
+                }
                 case "Kern":
                     pen.y += node.size;
                     break;
@@ -289,7 +353,7 @@ const processVBox = (
         y: loc.y,
         width: Layout.getWidth(box),
         height: Layout.vsize(box),
-        layers: [editorLayer, nonEditorLayer],
+        children: children,
         color: box.color,
         id: box.id,
     };
@@ -297,20 +361,22 @@ const processVBox = (
 
 type Options = {
     showCursor?: boolean;
-    inSelection?: boolean;
+    debug?: boolean;
 };
 
-const _processBox = (
-    box: Layout.Box,
-    loc: Point,
-    fontData: FontData,
-    options: Options,
-): Group => {
+type Context = {
+    fontData: FontData;
+    showCursor: boolean;
+    inSelection: boolean;
+    layer: "fg" | "bg" | "debug";
+};
+
+const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     switch (box.kind) {
         case "hbox":
-            return processHBox(box, loc, fontData, options);
+            return processHBox(box, loc, context);
         case "vbox":
-            return processVBox(box, loc, fontData, options);
+            return processVBox(box, loc, context);
     }
 };
 
@@ -319,11 +385,19 @@ export const processBox = (
     fontData: FontData,
     options: Options = {},
 ): Group => {
+    const layers: Group[] = [];
+
     const loc = {x: 0, y: Layout.getHeight(box)};
-    const scene = _processBox(box, loc, fontData, options);
+    const context: Context = {
+        showCursor: !!options.showCursor,
+        inSelection: false,
+        fontData: fontData,
+        layer: "fg",
+    };
+    const fgLayer = _processBox(box, loc, context);
 
     const {fontSize} = box;
-    const height = Math.max(scene.height, fontSize);
+    const height = Math.max(fgLayer.height, fontSize);
 
     const {font} = fontData;
     const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
@@ -332,8 +406,30 @@ export const processBox = (
     const ascent =
         ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
 
-    scene.y = Math.max(scene.y, ascent);
-    scene.height = height;
+    fgLayer.y = Math.max(fgLayer.y, ascent);
+    fgLayer.height = height;
+
+    context.layer = "bg";
+    const bgLayer = _processBox(box, loc, context);
+
+    layers.push(bgLayer);
+    layers.push(fgLayer);
+
+    if (options.debug) {
+        context.layer = "debug";
+        const debugLayer = _processBox(box, loc, context);
+
+        layers.push(debugLayer);
+    }
+
+    const scene: Group = {
+        type: "group",
+        x: 0,
+        y: 0,
+        width: fgLayer.width,
+        height: fgLayer.height,
+        children: layers,
+    };
 
     return scene;
 };

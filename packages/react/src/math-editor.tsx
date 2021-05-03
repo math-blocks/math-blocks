@@ -29,6 +29,9 @@ type Props = {
     stepChecker?: boolean;
 
     colorMap?: Map<number, string>;
+
+    // Renders bounding boxes around each group and glyph.
+    debug?: boolean;
 };
 
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
@@ -99,7 +102,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     };
 
-    const options = {showCursor: active};
+    const options = {showCursor: active, debug: props.debug};
 
     const scene = Typesetter.typesetZipper(zipper, context, options);
 
