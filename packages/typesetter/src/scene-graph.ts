@@ -173,6 +173,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y - height,
                             width: advance,
@@ -201,6 +202,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y - height,
                             width: advance,
@@ -294,6 +296,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x + node.shift,
                             y: pen.y - height,
                             width: width,
@@ -328,6 +331,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y,
                             width: width,
@@ -432,4 +436,64 @@ export const processBox = (
     };
 
     return scene;
+};
+
+type Side = "left" | "right";
+
+const isPointInRect = (point: Point, bounds: Rect): Side | undefined => {
+    if (
+        point.x > bounds.x &&
+        point.x < bounds.x + bounds.width / 2 &&
+        point.y > bounds.y &&
+        point.y < bounds.y + bounds.height
+    ) {
+        return "left";
+    }
+    if (
+        point.x > bounds.x + bounds.width / 2 &&
+        point.x < bounds.x + bounds.width &&
+        point.y > bounds.y &&
+        point.y < bounds.y + bounds.height
+    ) {
+        return "right";
+    }
+    return undefined;
+};
+
+type Intersection = {id: number; side: Side};
+
+export const findIntersections = (
+    point: Point,
+    node: Node, // must be the group containing the debug bounding rectangles
+    translation: Point = {x: 0, y: 0},
+): Intersection[] => {
+    const result: Intersection[] = [];
+
+    if (node.type === "rect") {
+        const translatedRect = {
+            ...node,
+            x: node.x + translation.x,
+            y: node.y + translation.y,
+        };
+
+        const side = isPointInRect(point, translatedRect);
+        if (side && node.id) {
+            result.push({
+                id: node.id,
+                side: side,
+            });
+        }
+    }
+
+    if (node.type === "group") {
+        const newTranslation = {
+            x: translation.x + node.x,
+            y: translation.y + node.y,
+        };
+        for (const child of node.children) {
+            result.push(...findIntersections(point, child, newTranslation));
+        }
+    }
+
+    return result;
 };

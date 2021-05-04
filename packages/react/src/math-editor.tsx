@@ -40,6 +40,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
     const fontData = useContext(FontDataContext);
     const inputRef = useRef<HTMLInputElement>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
 
     const callback = useCallback(
         (e: KeyboardEvent): void => {
@@ -82,7 +83,22 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     useEventListener("keydown", callback);
 
-    const focusHandler = (): void => inputRef?.current?.focus();
+    const handleClick = (
+        e: React.MouseEvent,
+        group: Typesetter.SceneGraph.Group,
+    ): void => {
+        inputRef?.current?.focus();
+        if (active && svgRef?.current) {
+            const bounds = svgRef.current.getBoundingClientRect();
+            const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
+
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                group.children[2],
+            );
+            console.log(intersections);
+        }
+    };
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
@@ -102,7 +118,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     };
 
-    const options = {showCursor: active, debug: props.debug};
+    const options = {showCursor: active, debug: true};
 
     const scene = Typesetter.typesetZipper(zipper, context, options);
 
@@ -110,7 +126,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         <div
             tabIndex={!props.readonly ? 0 : undefined}
             ref={containerRef}
-            onClick={focusHandler}
+            onClick={(e) => handleClick(e, scene)}
             onMouseDown={(e) => {
                 setActive(true);
                 // prevent blurring the input
@@ -138,7 +154,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 autoComplete="off"
                 spellCheck="false"
             />
-            <MathRenderer scene={scene} />
+            <MathRenderer scene={scene} ref={svgRef} />
         </div>
     );
 };
