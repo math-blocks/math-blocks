@@ -104,13 +104,13 @@ const nestedFractions = Editor.builders.row([
                 ],
                 [Editor.builders.glyph("1")],
             ),
-            Editor.builders.glyph("\u2212"),
+            Editor.builders.glyph("+"),
             Editor.builders.glyph("\u2212"),
             Editor.builders.glyph("y"),
         ],
         [Editor.builders.glyph("1")],
     ),
-    Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("+"),
     Editor.builders.glyph("b"),
 ]);
 

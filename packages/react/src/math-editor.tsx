@@ -96,7 +96,14 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 point,
                 group.children[2],
             );
-            console.log(intersections);
+            // put the node ids in the correct order to work with rowToZipper
+            intersections.reverse();
+
+            const row = Editor.zipperToRow(zipper);
+            const newZipper = Editor.rowToZipper(row, intersections);
+            if (newZipper) {
+                setZipper(newZipper);
+            }
         }
     };
 
