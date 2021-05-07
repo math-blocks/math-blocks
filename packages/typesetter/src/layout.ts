@@ -27,7 +27,6 @@ export type Box = {
     shift: Dist;
     content: readonly (readonly Node[])[];
     fontSize: number;
-    context: Context;
 } & Common &
     Dim;
 
@@ -38,7 +37,6 @@ export type Glyph = {
     size: number;
     fontData: FontData;
     pending?: boolean;
-    context: Context;
 } & Common;
 
 export type Kern = {
@@ -69,7 +67,6 @@ export const makeBox = (
         shift: 0,
         content,
         fontSize: fontSizeForContext(context),
-        context,
     };
 };
 
@@ -129,7 +126,6 @@ export const makeGlyph = (
         glyphID,
         size: fontSizeForContext(context),
         fontData: context.fontData,
-        context,
     };
 };
 
