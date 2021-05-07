@@ -83,27 +83,24 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     useEventListener("keydown", callback);
 
-    const handleClick = (
-        e: React.MouseEvent,
-        scene: Typesetter.SceneGraph.Scene,
-    ): void => {
-        inputRef?.current?.focus();
-        if (active && svgRef?.current) {
-            const bounds = svgRef.current.getBoundingClientRect();
-            const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
+    const positionCursor = (e: React.MouseEvent): void => {
+        if (!svgRef?.current) {
+            return;
+        }
+        const bounds = svgRef.current.getBoundingClientRect();
+        const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
 
-            const intersections = Typesetter.SceneGraph.findIntersections(
-                point,
-                scene.debug,
-            );
-            // put the node ids in the correct order to work with rowToZipper
-            intersections.reverse();
+        const intersections = Typesetter.SceneGraph.findIntersections(
+            point,
+            scene.hitboxes,
+        );
+        // put the node ids in the correct order to work with rowToZipper
+        intersections.reverse();
 
-            const row = Editor.zipperToRow(zipper);
-            const newZipper = Editor.rowToZipper(row, intersections);
-            if (newZipper) {
-                setZipper(newZipper);
-            }
+        const row = Editor.zipperToRow(zipper);
+        const newZipper = Editor.rowToZipper(row, intersections);
+        if (newZipper) {
+            setZipper(newZipper);
         }
     };
 
@@ -133,11 +130,14 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         <div
             tabIndex={!props.readonly ? 0 : undefined}
             ref={containerRef}
-            onClick={(e) => handleClick(e, scene)}
+            onClick={(e) => {
+                inputRef?.current?.focus();
+            }}
             onMouseDown={(e) => {
                 setActive(true);
                 // prevent blurring the input
                 e.preventDefault();
+                positionCursor(e);
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}

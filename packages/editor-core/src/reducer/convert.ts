@@ -42,7 +42,10 @@ export const zipperToRow = (zipper: Zipper): Row => {
     });
 };
 
-type Intersection = {id: number; side: "left" | "right"};
+type Side = "left" | "right";
+type Intersection =
+    | {type: "content"; id: number; side: Side}
+    | {type: "padding"; flag: "start" | "end"};
 
 export const rowToZipper = (
     row: Row,
@@ -57,7 +60,21 @@ export const rowToZipper = (
 
     [int, ...rest] = intersections;
 
-    let rowIndex = row.children.findIndex((child) => int.id === child.id);
+    if (int.type === "padding") {
+        return int.flag === "start"
+            ? {
+                  row: zrow(row.id, [], row.children),
+                  breadcrumbs: [],
+              }
+            : {
+                  row: zrow(row.id, row.children, []),
+                  breadcrumbs: [],
+              };
+    }
+
+    let rowIndex = row.children.findIndex(
+        (child) => int.type === "content" && int.id === child.id,
+    );
     if (rowIndex === -1) {
         // debugger;
         return;
@@ -91,7 +108,7 @@ export const rowToZipper = (
         case "root":
         case "delimited": {
             focusIndex = child.children.findIndex(
-                (child) => int.id === child?.id,
+                (child) => int.type === "content" && int.id === child?.id,
             );
             break;
         }

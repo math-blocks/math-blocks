@@ -11,6 +11,7 @@ type Common = {
 
 export type Group = {
     type: "group";
+    orientation: "vertical" | "horizontal";
     // position relative the parent group
     x: number;
     y: number;
@@ -44,6 +45,7 @@ export type Rect = {
     height: number;
     fill?: string;
     stroke?: string;
+    flag?: "start" | "end";
 } & Common;
 
 export type Node = Group | Glyph | Line | Rect;
@@ -134,7 +136,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         }
 
         section.forEach((node) => {
-            if (isSelection && layer === "bg") {
+            if (isSelection && layer === "selection") {
                 const yMin = -Math.max(Layout.getHeight(node), ascent);
 
                 const height = Math.max(
@@ -183,11 +185,26 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                         });
                     }
 
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
+                        children.push({
+                            type: "rect",
+                            id: node.id,
+                            x: pen.x,
+                            y: pen.y - box.height,
+                            width: advance,
+                            height: box.depth + box.height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     break;
                 }
                 case "HRule": {
                     const child = processHRule(node, pen);
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
                     break;
@@ -195,7 +212,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 case "Glyph": {
                     const child = processGlyph(node, pen);
 
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
 
@@ -212,9 +229,41 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                         });
                     }
 
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
+                        children.push({
+                            type: "rect",
+                            id: node.id,
+                            x: pen.x,
+                            y: pen.y - box.height,
+                            width: advance,
+                            height: box.depth + box.height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     break;
                 }
                 case "Kern":
+                    if (node.flag) {
+                        if (layer === "hitboxes") {
+                            // TODO: do a second pass on the hitboxes to expand
+                            // them to their full height
+                            children.push({
+                                type: "rect",
+                                flag: node.flag,
+                                x: pen.x,
+                                y: pen.y - box.height,
+                                width: node.size,
+                                height: box.depth + box.height,
+                                fill: "none",
+                                stroke: "red",
+                            });
+                        }
+                    }
+
                     // We don't need to include kerns in the output since we include
                     // the cursor or select rectangle in the scene graph.
                     break;
@@ -227,7 +276,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     });
 
     // Draw the selection.
-    if (layer === "bg") {
+    if (layer === "selection") {
         for (const selectionBox of selectionBoxes) {
             children.unshift({
                 ...selectionBox,
@@ -238,6 +287,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     return {
         type: "group",
+        orientation: "horizontal",
         x: loc.x,
         y: loc.y,
         width: Layout.getWidth(box),
@@ -306,13 +356,28 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                         });
                     }
 
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
+                        children.push({
+                            type: "rect",
+                            id: node.id,
+                            x: pen.x + node.shift,
+                            y: pen.y - height,
+                            width: width,
+                            height: depth + height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
                     pen.y += depth;
                     break;
                 }
                 case "HRule": {
                     pen.y += height;
                     const child = processHRule(node, pen);
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
                     pen.y += depth;
@@ -324,11 +389,24 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     pen.y += height;
                     const child = processGlyph(node, pen);
 
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
 
                     if (layer === "debug") {
+                        children.push({
+                            type: "rect",
+                            id: node.id,
+                            x: pen.x,
+                            y: pen.y,
+                            width: width,
+                            height: depth + height,
+                        });
+                    }
+
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
                         children.push({
                             type: "rect",
                             id: node.id,
@@ -353,6 +431,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     return {
         type: "group",
+        orientation: "vertical",
         x: loc.x,
         y: loc.y,
         width: Layout.getWidth(box),
@@ -372,7 +451,7 @@ type Context = {
     fontData: FontData;
     showCursor: boolean;
     inSelection: boolean;
-    layer: "fg" | "bg" | "debug";
+    layer: "content" | "selection" | "debug" | "hitboxes";
 };
 
 const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
@@ -390,6 +469,7 @@ export type Scene = {
     // group these into .layers?
     content: Group;
     selection: Group;
+    hitboxes: Group;
     debug: Group;
 };
 
@@ -398,19 +478,17 @@ export const processBox = (
     fontData: FontData,
     options: Options = {},
 ): Scene => {
-    const layers: Group[] = [];
-
     const loc = {x: 0, y: Layout.getHeight(box)};
     const context: Context = {
         showCursor: !!options.showCursor,
         inSelection: false,
         fontData: fontData,
-        layer: "fg",
+        layer: "content",
     };
-    const fgLayer = _processBox(box, loc, context);
+    const contentLayer = _processBox(box, loc, context);
 
     const {fontSize} = box;
-    const height = Math.max(fgLayer.height, fontSize);
+    const height = Math.max(contentLayer.height, fontSize);
 
     const {font} = fontData;
     const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
@@ -419,24 +497,25 @@ export const processBox = (
     const ascent =
         ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
 
-    fgLayer.y = Math.max(fgLayer.y, ascent);
-    fgLayer.height = height;
+    contentLayer.y = Math.max(contentLayer.y, ascent);
+    contentLayer.height = height;
 
-    context.layer = "bg";
-    const bgLayer = _processBox(box, loc, context);
-
-    layers.push(bgLayer);
-    layers.push(fgLayer);
+    context.layer = "selection";
+    const selectionLayer = _processBox(box, loc, context);
 
     context.layer = "debug";
     const debugLayer = _processBox(box, loc, context);
 
+    context.layer = "hitboxes";
+    const hitboxes = _processBox(box, loc, context);
+
     const scene: Scene = {
-        width: fgLayer.width,
-        height: fgLayer.height,
-        content: fgLayer,
-        selection: bgLayer,
+        width: contentLayer.width,
+        height: contentLayer.height,
+        content: contentLayer,
+        selection: selectionLayer,
         debug: debugLayer,
+        hitboxes: hitboxes,
     };
 
     return scene;
@@ -464,7 +543,9 @@ const isPointInRect = (point: Point, bounds: Rect): Side | undefined => {
     return undefined;
 };
 
-type Intersection = {id: number; side: Side};
+type Intersection =
+    | {type: "content"; id: number; side: Side}
+    | {type: "padding"; flag: "start" | "end"};
 
 export const findIntersections = (
     point: Point,
@@ -481,11 +562,19 @@ export const findIntersections = (
         };
 
         const side = isPointInRect(point, translatedRect);
-        if (side && node.id) {
-            result.push({
-                id: node.id,
-                side: side,
-            });
+        if (side) {
+            if (node.id) {
+                result.push({
+                    type: "content",
+                    id: node.id,
+                    side: side,
+                });
+            } else if (node.flag) {
+                result.push({
+                    type: "padding",
+                    flag: node.flag,
+                });
+            }
         }
     }
 

@@ -57,11 +57,11 @@ const withOperatorPadding = (
  * TODO: add originalDepth and originalHeight so that getDelimiter can make its
  * decisions based on the original dimensions of the box.
  *
- * @param {Layout.Box} box
+ * @param {Layout.Box} dim
  * @param {Context} context
  * @return {void}
  */
-const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
+const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
     const {
         fontData: {font},
     } = context;
@@ -74,11 +74,11 @@ const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
     const depth =
         ((parenMetrics.height - parenMetrics.bearingY + overshoot) * fontSize) /
         font.head.unitsPerEm;
-    box.depth = Math.max(box.depth, depth);
+    dim.depth = Math.max(dim.depth, depth);
 
     const height =
         ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
-    box.height = Math.max(box.height, height);
+    dim.height = Math.max(dim.height, height);
 };
 
 const typesetFrac = (
@@ -709,6 +709,10 @@ const _typesetChildren = (
             const result = shouldHavePadding(prevChild, child, context)
                 ? withOperatorPadding(glyph, context)
                 : glyph;
+            if (result !== glyph) {
+                result.id = glyph.id;
+                delete glyph.id;
+            }
             prevLayoutNode = result;
             prevChild = child;
             return result;
