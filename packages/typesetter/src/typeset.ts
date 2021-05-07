@@ -7,7 +7,7 @@ import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
 import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
 import type {Context} from "./types";
-import type {Group} from "./scene-graph";
+import type {Scene} from "./scene-graph";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -857,7 +857,7 @@ export const typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
     options: Options = {},
-): Group => {
+): Scene => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
     return processBox(box, context.fontData, options);
 };
@@ -866,7 +866,7 @@ export const typeset = (
     node: Editor.types.Node,
     context: Context,
     options: Options = {},
-): Group => {
+): Scene => {
     const box = _typeset(node, context) as Layout.Box;
     return processBox(box, context.fontData, options);
 };

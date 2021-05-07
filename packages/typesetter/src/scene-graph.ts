@@ -384,11 +384,20 @@ const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     }
 };
 
+export type Scene = {
+    width: number;
+    height: number;
+    // group these into .layers?
+    content: Group;
+    selection: Group;
+    debug: Group;
+};
+
 export const processBox = (
     box: Layout.Box,
     fontData: FontData,
     options: Options = {},
-): Group => {
+): Scene => {
     const layers: Group[] = [];
 
     const loc = {x: 0, y: Layout.getHeight(box)};
@@ -419,20 +428,15 @@ export const processBox = (
     layers.push(bgLayer);
     layers.push(fgLayer);
 
-    if (options.debug) {
-        context.layer = "debug";
-        const debugLayer = _processBox(box, loc, context);
+    context.layer = "debug";
+    const debugLayer = _processBox(box, loc, context);
 
-        layers.push(debugLayer);
-    }
-
-    const scene: Group = {
-        type: "group",
-        x: 0,
-        y: 0,
+    const scene: Scene = {
         width: fgLayer.width,
         height: fgLayer.height,
-        children: layers,
+        content: fgLayer,
+        selection: bgLayer,
+        debug: debugLayer,
     };
 
     return scene;

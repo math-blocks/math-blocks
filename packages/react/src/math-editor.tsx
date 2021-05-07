@@ -85,7 +85,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const handleClick = (
         e: React.MouseEvent,
-        group: Typesetter.SceneGraph.Group,
+        scene: Typesetter.SceneGraph.Scene,
     ): void => {
         inputRef?.current?.focus();
         if (active && svgRef?.current) {
@@ -94,7 +94,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
             const intersections = Typesetter.SceneGraph.findIntersections(
                 point,
-                group.children[2],
+                scene.debug,
             );
             // put the node ids in the correct order to work with rowToZipper
             intersections.reverse();
