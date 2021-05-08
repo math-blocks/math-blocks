@@ -25,4 +25,19 @@
             </g>
         </g>
     </g>
+    <g transform="translate(0,56.28)" id="5">
+        <g transform="translate(0,0)" id="2">
+            <g transform="translate(3.7650000000000006,-24.231)" id="3">
+                <rect type="rect" x="0" y="-21.252" width="16.335" height="21.680999999999997" stroke="red" fill="none"></rect>
+            </g>
+            <g transform="translate(0,-0.9600000000000009)" id="undefined">
+                <rect type="rect" x="0" y="-55.32" width="47.64" height="71.22" stroke="red" fill="none"></rect>
+            </g>
+            <g transform="translate(47.64,0)" id="undefined">
+                <g transform="translate(0,0)" id="4">
+                    <rect type="rect" x="0" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
 </svg>

@@ -26,4 +26,22 @@
         </g>
         <path fill="currentcolor" id="10" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(113.65199999999999, 0) scale(0.06, -0.06)"></path>
     </g>
+    <g transform="translate(0,46.2)" id="11">
+        <g transform="translate(0,0)" id="8">
+            <g transform="translate(0,0)" id="undefined">
+                <g transform="translate(14.225999999999999,0)" id="3">
+                    <rect type="rect" x="0" y="-42.36" width="16.98" height="42.36" stroke="red" fill="none"></rect>
+                    <rect type="rect" x="16.98" y="-40.38" width="17.1" height="40.38" stroke="red" fill="none"></rect>
+                    <rect type="rect" x="34.08" y="-29.1" width="51.12" height="29.1" stroke="red" fill="none"></rect>
+                </g>
+            </g>
+            <g transform="translate(0,50.14)" id="9">
+                <rect type="rect" x="0" y="-20.244" width="21.42" height="29.484" stroke="red" fill="none"></rect>
+                <rect type="rect" x="21.42" y="-11.718" width="42" height="2.394" stroke="red" fill="none"></rect>
+                <rect type="rect" x="63.42" y="-22.974" width="29.442" height="24.024" stroke="red" fill="none"></rect>
+                <rect type="rect" x="92.862" y="-26.964" width="20.79" height="27.426" stroke="red" fill="none"></rect>
+            </g>
+        </g>
+        <rect type="rect" x="113.65199999999999" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
+    </g>
 </svg>

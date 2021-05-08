@@ -29,4 +29,24 @@
             </g>
         </g>
     </g>
+    <g transform="translate(0,64.86)" id="8">
+        <g transform="translate(0,-15.48)" style="color:darkcyan" id="5">
+            <g transform="translate(0,-11.04)" id="6">
+                <rect type="rect" flag="start" x="0" y="-38.34" width="9.833999999999998" height="38.34" stroke="red" fill="none"></rect>
+                <rect type="rect" x="9.833999999999998" y="-38.34" width="29.7" height="38.34" stroke="red" fill="none"></rect>
+                <rect type="rect" flag="end" x="39.534" y="-38.34" width="9.833999999999998" height="38.34" stroke="red" fill="none"></rect>
+            </g>
+            <g transform="translate(0,8.881784197001252e-16)" id="undefined"></g>
+            <g transform="translate(0,60.57)" style="color:orange" id="7">
+                <rect type="rect" flag="start" x="0" y="-49.53" width="4.079999999999998" height="49.53" stroke="red" fill="none"></rect>
+                <rect type="rect" x="4.079999999999998" y="-38.64" width="29.7" height="38.64" stroke="red" fill="none"></rect>
+                <g transform="translate(33.78,0)" id="3">
+                    <g transform="translate(0,-21.6)" style="color:pink" id="4">
+                        <rect type="rect" x="0" y="-27.93" width="11.508" height="28.308" stroke="red" fill="none"></rect>
+                    </g>
+                </g>
+                <rect type="rect" flag="end" x="45.288" y="-49.53" width="4.079999999999998" height="49.53" stroke="red" fill="none"></rect>
+            </g>
+        </g>
+    </g>
 </svg>

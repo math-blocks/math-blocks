@@ -51,4 +51,38 @@
             </g>
         </g>
     </g>
+    <g transform="translate(0,123.12)" id="16">
+        <g transform="translate(0,0)" id="undefined">
+            <rect type="rect" x="0" y="-94.92" width="31.14" height="157.44" stroke="red" fill="none"></rect>
+            <g transform="translate(31.14,0)" id="9">
+                <g transform="translate(0,-15.48)" id="4">
+                    <g transform="translate(0,-24.840000000000003)" id="5">
+                        <rect type="rect" flag="start" x="0" y="-46.2" width="4.079999999999998" height="60" stroke="red" fill="none"></rect>
+                        <rect type="rect" x="4.079999999999998" y="-28.92" width="30.6" height="42.120000000000005" stroke="red" fill="none"></rect>
+                        <g transform="translate(34.68,0)" id="1">
+                            <rect type="rect" x="15" y="-17.58" width="43.2" height="4.079999999999998" stroke="red" fill="none"></rect>
+                        </g>
+                        <rect type="rect" x="107.88" y="-38.34" width="29.7" height="38.34" stroke="red" fill="none"></rect>
+                        <rect type="rect" flag="end" x="137.57999999999998" y="-46.2" width="4.079999999999998" height="60" stroke="red" fill="none"></rect>
+                    </g>
+                    <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
+                    <g transform="translate(0,57.24)" id="6">
+                        <rect type="rect" flag="start" x="0" y="-46.2" width="54.06" height="60" stroke="red" fill="none"></rect>
+                        <rect type="rect" x="54.06" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
+                        <rect type="rect" flag="end" x="87.6" y="-46.2" width="54.06" height="60" stroke="red" fill="none"></rect>
+                    </g>
+                </g>
+            </g>
+            <rect type="rect" x="172.8" y="-94.92" width="31.14" height="157.44" stroke="red" fill="none"></rect>
+        </g>
+        <g transform="translate(203.94,0)" id="13">
+            <g transform="translate(0,-90.78)" id="15">
+                <rect type="rect" x="0" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
+            </g>
+            <g transform="translate(0,85.26)" id="14">
+                <rect type="rect" x="0" y="-20.118" width="23.73" height="20.538" stroke="red" fill="none"></rect>
+                <rect type="rect" x="22.73" y="-32.34" width="2" height="42" fill="currentcolor"></rect>
+            </g>
+        </g>
+    </g>
 </svg>

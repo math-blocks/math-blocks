@@ -152,7 +152,7 @@ const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
         >
             <Group {...scene.selection} />
             <Group {...scene.content} />
-            {/* <Group {...scene.hitboxes} /> */}
+            <Group {...scene.hitboxes} />
         </svg>
     );
 });
