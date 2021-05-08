@@ -43,34 +43,4 @@
             </g>
         </g>
     </g>
-    <g transform="translate(0,41.718)" id="18">
-        <rect type="rect" x="0" y="-28.74" width="33.3" height="29.459999999999997" stroke="red" fill="none"></rect>
-        <g transform="translate(33.3,0)" id="2">
-            <g transform="translate(0,-21.600000000000005)" id="3">
-                <rect type="rect" x="0" y="-20.118" width="23.73" height="20.538" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-        <g transform="translate(57.03,0)" id="4">
-            <rect type="rect" x="15" y="-23.7" width="43.2" height="16.32" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="130.23000000000002" y="-28.74" width="33.3" height="29.459999999999997" stroke="red" fill="none"></rect>
-        <g transform="translate(163.53000000000003,0)" id="9">
-            <g transform="translate(0,12.6)" id="10">
-                <rect type="rect" x="0" y="-20.118" width="23.73" height="20.538" stroke="red" fill="none"></rect>
-                <rect type="rect" x="23.73" y="-12.306" width="30.24" height="2.856" stroke="red" fill="none"></rect>
-                <rect type="rect" x="53.97" y="-26.838" width="20.79" height="26.838" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-        <g transform="translate(238.29000000000002,0)" id="11">
-            <rect type="rect" x="15" y="-33.48" width="43.2" height="35.879999999999995" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="311.49" y="-28.74" width="33.3" height="29.459999999999997" stroke="red" fill="none"></rect>
-        <g transform="translate(344.79,0)" id="16">
-            <g transform="translate(0,12.6)" id="17">
-                <rect type="rect" x="0" y="-20.118" width="23.73" height="20.538" stroke="red" fill="none"></rect>
-                <rect type="rect" x="23.73" y="-12.306" width="30.24" height="2.856" stroke="red" fill="none"></rect>
-                <rect type="rect" x="53.97" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-    </g>
 </svg>

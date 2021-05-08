@@ -21,17 +21,4 @@
         <path fill="currentcolor" id="5" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(239.33999999999997, 0) scale(0.06, -0.06)"></path>
         <path fill="currentcolor" id="6" style="opacity:1" aria-hidden="true" d="M 468,317 C 468,523 378,642 249,642C 104,642 27,510 27,320C 27,143 86,-11 247,-11C 404,-11 468,146 468,317ZM 371,311 C 371,119 326,25 247,25C 167,25 123,121 123,315C 123,513 167,608 246,608C 328,608 371,514 371,311Z" transform="translate(269.03999999999996, 0) scale(0.06, -0.06)"></path>
     </g>
-    <g transform="translate(0,46.2)" id="7">
-        <rect type="rect" x="0" y="-38.64" width="29.7" height="38.64" stroke="red" fill="none"></rect>
-        <rect type="rect" x="29.7" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
-        <g transform="translate(63.239999999999995,0)" id="2">
-            <rect type="rect" x="15" y="-33.48" width="43.2" height="35.879999999999995" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="136.44" y="-37.8" width="29.7" height="38.58" stroke="red" fill="none"></rect>
-        <g transform="translate(166.14,0)" id="4">
-            <rect type="rect" x="15" y="-23.7" width="43.2" height="16.32" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="239.33999999999997" y="-38.34" width="29.7" height="38.34" stroke="red" fill="none"></rect>
-        <rect type="rect" x="269.03999999999996" y="-38.52" width="29.7" height="39.18" stroke="red" fill="none"></rect>
-    </g>
 </svg>

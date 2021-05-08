@@ -58,45 +58,4 @@
         </g>
         <path fill="currentcolor" id="19" style="opacity:1" aria-hidden="true" d="M 438,172 L 405,172 C 373,88 351,72 280,72L 126,72 L 126,75 L 477,440 L 481,467 L 115,467 L 79,313 L 110,313 C 130,380 141,398 205,398L 368,398 L 368,395 L 17,29 L 13,0 L 393,0 Z" transform="translate(407.61, 0) scale(0.06, -0.06)"></path>
     </g>
-    <g transform="translate(0,123.12)" id="20">
-        <rect type="rect" x="0" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
-        <g transform="translate(33.54,0)" id="1">
-            <rect type="rect" x="15" y="-33.48" width="43.2" height="35.879999999999995" stroke="red" fill="none"></rect>
-        </g>
-        <g transform="translate(106.74000000000001,0)" id="undefined">
-            <rect type="rect" x="0" y="-94.92" width="31.14" height="157.44" stroke="red" fill="none"></rect>
-            <g transform="translate(31.14,0)" id="11">
-                <g transform="translate(0,-15.48)" id="6">
-                    <g transform="translate(0,-24.840000000000003)" id="7">
-                        <rect type="rect" flag="start" x="0" y="-46.2" width="4.079999999999998" height="60" stroke="red" fill="none"></rect>
-                        <rect type="rect" x="4.079999999999998" y="-28.92" width="30.6" height="42.120000000000005" stroke="red" fill="none"></rect>
-                        <g transform="translate(34.68,0)" id="3">
-                            <rect type="rect" x="15" y="-17.58" width="43.2" height="4.079999999999998" stroke="red" fill="none"></rect>
-                        </g>
-                        <rect type="rect" x="107.88" y="-38.34" width="29.7" height="38.34" stroke="red" fill="none"></rect>
-                        <rect type="rect" flag="end" x="137.57999999999998" y="-46.2" width="4.079999999999998" height="60" stroke="red" fill="none"></rect>
-                    </g>
-                    <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
-                    <g transform="translate(0,57.24)" id="8">
-                        <rect type="rect" flag="start" x="0" y="-46.2" width="54.06" height="60" stroke="red" fill="none"></rect>
-                        <rect type="rect" x="54.06" y="-28.74" width="33.54" height="29.34" stroke="red" fill="none"></rect>
-                        <rect type="rect" flag="end" x="87.6" y="-46.2" width="54.06" height="60" stroke="red" fill="none"></rect>
-                    </g>
-                </g>
-            </g>
-            <rect type="rect" x="172.8" y="-94.92" width="31.14" height="157.44" stroke="red" fill="none"></rect>
-        </g>
-        <g transform="translate(310.68,0)" id="15">
-            <g transform="translate(0,-90.78)" id="17">
-                <rect type="rect" x="0" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
-            </g>
-            <g transform="translate(0,85.26)" id="16">
-                <rect type="rect" x="0" y="-20.118" width="23.73" height="20.538" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-        <g transform="translate(334.41,0)" id="18">
-            <rect type="rect" x="15" y="-33.48" width="43.2" height="35.879999999999995" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="407.61" y="-28.02" width="29.58" height="28.02" stroke="red" fill="none"></rect>
-    </g>
 </svg>

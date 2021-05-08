@@ -39,30 +39,4 @@
             </g>
         </g>
     </g>
-    <g transform="translate(0,48.647999999999996)" id="14">
-        <rect type="rect" x="0" y="-28.74" width="33.3" height="29.459999999999997" stroke="red" fill="none"></rect>
-        <g transform="translate(33.3,0)" id="2">
-            <g transform="translate(0,-21.599999999999998)" id="3">
-                <rect type="rect" x="0" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-        <g transform="translate(54.089999999999996,0)" id="4">
-            <rect type="rect" x="15" y="-33.48" width="43.2" height="35.879999999999995" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="127.28999999999999" y="-42.3" width="31.08" height="43.019999999999996" stroke="red" fill="none"></rect>
-        <g transform="translate(158.37,0)" id="7">
-            <g transform="translate(0,-21.599999999999998)" id="8">
-                <rect type="rect" x="0" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-        <g transform="translate(179.16,0)" id="9">
-            <rect type="rect" x="15" y="-23.7" width="43.2" height="16.32" stroke="red" fill="none"></rect>
-        </g>
-        <rect type="rect" x="252.36" y="-28.74" width="24.84" height="29.459999999999997" stroke="red" fill="none"></rect>
-        <g transform="translate(277.2,0)" id="12">
-            <g transform="translate(0,-21.599999999999998)" id="13">
-                <rect type="rect" x="0" y="-27.048" width="20.79" height="27.048" stroke="red" fill="none"></rect>
-            </g>
-        </g>
-    </g>
 </svg>
