@@ -460,17 +460,6 @@ export const processBox = (
     };
     const contentLayer = _processBox(box, loc, context);
 
-    // const {fontSize} = box;
-
-    // const {font} = fontData;
-    // const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
-    // // This assumes that parenMetrics.height < font.head.unitsPerEm
-    // const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
-    // const ascent =
-    //     ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
-
-    // contentLayer.y = Math.max(contentLayer.y, ascent);
-
     context.layer = "selection";
     const selectionLayer = _processBox(box, loc, context);
 
