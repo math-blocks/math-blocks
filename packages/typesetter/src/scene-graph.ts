@@ -11,7 +11,6 @@ type Common = {
 
 export type Group = {
     type: "group";
-    orientation: "vertical" | "horizontal";
     // pen position of the group within its parent
     x: number;
     y: number;
@@ -273,8 +272,6 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     return {
         type: "group",
-        orientation: "horizontal",
-        // how much to translate the children
         x: loc.x,
         y: loc.y,
         bounds: box,
@@ -402,7 +399,6 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     return {
         type: "group",
-        orientation: "vertical",
         x: loc.x,
         y: loc.y,
         bounds: box,
