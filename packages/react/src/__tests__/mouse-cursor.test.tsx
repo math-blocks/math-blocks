@@ -518,5 +518,18 @@ describe("moving cursor with mouse", () => {
             ]);
             expect(zipper.row.right).toEqualEditorNodes([glyph("0")]);
         });
+
+        test("inner", () => {
+            const point = {x: 44, y: 82};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            // We don't handle this case yet
+            expect(zipper).toBeUndefined();
+        });
     });
 });
