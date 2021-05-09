@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 501.38 159.12" width="501.38" height="159.12" style="background:white">
     <g transform="translate(0,96.60000000000001)" id="21">
-        <g transform="translate(0,0)" id="undefined">
-            <g transform="translate(31.14,0)" id="9">
+        <g transform="translate(0,0)" id="9">
+            <g transform="translate(31.14,0)" id="10">
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(0,-24.840000000000003)" id="5">
                         <rect type="rect" x="56.449999999999996" y="-46.2" width="2" height="60" fill="currentcolor"></rect>
@@ -31,9 +31,9 @@
         </g>
     </g>
     <g transform="translate(0,96.60000000000001)" id="21">
-        <g transform="translate(0,0)" id="undefined">
+        <g transform="translate(0,0)" id="9">
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 77,270 C 77,-310 247,-806 457,-1042L 486,-1020 C 288,-730 182,-246 182,270C 182,786 288,1270 486,1560L 457,1582 C 247,1346 77,850 77,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-            <g transform="translate(31.14,0)" id="9">
+            <g transform="translate(31.14,0)" id="10">
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(0,-24.840000000000003)" id="5">
                         <rect type="rect" x="56.449999999999996" y="-46.2" width="2" height="60" fill="currentcolor"></rect>

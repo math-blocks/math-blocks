@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 229.67 218.04000000000002" width="229.67" height="218.04000000000002">
     <g transform="translate(0,123.12)" id="16">
-        <g transform="translate(0,0)" id="undefined">
-            <g transform="translate(31.14,0)" id="9">
+        <g transform="translate(0,0)" id="9">
+            <g transform="translate(31.14,0)" id="10">
                 <rect type="rect" x="0" y="-86.52000000000001" width="141.66" height="142.08" fill="Highlight"></rect>
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(0,-24.840000000000003)" id="5">
@@ -19,9 +19,9 @@
         </g>
     </g>
     <g transform="translate(0,123.12)" id="16">
-        <g transform="translate(0,0)" id="undefined">
+        <g transform="translate(0,0)" id="9">
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 77,270 C 77,-310 247,-806 457,-1042L 486,-1020 C 288,-730 182,-246 182,270C 182,786 288,1270 486,1560L 457,1582 C 247,1346 77,850 77,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-            <g transform="translate(31.14,0)" id="9">
+            <g transform="translate(31.14,0)" id="10">
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(0,-24.840000000000003)" id="5">
                         <path fill="currentcolor" id="0" style="opacity:1" aria-hidden="true" d="M 251,325 C 239,405 232,437 210,475L 195,475 L 53,464 L 53,435 C 53,435 74,437 88,437C 149,437 154,388 161,343L 220,-9 C 192,-52 112,-165 93,-165C 71,-165 60,-112 22,-112C -1,-112 -17,-125 -17,-155C -17,-192 18,-220 60,-220C 136,-220 197,-112 289,15C 341,87 398,173 452,268C 484,322 496,367 496,406C 496,449 470,482 433,482C 404,482 389,464 389,443C 389,405 438,377 438,351C 438,327 429,303 405,264L 290,79 L 284,79 L 275,179 Z" transform="translate(4.079999999999998, 0) scale(0.06, -0.06)"></path>

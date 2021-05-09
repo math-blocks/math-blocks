@@ -439,9 +439,6 @@ const typesetFocus = (
         case "zdelimited": {
             const row = _typesetZipper(zipper, context);
 
-            row.id = focus.id;
-            row.color = context?.colorMap?.get(row.id);
-
             const thresholdOptions = {
                 value: "both" as const,
                 strict: true,
@@ -464,7 +461,12 @@ const typesetFocus = (
             open.pending = focus.leftDelim.value.pending;
             close.pending = focus.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]], context);
+            const delimited = Layout.hpackNat([[open, row, close]], context);
+
+            delimited.id = focus.id;
+            delimited.color = context?.colorMap?.get(delimited.id);
+
+            return delimited;
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -586,9 +588,6 @@ const _typeset = (
         case "delimited": {
             const row = typesetRow(node.children[0], context);
 
-            row.id = node.id;
-            row.color = context?.colorMap?.get(row.id);
-
             const thresholdOptions = {
                 value: "both" as const,
                 strict: true,
@@ -611,7 +610,12 @@ const _typeset = (
             open.pending = node.leftDelim.value.pending;
             close.pending = node.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]], context);
+            const delimited = Layout.hpackNat([[open, row, close]], context);
+
+            delimited.id = node.id;
+            delimited.color = context?.colorMap?.get(delimited.id);
+
+            return delimited;
         }
         case "atom": {
             return _typesetAtom(node, context);

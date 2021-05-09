@@ -2,8 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 471.98 200.51999999999998" width="471.98" height="200.51999999999998" style="background:white">
     <g transform="translate(0,113.76)" id="20">
         <g transform="translate(34.32,0)" id="1"></g>
-        <g transform="translate(111,0)" id="undefined">
-            <g transform="translate(44.16,0)" id="11">
+        <g transform="translate(111,0)" id="11">
+            <g transform="translate(44.16,0)" id="12">
                 <g transform="translate(0,-15)" id="6">
                     <g transform="translate(0,-23.400000000000006)" id="7">
                         <g transform="translate(31.800000000000004,0)" id="3"></g>
@@ -24,9 +24,9 @@
         <g transform="translate(34.32,0)" id="1">
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 722,250 C 722,261 713,270 702,270L 409,270 L 409,563 C 409,574 400,583 389,583C 378,583 369,574 369,563L 369,270 L 76,270 C 65,270 56,261 56,250C 56,239 65,230 76,230L 369,230 L 369,-63 C 369,-74 378,-83 389,-83C 400,-83 409,-74 409,-63L 409,230 L 702,230 C 713,230 722,239 722,250Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
         </g>
-        <g transform="translate(111,0)" id="undefined">
+        <g transform="translate(111,0)" id="11">
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 682,-928 C 682,-922 679,-917 675,-914C 462,-754 314,-311 314,64L 314,436 C 314,811 462,1254 675,1414C 679,1417 682,1422 682,1428C 682,1438 674,1446 664,1446C 660,1446 656,1444 653,1442C 431,1275 226,829 226,436L 226,64 C 226,-329 431,-775 653,-942C 656,-944 660,-946 664,-946C 674,-946 682,-938 682,-928Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-            <g transform="translate(44.16,0)" id="11">
+            <g transform="translate(44.16,0)" id="12">
                 <g transform="translate(0,-15)" id="6">
                     <g transform="translate(0,-23.400000000000006)" id="7">
                         <path fill="currentcolor" id="2" style="opacity:1" aria-hidden="true" d="M 490,404 C 490,422 476,431 461,431C 451,431 435,425 426,410C 424,405 416,374 412,356L 392,276 L 347,96 C 343,81 300,11 234,11C 183,11 172,55 172,92C 172,138 189,200 223,288C 239,329 243,340 243,360C 243,405 211,442 161,442C 66,442 29,297 29,288C 29,278 41,278 41,278C 51,278 52,280 57,296C 84,390 124,420 158,420C 166,420 183,420 183,388C 183,363 173,337 166,318C 126,212 108,155 108,108C 108,19 171,-11 230,-11C 269,-11 303,6 331,34C 318,-18 306,-67 266,-120C 240,-154 202,-183 156,-183C 142,-183 97,-180 80,-141C 96,-141 109,-141 123,-129C 133,-120 143,-107 143,-88C 143,-57 116,-53 106,-53C 83,-53 50,-69 50,-118C 50,-168 94,-205 156,-205C 259,-205 362,-114 390,-1L 486,381 C 490,395 490,397 490,404Z" transform="translate(2.4000000000000057, 0) scale(0.06, -0.06)"></path>

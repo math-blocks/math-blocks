@@ -90,7 +90,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         const bounds = svgRef.current.getBoundingClientRect();
         const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
 
-        console.log(scene.hitboxes);
         const intersections = Typesetter.SceneGraph.findIntersections(
             point,
             scene.hitboxes,
@@ -99,9 +98,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 y: scene.hitboxes.y,
             },
         );
-        // put the node ids in the correct order to work with rowToZipper
-        // intersections.reverse();
-        console.log(intersections);
 
         const row = Editor.zipperToRow(zipper);
         const newZipper = Editor.rowToZipper(row, intersections);
