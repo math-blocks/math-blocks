@@ -151,29 +151,29 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("fraction", () => {
-        test.skip("numerator left");
-        test.skip("numerator right");
-        test.skip("numerator middle");
+        test.todo("numerator left");
+        test.todo("numerator right");
+        test.todo("numerator middle");
 
-        test.skip("denominator left");
-        test.skip("denominator right");
-        test.skip("denominator middle");
+        test.todo("denominator left");
+        test.todo("denominator right");
+        test.todo("denominator middle");
     });
 
     describe("subsup", () => {
-        test.skip("superscript left");
-        test.skip("superscript right");
+        test.todo("superscript left");
+        test.todo("superscript right");
 
-        test.skip("subscript left");
-        test.skip("subscript right");
+        test.todo("subscript left");
+        test.todo("subscript right");
     });
 
     describe("root", () => {
-        test.skip("index");
-        test.skip("radicand");
+        test.todo("index");
+        test.todo("radicand");
     });
 
     describe("delimited", () => {
-        test.skip("simple");
+        test.todo("simple");
     });
 });
