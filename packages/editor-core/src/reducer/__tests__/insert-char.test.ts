@@ -2,7 +2,7 @@ import * as builders from "../../builders";
 
 import {insertChar} from "../insert-char";
 import {row, toEqualEditorNodes} from "../test-util";
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
@@ -94,7 +94,7 @@ describe("insertChar", () => {
                     type: "zrow",
                     left: [builders.glyph("1")],
                     selection: {
-                        dir: Dir.Right,
+                        dir: SelectionDir.Right,
                         nodes: [builders.glyph("+")],
                     },
                     right: [builders.glyph("2")],
@@ -115,7 +115,7 @@ describe("insertChar", () => {
                     type: "zrow",
                     left: [],
                     selection: {
-                        dir: Dir.Left,
+                        dir: SelectionDir.Left,
                         nodes: [builders.glyph("2")],
                     },
                     right: [],
@@ -125,7 +125,7 @@ describe("insertChar", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: Dir.Right,
+                            dir: 1,
                             other: builders.row([builders.glyph("3")]),
                         },
                         row: {
@@ -133,7 +133,7 @@ describe("insertChar", () => {
                             type: "zrow",
                             left: [builders.glyph("1"), builders.glyph("+")],
                             selection: {
-                                dir: Dir.Left,
+                                dir: SelectionDir.Left,
                                 nodes: [],
                             },
                             right: [],
@@ -156,7 +156,7 @@ describe("insertChar", () => {
                     type: "zrow",
                     left: [builders.glyph("1")],
                     selection: {
-                        dir: Dir.Right,
+                        dir: SelectionDir.Right,
                         nodes: [builders.glyph("+")],
                     },
                     right: [builders.glyph("2")],

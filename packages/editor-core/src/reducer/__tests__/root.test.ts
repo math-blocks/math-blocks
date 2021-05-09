@@ -2,7 +2,7 @@ import * as core from "@math-blocks/core";
 
 import * as builders from "../../builders";
 
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import {moveLeft} from "../move-left";
 import {root} from "../root";
 import {row, toEqualEditorNodes} from "../test-util";
@@ -39,7 +39,7 @@ describe("root", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toMatchInlineSnapshot(`
                 Object {
-                  "dir": "right",
+                  "dir": 1,
                   "id": 3,
                   "other": null,
                   "type": "zroot",
@@ -72,7 +72,7 @@ describe("root", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toMatchInlineSnapshot(`
                 Object {
-                  "dir": "left",
+                  "dir": 0,
                   "id": 3,
                   "other": Object {
                     "children": Array [],
@@ -100,7 +100,7 @@ describe("root", () => {
                         type: "zrow",
                         left: row("1+").children,
                         selection: {
-                            dir: Dir.Right,
+                            dir: SelectionDir.Right,
                             nodes: row("2+3").children,
                         },
                         right: [],
@@ -114,7 +114,7 @@ describe("root", () => {
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+                expect(result.breadcrumbs[0].focus.dir).toEqual(1);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
                 expect(result.breadcrumbs[0].focus.other).toBeNull();
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -156,7 +156,7 @@ describe("root", () => {
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+                expect(result.breadcrumbs[0].focus.dir).toEqual(1);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
                 expect(result.breadcrumbs[0].focus.other).toBeNull();
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -176,7 +176,7 @@ describe("root", () => {
                         type: "zrow",
                         left: row("1+").children,
                         selection: {
-                            dir: Dir.Right,
+                            dir: SelectionDir.Right,
                             nodes: row("2+3").children,
                         },
                         right: [],
@@ -190,7 +190,7 @@ describe("root", () => {
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual("left");
+                expect(result.breadcrumbs[0].focus.dir).toEqual(0);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
                 expect(result.breadcrumbs[0].focus.other)
                     .toMatchInlineSnapshot(`
@@ -239,7 +239,7 @@ describe("root", () => {
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual("left");
+                expect(result.breadcrumbs[0].focus.dir).toEqual(0);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
                 expect(result.breadcrumbs[0].focus.other)
                     .toMatchInlineSnapshot(`

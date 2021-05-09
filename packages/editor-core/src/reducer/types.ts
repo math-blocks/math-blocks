@@ -1,8 +1,8 @@
 import * as types from "../types";
-import {Dir} from "./enums";
+import {SelectionDir} from "./enums";
 
 type Selection = {
-    dir: Dir;
+    dir: SelectionDir;
     nodes: readonly types.Node[];
 };
 
@@ -27,7 +27,7 @@ export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
 export type ZFrac = {
     id: number;
     type: "zfrac";
-    dir: Dir; // what is focused, left = 0, right = 1
+    dir: 0 | 1; // index of focused child
     other: types.Row; // what isn't being focused
 };
 
@@ -36,7 +36,7 @@ export type ZFrac = {
 export type ZSubSup = {
     id: number;
     type: "zsubsup";
-    dir: Dir;
+    dir: 0 | 1; // index of focused child
     other: types.Row | null; // what isn't being focused
 };
 
@@ -44,14 +44,14 @@ export type ZLimits =
     | {
           id: number;
           type: "zlimits";
-          dir: Dir.Left;
+          dir: 0; // index of focused child
           other: types.Row | null;
           inner: types.Node;
       }
     | {
           id: number;
           type: "zlimits";
-          dir: Dir.Right;
+          dir: 1; // index of focused child
           other: types.Row;
           inner: types.Node;
       };
@@ -60,20 +60,20 @@ export type ZRoot =
     | {
           id: number;
           type: "zroot";
-          dir: Dir.Left;
+          dir: 0; // index of focused child
           other: types.Row;
       }
     | {
           id: number;
           type: "zroot";
-          dir: Dir.Right;
+          dir: 1; // index of focused child
           other: types.Row | null;
       };
 
 export type ZDelimited = {
     id: number;
     type: "zdelimited";
-    dir: Dir.None;
+    dir: 0; // index of focused child
     other: null;
     leftDelim: types.Atom;
     rightDelim: types.Atom;

@@ -1,5 +1,4 @@
-export enum Dir {
+export enum SelectionDir {
     Left = "left",
     Right = "right",
-    None = "none",
 }

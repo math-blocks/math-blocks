@@ -1,10 +1,9 @@
 import {getId} from "@math-blocks/core";
 
 import * as util from "./util";
-import {Dir} from "./enums";
 import type {Zipper} from "./types";
 
-export const subsup = (zipper: Zipper, dir: Dir): Zipper => {
+export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
     const {row, breadcrumbs} = zipper;
 
     if (row.right.length > 0) {
@@ -26,12 +25,12 @@ export const subsup = (zipper: Zipper, dir: Dir): Zipper => {
                             id: next.id, // reuse the id of the subsup we're updating
                             type: "zsubsup",
                             dir: dir,
-                            other: dir === Dir.Left ? sup : sub,
+                            other: dir === 0 ? sup : sub,
                         },
                     },
                 ],
                 row:
-                    dir === Dir.Left
+                    dir === 0
                         ? sub
                             ? util.zrow(sub.id, [], sub.children)
                             : util.zrow(getId(), [], [])

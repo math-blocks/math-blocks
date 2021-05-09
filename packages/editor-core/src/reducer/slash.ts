@@ -1,6 +1,5 @@
 import {getId} from "@math-blocks/core";
 
-import {Dir} from "./enums";
 import {rezipSelection, zrow} from "./util";
 import type {Zipper, Focus} from "./types";
 
@@ -43,7 +42,7 @@ export const slash = (zipper: Zipper): Zipper => {
         const focus: Focus = {
             type: "zfrac",
             id: getId(),
-            dir: Dir.Right,
+            dir: 1,
             other: {
                 id: getId(),
                 type: "row",
@@ -99,7 +98,7 @@ export const slash = (zipper: Zipper): Zipper => {
     const focus: Focus = {
         type: "zfrac",
         id: getId(),
-        dir: Dir.Right,
+        dir: 1,
         other: {
             id: getId(),
             type: "row",

@@ -3,7 +3,6 @@ import {getId} from "@math-blocks/core";
 import * as builders from "../builders";
 
 import * as util from "./util";
-import {Dir} from "./enums";
 import type {Zipper, Focus} from "./types";
 
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
@@ -14,13 +13,13 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
         ? {
               id: getId(),
               type: "zroot",
-              dir: Dir.Left,
+              dir: 0,
               other: builders.row([]),
           }
         : {
               id: getId(),
               type: "zroot",
-              dir: Dir.Right,
+              dir: 1,
               other: null,
           };
 

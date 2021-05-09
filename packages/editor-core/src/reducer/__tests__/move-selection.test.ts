@@ -3,7 +3,7 @@ import * as builders from "../../builders";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import type {Zipper} from "../types";
 
 // TODO: add a serializer or custom matcher to help with assertions
@@ -25,7 +25,7 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveRight(zipper, true);
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
@@ -45,7 +45,7 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveRight(moveRight(zipper, true), true);
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
         });
@@ -68,7 +68,7 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
@@ -88,7 +88,7 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveLeft(moveLeft(moveRight(zipper), true), true);
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
@@ -108,7 +108,7 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveRight(moveRight(moveLeft(zipper), true), true);
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
@@ -134,10 +134,12 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveRight(moveRight(moveRight(zipper), true), true);
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
@@ -161,10 +163,12 @@ describe("moveRight w/ selecting = true", () => {
             const result = moveRight(moveRight(moveRight(zipper)), true);
 
             expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
@@ -191,10 +195,12 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
             expect(result.breadcrumbs[0].row.right).toHaveLength(1);
         });
@@ -227,10 +233,12 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[0].row.right).toHaveLength(0);
         });
@@ -260,10 +268,12 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
@@ -296,7 +306,7 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
@@ -368,10 +378,12 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[1].row.right).toHaveLength(2);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
@@ -415,13 +427,17 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[1].row.right).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
         });
 
@@ -466,10 +482,12 @@ describe("moveRight w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Right);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Right);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Right,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[1].row.right).toHaveLength(0);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
@@ -494,7 +512,7 @@ describe("moveLeft w/ selecting = true", () => {
             const result = moveLeft(zipper, true);
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
@@ -514,7 +532,7 @@ describe("moveLeft w/ selecting = true", () => {
             const result = moveLeft(moveLeft(zipper, true), true);
 
             expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(2);
             expect(result.row.right).toHaveLength(0);
         });
@@ -537,7 +555,7 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
@@ -563,10 +581,12 @@ describe("moveLeft w/ selecting = true", () => {
             const result = moveLeft(moveLeft(moveLeft(zipper), true), true);
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
@@ -590,10 +610,12 @@ describe("moveLeft w/ selecting = true", () => {
             const result = moveLeft(moveLeft(moveLeft(zipper)), true);
 
             expect(result.row.right).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
@@ -620,10 +642,12 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(1);
         });
@@ -653,10 +677,12 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.right).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(0);
         });
@@ -686,10 +712,12 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[0].row.left).toHaveLength(2);
         });
@@ -722,7 +750,7 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
@@ -794,10 +822,12 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
             expect(result.breadcrumbs[1].row.left).toHaveLength(2);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
@@ -841,13 +871,17 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[1].row.left).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
         });
 
@@ -892,10 +926,12 @@ describe("moveLeft w/ selecting = true", () => {
             );
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(Dir.Left);
+            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(Dir.Left);
+            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
+                SelectionDir.Left,
+            );
             expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
             expect(result.breadcrumbs[1].row.left).toHaveLength(0);
             expect(result.breadcrumbs[0].row.selection).toBeNull();

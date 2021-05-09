@@ -1,6 +1,6 @@
 import * as builders from "../../builders";
 
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import {slash} from "../slash";
 import {moveLeft} from "../move-left";
 import {row, toEqualEditorNodes} from "../test-util";
@@ -28,7 +28,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -58,7 +58,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -89,7 +89,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -120,7 +120,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -151,7 +151,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -182,7 +182,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -222,7 +222,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -253,7 +253,7 @@ describe("slash", () => {
                     type: "zrow",
                     left: row("1+").children,
                     selection: {
-                        dir: Dir.Right,
+                        dir: SelectionDir.Right,
                         nodes: row("2+3").children,
                     },
                     right: [],
@@ -266,7 +266,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,
@@ -303,7 +303,7 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual("right");
+            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
                 result.breadcrumbs[0].focus.other?.children,

@@ -2,7 +2,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
-import {Dir} from "./enums";
+import {SelectionDir} from "./enums";
 import type {
     ZRow,
     ZFrac,
@@ -15,7 +15,7 @@ import type {
 } from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
-    if (focus.dir === Dir.Left) {
+    if (focus.dir === 0) {
         return {
             id: focus.id,
             type: "frac",
@@ -30,12 +30,12 @@ export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
     }
 };
 
-export const zfrac = (node: types.Frac, dir: Dir): ZFrac => {
+export const zfrac = (node: types.Frac, dir: 0 | 1): ZFrac => {
     return {
         id: node.id,
         type: "zfrac",
         dir,
-        other: dir === Dir.Left ? node.children[1] : node.children[0],
+        other: node.children[1 - dir],
     };
 };
 
@@ -43,7 +43,7 @@ export const subsup = (
     focus: ZSubSup,
     replacement: types.Row,
 ): types.SubSup => {
-    if (focus.dir === Dir.Left) {
+    if (focus.dir === 0) {
         return {
             id: focus.id,
             type: "subsup",
@@ -58,17 +58,17 @@ export const subsup = (
     }
 };
 
-export const zsubsup = (node: types.SubSup, dir: Dir): ZSubSup => {
+export const zsubsup = (node: types.SubSup, dir: 0 | 1): ZSubSup => {
     return {
         id: node.id,
         type: "zsubsup",
         dir,
-        other: dir === Dir.Left ? node.children[1] : node.children[0],
+        other: node.children[1 - dir],
     };
 };
 
 export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
-    if (focus.dir === Dir.Left) {
+    if (focus.dir === 0) {
         return {
             id: focus.id,
             type: "root",
@@ -83,15 +83,15 @@ export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
     }
 };
 
-export const zroot = (node: types.Root, dir: Dir): ZRoot => {
-    if (dir === Dir.Left) {
+export const zroot = (node: types.Root, dir: 0 | 1): ZRoot => {
+    if (dir === 0) {
         return {
             id: node.id,
             type: "zroot",
             dir,
             other: node.children[1],
         };
-    } else if (dir === Dir.Right) {
+    } else if (dir === 1) {
         return {
             id: node.id,
             type: "zroot",
@@ -107,7 +107,7 @@ export const limits = (
     focus: ZLimits,
     replacement: types.Row,
 ): types.Limits => {
-    if (focus.dir === Dir.Left) {
+    if (focus.dir === 0) {
         return {
             id: focus.id,
             type: "limits",
@@ -124,8 +124,8 @@ export const limits = (
     }
 };
 
-export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
-    if (dir === Dir.Left) {
+export const zlimits = (node: types.Limits, dir: 0 | 1): ZLimits => {
+    if (dir === 0) {
         return {
             id: node.id,
             type: "zlimits",
@@ -133,7 +133,7 @@ export const zlimits = (node: types.Limits, dir: Dir): ZLimits => {
             other: node.children[1],
             inner: node.inner,
         };
-    } else if (dir === Dir.Right) {
+    } else if (dir === 1) {
         return {
             id: node.id,
             type: "zlimits",
@@ -163,7 +163,7 @@ export const zdelimited = (node: types.Delimited): ZDelimited => {
     return {
         id: node.id,
         type: "zdelimited",
-        dir: Dir.None,
+        dir: 0,
         other: null,
         leftDelim: node.leftDelim,
         rightDelim: node.rightDelim,
@@ -290,7 +290,7 @@ export const rezipSelection = (zipper: Zipper): Zipper => {
 
     if (lastCrumb.row.selection) {
         const newSelectionNodes =
-            lastCrumb.row.selection.dir === Dir.Left
+            lastCrumb.row.selection.dir === SelectionDir.Left
                 ? [...lastCrumb.row.selection.nodes, node]
                 : [node, ...lastCrumb.row.selection.nodes];
 
