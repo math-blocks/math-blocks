@@ -10,7 +10,7 @@ import {getFontData, parse} from "@math-blocks/opentype";
 
 import type {FontData} from "@math-blocks/opentype";
 
-const {row, glyph /*, frac, limits, root, subsup */} = Editor.builders;
+const {row, glyph, frac, root, subsup, delimited, limits} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 
@@ -50,9 +50,11 @@ const stixFontLoader = async (): Promise<FontData> => {
 
 describe("moving cursor with mouse", () => {
     describe("simple row", () => {
-        test("middle of row", async () => {
-            const fontData = await stixFontLoader();
-            const math = row([
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
+
+        beforeEach(async () => {
+            math = row([
                 glyph("2"),
                 glyph("x"),
                 glyph("+"),
@@ -61,6 +63,8 @@ describe("moving cursor with mouse", () => {
                 glyph("1"),
                 glyph("0"),
             ]);
+
+            const fontData = await stixFontLoader();
             const fontSize = 64;
             const context: Typesetter.Context = {
                 fontData: fontData,
@@ -69,15 +73,14 @@ describe("moving cursor with mouse", () => {
                 renderMode: Typesetter.RenderMode.Static,
                 cramped: false,
             };
-            const scene = Typesetter.typeset(math, context);
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("middle of row", () => {
             const point = {x: 131, y: 22};
             const intersections = Typesetter.SceneGraph.findIntersections(
                 point,
                 scene.hitboxes,
-                {
-                    x: scene.hitboxes.x,
-                    y: scene.hitboxes.y,
-                },
             );
 
             const zipper = Editor.rowToZipper(math, intersections);
@@ -100,34 +103,11 @@ describe("moving cursor with mouse", () => {
             ]);
         });
 
-        test("end of row", async () => {
-            const fontData = await stixFontLoader();
-            const math = row([
-                glyph("2"),
-                glyph("x"),
-                glyph("+"),
-                glyph("5"),
-                glyph("="),
-                glyph("1"),
-                glyph("0"),
-            ]);
-            const fontSize = 64;
-            const context: Typesetter.Context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Static,
-                cramped: false,
-            };
-            const scene = Typesetter.typeset(math, context);
+        test("end of row", () => {
             const point = {x: 311, y: 22};
             const intersections = Typesetter.SceneGraph.findIntersections(
                 point,
                 scene.hitboxes,
-                {
-                    x: scene.hitboxes.x,
-                    y: scene.hitboxes.y,
-                },
             );
 
             const zipper = Editor.rowToZipper(math, intersections);
@@ -151,29 +131,392 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("fraction", () => {
-        test.todo("numerator left");
-        test.todo("numerator right");
-        test.todo("numerator middle");
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
 
-        test.todo("denominator left");
-        test.todo("denominator right");
-        test.todo("denominator middle");
+        beforeEach(async () => {
+            math = row([
+                frac(
+                    [glyph("1"), glyph("2")],
+                    [glyph("x"), glyph("+"), glyph("y")],
+                ),
+            ]);
+
+            const fontData = await stixFontLoader();
+            const fontSize = 64;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("numerator left", () => {
+            const point = {x: 20, y: 32};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([]);
+            expect(zipper.row.right).toEqualEditorNodes([
+                glyph("1"),
+                glyph("2"),
+            ]);
+        });
+
+        test("numerator middle", () => {
+            const point = {x: 78, y: 32};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([glyph("1")]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("2")]);
+        });
+
+        test("numerator right", () => {
+            const point = {x: 137, y: 32};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("1"),
+                glyph("2"),
+            ]);
+            expect(zipper.row.right).toEqualEditorNodes([]);
+        });
+
+        test("denominator", () => {
+            const point = {x: 111, y: 121};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Right);
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("x"),
+                glyph("+"),
+            ]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("y")]);
+        });
     });
 
     describe("subsup", () => {
-        test.todo("superscript left");
-        test.todo("superscript right");
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
 
-        test.todo("subscript left");
-        test.todo("subscript right");
+        beforeEach(async () => {
+            math = row([
+                frac([glyph("1")], [glyph("x")]),
+                glyph("+"),
+                glyph("a"),
+                subsup([glyph("n")], [glyph("2")]),
+            ]);
+
+            const fontData = await stixFontLoader();
+            const fontSize = 64;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("superscript left", () => {
+            const point = {x: 162, y: 6};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Right);
+            expect(zipper.row.left).toEqualEditorNodes([]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("2")]);
+        });
+
+        test("superscript right", () => {
+            const point = {x: 178, y: 6};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Right);
+            expect(zipper.row.left).toEqualEditorNodes([glyph("2")]);
+            expect(zipper.row.right).toEqualEditorNodes([]);
+        });
+
+        test("subscript left", () => {
+            const point = {x: 162, y: 143};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("n")]);
+        });
+
+        test("subscript right", () => {
+            const point = {x: 178, y: 143};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([glyph("n")]);
+            expect(zipper.row.right).toEqualEditorNodes([]);
+        });
     });
 
     describe("root", () => {
-        test.todo("index");
-        test.todo("radicand");
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
+
+        beforeEach(async () => {
+            math = row([
+                root([glyph("3")], [glyph("x"), glyph("+"), glyph("1")]),
+            ]);
+
+            const fontData = await stixFontLoader();
+            const fontSize = 64;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("index", () => {
+            const point = {x: 10, y: 19};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("3")]);
+        });
+
+        test("radicand", () => {
+            const point = {x: 147, y: 45};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Right);
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("x"),
+                glyph("+"),
+            ]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("1")]);
+        });
     });
 
     describe("delimited", () => {
-        test.todo("simple");
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
+
+        beforeEach(async () => {
+            math = row([
+                delimited(
+                    [glyph("x"), glyph("+"), glyph("1")],
+                    glyph("("),
+                    glyph(")"),
+                ),
+            ]);
+
+            const fontData = await stixFontLoader();
+            const fontSize = 64;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("simple", () => {
+            const point = {x: 129, y: 32};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.None);
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("x"),
+                glyph("+"),
+            ]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("1")]);
+        });
+    });
+
+    describe("limits", () => {
+        let math: Editor.types.Row;
+        let scene: Typesetter.SceneGraph.Scene;
+
+        beforeEach(async () => {
+            math = row([
+                limits(
+                    glyph("\u2211"), // \sum
+                    [glyph("i"), glyph("="), glyph("0")],
+                    [glyph("\u221e")], // infinity
+                ),
+                glyph("i"),
+            ]);
+
+            const fontData = await stixFontLoader();
+            const fontSize = 64;
+            const context: Typesetter.Context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Static,
+                cramped: false,
+            };
+            scene = Typesetter.typeset(math, context);
+        });
+
+        test("above", () => {
+            const point = {x: 44, y: 21};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Right);
+            expect(zipper.row.left).toEqualEditorNodes([glyph("\u221e")]);
+            expect(zipper.row.right).toEqualEditorNodes([]);
+        });
+
+        test("below", () => {
+            const point = {x: 44, y: 143};
+            const intersections = Typesetter.SceneGraph.findIntersections(
+                point,
+                scene.hitboxes,
+            );
+
+            const zipper = Editor.rowToZipper(math, intersections);
+
+            if (!zipper) {
+                throw new Error("zipper is undefined");
+            }
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].focus.dir).toEqual(Editor.Dir.Left);
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("i"),
+                glyph("="),
+            ]);
+            expect(zipper.row.right).toEqualEditorNodes([glyph("0")]);
+        });
     });
 });

@@ -547,9 +547,14 @@ const getIntersection = (
 export const findIntersections = (
     point: Point,
     node: Group, // must be the group containing the debug bounding rectangles
-    translation: Point,
+    translation?: Point,
 ): Intersection[] => {
     const result: Intersection[] = [];
+
+    translation = translation || {
+        x: node.x,
+        y: node.y,
+    };
 
     for (const child of node.children) {
         if (child.type !== "group" && child.type !== "rect") {

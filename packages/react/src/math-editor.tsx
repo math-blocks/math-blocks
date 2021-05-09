@@ -93,10 +93,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         const intersections = Typesetter.SceneGraph.findIntersections(
             point,
             scene.hitboxes,
-            {
-                x: scene.hitboxes.x,
-                y: scene.hitboxes.y,
-            },
         );
 
         const row = Editor.zipperToRow(zipper);
