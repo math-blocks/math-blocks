@@ -31,11 +31,11 @@ const EditorPage: React.FunctionComponent = () => {
     const [zipper, setZipper] = React.useState<Editor.Zipper>({
         breadcrumbs: [],
         row: {
-            id: examples[1].id,
+            id: examples[0].id,
             type: "zrow",
             left: [],
             selection: null,
-            right: examples[1].children,
+            right: examples[0].children,
         },
     });
 

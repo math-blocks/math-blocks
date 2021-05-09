@@ -7,7 +7,7 @@ import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
 import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
 import type {Context} from "./types";
-import type {Group} from "./scene-graph";
+import type {Scene} from "./scene-graph";
 
 // Dedupe this with editor/src/util.ts
 export const isGlyph = (
@@ -57,11 +57,11 @@ const withOperatorPadding = (
  * TODO: add originalDepth and originalHeight so that getDelimiter can make its
  * decisions based on the original dimensions of the box.
  *
- * @param {Layout.Box} box
+ * @param {Layout.Box} dim
  * @param {Context} context
  * @return {void}
  */
-const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
+const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
     const {
         fontData: {font},
     } = context;
@@ -74,11 +74,11 @@ const ensureMinDepthAndHeight = (box: Layout.Box, context: Context): void => {
     const depth =
         ((parenMetrics.height - parenMetrics.bearingY + overshoot) * fontSize) /
         font.head.unitsPerEm;
-    box.depth = Math.max(box.depth, depth);
+    dim.depth = Math.max(dim.depth, depth);
 
     const height =
         ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
-    box.height = Math.max(box.height, height);
+    dim.height = Math.max(dim.height, height);
 };
 
 const typesetFrac = (
@@ -439,9 +439,6 @@ const typesetFocus = (
         case "zdelimited": {
             const row = _typesetZipper(zipper, context);
 
-            row.id = focus.id;
-            row.color = context?.colorMap?.get(row.id);
-
             const thresholdOptions = {
                 value: "both" as const,
                 strict: true,
@@ -464,7 +461,12 @@ const typesetFocus = (
             open.pending = focus.leftDelim.value.pending;
             close.pending = focus.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]], context);
+            const delimited = Layout.hpackNat([[open, row, close]], context);
+
+            delimited.id = focus.id;
+            delimited.color = context?.colorMap?.get(delimited.id);
+
+            return delimited;
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -586,9 +588,6 @@ const _typeset = (
         case "delimited": {
             const row = typesetRow(node.children[0], context);
 
-            row.id = node.id;
-            row.color = context?.colorMap?.get(row.id);
-
             const thresholdOptions = {
                 value: "both" as const,
                 strict: true,
@@ -611,7 +610,12 @@ const _typeset = (
             open.pending = node.leftDelim.value.pending;
             close.pending = node.rightDelim.value.pending;
 
-            return Layout.hpackNat([[open, row, close]], context);
+            const delimited = Layout.hpackNat([[open, row, close]], context);
+
+            delimited.id = node.id;
+            delimited.color = context?.colorMap?.get(delimited.id);
+
+            return delimited;
         }
         case "atom": {
             return _typesetAtom(node, context);
@@ -709,6 +713,10 @@ const _typesetChildren = (
             const result = shouldHavePadding(prevChild, child, context)
                 ? withOperatorPadding(glyph, context)
                 : glyph;
+            if (result !== glyph) {
+                result.id = glyph.id;
+                delete glyph.id;
+            }
             prevLayoutNode = result;
             prevChild = child;
             return result;
@@ -857,7 +865,7 @@ export const typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
     options: Options = {},
-): Group => {
+): Scene => {
     const box = _typesetZipper(zipper, context) as Layout.Box;
     return processBox(box, context.fontData, options);
 };
@@ -866,7 +874,7 @@ export const typeset = (
     node: Editor.types.Node,
     context: Context,
     options: Options = {},
-): Group => {
+): Scene => {
     const box = _typeset(node, context) as Layout.Box;
     return processBox(box, context.fontData, options);
 };

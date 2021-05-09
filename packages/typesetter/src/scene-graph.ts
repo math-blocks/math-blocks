@@ -11,11 +11,12 @@ type Common = {
 
 export type Group = {
     type: "group";
-    // position relative the parent group
+    // pen position of the group within its parent
     x: number;
     y: number;
-    width: number;
-    height: number;
+    // `bounds` includes height and depth which is even information to compute
+    // the bounding box of the group in `findIntersections`.
+    bounds: Layout.Dim;
     children: readonly Node[];
 } & Common;
 
@@ -44,6 +45,7 @@ export type Rect = {
     height: number;
     fill?: string;
     stroke?: string;
+    flag?: "start" | "end";
 } & Common;
 
 export type Node = Group | Glyph | Line | Rect;
@@ -134,7 +136,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         }
 
         section.forEach((node) => {
-            if (isSelection && layer === "bg") {
+            if (isSelection && layer === "selection") {
                 const yMin = -Math.max(Layout.getHeight(node), ascent);
 
                 const height = Math.max(
@@ -173,6 +175,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y - height,
                             width: advance,
@@ -186,7 +189,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 }
                 case "HRule": {
                     const child = processHRule(node, pen);
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
                     break;
@@ -194,13 +197,29 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 case "Glyph": {
                     const child = processGlyph(node, pen);
 
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
 
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
+                            x: pen.x,
+                            y: pen.y - height,
+                            width: advance,
+                            height: depth + height,
+                            fill: "none",
+                            stroke: "red",
+                        });
+                    }
+
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
+                        children.push({
+                            type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y - height,
                             width: advance,
@@ -213,6 +232,23 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     break;
                 }
                 case "Kern":
+                    if (node.flag) {
+                        if (layer === "hitboxes") {
+                            // TODO: do a second pass on the hitboxes to expand
+                            // them to their full height
+                            children.push({
+                                type: "rect",
+                                flag: node.flag,
+                                x: pen.x,
+                                y: pen.y - box.height,
+                                width: node.size,
+                                height: box.depth + box.height,
+                                fill: "none",
+                                stroke: "red",
+                            });
+                        }
+                    }
+
                     // We don't need to include kerns in the output since we include
                     // the cursor or select rectangle in the scene graph.
                     break;
@@ -225,7 +261,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     });
 
     // Draw the selection.
-    if (layer === "bg") {
+    if (layer === "selection") {
         for (const selectionBox of selectionBoxes) {
             children.unshift({
                 ...selectionBox,
@@ -238,8 +274,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         type: "group",
         x: loc.x,
         y: loc.y,
-        width: Layout.getWidth(box),
-        height: Layout.vsize(box),
+        bounds: box,
         children: children,
         color: box.color,
         id: box.id,
@@ -294,6 +329,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
                             x: pen.x + node.shift,
                             y: pen.y - height,
                             width: width,
@@ -309,7 +345,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 case "HRule": {
                     pen.y += height;
                     const child = processHRule(node, pen);
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
                     pen.y += depth;
@@ -321,13 +357,27 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     pen.y += height;
                     const child = processGlyph(node, pen);
 
-                    if (layer === "fg") {
+                    if (layer === "content") {
                         children.push(child);
                     }
 
                     if (layer === "debug") {
                         children.push({
                             type: "rect",
+                            id: node.id,
+                            x: pen.x,
+                            y: pen.y,
+                            width: width,
+                            height: depth + height,
+                        });
+                    }
+
+                    if (layer === "hitboxes") {
+                        // TODO: do a second pass on the hitboxes to expand them
+                        // to their full height
+                        children.push({
+                            type: "rect",
+                            id: node.id,
                             x: pen.x,
                             y: pen.y,
                             width: width,
@@ -351,8 +401,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         type: "group",
         x: loc.x,
         y: loc.y,
-        width: Layout.getWidth(box),
-        height: Layout.vsize(box),
+        bounds: box,
         children: children,
         color: box.color,
         id: box.id,
@@ -368,7 +417,10 @@ type Context = {
     fontData: FontData;
     showCursor: boolean;
     inSelection: boolean;
-    layer: "fg" | "bg" | "debug";
+    // When computing "hitboxes", only Groups and Rect and returned.  Groups
+    // remain unchanged from other layers, but Rects and the bounding boxes of
+    // Glyphs and horizontal Kerns.
+    layer: "content" | "selection" | "debug" | "hitboxes";
 };
 
 const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
@@ -380,56 +432,227 @@ const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     }
 };
 
+export type Scene = {
+    width: number;
+    height: number;
+    // group these into .layers?
+    content: Group;
+    selection: Group;
+    hitboxes: Group;
+    debug: Group;
+};
+
 export const processBox = (
     box: Layout.Box,
     fontData: FontData,
     options: Options = {},
-): Group => {
-    const layers: Group[] = [];
-
+): Scene => {
     const loc = {x: 0, y: Layout.getHeight(box)};
     const context: Context = {
         showCursor: !!options.showCursor,
         inSelection: false,
         fontData: fontData,
-        layer: "fg",
+        layer: "content",
     };
-    const fgLayer = _processBox(box, loc, context);
+    const contentLayer = _processBox(box, loc, context);
 
-    const {fontSize} = box;
-    const height = Math.max(fgLayer.height, fontSize);
+    context.layer = "selection";
+    const selectionLayer = _processBox(box, loc, context);
 
-    const {font} = fontData;
-    const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
-    // This assumes that parenMetrics.height < font.head.unitsPerEm
-    const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
-    const ascent =
-        ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
+    context.layer = "debug";
+    const debugLayer = _processBox(box, loc, context);
 
-    fgLayer.y = Math.max(fgLayer.y, ascent);
-    fgLayer.height = height;
+    context.layer = "hitboxes";
+    const hitboxes = _processBox(box, loc, context);
 
-    context.layer = "bg";
-    const bgLayer = _processBox(box, loc, context);
-
-    layers.push(bgLayer);
-    layers.push(fgLayer);
-
-    if (options.debug) {
-        context.layer = "debug";
-        const debugLayer = _processBox(box, loc, context);
-
-        layers.push(debugLayer);
-    }
-
-    const scene: Group = {
-        type: "group",
-        x: 0,
-        y: 0,
-        width: fgLayer.width,
-        height: fgLayer.height,
-        children: layers,
+    const scene: Scene = {
+        width: contentLayer.bounds.width,
+        height: contentLayer.bounds.height + contentLayer.bounds.depth,
+        content: contentLayer,
+        selection: selectionLayer,
+        debug: debugLayer,
+        hitboxes: hitboxes,
     };
 
     return scene;
+};
+
+type Side = "left" | "right";
+
+type Bounds = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
+const isPointInBounds = (point: Point, bounds: Bounds): Side | undefined => {
+    if (
+        point.x > bounds.x &&
+        point.x < bounds.x + bounds.width / 2 &&
+        point.y > bounds.y &&
+        point.y < bounds.y + bounds.height
+    ) {
+        return "left";
+    }
+    if (
+        point.x > bounds.x + bounds.width / 2 &&
+        point.x < bounds.x + bounds.width &&
+        point.y > bounds.y &&
+        point.y < bounds.y + bounds.height
+    ) {
+        return "right";
+    }
+    return undefined;
+};
+
+const getBounds = (child: Group | Rect, translation: Point): Bounds => {
+    return child.type === "group"
+        ? {
+              x: child.x + translation.x,
+              y: child.y + translation.y - child.bounds.height,
+              width: child.bounds.width,
+              height: child.bounds.height + child.bounds.depth,
+          }
+        : {
+              x: child.x + translation.x,
+              y: child.y + translation.y,
+              width: child.width,
+              height: child.height,
+          };
+};
+
+type Intersection =
+    | {type: "content"; id: number; side: Side}
+    | {type: "padding"; flag: "start" | "end"};
+
+const getIntersection = (
+    child: Group | Rect,
+    side: Side,
+): Intersection | void => {
+    if (child.id) {
+        return {
+            type: "content",
+            id: child.id,
+            side: side,
+        };
+    } else if (child.type === "rect" && child.flag) {
+        return {
+            type: "padding",
+            flag: child.flag,
+        };
+    }
+};
+
+export const findIntersections = (
+    point: Point,
+    node: Group, // must be the group containing the debug bounding rectangles
+    translation?: Point,
+): Intersection[] => {
+    const result: Intersection[] = [];
+
+    translation = translation || {
+        x: node.x,
+        y: node.y,
+    };
+
+    for (const child of node.children) {
+        if (child.type !== "group" && child.type !== "rect") {
+            throw new Error("Unexpected node type in hitboxes");
+        }
+
+        const bounds = getBounds(child, translation);
+        const side = isPointInBounds(point, bounds);
+
+        if (side) {
+            const intersection = getIntersection(child, side);
+            if (intersection) {
+                result.push(intersection);
+            }
+
+            if (child.type === "group") {
+                const newTranslation = {
+                    x: child.x + translation.x,
+                    y: child.y + translation.y,
+                };
+
+                result.push(...findIntersections(point, child, newTranslation));
+            }
+        }
+    }
+
+    if (result.length === 0) {
+        // iterate through all of the children again and find any bounds that
+        // intersect with the vertical line crossing with `point` on it
+
+        const candidateIntersections: (Group | Rect)[] = [];
+
+        for (const child of node.children) {
+            if (child.type !== "group" && child.type !== "rect") {
+                throw new Error("Unexpected node type in hitboxes");
+            }
+
+            const bounds = getBounds(child, translation);
+
+            // We decide which side of the child to put the cursor on once we
+            // decide on which candidate is the closest vertically to the point.
+            if (point.x > bounds.x && point.x < bounds.x + bounds.width) {
+                candidateIntersections.push(child);
+            }
+        }
+
+        // If there are no candidates don't bother finding the closest one.
+        if (candidateIntersections.length === 0) {
+            return result;
+        }
+
+        const [int, ...rest] = candidateIntersections;
+
+        // The closest candidate is the one with the smallest vertical distance
+        // from the point.
+        let bounds = getBounds(int, translation);
+        let minDist = Math.min(
+            Math.abs(bounds.y - point.y),
+            Math.abs(bounds.y + bounds.height - point.y),
+        );
+        let closest = int;
+
+        for (const candidate of rest) {
+            bounds = getBounds(candidate, translation);
+            const dist = Math.min(
+                Math.abs(bounds.y - point.y),
+                Math.abs(bounds.y + bounds.height - point.y),
+            );
+            if (dist < minDist) {
+                minDist = dist;
+                closest = candidate;
+            }
+        }
+
+        // Determine whether the cursor should be to the left or the right of
+        // the closest node.
+        bounds = getBounds(closest, translation);
+        const side: Side =
+            point.x < bounds.x + bounds.width / 2 ? "left" : "right";
+
+        if (side) {
+            const intersection = getIntersection(closest, side);
+            if (intersection) {
+                result.push(intersection);
+            }
+
+            if (closest.type === "group") {
+                const newTranslation = {
+                    x: closest.x + translation.x,
+                    y: closest.y + translation.y,
+                };
+
+                result.push(
+                    ...findIntersections(point, closest, newTranslation),
+                );
+            }
+        }
+    }
+
+    return result;
 };

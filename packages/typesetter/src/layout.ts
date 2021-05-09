@@ -8,7 +8,7 @@ import {MathStyle} from "./enums";
 
 type Dist = number;
 
-type Dim = {
+export type Dim = {
     width: Dist;
     depth: Dist;
     height: Dist;
@@ -42,6 +42,8 @@ export type Glyph = {
 export type Kern = {
     type: "Kern";
     size: Dist;
+    // Used for hitboxes at the start/end of a numerator or denominator
+    flag?: "start" | "end";
 } & Common;
 
 export type HRule = {
@@ -68,9 +70,43 @@ export const makeBox = (
     };
 };
 
-export const makeKern = (size: Dist): Kern => ({
+export const rebox = (box: Box, before: Kern, after: Kern): Box => {
+    if (box.content.length === 1) {
+        return {
+            ...box,
+            width: box.width + before.size + after.size,
+            content: [[before, ...box.content[0], after]],
+        };
+    } else if (box.content.length === 2) {
+        return {
+            ...box,
+            width: box.width + before.size + after.size,
+            content: [
+                [before, ...box.content[0]],
+                [...box.content[1], after],
+            ],
+        };
+    } else if (box.content.length === 3) {
+        return {
+            ...box,
+            width: box.width + before.size + after.size,
+            content: [
+                [before, ...box.content[0]],
+                box.content[1],
+                [...box.content[2], after],
+            ],
+        };
+    } else {
+        throw new Error(
+            `box.content.length = ${box.content.length} which is invalid`,
+        );
+    }
+};
+
+export const makeKern = (size: Dist, flag?: "start" | "end"): Kern => ({
     type: "Kern",
     size,
+    flag,
 });
 
 export const makeHRule = (thickness: number, width: number): HRule => ({
@@ -321,23 +357,33 @@ export const makeFract = (numBox: Box, denBox: Box, context: Context): Box => {
             30 * multiplier, // empty numerator/denominator width
         ) +
         2 * endPadding;
-    const stroke = hpackNat([[makeHRule(thickness, width)]], context);
-
-    const upList = makeList(minNumGap, numBox);
-    const dnList = makeList(minDenGap, denBox);
-
-    const fracBox = makeVBox(width, stroke, upList, dnList, context);
-    fracBox.shift = -shift;
 
     // center the numerator
     if (getWidth(numBox) < width) {
-        numBox.shift = (width - getWidth(numBox)) / 2;
+        const kernSize = (width - getWidth(numBox)) / 2;
+        numBox = rebox(
+            numBox,
+            makeKern(kernSize, "start"),
+            makeKern(kernSize, "end"),
+        );
     }
 
     // center the denominator
     if (getWidth(denBox) < width) {
-        denBox.shift = (width - getWidth(denBox)) / 2;
+        const kernSize = (width - getWidth(denBox)) / 2;
+        denBox = rebox(
+            denBox,
+            makeKern(kernSize, "start"),
+            makeKern(kernSize, "end"),
+        );
     }
+
+    const upList = makeList(minNumGap, numBox);
+    const dnList = makeList(minDenGap, denBox);
+    const stroke = hpackNat([[makeHRule(thickness, width)]], context);
+
+    const fracBox = makeVBox(width, stroke, upList, dnList, context);
+    fracBox.shift = -shift;
 
     return fracBox;
 };

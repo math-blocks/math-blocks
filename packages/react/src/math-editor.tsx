@@ -40,6 +40,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
     const fontData = useContext(FontDataContext);
     const inputRef = useRef<HTMLInputElement>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
 
     const callback = useCallback(
         (e: KeyboardEvent): void => {
@@ -82,7 +83,24 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     useEventListener("keydown", callback);
 
-    const focusHandler = (): void => inputRef?.current?.focus();
+    const positionCursor = (e: React.MouseEvent): void => {
+        if (!svgRef?.current) {
+            return;
+        }
+        const bounds = svgRef.current.getBoundingClientRect();
+        const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
+
+        const intersections = Typesetter.SceneGraph.findIntersections(
+            point,
+            scene.hitboxes,
+        );
+
+        const row = Editor.zipperToRow(zipper);
+        const newZipper = Editor.rowToZipper(row, intersections);
+        if (newZipper) {
+            setZipper(newZipper);
+        }
+    };
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
@@ -102,7 +120,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     };
 
-    const options = {showCursor: active, debug: props.debug};
+    const options = {showCursor: active, debug: true};
 
     const scene = Typesetter.typesetZipper(zipper, context, options);
 
@@ -110,11 +128,14 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         <div
             tabIndex={!props.readonly ? 0 : undefined}
             ref={containerRef}
-            onClick={focusHandler}
+            onClick={(e) => {
+                inputRef?.current?.focus();
+            }}
             onMouseDown={(e) => {
                 setActive(true);
                 // prevent blurring the input
                 e.preventDefault();
+                positionCursor(e);
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}
@@ -138,7 +159,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 autoComplete="off"
                 spellCheck="false"
             />
-            <MathRenderer scene={scene} />
+            <MathRenderer scene={scene} ref={svgRef} />
         </div>
     );
 };

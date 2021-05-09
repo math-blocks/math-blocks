@@ -131,7 +131,7 @@ const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
 const CURSOR_WIDTH = 2;
 
 type Props = {
-    scene: SceneGraph.Group;
+    scene: SceneGraph.Scene;
     style?: React.CSSProperties;
 };
 
@@ -150,7 +150,9 @@ const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
             style={style}
             ref={ref}
         >
-            <Group {...scene} />
+            <Group {...scene.selection} />
+            <Group {...scene.content} />
+            {/* <Group {...scene.hitboxes} /> */}
         </svg>
     );
 });
