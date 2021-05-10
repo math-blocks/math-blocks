@@ -1,9 +1,9 @@
-import {Dir} from "./enums";
+import {SelectionDir} from "./enums";
 import type {ZRow} from "./types";
 
 export const startSelection = <T extends {row: ZRow}>(
     crumb: T,
-    dir: Dir,
+    dir: SelectionDir,
 ): T => {
     return {
         ...crumb,
@@ -37,7 +37,7 @@ export const crumbMoveLeft = <T extends {row: ZRow}>(crumb: T): T => {
         return crumb;
     }
 
-    if (selection.dir === Dir.Left) {
+    if (selection.dir === SelectionDir.Left) {
         return {
             ...crumb,
             row: {
@@ -77,7 +77,7 @@ export const crumbMoveRight = <T extends {row: ZRow}>(crumb: T): T => {
         return crumb;
     }
 
-    if (selection.dir === Dir.Right) {
+    if (selection.dir === SelectionDir.Right) {
         return {
             ...crumb,
             row: {

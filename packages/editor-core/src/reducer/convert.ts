@@ -11,7 +11,7 @@ import {
     zroot,
     zdelimited,
 } from "./util";
-import {Dir} from "./enums";
+import {SelectionDir} from "./enums";
 
 export const zipperToRow = (zipper: Zipper): Row => {
     if (zipper.breadcrumbs.length === 0) {
@@ -25,7 +25,7 @@ export const zipperToRow = (zipper: Zipper): Row => {
     const focusedNode = focusToNode(crumb.focus, zrowToRow(zipper.row));
 
     const newRight =
-        crumb.row.selection?.dir === Dir.Right
+        crumb.row.selection?.dir === SelectionDir.Right
             ? [...crumb.row.left, focusedNode, ...selection, ...crumb.row.right]
             : [
                   ...crumb.row.left,
@@ -76,7 +76,6 @@ export const rowToZipper = (
         (child) => int.type === "content" && int.id === child.id,
     );
     if (rowIndex === -1) {
-        // debugger;
         return;
     }
 
@@ -115,34 +114,47 @@ export const rowToZipper = (
     }
 
     if (focusIndex === -1) {
-        // debugger;
         return;
     }
-
-    // TODO: replace Dir.Left, Dir.Right, Dir.None with an simple integer index
 
     let focus: Focus;
     let focusRow: Row;
     switch (child.type) {
         case "frac": {
-            focus = zfrac(child, focusIndex === 0 ? Dir.Left : Dir.Right);
+            if (focusIndex !== 0 && focusIndex !== 1) {
+                throw new Error(`Invalid focusIndex: ${focusIndex} for "frac"`);
+            }
+            focus = zfrac(child, focusIndex);
             focusRow = child.children[focusIndex];
             break;
         }
         case "limits": {
-            focus = zlimits(child, focusIndex === 0 ? Dir.Left : Dir.Right);
+            if (focusIndex !== 0 && focusIndex !== 1) {
+                throw new Error(
+                    `Invalid focusIndex: ${focusIndex} for "limits"`,
+                );
+            }
+            focus = zlimits(child, focusIndex);
             // @ts-expect-error: this should never happen since focusIndex !== -1
             focusRow = child.children[focusIndex];
             break;
         }
         case "subsup": {
-            focus = zsubsup(child, focusIndex === 0 ? Dir.Left : Dir.Right);
+            if (focusIndex !== 0 && focusIndex !== 1) {
+                throw new Error(
+                    `Invalid focusIndex: ${focusIndex} for "subsup"`,
+                );
+            }
+            focus = zsubsup(child, focusIndex);
             // @ts-expect-error: this should never happen since focusIndex !== -1
             focusRow = child.children[focusIndex];
             break;
         }
         case "root": {
-            focus = zroot(child, focusIndex === 0 ? Dir.Left : Dir.Right);
+            if (focusIndex !== 0 && focusIndex !== 1) {
+                throw new Error(`Invalid focusIndex: ${focusIndex} for "root"`);
+            }
+            focus = zroot(child, focusIndex);
             // @ts-expect-error: this should never happen since focusIndex !== -1
             focusRow = child.children[focusIndex];
             break;

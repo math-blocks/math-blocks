@@ -1,4 +1,3 @@
-import {Dir} from "./enums";
 import {rezipSelection, zdelimited, zrow} from "./util";
 import {moveLeft} from "./move-left";
 
@@ -88,7 +87,7 @@ export const backspace = (zipper: Zipper): Zipper => {
 
     const children = focus.other ? focus.other.children : [];
 
-    if (focus.dir === Dir.Left) {
+    if (focus.dir === 0) {
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {

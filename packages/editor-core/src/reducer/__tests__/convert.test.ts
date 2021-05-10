@@ -1,7 +1,7 @@
 import * as builders from "../../builders";
 
 import {zipperToRow} from "../convert";
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import {row, toEqualEditorNodes} from "../test-util";
 
 import type {Zipper} from "../types";
@@ -51,7 +51,7 @@ describe("zipperToRow", () => {
                     type: "zrow",
                     left: row("1").children,
                     selection: {
-                        dir: Dir.Right,
+                        dir: SelectionDir.Right,
                         nodes: row("+").children,
                     },
                     right: row("2").children,
@@ -90,7 +90,7 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: Dir.Left,
+                            dir: 0,
                             other: row("3"),
                         },
                     },
@@ -128,7 +128,7 @@ describe("zipperToRow", () => {
                             type: "zrow",
                             left: row("1+").children,
                             selection: {
-                                dir: Dir.Left,
+                                dir: SelectionDir.Left,
                                 nodes: row("5+").children,
                             },
                             right: row("+4").children,
@@ -137,7 +137,7 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: Dir.Left,
+                            dir: 0,
                             other: row("3"),
                         },
                     },
@@ -177,7 +177,7 @@ describe("zipperToRow", () => {
                             type: "zrow",
                             left: row("1+").children,
                             selection: {
-                                dir: Dir.Right,
+                                dir: SelectionDir.Right,
                                 nodes: row("+5").children,
                             },
                             right: row("+4").children,
@@ -186,7 +186,7 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: Dir.Left,
+                            dir: 0,
                             other: row("3"),
                         },
                     },

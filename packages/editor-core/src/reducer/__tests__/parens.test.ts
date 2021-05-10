@@ -2,7 +2,7 @@ import {toEqualEditorNodes, row, delimited} from "../test-util";
 import {parens} from "../parens";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import * as builders from "../../builders";
 
 import type {Zipper} from "../types";
@@ -18,7 +18,7 @@ describe("parens", () => {
                     type: "zrow",
                     left: row("2").children,
                     selection: {
-                        dir: Dir.Left,
+                        dir: SelectionDir.Left,
                         nodes: row("x+5").children,
                     },
                     right: row("=10").children,
@@ -47,7 +47,7 @@ describe("parens", () => {
                     type: "zrow",
                     left: row("2").children,
                     selection: {
-                        dir: Dir.Right,
+                        dir: SelectionDir.Right,
                         nodes: row("x+5").children,
                     },
                     right: row("=10").children,

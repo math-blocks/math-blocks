@@ -8,7 +8,6 @@ import {parens} from "./parens";
 import {root} from "./root";
 import {slash} from "./slash";
 import {subsup} from "./subsup";
-import {Dir} from "./enums";
 import {zrow} from "./util";
 import type {Zipper} from "./types";
 
@@ -38,10 +37,10 @@ export const zipperReducer = (
             return backspace(state);
         }
         case "_": {
-            return subsup(state, Dir.Left);
+            return subsup(state, 0);
         }
         case "^": {
-            return subsup(state, Dir.Right);
+            return subsup(state, 1);
         }
         case "(":
         case ")":

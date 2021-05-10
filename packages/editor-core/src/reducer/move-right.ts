@@ -2,7 +2,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
-import {Dir} from "./enums";
+import {SelectionDir} from "./enums";
 import type {Breadcrumb, Focus, Zipper, ZRow, ZRowWithSelection} from "./types";
 import * as util from "./util";
 import {crumbMoveRight, startSelection, stopSelection} from "./selection-util";
@@ -48,21 +48,21 @@ const cursorRight = (zipper: Zipper): Zipper => {
             let focus: Focus;
             switch (next.type) {
                 case "frac": {
-                    focus = util.zfrac(next, Dir.Left);
+                    focus = util.zfrac(next, 0);
                     break;
                 }
                 case "subsup": {
-                    const dir = next.children[0] ? Dir.Left : Dir.Right;
+                    const dir = next.children[0] ? 0 : 1;
                     focus = util.zsubsup(next, dir);
                     break;
                 }
                 case "root": {
-                    const dir = next.children[0] ? Dir.Left : Dir.Right;
+                    const dir = next.children[0] ? 0 : 1;
                     focus = util.zroot(next, dir);
                     break;
                 }
                 case "limits":
-                    focus = util.zlimits(next, Dir.Left);
+                    focus = util.zlimits(next, 0);
                     break;
                 case "delimited": {
                     focus = util.zdelimited(next);
@@ -117,7 +117,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        dir: Dir.Right,
+                        dir: 1,
                         other: exitedRow,
                     },
                 },
@@ -127,19 +127,19 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zsubsup":
-                return focus.dir === Dir.Left && focus.other
+                return focus.dir === 0 && focus.other
                     ? focusRight(focus.other)
                     : exitNode(util.subsup(focus, exitedRow));
             case "zfrac":
-                return focus.dir === Dir.Left
+                return focus.dir === 0
                     ? focusRight(focus.other)
                     : exitNode(util.frac(focus, exitedRow));
             case "zroot":
-                return focus.dir === Dir.Left
+                return focus.dir === 0
                     ? focusRight(focus.other)
                     : exitNode(util.root(focus, exitedRow));
             case "zlimits":
-                return focus.dir === Dir.Left && focus.other
+                return focus.dir === 0 && focus.other
                     ? focusRight(focus.other)
                     : exitNode(util.limits(focus, exitedRow));
             default:
@@ -176,15 +176,15 @@ const selectionRight = (zipper: Zipper): Zipper => {
         // We haven't started selecting anything yet.
         if (row.right.length > 0) {
             // Create a new selection to the left and move left.
-            return crumbMoveRight(startSelection(zipper, Dir.Right));
+            return crumbMoveRight(startSelection(zipper, SelectionDir.Right));
         } else {
             // Create an empty selection and them move outward.
             const index = zipper.breadcrumbs.length - 1;
             const crumb = zipper.breadcrumbs[index];
-            const updatedCrumb = startSelection(crumb, Dir.Right);
+            const updatedCrumb = startSelection(crumb, SelectionDir.Right);
 
             return {
-                ...startSelection(zipper, Dir.Right),
+                ...startSelection(zipper, SelectionDir.Right),
                 breadcrumbs: replaceItem(
                     zipper.breadcrumbs,
                     updatedCrumb,
@@ -197,13 +197,13 @@ const selectionRight = (zipper: Zipper): Zipper => {
 
         const row = rowsWithSelections[0]; // same as zipper.row
 
-        if (row.selection.dir === Dir.Right) {
+        if (row.selection.dir === SelectionDir.Right) {
             if (zipper.row.right.length > 0) {
                 return crumbMoveRight(zipper);
             } else if (zipper.breadcrumbs.length > 0) {
                 const index = zipper.breadcrumbs.length - 1;
                 const crumb = zipper.breadcrumbs[index];
-                const updatedCrumb = startSelection(crumb, Dir.Right);
+                const updatedCrumb = startSelection(crumb, SelectionDir.Right);
 
                 // Move out to start a selection in the parent crumb.
                 return {
@@ -243,7 +243,7 @@ const selectionRight = (zipper: Zipper): Zipper => {
         const crumb = zipper.breadcrumbs[index];
         const row = rowsWithSelections[0]; // same as crumb.row
 
-        if (row.selection.dir === Dir.Right) {
+        if (row.selection.dir === SelectionDir.Right) {
             if (row.right.length > 0) {
                 const updatedCrumb = crumbMoveRight(crumb);
                 return {
@@ -265,7 +265,7 @@ const selectionRight = (zipper: Zipper): Zipper => {
                 }
 
                 const crumb = zipper.breadcrumbs[index];
-                const updatedCrumb = startSelection(crumb, Dir.Right);
+                const updatedCrumb = startSelection(crumb, SelectionDir.Right);
                 return {
                     ...zipper,
                     breadcrumbs: replaceItem(

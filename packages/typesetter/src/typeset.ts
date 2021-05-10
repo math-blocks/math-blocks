@@ -326,12 +326,12 @@ const typesetFocus = (
             const childContext = childContextForFrac(context);
 
             const numerator =
-                focus.dir === "left"
+                focus.dir === 0
                     ? _typesetZipper(zipper, childContext)
                     : typesetRow(focus.other, childContext);
 
             const denominator =
-                focus.dir === "left"
+                focus.dir === 0
                     ? typesetRow(focus.other, childContext)
                     : _typesetZipper(zipper, childContext);
 
@@ -346,7 +346,7 @@ const typesetFocus = (
             const childContext = childContextForSubsup(context);
 
             const [sub, sup] =
-                focus.dir === "left"
+                focus.dir === 0
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
 
@@ -377,7 +377,7 @@ const typesetFocus = (
         }
         case "zroot": {
             const [ind, rad] =
-                focus.dir === "left"
+                focus.dir === 0
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
 
@@ -410,7 +410,7 @@ const typesetFocus = (
             const childContext = childContextForLimits(context);
 
             const [lower, upper] =
-                focus.dir === "left"
+                focus.dir === 0
                     ? [zipper.row, focus.other]
                     : [focus.other, zipper.row];
 

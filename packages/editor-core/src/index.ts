@@ -9,5 +9,5 @@ export {parse} from "./parser/parser";
 
 export {zipperReducer} from "./reducer/reducer";
 export {zipperToRow, rowToZipper} from "./reducer/convert";
-export {Dir} from "./reducer/enums";
+export {SelectionDir as Dir} from "./reducer/enums";
 export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./reducer/types";

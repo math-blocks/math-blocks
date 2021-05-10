@@ -9,7 +9,7 @@ import {
     delimited,
     toEqualEditorNodes,
 } from "../test-util";
-import {Dir} from "../enums";
+import {SelectionDir} from "../enums";
 import * as builders from "../../builders";
 import * as types from "../../types";
 
@@ -94,7 +94,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: Dir.Left, // the numerator is focused
+                            dir: 0, // the numerator is focused
                             other: row("3"), // denominator
                         },
                     },
@@ -128,7 +128,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: Dir.Right, // the denominator is focused
+                            dir: 1, // the denominator is focused
                             other: row("2"), // numerator
                         },
                     },
@@ -160,7 +160,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: Dir.Right,
+                dir: 1,
                 other: f.children[0],
             });
             expect(result.row.left).toHaveLength(1);
@@ -191,7 +191,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: Dir.Left, // the subscript is focused
+                            dir: 0, // the subscript is focused
                             other: null, // no superscript
                         },
                     },
@@ -225,7 +225,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: Dir.Left, // the subscript is focused
+                            dir: 0, // the subscript is focused
                             other: row("2"), // superscript
                         },
                     },
@@ -259,7 +259,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: Dir.Right, // the superscript is focused
+                            dir: 1, // the superscript is focused
                             other: null, // no subscript
                         },
                     },
@@ -293,7 +293,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: Dir.Right, // the superscript is focused
+                            dir: 1, // the superscript is focused
                             other: row("n"), // subscript
                         },
                     },
@@ -330,7 +330,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: Dir.Left,
+                dir: 0,
                 other: null,
             });
             expect(result.row.left).toHaveLength(1);
@@ -357,7 +357,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: Dir.Right,
+                dir: 1,
                 other: null,
             });
             expect(result.row.left).toHaveLength(1);
@@ -388,7 +388,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: Dir.Right, // the radicand is focused
+                            dir: 1, // the radicand is focused
                             other: null, // no index
                         },
                     },
@@ -422,7 +422,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: Dir.Right, // the radicand is focused
+                            dir: 1, // the radicand is focused
                             other: row("3"), // index
                         },
                     },
@@ -456,7 +456,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: Dir.Left, // the index is focused
+                            dir: 0, // the index is focused
                             other: row("27"), // radicand
                         },
                     },
@@ -488,7 +488,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: Dir.Right,
+                dir: 1,
                 other: null,
             });
             expect(result.row.left).toHaveLength(1);
@@ -515,7 +515,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: Dir.Right,
+                dir: 1,
                 other: r.children[0],
             });
             expect(result.row.left).toHaveLength(1);
@@ -546,7 +546,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: Dir.Left, // the lower bound is focused
+                            dir: 0, // the lower bound is focused
                             other: null, // no upper bound
                             inner: row("lim"),
                         },
@@ -581,7 +581,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: Dir.Left, // the lower bound is focused
+                            dir: 0, // the lower bound is focused
                             other: row("n"), // upper bound
                             inner: row("sum"),
                         },
@@ -616,7 +616,7 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: Dir.Right, // the upper bound is focused
+                            dir: 1, // the upper bound is focused
                             other: row("i=0"), // lower bound
                             inner: row("sum"),
                         },
@@ -663,7 +663,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
-                dir: Dir.Left,
+                dir: 0,
                 other: null,
                 inner: inner,
             });
@@ -706,7 +706,7 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: Dir.Right,
+                dir: 1,
                 other: lower,
                 inner: inner,
             });
@@ -924,7 +924,7 @@ describe("backspace", () => {
                     type: "zrow",
                     left: row("2x").children,
                     selection: {
-                        dir: Dir.Left,
+                        dir: SelectionDir.Left,
                         nodes: row("+5").children,
                     },
                     right: row("=10").children,
