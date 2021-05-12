@@ -168,7 +168,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([]);
             expect(zipper.row.right).toEqualEditorNodes([
                 glyph("1"),
@@ -190,7 +190,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([glyph("1")]);
             expect(zipper.row.right).toEqualEditorNodes([glyph("2")]);
         });
@@ -209,7 +209,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([
                 glyph("1"),
                 glyph("2"),
@@ -231,7 +231,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([
                 glyph("x"),
                 glyph("+"),
@@ -278,7 +278,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([]);
             expect(zipper.row.right).toEqualEditorNodes([glyph("2")]);
         });
@@ -297,7 +297,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([glyph("2")]);
             expect(zipper.row.right).toEqualEditorNodes([]);
         });
@@ -316,7 +316,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([]);
             expect(zipper.row.right).toEqualEditorNodes([glyph("n")]);
         });
@@ -335,7 +335,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([glyph("n")]);
             expect(zipper.row.right).toEqualEditorNodes([]);
         });
@@ -376,7 +376,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([]);
             expect(zipper.row.right).toEqualEditorNodes([glyph("3")]);
         });
@@ -395,7 +395,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([
                 glyph("x"),
                 glyph("+"),
@@ -443,7 +443,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([
                 glyph("x"),
                 glyph("+"),
@@ -492,7 +492,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([glyph("\u221e")]);
             expect(zipper.row.right).toEqualEditorNodes([]);
         });
@@ -511,7 +511,7 @@ describe("moving cursor with mouse", () => {
             }
 
             expect(zipper.breadcrumbs).toHaveLength(1);
-            expect(zipper.breadcrumbs[0].focus.dir).toEqual(0);
+            expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
             expect(zipper.row.left).toEqualEditorNodes([
                 glyph("i"),
                 glyph("="),

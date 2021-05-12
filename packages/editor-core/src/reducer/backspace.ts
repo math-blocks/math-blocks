@@ -85,9 +85,8 @@ export const backspace = (zipper: Zipper): Zipper => {
 
     const {focus, row} = parent;
 
-    const children = focus.other ? focus.other.children : [];
-
-    if (focus.dir === 0) {
+    if (focus.left.length === 0) {
+        const children = focus.right[0] ? focus.right[0].children : [];
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
@@ -96,7 +95,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             },
         };
     } else {
-        if (focus.type === "zsubsup" && focus.other) {
+        if (focus.type === "zsubsup" && focus.left[0]) {
             return {
                 breadcrumbs: breadcrumbs.slice(0, -1),
                 row: {
@@ -106,7 +105,7 @@ export const backspace = (zipper: Zipper): Zipper => {
                         {
                             id: focus.id,
                             type: "subsup",
-                            children: [focus.other, null],
+                            children: [focus.left[0], null],
                         },
                     ],
                     right: [...zipper.row.right, ...row.right],
@@ -114,6 +113,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             };
         }
 
+        const children = focus.left[0] ? focus.left[0].children : [];
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {

@@ -325,15 +325,13 @@ const typesetFocus = (
         case "zfrac": {
             const childContext = childContextForFrac(context);
 
-            const numerator =
-                focus.dir === 0
-                    ? _typesetZipper(zipper, childContext)
-                    : typesetRow(focus.other, childContext);
+            const numerator = focus.left[0]
+                ? typesetRow(focus.left[0], childContext)
+                : _typesetZipper(zipper, childContext);
 
-            const denominator =
-                focus.dir === 0
-                    ? typesetRow(focus.other, childContext)
-                    : _typesetZipper(zipper, childContext);
+            const denominator = focus.right[0]
+                ? typesetRow(focus.right[0], childContext)
+                : _typesetZipper(zipper, childContext);
 
             const frac = typesetFrac(numerator, denominator, context);
 
@@ -346,23 +344,23 @@ const typesetFocus = (
             const childContext = childContextForSubsup(context);
 
             const [sub, sup] =
-                focus.dir === 0
-                    ? [zipper.row, focus.other]
-                    : [focus.other, zipper.row];
+                focus.left.length === 0 && focus.right.length === 1
+                    ? [zipper.row, focus.right[0]]
+                    : [focus.left[0], zipper.row];
 
             // TODO: document this better so I know what's going on here.
-            const subBox =
-                sub &&
-                (sub.type === "row"
+            const subBox = sub
+                ? sub.type === "row"
                     ? typesetRow(sub, childContext)
-                    : _typesetZipper(zipper, childContext));
+                    : _typesetZipper(zipper, childContext)
+                : null;
 
             // TODO: document this better so I know what's going on here.
-            const supBox =
-                sup &&
-                (sup.type === "row"
+            const supBox = sup
+                ? sup.type === "row"
                     ? typesetRow(sup, childContext)
-                    : _typesetZipper(zipper, childContext));
+                    : _typesetZipper(zipper, childContext)
+                : null;
 
             const parentBox = typesetSubsup(
                 subBox,
@@ -376,10 +374,9 @@ const typesetFocus = (
             return parentBox;
         }
         case "zroot": {
-            const [ind, rad] =
-                focus.dir === 0
-                    ? [zipper.row, focus.other]
-                    : [focus.other, zipper.row];
+            const [ind, rad] = focus.right[0]
+                ? [zipper.row, focus.right[0]]
+                : [focus.left[0], zipper.row];
 
             const radicand =
                 rad.type === "row"
@@ -409,21 +406,20 @@ const typesetFocus = (
         case "zlimits": {
             const childContext = childContextForLimits(context);
 
-            const [lower, upper] =
-                focus.dir === 0
-                    ? [zipper.row, focus.other]
-                    : [focus.other, zipper.row];
+            const [lower, upper] = focus.left[0]
+                ? [focus.left[0], zipper.row]
+                : [zipper.row, focus.right[0]];
 
             const lowerBox =
                 lower.type === "row"
                     ? typesetRow(lower, childContext)
                     : _typesetZipper(zipper, childContext);
 
-            const upperBox =
-                upper &&
-                (upper.type === "row"
+            const upperBox = upper
+                ? upper.type === "row"
                     ? typesetRow(upper, childContext)
-                    : _typesetZipper(zipper, childContext));
+                    : _typesetZipper(zipper, childContext)
+                : null;
 
             const inner = _typeset(focus.inner, {...context, operator: true});
             inner.id = focus.inner.id;

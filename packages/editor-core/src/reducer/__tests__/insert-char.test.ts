@@ -125,8 +125,8 @@ describe("insertChar", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: 1,
-                            other: builders.row([builders.glyph("3")]),
+                            left: [builders.row([builders.glyph("3")])],
+                            right: [],
                         },
                         row: {
                             id: 0,

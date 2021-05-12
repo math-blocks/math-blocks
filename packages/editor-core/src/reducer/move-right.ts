@@ -117,8 +117,8 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        dir: 1,
-                        other: exitedRow,
+                        left: [exitedRow],
+                        right: [],
                     },
                 },
             ],
@@ -127,20 +127,20 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
         switch (focus.type) {
             case "zsubsup":
-                return focus.dir === 0 && focus.other
-                    ? focusRight(focus.other)
+                return focus.right[0]
+                    ? focusRight(focus.right[0])
                     : exitNode(util.subsup(focus, exitedRow));
             case "zfrac":
-                return focus.dir === 0
-                    ? focusRight(focus.other)
+                return focus.right[0]
+                    ? focusRight(focus.right[0])
                     : exitNode(util.frac(focus, exitedRow));
             case "zroot":
-                return focus.dir === 0
-                    ? focusRight(focus.other)
+                return focus.right[0]
+                    ? focusRight(focus.right[0])
                     : exitNode(util.root(focus, exitedRow));
             case "zlimits":
-                return focus.dir === 0 && focus.other
-                    ? focusRight(focus.other)
+                return focus.right[0]
+                    ? focusRight(focus.right[0])
                     : exitNode(util.limits(focus, exitedRow));
             default:
                 throw new UnreachableCaseError(focus);

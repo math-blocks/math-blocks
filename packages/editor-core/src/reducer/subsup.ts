@@ -21,12 +21,7 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
                             ...row,
                             right: rest,
                         },
-                        focus: {
-                            id: next.id, // reuse the id of the subsup we're updating
-                            type: "zsubsup",
-                            dir: dir,
-                            other: dir === 0 ? sup : sub,
-                        },
+                        focus: util.zsubsup(next, dir),
                     },
                 ],
                 row:
@@ -47,12 +42,20 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
             ...zipper.breadcrumbs,
             {
                 row: zipper.row,
-                focus: {
-                    id: getId(),
-                    type: "zsubsup",
-                    dir: dir,
-                    other: null, // this is a new subsup so don't give it a sub
-                },
+                focus:
+                    dir === 0
+                        ? {
+                              id: getId(),
+                              type: "zsubsup",
+                              left: [],
+                              right: [null],
+                          }
+                        : {
+                              id: getId(),
+                              type: "zsubsup",
+                              left: [null],
+                              right: [],
+                          },
             },
         ],
         row: util.zrow(getId(), [], []),

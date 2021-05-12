@@ -15,135 +15,120 @@ import type {
 } from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
-    if (focus.dir === 0) {
-        return {
-            id: focus.id,
-            type: "frac",
-            children: [replacement, focus.other],
-        };
-    } else {
-        return {
-            id: focus.id,
-            type: "frac",
-            children: [focus.other, replacement],
-        };
-    }
+    return {
+        id: focus.id,
+        type: "frac",
+        children: [...focus.left, replacement, ...focus.right] as [
+            types.Row,
+            types.Row,
+        ],
+    };
 };
 
-export const zfrac = (node: types.Frac, dir: 0 | 1): ZFrac => {
-    return {
-        id: node.id,
-        type: "zfrac",
-        dir,
-        other: node.children[1 - dir],
-    };
+export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
+    return index === 0
+        ? {
+              id: node.id,
+              type: "zfrac",
+              left: [],
+              right: [node.children[1]],
+          }
+        : {
+              id: node.id,
+              type: "zfrac",
+              left: [node.children[0]],
+              right: [],
+          };
 };
 
 export const subsup = (
     focus: ZSubSup,
     replacement: types.Row,
 ): types.SubSup => {
-    if (focus.dir === 0) {
-        return {
-            id: focus.id,
-            type: "subsup",
-            children: [replacement, focus.other],
-        };
-    } else {
-        return {
-            id: focus.id,
-            type: "subsup",
-            children: [focus.other, replacement],
-        };
-    }
-};
-
-export const zsubsup = (node: types.SubSup, dir: 0 | 1): ZSubSup => {
     return {
-        id: node.id,
-        type: "zsubsup",
-        dir,
-        other: node.children[1 - dir],
+        id: focus.id,
+        type: "subsup",
+        children: [...focus.left, replacement, ...focus.right] as [
+            types.Row | null,
+            types.Row | null,
+        ],
     };
 };
 
-export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
-    if (focus.dir === 0) {
-        return {
-            id: focus.id,
-            type: "root",
-            children: [replacement, focus.other],
-        };
-    } else {
-        return {
-            id: focus.id,
-            type: "root",
-            children: [focus.other, replacement],
-        };
-    }
+export const zsubsup = (node: types.SubSup, index: 0 | 1): ZSubSup => {
+    return index === 0
+        ? {
+              id: node.id,
+              type: "zsubsup",
+              left: [],
+              right: [node.children[1]],
+          }
+        : {
+              id: node.id,
+              type: "zsubsup",
+              left: [node.children[0]],
+              right: [],
+          };
 };
 
-export const zroot = (node: types.Root, dir: 0 | 1): ZRoot => {
-    if (dir === 0) {
-        return {
-            id: node.id,
-            type: "zroot",
-            dir,
-            other: node.children[1],
-        };
-    } else if (dir === 1) {
-        return {
-            id: node.id,
-            type: "zroot",
-            dir,
-            other: node.children[0],
-        };
-    } else {
-        throw new Error("dir cannot be Dir.None for zlimits");
-    }
+export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
+    return {
+        id: focus.id,
+        type: "root",
+        children: [...focus.left, replacement, ...focus.right] as [
+            types.Row | null,
+            types.Row,
+        ],
+    };
+};
+
+export const zroot = (node: types.Root, index: 0 | 1): ZRoot => {
+    return index === 0
+        ? {
+              id: node.id,
+              type: "zroot",
+              left: [],
+              right: [node.children[1]],
+          }
+        : {
+              id: node.id,
+              type: "zroot",
+              left: [node.children[0]],
+              right: [],
+          };
 };
 
 export const limits = (
     focus: ZLimits,
     replacement: types.Row,
 ): types.Limits => {
-    if (focus.dir === 0) {
-        return {
-            id: focus.id,
-            type: "limits",
-            children: [replacement, focus.other],
-            inner: focus.inner,
-        };
-    } else {
-        return {
-            id: focus.id,
-            type: "limits",
-            children: [focus.other, replacement],
-            inner: focus.inner,
-        };
-    }
+    return {
+        id: focus.id,
+        type: "limits",
+        inner: focus.inner,
+        children: [...focus.left, replacement, ...focus.right] as [
+            types.Row,
+            types.Row | null,
+        ],
+    };
 };
 
-export const zlimits = (node: types.Limits, dir: 0 | 1): ZLimits => {
-    if (dir === 0) {
-        return {
-            id: node.id,
-            type: "zlimits",
-            dir,
-            other: node.children[1],
-            inner: node.inner,
-        };
-    } else if (dir === 1) {
-        return {
-            id: node.id,
-            type: "zlimits",
-            dir,
-            other: node.children[0],
-            inner: node.inner,
-        };
-    } else {
-        throw new Error("dir cannot be Dir.None for zlimits");
-    }
+export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
+    return index === 0
+        ? {
+              id: node.id,
+              type: "zlimits",
+              left: [],
+              right: [node.children[1]],
+              inner: node.inner,
+          }
+        : {
+              id: node.id,
+              type: "zlimits",
+              left: [node.children[0]],
+              right: [],
+              inner: node.inner,
+          };
 };
 
 export const delimited = (
@@ -153,7 +138,7 @@ export const delimited = (
     return {
         id: focus.id,
         type: "delimited",
-        children: [replacement],
+        children: [replacement], // focus.left and focus.right are always empty arrays
         leftDelim: focus.leftDelim,
         rightDelim: focus.rightDelim,
     };
@@ -163,8 +148,8 @@ export const zdelimited = (node: types.Delimited): ZDelimited => {
     return {
         id: node.id,
         type: "zdelimited",
-        dir: 0,
-        other: null,
+        left: [],
+        right: [],
         leftDelim: node.leftDelim,
         rightDelim: node.rightDelim,
     };
