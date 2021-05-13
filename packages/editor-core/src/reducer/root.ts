@@ -13,14 +13,14 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
         ? {
               id: getId(),
               type: "zroot",
-              dir: 0,
-              other: builders.row([]),
+              left: [],
+              right: [builders.row([])],
           }
         : {
               id: getId(),
               type: "zroot",
-              dir: 1,
-              other: null,
+              left: [null],
+              right: [],
           };
 
     if (selection) {

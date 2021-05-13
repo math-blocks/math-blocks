@@ -52,13 +52,13 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     break;
                 }
                 case "subsup": {
-                    const dir = next.children[0] ? 0 : 1;
-                    focus = util.zsubsup(next, dir);
+                    const index = next.children[0] ? 0 : 1;
+                    focus = util.zsubsup(next, index);
                     break;
                 }
                 case "root": {
-                    const dir = next.children[0] ? 0 : 1;
-                    focus = util.zroot(next, dir);
+                    const index = next.children[0] ? 0 : 1;
+                    focus = util.zroot(next, index);
                     break;
                 }
                 case "limits":
@@ -117,34 +117,17 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        dir: 1,
-                        other: exitedRow,
+                        left: [exitedRow],
+                        right: [],
                     },
                 },
             ],
             row: util.zrow(row.id, [], row.children),
         });
 
-        switch (focus.type) {
-            case "zsubsup":
-                return focus.dir === 0 && focus.other
-                    ? focusRight(focus.other)
-                    : exitNode(util.subsup(focus, exitedRow));
-            case "zfrac":
-                return focus.dir === 0
-                    ? focusRight(focus.other)
-                    : exitNode(util.frac(focus, exitedRow));
-            case "zroot":
-                return focus.dir === 0
-                    ? focusRight(focus.other)
-                    : exitNode(util.root(focus, exitedRow));
-            case "zlimits":
-                return focus.dir === 0 && focus.other
-                    ? focusRight(focus.other)
-                    : exitNode(util.limits(focus, exitedRow));
-            default:
-                throw new UnreachableCaseError(focus);
-        }
+        return focus.right[0]
+            ? focusRight(focus.right[0])
+            : exitNode(util.focusToNode(focus, exitedRow));
     }
 
     return zipper;

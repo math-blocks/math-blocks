@@ -42,12 +42,14 @@ export const slash = (zipper: Zipper): Zipper => {
         const focus: Focus = {
             type: "zfrac",
             id: getId(),
-            dir: 1,
-            other: {
-                id: getId(),
-                type: "row",
-                children: selection.nodes,
-            },
+            left: [
+                {
+                    id: getId(),
+                    type: "row",
+                    children: selection.nodes,
+                },
+            ],
+            right: [],
         };
 
         return {
@@ -98,12 +100,14 @@ export const slash = (zipper: Zipper): Zipper => {
     const focus: Focus = {
         type: "zfrac",
         id: getId(),
-        dir: 1,
-        other: {
-            id: getId(),
-            type: "row",
-            children: left.slice(index + 1),
-        },
+        left: [
+            {
+                id: getId(),
+                type: "row",
+                children: left.slice(index + 1),
+            },
+        ],
+        right: [],
     };
 
     return {

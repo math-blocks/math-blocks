@@ -94,8 +94,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: 0, // the numerator is focused
-                            other: row("3"), // denominator
+                            left: [],
+                            right: [row("3")],
                         },
                     },
                 ],
@@ -128,8 +128,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zfrac",
-                            dir: 1, // the denominator is focused
-                            other: row("2"), // numerator
+                            left: [row("2")],
+                            right: [],
                         },
                     },
                 ],
@@ -160,8 +160,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: 1,
-                other: f.children[0],
+                left: [f.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -191,8 +191,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: 0, // the subscript is focused
-                            other: null, // no superscript
+                            left: [], // the subscript is focused
+                            right: [null], // no superscript
                         },
                     },
                 ],
@@ -225,8 +225,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: 0, // the subscript is focused
-                            other: row("2"), // superscript
+                            left: [], // the subscript is focused
+                            right: [row("2")], // superscript
                         },
                     },
                 ],
@@ -259,8 +259,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: 1, // the superscript is focused
-                            other: null, // no subscript
+                            left: [null], // no subscript
+                            right: [], // the superscript is focused
                         },
                     },
                 ],
@@ -293,8 +293,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zsubsup",
-                            dir: 1, // the superscript is focused
-                            other: row("n"), // subscript
+                            left: [row("n")], // subscript
+                            right: [], // the superscript is focused
                         },
                     },
                 ],
@@ -330,8 +330,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -357,8 +357,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -388,8 +388,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: 1, // the radicand is focused
-                            other: null, // no index
+                            left: [null], // no index
+                            right: [], // the radicand is focused
                         },
                     },
                 ],
@@ -422,8 +422,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: 1, // the radicand is focused
-                            other: row("3"), // index
+                            left: [row("3")], // index
+                            right: [], // the radicand is focused
                         },
                     },
                 ],
@@ -456,8 +456,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zroot",
-                            dir: 0, // the index is focused
-                            other: row("27"), // radicand
+                            left: [], // the index is focused
+                            right: [row("27")], // radicand
                         },
                     },
                 ],
@@ -488,8 +488,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -515,8 +515,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: r.children[0],
+                left: [r.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -546,8 +546,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: 0, // the lower bound is focused
-                            other: null, // no upper bound
+                            left: [], // the lower bound is focused
+                            right: [null], // no upper bound
                             inner: row("lim"),
                         },
                     },
@@ -581,8 +581,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: 0, // the lower bound is focused
-                            other: row("n"), // upper bound
+                            left: [], // the lower bound is focused
+                            right: [row("n")], // upper bound
                             inner: row("sum"),
                         },
                     },
@@ -616,8 +616,8 @@ describe("backspace", () => {
                         focus: {
                             id: 0,
                             type: "zlimits",
-                            dir: 1, // the upper bound is focused
-                            other: row("i=0"), // lower bound
+                            left: [row("i=0")], // lower bound
+                            right: [], // the upper bound is focused
                             inner: row("sum"),
                         },
                     },
@@ -663,8 +663,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(1);
@@ -706,8 +706,8 @@ describe("backspace", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: 1,
-                other: lower,
+                left: [lower],
+                right: [],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(1);

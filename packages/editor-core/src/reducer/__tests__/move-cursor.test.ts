@@ -65,8 +65,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: 0,
-                other: f.children[1],
+                left: [],
+                right: [f.children[1]],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -92,8 +92,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: 1,
-                other: f.children[0],
+                left: [f.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -144,8 +144,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 0,
-                other: ss.children[1],
+                left: [],
+                right: [ss.children[1]],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -171,8 +171,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 1,
-                other: ss.children[0],
+                left: [ss.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -223,8 +223,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -273,8 +273,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -323,8 +323,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 0,
-                other: r.children[1],
+                left: [],
+                right: [r.children[1]],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -350,8 +350,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: r.children[0],
+                left: [r.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -402,8 +402,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -466,8 +466,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(0);
@@ -546,8 +546,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: 0,
-                other: upper,
+                left: [],
+                right: [upper],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(0);
@@ -589,8 +589,8 @@ describe("moveRight", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: 1,
-                other: lower,
+                left: [lower],
+                right: [],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(0);
@@ -697,8 +697,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: 1,
-                other: f.children[0],
+                left: [f.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -724,8 +724,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: f.id,
                 type: "zfrac",
-                dir: 0,
-                other: f.children[1],
+                left: [],
+                right: [f.children[1]],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -776,8 +776,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 1,
-                other: ss.children[0],
+                left: [ss.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -803,8 +803,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 0,
-                other: ss.children[1],
+                left: [],
+                right: [ss.children[1]],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -855,8 +855,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -905,8 +905,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: ss.id,
                 type: "zsubsup",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -955,8 +955,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: r.children[0],
+                left: [r.children[0]],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -982,8 +982,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 0,
-                other: r.children[1],
+                left: [],
+                right: [r.children[1]],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1034,8 +1034,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: r.id,
                 type: "zroot",
-                dir: 1,
-                other: null,
+                left: [null],
+                right: [],
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1098,8 +1098,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: lim.id,
                 type: "zlimits",
-                dir: 0,
-                other: null,
+                left: [],
+                right: [null],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(1);
@@ -1178,8 +1178,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: 1,
-                other: lower,
+                left: [lower],
+                right: [],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(1);
@@ -1221,8 +1221,8 @@ describe("moveLeft", () => {
             expect(result.breadcrumbs[0].focus).toEqual({
                 id: sum.id,
                 type: "zlimits",
-                dir: 0,
-                other: upper,
+                left: [],
+                right: [upper],
                 inner: inner,
             });
             expect(result.row.left).toHaveLength(1);

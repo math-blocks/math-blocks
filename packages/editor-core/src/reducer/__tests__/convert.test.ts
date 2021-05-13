@@ -90,8 +90,8 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: 0,
-                            other: row("3"),
+                            left: [],
+                            right: [row("3")],
                         },
                     },
                 ],
@@ -137,8 +137,8 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: 0,
-                            other: row("3"),
+                            left: [],
+                            right: [row("3")],
                         },
                     },
                 ],
@@ -186,8 +186,8 @@ describe("zipperToRow", () => {
                         focus: {
                             id: 2,
                             type: "zfrac",
-                            dir: 0,
-                            other: row("3"),
+                            left: [],
+                            right: [row("3")],
                         },
                     },
                 ],

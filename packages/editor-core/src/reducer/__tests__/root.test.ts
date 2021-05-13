@@ -39,9 +39,11 @@ describe("root", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toMatchInlineSnapshot(`
                 Object {
-                  "dir": 1,
                   "id": 3,
-                  "other": null,
+                  "left": Array [
+                    null,
+                  ],
+                  "right": Array [],
                   "type": "zroot",
                 }
             `);
@@ -72,13 +74,15 @@ describe("root", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toMatchInlineSnapshot(`
                 Object {
-                  "dir": 0,
                   "id": 3,
-                  "other": Object {
-                    "children": Array [],
-                    "id": 4,
-                    "type": "row",
-                  },
+                  "left": Array [],
+                  "right": Array [
+                    Object {
+                      "children": Array [],
+                      "id": 4,
+                      "type": "row",
+                    },
+                  ],
                   "type": "zroot",
                 }
             `);
@@ -114,9 +118,9 @@ describe("root", () => {
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual(1);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
-                expect(result.breadcrumbs[0].focus.other).toBeNull();
+                expect(result.breadcrumbs[0].focus.left).toEqual([null]);
+                expect(result.breadcrumbs[0].focus.right).toEqual([]);
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                     row("").children,
                 );
@@ -156,9 +160,9 @@ describe("root", () => {
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual(1);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
-                expect(result.breadcrumbs[0].focus.other).toBeNull();
+                expect(result.breadcrumbs[0].focus.left).toEqual([null]);
+                expect(result.breadcrumbs[0].focus.right).toEqual([]);
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                     row("").children,
                 );
@@ -190,15 +194,17 @@ describe("root", () => {
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual(0);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
-                expect(result.breadcrumbs[0].focus.other)
+                expect(result.breadcrumbs[0].focus.left).toEqual([]);
+                expect(result.breadcrumbs[0].focus.right)
                     .toMatchInlineSnapshot(`
-                    Object {
-                      "children": Array [],
-                      "id": 8,
-                      "type": "row",
-                    }
+                    Array [
+                      Object {
+                        "children": Array [],
+                        "id": 8,
+                        "type": "row",
+                      },
+                    ]
                 `);
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                     row("").children,
@@ -239,15 +245,17 @@ describe("root", () => {
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);
                 expect(result.breadcrumbs).toHaveLength(1);
-                expect(result.breadcrumbs[0].focus.dir).toEqual(0);
                 expect(result.breadcrumbs[0].focus.type).toEqual("zroot");
-                expect(result.breadcrumbs[0].focus.other)
+                expect(result.breadcrumbs[0].focus.left).toEqual([]);
+                expect(result.breadcrumbs[0].focus.right)
                     .toMatchInlineSnapshot(`
-                    Object {
-                      "children": Array [],
-                      "id": 7,
-                      "type": "row",
-                    }
+                    Array [
+                      Object {
+                        "children": Array [],
+                        "id": 7,
+                        "type": "row",
+                      },
+                    ]
                 `);
                 expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                     row("").children,

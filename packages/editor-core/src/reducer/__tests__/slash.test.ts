@@ -28,10 +28,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("2").children);
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                 row("").children,
@@ -58,10 +58,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("ab").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -89,10 +89,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("(1+2)").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -120,10 +120,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("(a)(b)").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -151,10 +151,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("1").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -182,10 +182,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("1").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -222,10 +222,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("2").children);
 
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
@@ -266,10 +266,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(row("2+3").children);
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes(
                 row("").children,
@@ -303,10 +303,10 @@ describe("slash", () => {
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].focus.dir).toEqual(1);
+            expect(result.breadcrumbs[0].focus.right).toEqual([]);
             expect(result.breadcrumbs[0].focus.type).toEqual("zfrac");
             expect(
-                result.breadcrumbs[0].focus.other?.children,
+                result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(
                 builders.row([
                     builders.glyph("x"),

@@ -24,35 +24,49 @@ export type ZRowWithSelection = {
 
 export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
 
-export type ZFrac = {
-    id: number;
-    type: "zfrac";
-    dir: 0 | 1; // index of focused child
-    other: types.Row; // what isn't being focused
-};
+export type ZFrac =
+    | {
+          id: number;
+          type: "zfrac";
+          left: [];
+          right: [types.Row];
+      }
+    | {
+          id: number;
+          type: "zfrac";
+          left: [types.Row];
+          right: [];
+      };
 
 // TODO: consider splitting up SubSup into three different types.
 // If both `sub` and `sup` are `null` then the node is invalid.
-export type ZSubSup = {
-    id: number;
-    type: "zsubsup";
-    dir: 0 | 1; // index of focused child
-    other: types.Row | null; // what isn't being focused
-};
+export type ZSubSup =
+    | {
+          id: number;
+          type: "zsubsup";
+          left: [];
+          right: [types.Row | null];
+      }
+    | {
+          id: number;
+          type: "zsubsup";
+          left: [types.Row | null];
+          right: [];
+      };
 
 export type ZLimits =
     | {
           id: number;
           type: "zlimits";
-          dir: 0; // index of focused child
-          other: types.Row | null;
+          left: [];
+          right: [types.Row | null];
           inner: types.Node;
       }
     | {
           id: number;
           type: "zlimits";
-          dir: 1; // index of focused child
-          other: types.Row;
+          left: [types.Row];
+          right: [];
           inner: types.Node;
       };
 
@@ -60,21 +74,21 @@ export type ZRoot =
     | {
           id: number;
           type: "zroot";
-          dir: 0; // index of focused child
-          other: types.Row;
+          left: [];
+          right: [types.Row];
       }
     | {
           id: number;
           type: "zroot";
-          dir: 1; // index of focused child
-          other: types.Row | null;
+          left: [types.Row | null];
+          right: [];
       };
 
 export type ZDelimited = {
     id: number;
     type: "zdelimited";
-    dir: 0; // index of focused child
-    other: null;
+    left: [];
+    right: [];
     leftDelim: types.Atom;
     rightDelim: types.Atom;
 };

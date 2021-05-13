@@ -82,45 +82,39 @@ export const backspace = (zipper: Zipper): Zipper => {
     }
 
     const parent = breadcrumbs[breadcrumbs.length - 1];
-
     const {focus, row} = parent;
 
-    const children = focus.other ? focus.other.children : [];
-
-    if (focus.dir === 0) {
+    // Special deleting from the start of a superscript when there's both a
+    // superscript and subscript.
+    // - before: a_n^|2
+    // - after: a_n|2
+    if (focus.type === "zsubsup" && focus.left[0]) {
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
                 ...row,
-                right: [...zipper.row.right, ...children, ...row.right],
-            },
-        };
-    } else {
-        if (focus.type === "zsubsup" && focus.other) {
-            return {
-                breadcrumbs: breadcrumbs.slice(0, -1),
-                row: {
-                    ...row,
-                    left: [
-                        ...row.left,
-                        {
-                            id: focus.id,
-                            type: "subsup",
-                            children: [focus.other, null],
-                        },
-                    ],
-                    right: [...zipper.row.right, ...row.right],
-                },
-            };
-        }
-
-        return {
-            breadcrumbs: breadcrumbs.slice(0, -1),
-            row: {
-                ...row,
-                left: [...row.left, ...children],
+                left: [
+                    ...row.left,
+                    {
+                        id: focus.id,
+                        type: "subsup",
+                        children: [focus.left[0], null],
+                    },
+                ],
                 right: [...zipper.row.right, ...row.right],
             },
         };
     }
+
+    const leftChildren = focus.left[0] ? focus.left[0].children : [];
+    const rightChildren = focus.right[0] ? focus.right[0].children : [];
+
+    return {
+        breadcrumbs: breadcrumbs.slice(0, -1),
+        row: {
+            ...row,
+            left: [...row.left, ...leftChildren],
+            right: [...zipper.row.right, ...rightChildren, ...row.right],
+        },
+    };
 };
