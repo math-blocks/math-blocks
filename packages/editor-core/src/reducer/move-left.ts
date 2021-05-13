@@ -52,8 +52,8 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                     break;
                 }
                 case "subsup": {
-                    const dir = prev.children[1] ? 1 : 0;
-                    focus = util.zsubsup(prev, dir);
+                    const index = prev.children[1] ? 1 : 0;
+                    focus = util.zsubsup(prev, index);
                     break;
                 }
                 case "root": {
@@ -61,8 +61,8 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                     break;
                 }
                 case "limits": {
-                    const dir = prev.children[1] ? 1 : 0;
-                    focus = util.zlimits(prev, dir);
+                    const index = prev.children[1] ? 1 : 0;
+                    focus = util.zlimits(prev, index);
                     break;
                 }
                 case "delimited": {
@@ -127,29 +127,9 @@ const cursorLeft = (zipper: Zipper): Zipper => {
             row: util.zrow(row.id, row.children, []),
         });
 
-        switch (focus.type) {
-            case "zsubsup": {
-                return focus.left[0]
-                    ? focusLeft(focus.left[0])
-                    : exitNode(util.subsup(focus, exitedRow));
-            }
-            case "zfrac": {
-                return focus.left[0]
-                    ? focusLeft(focus.left[0])
-                    : exitNode(util.frac(focus, exitedRow));
-            }
-            case "zroot": {
-                return focus.left[0]
-                    ? focusLeft(focus.left[0])
-                    : exitNode(util.root(focus, exitedRow));
-            }
-            case "zlimits":
-                return focus.left[0]
-                    ? focusLeft(focus.left[0])
-                    : exitNode(util.limits(focus, exitedRow));
-            default:
-                throw new UnreachableCaseError(focus);
-        }
+        return focus.left[0]
+            ? focusLeft(focus.left[0])
+            : exitNode(util.focusToNode(focus, exitedRow));
     }
 
     return zipper;
