@@ -191,3 +191,113 @@ export const rowToZipper = (
 
     return zipper;
 };
+
+// This call can return undefined if the args passed to it have a different
+// base structure, e.g. 2x| + 5 = 10, and 3y - 8| = 15.
+export const selectionZipperFromZippers = (
+    startZipper: Zipper,
+    endZipper: Zipper,
+): Zipper | void => {
+    // Plan:
+    // - start with simple situation where both cursors are in the same row
+    // - handle more complex situations where cursors are in different rows
+    //   - find last common row, do the same thing as the simple situation
+    if (startZipper.row.id == endZipper.row.id) {
+        // TODO: do some validation on the rows to check that they contain the
+        // same number of children.
+
+        // assert row.selection is empty for both startZipper and endZipper
+
+        const left =
+            startZipper.row.left.length < endZipper.row.left.length
+                ? startZipper.row.left
+                : endZipper.row.left;
+
+        const right =
+            startZipper.row.right.length < endZipper.row.right.length
+                ? startZipper.row.right
+                : endZipper.row.right;
+
+        const children = [...startZipper.row.left, ...startZipper.row.right];
+
+        const selection = children.slice(
+            left.length,
+            children.length - right.length,
+        );
+
+        return {
+            ...startZipper,
+            row: {
+                ...startZipper.row,
+                left: left,
+                right: right,
+                selection: {
+                    dir: SelectionDir.Left, // TODO: get rid of this
+                    nodes: selection,
+                },
+            },
+        };
+    } else {
+        // find the last breadcrumb with a common row id
+        const length = Math.min(
+            startZipper.breadcrumbs.length,
+            endZipper.breadcrumbs.length,
+        );
+
+        let index = -1;
+        for (let i = 0; i < length; i++) {
+            if (
+                startZipper.breadcrumbs[i].row.id ===
+                endZipper.breadcrumbs[i].row.id
+            ) {
+                index = i;
+            }
+        }
+
+        const shortestZipper =
+            startZipper.breadcrumbs.length === length ? startZipper : endZipper;
+
+        // TODO: rezip the shortestZipper above the current index
+        console.log(`index = ${index}`);
+
+        if (shortestZipper.breadcrumbs.length === index + 1) {
+            // no rezipping is required
+            const otherCrumb =
+                shortestZipper === startZipper
+                    ? endZipper.breadcrumbs[index + 1]
+                    : startZipper.breadcrumbs[index + 1];
+
+            const children = [
+                ...shortestZipper.row.left,
+                ...shortestZipper.row.right,
+            ];
+
+            const firstIndex = Math.min(
+                shortestZipper.row.left.length,
+                otherCrumb.row.left.length,
+            );
+
+            const lastIndex =
+                children.length -
+                Math.min(
+                    shortestZipper.row.right.length,
+                    otherCrumb.row.right.length,
+                );
+
+            return {
+                ...shortestZipper,
+                row: {
+                    ...shortestZipper.row,
+                    left: children.slice(0, firstIndex),
+                    selection: {
+                        dir: SelectionDir.Left, // TODO: remove this
+                        nodes: children.slice(firstIndex, lastIndex),
+                    },
+                    right: children.slice(lastIndex),
+                },
+            };
+        }
+    }
+
+    return undefined;
+};

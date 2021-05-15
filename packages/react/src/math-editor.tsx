@@ -37,6 +37,11 @@ type Props = {
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
+    // In the future we may want to provide a way to set both the start and end
+    // positions so that we set a starting selection.
+    const [startZipper, setStartZipper] = useState<Editor.Zipper>(props.zipper);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [endZipper, setEndZipper] = useState<Editor.Zipper>(props.zipper);
     const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
     const fontData = useContext(FontDataContext);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -97,8 +102,22 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
         const row = Editor.zipperToRow(zipper);
         const newZipper = Editor.rowToZipper(row, intersections);
+
         if (newZipper) {
-            setZipper(newZipper);
+            if (e.shiftKey) {
+                const selectionZipper = Editor.selectionZipperFromZippers(
+                    startZipper,
+                    newZipper,
+                );
+                if (selectionZipper) {
+                    setEndZipper(newZipper);
+                    setZipper(selectionZipper);
+                }
+            } else {
+                setStartZipper(newZipper);
+                setEndZipper(newZipper);
+                setZipper(newZipper);
+            }
         }
     };
 
