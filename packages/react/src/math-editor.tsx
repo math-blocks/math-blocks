@@ -97,7 +97,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         }
         const bounds = svgRef.current.getBoundingClientRect();
         const point = {x: e.clientX - bounds.x, y: e.clientY - bounds.y};
-        console.log(point);
 
         const intersections = Typesetter.SceneGraph.findIntersections(
             point,
