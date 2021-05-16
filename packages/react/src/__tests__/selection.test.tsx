@@ -156,6 +156,29 @@ describe("moving cursor with mouse", () => {
                 glyph("0"),
             ]);
         });
+
+        test("at the same location", async () => {
+            const zipper = await getSelectionZipper(
+                math,
+                {x: 67, y: 30},
+                {x: 67, y: 30},
+            );
+
+            expect(zipper.row.left).toEqualEditorNodes([
+                glyph("2"),
+                glyph("x"),
+            ]);
+
+            expect(zipper.row.selection).toBeNull();
+
+            expect(zipper.row.right).toEqualEditorNodes([
+                glyph("+"),
+                glyph("5"),
+                glyph("="),
+                glyph("1"),
+                glyph("0"),
+            ]);
+        });
     });
 
     describe("adding fractions", () => {
@@ -287,11 +310,68 @@ describe("moving cursor with mouse", () => {
             ]);
         });
 
+        test("one-level deep and two-levels deep in fraction numerator", async () => {
+            const zipper = await getSelectionZipper(
+                math,
+                {x: 216, y: 54},
+                {x: 145, y: 24},
+            );
+
+            expect(zipper.breadcrumbs).toHaveLength(1);
+            expect(zipper.breadcrumbs[0].row.left).toEqualEditorNodes([
+                math.children[0],
+                math.children[1],
+            ]);
+            expect(zipper.breadcrumbs[0].row.right).toEqualEditorNodes([
+                math.children[3],
+                math.children[4],
+                math.children[5],
+                math.children[6],
+            ]);
+
+            // @ts-expect-error: we know math.chilren[2] is a "frac" node
+            const numerator = math.children[2].children[0];
+
+            expect(zipper.row.left).toEqualEditorNodes([]);
+
+            // All nodes in the numerator are selected
+            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+                numerator.children[0],
+                numerator.children[1],
+            ]);
+
+            expect(zipper.row.right).toEqualEditorNodes([
+                numerator.children[2],
+            ]);
+        });
+
         test("two-levels deep and at the root level", async () => {
             const zipper = await getSelectionZipper(
                 math,
                 {x: 145, y: 24},
                 {x: 34, y: 112},
+            );
+
+            expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
+
+            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+                math.children[1],
+                math.children[2],
+            ]);
+
+            expect(zipper.row.right).toEqualEditorNodes([
+                math.children[3],
+                math.children[4],
+                math.children[5],
+                math.children[6],
+            ]);
+        });
+
+        test("at the root level and two-levels deep", async () => {
+            const zipper = await getSelectionZipper(
+                math,
+                {x: 34, y: 112},
+                {x: 145, y: 24},
             );
 
             expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
