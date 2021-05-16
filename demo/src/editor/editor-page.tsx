@@ -171,10 +171,11 @@ const EditorPage: React.FunctionComponent = () => {
                     }}
                     defaultValue={0}
                 >
-                    <option value={0}>Simple Equation</option>
-                    <option value={1}>All Node Types</option>
-                    <option value={2}>Tall Delimiters</option>
-                    <option value={3}>Nested Fractions</option>
+                    <option value={0}>Adding Fractions</option>
+                    <option value={1}>Simple Equation</option>
+                    <option value={2}>All Node Types</option>
+                    <option value={3}>Tall Delimiters</option>
+                    <option value={4}>Nested Fractions</option>
                 </select>
                 <span
                     style={{

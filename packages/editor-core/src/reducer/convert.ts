@@ -12,6 +12,7 @@ import {
     zdelimited,
 } from "./util";
 import {SelectionDir} from "./enums";
+import type {ZRow} from "./types";
 
 export const zipperToRow = (zipper: Zipper): Row => {
     if (zipper.breadcrumbs.length === 0) {
@@ -190,4 +191,194 @@ export const rowToZipper = (
     };
 
     return zipper;
+};
+
+const getLeftSelectionRight = (
+    row1: ZRow,
+    row2: ZRow,
+    children: Node[],
+): {
+    left: Node[];
+    selection: {
+        dir: SelectionDir; // TODO: remove this
+        nodes: Node[];
+    } | null;
+    right: Node[];
+} => {
+    const firstIndex = Math.min(row1.left.length, row2.left.length);
+    const lastIndex =
+        children.length - Math.min(row1.right.length, row2.right.length);
+
+    const selectionNodes = children.slice(firstIndex, lastIndex);
+
+    return {
+        left: children.slice(0, firstIndex),
+        selection:
+            selectionNodes.length > 0
+                ? {
+                      dir: SelectionDir.Left, // TODO: remove this
+                      nodes: selectionNodes,
+                  }
+                : null,
+        right: children.slice(lastIndex),
+    };
+};
+
+// This call can return undefined if the args passed to it have a different
+// base structure, e.g. 2x| + 5 = 10, and 3y - 8| = 15.
+export const selectionZipperFromZippers = (
+    startZipper: Zipper,
+    endZipper: Zipper,
+): Zipper | void => {
+    // Case 1: Common row
+    if (startZipper.row.id == endZipper.row.id) {
+        // TODO: do some validation on the rows to check that they contain the
+        // same number of children.
+
+        // assert row.selection is empty for both startZipper and endZipper
+
+        const children = [...startZipper.row.left, ...startZipper.row.right];
+
+        return {
+            ...startZipper,
+            row: {
+                ...startZipper.row,
+                ...getLeftSelectionRight(
+                    startZipper.row,
+                    endZipper.row,
+                    children,
+                ),
+            },
+        };
+    }
+
+    // find the last breadcrumb with a common row id
+    const length = Math.min(
+        startZipper.breadcrumbs.length,
+        endZipper.breadcrumbs.length,
+    );
+
+    let index = -1;
+    for (let i = 0; i < length; i++) {
+        if (
+            startZipper.breadcrumbs[i].row.id ===
+            endZipper.breadcrumbs[i].row.id
+        ) {
+            index = i;
+        }
+    }
+
+    // Case 2: Common breadcrumb
+    if (index !== -1) {
+        const crumb = startZipper.breadcrumbs[index];
+
+        // Rezip shorterZipper until breadcrumbs reaches desired length.
+        let zipper = startZipper;
+        while (zipper.breadcrumbs.length > index) {
+            const crumbs = zipper.breadcrumbs;
+
+            const lastCrumb = crumbs[crumbs.length - 1];
+            const restCrumbs = crumbs.slice(0, -1);
+
+            const node = focusToNode(lastCrumb.focus, zrowToRow(zipper.row));
+            zipper = {
+                row: {
+                    ...lastCrumb.row,
+                    // We need to know which side the shortestZipper is on to
+                    // order to know whether to includ 'node' in '.left' or '.right'.
+                    left: [...lastCrumb.row.left, node],
+                },
+                breadcrumbs: restCrumbs,
+            };
+        }
+
+        // even though the IDs of the crumb's rows are the same, the index
+        // of their focuses are different
+        const startCrumb = startZipper.breadcrumbs[index];
+        const endCrumb = endZipper.breadcrumbs[index];
+
+        // If the focus IDs are the same then the selection is contained within
+        // one of the zipper's row.
+        if (
+            startCrumb.focus.left.length === endCrumb.focus.left.length &&
+            startCrumb.focus.right.length === endCrumb.focus.right.length &&
+            startCrumb.focus.id === endCrumb.focus.id
+        ) {
+            if (startZipper.breadcrumbs.length === index + 1) {
+                const row = startZipper.row;
+                const otherRow = endZipper.breadcrumbs[index + 1].row;
+                const children = [...row.left, ...row.right];
+
+                return {
+                    ...zipper,
+                    breadcrumbs: [...zipper.breadcrumbs, crumb],
+                    row: {
+                        ...row,
+                        ...getLeftSelectionRight(row, otherRow, children),
+                    },
+                };
+            }
+            if (endZipper.breadcrumbs.length === index + 1) {
+                const row = endZipper.row;
+                const otherRow = startZipper.breadcrumbs[index + 1].row;
+                const children = [...row.left, ...row.right];
+
+                return {
+                    ...zipper,
+                    breadcrumbs: [...zipper.breadcrumbs, crumb],
+                    row: {
+                        ...row,
+                        ...getLeftSelectionRight(row, otherRow, children),
+                    },
+                };
+            }
+
+            // This should never happen
+            throw new Error("unhandled case");
+        }
+
+        const children = [...zipper.row.left, ...zipper.row.right];
+
+        return {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                ...getLeftSelectionRight(
+                    startCrumb.row,
+                    endCrumb.row,
+                    children,
+                ),
+            },
+        };
+    }
+
+    // Case 3: No common breadcrumb/row
+    const shortestZipper =
+        startZipper.breadcrumbs.length === length ? startZipper : endZipper;
+
+    if (shortestZipper.breadcrumbs.length === index + 1) {
+        const otherCrumb =
+            shortestZipper === startZipper
+                ? endZipper.breadcrumbs[index + 1]
+                : startZipper.breadcrumbs[index + 1];
+
+        const children = [
+            ...shortestZipper.row.left,
+            ...shortestZipper.row.right,
+        ];
+
+        return {
+            ...shortestZipper,
+            row: {
+                ...shortestZipper.row,
+                ...getLeftSelectionRight(
+                    shortestZipper.row,
+                    otherCrumb.row,
+                    children,
+                ),
+            },
+        };
+    }
+
+    return undefined;
 };

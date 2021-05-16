@@ -114,4 +114,43 @@ const nestedFractions = Editor.builders.row([
     Editor.builders.glyph("b"),
 ]);
 
-export const examples = [simpleRow, allNodeTypes, delimiters, nestedFractions];
+const addingFractions = Editor.builders.row([
+    Editor.builders.glyph("2"),
+    Editor.builders.glyph("+"),
+    Editor.builders.frac(
+        [
+            Editor.builders.frac(
+                [Editor.builders.glyph("a")],
+                [Editor.builders.glyph("b")],
+            ),
+            Editor.builders.glyph("+"),
+            Editor.builders.frac(
+                [Editor.builders.glyph("c")],
+                [Editor.builders.glyph("d")],
+            ),
+        ],
+        [Editor.builders.glyph("1")],
+    ),
+    Editor.builders.glyph("+"),
+    Editor.builders.frac(
+        [
+            Editor.builders.frac(
+                [Editor.builders.glyph("x")],
+                [Editor.builders.glyph("y")],
+            ),
+            Editor.builders.glyph("+"),
+            Editor.builders.glyph("1"),
+        ],
+        [Editor.builders.glyph("1")],
+    ),
+    Editor.builders.glyph("\u2212"),
+    Editor.builders.glyph("y"),
+]);
+
+export const examples = [
+    addingFractions,
+    simpleRow,
+    allNodeTypes,
+    delimiters,
+    nestedFractions,
+];
