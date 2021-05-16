@@ -202,19 +202,24 @@ const getLeftSelectionRight = (
     selection: {
         dir: SelectionDir; // TODO: remove this
         nodes: Node[];
-    };
+    } | null;
     right: Node[];
 } => {
     const firstIndex = Math.min(row1.left.length, row2.left.length);
     const lastIndex =
         children.length - Math.min(row1.right.length, row2.right.length);
 
+    const selectionNodes = children.slice(firstIndex, lastIndex);
+
     return {
         left: children.slice(0, firstIndex),
-        selection: {
-            dir: SelectionDir.Left, // TODO: remove this
-            nodes: children.slice(firstIndex, lastIndex),
-        },
+        selection:
+            selectionNodes.length > 0
+                ? {
+                      dir: SelectionDir.Left, // TODO: remove this
+                      nodes: selectionNodes,
+                  }
+                : null,
         right: children.slice(lastIndex),
     };
 };
@@ -234,24 +239,15 @@ export const selectionZipperFromZippers = (
 
         const children = [...startZipper.row.left, ...startZipper.row.right];
 
-        const firstIndex = Math.min(
-            startZipper.row.left.length,
-            endZipper.row.left.length,
-        );
-        const lastIndex =
-            children.length -
-            Math.min(startZipper.row.right.length, endZipper.row.right.length);
-
         return {
             ...startZipper,
             row: {
                 ...startZipper.row,
-                left: children.slice(0, firstIndex),
-                selection: {
-                    dir: SelectionDir.Left, // TODO: get rid of this
-                    nodes: children.slice(firstIndex, lastIndex),
-                },
-                right: children.slice(lastIndex),
+                ...getLeftSelectionRight(
+                    startZipper.row,
+                    endZipper.row,
+                    children,
+                ),
             },
         };
     }
@@ -337,6 +333,7 @@ export const selectionZipperFromZippers = (
                 };
             }
 
+            // This should never happen
             throw new Error("unhandled case");
         }
 
