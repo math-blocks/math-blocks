@@ -25,13 +25,14 @@ type Action = {type: string; shift?: boolean};
 export const zipperReducer = (
     state: State = initialState,
     action: Action,
+    startZipper?: Zipper,
 ): State => {
     switch (action.type) {
         case "ArrowLeft": {
-            return moveLeft(state, !!action.shift);
+            return moveLeft(state, startZipper);
         }
         case "ArrowRight": {
-            return moveRight(state, !!action.shift);
+            return moveRight(state, startZipper);
         }
         case "Backspace": {
             return backspace(state);

@@ -2,11 +2,8 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../types";
 
-import {SelectionDir} from "./enums";
-import type {Breadcrumb, Focus, Zipper, ZRow, ZRowWithSelection} from "./types";
+import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";
-import {crumbMoveRight, startSelection, stopSelection} from "./selection-util";
-import {replaceItem} from "./array-util";
 
 const cursorRight = (zipper: Zipper): Zipper => {
     zipper = util.rezipSelection(zipper);
@@ -133,171 +130,86 @@ const cursorRight = (zipper: Zipper): Zipper => {
     return zipper;
 };
 
-function hasSelection(row: ZRow): row is ZRowWithSelection {
-    return row.selection !== null;
-}
+const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
+    console.log("selecting to the right");
 
-const selectionRight = (zipper: Zipper): Zipper => {
-    // INVARIANT: selections in crumbs can only exist from last crumb (top) back
-    // to the first crumb (bottom), there can be no gaps either
+    // Case 1: We're at the end of the row
+    if (endZipper.row.right.length === 0) {
+        // leave the node if we can
+        if (endZipper.breadcrumbs.length > 0) {
+            const {focus, row: parentRow} = endZipper.breadcrumbs[
+                endZipper.breadcrumbs.length - 1
+            ];
 
-    // Cases to handle:
-    // - start a selection
-    // - expand a selection (possibly moving out to a yet to be selected focus)
-    // - contract a selection (possible moving in to an already selected focus)
+            const exitNode = (updatedNode: types.Node): Zipper => ({
+                breadcrumbs: endZipper.breadcrumbs.slice(0, -1),
+                // place the subsup we exited on our left
+                row: util.insertLeft(parentRow, updatedNode),
+            });
 
-    const rowsWithSelections: ZRowWithSelection[] = zipper.breadcrumbs
-        .map((crumb) => crumb.row)
-        .filter(hasSelection);
-    if (zipper.row.selection) {
-        rowsWithSelections.push(zipper.row);
+            const exitedRow: types.Row = util.zrowToRow(endZipper.row);
+
+            return exitNode(util.focusToNode(focus, exitedRow));
+        }
+
+        // If there are no breadcrumbs we're at the topmost row so there's
+        // nowhere to go.
+        return endZipper;
     }
 
-    if (rowsWithSelections.length === 0) {
-        const {row} = zipper;
+    const nextNode = endZipper.row.right[0];
 
-        // We haven't started selecting anything yet.
-        if (row.right.length > 0) {
-            // Create a new selection to the left and move left.
-            return crumbMoveRight(startSelection(zipper, SelectionDir.Right));
-        } else {
-            // Create an empty selection and them move outward.
-            const index = zipper.breadcrumbs.length - 1;
-            const crumb = zipper.breadcrumbs[index];
-            const updatedCrumb = startSelection(crumb, SelectionDir.Right);
+    // Case 2: Enter the next node if the startZipper is focused on it
+    let canEnterNextNode = true;
 
-            return {
-                ...startSelection(zipper, SelectionDir.Right),
-                breadcrumbs: replaceItem(
-                    zipper.breadcrumbs,
-                    updatedCrumb,
-                    index,
-                ),
-            };
-        }
-    } else if (rowsWithSelections.length === 1) {
-        // Our selection is in the current row (top of zipper).
+    // If there are more breadcrumbs in the startZipper...
+    if (endZipper.breadcrumbs.length < startZipper.breadcrumbs.length) {
+        // ...and all of the breadcrums in the endZipper have a match in
+        // startZipper...
+        canEnterNextNode = endZipper.breadcrumbs.every((endCrumb, i) => {
+            const startCrumb = startZipper.breadcrumbs[i];
+            return (
+                startCrumb.focus.id === endCrumb.focus.id &&
+                startCrumb.focus.left.length === endCrumb.focus.left.length &&
+                startCrumb.focus.right.length === endCrumb.focus.right.length
+            );
+        });
 
-        const row = rowsWithSelections[0]; // same as zipper.row
+        if (canEnterNextNode) {
+            const nextCrumb =
+                startZipper.breadcrumbs[endZipper.breadcrumbs.length];
 
-        if (row.selection.dir === SelectionDir.Right) {
-            if (zipper.row.right.length > 0) {
-                return crumbMoveRight(zipper);
-            } else if (zipper.breadcrumbs.length > 0) {
-                const index = zipper.breadcrumbs.length - 1;
-                const crumb = zipper.breadcrumbs[index];
-                const updatedCrumb = startSelection(crumb, SelectionDir.Right);
+            // ...and the focus of the next crumb in startZipper matches the node
+            // we're trying to enter...
+            if (nextCrumb.focus.id === nextNode.id) {
+                const child: types.Row =
+                    // @ts-expect-error: TODO - type check this
+                    nextNode.children[nextCrumb.focus.left.length];
 
-                // Move out to start a selection in the parent crumb.
                 return {
-                    ...zipper,
-                    breadcrumbs: replaceItem(
-                        zipper.breadcrumbs,
-                        updatedCrumb,
-                        index,
-                    ),
+                    ...endZipper,
+                    // ...then enter the node using the next crumb...
+                    breadcrumbs: [...endZipper.breadcrumbs, nextCrumb],
+                    // ...and move the cursor to the start of the row.
+                    row: util.zrow(child.id, [], child.children),
                 };
-            } else {
-                // There's nowhere to go.  We're at the left-most part of the
-                // top-most row.
-                return zipper;
-            }
-        } else {
-            if (row.selection.nodes.length > 0) {
-                const result = crumbMoveRight(zipper);
-                if (result.row.selection?.nodes.length === 0) {
-                    // we're back at original cursor position, stop selecting
-                    return stopSelection(result);
-                } else {
-                    return result;
-                }
-            } else {
-                // This should never happen since we drop the selection if the
-                // number of nodes reaches 0.
-                // we're back at original cursor position, stop selecting
-                // This might happen if we started our selection at the edge
-                return stopSelection(zipper);
-            }
-        }
-    } else {
-        // Our selection is in the one of the breadcrumb rows.
-
-        let index = zipper.breadcrumbs.length - rowsWithSelections.length + 1;
-        const crumb = zipper.breadcrumbs[index];
-        const row = rowsWithSelections[0]; // same as crumb.row
-
-        if (row.selection.dir === SelectionDir.Right) {
-            if (row.right.length > 0) {
-                const updatedCrumb = crumbMoveRight(crumb);
-                return {
-                    ...zipper,
-                    breadcrumbs: replaceItem(
-                        zipper.breadcrumbs,
-                        updatedCrumb,
-                        index,
-                    ),
-                };
-            } else {
-                // Move out to start a selection in the parent crumb.
-                index = index - 1;
-
-                // We've reached the start of the bottom crumb so there's
-                // nowhere to go.
-                if (index < 0) {
-                    return zipper;
-                }
-
-                const crumb = zipper.breadcrumbs[index];
-                const updatedCrumb = startSelection(crumb, SelectionDir.Right);
-                return {
-                    ...zipper,
-                    breadcrumbs: replaceItem(
-                        zipper.breadcrumbs,
-                        updatedCrumb,
-                        index,
-                    ),
-                };
-            }
-        } else {
-            if (row.selection.nodes.length > 0) {
-                const updatedCrumb = crumbMoveRight(crumb);
-                return {
-                    ...zipper,
-                    breadcrumbs: replaceItem(
-                        zipper.breadcrumbs,
-                        updatedCrumb,
-                        index,
-                    ),
-                };
-            } else {
-                const updatedCrumb = stopSelection(crumb);
-                const result: Zipper = {
-                    ...zipper,
-                    breadcrumbs: replaceItem(
-                        zipper.breadcrumbs,
-                        updatedCrumb,
-                        index,
-                    ),
-                };
-
-                // If there are no selections in any of the breadcrumbs and the
-                // selection in the result.row is empty then clear the selection
-                // there as well.
-                if (
-                    result.row.selection?.nodes.length === 0 &&
-                    result.breadcrumbs.every(
-                        (crumb) => crumb.row.selection === null,
-                    )
-                ) {
-                    return stopSelection(result);
-                }
-
-                return result;
             }
         }
     }
+
+    // Case 3: Simple move to the right
+    return {
+        ...endZipper,
+        row: {
+            ...endZipper.row,
+            left: [...endZipper.row.left, nextNode],
+            right: endZipper.row.right.slice(1),
+        },
+    };
 };
 
-export const moveRight = (zipper: Zipper, selecting?: boolean): Zipper => {
-    return selecting ? selectionRight(zipper) : cursorRight(zipper);
+export const moveRight = (endZipper: Zipper, startZipper?: Zipper): Zipper => {
+    return startZipper
+        ? selectionRight(startZipper, endZipper)
+        : cursorRight(endZipper);
 };
