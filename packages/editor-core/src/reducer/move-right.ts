@@ -131,8 +131,6 @@ const cursorRight = (zipper: Zipper): Zipper => {
 };
 
 const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
-    console.log("selecting to the right");
-
     // Case 1: We're at the end of the row
     if (endZipper.row.right.length === 0) {
         // leave the node if we can
@@ -208,8 +206,8 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
     };
 };
 
-export const moveRight = (endZipper: Zipper, startZipper?: Zipper): Zipper => {
-    return startZipper
+export const moveRight = (startZipper: Zipper, endZipper?: Zipper): Zipper => {
+    return endZipper
         ? selectionRight(startZipper, endZipper)
-        : cursorRight(endZipper);
+        : cursorRight(startZipper);
 };

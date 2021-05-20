@@ -133,8 +133,6 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
 };
 
 const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
-    console.log("selecting to the left");
-
     // Case 1: We're at the start of the row
     if (endZipper.row.left.length === 0) {
         // leave the node if we can
@@ -185,6 +183,7 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
             // we're trying to enter...
             if (nextCrumb.focus.id === prevNode.id) {
                 const child: types.Row =
+                    // @ts-expect-error: TODO - type check this
                     prevNode.children[nextCrumb.focus.left.length];
 
                 const result = {
@@ -194,8 +193,6 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     // ...and move the cursor to the end of the row.
                     row: util.zrow(child.id, child.children, []),
                 };
-
-                console.log(result);
 
                 return result;
             }
@@ -212,8 +209,8 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
     };
 };
 
-export const moveLeft = (endZipper: Zipper, startZipper?: Zipper): Zipper => {
-    return startZipper
+export const moveLeft = (startZipper: Zipper, endZipper?: Zipper): Zipper => {
+    return endZipper
         ? selectionLeft(startZipper, endZipper)
-        : cursorLeft(endZipper);
+        : cursorLeft(startZipper);
 };

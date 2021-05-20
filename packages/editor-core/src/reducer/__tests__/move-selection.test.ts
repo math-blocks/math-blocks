@@ -4,6 +4,7 @@ import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
 import {SelectionDir} from "../enums";
+import {selectionZipperFromZippers} from "../convert";
 import type {Zipper} from "../types";
 
 // TODO: add a serializer or custom matcher to help with assertions
@@ -11,7 +12,7 @@ import type {Zipper} from "../types";
 describe("moveRight w/ selecting = true", () => {
     describe("simple row", () => {
         test("selects the character to the right", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -21,17 +22,21 @@ describe("moveRight w/ selecting = true", () => {
                 },
                 breadcrumbs: [],
             };
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
 
-            const result = moveRight(zipper, true);
+            if (!result) {
+                throw new Error("Can't create selectino from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
         test("selects multiple characters to the right", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -41,17 +46,22 @@ describe("moveRight w/ selecting = true", () => {
                 },
                 breadcrumbs: [],
             };
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
 
-            const result = moveRight(moveRight(zipper, true), true);
+            if (!result) {
+                throw new Error("Can't create selectino from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
         });
 
         test("constricting selection to the left", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -61,20 +71,24 @@ describe("moveRight w/ selecting = true", () => {
                 },
                 breadcrumbs: [],
             };
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            const result = moveLeft(
-                moveRight(moveRight(zipper, true), true),
-                true,
-            );
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selectino from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
         test("tries to select past the start", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -84,17 +98,24 @@ describe("moveRight w/ selecting = true", () => {
                 },
                 breadcrumbs: [],
             };
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            const result = moveLeft(moveLeft(moveRight(zipper), true), true);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selectino from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
         test("tries to select past the end", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -104,11 +125,18 @@ describe("moveRight w/ selecting = true", () => {
                 },
                 breadcrumbs: [],
             };
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
 
-            const result = moveRight(moveRight(moveLeft(zipper), true), true);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selectino from zippers");
+            }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
@@ -116,7 +144,7 @@ describe("moveRight w/ selecting = true", () => {
 
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -131,21 +159,25 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(moveRight(moveRight(zipper), true), true);
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -160,21 +192,25 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(moveRight(moveRight(zipper)), true);
+            startZipper = moveRight(startZipper);
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
-            expect(result.row.selection?.nodes).toHaveLength(0);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("selecting to the right from the first breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -189,24 +225,26 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(zipper), true), true),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
-            expect(result.breadcrumbs[0].row.right).toHaveLength(1);
+            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.right).toHaveLength(1);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("selecting to the right edge of the bottom breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -221,30 +259,28 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(
-                    moveRight(
-                        moveRight(moveRight(moveRight(zipper), true), true),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[0].row.right).toHaveLength(0);
+            expect(result.row.selection?.nodes).toHaveLength(3);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -259,27 +295,27 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveRight(
-                    moveRight(moveRight(moveRight(zipper), true), true),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
+            expect(result.row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -294,26 +330,30 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(
-                    moveRight(
-                        moveRight(moveRight(moveRight(zipper), true), true),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
+            // We're inside the fraction
+            expect(result.breadcrumbs[0].row.left).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
 
         test("move back to the starting location", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -328,29 +368,31 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(
-                    moveLeft(
-                        moveRight(
-                            moveRight(moveRight(moveRight(zipper), true), true),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.right).toHaveLength(1);
             expect(result.row.selection).toBeNull();
             expect(result.row.left).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(1);
         });
     });
 
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -372,25 +414,28 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(zipper)), true),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[1].row.right).toHaveLength(2);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
+            expect(result.row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(1);
+            expect(result.breadcrumbs[0].row.left).toHaveLength(0);
+            expect(result.breadcrumbs[0].row.right).toHaveLength(2);
         });
 
         test("expanding selection out of the outer fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -412,37 +457,29 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(
-                    moveRight(
-                        moveRight(
-                            moveRight(moveRight(moveRight(zipper)), true),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[1].row.right).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            expect(result.row.right).toHaveLength(2);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting selection in from the outer fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -464,33 +501,26 @@ describe("moveRight w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveRight(
-                    moveRight(
-                        moveRight(
-                            moveRight(
-                                moveRight(moveRight(moveRight(zipper)), true),
-                                true,
-                            ),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveRight(startZipper);
+            startZipper = moveRight(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveRight(startZipper, endZipper); // select '1'
+            endZipper = moveRight(startZipper, endZipper); // select '1/2' fraction
+            endZipper = moveRight(startZipper, endZipper); // select '+'
+            endZipper = moveRight(startZipper, endZipper); // select '3'
+            endZipper = moveRight(startZipper, endZipper); // select 'x'
+            endZipper = moveLeft(startZipper, endZipper); // de-select 'x'
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Right);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Right,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[1].row.right).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
+            expect(result.row.selection?.nodes).toHaveLength(3);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(1);
         });
     });
 });
@@ -498,7 +528,7 @@ describe("moveRight w/ selecting = true", () => {
 describe("moveLeft w/ selecting = true", () => {
     describe("simple row", () => {
         test("selects the character to the right", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -509,16 +539,22 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(zipper, true);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
 
         test("selects multiple characters to the right", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -529,7 +565,15 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(moveLeft(zipper, true), true);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(1);
             expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
@@ -538,7 +582,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("constricting selection to the right", () => {
-            const zipper: Zipper = {
+            const startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -549,10 +593,16 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveLeft(moveLeft(zipper, true), true),
-                true,
-            );
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(2);
             expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
@@ -563,7 +613,7 @@ describe("moveLeft w/ selecting = true", () => {
 
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -578,21 +628,25 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper), true), true);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(2); // '1', '+'
+            expect(result.row.selection?.nodes).toHaveLength(1); // 2/3
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -607,21 +661,25 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)), true);
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.right).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(0);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(2); // '1', '+'
+            expect(result.row.selection?.nodes).toHaveLength(1); // 2/3
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("selecting to the left from the first breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -636,24 +694,26 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(zipper), true), true),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(1); // focus is selected
-            expect(result.breadcrumbs[0].row.left).toHaveLength(1);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(1);
+            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("selecting to the left edge of the bottom breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -668,27 +728,28 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(
-                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)), true), true),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.right).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(0);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[0].row.left).toHaveLength(0);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(0);
+            expect(result.row.selection?.nodes).toHaveLength(3); // all nodes
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -703,27 +764,27 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveLeft(
-                    moveLeft(moveLeft(moveLeft(zipper), true), true),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(2);
             expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[0].row.left).toHaveLength(2);
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -738,26 +799,29 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(
-                    moveLeft(
-                        moveLeft(moveLeft(moveLeft(zipper), true), true),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
             expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("move back to the starting location", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -772,19 +836,20 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveRight(
-                    moveRight(
-                        moveLeft(
-                            moveLeft(moveLeft(moveLeft(zipper), true), true),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(1);
             expect(result.row.selection).toBeNull();
@@ -794,7 +859,7 @@ describe("moveLeft w/ selecting = true", () => {
 
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -816,25 +881,26 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(zipper)), true),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(0); // focus is selected
-            expect(result.breadcrumbs[1].row.left).toHaveLength(2);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(2); // '2', '+'
+            expect(result.row.selection?.nodes).toHaveLength(1); // 3/4
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(1);
         });
 
         test("expanding selection out of the outer fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -856,37 +922,29 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveLeft(
-                moveLeft(
-                    moveLeft(
-                        moveLeft(
-                            moveLeft(moveLeft(moveLeft(zipper)), true),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
 
-            expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[1].row.left).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[0].row.selection?.nodes).toHaveLength(0); // focus is selected
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            expect(result.row.left).toHaveLength(2); // '1', '+'
+            expect(result.row.selection?.nodes).toHaveLength(1); // (2 + 3/4) / x
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(0);
         });
 
         test("constricting selection in from the outer fraction", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -908,33 +966,26 @@ describe("moveLeft w/ selecting = true", () => {
                 breadcrumbs: [],
             };
 
-            const result = moveRight(
-                moveLeft(
-                    moveLeft(
-                        moveLeft(
-                            moveLeft(
-                                moveLeft(moveLeft(moveLeft(zipper)), true),
-                                true,
-                            ),
-                            true,
-                        ),
-                        true,
-                    ),
-                    true,
-                ),
-                true,
-            );
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveRight(startZipper, endZipper);
+
+            const result = selectionZipperFromZippers(startZipper, endZipper);
+
+            if (!result) {
+                throw new Error("Can't create selection from zippers");
+            }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
-            expect(result.breadcrumbs).toHaveLength(2);
-            expect(result.breadcrumbs[1].row.selection?.dir).toEqual(
-                SelectionDir.Left,
-            );
-            expect(result.breadcrumbs[1].row.selection?.nodes).toHaveLength(2); // focus is selected
-            expect(result.breadcrumbs[1].row.left).toHaveLength(0);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
+            expect(result.row.selection?.nodes).toHaveLength(3); // 2 + 3/4
+            expect(result.row.right).toHaveLength(0);
+            expect(result.breadcrumbs).toHaveLength(1);
         });
     });
 });

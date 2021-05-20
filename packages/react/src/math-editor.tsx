@@ -70,9 +70,9 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         setEndZipper(startZipper);
                     } else if (e.shiftKey) {
                         const newEndZipper = Editor.zipperReducer(
-                            endZipper,
-                            action,
                             startZipper,
+                            action,
+                            endZipper,
                         );
                         const selectionZipper = Editor.selectionZipperFromZippers(
                             startZipper,
