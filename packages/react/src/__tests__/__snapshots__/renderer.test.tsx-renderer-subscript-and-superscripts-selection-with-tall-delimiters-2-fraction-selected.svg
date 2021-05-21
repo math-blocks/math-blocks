@@ -3,6 +3,7 @@
     <g transform="translate(0,123.12)" id="16">
         <g transform="translate(0,0)" id="9">
             <g transform="translate(31.14,0)" id="10">
+                <rect type="rect" x="0" y="-86.52000000000001" width="141.66" height="142.08" fill="Highlight"></rect>
                 <g transform="translate(0,-15.48)" id="4">
                     <g transform="translate(0,-24.840000000000003)" id="5">
                         <g transform="translate(34.68,0)" id="1"></g>
@@ -10,7 +11,6 @@
                     <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
                     <g transform="translate(0,57.24)" id="6"></g>
                 </g>
-                <rect type="rect" x="140.66" y="-46.2" width="2" height="60" fill="currentcolor"></rect>
             </g>
         </g>
         <g transform="translate(203.94,0)" id="13">
@@ -37,7 +37,6 @@
                         <path fill="currentcolor" id="3" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(54.06, 0) scale(0.06, -0.06)"></path>
                     </g>
                 </g>
-                <rect type="rect" x="140.66" y="-46.2" width="2" height="60" fill="currentcolor"></rect>
             </g>
             <path fill="currentcolor" id="undefined" style="opacity:1" aria-hidden="true" d="M 442,270 C 442,850 272,1346 62,1582L 33,1560 C 231,1270 337,786 337,270C 337,-246 231,-730 33,-1020L 62,-1042 C 272,-806 442,-310 442,270Z" transform="translate(172.8, 0) scale(0.06, -0.06)"></path>
         </g>
