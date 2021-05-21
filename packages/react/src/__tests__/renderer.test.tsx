@@ -357,7 +357,7 @@ describe("renderer", () => {
         });
 
         describe("selection with tall delimiters", () => {
-            let zipper: Editor.Zipper;
+            let startZipper: Editor.Zipper;
             let context: Typesetter.Context;
             let options: Typesetter.Options;
             beforeEach(async () => {
@@ -384,7 +384,7 @@ describe("renderer", () => {
                     renderMode: Typesetter.RenderMode.Dynamic,
                     cramped: false,
                 };
-                zipper = {
+                startZipper = {
                     row: {
                         type: "zrow",
                         id: editNode.id,
@@ -400,7 +400,9 @@ describe("renderer", () => {
                 };
 
                 const moveLeft = () => {
-                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                    startZipper = Editor.zipperReducer(startZipper, {
+                        type: "ArrowLeft",
+                    });
                 };
                 moveLeft(); // into subscript
                 moveLeft();
@@ -413,18 +415,32 @@ describe("renderer", () => {
             });
 
             test("1 selection in denominator", () => {
+                let endZipper = startZipper;
                 const selectRight = () => {
-                    zipper = Editor.zipperReducer(zipper, {
-                        type: "ArrowRight",
-                        shift: true,
-                    });
+                    endZipper = Editor.zipperReducer(
+                        startZipper,
+                        {
+                            type: "ArrowRight",
+                            shift: true,
+                        },
+                        endZipper,
+                    );
                 };
                 selectRight();
+
+                const selectionZipper = Editor.selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
+                );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
 
                 expect(
                     <MathRenderer
                         scene={Typesetter.typesetZipper(
-                            zipper,
+                            selectionZipper,
                             context,
                             options,
                         )}
@@ -433,19 +449,33 @@ describe("renderer", () => {
             });
 
             test("2 fraction selected", () => {
+                let endZipper = startZipper;
                 const selectRight = () => {
-                    zipper = Editor.zipperReducer(zipper, {
-                        type: "ArrowRight",
-                        shift: true,
-                    });
+                    endZipper = Editor.zipperReducer(
+                        startZipper,
+                        {
+                            type: "ArrowRight",
+                            shift: true,
+                        },
+                        endZipper,
+                    );
                 };
                 selectRight();
                 selectRight();
 
+                const selectionZipper = Editor.selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
+                );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
+
                 expect(
                     <MathRenderer
                         scene={Typesetter.typesetZipper(
-                            zipper,
+                            selectionZipper,
                             context,
                             options,
                         )}
@@ -454,20 +484,34 @@ describe("renderer", () => {
             });
 
             test("3 delimited selected", () => {
+                let endZipper = startZipper;
                 const selectRight = () => {
-                    zipper = Editor.zipperReducer(zipper, {
-                        type: "ArrowRight",
-                        shift: true,
-                    });
+                    endZipper = Editor.zipperReducer(
+                        startZipper,
+                        {
+                            type: "ArrowRight",
+                            shift: true,
+                        },
+                        endZipper,
+                    );
                 };
                 selectRight();
                 selectRight();
                 selectRight();
 
+                const selectionZipper = Editor.selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
+                );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
+
                 expect(
                     <MathRenderer
                         scene={Typesetter.typesetZipper(
-                            zipper,
+                            selectionZipper,
                             context,
                             options,
                         )}
@@ -476,21 +520,35 @@ describe("renderer", () => {
             });
 
             test("4 subsup selected", () => {
+                let endZipper = startZipper;
                 const selectRight = () => {
-                    zipper = Editor.zipperReducer(zipper, {
-                        type: "ArrowRight",
-                        shift: true,
-                    });
+                    endZipper = Editor.zipperReducer(
+                        startZipper,
+                        {
+                            type: "ArrowRight",
+                            shift: true,
+                        },
+                        endZipper,
+                    );
                 };
                 selectRight();
                 selectRight();
                 selectRight();
                 selectRight();
 
+                const selectionZipper = Editor.selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
+                );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
+
                 expect(
                     <MathRenderer
                         scene={Typesetter.typesetZipper(
-                            zipper,
+                            selectionZipper,
                             context,
                             options,
                         )}

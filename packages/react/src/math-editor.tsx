@@ -52,10 +52,12 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const callback = useCallback(
         (e: KeyboardEvent): void => {
+            console.log(e.key);
+
             if (active && !props.readonly) {
                 const action = {
                     type: e.key,
-                    shift: e.shiftKey,
+                    // shift: e.shiftKey,
                 };
                 if (e.key === "Enter" && props.onSubmit) {
                     // TODO: submit all rows
@@ -64,20 +66,40 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         setActive(false);
                     }
                 } else {
-                    const value: Editor.Zipper = Editor.zipperReducer(
-                        zipper,
-                        action,
-                    );
-                    setZipper(value);
-                    if (
-                        props.onChange &&
-                        e.keyCode !== 37 &&
-                        e.keyCode !== 38 &&
-                        e.keyCode !== 39 &&
-                        e.keyCode !== 40
-                    ) {
-                        // TODO: communicate all rows when sending this event
-                        props.onChange(value);
+                    if (e.key === "Shift") {
+                        setEndZipper(startZipper);
+                    } else if (e.shiftKey) {
+                        const newEndZipper = Editor.zipperReducer(
+                            startZipper,
+                            action,
+                            endZipper,
+                        );
+                        const selectionZipper = Editor.selectionZipperFromZippers(
+                            startZipper,
+                            newEndZipper,
+                        );
+                        if (selectionZipper) {
+                            setZipper(selectionZipper);
+                            setEndZipper(newEndZipper);
+                        }
+                    } else {
+                        const value: Editor.Zipper = Editor.zipperReducer(
+                            zipper,
+                            action,
+                        );
+                        setZipper(value);
+                        // Always up the start position when not holding shift
+                        setStartZipper(value);
+                        if (
+                            props.onChange &&
+                            e.keyCode !== 37 &&
+                            e.keyCode !== 38 &&
+                            e.keyCode !== 39 &&
+                            e.keyCode !== 40
+                        ) {
+                            // TODO: communicate all rows when sending this event
+                            props.onChange(value);
+                        }
                     }
                 }
 
@@ -86,7 +108,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 e.stopPropagation();
             }
         },
-        [zipper, props, active],
+        [zipper, startZipper, endZipper, props, active],
     );
 
     useEventListener("keydown", callback);

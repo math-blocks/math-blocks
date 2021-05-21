@@ -6,6 +6,7 @@ import {SelectionDir} from "../enums";
 import {moveLeft} from "../move-left";
 import {root} from "../root";
 import {row, toEqualEditorNodes} from "../test-util";
+import {selectionZipperFromZippers} from "../convert";
 
 import type {Zipper} from "../types";
 
@@ -130,7 +131,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                const zipper: Zipper = {
+                let startZipper: Zipper = {
                     row: {
                         id: 0,
                         type: "zrow",
@@ -146,10 +147,22 @@ describe("root", () => {
                     breadcrumbs: [],
                 };
 
-                const result = root(
-                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)), true), true),
-                    false,
+                startZipper = moveLeft(startZipper);
+                startZipper = moveLeft(startZipper);
+                let endZipper = startZipper;
+                endZipper = moveLeft(startZipper, endZipper);
+                endZipper = moveLeft(startZipper, endZipper);
+
+                const selectionZipper = selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
                 );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
+
+                const result = root(selectionZipper, false);
 
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(
@@ -215,7 +228,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                const zipper: Zipper = {
+                let startZipper: Zipper = {
                     row: {
                         id: 0,
                         type: "zrow",
@@ -231,10 +244,22 @@ describe("root", () => {
                     breadcrumbs: [],
                 };
 
-                const result = root(
-                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)), true), true),
-                    true, // index
+                startZipper = moveLeft(startZipper);
+                startZipper = moveLeft(startZipper);
+                let endZipper = startZipper;
+                endZipper = moveLeft(endZipper);
+                endZipper = moveLeft(endZipper);
+
+                const selectionZipper = selectionZipperFromZippers(
+                    startZipper,
+                    endZipper,
                 );
+
+                if (!selectionZipper) {
+                    throw new Error("Can't create selection from zippers");
+                }
+
+                const result = root(selectionZipper, true); // index
 
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(

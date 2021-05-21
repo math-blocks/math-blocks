@@ -4,6 +4,7 @@ import {SelectionDir} from "../enums";
 import {slash} from "../slash";
 import {moveLeft} from "../move-left";
 import {row, toEqualEditorNodes} from "../test-util";
+import {selectionZipperFromZippers} from "../convert";
 
 import type {Zipper} from "../types";
 
@@ -280,7 +281,7 @@ describe("slash", () => {
         });
 
         test("selection in breadcrumbs", () => {
-            const zipper: Zipper = {
+            let startZipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
@@ -296,9 +297,22 @@ describe("slash", () => {
                 breadcrumbs: [],
             };
 
-            const result = slash(
-                moveLeft(moveLeft(moveLeft(moveLeft(zipper)), true), true),
+            startZipper = moveLeft(startZipper);
+            startZipper = moveLeft(startZipper);
+            let endZipper = startZipper;
+            endZipper = moveLeft(startZipper, endZipper);
+            endZipper = moveLeft(startZipper, endZipper);
+
+            const selectionZipper = selectionZipperFromZippers(
+                startZipper,
+                endZipper,
             );
+
+            if (!selectionZipper) {
+                throw new Error("Can't create selection from zippers");
+            }
+
+            const result = slash(selectionZipper);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
