@@ -1,16 +1,26 @@
 import {getId} from "@math-blocks/core";
 
-import * as util from "./util";
+import {zrow, zsubsup} from "./util";
 import type {Zipper} from "./types";
 
-export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
+/**
+ * Add a new subscript or superscript or navigate into an existing one.
+ *
+ * @param {Zipper} zipper
+ * @param {0 | 1} index 0 = subscript, 1 = superscript
+ */
+export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
     const {row, breadcrumbs} = zipper;
 
-    // TODO: handle zipper.selection.length > 0
+    // The selection will be inserted at the start of the new/existing
+    // subscript/superscript.
+    const selection = zipper.row.selection;
 
+    // If there's something to the right of the cursor...
     if (row.right.length > 0) {
         const [next, ...rest] = row.right;
 
+        // ...check if it's a subsup and...
         if (next.type === "subsup") {
             const [sub, sup] = next.children;
 
@@ -25,17 +35,21 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
                             left: row.left,
                             right: rest,
                         },
-                        focus: util.zsubsup(next, dir),
+                        focus: zsubsup(next, index),
                     },
                 ],
                 row:
-                    dir === 0
+                    index === 0
                         ? sub
-                            ? util.zrow(sub.id, [], sub.children)
-                            : util.zrow(getId(), [], [])
+                            ? // ...navigate into the existing subscript
+                              zrow(sub.id, selection, sub.children)
+                            : // ...add a subscript to the existing subsup
+                              zrow(getId(), selection, [])
                         : sup
-                        ? util.zrow(sup.id, [], sup.children)
-                        : util.zrow(getId(), [], []),
+                        ? // ...navigate into the existing superscript
+                          zrow(sup.id, selection, sup.children)
+                        : // ...add a superscript to the existing subsup
+                          zrow(getId(), selection, []),
             };
         }
     }
@@ -52,7 +66,7 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
                     right: zipper.row.right,
                 },
                 focus:
-                    dir === 0
+                    index === 0
                         ? {
                               id: getId(),
                               type: "zsubsup",
@@ -67,6 +81,6 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
                           },
             },
         ],
-        row: util.zrow(getId(), [], []),
+        row: zrow(getId(), selection, []),
     };
 };

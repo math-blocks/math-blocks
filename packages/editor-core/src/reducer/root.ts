@@ -32,19 +32,9 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
         focus,
     };
 
-    if (selection.length > 0) {
-        const radicand = util.zrow(getId(), selection, []);
-
-        return {
-            ...zipper,
-            row: radicand,
-            breadcrumbs: [...zipper.breadcrumbs, crumb],
-        };
-    }
-
     return {
         ...zipper,
         breadcrumbs: [...zipper.breadcrumbs, crumb],
-        row: util.zrow(getId(), [], []),
+        row: util.zrow(getId(), selection, []),
     };
 };

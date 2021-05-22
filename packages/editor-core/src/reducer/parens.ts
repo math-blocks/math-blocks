@@ -109,7 +109,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             }
         }
 
-        // If we're immediately to the left of a "delimted" node where then
+        // If we're immediately to the left of a "delimited" node where then
         // leftDelim is pending.  Make the delim non-pending and move into
         // the "delimited" node.
         const next = right[0];

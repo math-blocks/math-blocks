@@ -594,8 +594,8 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         breadcrumbs: [],
     };
 
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight", shift: true});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight", shift: true});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -675,8 +675,8 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
     zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft", shift: true});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft", shift: true});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {

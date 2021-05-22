@@ -419,10 +419,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -453,10 +450,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -488,10 +482,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -524,10 +515,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };

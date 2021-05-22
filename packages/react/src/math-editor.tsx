@@ -57,7 +57,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             if (active && !props.readonly) {
                 const action = {
                     type: e.key,
-                    // shift: e.shiftKey,
                 };
                 if (e.key === "Enter" && props.onSubmit) {
                     // TODO: submit all rows
@@ -67,8 +66,13 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     }
                 } else {
                     if (e.key === "Shift") {
+                        // Start a selection
                         setEndZipper(startZipper);
-                    } else if (e.shiftKey) {
+                    } else if (
+                        e.shiftKey &&
+                        (e.key === "ArrowLeft" || e.key === "ArrowRight")
+                    ) {
+                        // Handle modifying the current selection.
                         const newEndZipper = Editor.zipperReducer(
                             startZipper,
                             action,
@@ -83,6 +87,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                             setEndZipper(newEndZipper);
                         }
                     } else {
+                        // Modify the content
                         const value: Editor.Zipper = Editor.zipperReducer(
                             zipper,
                             action,

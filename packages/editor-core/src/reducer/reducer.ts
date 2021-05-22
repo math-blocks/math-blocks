@@ -18,7 +18,7 @@ const initialState: State = {
     breadcrumbs: [],
 };
 
-type Action = {type: string; shift?: boolean};
+type Action = {type: string};
 
 // TODO: check if cursor is valid before process action
 // Even better, replace the cursor with a zip-tree
