@@ -4,9 +4,14 @@ import * as Layout from "./layout";
 
 import type {FontData} from "@math-blocks/opentype";
 
+type Style = {
+    fill?: string;
+    stroke?: string;
+};
+
 type Common = {
     id?: number;
-    color?: string;
+    style: Style;
 };
 
 export type Group = {
@@ -64,7 +69,9 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
         x2: loc.x + advance,
         y2: loc.y,
         thickness: hrule.thickness,
-        color: hrule.color,
+        style: {
+            stroke: hrule.style.color,
+        },
         id: hrule.id,
     };
 };
@@ -76,7 +83,9 @@ const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
         y: loc.y,
         width: Layout.getWidth(glyph),
         glyph: glyph,
-        color: glyph.color,
+        style: {
+            fill: glyph.style.color,
+        },
         id: glyph.id,
     };
 };
@@ -114,6 +123,11 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     const ascent =
         ((parenMetrics.bearingY + overshoot) * fontSize) / font.head.unitsPerEm;
 
+    const debugStyle = {
+        fill: "none",
+        stroke: "red",
+    };
+
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
 
@@ -132,6 +146,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 y: pen.y - ascent,
                 width: CURSOR_WIDTH,
                 height: fontSize,
+                style: {},
             });
         }
 
@@ -150,6 +165,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     y: yMin,
                     width: Layout.getWidth(node),
                     height: height,
+                    style: {},
                 });
             }
 
@@ -180,8 +196,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y - height,
                             width: advance,
                             height: depth + height,
-                            fill: "none",
-                            stroke: "red",
+                            style: debugStyle,
                         });
                     }
 
@@ -209,8 +224,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y - height,
                             width: advance,
                             height: depth + height,
-                            fill: "none",
-                            stroke: "red",
+                            style: debugStyle,
                         });
                     }
 
@@ -224,8 +238,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y - height,
                             width: advance,
                             height: depth + height,
-                            fill: "none",
-                            stroke: "red",
+                            style: debugStyle,
                         });
                     }
 
@@ -243,8 +256,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                                 y: pen.y - box.height,
                                 width: node.size,
                                 height: box.depth + box.height,
-                                fill: "none",
-                                stroke: "red",
+                                style: debugStyle,
                             });
                         }
                     }
@@ -276,7 +288,9 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         y: loc.y,
         bounds: box,
         children: children,
-        color: box.color,
+        style: {
+            fill: box.style.color,
+        },
         id: box.id,
     };
 };
@@ -288,6 +302,11 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     const children: Node[] = [];
     const {layer} = context;
+
+    const debugStyle = {
+        fill: "none",
+        stroke: "red",
+    };
 
     box.content.forEach((section) => {
         section.forEach((node) => {
@@ -334,8 +353,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y - height,
                             width: width,
                             height: depth + height,
-                            fill: "none",
-                            stroke: "red",
+                            style: debugStyle,
                         });
                     }
 
@@ -369,6 +387,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y,
                             width: width,
                             height: depth + height,
+                            style: debugStyle,
                         });
                     }
 
@@ -382,6 +401,7 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                             y: pen.y,
                             width: width,
                             height: depth + height,
+                            style: debugStyle,
                         });
                     }
 
@@ -403,7 +423,9 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         y: loc.y,
         bounds: box,
         children: children,
-        color: box.color,
+        style: {
+            fill: box.style.color,
+        },
         id: box.id,
     };
 };

@@ -583,7 +583,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         root(null, [frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")])]),
     ]);
 
-    let zipper: Editor.Zipper = {
+    const startZipper: Editor.Zipper = {
         row: {
             type: "zrow",
             id: math.id,
@@ -594,8 +594,26 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         breadcrumbs: [],
     };
 
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
+    let endZipper = startZipper;
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowRight"},
+        endZipper,
+    );
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowRight"},
+        endZipper,
+    );
+
+    const selectionZipper = Editor.selectionZipperFromZippers(
+        startZipper,
+        endZipper,
+    );
+
+    if (!selectionZipper) {
+        throw new Error("Cannot form selection zipper");
+    }
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -608,7 +626,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     const options = {
         showCursor: true,
     };
-    const prod = Typesetter.typesetZipper(zipper, context, options);
+    const prod = Typesetter.typesetZipper(selectionZipper, context, options);
 
     return <MathRenderer scene={prod} style={style} />;
 };
@@ -662,7 +680,7 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         ),
     ]);
 
-    let zipper: Editor.Zipper = {
+    let startZipper: Editor.Zipper = {
         row: {
             type: "zrow",
             id: math.id,
@@ -673,10 +691,28 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         breadcrumbs: [],
     };
 
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    startZipper = Editor.zipperReducer(startZipper, {type: "ArrowLeft"});
+    startZipper = Editor.zipperReducer(startZipper, {type: "ArrowLeft"});
+    let endZipper = startZipper;
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowLeft"},
+        endZipper,
+    );
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowLeft"},
+        endZipper,
+    );
+
+    const selectionZipper = Editor.selectionZipperFromZippers(
+        startZipper,
+        endZipper,
+    );
+
+    if (!selectionZipper) {
+        throw new Error("Cannot form selection zipper");
+    }
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -689,7 +725,7 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const options = {
         showCursor: true,
     };
-    const prod = Typesetter.typesetZipper(zipper, context, options);
+    const prod = Typesetter.typesetZipper(selectionZipper, context, options);
 
     return <MathRenderer scene={prod} style={style} />;
 };

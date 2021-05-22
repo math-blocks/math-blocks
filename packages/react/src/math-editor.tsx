@@ -31,7 +31,7 @@ type Props = {
     colorMap?: Map<number, string>;
 
     // Renders bounding boxes around each group and glyph.
-    debug?: boolean;
+    showHitboxes?: boolean;
 };
 
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
@@ -157,7 +157,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         setZipper(props.zipper);
     }, [props.zipper]);
 
-    const {style, fontSize} = props;
+    const {style, fontSize, showHitboxes} = props;
 
     const context: Typesetter.Context = {
         fontData: fontData,
@@ -217,7 +217,11 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 autoComplete="off"
                 spellCheck="false"
             />
-            <MathRenderer scene={scene} ref={svgRef} />
+            <MathRenderer
+                scene={scene}
+                ref={svgRef}
+                showHitboxes={showHitboxes}
+            />
         </div>
     );
 };

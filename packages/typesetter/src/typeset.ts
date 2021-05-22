@@ -21,7 +21,10 @@ const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
         context,
     );
     box.id = row.id;
-    box.color = context?.colorMap?.get(row.id);
+    const color = context?.colorMap?.get(row.id);
+    if (color) {
+        box.style.color = color;
+    }
 
     if (context.renderMode === RenderMode.Dynamic) {
         ensureMinDepthAndHeight(box, context);
@@ -336,7 +339,7 @@ const typesetFocus = (
             const frac = typesetFrac(numerator, denominator, context);
 
             frac.id = focus.id;
-            frac.color = context?.colorMap?.get(focus.id);
+            frac.style.color = context?.colorMap?.get(focus.id);
 
             return frac;
         }
@@ -399,7 +402,7 @@ const typesetFocus = (
             const root = typesetRoot(index, radicand, context);
 
             root.id = focus.id;
-            root.color = context?.colorMap?.get(root.id);
+            root.style.color = context?.colorMap?.get(root.id);
 
             return root;
         }
@@ -423,12 +426,12 @@ const typesetFocus = (
 
             const inner = _typeset(focus.inner, {...context, operator: true});
             inner.id = focus.inner.id;
-            inner.color = context?.colorMap?.get(inner.id);
+            inner.style.color = context?.colorMap?.get(inner.id);
 
             const limits = typesetLimits(inner, lowerBox, upperBox, context);
 
             limits.id = focus.id;
-            limits.color = context?.colorMap?.get(limits.id);
+            limits.style.color = context?.colorMap?.get(limits.id);
 
             return limits;
         }
@@ -460,7 +463,7 @@ const typesetFocus = (
             const delimited = Layout.hpackNat([[open, row, close]], context);
 
             delimited.id = focus.id;
-            delimited.color = context?.colorMap?.get(delimited.id);
+            delimited.style.color = context?.colorMap?.get(delimited.id);
 
             return delimited;
         }
@@ -490,7 +493,7 @@ const _typesetAtom = (
     }
 
     glyph.id = node.id;
-    glyph.color = context.colorMap?.get(node.id);
+    glyph.style.color = context.colorMap?.get(node.id);
     glyph.pending = node.value.pending;
     return glyph;
 };
@@ -516,7 +519,7 @@ const _typeset = (
             const frac = typesetFrac(numerator, denominator, context);
 
             frac.id = node.id;
-            frac.color = context?.colorMap?.get(node.id);
+            frac.style.color = context?.colorMap?.get(node.id);
 
             return frac;
         }
@@ -556,7 +559,7 @@ const _typeset = (
             const root = typesetRoot(index, radicand, context);
 
             root.id = node.id;
-            root.color = context?.colorMap?.get(root.id);
+            root.style.color = context?.colorMap?.get(root.id);
 
             return root;
         }
@@ -572,12 +575,12 @@ const _typeset = (
 
             const inner = _typeset(node.inner, {...context, operator: true});
             inner.id = node.inner.id;
-            inner.color = context?.colorMap?.get(inner.id);
+            inner.style.color = context?.colorMap?.get(inner.id);
 
             const limits = typesetLimits(inner, lowerBox, upperBox, context);
 
             limits.id = node.id;
-            limits.color = context?.colorMap?.get(limits.id);
+            limits.style.color = context?.colorMap?.get(limits.id);
 
             return limits;
         }
@@ -609,7 +612,7 @@ const _typeset = (
             const delimited = Layout.hpackNat([[open, row, close]], context);
 
             delimited.id = node.id;
-            delimited.color = context?.colorMap?.get(delimited.id);
+            delimited.style.color = context?.colorMap?.get(delimited.id);
 
             return delimited;
         }
@@ -762,7 +765,7 @@ const _typesetZipper = (
 
         const box = Layout.hpackNat([nodes], context);
         box.id = row.id;
-        box.color = context?.colorMap?.get(box.id);
+        box.style.color = context?.colorMap?.get(box.id);
 
         if (context.renderMode === RenderMode.Dynamic) {
             ensureMinDepthAndHeight(box, context);
@@ -799,7 +802,7 @@ const _typesetZipper = (
 
         const box = Layout.hpackNat([left, selection, right], context);
         box.id = row.id;
-        box.color = context?.colorMap?.get(box.id);
+        box.style.color = context?.colorMap?.get(box.id);
 
         if (context.renderMode === RenderMode.Dynamic) {
             ensureMinDepthAndHeight(box, context);
