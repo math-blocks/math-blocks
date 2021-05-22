@@ -1,28 +1,12 @@
 import * as types from "../types";
-import {SelectionDir} from "./enums";
 
-type Selection = {
-    dir: SelectionDir;
-    nodes: readonly types.Node[];
-};
-
-export type ZRowWithoutSelection = {
+export type ZRow = {
     id: number;
     type: "zrow";
     left: readonly types.Node[];
-    selection: null;
+    selection: readonly types.Node[];
     right: readonly types.Node[];
 };
-
-export type ZRowWithSelection = {
-    id: number;
-    type: "zrow";
-    left: readonly types.Node[];
-    selection: Selection;
-    right: readonly types.Node[];
-};
-
-export type ZRow = ZRowWithoutSelection | ZRowWithSelection;
 
 export type ZFrac =
     | {
@@ -105,8 +89,19 @@ export type ZColumns = {
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited; // | ZColumns;
 
+// TODO:
+// - create functions to convert between ZRow and BreadcrumbRow and back
+//   if the ZRow we're trying to convert has a selection, throw
+
+export type BreadcrumbRow = {
+    id: number;
+    type: "bcrow";
+    left: readonly types.Node[];
+    right: readonly types.Node[];
+};
+
 export type Breadcrumb = {
-    row: ZRow;
+    row: BreadcrumbRow;
     focus: Focus; // The item from the row that the cursor is inside of
 };
 

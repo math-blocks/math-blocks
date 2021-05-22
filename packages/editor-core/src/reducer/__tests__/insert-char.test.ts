@@ -2,7 +2,6 @@ import * as builders from "../../builders";
 
 import {insertChar} from "../insert-char";
 import {row, toEqualEditorNodes} from "../test-util";
-import {SelectionDir} from "../enums";
 import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
@@ -14,7 +13,7 @@ describe("insertChar", () => {
                 id: 0,
                 type: "zrow",
                 left: row("1+").children,
-                selection: null,
+                selection: [],
                 right: [],
             },
             breadcrumbs: [],
@@ -31,7 +30,7 @@ describe("insertChar", () => {
             row: {
                 id: 0,
                 type: "zrow",
-                selection: null,
+                selection: [],
                 left: [],
                 right: row("+2").children,
             },
@@ -50,7 +49,7 @@ describe("insertChar", () => {
                 id: 0,
                 type: "zrow",
                 left: [builders.glyph("1")],
-                selection: null,
+                selection: [],
                 right: [builders.glyph("2")],
             },
             breadcrumbs: [],
@@ -68,7 +67,7 @@ describe("insertChar", () => {
                 id: 0,
                 type: "zrow",
                 left: row("1+").children,
-                selection: null,
+                selection: [],
                 right: [],
             },
             breadcrumbs: [],
@@ -93,10 +92,7 @@ describe("insertChar", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("1")],
-                    selection: {
-                        dir: SelectionDir.Right,
-                        nodes: [builders.glyph("+")],
-                    },
+                    selection: [builders.glyph("+")],
                     right: [builders.glyph("2")],
                 },
                 breadcrumbs: [],
@@ -108,57 +104,13 @@ describe("insertChar", () => {
             expect(result.row.right).toEqualEditorNodes(row("2").children);
         });
 
-        test("replace a selection spanning multiple levels", () => {
-            const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: {
-                        dir: SelectionDir.Left,
-                        nodes: [builders.glyph("2")],
-                    },
-                    right: [],
-                },
-                breadcrumbs: [
-                    {
-                        focus: {
-                            id: 0,
-                            type: "zfrac",
-                            left: [builders.row([builders.glyph("3")])],
-                            right: [],
-                        },
-                        row: {
-                            id: 0,
-                            type: "zrow",
-                            left: [builders.glyph("1"), builders.glyph("+")],
-                            selection: {
-                                dir: SelectionDir.Left,
-                                nodes: [],
-                            },
-                            right: [],
-                        },
-                    },
-                ],
-            };
-
-            const result = insertChar(zipper, "2");
-
-            expect(result.breadcrumbs).toHaveLength(0);
-            expect(result.row.left).toEqualEditorNodes(row("1+2").children);
-            expect(result.row.right).toEqualEditorNodes(row("").children);
-        });
-
         test("inserts 'limits' characte before selection", () => {
             const zipper: Zipper = {
                 row: {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("1")],
-                    selection: {
-                        dir: SelectionDir.Right,
-                        nodes: [builders.glyph("+")],
-                    },
+                    selection: [builders.glyph("+")],
                     right: [builders.glyph("2")],
                 },
                 breadcrumbs: [],

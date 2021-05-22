@@ -9,7 +9,6 @@ import {
     delimited,
     toEqualEditorNodes,
 } from "../test-util";
-import {SelectionDir} from "../enums";
 import * as builders from "../../builders";
 import * as types from "../../types";
 
@@ -24,7 +23,7 @@ describe("backspace", () => {
                 id: 0,
                 type: "zrow",
                 left: row("1+2").children,
-                selection: null,
+                selection: [],
                 right: [],
             },
             breadcrumbs: [],
@@ -42,7 +41,7 @@ describe("backspace", () => {
                 id: 0,
                 type: "zrow",
                 left: row("1+").children,
-                selection: null,
+                selection: [],
                 right: row("2").children,
             },
             breadcrumbs: [],
@@ -60,7 +59,7 @@ describe("backspace", () => {
                 id: 0,
                 type: "zrow",
                 left: [],
-                selection: null,
+                selection: [],
                 right: row("1+2").children,
             },
             breadcrumbs: [],
@@ -79,16 +78,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("2").children, // numerator
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -113,16 +111,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("3").children, // denominator
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -148,7 +145,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), f],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -176,16 +173,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("n").children, // subscript
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("x").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -210,16 +206,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("n").children, // sbuscript
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("x").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -244,16 +239,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("2").children, // superscript
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("x").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -278,16 +272,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("2").children, // superscript
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("x").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -318,7 +311,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), ss],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -345,7 +338,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), ss],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -373,16 +366,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("27").children, // index
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -407,16 +399,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("27").children, // index
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -441,16 +432,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("3").children,
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: [],
                         },
                         focus: {
@@ -476,7 +466,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), r],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -503,7 +493,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), r],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -531,16 +521,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("x->0").children, // lower bound
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: [],
-                            selection: null,
                             right: row("x").children,
                         },
                         focus: {
@@ -566,16 +555,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("i=0").children, // lower bound
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: [],
-                            selection: null,
                             right: row("i").children,
                         },
                         focus: {
@@ -601,16 +589,15 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("n").children, // upper bound
                 },
                 breadcrumbs: [
                     {
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: [],
-                            selection: null,
                             right: row("i").children,
                         },
                         focus: {
@@ -651,7 +638,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), lim],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -694,7 +681,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("a"), sum],
-                    selection: null,
+                    selection: [],
                     right: [builders.glyph("d")],
                 },
                 breadcrumbs: [],
@@ -724,7 +711,7 @@ describe("backspace", () => {
                         id: 0,
                         type: "zrow",
                         left: [delimited("2x+5")],
-                        selection: null,
+                        selection: [],
                         right: [],
                     },
                     breadcrumbs: [],
@@ -753,7 +740,7 @@ describe("backspace", () => {
                         id: 0,
                         type: "zrow",
                         left: [],
-                        selection: null,
+                        selection: [],
                         right: [delimited("2x+5")],
                     },
                     breadcrumbs: [],
@@ -791,7 +778,7 @@ describe("backspace", () => {
                                 builders.glyph(")"),
                             ),
                         ],
-                        selection: null,
+                        selection: [],
                         right: [],
                     },
                     breadcrumbs: [],
@@ -818,7 +805,7 @@ describe("backspace", () => {
                         id: 0,
                         type: "zrow",
                         left: [],
-                        selection: null,
+                        selection: [],
                         right: [
                             builders.delimited(
                                 [
@@ -874,7 +861,7 @@ describe("backspace", () => {
                                 builders.glyph(")"),
                             ),
                         ],
-                        selection: null,
+                        selection: [],
                         right: [],
                     },
                     breadcrumbs: [],
@@ -894,7 +881,7 @@ describe("backspace", () => {
                         type: "zrow",
                         left: [],
 
-                        selection: null,
+                        selection: [],
                         right: [
                             builders.delimited(
                                 row("2x+5").children,
@@ -923,10 +910,7 @@ describe("backspace", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2x").children,
-                    selection: {
-                        dir: SelectionDir.Left,
-                        nodes: row("+5").children,
-                    },
+                    selection: row("+5").children,
                     right: row("=10").children,
                 },
                 breadcrumbs: [],

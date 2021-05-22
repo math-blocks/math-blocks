@@ -156,7 +156,7 @@ export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
             id: math.id,
             left: math.children.slice(0, 1),
             right: math.children.slice(1),
-            selection: null,
+            selection: [],
         },
         breadcrumbs: [],
     };
@@ -193,10 +193,7 @@ export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
             type: "zrow",
             id: math.id,
             left: math.children.slice(0, 1),
-            selection: {
-                dir: Editor.Dir.Right,
-                nodes: math.children.slice(1, 5),
-            },
+            selection: math.children.slice(1, 5),
             right: math.children.slice(5),
         },
         breadcrumbs: [],
@@ -548,7 +545,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
             id: math.id,
             left: [],
             right: math.children,
-            selection: null,
+            selection: [],
         },
         breadcrumbs: [],
     };
@@ -592,7 +589,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
             id: math.id,
             left: [],
             right: math.children,
-            selection: null,
+            selection: [],
         },
         breadcrumbs: [],
     };
@@ -627,7 +624,7 @@ export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
             id: math.id,
             left: math.children,
             right: [],
-            selection: null,
+            selection: [],
         },
         breadcrumbs: [],
     };
@@ -671,7 +668,7 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
             id: math.id,
             left: math.children,
             right: [],
-            selection: null,
+            selection: [],
         },
         breadcrumbs: [],
     };

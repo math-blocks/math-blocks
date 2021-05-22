@@ -2,7 +2,6 @@ import * as core from "@math-blocks/core";
 
 import * as builders from "../../builders";
 
-import {SelectionDir} from "../enums";
 import {moveLeft} from "../move-left";
 import {root} from "../root";
 import {row, toEqualEditorNodes} from "../test-util";
@@ -27,7 +26,7 @@ describe("root", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -62,7 +61,7 @@ describe("root", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -104,10 +103,7 @@ describe("root", () => {
                         id: 0,
                         type: "zrow",
                         left: row("1+").children,
-                        selection: {
-                            dir: SelectionDir.Right,
-                            nodes: row("2+3").children,
-                        },
+                        selection: row("2+3").children,
                         right: [],
                     },
                     breadcrumbs: [],
@@ -141,7 +137,7 @@ describe("root", () => {
                             builders.glyph("x"),
                             builders.subsup(undefined, [builders.glyph("2")]),
                         ],
-                        selection: null,
+                        selection: [],
                         right: [],
                     },
                     breadcrumbs: [],
@@ -192,10 +188,7 @@ describe("root", () => {
                         id: 0,
                         type: "zrow",
                         left: row("1+").children,
-                        selection: {
-                            dir: SelectionDir.Right,
-                            nodes: row("2+3").children,
-                        },
+                        selection: row("2+3").children,
                         right: [],
                     },
                     breadcrumbs: [],
@@ -238,7 +231,7 @@ describe("root", () => {
                             builders.glyph("x"),
                             builders.subsup(undefined, [builders.glyph("2")]),
                         ],
-                        selection: null,
+                        selection: [],
                         right: [],
                     },
                     breadcrumbs: [],

@@ -13,5 +13,4 @@ export {
     rowToZipper,
     selectionZipperFromZippers,
 } from "./reducer/convert";
-export {SelectionDir as Dir} from "./reducer/enums";
 export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./reducer/types";

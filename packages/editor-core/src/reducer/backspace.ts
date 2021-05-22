@@ -1,18 +1,17 @@
-import {rezipSelection, zdelimited, zrow} from "./util";
+import {zdelimited, zrow} from "./util";
 import {moveLeft} from "./move-left";
 
 import type {Breadcrumb, Zipper} from "./types";
 
 export const backspace = (zipper: Zipper): Zipper => {
-    zipper = rezipSelection(zipper);
     const {selection} = zipper.row;
 
-    if (selection) {
+    if (selection.length > 0) {
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                selection: null,
+                selection: [],
             },
         };
     }
@@ -37,7 +36,12 @@ export const backspace = (zipper: Zipper): Zipper => {
                 return newZipper;
             } else {
                 const crumb: Breadcrumb = {
-                    row: zrow(zipper.row.id, left.slice(0, -1), []),
+                    row: {
+                        type: "bcrow",
+                        id: zipper.row.id,
+                        left: left.slice(0, -1),
+                        right: [],
+                    },
                     focus: {
                         ...zdelimited(prev),
                         rightDelim: {
@@ -92,7 +96,8 @@ export const backspace = (zipper: Zipper): Zipper => {
         return {
             breadcrumbs: breadcrumbs.slice(0, -1),
             row: {
-                ...row,
+                type: "zrow",
+                id: row.id,
                 left: [
                     ...row.left,
                     {
@@ -101,6 +106,7 @@ export const backspace = (zipper: Zipper): Zipper => {
                         children: [focus.left[0], null],
                     },
                 ],
+                selection: [],
                 right: [...zipper.row.right, ...row.right],
             },
         };
@@ -112,8 +118,10 @@ export const backspace = (zipper: Zipper): Zipper => {
     return {
         breadcrumbs: breadcrumbs.slice(0, -1),
         row: {
-            ...row,
+            type: "zrow",
+            id: row.id,
             left: [...row.left, ...leftChildren],
+            selection: [],
             right: [...zipper.row.right, ...rightChildren, ...row.right],
         },
     };

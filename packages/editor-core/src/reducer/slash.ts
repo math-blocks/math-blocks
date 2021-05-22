@@ -1,6 +1,6 @@
 import {getId} from "@math-blocks/core";
 
-import {rezipSelection, zrow} from "./util";
+import {zrow} from "./util";
 import type {Zipper, Focus} from "./types";
 
 // TODO: dedupe with isOperator in typeset.ts
@@ -35,10 +35,9 @@ const isOperator = (char: string): boolean => {
 };
 
 export const slash = (zipper: Zipper): Zipper => {
-    zipper = rezipSelection(zipper);
     const {left, selection} = zipper.row;
 
-    if (selection) {
+    if (selection.length > 0) {
         const focus: Focus = {
             type: "zfrac",
             id: getId(),
@@ -46,7 +45,7 @@ export const slash = (zipper: Zipper): Zipper => {
                 {
                     id: getId(),
                     type: "row",
-                    children: selection.nodes,
+                    children: selection,
                 },
             ],
             right: [],
@@ -59,8 +58,10 @@ export const slash = (zipper: Zipper): Zipper => {
                 ...zipper.breadcrumbs,
                 {
                     row: {
-                        ...zipper.row,
-                        selection: null,
+                        type: "bcrow",
+                        id: zipper.row.id,
+                        left: zipper.row.left,
+                        right: zipper.row.right,
                     },
                     focus,
                 },
@@ -117,8 +118,10 @@ export const slash = (zipper: Zipper): Zipper => {
             ...zipper.breadcrumbs,
             {
                 row: {
-                    ...zipper.row,
+                    type: "bcrow",
+                    id: zipper.row.id,
                     left: left.slice(0, index + 1),
+                    right: zipper.row.right,
                 },
                 focus,
             },

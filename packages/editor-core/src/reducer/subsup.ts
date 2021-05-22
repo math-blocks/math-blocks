@@ -6,6 +6,8 @@ import type {Zipper} from "./types";
 export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
     const {row, breadcrumbs} = zipper;
 
+    // TODO: handle zipper.selection.length > 0
+
     if (row.right.length > 0) {
         const [next, ...rest] = row.right;
 
@@ -18,7 +20,9 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
                     ...breadcrumbs,
                     {
                         row: {
-                            ...row,
+                            type: "bcrow",
+                            id: row.id,
+                            left: row.left,
                             right: rest,
                         },
                         focus: util.zsubsup(next, dir),
@@ -41,7 +45,12 @@ export const subsup = (zipper: Zipper, dir: 0 | 1): Zipper => {
         breadcrumbs: [
             ...zipper.breadcrumbs,
             {
-                row: zipper.row,
+                row: {
+                    type: "bcrow",
+                    id: zipper.row.id,
+                    left: zipper.row.left,
+                    right: zipper.row.right,
+                },
                 focus:
                     dir === 0
                         ? {

@@ -275,8 +275,8 @@ describe("renderer", () => {
                         type: "zrow",
                         id: editNode.id,
                         left: editNode.children,
+                        selection: [],
                         right: [],
-                        selection: null,
                     },
                     breadcrumbs: [],
                 };
@@ -389,8 +389,8 @@ describe("renderer", () => {
                         type: "zrow",
                         id: editNode.id,
                         left: editNode.children,
+                        selection: [],
                         right: [],
-                        selection: null,
                     },
                     breadcrumbs: [],
                 };
@@ -598,7 +598,7 @@ describe("renderer", () => {
                     id: node.id,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: node.children,
                 },
             };

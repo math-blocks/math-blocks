@@ -1,6 +1,5 @@
 import * as builders from "../builders";
 
-import {rezipSelection} from "./util";
 import type {Zipper} from "./types";
 
 // TODO: place cursor in lower limits
@@ -12,7 +11,6 @@ const LIMIT_CHARS = [
 ];
 
 export const insertChar = (zipper: Zipper, char: string): Zipper => {
-    zipper = rezipSelection(zipper);
     const {left, selection} = zipper.row;
     let newNode;
     if (LIMIT_CHARS.includes(char)) {
@@ -21,18 +19,18 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
         newNode = builders.glyph(char);
     }
 
-    if (selection) {
+    if (selection.length > 0) {
         // When inserting limits, we move the current selection to the right
         // of the new node.
         const newLeft = LIMIT_CHARS.includes(char)
-            ? [...left, newNode, ...selection.nodes]
+            ? [...left, newNode, ...selection]
             : [...left, newNode];
 
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                selection: null,
+                selection: [],
                 left: newLeft,
             },
         };

@@ -121,7 +121,7 @@ describe("moving cursor with mouse", () => {
                 glyph("x"),
             ]);
 
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 glyph("+"),
                 glyph("5"),
                 glyph("="),
@@ -145,7 +145,7 @@ describe("moving cursor with mouse", () => {
                 glyph("x"),
             ]);
 
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 glyph("+"),
                 glyph("5"),
                 glyph("="),
@@ -169,7 +169,7 @@ describe("moving cursor with mouse", () => {
                 glyph("x"),
             ]);
 
-            expect(zipper.row.selection).toBeNull();
+            expect(zipper.row.selection).toHaveLength(0);
 
             expect(zipper.row.right).toEqualEditorNodes([
                 glyph("+"),
@@ -231,7 +231,7 @@ describe("moving cursor with mouse", () => {
                 math.children[1],
             ]);
 
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 math.children[2],
                 math.children[3],
                 math.children[4],
@@ -268,9 +268,7 @@ describe("moving cursor with mouse", () => {
             expect(zipper.row.left).toEqualEditorNodes([]);
 
             // All nodes in the numerator are selected
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes(
-                numerator.children,
-            );
+            expect(zipper.row.selection).toEqualEditorNodes(numerator.children);
 
             expect(zipper.row.right).toEqualEditorNodes([]);
         });
@@ -300,7 +298,7 @@ describe("moving cursor with mouse", () => {
             expect(zipper.row.left).toEqualEditorNodes([]);
 
             // All nodes in the numerator are selected
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 numerator.children[0],
                 numerator.children[1],
             ]);
@@ -335,7 +333,7 @@ describe("moving cursor with mouse", () => {
             expect(zipper.row.left).toEqualEditorNodes([]);
 
             // All nodes in the numerator are selected
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 numerator.children[0],
                 numerator.children[1],
             ]);
@@ -354,7 +352,7 @@ describe("moving cursor with mouse", () => {
 
             expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
 
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 math.children[1],
                 math.children[2],
             ]);
@@ -376,7 +374,7 @@ describe("moving cursor with mouse", () => {
 
             expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
 
-            expect(zipper.row.selection?.nodes).toEqualEditorNodes([
+            expect(zipper.row.selection).toEqualEditorNodes([
                 math.children[1],
                 math.children[2],
             ]);

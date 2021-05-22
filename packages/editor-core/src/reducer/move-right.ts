@@ -6,17 +6,16 @@ import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";
 
 const cursorRight = (zipper: Zipper): Zipper => {
-    zipper = util.rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the right
-    if (selection) {
+    if (selection.length > 0) {
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: [...left, ...selection.nodes],
-                selection: null,
+                left: [...left, ...selection],
+                selection: [],
             },
         };
     }
@@ -70,7 +69,14 @@ const cursorRight = (zipper: Zipper): Zipper => {
             }
 
             const breadcrumb: Breadcrumb = {
-                row: util.delRight(zipper.row),
+                row: {
+                    type: "bcrow",
+                    id: zipper.row.id,
+                    left: left,
+                    // The node that was removed from right here is the node
+                    // that we're navigating into.
+                    right: right.slice(1),
+                },
                 focus: focus,
             };
 
@@ -100,7 +106,13 @@ const cursorRight = (zipper: Zipper): Zipper => {
         const exitNode = (updatedNode: types.Node): Zipper => ({
             breadcrumbs: zipper.breadcrumbs.slice(0, -1),
             // place the subsup we exited on our left
-            row: util.insertLeft(parentRow, updatedNode),
+            row: {
+                type: "zrow",
+                id: parentRow.id,
+                left: [...parentRow.left, updatedNode],
+                selection: [],
+                right: parentRow.right,
+            },
         });
 
         if (focus.type === "zdelimited") {
@@ -142,7 +154,13 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
             const exitNode = (updatedNode: types.Node): Zipper => ({
                 breadcrumbs: endZipper.breadcrumbs.slice(0, -1),
                 // place the subsup we exited on our left
-                row: util.insertLeft(parentRow, updatedNode),
+                row: {
+                    type: "zrow",
+                    id: parentRow.id,
+                    left: [...parentRow.left, updatedNode],
+                    selection: [],
+                    right: parentRow.right,
+                },
             });
 
             const exitedRow: types.Row = util.zrowToRow(endZipper.row);
