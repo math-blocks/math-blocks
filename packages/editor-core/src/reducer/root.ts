@@ -3,10 +3,9 @@ import {getId} from "@math-blocks/core";
 import * as builders from "../builders";
 
 import * as util from "./util";
-import type {Zipper, Focus} from "./types";
+import type {Zipper, Focus, Breadcrumb} from "./types";
 
 export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
-    zipper = util.rezipSelection(zipper);
     const {selection} = zipper.row;
 
     const focus: Focus = withIndex
@@ -23,34 +22,19 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
               right: [],
           };
 
-    if (selection) {
-        const radicand = util.zrow(getId(), selection.nodes, []);
-
-        return {
-            ...zipper,
-            row: radicand,
-            breadcrumbs: [
-                ...zipper.breadcrumbs,
-                {
-                    row: {
-                        ...zipper.row,
-                        selection: null,
-                    },
-                    focus,
-                },
-            ],
-        };
-    }
+    const crumb: Breadcrumb = {
+        row: {
+            type: "bcrow",
+            id: zipper.row.id,
+            left: zipper.row.left,
+            right: zipper.row.right,
+        },
+        focus,
+    };
 
     return {
         ...zipper,
-        breadcrumbs: [
-            ...zipper.breadcrumbs,
-            {
-                row: zipper.row,
-                focus,
-            },
-        ],
-        row: util.zrow(getId(), [], []),
+        breadcrumbs: [...zipper.breadcrumbs, crumb],
+        row: util.zrow(getId(), selection, []),
     };
 };

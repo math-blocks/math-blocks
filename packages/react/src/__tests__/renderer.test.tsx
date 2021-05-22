@@ -275,8 +275,8 @@ describe("renderer", () => {
                         type: "zrow",
                         id: editNode.id,
                         left: editNode.children,
+                        selection: [],
                         right: [],
-                        selection: null,
                     },
                     breadcrumbs: [],
                 };
@@ -389,8 +389,8 @@ describe("renderer", () => {
                         type: "zrow",
                         id: editNode.id,
                         left: editNode.children,
+                        selection: [],
                         right: [],
-                        selection: null,
                     },
                     breadcrumbs: [],
                 };
@@ -419,10 +419,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -453,10 +450,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -488,10 +482,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -524,10 +515,7 @@ describe("renderer", () => {
                 const selectRight = () => {
                     endZipper = Editor.zipperReducer(
                         startZipper,
-                        {
-                            type: "ArrowRight",
-                            shift: true,
-                        },
+                        {type: "ArrowRight"},
                         endZipper,
                     );
                 };
@@ -598,7 +586,7 @@ describe("renderer", () => {
                     id: node.id,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: node.children,
                 },
             };
@@ -660,6 +648,36 @@ describe("renderer", () => {
         test("cursor in the middle", async () => {
             const Cursor = await storyToComponent(stories.Cursor);
             expect(<Cursor />).toMatchSVGSnapshot();
+        });
+
+        test("cursor in front of operator", async () => {
+            const zipper: Editor.Zipper = {
+                breadcrumbs: [],
+                row: {
+                    id: Core.getId(),
+                    type: "zrow",
+                    left: [glyph("2")],
+                    selection: [],
+                    right: [glyph("+"), glyph("a")],
+                },
+            };
+
+            const fontData = await stixFontLoader();
+            const fontSize = 60;
+            const context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Dynamic,
+                cramped: false,
+            };
+            const options = {showCursor: true};
+
+            expect(
+                <MathRenderer
+                    scene={Typesetter.typesetZipper(zipper, context, options)}
+                />,
+            ).toMatchSVGSnapshot();
         });
     });
 

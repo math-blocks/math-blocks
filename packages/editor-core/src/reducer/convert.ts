@@ -11,8 +11,6 @@ import {
     zroot,
     zdelimited,
 } from "./util";
-import {SelectionDir} from "./enums";
-import type {ZRow} from "./types";
 
 export const zipperToRow = (zipper: Zipper): Row => {
     if (zipper.breadcrumbs.length === 0) {
@@ -22,18 +20,9 @@ export const zipperToRow = (zipper: Zipper): Row => {
     const crumb = zipper.breadcrumbs[zipper.breadcrumbs.length - 1];
     const restCrumbs = zipper.breadcrumbs.slice(0, -1);
 
-    const selection: readonly Node[] = crumb.row.selection?.nodes ?? [];
     const focusedNode = focusToNode(crumb.focus, zrowToRow(zipper.row));
 
-    const newRight =
-        crumb.row.selection?.dir === SelectionDir.Right
-            ? [...crumb.row.left, focusedNode, ...selection, ...crumb.row.right]
-            : [
-                  ...crumb.row.left,
-                  ...selection,
-                  focusedNode,
-                  ...crumb.row.right,
-              ];
+    const newRight = [...crumb.row.left, focusedNode, ...crumb.row.right];
 
     const row = zrow(crumb.row.id, [], newRight);
 
@@ -171,11 +160,12 @@ export const rowToZipper = (
     }
 
     const crumb: Breadcrumb = {
-        row: zrow(
-            row.id,
-            row.children.slice(0, rowIndex), // focus replaces the missing child
-            row.children.slice(rowIndex + 1),
-        ),
+        row: {
+            type: "bcrow",
+            id: row.id,
+            left: row.children.slice(0, rowIndex), // focus replaces the missing child
+            right: row.children.slice(rowIndex + 1),
+        },
         focus: focus,
     };
 
@@ -194,15 +184,12 @@ export const rowToZipper = (
 };
 
 const getLeftSelectionRight = (
-    row1: ZRow,
-    row2: ZRow,
+    row1: {left: readonly Node[]; right: readonly Node[]},
+    row2: {left: readonly Node[]; right: readonly Node[]},
     children: Node[],
 ): {
     left: Node[];
-    selection: {
-        dir: SelectionDir; // TODO: remove this
-        nodes: Node[];
-    } | null;
+    selection: Node[];
     right: Node[];
 } => {
     const firstIndex = Math.min(row1.left.length, row2.left.length);
@@ -213,13 +200,7 @@ const getLeftSelectionRight = (
 
     return {
         left: children.slice(0, firstIndex),
-        selection:
-            selectionNodes.length > 0
-                ? {
-                      dir: SelectionDir.Left, // TODO: remove this
-                      nodes: selectionNodes,
-                  }
-                : null,
+        selection: selectionNodes.length > 0 ? selectionNodes : [],
         right: children.slice(lastIndex),
     };
 };
@@ -283,10 +264,13 @@ export const selectionZipperFromZippers = (
             const node = focusToNode(lastCrumb.focus, zrowToRow(zipper.row));
             zipper = {
                 row: {
-                    ...lastCrumb.row,
+                    type: "zrow",
+                    id: lastCrumb.row.id,
                     // We need to know which side the shortestZipper is on to
                     // order to know whether to includ 'node' in '.left' or '.right'.
                     left: [...lastCrumb.row.left, node],
+                    selection: [],
+                    right: lastCrumb.row.right,
                 },
                 breadcrumbs: restCrumbs,
             };

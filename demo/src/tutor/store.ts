@@ -15,7 +15,7 @@ const zipper: Editor.Zipper = {
         id: question.id,
         type: "zrow",
         left: [],
-        selection: null,
+        selection: [],
         right: question.children,
     },
 };

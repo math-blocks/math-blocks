@@ -6,17 +6,16 @@ import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";
 
 const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
-    zipper = util.rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the left
-    if (selection) {
+    if (selection.length > 0) {
         return {
             ...zipper,
             row: {
                 ...zipper.row,
-                selection: null,
-                right: [...selection.nodes, ...right],
+                selection: [],
+                right: [...selection, ...right],
             },
         };
     }
@@ -72,7 +71,14 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
             }
 
             const breadcrumb: Breadcrumb = {
-                row: util.delLeft(zipper.row),
+                row: {
+                    type: "bcrow",
+                    id: zipper.row.id,
+                    // The node that was removed from `left` here is the node
+                    // that we're navigating into.
+                    left: left.slice(0, -1),
+                    right: right,
+                },
                 focus: focus,
             };
 
@@ -102,7 +108,13 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
         const exitNode = (updatedNode: types.Node): Zipper => ({
             breadcrumbs: zipper.breadcrumbs.slice(0, -1),
             // place the fraction we exited on our right
-            row: util.insertRight(parentRow, updatedNode),
+            row: {
+                type: "zrow",
+                id: parentRow.id,
+                left: parentRow.left,
+                selection: [],
+                right: [updatedNode, ...parentRow.right],
+            },
         });
 
         if (focus.type === "zdelimited") {
@@ -146,7 +158,13 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
             const exitNode = (updatedNode: types.Node): Zipper => ({
                 breadcrumbs: endZipper.breadcrumbs.slice(0, -1),
                 // place the fraction we exited on our right
-                row: util.insertRight(parentRow, updatedNode),
+                row: {
+                    type: "zrow",
+                    id: parentRow.id,
+                    left: parentRow.left,
+                    selection: [],
+                    right: [updatedNode, ...parentRow.right],
+                },
             });
 
             return exitNode(util.focusToNode(focus, exitedRow));

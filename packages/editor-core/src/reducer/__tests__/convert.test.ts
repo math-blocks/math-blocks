@@ -1,7 +1,6 @@
 import * as builders from "../../builders";
 
 import {zipperToRow} from "../convert";
-import {SelectionDir} from "../enums";
 import {row, toEqualEditorNodes} from "../test-util";
 
 import type {Zipper} from "../types";
@@ -16,7 +15,7 @@ describe("zipperToRow", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -33,7 +32,7 @@ describe("zipperToRow", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+").children,
-                    selection: null,
+                    selection: [],
                     right: row("2").children,
                 },
                 breadcrumbs: [],
@@ -50,10 +49,7 @@ describe("zipperToRow", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1").children,
-                    selection: {
-                        dir: SelectionDir.Right,
-                        nodes: row("+").children,
-                    },
+                    selection: row("+").children,
                     right: row("2").children,
                 },
                 breadcrumbs: [],
@@ -73,7 +69,7 @@ describe("zipperToRow", () => {
                     id: 1,
                     type: "zrow",
                     left: row("2").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [
@@ -81,9 +77,8 @@ describe("zipperToRow", () => {
                         // root row
                         row: {
                             id: 0,
-                            type: "zrow",
+                            type: "bcrow",
                             left: row("1+").children,
-                            selection: null,
                             right: row("+4").children,
                         },
                         // denominator
@@ -104,104 +99,6 @@ describe("zipperToRow", () => {
                     builders.glyph("1"),
                     builders.glyph("+"),
                     builders.frac(row("2").children, row("3").children),
-                    builders.glyph("+"),
-                    builders.glyph("4"),
-                ]).children,
-            );
-        });
-
-        test("with left selection", () => {
-            const zipper: Zipper = {
-                // numerator
-                row: {
-                    id: 1,
-                    type: "zrow",
-                    left: row("2").children,
-                    selection: null,
-                    right: [],
-                },
-                breadcrumbs: [
-                    {
-                        // root row
-                        row: {
-                            id: 0,
-                            type: "zrow",
-                            left: row("1+").children,
-                            selection: {
-                                dir: SelectionDir.Left,
-                                nodes: row("5+").children,
-                            },
-                            right: row("+4").children,
-                        },
-                        // denominator
-                        focus: {
-                            id: 2,
-                            type: "zfrac",
-                            left: [],
-                            right: [row("3")],
-                        },
-                    },
-                ],
-            };
-
-            const result = zipperToRow(zipper);
-
-            expect(result.children).toEqualEditorNodes(
-                builders.row([
-                    builders.glyph("1"),
-                    builders.glyph("+"),
-                    builders.glyph("5"),
-                    builders.glyph("+"),
-                    builders.frac(row("2").children, row("3").children),
-                    builders.glyph("+"),
-                    builders.glyph("4"),
-                ]).children,
-            );
-        });
-
-        test("with right selection", () => {
-            const zipper: Zipper = {
-                // numerator
-                row: {
-                    id: 1,
-                    type: "zrow",
-                    left: row("2").children,
-                    selection: null,
-                    right: [],
-                },
-                breadcrumbs: [
-                    {
-                        // root row
-                        row: {
-                            id: 0,
-                            type: "zrow",
-                            left: row("1+").children,
-                            selection: {
-                                dir: SelectionDir.Right,
-                                nodes: row("+5").children,
-                            },
-                            right: row("+4").children,
-                        },
-                        // denominator
-                        focus: {
-                            id: 2,
-                            type: "zfrac",
-                            left: [],
-                            right: [row("3")],
-                        },
-                    },
-                ],
-            };
-
-            const result = zipperToRow(zipper);
-
-            expect(result.children).toEqualEditorNodes(
-                builders.row([
-                    builders.glyph("1"),
-                    builders.glyph("+"),
-                    builders.frac(row("2").children, row("3").children),
-                    builders.glyph("+"),
-                    builders.glyph("5"),
                     builders.glyph("+"),
                     builders.glyph("4"),
                 ]).children,

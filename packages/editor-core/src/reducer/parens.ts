@@ -1,6 +1,5 @@
 import * as builders from "../builders";
 
-import {rezipSelection} from "./util";
 import {moveRight} from "./move-right";
 
 import type {Zipper} from "./types";
@@ -26,27 +25,22 @@ const rightGlyphMap = {
 };
 
 export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
-    zipper = rezipSelection(zipper);
     const {left, selection, right} = zipper.row;
 
     const leftParen = builders.glyph(leftGlyphMap[char]);
     const rightParen = builders.glyph(rightGlyphMap[char]);
 
-    if (selection) {
+    if (selection.length > 0) {
         if (leftParen.value.char === char) {
             const newZipper: Zipper = {
                 ...zipper,
                 row: {
                     ...zipper.row,
                     right: [
-                        builders.delimited(
-                            selection.nodes,
-                            leftParen,
-                            rightParen,
-                        ),
+                        builders.delimited(selection, leftParen, rightParen),
                         ...right,
                     ],
-                    selection: null,
+                    selection: [],
                 },
             };
 
@@ -61,9 +55,9 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                 ...zipper.row,
                 left: [
                     ...left,
-                    builders.delimited(selection.nodes, leftParen, rightParen),
+                    builders.delimited(selection, leftParen, rightParen),
                 ],
-                selection: null,
+                selection: [],
             },
         };
 
@@ -115,7 +109,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             }
         }
 
-        // If we're immediately to the left of a "delimted" node where then
+        // If we're immediately to the left of a "delimited" node where then
         // leftDelim is pending.  Make the delim non-pending and move into
         // the "delimited" node.
         const next = right[0];

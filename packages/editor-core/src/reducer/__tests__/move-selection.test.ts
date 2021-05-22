@@ -3,7 +3,6 @@ import * as builders from "../../builders";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
-import {SelectionDir} from "../enums";
 import {selectionZipperFromZippers} from "../convert";
 import type {Zipper} from "../types";
 
@@ -17,7 +16,7 @@ describe("moveRight w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("1+2").children,
                 },
                 breadcrumbs: [],
@@ -31,7 +30,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
@@ -41,7 +40,7 @@ describe("moveRight w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("1+2").children,
                 },
                 breadcrumbs: [],
@@ -56,7 +55,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.selection).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
         });
 
@@ -66,7 +65,7 @@ describe("moveRight w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("1+2").children,
                 },
                 breadcrumbs: [],
@@ -83,7 +82,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
@@ -93,7 +92,7 @@ describe("moveRight w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("1+2").children,
                 },
                 breadcrumbs: [],
@@ -110,7 +109,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
         });
 
@@ -120,7 +119,7 @@ describe("moveRight w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+2").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -137,7 +136,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
     });
@@ -154,7 +153,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -171,7 +170,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -187,7 +186,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -204,7 +203,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -220,7 +219,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -238,7 +237,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.selection).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -254,7 +253,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -274,7 +273,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(3);
+            expect(result.row.selection).toHaveLength(3);
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -290,7 +289,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -309,7 +308,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -325,7 +324,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -345,7 +344,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.breadcrumbs).toHaveLength(1);
             // We're inside the fraction
             expect(result.breadcrumbs[0].row.left).toHaveLength(0);
@@ -363,7 +362,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -384,7 +383,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.right).toHaveLength(1);
-            expect(result.row.selection).toBeNull();
+            expect(result.row.selection).toHaveLength(0);
             expect(result.row.left).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
         });
@@ -409,7 +408,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -427,7 +426,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].row.left).toHaveLength(0);
@@ -452,7 +451,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -473,7 +472,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -496,7 +495,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -518,7 +517,7 @@ describe("moveRight w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(3);
+            expect(result.row.selection).toHaveLength(3);
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
         });
@@ -533,7 +532,7 @@ describe("moveLeft w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+2").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -549,7 +548,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
 
@@ -559,7 +558,7 @@ describe("moveLeft w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+2").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -576,8 +575,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.selection).toHaveLength(2);
             expect(result.row.right).toHaveLength(0);
         });
 
@@ -587,7 +585,7 @@ describe("moveLeft w/ selecting = true", () => {
                     id: 0,
                     type: "zrow",
                     left: row("1+2").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -605,8 +603,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.dir).toEqual(SelectionDir.Left);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
         });
     });
@@ -622,7 +619,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -640,7 +637,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2); // '1', '+'
-            expect(result.row.selection?.nodes).toHaveLength(1); // 2/3
+            expect(result.row.selection).toHaveLength(1); // 2/3
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -655,7 +652,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -673,7 +670,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2); // '1', '+'
-            expect(result.row.selection?.nodes).toHaveLength(1); // 2/3
+            expect(result.row.selection).toHaveLength(1); // 2/3
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -688,7 +685,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -707,7 +704,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection?.nodes).toHaveLength(2);
+            expect(result.row.selection).toHaveLength(2);
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -722,7 +719,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -743,7 +740,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(3); // all nodes
+            expect(result.row.selection).toHaveLength(3); // all nodes
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -758,7 +755,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -778,7 +775,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -793,7 +790,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -814,10 +811,9 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(1);
+            expect(result.row.selection).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
-            expect(result.breadcrumbs[0].row.selection).toBeNull();
         });
 
         test("move back to the starting location", () => {
@@ -830,7 +826,7 @@ describe("moveLeft w/ selecting = true", () => {
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -852,7 +848,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(1);
-            expect(result.row.selection).toBeNull();
+            expect(result.row.selection).toHaveLength(0);
             expect(result.row.right).toHaveLength(0);
         });
     });
@@ -876,7 +872,7 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -894,7 +890,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2); // '2', '+'
-            expect(result.row.selection?.nodes).toHaveLength(1); // 3/4
+            expect(result.row.selection).toHaveLength(1); // 3/4
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
         });
@@ -917,7 +913,7 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -938,7 +934,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(2); // '1', '+'
-            expect(result.row.selection?.nodes).toHaveLength(1); // (2 + 3/4) / x
+            expect(result.row.selection).toHaveLength(1); // (2 + 3/4) / x
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(0);
         });
@@ -961,7 +957,7 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: null,
+                    selection: [],
                 },
                 breadcrumbs: [],
             };
@@ -983,7 +979,7 @@ describe("moveLeft w/ selecting = true", () => {
             }
 
             expect(result.row.left).toHaveLength(0);
-            expect(result.row.selection?.nodes).toHaveLength(3); // 2 + 3/4
+            expect(result.row.selection).toHaveLength(3); // 2 + 3/4
             expect(result.row.right).toHaveLength(0);
             expect(result.breadcrumbs).toHaveLength(1);
         });

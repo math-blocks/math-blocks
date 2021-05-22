@@ -252,7 +252,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     id: row.id,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row.children,
                 },
             };
@@ -347,7 +347,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                         id: corrected.id,
                         type: "zrow",
                         left: [],
-                        selection: null,
+                        selection: [],
                         right: corrected.children,
                     },
                 };

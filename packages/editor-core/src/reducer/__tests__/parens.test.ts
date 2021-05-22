@@ -2,7 +2,6 @@ import {toEqualEditorNodes, row, delimited} from "../test-util";
 import {parens} from "../parens";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
-import {SelectionDir} from "../enums";
 import * as builders from "../../builders";
 
 import type {Zipper} from "../types";
@@ -17,10 +16,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2").children,
-                    selection: {
-                        dir: SelectionDir.Left,
-                        nodes: row("x+5").children,
-                    },
+                    selection: row("x+5").children,
                     right: row("=10").children,
                 },
                 breadcrumbs: [],
@@ -46,10 +42,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2").children,
-                    selection: {
-                        dir: SelectionDir.Right,
-                        nodes: row("x+5").children,
-                    },
+                    selection: row("x+5").children,
                     right: row("=10").children,
                 },
                 breadcrumbs: [],
@@ -80,7 +73,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -118,7 +111,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -141,7 +134,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: row("2x+5").children,
                 },
                 breadcrumbs: [],
@@ -179,7 +172,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2x+5").children,
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -203,7 +196,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [delimited("2x+5")],
                 },
                 breadcrumbs: [],
@@ -241,7 +234,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [delimited("2x+5")],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -266,7 +259,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [
                         builders.glyph("2"),
                         delimited("x+5"),
@@ -322,7 +315,7 @@ describe("parens", () => {
                         builders.glyph("1"),
                         builders.glyph("0"),
                     ],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -359,7 +352,7 @@ describe("parens", () => {
                             builders.glyph(")", true),
                         ),
                     ],
-                    selection: null,
+                    selection: [],
                     right: [],
                 },
                 breadcrumbs: [],
@@ -383,7 +376,7 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: [],
-                    selection: null,
+                    selection: [],
                     right: [
                         builders.delimited(
                             row("2x+5").children,

@@ -34,7 +34,7 @@ const EditorPage: React.FunctionComponent = () => {
             id: examples[0].id,
             type: "zrow",
             left: [],
-            selection: null,
+            selection: [],
             right: examples[0].children,
         },
     });
@@ -163,7 +163,7 @@ const EditorPage: React.FunctionComponent = () => {
                                 id: example.id,
                                 type: "zrow",
                                 left: [],
-                                selection: null,
+                                selection: [],
                                 right: example.children,
                             },
                         };

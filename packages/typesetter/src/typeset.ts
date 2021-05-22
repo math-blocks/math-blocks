@@ -735,101 +735,57 @@ const _typesetZipper = (
     if (crumb) {
         const row = crumb.row;
 
-        if (row.selection) {
-            const left = _typesetChildren(row.left, context);
-            const nextZipper: Editor.Zipper = {
-                ...zipper,
-                breadcrumbs: restCrumbs,
-            };
-            const focusBox = typesetFocus(crumb.focus, nextZipper, context);
-            const selection =
-                row.selection.dir === "left"
-                    ? [
-                          ..._typesetChildren(
-                              row.selection.nodes,
-                              context,
-                              row.left[row.left.length - 1],
-                          ),
-                          focusBox,
-                      ]
-                    : [
-                          focusBox,
-                          ..._typesetChildren(
-                              row.selection.nodes,
-                              context,
-                              crumb.focus, // prev edit node
-                              focusBox, // prev layout node
-                          ),
-                      ];
-            const right = _typesetChildren(
+        const nodes: Layout.Node[] = [];
+
+        nodes.push(..._typesetChildren(row.left, context));
+        const nextZipper: Editor.Zipper = {
+            ...zipper,
+            breadcrumbs: restCrumbs,
+        };
+        nodes.push(
+            typesetFocus(
+                crumb.focus,
+                nextZipper,
+                context,
+                row.left[row.left.length - 1], // previous edit node
+                nodes[nodes.length - 1], // previous layout node
+            ),
+        );
+        nodes.push(
+            ..._typesetChildren(
                 row.right,
                 context,
-                row.selection.dir === "left" || row.selection.nodes.length === 0
-                    ? crumb.focus
-                    : row.selection.nodes[row.selection.nodes.length - 1],
-                selection[selection.length - 1], // previous layout node
-            );
+                crumb.focus, // previous edit node
+                nodes[nodes.length - 1], // previous layout node
+            ),
+        );
 
-            const box = Layout.hpackNat([left, selection, right], context);
-            box.id = row.id;
-            box.color = context?.colorMap?.get(box.id);
+        const box = Layout.hpackNat([nodes], context);
+        box.id = row.id;
+        box.color = context?.colorMap?.get(box.id);
 
-            if (context.renderMode === RenderMode.Dynamic) {
-                ensureMinDepthAndHeight(box, context);
-            }
-
-            return box;
-        } else {
-            const nodes: Layout.Node[] = [];
-
-            nodes.push(..._typesetChildren(row.left, context));
-            const nextZipper: Editor.Zipper = {
-                ...zipper,
-                breadcrumbs: restCrumbs,
-            };
-            nodes.push(
-                typesetFocus(
-                    crumb.focus,
-                    nextZipper,
-                    context,
-                    row.left[row.left.length - 1], // previous edit node
-                    nodes[nodes.length - 1], // previous layout node
-                ),
-            );
-            nodes.push(
-                ..._typesetChildren(
-                    row.right,
-                    context,
-                    crumb.focus, // previous edit node
-                    nodes[nodes.length - 1], // previous layout node
-                ),
-            );
-
-            const box = Layout.hpackNat([nodes], context);
-            box.id = row.id;
-            box.color = context?.colorMap?.get(box.id);
-
-            if (context.renderMode === RenderMode.Dynamic) {
-                ensureMinDepthAndHeight(box, context);
-            }
-
-            return box;
+        if (context.renderMode === RenderMode.Dynamic) {
+            ensureMinDepthAndHeight(box, context);
         }
+
+        return box;
     } else {
         const row = zipper.row;
 
         const left = _typesetChildren(row.left, context);
-        const selection = row.selection
-            ? _typesetChildren(
-                  row.selection.nodes,
-                  context,
-                  row.left[row.left.length - 1],
-              )
-            : [];
+        const selection =
+            row.selection.length > 0
+                ? _typesetChildren(
+                      row.selection,
+                      context,
+                      row.left[row.left.length - 1],
+                  )
+                : [];
 
-        const prevEditNode = row.selection
-            ? row.selection.nodes[row.selection.nodes.length - 1]
-            : row.left[row.left.length - 1];
+        const prevEditNode =
+            row.selection.length > 0
+                ? row.selection[row.selection.length - 1]
+                : row.left[row.left.length - 1];
 
         const prevLayoutNode =
             selection[selection.length - 1] || left[left.length - 1];

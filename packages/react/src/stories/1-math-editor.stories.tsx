@@ -47,7 +47,7 @@ export const Editable: Story<EmptyProps> = (args, {loaded: fontData}) => {
             id: math.id,
             type: "zrow",
             left: [],
-            selection: null,
+            selection: [],
             right: math.children,
         },
     };
@@ -82,7 +82,7 @@ export const Readonly: Story<EmptyProps> = (args, {loaded: fontData}) => {
             id: math.id,
             type: "zrow",
             left: [],
-            selection: null,
+            selection: [],
             right: math.children,
         },
     };
