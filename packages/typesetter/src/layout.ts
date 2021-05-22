@@ -14,12 +14,17 @@ export type Dim = {
     height: Dist;
 };
 
-type BoxKind = "hbox" | "vbox";
+type Style = {
+    color?: string;
+    cancel?: boolean;
+};
 
 type Common = {
     id?: number;
-    color?: string;
+    style: Style;
 };
+
+type BoxKind = "hbox" | "vbox";
 
 export type Box = {
     type: "Box";
@@ -67,6 +72,7 @@ export const makeBox = (
         shift: 0,
         content,
         fontSize: fontSizeForContext(context),
+        style: {},
     };
 };
 
@@ -107,12 +113,14 @@ export const makeKern = (size: Dist, flag?: "start" | "end"): Kern => ({
     type: "Kern",
     size,
     flag,
+    style: {},
 });
 
 export const makeHRule = (thickness: number, width: number): HRule => ({
     type: "HRule",
     thickness,
     width,
+    style: {},
 });
 
 export const makeGlyph = (
@@ -126,6 +134,7 @@ export const makeGlyph = (
         glyphID,
         size: fontSizeForContext(context),
         fontData: context.fontData,
+        style: {},
     };
 };
 

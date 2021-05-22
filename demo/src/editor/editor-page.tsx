@@ -43,7 +43,7 @@ const EditorPage: React.FunctionComponent = () => {
         RadicalDegreeAlgorithm
     >(RadicalDegreeAlgorithm.OpenType);
 
-    const [debug, setDebug] = React.useState<boolean>(false);
+    const [showHitboxes, setShowHitboxes] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         const loadFont = async (): Promise<void> => {
@@ -144,7 +144,7 @@ const EditorPage: React.FunctionComponent = () => {
                 readonly={false}
                 zipper={zipper}
                 radicalDegreeAlgorithm={radicalDegreeAlgorithm}
-                debug={debug}
+                showHitboxes={showHitboxes}
             />
             <br />
             <br />
@@ -171,8 +171,8 @@ const EditorPage: React.FunctionComponent = () => {
                     }}
                     defaultValue={0}
                 >
-                    <option value={0}>Adding Fractions</option>
-                    <option value={1}>Simple Equation</option>
+                    <option value={0}>Simple Equation</option>
+                    <option value={1}>Adding Fractions</option>
                     <option value={2}>All Node Types</option>
                     <option value={3}>Tall Delimiters</option>
                     <option value={4}>Nested Fractions</option>
@@ -226,11 +226,11 @@ const EditorPage: React.FunctionComponent = () => {
                         marginLeft: 32,
                     }}
                 >
-                    Debug
+                    Show Hitboxes
                 </span>
                 <input
                     type="checkbox"
-                    onChange={(e) => setDebug(e.target.checked)}
+                    onChange={(e) => setShowHitboxes(e.target.checked)}
                 ></input>
             </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>

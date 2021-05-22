@@ -148,8 +148,8 @@ const addingFractions = Editor.builders.row([
 ]);
 
 export const examples = [
-    addingFractions,
     simpleRow,
+    addingFractions,
     allNodeTypes,
     delimiters,
     nestedFractions,

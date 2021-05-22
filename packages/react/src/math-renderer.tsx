@@ -6,14 +6,14 @@ import * as OpenType from "@math-blocks/opentype";
 
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
     id,
-    color,
+    style,
     thickness,
     ...props
 }) => {
     return (
         <line
             {...props}
-            stroke={color || "currentColor"}
+            stroke={style.stroke}
             strokeWidth={thickness}
             strokeLinecap="butt"
         />
@@ -25,7 +25,7 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
     id,
     ...props
 }) => {
-    return <rect {...props} fill={fill || "currentcolor"} />;
+    return <rect {...props} fill={fill} />;
 };
 
 const getPath = (glyph: OpenType.Glyph): string => {
@@ -56,7 +56,12 @@ enum GlyphRendering {
     Text,
 }
 
-const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
+const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
+    x,
+    y,
+    glyph,
+    style,
+}) => {
     const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
 
     const {font} = glyph.fontData;
@@ -67,7 +72,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
     if (glyphRendering === GlyphRendering.Path) {
         return (
             <path
-                fill={glyph.color || "currentcolor"}
+                fill={style.fill}
                 id={id}
                 style={{opacity: glyph.pending ? 0.5 : 1.0}}
                 aria-hidden="true"
@@ -83,7 +88,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({x, y, glyph}) => {
                 y={y}
                 fontFamily={fontFamily}
                 fontSize={glyph.size}
-                fill={glyph.color || "currentcolor"}
+                fill={style.fill}
                 id={id}
                 style={{opacity: glyph.pending ? 0.5 : 1.0}}
                 aria-hidden="true"
@@ -98,13 +103,13 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
     x,
     y,
     children,
-    color,
+    style,
     id,
 }) => {
     const _id = typeof id !== undefined ? String(id) : undefined;
 
     return (
-        <g transform={`translate(${x},${y})`} style={{color: color}} id={_id}>
+        <g transform={`translate(${x},${y})`} fill={style.fill} id={_id}>
             {children.map((child, i) => {
                 const key = `${i}`;
                 return <Node {...child} key={key} />;
@@ -133,10 +138,11 @@ const CURSOR_WIDTH = 2;
 type Props = {
     scene: SceneGraph.Scene;
     style?: React.CSSProperties;
+    showHitboxes?: boolean;
 };
 
 const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
-    const {scene, style} = props;
+    const {scene, style, showHitboxes} = props;
     const {width, height} = scene;
     const padding = CURSOR_WIDTH / 2;
     const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
@@ -151,8 +157,17 @@ const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
             ref={ref}
         >
             <Group {...scene.selection} />
-            <Group {...scene.content} />
-            {/* <Group {...scene.hitboxes} /> */}
+            {/**
+             * We set 'fill' and stroke to 'currentColor' so that the base
+             * color is whatever the current CSS 'color' property is set up.
+             * Individual nodes within the scene can override their style's
+             * color and the render above will set the fill and/or stroke in
+             * rendered SVG element appropriately.
+             */}
+            <g fill="currentColor" stroke="currentColor">
+                <Group {...scene.content} />
+            </g>
+            {showHitboxes && <Group {...scene.hitboxes} />}
         </svg>
     );
 });
