@@ -661,6 +661,36 @@ describe("renderer", () => {
             const Cursor = await storyToComponent(stories.Cursor);
             expect(<Cursor />).toMatchSVGSnapshot();
         });
+
+        test("cursor in front of operator", async () => {
+            const zipper: Editor.Zipper = {
+                breadcrumbs: [],
+                row: {
+                    id: Core.getId(),
+                    type: "zrow",
+                    left: [glyph("2")],
+                    selection: [],
+                    right: [glyph("+"), glyph("a")],
+                },
+            };
+
+            const fontData = await stixFontLoader();
+            const fontSize = 60;
+            const context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Dynamic,
+                cramped: false,
+            };
+            const options = {showCursor: true};
+
+            expect(
+                <MathRenderer
+                    scene={Typesetter.typesetZipper(zipper, context, options)}
+                />,
+            ).toMatchSVGSnapshot();
+        });
     });
 
     describe("selection", () => {
