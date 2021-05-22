@@ -773,17 +773,19 @@ const _typesetZipper = (
         const row = zipper.row;
 
         const left = _typesetChildren(row.left, context);
-        const selection = row.selection
-            ? _typesetChildren(
-                  row.selection,
-                  context,
-                  row.left[row.left.length - 1],
-              )
-            : [];
+        const selection =
+            row.selection.length > 0
+                ? _typesetChildren(
+                      row.selection,
+                      context,
+                      row.left[row.left.length - 1],
+                  )
+                : [];
 
-        const prevEditNode = row.selection
-            ? row.selection[row.selection.length - 1]
-            : row.left[row.left.length - 1];
+        const prevEditNode =
+            row.selection.length > 0
+                ? row.selection[row.selection.length - 1]
+                : row.left[row.left.length - 1];
 
         const prevLayoutNode =
             selection[selection.length - 1] || left[left.length - 1];
