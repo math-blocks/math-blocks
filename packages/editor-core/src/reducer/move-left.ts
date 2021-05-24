@@ -78,6 +78,7 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                     // that we're navigating into.
                     left: left.slice(0, -1),
                     right: right,
+                    style: zipper.row.style,
                 },
                 focus: focus,
             };
@@ -114,6 +115,7 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                 left: parentRow.left,
                 selection: [],
                 right: [updatedNode, ...parentRow.right],
+                style: parentRow.style,
             },
         });
 
@@ -164,6 +166,7 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     left: parentRow.left,
                     selection: [],
                     right: [updatedNode, ...parentRow.right],
+                    style: parentRow.style,
                 },
             });
 

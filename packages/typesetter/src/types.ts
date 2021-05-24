@@ -7,7 +7,8 @@ export type Context = {
     baseFontSize: number;
     mathStyle: MathStyle;
     cramped: boolean;
-    colorMap?: Map<number, string>;
+    // TODO: Create a helper function to add colors to nodes in an Editor tree
+    // colorMap?: Map<number, string>;
     operator?: boolean; // if true, doesn't use italics for latin glyphs
     renderMode: RenderMode;
     radicalDegreeAlgorithm?: RadicalDegreeAlgorithm;

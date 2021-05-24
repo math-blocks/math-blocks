@@ -76,6 +76,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     // The node that was removed from right here is the node
                     // that we're navigating into.
                     right: right.slice(1),
+                    style: zipper.row.style,
                 },
                 focus: focus,
             };
@@ -112,6 +113,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                 left: [...parentRow.left, updatedNode],
                 selection: [],
                 right: parentRow.right,
+                style: parentRow.style,
             },
         });
 
@@ -160,6 +162,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     left: [...parentRow.left, updatedNode],
                     selection: [],
                     right: parentRow.right,
+                    style: parentRow.style,
                 },
             });
 

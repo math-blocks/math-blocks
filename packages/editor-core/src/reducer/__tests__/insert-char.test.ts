@@ -1,7 +1,7 @@
 import * as builders from "../../builders";
 
 import {insertChar} from "../insert-char";
-import {row, toEqualEditorNodes} from "../test-util";
+import {row, toEqualEditorNodes, zrow} from "../test-util";
 import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
@@ -9,13 +9,7 @@ expect.extend({toEqualEditorNodes});
 describe("insertChar", () => {
     test("it inserts characters at the end", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: row("1+").children,
-                selection: [],
-                right: [],
-            },
+            row: zrow(row("1+").children, []),
             breadcrumbs: [],
         };
 
@@ -27,13 +21,7 @@ describe("insertChar", () => {
 
     test("it inserts characters at the start", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                selection: [],
-                left: [],
-                right: row("+2").children,
-            },
+            row: zrow([], row("+2").children),
             breadcrumbs: [],
         };
 
@@ -45,13 +33,7 @@ describe("insertChar", () => {
 
     test("it inserts characters in the middle", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: [builders.glyph("1")],
-                selection: [],
-                right: [builders.glyph("2")],
-            },
+            row: zrow([builders.glyph("1")], [builders.glyph("2")]),
             breadcrumbs: [],
         };
 
@@ -63,13 +45,7 @@ describe("insertChar", () => {
 
     test("it inserts 'limits' characters", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: row("1+").children,
-                selection: [],
-                right: [],
-            },
+            row: zrow(row("1+").children, []),
             breadcrumbs: [],
         };
 
@@ -94,6 +70,7 @@ describe("insertChar", () => {
                     left: [builders.glyph("1")],
                     selection: [builders.glyph("+")],
                     right: [builders.glyph("2")],
+                    style: {},
                 },
                 breadcrumbs: [],
             };
@@ -112,6 +89,7 @@ describe("insertChar", () => {
                     left: [builders.glyph("1")],
                     selection: [builders.glyph("+")],
                     right: [builders.glyph("2")],
+                    style: {},
                 },
                 breadcrumbs: [],
             };

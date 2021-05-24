@@ -20,6 +20,7 @@ export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
             types.Row,
             types.Row,
         ],
+        style: focus.style,
     };
 };
 
@@ -30,12 +31,14 @@ export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
               type: "zfrac",
               left: [],
               right: [node.children[1]],
+              style: node.style,
           }
         : {
               id: node.id,
               type: "zfrac",
               left: [node.children[0]],
               right: [],
+              style: node.style,
           };
 };
 
@@ -50,6 +53,7 @@ export const subsup = (
             types.Row | null,
             types.Row | null,
         ],
+        style: focus.style,
     };
 };
 
@@ -60,12 +64,14 @@ export const zsubsup = (node: types.SubSup, index: 0 | 1): ZSubSup => {
               type: "zsubsup",
               left: [],
               right: [node.children[1]],
+              style: node.style,
           }
         : {
               id: node.id,
               type: "zsubsup",
               left: [node.children[0]],
               right: [],
+              style: node.style,
           };
 };
 
@@ -77,6 +83,7 @@ export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
             types.Row | null,
             types.Row,
         ],
+        style: focus.style,
     };
 };
 
@@ -87,12 +94,14 @@ export const zroot = (node: types.Root, index: 0 | 1): ZRoot => {
               type: "zroot",
               left: [],
               right: [node.children[1]],
+              style: node.style,
           }
         : {
               id: node.id,
               type: "zroot",
               left: [node.children[0]],
               right: [],
+              style: node.style,
           };
 };
 
@@ -108,6 +117,7 @@ export const limits = (
             types.Row,
             types.Row | null,
         ],
+        style: focus.style,
     };
 };
 
@@ -119,6 +129,7 @@ export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
               left: [],
               right: [node.children[1]],
               inner: node.inner,
+              style: node.style,
           }
         : {
               id: node.id,
@@ -126,6 +137,7 @@ export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
               left: [node.children[0]],
               right: [],
               inner: node.inner,
+              style: node.style,
           };
 };
 
@@ -139,6 +151,7 @@ export const delimited = (
         children: [replacement], // focus.left and focus.right are always empty arrays
         leftDelim: focus.leftDelim,
         rightDelim: focus.rightDelim,
+        style: focus.style,
     };
 };
 
@@ -150,6 +163,7 @@ export const zdelimited = (node: types.Delimited): ZDelimited => {
         right: [],
         leftDelim: node.leftDelim,
         rightDelim: node.rightDelim,
+        style: node.style,
     };
 };
 
@@ -191,6 +205,7 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
         id: zrow.id,
         type: "row",
         children: [...zrow.left, ...zrow.selection, ...zrow.right],
+        style: zrow.style,
     };
 };
 
@@ -204,4 +219,5 @@ export const zrow = (
     left,
     selection: [],
     right,
+    style: {},
 });

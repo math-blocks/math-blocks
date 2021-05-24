@@ -3,10 +3,15 @@ import * as sharedTypes from "./shared-types";
 export type Glyph = {
     kind: "glyph";
     char: string;
-    pending?: boolean;
+    pending?: boolean; // TODO: move this into Style
 };
 
-type Common = {id: number};
+export type Style = {
+    color?: string;
+    cancel?: boolean;
+};
+
+type Common = {id: number; style: Style};
 
 export type Row = sharedTypes.Row<Glyph, Common>;
 export type Delimited = sharedTypes.Delimited<Glyph, Common>;

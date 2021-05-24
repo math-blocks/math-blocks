@@ -165,6 +165,7 @@ export const rowToZipper = (
             id: row.id,
             left: row.children.slice(0, rowIndex), // focus replaces the missing child
             right: row.children.slice(rowIndex + 1),
+            style: row.style,
         },
         focus: focus,
     };
@@ -271,6 +272,7 @@ export const selectionZipperFromZippers = (
                     left: [...lastCrumb.row.left, node],
                     selection: [],
                     right: lastCrumb.row.right,
+                    style: lastCrumb.row.style,
                 },
                 breadcrumbs: restCrumbs,
             };

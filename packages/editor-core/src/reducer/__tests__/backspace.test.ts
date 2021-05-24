@@ -8,6 +8,7 @@ import {
     root,
     delimited,
     toEqualEditorNodes,
+    zrow,
 } from "../test-util";
 import * as builders from "../../builders";
 import * as types from "../../types";
@@ -16,16 +17,24 @@ import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
+const limits = (
+    inner: types.Node,
+    lower: types.Row,
+    upper: types.Row | null,
+): types.Limits => {
+    return {
+        id: 0,
+        type: "limits",
+        children: [lower, upper],
+        inner: inner,
+        style: {},
+    };
+};
+
 describe("backspace", () => {
     test("it deletes characters at the end", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: row("1+2").children,
-                selection: [],
-                right: [],
-            },
+            row: zrow(row("1+2").children, []),
             breadcrumbs: [],
         };
 
@@ -37,13 +46,7 @@ describe("backspace", () => {
 
     test("it deletes characters in the middle", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: row("1+").children,
-                selection: [],
-                right: row("2").children,
-            },
+            row: zrow(row("1+").children, row("2").children),
             breadcrumbs: [],
         };
 
@@ -55,13 +58,7 @@ describe("backspace", () => {
 
     test("it does nothing at the start", () => {
         const zipper: Zipper = {
-            row: {
-                id: 0,
-                type: "zrow",
-                left: [],
-                selection: [],
-                right: row("1+2").children,
-            },
+            row: zrow([], row("1+2").children),
             breadcrumbs: [],
         };
 
@@ -74,13 +71,7 @@ describe("backspace", () => {
     describe("fractions", () => {
         test("deleting from the start of the numerator", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("2").children, // numerator
-                },
+                row: zrow([], row("2").children), // numerator
                 breadcrumbs: [
                     {
                         row: {
@@ -88,12 +79,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zfrac",
                             left: [],
                             right: [row("3")],
+                            style: {},
                         },
                     },
                 ],
@@ -107,13 +100,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the denominator", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("3").children, // denominator
-                },
+                row: zrow([], row("3").children), // denominator
                 breadcrumbs: [
                     {
                         row: {
@@ -121,12 +108,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zfrac",
                             left: [row("2")],
                             right: [],
+                            style: {},
                         },
                     },
                 ],
@@ -141,13 +130,7 @@ describe("backspace", () => {
         test("deleting from the right of the fraction moves into the denonominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), f],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -159,6 +142,7 @@ describe("backspace", () => {
                 type: "zfrac",
                 left: [f.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -169,13 +153,7 @@ describe("backspace", () => {
     describe("subsup", () => {
         test("deleting from the start of the subscript w/o a superscript", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("n").children, // subscript
-                },
+                row: zrow([], row("n").children), // subscript
                 breadcrumbs: [
                     {
                         row: {
@@ -183,12 +161,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("x").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zsubsup",
                             left: [], // the subscript is focused
                             right: [null], // no superscript
+                            style: {},
                         },
                     },
                 ],
@@ -202,13 +182,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the subscript with a superscript", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("n").children, // sbuscript
-                },
+                row: zrow([], row("n").children), // sbuscript
                 breadcrumbs: [
                     {
                         row: {
@@ -216,12 +190,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("x").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zsubsup",
                             left: [], // the subscript is focused
                             right: [row("2")], // superscript
+                            style: {},
                         },
                     },
                 ],
@@ -235,13 +211,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the superscript w/o a subscript", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("2").children, // superscript
-                },
+                row: zrow([], row("2").children), // superscript
                 breadcrumbs: [
                     {
                         row: {
@@ -249,12 +219,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("x").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zsubsup",
                             left: [null], // no subscript
                             right: [], // the superscript is focused
+                            style: {},
                         },
                     },
                 ],
@@ -268,13 +240,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the superscript with a subscript", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("2").children, // superscript
-                },
+                row: zrow([], row("2").children), // superscript
                 breadcrumbs: [
                     {
                         row: {
@@ -282,12 +248,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("x").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zsubsup",
                             left: [row("n")], // subscript
                             right: [], // the superscript is focused
+                            style: {},
                         },
                     },
                 ],
@@ -307,13 +275,7 @@ describe("backspace", () => {
         test("deleting from the right of a subscript", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -325,6 +287,7 @@ describe("backspace", () => {
                 type: "zsubsup",
                 left: [],
                 right: [null],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -334,13 +297,7 @@ describe("backspace", () => {
         test("deleting from the right of a superscript", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -352,6 +309,7 @@ describe("backspace", () => {
                 type: "zsubsup",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -362,13 +320,7 @@ describe("backspace", () => {
     describe("roots", () => {
         test("deleting from the start of a radicand w/o an index", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("27").children, // index
-                },
+                row: zrow([], row("27").children), // index
                 breadcrumbs: [
                     {
                         row: {
@@ -376,12 +328,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zroot",
                             left: [null], // no index
                             right: [], // the radicand is focused
+                            style: {},
                         },
                     },
                 ],
@@ -395,13 +349,7 @@ describe("backspace", () => {
 
         test("deleting from the start of a radicand with an index", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("27").children, // index
-                },
+                row: zrow([], row("27").children), // index
                 breadcrumbs: [
                     {
                         row: {
@@ -409,12 +357,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zroot",
                             left: [row("3")], // index
                             right: [], // the radicand is focused
+                            style: {},
                         },
                     },
                 ],
@@ -428,13 +378,7 @@ describe("backspace", () => {
 
         test("deleting from the start of an index", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("3").children,
-                },
+                row: zrow([], row("3").children),
                 breadcrumbs: [
                     {
                         row: {
@@ -442,12 +386,14 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: [],
+                            style: {},
                         },
                         focus: {
                             id: 0,
                             type: "zroot",
                             left: [], // the index is focused
                             right: [row("27")], // radicand
+                            style: {},
                         },
                     },
                 ],
@@ -462,13 +408,7 @@ describe("backspace", () => {
         test("deleting from the right of a root w/o an index", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -480,6 +420,7 @@ describe("backspace", () => {
                 type: "zroot",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -489,13 +430,7 @@ describe("backspace", () => {
         test("deleting from the right of a root with an index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -507,6 +442,7 @@ describe("backspace", () => {
                 type: "zroot",
                 left: [r.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -517,13 +453,7 @@ describe("backspace", () => {
     describe("limits", () => {
         test("deleting from the start of the lower bound w/o an upper bound", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("x->0").children, // lower bound
-                },
+                row: zrow([], row("x->0").children), // lower bound
                 breadcrumbs: [
                     {
                         row: {
@@ -531,6 +461,7 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: [],
                             right: row("x").children,
+                            style: {},
                         },
                         focus: {
                             id: 0,
@@ -538,6 +469,7 @@ describe("backspace", () => {
                             left: [], // the lower bound is focused
                             right: [null], // no upper bound
                             inner: row("lim"),
+                            style: {},
                         },
                     },
                 ],
@@ -551,13 +483,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the bound limit with an upper bound", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("i=0").children, // lower bound
-                },
+                row: zrow([], row("i=0").children), // lower bound
                 breadcrumbs: [
                     {
                         row: {
@@ -565,6 +491,7 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: [],
                             right: row("i").children,
+                            style: {},
                         },
                         focus: {
                             id: 0,
@@ -572,6 +499,7 @@ describe("backspace", () => {
                             left: [], // the lower bound is focused
                             right: [row("n")], // upper bound
                             inner: row("sum"),
+                            style: {},
                         },
                     },
                 ],
@@ -585,13 +513,7 @@ describe("backspace", () => {
 
         test("deleting from the start of the upper bound", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("n").children, // upper bound
-                },
+                row: zrow([], row("n").children), // upper bound
                 breadcrumbs: [
                     {
                         row: {
@@ -599,6 +521,7 @@ describe("backspace", () => {
                             type: "bcrow",
                             left: [],
                             right: row("i").children,
+                            style: {},
                         },
                         focus: {
                             id: 0,
@@ -606,6 +529,7 @@ describe("backspace", () => {
                             left: [row("i=0")], // lower bound
                             right: [], // the upper bound is focused
                             inner: row("sum"),
+                            style: {},
                         },
                     },
                 ],
@@ -619,28 +543,10 @@ describe("backspace", () => {
 
         test("deleting from the right of a limits node w/o an upper bound", () => {
             const lower: types.Row = row("b");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const lim: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, null],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), lim],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -653,6 +559,7 @@ describe("backspace", () => {
                 left: [],
                 right: [null],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -662,28 +569,10 @@ describe("backspace", () => {
         test("deleting from the right of a limits node with an upper bound", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), sum],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -696,6 +585,7 @@ describe("backspace", () => {
                 left: [lower],
                 right: [],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -707,13 +597,7 @@ describe("backspace", () => {
         describe("no pending parens", () => {
             test("deleting the right paren should change it to pending", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [delimited("2x+5")],
-                        selection: [],
-                        right: [],
-                    },
+                    row: zrow([delimited("2x+5")], []),
                     breadcrumbs: [],
                 };
 
@@ -736,13 +620,7 @@ describe("backspace", () => {
 
             test("deleting the left paren should remove the parens", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [],
-                        selection: [],
-                        right: [delimited("2x+5")],
-                    },
+                    row: zrow([], [delimited("2x+5")]),
                     breadcrumbs: [],
                 };
 
@@ -758,10 +636,8 @@ describe("backspace", () => {
         describe("no pending parens inside existing parens", () => {
             test("deleting the right paren should change it to pending", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [
+                    row: zrow(
+                        [
                             builders.delimited(
                                 [
                                     builders.glyph("2"),
@@ -778,9 +654,8 @@ describe("backspace", () => {
                                 builders.glyph(")"),
                             ),
                         ],
-                        selection: [],
-                        right: [],
-                    },
+                        [],
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -801,12 +676,9 @@ describe("backspace", () => {
 
             test("deleting the left paren should remove the parens", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [],
-                        selection: [],
-                        right: [
+                    row: zrow(
+                        [],
+                        [
                             builders.delimited(
                                 [
                                     builders.glyph("2"),
@@ -823,7 +695,7 @@ describe("backspace", () => {
                                 builders.glyph(")"),
                             ),
                         ],
-                    },
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -851,19 +723,16 @@ describe("backspace", () => {
         describe("pending parens", () => {
             test("deleting the right non-pending paren should delete both parens", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [
+                    row: zrow(
+                        [
                             builders.delimited(
                                 row("2x+5").children,
                                 builders.glyph("(", true),
                                 builders.glyph(")"),
                             ),
                         ],
-                        selection: [],
-                        right: [],
-                    },
+                        [],
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -876,20 +745,16 @@ describe("backspace", () => {
             });
             test("deleting the left non-pending paren should delete both parens", () => {
                 const zipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [],
-
-                        selection: [],
-                        right: [
+                    row: zrow(
+                        [],
+                        [
                             builders.delimited(
                                 row("2x+5").children,
                                 builders.glyph("(", true),
                                 builders.glyph(")"),
                             ),
                         ],
-                    },
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -912,6 +777,7 @@ describe("backspace", () => {
                     left: row("2x").children,
                     selection: row("+5").children,
                     right: row("=10").children,
+                    style: {},
                 },
                 breadcrumbs: [],
             };

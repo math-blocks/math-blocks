@@ -1,4 +1,4 @@
-import {toEqualEditorNodes, row, delimited} from "../test-util";
+import {toEqualEditorNodes, row, delimited, zrow} from "../test-util";
 import {parens} from "../parens";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
@@ -18,6 +18,7 @@ describe("parens", () => {
                     left: row("2").children,
                     selection: row("x+5").children,
                     right: row("=10").children,
+                    style: {},
                 },
                 breadcrumbs: [],
             };
@@ -44,6 +45,7 @@ describe("parens", () => {
                     left: row("2").children,
                     selection: row("x+5").children,
                     right: row("=10").children,
+                    style: {},
                 },
                 breadcrumbs: [],
             };
@@ -69,13 +71,7 @@ describe("parens", () => {
     describe("no selection", () => {
         test("empty row, '('", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [],
-                },
+                row: zrow([], []),
                 breadcrumbs: [],
             };
 
@@ -107,13 +103,7 @@ describe("parens", () => {
 
         test("empty row, ')'", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [],
-                },
+                row: zrow([], []),
                 breadcrumbs: [],
             };
 
@@ -130,13 +120,7 @@ describe("parens", () => {
 
         test("non-empty row, '(' at start", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("2x+5").children,
-                },
+                row: zrow([], row("2x+5").children),
                 breadcrumbs: [],
             };
 
@@ -168,13 +152,7 @@ describe("parens", () => {
 
         test("non-empty row, ')' at end", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("2x+5").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("2x+5").children, []),
                 breadcrumbs: [],
             };
 
@@ -192,13 +170,7 @@ describe("parens", () => {
 
         test("inside existing parens, '(' at start", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [delimited("2x+5")],
-                },
+                row: zrow([], [delimited("2x+5")]),
                 breadcrumbs: [],
             };
 
@@ -230,13 +202,7 @@ describe("parens", () => {
 
         test("inside existing parens, ')' at end", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [delimited("2x+5")],
-                    selection: [],
-                    right: [],
-                },
+                row: zrow([delimited("2x+5")], []),
                 breadcrumbs: [],
             };
 
@@ -255,19 +221,16 @@ describe("parens", () => {
 
         test("outside existing parens, '(' at start", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [
+                row: zrow(
+                    [],
+                    [
                         builders.glyph("2"),
                         delimited("x+5"),
                         builders.glyph("="),
                         builders.glyph("1"),
                         builders.glyph("0"),
                     ],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -305,19 +268,16 @@ describe("parens", () => {
 
         test("outside existing parens, ')' at end", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [
+                row: zrow(
+                    [
                         builders.glyph("2"),
                         delimited("x+5"),
                         builders.glyph("="),
                         builders.glyph("1"),
                         builders.glyph("0"),
                     ],
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -342,19 +302,16 @@ describe("parens", () => {
 
         test("add matching paren, ')'", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [
+                row: zrow(
+                    [
                         builders.delimited(
                             row("2x+5").children,
                             builders.glyph("("),
                             builders.glyph(")", true),
                         ),
                     ],
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -372,19 +329,16 @@ describe("parens", () => {
 
         test("add matching paren, '('", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [
+                row: zrow(
+                    [],
+                    [
                         builders.delimited(
                             row("2x+5").children,
                             builders.glyph("(", true),
                             builders.glyph(")"),
                         ),
                     ],
-                },
+                ),
                 breadcrumbs: [],
             };
 

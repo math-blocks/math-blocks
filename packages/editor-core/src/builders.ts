@@ -7,6 +7,7 @@ export function row(children: readonly types.Node[]): types.Row {
         id: getId(),
         type: "row",
         children,
+        style: {},
     };
 }
 
@@ -15,6 +16,7 @@ export function subsup(sub?: types.Node[], sup?: types.Node[]): types.SubSup {
         id: getId(),
         type: "subsup",
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
+        style: {},
     };
 }
 
@@ -28,6 +30,7 @@ export function limits(
         type: "limits",
         inner,
         children: [row(lower), upper ? row(upper) : null],
+        style: {},
     };
 }
 
@@ -39,6 +42,7 @@ export function frac(
         id: getId(),
         type: "frac",
         children: [row(numerator), row(denominator)],
+        style: {},
     };
 }
 
@@ -52,6 +56,7 @@ export function root(
         id: getId(),
         type: "root",
         children: [index ? row(index) : null, row(radicand)],
+        style: {},
     };
 }
 
@@ -66,6 +71,7 @@ export function delimited(
         children: [row(inner)],
         leftDelim: leftDelim,
         rightDelim: rightDelim,
+        style: {},
     };
 }
 
@@ -74,6 +80,7 @@ export function atom(value: types.Glyph): types.Atom {
         id: getId(),
         type: "atom",
         value,
+        style: {},
     };
 }
 

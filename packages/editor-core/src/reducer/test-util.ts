@@ -3,6 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import * as types from "../types";
 import * as builders from "../builders";
 
+import type {ZRow} from "./types";
+
 export const row = (str: string): types.Row =>
     builders.row(
         str.split("").map((glyph) => {
@@ -70,5 +72,19 @@ export const toEqualEditorNodes = (
     return {
         message: () => message,
         pass: false,
+    };
+};
+
+export const zrow = (
+    left: readonly types.Node[],
+    right: readonly types.Node[],
+): ZRow => {
+    return {
+        id: 0,
+        type: "zrow",
+        left: left,
+        selection: [],
+        right: right,
+        style: {},
     };
 };

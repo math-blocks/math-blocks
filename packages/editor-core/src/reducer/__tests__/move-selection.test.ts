@@ -5,6 +5,7 @@ import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 import type {Zipper} from "../types";
+import {zrow} from "../test-util";
 
 // TODO: add a serializer or custom matcher to help with assertions
 
@@ -12,13 +13,7 @@ describe("moveRight w/ selecting = true", () => {
     describe("simple row", () => {
         test("selects the character to the right", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
             let endZipper = startZipper;
@@ -36,13 +31,7 @@ describe("moveRight w/ selecting = true", () => {
 
         test("selects multiple characters to the right", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
             let endZipper = startZipper;
@@ -61,13 +50,7 @@ describe("moveRight w/ selecting = true", () => {
 
         test("constricting selection to the left", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
             let endZipper = startZipper;
@@ -88,13 +71,7 @@ describe("moveRight w/ selecting = true", () => {
 
         test("tries to select past the start", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
             startZipper = moveRight(startZipper);
@@ -115,13 +92,7 @@ describe("moveRight w/ selecting = true", () => {
 
         test("tries to select past the end", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
             startZipper = moveLeft(startZipper);
@@ -144,17 +115,14 @@ describe("moveRight w/ selecting = true", () => {
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -177,17 +145,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("moving out of the fraction (starting at the edge)", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -210,17 +175,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("selecting to the right from the first breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -244,17 +206,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("selecting to the right edge of the bottom breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -280,17 +239,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("constricting the selection to the left from the first breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -315,17 +271,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -353,17 +306,14 @@ describe("moveRight w/ selecting = true", () => {
 
         test("move back to the starting location", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         frac("1", "2"),
                         builders.glyph("+"),
                         builders.glyph("3"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -392,11 +342,9 @@ describe("moveRight w/ selecting = true", () => {
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         builders.frac(
                             [
                                 frac("1", "2"),
@@ -408,8 +356,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -435,11 +382,9 @@ describe("moveRight w/ selecting = true", () => {
 
         test("expanding selection out of the outer fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         builders.frac(
                             [
                                 frac("1", "2"),
@@ -451,8 +396,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -479,11 +423,9 @@ describe("moveRight w/ selecting = true", () => {
 
         test("constricting selection in from the outer fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    right: builders.row([
+                row: zrow(
+                    [],
+                    builders.row([
                         builders.frac(
                             [
                                 frac("1", "2"),
@@ -495,8 +437,7 @@ describe("moveRight w/ selecting = true", () => {
                         builders.glyph("+"),
                         builders.glyph("4"),
                     ]).children,
-                    selection: [],
-                },
+                ),
                 breadcrumbs: [],
             };
 
@@ -528,13 +469,7 @@ describe("moveLeft w/ selecting = true", () => {
     describe("simple row", () => {
         test("selects the character to the right", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -554,13 +489,7 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("selects multiple characters to the right", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -581,13 +510,7 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("constricting selection to the right", () => {
             const startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -611,17 +534,14 @@ describe("moveLeft w/ selecting = true", () => {
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -644,17 +564,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("moving out of the fraction (starting at the edge)", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -677,17 +594,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("selecting to the left from the first breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -711,17 +625,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("selecting to the left edge of the bottom breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -747,17 +658,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("constricting the selection to the left from the first breadcrumb", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -782,17 +690,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -818,17 +723,14 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("move back to the starting location", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         frac("2", "3"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -856,11 +758,8 @@ describe("moveLeft w/ selecting = true", () => {
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    right: [],
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         builders.frac(
@@ -872,8 +771,8 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -897,11 +796,8 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("expanding selection out of the outer fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    right: [],
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         builders.frac(
@@ -913,8 +809,8 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -941,11 +837,8 @@ describe("moveLeft w/ selecting = true", () => {
 
         test("constricting selection in from the outer fraction", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    right: [],
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         builders.frac(
@@ -957,8 +850,8 @@ describe("moveLeft w/ selecting = true", () => {
                             ],
                         ),
                     ]).children,
-                    selection: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 

@@ -3,20 +3,28 @@ import * as builders from "../../builders";
 
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
-import {row, frac, root, subsup} from "../test-util";
+import {row, frac, root, subsup, zrow} from "../test-util";
 import type {Zipper} from "../types";
+
+const limits = (
+    inner: types.Node,
+    lower: types.Row,
+    upper: types.Row | null,
+): types.Limits => {
+    return {
+        id: 0,
+        type: "limits",
+        children: [lower, upper],
+        inner: inner,
+        style: {},
+    };
+};
 
 describe("moveRight", () => {
     describe("row", () => {
         test("it moves right within the current row", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
 
@@ -28,13 +36,7 @@ describe("moveRight", () => {
 
         test("doesn't move right if we're at the end of the topmost row", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -49,13 +51,7 @@ describe("moveRight", () => {
         test("moves into the numerator of a frac", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [f, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -67,6 +63,7 @@ describe("moveRight", () => {
                 type: "zfrac",
                 left: [],
                 right: [f.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -76,13 +73,7 @@ describe("moveRight", () => {
         test("moves from the numerator to the denominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [f, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -94,6 +85,7 @@ describe("moveRight", () => {
                 type: "zfrac",
                 left: [f.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -103,13 +95,7 @@ describe("moveRight", () => {
         test("moves out of the denominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [f, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -128,13 +114,7 @@ describe("moveRight", () => {
         test("moves into the subscript of a subsup", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -146,6 +126,7 @@ describe("moveRight", () => {
                 type: "zsubsup",
                 left: [],
                 right: [ss.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -155,13 +136,7 @@ describe("moveRight", () => {
         test("moves from the subscript to the superscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -173,6 +148,7 @@ describe("moveRight", () => {
                 type: "zsubsup",
                 left: [ss.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -182,13 +158,7 @@ describe("moveRight", () => {
         test("moves out of the superscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -207,13 +177,7 @@ describe("moveRight", () => {
         test("moves into the subscript of a sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -225,6 +189,7 @@ describe("moveRight", () => {
                 type: "zsubsup",
                 left: [],
                 right: [null],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -234,13 +199,7 @@ describe("moveRight", () => {
         test("moves out of the sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -257,13 +216,7 @@ describe("moveRight", () => {
         test("moves into the superscript of a sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -275,6 +228,7 @@ describe("moveRight", () => {
                 type: "zsubsup",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -284,13 +238,7 @@ describe("moveRight", () => {
         test("moves out of the sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [ss, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -307,13 +255,7 @@ describe("moveRight", () => {
         test("moves into the index of an nth root", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [r, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -325,6 +267,7 @@ describe("moveRight", () => {
                 type: "zroot",
                 left: [],
                 right: [r.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -334,13 +277,7 @@ describe("moveRight", () => {
         test("moves from the index to the radicand", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [r, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -352,6 +289,7 @@ describe("moveRight", () => {
                 type: "zroot",
                 left: [r.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -361,13 +299,7 @@ describe("moveRight", () => {
         test("moves out of the radicand", () => {
             const r = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [r, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -386,13 +318,7 @@ describe("moveRight", () => {
         test("moves into the radicand of a root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [r, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -404,6 +330,7 @@ describe("moveRight", () => {
                 type: "zroot",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -413,13 +340,7 @@ describe("moveRight", () => {
         test("moves out of the root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [r, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -435,28 +356,10 @@ describe("moveRight", () => {
     describe("lim", () => {
         test("moves into lower", () => {
             const lower: types.Row = row("b");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const lim: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, null],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [lim, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -469,6 +372,7 @@ describe("moveRight", () => {
                 left: [],
                 right: [null],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -477,28 +381,10 @@ describe("moveRight", () => {
 
         test("exits the lim", () => {
             const lower: types.Row = row("b");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const lim: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, null],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [lim, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -515,28 +401,10 @@ describe("moveRight", () => {
         test("moves into lower", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [sum, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -549,6 +417,7 @@ describe("moveRight", () => {
                 left: [],
                 right: [upper],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -558,28 +427,10 @@ describe("moveRight", () => {
         test("moves from lower into upper", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [sum, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -592,6 +443,7 @@ describe("moveRight", () => {
                 left: [lower],
                 right: [],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(0);
             expect(result.row.right).toHaveLength(1);
@@ -601,28 +453,10 @@ describe("moveRight", () => {
         test("exits the sum", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a")],
-                    selection: [],
-                    right: [sum, builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -642,13 +476,7 @@ describe("moveLeft", () => {
     describe("row", () => {
         test("it moves right within the current row", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -660,13 +488,7 @@ describe("moveLeft", () => {
 
         test("doesn't move right if we're at the end of the topmost row", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row("1+2").children,
-                },
+                row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
 
@@ -681,13 +503,7 @@ describe("moveLeft", () => {
         test("moves into the denominator of a frac", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), f],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -699,6 +515,7 @@ describe("moveLeft", () => {
                 type: "zfrac",
                 left: [f.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -708,13 +525,7 @@ describe("moveLeft", () => {
         test("moves from the denominator to the numerator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), f],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -726,6 +537,7 @@ describe("moveLeft", () => {
                 type: "zfrac",
                 left: [],
                 right: [f.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -735,13 +547,7 @@ describe("moveLeft", () => {
         test("moves out of the numberator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), f],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -760,13 +566,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a subsup", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -778,6 +578,7 @@ describe("moveLeft", () => {
                 type: "zsubsup",
                 left: [ss.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -787,13 +588,7 @@ describe("moveLeft", () => {
         test("moves from the superscript to the subscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -805,6 +600,7 @@ describe("moveLeft", () => {
                 type: "zsubsup",
                 left: [],
                 right: [ss.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -814,13 +610,7 @@ describe("moveLeft", () => {
         test("moves out of the subscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -839,13 +629,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -857,6 +641,7 @@ describe("moveLeft", () => {
                 type: "zsubsup",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -866,13 +651,7 @@ describe("moveLeft", () => {
         test("exits the sup to the left", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -889,13 +668,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -907,6 +680,7 @@ describe("moveLeft", () => {
                 type: "zsubsup",
                 left: [],
                 right: [null],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -916,13 +690,7 @@ describe("moveLeft", () => {
         test("exits the sub to the left", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), ss],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -939,13 +707,7 @@ describe("moveLeft", () => {
         test("moves into the radicand of an nth root", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -957,6 +719,7 @@ describe("moveLeft", () => {
                 type: "zroot",
                 left: [r.children[0]],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -966,13 +729,7 @@ describe("moveLeft", () => {
         test("moves from the radicand to the index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -984,6 +741,7 @@ describe("moveLeft", () => {
                 type: "zroot",
                 left: [],
                 right: [r.children[1]],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -993,13 +751,7 @@ describe("moveLeft", () => {
         test("moves out of the index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1018,13 +770,7 @@ describe("moveLeft", () => {
         test("moves into the radicand of a root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1036,6 +782,7 @@ describe("moveLeft", () => {
                 type: "zroot",
                 left: [null],
                 right: [],
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1045,13 +792,7 @@ describe("moveLeft", () => {
         test("exits the sup to the left", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), r],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1067,28 +808,10 @@ describe("moveLeft", () => {
     describe("lim", () => {
         test("moves into lower", () => {
             const lower: types.Row = row("b");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const lim: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, null],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), lim],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1101,6 +824,7 @@ describe("moveLeft", () => {
                 left: [],
                 right: [null],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1109,28 +833,10 @@ describe("moveLeft", () => {
 
         test("exits the lim", () => {
             const lower: types.Row = row("b");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const lim: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, null],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), lim],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1147,28 +853,10 @@ describe("moveLeft", () => {
         test("moves into upper", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), sum],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1181,6 +869,7 @@ describe("moveLeft", () => {
                 left: [lower],
                 right: [],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1190,28 +879,10 @@ describe("moveLeft", () => {
         test("moves from uper into lower", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), sum],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 
@@ -1224,6 +895,7 @@ describe("moveLeft", () => {
                 left: [],
                 right: [upper],
                 inner: inner,
+                style: {},
             });
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(0);
@@ -1233,28 +905,10 @@ describe("moveLeft", () => {
         test("exits the sum", () => {
             const lower: types.Row = row("b");
             const upper: types.Row = row("c");
-            const inner: types.Atom = {
-                id: 0,
-                type: "atom",
-                value: {
-                    kind: "glyph",
-                    char: "l",
-                },
-            };
-            const sum: types.Limits = {
-                id: 0,
-                type: "limits",
-                children: [lower, upper],
-                inner: inner,
-            };
+            const inner: types.Atom = builders.glyph("l");
+            const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [builders.glyph("a"), sum],
-                    selection: [],
-                    right: [builders.glyph("d")],
-                },
+                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
 

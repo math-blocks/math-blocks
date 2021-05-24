@@ -24,7 +24,6 @@ const AccessibleMath: React.FC<Props> = (props) => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
-        colorMap: undefined,
     };
 
     const options = {showCursor: false};

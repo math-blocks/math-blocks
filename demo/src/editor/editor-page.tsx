@@ -36,6 +36,7 @@ const EditorPage: React.FunctionComponent = () => {
             left: [],
             selection: [],
             right: examples[0].children,
+            style: {},
         },
     });
 
@@ -165,6 +166,7 @@ const EditorPage: React.FunctionComponent = () => {
                                 left: [],
                                 selection: [],
                                 right: example.children,
+                                style: {},
                             },
                         };
                         setZipper(zipper);
