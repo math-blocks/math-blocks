@@ -213,11 +213,12 @@ export const zrow = (
     id: number,
     left: readonly types.Node[],
     right: readonly types.Node[],
+    style?: types.Style,
 ): ZRow => ({
     id: id,
     type: "zrow",
     left,
     selection: [],
     right,
-    style: {},
+    style: style ?? {},
 });

@@ -109,7 +109,12 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
     const _id = typeof id !== undefined ? String(id) : undefined;
 
     return (
-        <g transform={`translate(${x},${y})`} fill={style.fill} id={_id}>
+        <g
+            transform={`translate(${x},${y})`}
+            fill={style.fill}
+            stroke={style.stroke}
+            id={_id}
+        >
             {children.map((child, i) => {
                 const key = `${i}`;
                 return <Node {...child} key={key} />;
@@ -156,15 +161,15 @@ const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
             style={style}
             ref={ref}
         >
-            <Group {...scene.selection} />
-            {/**
-             * We set 'fill' and stroke to 'currentColor' so that the base
-             * color is whatever the current CSS 'color' property is set up.
-             * Individual nodes within the scene can override their style's
-             * color and the render above will set the fill and/or stroke in
-             * rendered SVG element appropriately.
-             */}
             <g fill="currentColor" stroke="currentColor">
+                <Group {...scene.selection} />
+                {/**
+                 * We set 'fill' and stroke to 'currentColor' so that the base
+                 * color is whatever the current CSS 'color' property is set up.
+                 * Individual nodes within the scene can override their style's
+                 * color and the render above will set the fill and/or stroke in
+                 * rendered SVG element appropriately.
+                 */}
                 <Group {...scene.content} />
             </g>
             {showHitboxes && <Group {...scene.hitboxes} />}

@@ -137,7 +137,8 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
             index === 1 &&
             !hasSelection &&
             !context.inSelection &&
-            context.showCursor
+            context.showCursor &&
+            layer === "selection"
         ) {
             // Draw the cursor.
             children.push({
@@ -159,6 +160,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                     fontSize,
                 );
 
+                // Draw the cursor.
                 selectionBoxes.push({
                     type: "rect",
                     x: pen.x,
@@ -278,6 +280,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
             children.unshift({
                 ...selectionBox,
                 fill: "Highlight",
+                stroke: "none",
             });
         }
     }
@@ -288,9 +291,13 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         y: loc.y,
         bounds: box,
         children: children,
-        style: {
-            fill: box.style.color,
-        },
+        style:
+            layer === "content"
+                ? {
+                      fill: box.style.color,
+                      stroke: box.style.color,
+                  }
+                : {},
         id: box.id,
     };
 };
@@ -423,9 +430,13 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         y: loc.y,
         bounds: box,
         children: children,
-        style: {
-            fill: box.style.color,
-        },
+        style:
+            layer === "content"
+                ? {
+                      fill: box.style.color,
+                      stroke: box.style.color,
+                  }
+                : {},
         id: box.id,
     };
 };

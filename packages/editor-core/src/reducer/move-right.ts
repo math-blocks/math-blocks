@@ -88,7 +88,12 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.zrow(focusedRow.id, [], focusedRow.children),
+                row: util.zrow(
+                    focusedRow.id,
+                    [],
+                    focusedRow.children,
+                    focusedRow.style,
+                ),
             };
         }
 
@@ -133,7 +138,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.zrow(row.id, [], row.children),
+            row: util.zrow(row.id, [], row.children, row.style),
         });
 
         return focus.right[0]
@@ -210,7 +215,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     // ...then enter the node using the next crumb...
                     breadcrumbs: [...endZipper.breadcrumbs, nextCrumb],
                     // ...and move the cursor to the start of the row.
-                    row: util.zrow(child.id, [], child.children),
+                    row: util.zrow(child.id, [], child.children, child.style),
                 };
             }
         }

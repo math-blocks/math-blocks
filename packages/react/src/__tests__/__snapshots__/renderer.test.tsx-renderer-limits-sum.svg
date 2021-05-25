@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 113.90599999999999 109.95" width="113.90599999999999" height="109.95" style="background:white">
-    <g transform="translate(0,64.86)" id="16">
-        <g transform="translate(0,0)" id="5">
-            <g transform="translate(11.255999999999997,-45.42)" id="7"></g>
-            <g transform="translate(0,0)" id="undefined"></g>
-            <g transform="translate(0,31.93)" id="6"></g>
-        </g>
-        <g transform="translate(62.538,-15.48)" id="13">
-            <g transform="translate(0,-11.04)" id="14"></g>
-            <g transform="translate(0,8.881784197001252e-16)" id="undefined"></g>
-            <g transform="translate(0,60.57)" id="15">
-                <g transform="translate(33.78,0)" id="11">
-                    <g transform="translate(0,-21.6)" id="12"></g>
+    <g fill="currentColor" stroke="currentColor">
+        <g transform="translate(0,64.86)" id="16">
+            <g transform="translate(0,0)" id="5">
+                <g transform="translate(11.255999999999997,-45.42)" id="7"></g>
+                <g transform="translate(0,0)" id="undefined"></g>
+                <g transform="translate(0,31.93)" id="6"></g>
+            </g>
+            <g transform="translate(62.538,-15.48)" id="13">
+                <g transform="translate(0,-11.04)" id="14"></g>
+                <g transform="translate(0,8.881784197001252e-16)" id="undefined"></g>
+                <g transform="translate(0,60.57)" id="15">
+                    <g transform="translate(33.78,0)" id="11">
+                        <g transform="translate(0,-21.6)" id="12"></g>
+                    </g>
                 </g>
             </g>
         </g>
-    </g>
-    <g fill="currentColor" stroke="currentColor">
         <g transform="translate(0,64.86)" id="16">
             <g transform="translate(0,0)" id="5">
                 <g transform="translate(11.255999999999997,-45.42)" id="7">

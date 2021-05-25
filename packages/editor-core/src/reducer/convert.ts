@@ -25,6 +25,7 @@ export const zipperToRow = (zipper: Zipper): Row => {
     const newRight = [...crumb.row.left, focusedNode, ...crumb.row.right];
 
     const row = zrow(crumb.row.id, [], newRight);
+    row.style = crumb.row.style;
 
     return zipperToRow({
         row,
@@ -53,11 +54,11 @@ export const rowToZipper = (
     if (int.type === "padding") {
         return int.flag === "start"
             ? {
-                  row: zrow(row.id, [], row.children),
+                  row: zrow(row.id, [], row.children, row.style),
                   breadcrumbs: [],
               }
             : {
-                  row: zrow(row.id, row.children, []),
+                  row: zrow(row.id, row.children, [], row.style),
                   breadcrumbs: [],
               };
     }
@@ -79,6 +80,7 @@ export const rowToZipper = (
                 row.id,
                 row.children.slice(0, rowIndex),
                 row.children.slice(rowIndex),
+                row.style,
             ),
             breadcrumbs: [],
         };
