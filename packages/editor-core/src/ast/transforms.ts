@@ -1,7 +1,12 @@
-import type {Focus, Zipper} from "../reducer/types";
+import type {Focus, Zipper, Breadcrumb} from "../reducer/types";
 import * as types from "./types";
 
 type ColorMap = Map<number, string>;
+
+const transformNodes = (
+    nodes: readonly types.Node[],
+    callback: <U extends types.Node>(node: U) => U,
+): readonly types.Node[] => nodes.map((node) => transformNode(node, callback));
 
 // Do we actually need this function?
 export const transformZipper = (
@@ -11,25 +16,33 @@ export const transformZipper = (
     const breadcrumbs = zipper.breadcrumbs.map((crumb) => {
         const {row, focus} = crumb;
 
-        return {
-            focus: callback(focus),
-            // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
+        const newCrumb: Breadcrumb = {
+            focus: {
+                ...focus,
+                left: focus.left.map(
+                    (node) => node && transformNode(node, callback),
+                ),
+                right: focus.left.map(
+                    (node) => node && transformNode(node, callback),
+                ),
+            },
             row: {
                 ...row,
-                left: row.left.map(callback),
-                selection: row.left.map(callback),
-                right: row.left.map(callback),
+                left: transformNodes(row.left, callback),
+                right: transformNodes(row.right, callback),
             },
         };
+
+        return newCrumb;
     });
 
     // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
     // TODO: call transformNode on the nodes
     const row = {
         ...zipper.row,
-        left: zipper.row.left.map(callback),
-        selection: zipper.row.selection.map(callback),
-        right: zipper.row.right.map(callback),
+        left: transformNodes(zipper.row.left, callback),
+        selection: transformNodes(zipper.row.left, callback),
+        right: transformNodes(zipper.row.right, callback),
     };
 
     return {row, breadcrumbs};
@@ -72,17 +85,17 @@ const transformRow = (
         : callback(row);
 };
 
-export const transformNode = (
-    node: types.Node,
-    callback: <T extends types.Node>(node: T) => T,
-): types.Node => {
+export const transformNode = <T extends types.Node>(
+    node: T,
+    callback: <U extends types.Node>(node: U) => U,
+): T => {
     if (node.type === "atom") {
         return callback(node);
     }
 
     // The top-level node is a row
     if (node.type === "row") {
-        return transformRow(node, callback);
+        return transformRow(node as types.Row, callback);
     }
 
     // TypeScript can't handle this kind of polymorphism
