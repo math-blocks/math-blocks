@@ -3,6 +3,7 @@ import * as types from "./types";
 
 type ColorMap = Map<number, string>;
 
+// Do we actually need this function?
 export const transformZipper = (
     zipper: Zipper,
     callback: <T extends Focus | types.Node>(node: T) => T,
@@ -23,6 +24,7 @@ export const transformZipper = (
     });
 
     // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
+    // TODO: call transformNode on the nodes
     const row = {
         ...zipper.row,
         left: zipper.row.left.map(callback),
@@ -51,6 +53,25 @@ export const applyColorMapToZipper = (
     });
 };
 
+const transformRow = (
+    row: types.Row,
+    callback: <T extends types.Node>(node: T) => T,
+): types.Row => {
+    const newChildren = row.children.map((child) =>
+        transformNode(child, callback),
+    );
+    const changed = newChildren.some(
+        (child, index: number) => child !== row.children[index],
+    );
+
+    return changed
+        ? callback({
+              ...row,
+              children: newChildren,
+          })
+        : callback(row);
+};
+
 export const transformNode = (
     node: types.Node,
     callback: <T extends types.Node>(node: T) => T,
@@ -61,37 +82,26 @@ export const transformNode = (
 
     // The top-level node is a row
     if (node.type === "row") {
-        return callback({
-            ...node,
-            children: node.children.map(
-                // TypeScript can't handle this kind of polymorphism
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (node: any) => transformNode(node, callback),
-            ),
-        });
+        return transformRow(node, callback);
     }
 
-    const newChildren = node.children.map(
-        // TypeScript can't handle this kind of polymorphism
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (row: any) => {
-            const result = row && {
-                ...row,
-                children: row.children.map(
-                    // TypeScript can't handle this kind of polymorphism
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (node: any) => transformNode(node, callback),
-                ),
-            };
-            return result && callback(result);
-        },
+    // TypeScript can't handle this kind of polymorphism
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newChildren = node.children.map((row: any) => {
+        return row && transformRow(row, callback);
+    });
+
+    const changed = newChildren.some(
+        (child, index) => child !== node.children[index],
     );
 
-    return callback({
-        ...node,
-        // @ts-expect-error: TypeScript can't handle this kind of polymorphism
-        children: newChildren,
-    });
+    return changed
+        ? callback({
+              ...node,
+              // @ts-expect-error: TypeScript can't handle this kind of polymorphism
+              children: newChildren,
+          })
+        : callback(node);
 };
 
 export const applyColorMapToEditorNode = (
