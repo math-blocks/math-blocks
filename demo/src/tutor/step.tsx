@@ -254,6 +254,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     left: [],
                     selection: [],
                     right: row.children,
+                    style: {},
                 },
             };
 
@@ -349,6 +350,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                         left: [],
                         selection: [],
                         right: corrected.children,
+                        style: {},
                     },
                 };
 

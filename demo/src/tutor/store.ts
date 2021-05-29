@@ -17,6 +17,7 @@ const zipper: Editor.Zipper = {
         left: [],
         selection: [],
         right: question.children,
+        style: {},
     },
 };
 

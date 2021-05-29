@@ -46,9 +46,11 @@ export const slash = (zipper: Zipper): Zipper => {
                     id: getId(),
                     type: "row",
                     children: selection,
+                    style: {},
                 },
             ],
             right: [],
+            style: {},
         };
 
         return {
@@ -62,6 +64,7 @@ export const slash = (zipper: Zipper): Zipper => {
                         id: zipper.row.id,
                         left: zipper.row.left,
                         right: zipper.row.right,
+                        style: zipper.row.style,
                     },
                     focus,
                 },
@@ -106,9 +109,11 @@ export const slash = (zipper: Zipper): Zipper => {
                 id: getId(),
                 type: "row",
                 children: left.slice(index + 1),
+                style: {},
             },
         ],
         right: [],
+        style: {},
     };
 
     return {
@@ -122,6 +127,7 @@ export const slash = (zipper: Zipper): Zipper => {
                     id: zipper.row.id,
                     left: left.slice(0, index + 1),
                     right: zipper.row.right,
+                    style: zipper.row.style,
                 },
                 focus,
             },

@@ -16,6 +16,7 @@ import stixPath from "../../../../assets/STIX2Math.otf";
 import lmPath from "../../../../assets/latinmodern-math.otf";
 
 const {row, glyph, frac, limits, root, subsup} = Editor.builders;
+const {applyColorMapToEditorNode} = Editor.transforms;
 
 const stixFontLoader = async (): Promise<FontData> => {
     const res = await fetch(stixPath);
@@ -155,8 +156,9 @@ export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
             type: "zrow",
             id: math.id,
             left: math.children.slice(0, 1),
-            right: math.children.slice(1),
             selection: [],
+            right: math.children.slice(1),
+            style: {},
         },
         breadcrumbs: [],
     };
@@ -195,6 +197,7 @@ export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
             left: math.children.slice(0, 1),
             selection: math.children.slice(1, 5),
             right: math.children.slice(5),
+            style: {},
         },
         breadcrumbs: [],
     };
@@ -344,7 +347,6 @@ export const ColorizedFraction: Story<EmptyProps> = (
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
-        colorMap: colorMap,
     };
 
     const fracNode = frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]);
@@ -356,7 +358,8 @@ export const ColorizedFraction: Story<EmptyProps> = (
         colorMap.set(subsup.children[1].id, "pink");
     }
 
-    const sum = Typesetter.typeset(row([fracNode]), context);
+    const fracNodeWithColor = applyColorMapToEditorNode(fracNode, colorMap);
+    const sum = Typesetter.typeset(row([fracNodeWithColor]), context);
 
     return <MathRenderer scene={sum} style={style} />;
 };
@@ -390,9 +393,10 @@ export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
-        colorMap: colorMap,
     };
-    const prod = Typesetter.typeset(editNode, context);
+
+    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
+    const prod = Typesetter.typeset(editNodeWithColor, context);
 
     return <MathRenderer scene={prod} style={style} />;
 };
@@ -447,9 +451,9 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
-        colorMap: colorMap,
     };
-    const prod = Typesetter.typeset(editNode, context);
+    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
+    const prod = Typesetter.typeset(editNodeWithColor, context);
 
     return <MathRenderer scene={prod} style={style} />;
 };
@@ -494,9 +498,9 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
-        colorMap: colorMap,
     };
-    const prod = Typesetter.typeset(editNode, context);
+    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
+    const prod = Typesetter.typeset(editNodeWithColor, context);
 
     return <MathRenderer scene={prod} style={style} />;
 };
@@ -546,6 +550,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
             left: [],
             right: math.children,
             selection: [],
+            style: {},
         },
         breadcrumbs: [],
     };
@@ -590,6 +595,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
             left: [],
             right: math.children,
             selection: [],
+            style: {},
         },
         breadcrumbs: [],
     };
@@ -643,6 +649,7 @@ export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
             left: math.children,
             right: [],
             selection: [],
+            style: {},
         },
         breadcrumbs: [],
     };
@@ -687,6 +694,7 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
             left: math.children,
             right: [],
             selection: [],
+            style: {},
         },
         breadcrumbs: [],
     };

@@ -20,6 +20,7 @@ const questionZipper: Editor.Zipper = {
         left: [],
         selection: [],
         right: question.children,
+        style: {},
     },
 };
 

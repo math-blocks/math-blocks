@@ -41,6 +41,7 @@ export const backspace = (zipper: Zipper): Zipper => {
                         id: zipper.row.id,
                         left: left.slice(0, -1),
                         right: [],
+                        style: zipper.row.style,
                     },
                     focus: {
                         ...zdelimited(prev),
@@ -104,10 +105,12 @@ export const backspace = (zipper: Zipper): Zipper => {
                         id: focus.id,
                         type: "subsup",
                         children: [focus.left[0], null],
+                        style: focus.style,
                     },
                 ],
                 selection: [],
                 right: [...zipper.row.right, ...row.right],
+                style: row.style,
             },
         };
     }
@@ -123,6 +126,7 @@ export const backspace = (zipper: Zipper): Zipper => {
             left: [...row.left, ...leftChildren],
             selection: [],
             right: [...zipper.row.right, ...rightChildren, ...row.right],
+            style: row.style,
         },
     };
 };

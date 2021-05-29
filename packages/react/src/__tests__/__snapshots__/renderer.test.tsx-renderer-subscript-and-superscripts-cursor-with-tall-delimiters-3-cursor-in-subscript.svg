@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 229.67 218.04000000000002" width="229.67" height="218.04000000000002">
-    <g transform="translate(0,123.12)" id="16">
-        <g transform="translate(0,0)" id="9">
-            <g transform="translate(31.14,0)" id="10">
-                <g transform="translate(0,-15.48)" id="4">
-                    <g transform="translate(0,-24.840000000000003)" id="5">
-                        <g transform="translate(34.68,0)" id="1"></g>
+    <g fill="currentColor" stroke="currentColor">
+        <g transform="translate(0,123.12)" id="16">
+            <g transform="translate(0,0)" id="9">
+                <g transform="translate(31.14,0)" id="10">
+                    <g transform="translate(0,-15.48)" id="4">
+                        <g transform="translate(0,-24.840000000000003)" id="5">
+                            <g transform="translate(34.68,0)" id="1"></g>
+                        </g>
+                        <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
+                        <g transform="translate(0,57.24)" id="6"></g>
                     </g>
-                    <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
-                    <g transform="translate(0,57.24)" id="6"></g>
+                </g>
+            </g>
+            <g transform="translate(203.94,0)" id="13">
+                <g transform="translate(0,-90.78)" id="15"></g>
+                <g transform="translate(0,85.26)" id="14">
+                    <rect type="rect" x="22.73" y="-32.34" width="2" height="42"></rect>
                 </g>
             </g>
         </g>
-        <g transform="translate(203.94,0)" id="13">
-            <g transform="translate(0,-90.78)" id="15"></g>
-            <g transform="translate(0,85.26)" id="14">
-                <rect type="rect" x="22.73" y="-32.34" width="2" height="42"></rect>
-            </g>
-        </g>
-    </g>
-    <g fill="currentColor" stroke="currentColor">
         <g transform="translate(0,123.12)" id="16">
             <g transform="translate(0,0)" id="9">
                 <path id="undefined" style="opacity:1" aria-hidden="true" d="M 77,270 C 77,-310 247,-806 457,-1042L 486,-1020 C 288,-730 182,-246 182,270C 182,786 288,1270 486,1560L 457,1582 C 247,1346 77,850 77,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
@@ -48,7 +48,6 @@
                 </g>
                 <g transform="translate(0,85.26)" id="14">
                     <path id="11" style="opacity:1" aria-hidden="true" d="M 521,112 C 506,93 481,60 447,60C 433,60 428,68 428,79C 428,91 430,103 430,103L 487,334 C 490,348 496,382 496,408C 496,444 481,479 430,479C 312,479 227,334 185,259L 177,259 L 227,476 L 205,476 L 66,465 L 66,438 C 66,438 86,440 99,440C 122,440 131,430 131,413C 131,398 128,380 128,380L 47,0 L 129,0 L 165,158 C 197,227 307,407 380,407C 403,407 410,390 410,367C 410,347 403,319 403,319L 344,88 C 343,83 339,65 339,49C 339,19 354,-10 404,-10C 476,-10 516,60 542,97Z" transform="translate(0, 0) scale(0.042, -0.042)"></path>
-                    <rect type="rect" x="22.73" y="-32.34" width="2" height="42"></rect>
                 </g>
             </g>
         </g>

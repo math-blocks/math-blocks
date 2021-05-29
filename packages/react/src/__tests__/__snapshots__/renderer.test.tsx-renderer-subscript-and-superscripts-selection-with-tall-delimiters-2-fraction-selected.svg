@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 229.67 218.04000000000002" width="229.67" height="218.04000000000002">
-    <g transform="translate(0,123.12)" id="16">
-        <g transform="translate(0,0)" id="9">
-            <g transform="translate(31.14,0)" id="10">
-                <rect type="rect" x="0" y="-86.52000000000001" width="141.66" height="142.08" fill="Highlight"></rect>
-                <g transform="translate(0,-15.48)" id="4">
-                    <g transform="translate(0,-24.840000000000003)" id="5">
-                        <g transform="translate(34.68,0)" id="1"></g>
+    <g fill="currentColor" stroke="currentColor">
+        <g transform="translate(0,123.12)" id="16">
+            <g transform="translate(0,0)" id="9">
+                <g transform="translate(31.14,0)" id="10">
+                    <rect type="rect" x="0" y="-86.52000000000001" width="141.66" height="142.08" stroke="none" fill="Highlight"></rect>
+                    <g transform="translate(0,-15.48)" id="4">
+                        <g transform="translate(0,-24.840000000000003)" id="5">
+                            <g transform="translate(34.68,0)" id="1"></g>
+                        </g>
+                        <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
+                        <g transform="translate(0,57.24)" id="6"></g>
                     </g>
-                    <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
-                    <g transform="translate(0,57.24)" id="6"></g>
                 </g>
             </g>
+            <g transform="translate(203.94,0)" id="13">
+                <g transform="translate(0,-90.78)" id="15"></g>
+                <g transform="translate(0,85.26)" id="14"></g>
+            </g>
         </g>
-        <g transform="translate(203.94,0)" id="13">
-            <g transform="translate(0,-90.78)" id="15"></g>
-            <g transform="translate(0,85.26)" id="14"></g>
-        </g>
-    </g>
-    <g fill="currentColor" stroke="currentColor">
         <g transform="translate(0,123.12)" id="16">
             <g transform="translate(0,0)" id="9">
                 <path id="undefined" style="opacity:1" aria-hidden="true" d="M 77,270 C 77,-310 247,-806 457,-1042L 486,-1020 C 288,-730 182,-246 182,270C 182,786 288,1270 486,1560L 457,1582 C 247,1346 77,850 77,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>

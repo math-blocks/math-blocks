@@ -1,4 +1,4 @@
-import * as types from "../types";
+import * as types from "../ast/types";
 
 export type ZRow = {
     id: number;
@@ -6,6 +6,7 @@ export type ZRow = {
     left: readonly types.Node[];
     selection: readonly types.Node[];
     right: readonly types.Node[];
+    style: types.Style;
 };
 
 export type ZFrac =
@@ -14,12 +15,14 @@ export type ZFrac =
           type: "zfrac";
           left: [];
           right: [types.Row];
+          style: types.Style;
       }
     | {
           id: number;
           type: "zfrac";
           left: [types.Row];
           right: [];
+          style: types.Style;
       };
 
 // TODO: consider splitting up SubSup into three different types.
@@ -30,12 +33,14 @@ export type ZSubSup =
           type: "zsubsup";
           left: [];
           right: [types.Row | null];
+          style: types.Style;
       }
     | {
           id: number;
           type: "zsubsup";
           left: [types.Row | null];
           right: [];
+          style: types.Style;
       };
 
 export type ZLimits =
@@ -45,6 +50,7 @@ export type ZLimits =
           left: [];
           right: [types.Row | null];
           inner: types.Node;
+          style: types.Style;
       }
     | {
           id: number;
@@ -52,6 +58,7 @@ export type ZLimits =
           left: [types.Row];
           right: [];
           inner: types.Node;
+          style: types.Style;
       };
 
 export type ZRoot =
@@ -60,11 +67,13 @@ export type ZRoot =
           type: "zroot";
           left: [];
           right: [types.Row];
+          style: types.Style;
       }
     | {
           id: number;
           type: "zroot";
           left: [types.Row | null];
+          style: types.Style;
           right: [];
       };
 
@@ -75,6 +84,7 @@ export type ZDelimited = {
     right: [];
     leftDelim: types.Atom;
     rightDelim: types.Atom;
+    style: types.Style;
 };
 
 // TODO: we need some way to convert this to a non-zippered node, right now we
@@ -85,6 +95,7 @@ export type ZColumns = {
     type: "zcolumns";
     left: readonly types.Row[];
     right: readonly types.Row[];
+    style: types.Style;
 };
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited; // | ZColumns;
@@ -98,6 +109,7 @@ export type BreadcrumbRow = {
     type: "bcrow";
     left: readonly types.Node[];
     right: readonly types.Node[];
+    style: types.Style;
 };
 
 export type Breadcrumb = {

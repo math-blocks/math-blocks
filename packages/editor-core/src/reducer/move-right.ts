@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import * as types from "../types";
+import * as types from "../ast/types";
 
 import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";
@@ -76,6 +76,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     // The node that was removed from right here is the node
                     // that we're navigating into.
                     right: right.slice(1),
+                    style: zipper.row.style,
                 },
                 focus: focus,
             };
@@ -87,7 +88,12 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.zrow(focusedRow.id, [], focusedRow.children),
+                row: util.zrow(
+                    focusedRow.id,
+                    [],
+                    focusedRow.children,
+                    focusedRow.style,
+                ),
             };
         }
 
@@ -112,6 +118,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                 left: [...parentRow.left, updatedNode],
                 selection: [],
                 right: parentRow.right,
+                style: parentRow.style,
             },
         });
 
@@ -131,7 +138,7 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.zrow(row.id, [], row.children),
+            row: util.zrow(row.id, [], row.children, row.style),
         });
 
         return focus.right[0]
@@ -160,6 +167,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     left: [...parentRow.left, updatedNode],
                     selection: [],
                     right: parentRow.right,
+                    style: parentRow.style,
                 },
             });
 
@@ -207,7 +215,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     // ...then enter the node using the next crumb...
                     breadcrumbs: [...endZipper.breadcrumbs, nextCrumb],
                     // ...and move the cursor to the start of the row.
-                    row: util.zrow(child.id, [], child.children),
+                    row: util.zrow(child.id, [], child.children, child.style),
                 };
             }
         }

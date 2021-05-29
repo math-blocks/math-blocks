@@ -34,6 +34,7 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
                             id: row.id,
                             left: row.left,
                             right: rest,
+                            style: row.style,
                         },
                         focus: zsubsup(next, index),
                     },
@@ -64,6 +65,7 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
                     id: zipper.row.id,
                     left: zipper.row.left,
                     right: zipper.row.right,
+                    style: zipper.row.style,
                 },
                 focus:
                     index === 0
@@ -72,12 +74,14 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
                               type: "zsubsup",
                               left: [],
                               right: [null],
+                              style: {},
                           }
                         : {
                               id: getId(),
                               type: "zsubsup",
                               left: [null],
                               right: [],
+                              style: {},
                           },
             },
         ],

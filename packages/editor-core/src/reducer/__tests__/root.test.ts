@@ -1,10 +1,10 @@
 import * as core from "@math-blocks/core";
 
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import {moveLeft} from "../move-left";
 import {root} from "../root";
-import {row, toEqualEditorNodes} from "../test-util";
+import {row, toEqualEditorNodes, zrow} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 
 import type {Zipper} from "../types";
@@ -22,13 +22,7 @@ describe("root", () => {
     describe("without selection", () => {
         test("no index", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+").children, []),
                 breadcrumbs: [],
             };
 
@@ -44,6 +38,7 @@ describe("root", () => {
                     null,
                   ],
                   "right": Array [],
+                  "style": Object {},
                   "type": "zroot",
                 }
             `);
@@ -57,13 +52,7 @@ describe("root", () => {
 
         test("with index", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+").children, []),
                 breadcrumbs: [],
             };
 
@@ -80,9 +69,11 @@ describe("root", () => {
                     Object {
                       "children": Array [],
                       "id": 4,
+                      "style": Object {},
                       "type": "row",
                     },
                   ],
+                  "style": Object {},
                   "type": "zroot",
                 }
             `);
@@ -105,6 +96,7 @@ describe("root", () => {
                         left: row("1+").children,
                         selection: row("2+3").children,
                         right: [],
+                        style: {},
                     },
                     breadcrumbs: [],
                 };
@@ -128,18 +120,15 @@ describe("root", () => {
 
             test("selection in breadcrumbs", () => {
                 let startZipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [
+                    row: zrow(
+                        [
                             builders.glyph("1"),
                             builders.glyph("+"),
                             builders.glyph("x"),
                             builders.subsup(undefined, [builders.glyph("2")]),
                         ],
-                        selection: [],
-                        right: [],
-                    },
+                        [],
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -190,6 +179,7 @@ describe("root", () => {
                         left: row("1+").children,
                         selection: row("2+3").children,
                         right: [],
+                        style: {},
                     },
                     breadcrumbs: [],
                 };
@@ -208,6 +198,7 @@ describe("root", () => {
                       Object {
                         "children": Array [],
                         "id": 8,
+                        "style": Object {},
                         "type": "row",
                       },
                     ]
@@ -222,18 +213,15 @@ describe("root", () => {
 
             test("selection in breadcrumbs", () => {
                 let startZipper: Zipper = {
-                    row: {
-                        id: 0,
-                        type: "zrow",
-                        left: [
+                    row: zrow(
+                        [
                             builders.glyph("1"),
                             builders.glyph("+"),
                             builders.glyph("x"),
                             builders.subsup(undefined, [builders.glyph("2")]),
                         ],
-                        selection: [],
-                        right: [],
-                    },
+                        [],
+                    ),
                     breadcrumbs: [],
                 };
 
@@ -271,6 +259,7 @@ describe("root", () => {
                       Object {
                         "children": Array [],
                         "id": 7,
+                        "style": Object {},
                         "type": "row",
                       },
                     ]

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 124.325 153.3" width="124.325" height="153.3" style="background:white">
-    <g transform="translate(0,86.52000000000001)" id="11">
-        <g transform="translate(0,-15.48)" id="8">
-            <g transform="translate(0,-24.840000000000003)" id="9"></g>
-            <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
-            <g transform="translate(0,67.32)" id="10">
-                <g transform="translate(4.079999999999998,0)" id="5">
-                    <g transform="translate(0,-24.231)" id="6"></g>
-                    <g transform="translate(28.905,-0.9600000000000009)" id="undefined"></g>
-                    <g transform="translate(76.545,0)" id="undefined">
-                        <g transform="translate(0,0)" id="7"></g>
+    <g fill="currentColor" stroke="currentColor">
+        <g transform="translate(0,86.52000000000001)" id="11">
+            <g transform="translate(0,-15.48)" id="8">
+                <g transform="translate(0,-24.840000000000003)" id="9"></g>
+                <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
+                <g transform="translate(0,67.32)" id="10">
+                    <g transform="translate(4.079999999999998,0)" id="5">
+                        <g transform="translate(0,-24.231)" id="6"></g>
+                        <g transform="translate(28.905,-0.9600000000000009)" id="undefined"></g>
+                        <g transform="translate(76.545,0)" id="undefined">
+                            <g transform="translate(0,0)" id="7"></g>
+                        </g>
                     </g>
                 </g>
             </g>
         </g>
-    </g>
-    <g fill="currentColor" stroke="currentColor">
         <g transform="translate(0,86.52000000000001)" id="11">
             <g transform="translate(0,-15.48)" id="8">
                 <g transform="translate(0,-24.840000000000003)" id="9">

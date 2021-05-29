@@ -2,6 +2,9 @@ import * as Editor from "@math-blocks/editor-core";
 
 const simpleRow = Editor.util.row("2x+5=10");
 
+simpleRow.children[1].style.color = "orange";
+simpleRow.children[3].style.color = "teal";
+
 const delimiters = Editor.builders.row([
     Editor.builders.glyph("x"),
     Editor.builders.glyph("+"),
@@ -146,6 +149,12 @@ const addingFractions = Editor.builders.row([
     Editor.builders.glyph("\u2212"),
     Editor.builders.glyph("y"),
 ]);
+
+addingFractions.children[2].style.color = "teal";
+// @ts-expect-error: we don't both refining the type since we know what it is
+addingFractions.children[2].children[0].style.color = "orange";
+// @ts-expect-error: we don't both refining the type since we know what it is
+addingFractions.children[2].children[0].children[0].style.color = "pink";
 
 export const examples = [
     simpleRow,

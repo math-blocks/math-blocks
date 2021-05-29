@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import * as types from "../types";
+import * as types from "../ast/types";
 
 import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";
@@ -78,6 +78,7 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                     // that we're navigating into.
                     left: left.slice(0, -1),
                     right: right,
+                    style: zipper.row.style,
                 },
                 focus: focus,
             };
@@ -89,7 +90,12 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
 
             return {
                 breadcrumbs: [...zipper.breadcrumbs, breadcrumb],
-                row: util.zrow(focusedRow.id, focusedRow.children, []),
+                row: util.zrow(
+                    focusedRow.id,
+                    focusedRow.children,
+                    [],
+                    focusedRow.style,
+                ),
             };
         }
 
@@ -114,6 +120,7 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                 left: parentRow.left,
                 selection: [],
                 right: [updatedNode, ...parentRow.right],
+                style: parentRow.style,
             },
         });
 
@@ -133,7 +140,7 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                     },
                 },
             ],
-            row: util.zrow(row.id, row.children, []),
+            row: util.zrow(row.id, row.children, [], row.style),
         });
 
         return focus.left[0]
@@ -164,6 +171,7 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     left: parentRow.left,
                     selection: [],
                     right: [updatedNode, ...parentRow.right],
+                    style: parentRow.style,
                 },
             });
 
@@ -209,7 +217,7 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                     // ...then enter the node using the next crumb...
                     breadcrumbs: [...endZipper.breadcrumbs, nextCrumb],
                     // ...and move the cursor to the end of the row.
-                    row: util.zrow(child.id, child.children, []),
+                    row: util.zrow(child.id, child.children, [], child.style),
                 };
 
                 return result;

@@ -1,6 +1,6 @@
 import {getId} from "@math-blocks/core";
 
-import * as builders from "../builders";
+import * as builders from "../ast/builders";
 
 import * as util from "./util";
 import type {Zipper, Focus, Breadcrumb} from "./types";
@@ -14,12 +14,14 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
               type: "zroot",
               left: [],
               right: [builders.row([])],
+              style: {},
           }
         : {
               id: getId(),
               type: "zroot",
               left: [null],
               right: [],
+              style: {},
           };
 
     const crumb: Breadcrumb = {
@@ -28,6 +30,7 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
             id: zipper.row.id,
             left: zipper.row.left,
             right: zipper.row.right,
+            style: zipper.row.style,
         },
         focus,
     };

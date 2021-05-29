@@ -4,7 +4,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "./util";
-import {Row} from "../types";
+import {Row} from "../ast/types";
 import {Node} from "./types";
 
 type Token = Node;

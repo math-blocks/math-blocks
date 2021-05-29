@@ -277,6 +277,7 @@ describe("renderer", () => {
                         left: editNode.children,
                         selection: [],
                         right: [],
+                        style: {},
                     },
                     breadcrumbs: [],
                 };
@@ -391,6 +392,7 @@ describe("renderer", () => {
                         left: editNode.children,
                         selection: [],
                         right: [],
+                        style: {},
                     },
                     breadcrumbs: [],
                 };
@@ -588,6 +590,7 @@ describe("renderer", () => {
                     left: [],
                     selection: [],
                     right: node.children,
+                    style: {},
                 },
             };
 
@@ -659,6 +662,7 @@ describe("renderer", () => {
                     left: [glyph("2")],
                     selection: [],
                     right: [glyph("+"), glyph("a")],
+                    style: {},
                 },
             };
 

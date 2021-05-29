@@ -1,7 +1,7 @@
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import {zipperToRow} from "../convert";
-import {row, toEqualEditorNodes} from "../test-util";
+import {row, toEqualEditorNodes, zrow} from "../test-util";
 
 import type {Zipper} from "../types";
 
@@ -11,13 +11,7 @@ describe("zipperToRow", () => {
     describe("no breadcrumbs", () => {
         test("empty zipper", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: [],
-                },
+                row: zrow([], []),
                 breadcrumbs: [],
             };
 
@@ -28,13 +22,7 @@ describe("zipperToRow", () => {
 
         test("zipper with no breadcrumbs and no selection", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+").children,
-                    selection: [],
-                    right: row("2").children,
-                },
+                row: zrow(row("1+").children, row("2").children),
                 breadcrumbs: [],
             };
 
@@ -51,6 +39,7 @@ describe("zipperToRow", () => {
                     left: row("1").children,
                     selection: row("+").children,
                     right: row("2").children,
+                    style: {},
                 },
                 breadcrumbs: [],
             };
@@ -65,13 +54,7 @@ describe("zipperToRow", () => {
         test("no selection", () => {
             const zipper: Zipper = {
                 // numerator
-                row: {
-                    id: 1,
-                    type: "zrow",
-                    left: row("2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("2").children, []),
                 breadcrumbs: [
                     {
                         // root row
@@ -80,6 +63,7 @@ describe("zipperToRow", () => {
                             type: "bcrow",
                             left: row("1+").children,
                             right: row("+4").children,
+                            style: {},
                         },
                         // denominator
                         focus: {
@@ -87,6 +71,7 @@ describe("zipperToRow", () => {
                             type: "zfrac",
                             left: [],
                             right: [row("3")],
+                            style: {},
                         },
                     },
                 ],

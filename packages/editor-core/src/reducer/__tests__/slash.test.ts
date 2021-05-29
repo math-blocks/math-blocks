@@ -1,9 +1,10 @@
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import {slash} from "../slash";
 import {moveLeft} from "../move-left";
 import {row, toEqualEditorNodes} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
+import {zrow} from "../test-util";
 
 import type {Zipper} from "../types";
 
@@ -13,13 +14,7 @@ describe("slash", () => {
     describe("without selection", () => {
         test("after number", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+2").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
 
@@ -43,13 +38,7 @@ describe("slash", () => {
 
         test("after implicit multiplication of variables", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+ab").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+ab").children, []),
                 breadcrumbs: [],
             };
 
@@ -74,13 +63,7 @@ describe("slash", () => {
 
         test("after parens", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("(1+2)").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("(1+2)").children, []),
                 breadcrumbs: [],
             };
 
@@ -105,13 +88,7 @@ describe("slash", () => {
 
         test("after implicit multiplication w/ parens", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("1+(a)(b)").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("1+(a)(b)").children, []),
                 breadcrumbs: [],
             };
 
@@ -136,13 +113,7 @@ describe("slash", () => {
 
         test("inside parens", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("(1").children,
-                    selection: [],
-                    right: row("+2)").children,
-                },
+                row: zrow(row("(1").children, row("+2)").children),
                 breadcrumbs: [],
             };
 
@@ -167,13 +138,7 @@ describe("slash", () => {
 
         test("after equals", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: row("x=1").children,
-                    selection: [],
-                    right: [],
-                },
+                row: zrow(row("x=1").children, []),
                 breadcrumbs: [],
             };
 
@@ -198,10 +163,8 @@ describe("slash", () => {
 
         test("after limits", () => {
             const zipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: builders.row([
+                row: zrow(
+                    builders.row([
                         builders.glyph("1"),
                         builders.glyph("+"),
                         builders.limits(
@@ -211,9 +174,8 @@ describe("slash", () => {
                         ),
                         builders.glyph("2"),
                     ]).children,
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 
@@ -254,6 +216,7 @@ describe("slash", () => {
                     left: row("1+").children,
                     selection: row("2+3").children,
                     right: [],
+                    style: {},
                 },
                 breadcrumbs: [],
             };
@@ -278,18 +241,15 @@ describe("slash", () => {
 
         test("selection in breadcrumbs", () => {
             let startZipper: Zipper = {
-                row: {
-                    id: 0,
-                    type: "zrow",
-                    left: [
+                row: zrow(
+                    [
                         builders.glyph("1"),
                         builders.glyph("+"),
                         builders.glyph("x"),
                         builders.subsup(undefined, [builders.glyph("2")]),
                     ],
-                    selection: [],
-                    right: [],
-                },
+                    [],
+                ),
                 breadcrumbs: [],
             };
 

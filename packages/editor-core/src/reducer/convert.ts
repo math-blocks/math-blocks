@@ -1,5 +1,5 @@
 import type {Breadcrumb, Zipper, Focus} from "./types";
-import type {Row, Node} from "../types";
+import type {Row, Node} from "../ast/types";
 
 import {
     focusToNode,
@@ -25,6 +25,7 @@ export const zipperToRow = (zipper: Zipper): Row => {
     const newRight = [...crumb.row.left, focusedNode, ...crumb.row.right];
 
     const row = zrow(crumb.row.id, [], newRight);
+    row.style = crumb.row.style;
 
     return zipperToRow({
         row,
@@ -53,11 +54,11 @@ export const rowToZipper = (
     if (int.type === "padding") {
         return int.flag === "start"
             ? {
-                  row: zrow(row.id, [], row.children),
+                  row: zrow(row.id, [], row.children, row.style),
                   breadcrumbs: [],
               }
             : {
-                  row: zrow(row.id, row.children, []),
+                  row: zrow(row.id, row.children, [], row.style),
                   breadcrumbs: [],
               };
     }
@@ -79,6 +80,7 @@ export const rowToZipper = (
                 row.id,
                 row.children.slice(0, rowIndex),
                 row.children.slice(rowIndex),
+                row.style,
             ),
             breadcrumbs: [],
         };
@@ -165,6 +167,7 @@ export const rowToZipper = (
             id: row.id,
             left: row.children.slice(0, rowIndex), // focus replaces the missing child
             right: row.children.slice(rowIndex + 1),
+            style: row.style,
         },
         focus: focus,
     };
@@ -271,6 +274,7 @@ export const selectionZipperFromZippers = (
                     left: [...lastCrumb.row.left, node],
                     selection: [],
                     right: lastCrumb.row.right,
+                    style: lastCrumb.row.style,
                 },
                 breadcrumbs: restCrumbs,
             };

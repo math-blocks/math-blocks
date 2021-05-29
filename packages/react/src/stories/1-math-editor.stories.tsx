@@ -49,6 +49,7 @@ export const Editable: Story<EmptyProps> = (args, {loaded: fontData}) => {
             left: [],
             selection: [],
             right: math.children,
+            style: {},
         },
     };
 
@@ -84,6 +85,7 @@ export const Readonly: Story<EmptyProps> = (args, {loaded: fontData}) => {
             left: [],
             selection: [],
             right: math.children,
+            style: {},
         },
     };
 
