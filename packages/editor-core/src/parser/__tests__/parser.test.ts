@@ -1,8 +1,8 @@
 import * as Testing from "@math-blocks/testing";
 
-import {row, glyph, subsup} from "../../builders";
-import * as builders from "../../builders";
-import * as util from "../../util";
+import {row, glyph, subsup} from "../../ast/builders";
+import * as builders from "../../ast/builders";
+import * as util from "../../ast/util";
 
 import * as parser from "../parser";
 

@@ -2,7 +2,7 @@ import {toEqualEditorNodes, row, delimited, zrow} from "../test-util";
 import {parens} from "../parens";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import type {Zipper} from "../types";
 

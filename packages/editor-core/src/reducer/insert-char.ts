@@ -1,4 +1,4 @@
-import * as builders from "../builders";
+import * as builders from "../ast/builders";
 
 import type {Zipper} from "./types";
 

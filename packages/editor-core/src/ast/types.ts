@@ -1,4 +1,4 @@
-import * as sharedTypes from "./shared-types";
+import * as sharedTypes from "../shared-types";
 
 export type Glyph = {
     kind: "glyph";

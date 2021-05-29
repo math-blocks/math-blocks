@@ -8,7 +8,6 @@ import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
-import {applyColorMapToEditorNode} from "../util";
 
 // @ts-expect-error: TypeScript doesn't know about this path
 import stixPath from "../../../../assets/STIX2Math.otf";
@@ -17,6 +16,7 @@ import stixPath from "../../../../assets/STIX2Math.otf";
 import lmPath from "../../../../assets/latinmodern-math.otf";
 
 const {row, glyph, frac, limits, root, subsup} = Editor.builders;
+const {applyColorMapToEditorNode} = Editor.transforms;
 
 const stixFontLoader = async (): Promise<FontData> => {
     const res = await fetch(stixPath);

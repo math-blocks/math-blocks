@@ -10,8 +10,8 @@ import {
     toEqualEditorNodes,
     zrow,
 } from "../test-util";
-import * as builders from "../../builders";
-import * as types from "../../types";
+import * as builders from "../../ast/builders";
+import * as types from "../../ast/types";
 
 import type {Zipper} from "../types";
 

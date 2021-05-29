@@ -1,4 +1,4 @@
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import {insertChar} from "../insert-char";
 import {row, toEqualEditorNodes, zrow} from "../test-util";

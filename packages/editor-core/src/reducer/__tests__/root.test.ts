@@ -1,6 +1,6 @@
 import * as core from "@math-blocks/core";
 
-import * as builders from "../../builders";
+import * as builders from "../../ast/builders";
 
 import {moveLeft} from "../move-left";
 import {root} from "../root";

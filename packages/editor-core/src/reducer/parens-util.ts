@@ -1,4 +1,4 @@
-import * as types from "../types";
+import * as types from "../ast/types";
 
 export const isPending = (
     node: types.Node | undefined,

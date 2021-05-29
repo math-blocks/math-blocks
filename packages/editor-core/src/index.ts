@@ -1,8 +1,9 @@
-import * as builders from "./builders";
-import * as types from "./types";
-import * as util from "./util";
+import * as builders from "./ast/builders";
+import * as types from "./ast/types";
+import * as util from "./ast/util";
+import * as transforms from "./ast/transforms";
 
-export {builders, types, util};
+export {builders, transforms, types, util};
 
 export {print} from "./printer/printer";
 export {parse} from "./parser/parser";

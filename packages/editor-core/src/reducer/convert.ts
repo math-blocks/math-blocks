@@ -1,5 +1,5 @@
 import type {Breadcrumb, Zipper, Focus} from "./types";
-import type {Row, Node} from "../types";
+import type {Row, Node} from "../ast/types";
 
 import {
     focusToNode,

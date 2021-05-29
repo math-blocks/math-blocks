@@ -1,6 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import * as types from "../types";
+import * as types from "../ast/types";
 
 import type {Breadcrumb, Focus, Zipper} from "./types";
 import * as util from "./util";

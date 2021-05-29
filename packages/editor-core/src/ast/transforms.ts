@@ -1,17 +1,12 @@
-// TODO:
-// - create function to apply a colorMap to nodes in a Zipper
-// - create function to apply a colorMap to nodes in a Editor tree
-// - extract tree traversal into a separate function and implement applyColorMap
-//   using this generalized function
-
-import * as Editor from "@math-blocks/editor-core";
+import type {Focus, Zipper} from "../reducer/types";
+import * as types from "./types";
 
 type ColorMap = Map<number, string>;
 
 export const transformZipper = (
-    zipper: Editor.Zipper,
-    callback: <T extends Editor.Focus | Editor.types.Node>(node: T) => T,
-): Editor.Zipper => {
+    zipper: Zipper,
+    callback: <T extends Focus | types.Node>(node: T) => T,
+): Zipper => {
     const breadcrumbs = zipper.breadcrumbs.map((crumb) => {
         const {row, focus} = crumb;
 
@@ -39,9 +34,9 @@ export const transformZipper = (
 };
 
 export const applyColorMapToZipper = (
-    zipper: Editor.Zipper,
+    zipper: Zipper,
     colorMap: ColorMap,
-): Editor.Zipper => {
+): Zipper => {
     return transformZipper(zipper, (focusOrNode) => {
         const color = colorMap.get(focusOrNode.id);
         return color
@@ -57,9 +52,9 @@ export const applyColorMapToZipper = (
 };
 
 export const transformNode = (
-    node: Editor.types.Node,
-    callback: <T extends Editor.types.Node>(node: T) => T,
-): Editor.types.Node => {
+    node: types.Node,
+    callback: <T extends types.Node>(node: T) => T,
+): types.Node => {
     if (node.type === "atom") {
         return callback(node);
     }
@@ -100,9 +95,9 @@ export const transformNode = (
 };
 
 export const applyColorMapToEditorNode = (
-    node: Editor.types.Node,
+    node: types.Node,
     colorMap: ColorMap,
-): Editor.types.Node => {
+): types.Node => {
     return transformNode(node, (node) => {
         const color = colorMap.get(node.id);
         return color

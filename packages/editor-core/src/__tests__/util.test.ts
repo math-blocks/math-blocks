@@ -1,6 +1,6 @@
-import {glyph, row} from "../builders";
+import {glyph, row} from "../ast/builders";
 import {toEqualMath} from "../test-util";
-import * as util from "../util";
+import * as util from "../ast/util";
 
 expect.extend({toEqualMath});
 
