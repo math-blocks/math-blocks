@@ -6,6 +6,7 @@ import {parse, getFontData} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 import {RadicalDegreeAlgorithm} from "@math-blocks/typesetter";
 
+import FormattingPalette from "./formatting-palette";
 import {examples} from "./examples";
 
 const EditorPage: React.FunctionComponent = () => {
@@ -31,11 +32,11 @@ const EditorPage: React.FunctionComponent = () => {
     const [zipper, setZipper] = React.useState<Editor.Zipper>({
         breadcrumbs: [],
         row: {
-            id: examples[1].id,
+            id: examples[0].id,
             type: "zrow",
             left: [],
             selection: [],
-            right: examples[1].children,
+            right: examples[0].children,
             style: {},
         },
     });
@@ -171,7 +172,7 @@ const EditorPage: React.FunctionComponent = () => {
                         };
                         setZipper(zipper);
                     }}
-                    defaultValue={1}
+                    defaultValue={0}
                 >
                     <option value={0}>Simple Equation</option>
                     <option value={1}>Adding Fractions</option>
@@ -236,6 +237,7 @@ const EditorPage: React.FunctionComponent = () => {
                 ></input>
             </div>
             <div style={{position: "fixed", bottom: 0, left: 0}}>
+                <FormattingPalette />
                 {/* <EditingPanel /> */}
                 <div style={{height: 8}} />
                 <MathKeypad />

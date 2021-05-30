@@ -8,7 +8,7 @@ export default function useEventListener(
     useEffect(
         () => {
             // Make sure element supports addEventListener
-            // On
+            // On the element
             const isSupported = element?.addEventListener;
             if (!isSupported) return;
 

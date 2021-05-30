@@ -9,7 +9,7 @@ import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
-const {useState, useRef, useContext, useCallback} = React;
+const {useEffect, useState, useRef, useContext, useCallback} = React;
 
 type Props = {
     // The initial value for the editor
@@ -37,6 +37,7 @@ type Props = {
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
+    const [selecting, setSelecting] = useState<boolean>(false);
 
     // In the future we may want to provide a way to set both the start and end
     // positions so that we set a starting selection.
@@ -50,7 +51,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
-    const callback = useCallback(
+    const handleKeydown = useCallback(
         (e: KeyboardEvent): void => {
             console.log(e.key);
 
@@ -65,9 +66,14 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         setActive(false);
                     }
                 } else {
+                    // pressing up/down on the shift key will restart a selection
+                    // even if no other key has been pressed in the interim.
                     if (e.key === "Shift") {
-                        // Start a selection
-                        setEndZipper(startZipper);
+                        if (!selecting) {
+                            // Start a selection
+                            setEndZipper(startZipper);
+                            setSelecting(true);
+                        }
                     } else if (
                         e.shiftKey &&
                         (e.key === "ArrowLeft" || e.key === "ArrowRight")
@@ -87,6 +93,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                             setEndZipper(newEndZipper);
                         }
                     } else {
+                        // End a selection
+                        setSelecting(false);
                         // Modify the content
                         const value: Editor.Zipper = Editor.zipperReducer(
                             zipper,
@@ -113,10 +121,95 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 e.stopPropagation();
             }
         },
-        [zipper, startZipper, endZipper, props, active],
+        [zipper, startZipper, endZipper, selecting, props, active],
     );
 
-    useEventListener("keydown", callback);
+    useEventListener("keydown", handleKeydown);
+
+    type FormattingEvent = {
+        type: "color";
+        value: string;
+    };
+
+    const handleFormatting = useCallback(
+        (e: CustomEvent<FormattingEvent>): void => {
+            const {detail} = e;
+            if (detail.type === "color") {
+                const color = detail.value;
+                const {selection} = zipper.row;
+
+                let inSelection = false;
+
+                if (selection.length > 0) {
+                    const selectedNodeIds = selection.map((node) => node.id);
+                    const callback: Editor.transforms.ZipperCallback = {
+                        enter: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = true;
+                            }
+                        },
+                        exit: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = false;
+                            }
+                            if (
+                                inSelection ||
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                return {
+                                    ...node,
+                                    style: {
+                                        ...node.style,
+                                        color: color,
+                                    },
+                                };
+                            }
+                        },
+                    };
+                    // We transform both the start and end zipper in order for
+                    // things to work with Case 3 in selectionZipperFromZippers.
+                    const newStartZipper = Editor.transforms.traverseZipper(
+                        startZipper,
+                        callback,
+                    );
+                    const newEndZipper = Editor.transforms.traverseZipper(
+                        endZipper,
+                        callback,
+                    );
+                    const newSelectionZippper = Editor.selectionZipperFromZippers(
+                        newStartZipper,
+                        newEndZipper,
+                    );
+
+                    if (newSelectionZippper) {
+                        setStartZipper(newStartZipper);
+                        setEndZipper(newEndZipper);
+                        setZipper(newSelectionZippper);
+                    }
+                }
+            }
+        },
+        [zipper, startZipper, endZipper],
+    ) as EventListener;
+
+    useEffect(
+        () => {
+            // Add event listener
+            window.addEventListener("formatting", handleFormatting);
+
+            // Remove event listener on cleanup
+            return () => {
+                window.removeEventListener("formatting", handleFormatting);
+            };
+        },
+        [handleFormatting], // Re-run if the handler changes
+    );
 
     const positionCursor = (e: React.MouseEvent, select: boolean): void => {
         if (!svgRef?.current) {

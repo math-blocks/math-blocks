@@ -2,9 +2,6 @@ import * as Editor from "@math-blocks/editor-core";
 
 const simpleRow = Editor.util.row("2x+5=10");
 
-simpleRow.children[1].style.color = "orange";
-simpleRow.children[3].style.color = "teal";
-
 const delimiters = Editor.builders.row([
     Editor.builders.glyph("x"),
     Editor.builders.glyph("+"),

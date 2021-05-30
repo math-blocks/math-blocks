@@ -210,6 +210,8 @@ const getLeftSelectionRight = (
 
 // This call can return undefined if the args passed to it have a different
 // base structure, e.g. 2x| + 5 = 10, and 3y - 8| = 15.
+// It maintains the styles from startZipper in the returned zipper.
+// TODO: write a test for this.
 export const selectionZipperFromZippers = (
     startZipper: Zipper,
     endZipper: Zipper,

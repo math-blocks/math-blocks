@@ -13,15 +13,15 @@ export type ZFrac =
     | {
           id: number;
           type: "zfrac";
-          left: [];
-          right: [types.Row];
+          left: readonly [];
+          right: readonly [types.Row];
           style: types.Style;
       }
     | {
           id: number;
           type: "zfrac";
-          left: [types.Row];
-          right: [];
+          left: readonly [types.Row];
+          right: readonly [];
           style: types.Style;
       };
 
@@ -31,15 +31,15 @@ export type ZSubSup =
     | {
           id: number;
           type: "zsubsup";
-          left: [];
-          right: [types.Row | null];
+          left: readonly [];
+          right: readonly [types.Row | null];
           style: types.Style;
       }
     | {
           id: number;
           type: "zsubsup";
-          left: [types.Row | null];
-          right: [];
+          left: readonly [types.Row | null];
+          right: readonly [];
           style: types.Style;
       };
 
@@ -47,16 +47,16 @@ export type ZLimits =
     | {
           id: number;
           type: "zlimits";
-          left: [];
-          right: [types.Row | null];
+          left: readonly [];
+          right: readonly [types.Row | null];
           inner: types.Node;
           style: types.Style;
       }
     | {
           id: number;
           type: "zlimits";
-          left: [types.Row];
-          right: [];
+          left: readonly [types.Row];
+          right: readonly [];
           inner: types.Node;
           style: types.Style;
       };
@@ -65,23 +65,23 @@ export type ZRoot =
     | {
           id: number;
           type: "zroot";
-          left: [];
-          right: [types.Row];
+          left: readonly [];
+          right: readonly [types.Row];
           style: types.Style;
       }
     | {
           id: number;
           type: "zroot";
-          left: [types.Row | null];
+          left: readonly [types.Row | null];
+          right: readonly [];
           style: types.Style;
-          right: [];
       };
 
 export type ZDelimited = {
     id: number;
     type: "zdelimited";
-    left: [];
-    right: [];
+    left: readonly [];
+    right: readonly [];
     leftDelim: types.Atom;
     rightDelim: types.Atom;
     style: types.Style;

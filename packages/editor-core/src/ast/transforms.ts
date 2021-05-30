@@ -1,123 +1,198 @@
-import type {Focus, Zipper} from "../reducer/types";
+import type {
+    Focus,
+    Zipper,
+    Breadcrumb,
+    BreadcrumbRow,
+    ZRow,
+} from "../reducer/types";
 import * as types from "./types";
 
-type ColorMap = Map<number, string>;
+export const traverseNodes = (
+    nodes: readonly types.Node[],
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U | void;
+    },
+): readonly types.Node[] => nodes.map((node) => traverseNode(node, callback));
 
-// Do we actually need this function?
-export const transformZipper = (
+export type ZipperCallback = {
+    enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+        node: T,
+    ) => void;
+    exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+        node: T,
+    ) => T | void;
+};
+
+/**
+ * Preform depth first traversal of a zipper.  Breadcrumbs are processed first
+ * to last recursively followed by the row.  The nodes in each row are processed
+ * left to right.
+ */
+export const traverseZipper = (
     zipper: Zipper,
-    callback: <T extends Focus | types.Node>(node: T) => T,
+    callback: ZipperCallback,
 ): Zipper => {
-    const breadcrumbs = zipper.breadcrumbs.map((crumb) => {
-        const {row, focus} = crumb;
+    const {breadcrumbs} = zipper;
+
+    if (breadcrumbs.length === 0) {
+        // Base case
+        const {row} = zipper;
+
+        callback.enter?.(row);
+        let newRow = {
+            ...row,
+            left: traverseNodes(row.left, callback),
+            selection: traverseNodes(row.selection, callback),
+            right: traverseNodes(row.right, callback),
+        };
+        newRow = callback.exit(newRow) || newRow;
 
         return {
-            focus: callback(focus),
-            // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
-            row: {
-                ...row,
-                left: row.left.map(callback),
-                selection: row.left.map(callback),
-                right: row.left.map(callback),
-            },
+            row: newRow,
+            breadcrumbs: breadcrumbs,
         };
+    }
+
+    // Recursive case
+    const [crumb, ...restCrumbs] = breadcrumbs;
+
+    const {row, focus} = crumb;
+
+    // start processing the row
+    callback.enter?.(row);
+    const rowLeft = traverseNodes(row.left, callback);
+
+    // start processing the focus
+    callback.enter?.(focus);
+    const focusLeft = focus.left.map((row) => {
+        return row && traverseRow(row, callback);
     });
 
-    // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
-    // TODO: call transformNode on the nodes
-    const row = {
-        ...zipper.row,
-        left: zipper.row.left.map(callback),
-        selection: zipper.row.selection.map(callback),
-        right: zipper.row.right.map(callback),
+    // recurse
+    const newZipper = traverseZipper(
+        {
+            ...zipper,
+            breadcrumbs: restCrumbs,
+        },
+        callback,
+    );
+
+    // finish processing the focus
+    const focusRight = focus.right.map((row) => {
+        return row && traverseRow(row, callback);
+    });
+    let newFocus: Focus = {
+        ...focus,
+        // @ts-expect-error: TypeScript can't map a union of tuples
+        left: focusLeft,
+        // @ts-expect-error: TypeScript can't map a union of tuples
+        right: focusRight,
+    };
+    newFocus = callback.exit(newFocus) || newFocus;
+
+    // finish processing the row
+    const rowRight = traverseNodes(row.right, callback);
+    let newRow: BreadcrumbRow = {
+        ...row,
+        left: rowLeft,
+        right: rowRight,
+    };
+    newRow = callback.exit(newRow) || newRow;
+
+    const newCrumb: Breadcrumb = {
+        focus: newFocus,
+        row: newRow,
     };
 
-    return {row, breadcrumbs};
+    return {
+        ...newZipper,
+        breadcrumbs: [newCrumb, ...newZipper.breadcrumbs],
+    };
 };
 
-export const applyColorMapToZipper = (
-    zipper: Zipper,
-    colorMap: ColorMap,
-): Zipper => {
-    return transformZipper(zipper, (focusOrNode) => {
-        const color = colorMap.get(focusOrNode.id);
-        return color
-            ? {
-                  ...focusOrNode,
-                  style: {
-                      ...focusOrNode.style,
-                      color,
-                  },
-              }
-            : focusOrNode;
-    });
-};
-
-const transformRow = (
+const traverseRow = (
     row: types.Row,
-    callback: <T extends types.Node>(node: T) => T,
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U | void;
+    },
 ): types.Row => {
-    const newChildren = row.children.map((child) =>
-        transformNode(child, callback),
-    );
+    callback.enter?.(row);
+
+    const newChildren = traverseNodes(row.children, callback);
     const changed = newChildren.some(
         (child, index: number) => child !== row.children[index],
     );
 
-    return changed
-        ? callback({
-              ...row,
-              children: newChildren,
-          })
-        : callback(row);
+    if (changed) {
+        const newRow = {
+            ...row,
+            children: newChildren,
+        };
+        return callback.exit(newRow) || newRow;
+    }
+
+    return callback.exit(row) || row;
 };
 
-export const transformNode = (
-    node: types.Node,
-    callback: <T extends types.Node>(node: T) => T,
-): types.Node => {
+export const traverseNode = <T extends types.Node>(
+    node: T,
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U | void;
+    },
+): T => {
     if (node.type === "atom") {
-        return callback(node);
+        callback.enter?.(node);
+        return callback.exit(node) || node;
     }
 
     // The top-level node is a row
     if (node.type === "row") {
-        return transformRow(node, callback);
+        const result = traverseRow(node, callback);
+        // @ts-expect-error: TypeScript doesn't realize that T is equivalent to types.Row here
+        return result;
     }
 
-    // TypeScript can't handle this kind of polymorphism
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newChildren = node.children.map((row: any) => {
-        return row && transformRow(row, callback);
+    callback.enter?.(node);
+    const newChildren = node.children.map((row) => {
+        return row && traverseRow(row, callback);
     });
 
     const changed = newChildren.some(
         (child, index) => child !== node.children[index],
     );
 
-    return changed
-        ? callback({
-              ...node,
-              // @ts-expect-error: TypeScript can't handle this kind of polymorphism
-              children: newChildren,
-          })
-        : callback(node);
+    if (changed) {
+        const newNode = {
+            ...node,
+            children: newChildren,
+        };
+        return callback.exit(newNode) || newNode;
+    }
+
+    return callback.exit(node) || node;
 };
+
+type ColorMap = Map<number, string>;
 
 export const applyColorMapToEditorNode = (
     node: types.Node,
     colorMap: ColorMap,
 ): types.Node => {
-    return transformNode(node, (node) => {
-        const color = colorMap.get(node.id);
-        return color
-            ? {
-                  ...node,
-                  style: {
-                      ...node.style,
-                      color,
-                  },
-              }
-            : node;
+    return traverseNode(node, {
+        exit: (node) => {
+            const color = colorMap.get(node.id);
+            return color
+                ? {
+                      ...node,
+                      style: {
+                          ...node.style,
+                          color,
+                      },
+                  }
+                : node;
+        },
     });
 };
