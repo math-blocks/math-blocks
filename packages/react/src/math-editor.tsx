@@ -170,17 +170,15 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                                     },
                                 };
                             }
-
-                            return node;
                         },
                     };
                     // We transform both the start and end zipper in order for
                     // things to work with Case 3 in selectionZipperFromZippers.
-                    const newStartZipper = Editor.transforms.transformZipper(
+                    const newStartZipper = Editor.transforms.traverseZipper(
                         startZipper,
                         callback,
                     );
-                    const newEndZipper = Editor.transforms.transformZipper(
+                    const newEndZipper = Editor.transforms.traverseZipper(
                         endZipper,
                         callback,
                     );

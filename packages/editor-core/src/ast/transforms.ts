@@ -7,19 +7,21 @@ import type {
 } from "../reducer/types";
 import * as types from "./types";
 
-export const transformNodes = (
+export const traverseNodes = (
     nodes: readonly types.Node[],
     callback: {
         enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U;
+        exit: <U extends types.Node>(node: U) => U | void;
     },
-): readonly types.Node[] => nodes.map((node) => transformNode(node, callback));
+): readonly types.Node[] => nodes.map((node) => traverseNode(node, callback));
 
 export type ZipperCallback = {
     enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
     ) => void;
-    exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(node: T) => T;
+    exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+        node: T,
+    ) => T | void;
 };
 
 /**
@@ -27,7 +29,7 @@ export type ZipperCallback = {
  * to last recursively followed by the row.  The nodes in each row are processed
  * left to right.
  */
-export const transformZipper = (
+export const traverseZipper = (
     zipper: Zipper,
     callback: ZipperCallback,
 ): Zipper => {
@@ -40,11 +42,11 @@ export const transformZipper = (
         callback.enter?.(row);
         let newRow = {
             ...row,
-            left: transformNodes(row.left, callback),
-            selection: transformNodes(row.selection, callback),
-            right: transformNodes(row.right, callback),
+            left: traverseNodes(row.left, callback),
+            selection: traverseNodes(row.selection, callback),
+            right: traverseNodes(row.right, callback),
         };
-        newRow = callback.exit(newRow);
+        newRow = callback.exit(newRow) || newRow;
 
         return {
             row: newRow,
@@ -59,16 +61,16 @@ export const transformZipper = (
 
     // start processing the row
     callback.enter?.(row);
-    const rowLeft = transformNodes(row.left, callback);
+    const rowLeft = traverseNodes(row.left, callback);
 
     // start processing the focus
     callback.enter?.(focus);
     const focusLeft = focus.left.map((row) => {
-        return row && transformRow(row, callback);
+        return row && traverseRow(row, callback);
     });
 
     // recurse
-    const newZipper = transformZipper(
+    const newZipper = traverseZipper(
         {
             ...zipper,
             breadcrumbs: restCrumbs,
@@ -78,7 +80,7 @@ export const transformZipper = (
 
     // finish processing the focus
     const focusRight = focus.right.map((row) => {
-        return row && transformRow(row, callback);
+        return row && traverseRow(row, callback);
     });
     let newFocus: Focus = {
         ...focus,
@@ -87,16 +89,16 @@ export const transformZipper = (
         // @ts-expect-error: TypeScript can't map a union of tuples
         right: focusRight,
     };
-    newFocus = callback.exit(newFocus);
+    newFocus = callback.exit(newFocus) || newFocus;
 
     // finish processing the row
-    const rowRight = transformNodes(row.right, callback);
+    const rowRight = traverseNodes(row.right, callback);
     let newRow: BreadcrumbRow = {
         ...row,
         left: rowLeft,
         right: rowRight,
     };
-    newRow = callback.exit(newRow);
+    newRow = callback.exit(newRow) || newRow;
 
     const newCrumb: Breadcrumb = {
         focus: newFocus,
@@ -109,62 +111,68 @@ export const transformZipper = (
     };
 };
 
-const transformRow = (
+const traverseRow = (
     row: types.Row,
     callback: {
         enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U;
+        exit: <U extends types.Node>(node: U) => U | void;
     },
 ): types.Row => {
     callback.enter?.(row);
 
-    const newChildren = transformNodes(row.children, callback);
+    const newChildren = traverseNodes(row.children, callback);
     const changed = newChildren.some(
         (child, index: number) => child !== row.children[index],
     );
 
-    return changed
-        ? callback.exit({
-              ...row,
-              children: newChildren,
-          })
-        : callback.exit(row);
+    if (changed) {
+        const newRow = {
+            ...row,
+            children: newChildren,
+        };
+        return callback.exit(newRow) || newRow;
+    }
+
+    return callback.exit(row) || row;
 };
 
-export const transformNode = <T extends types.Node>(
+export const traverseNode = <T extends types.Node>(
     node: T,
     callback: {
         enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U;
+        exit: <U extends types.Node>(node: U) => U | void;
     },
 ): T => {
     if (node.type === "atom") {
         callback.enter?.(node);
-        return callback.exit(node);
+        return callback.exit(node) || node;
     }
 
     // The top-level node is a row
     if (node.type === "row") {
-        const result = transformRow(node, callback);
+        const result = traverseRow(node, callback);
         // @ts-expect-error: TypeScript doesn't realize that T is equivalent to types.Row here
         return result;
     }
 
     callback.enter?.(node);
     const newChildren = node.children.map((row) => {
-        return row && transformRow(row, callback);
+        return row && traverseRow(row, callback);
     });
 
     const changed = newChildren.some(
         (child, index) => child !== node.children[index],
     );
 
-    return changed
-        ? callback.exit({
-              ...node,
-              children: newChildren,
-          })
-        : callback.exit(node);
+    if (changed) {
+        const newNode = {
+            ...node,
+            children: newChildren,
+        };
+        return callback.exit(newNode) || newNode;
+    }
+
+    return callback.exit(node) || node;
 };
 
 type ColorMap = Map<number, string>;
@@ -173,7 +181,7 @@ export const applyColorMapToEditorNode = (
     node: types.Node,
     colorMap: ColorMap,
 ): types.Node => {
-    return transformNode(node, {
+    return traverseNode(node, {
         exit: (node) => {
             const color = colorMap.get(node.id);
             return color
