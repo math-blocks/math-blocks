@@ -7,104 +7,140 @@ import type {
 } from "../reducer/types";
 import * as types from "./types";
 
-type ColorMap = Map<number, string>;
-
-// TODO: instead of a single callback, we should have an object with
-// 'enter' and 'exit' properties
-
 export const transformNodes = (
     nodes: readonly types.Node[],
-    callback: <U extends types.Node>(node: U) => U,
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U;
+    },
 ): readonly types.Node[] => nodes.map((node) => transformNode(node, callback));
 
-export const transformZipper = (
-    zipper: Zipper,
-    callback: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+export type ZipperCallback = {
+    enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
-    ) => T,
-): Zipper => {
-    // TODO: check that things have actually changed before returning a new object
-
-    const breadcrumbs = zipper.breadcrumbs.map((crumb) => {
-        const {row, focus} = crumb;
-
-        const newFocus: Focus = {
-            ...focus,
-            // @ts-expect-error: TypeScript can't map a union of tuples
-            left: focus.left.map(
-                (node) => node && transformNode(node, callback),
-            ),
-            // @ts-expect-error: TypeScript can't map a union of tuples
-            right: focus.right.map(
-                (node) => node && transformNode(node, callback),
-            ),
-        };
-
-        const newRow: BreadcrumbRow = {
-            ...row,
-            left: transformNodes(row.left, callback),
-            right: transformNodes(row.right, callback),
-        };
-
-        const newCrumb: Breadcrumb = {
-            focus: callback(newFocus),
-            row: callback(newRow),
-        };
-
-        return newCrumb;
-    });
-
-    const row = callback({
-        ...zipper.row,
-        left: transformNodes(zipper.row.left, callback),
-        selection: transformNodes(zipper.row.selection, callback),
-        right: transformNodes(zipper.row.right, callback),
-    });
-
-    return {row, breadcrumbs};
+    ) => void;
+    exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(node: T) => T;
 };
 
-export const applyColorMapToZipper = (
+/**
+ * Preform depth first traversal of a zipper.  Breadcrumbs are processed first
+ * to last recursively followed by the row.  The nodes in each row are processed
+ * left to right.
+ */
+export const transformZipper = (
     zipper: Zipper,
-    colorMap: ColorMap,
+    callback: ZipperCallback,
 ): Zipper => {
-    return transformZipper(zipper, (focusOrNode) => {
-        const color = colorMap.get(focusOrNode.id);
-        return color
-            ? {
-                  ...focusOrNode,
-                  style: {
-                      ...focusOrNode.style,
-                      color,
-                  },
-              }
-            : focusOrNode;
+    const {breadcrumbs} = zipper;
+
+    if (breadcrumbs.length === 0) {
+        // Base case
+        const {row} = zipper;
+
+        callback.enter?.(row);
+        let newRow = {
+            ...row,
+            left: transformNodes(row.left, callback),
+            selection: transformNodes(row.selection, callback),
+            right: transformNodes(row.right, callback),
+        };
+        newRow = callback.exit(newRow);
+
+        return {
+            row: newRow,
+            breadcrumbs: breadcrumbs,
+        };
+    }
+
+    // Recursive case
+    const [crumb, ...restCrumbs] = breadcrumbs;
+
+    const {row, focus} = crumb;
+
+    // start processing the row
+    callback.enter?.(row);
+    const rowLeft = transformNodes(row.left, callback);
+
+    // start processing the focus
+    callback.enter?.(focus);
+    const focusLeft = focus.left.map((row) => {
+        return row && transformRow(row, callback);
     });
+
+    // recurse
+    const newZipper = transformZipper(
+        {
+            ...zipper,
+            breadcrumbs: restCrumbs,
+        },
+        callback,
+    );
+
+    // finish processing the focus
+    const focusRight = focus.right.map((row) => {
+        return row && transformRow(row, callback);
+    });
+    let newFocus: Focus = {
+        ...focus,
+        // @ts-expect-error: TypeScript can't map a union of tuples
+        left: focusLeft,
+        // @ts-expect-error: TypeScript can't map a union of tuples
+        right: focusRight,
+    };
+    newFocus = callback.exit(newFocus);
+
+    // finish processing the row
+    const rowRight = transformNodes(row.right, callback);
+    let newRow: BreadcrumbRow = {
+        ...row,
+        left: rowLeft,
+        right: rowRight,
+    };
+    newRow = callback.exit(newRow);
+
+    const newCrumb: Breadcrumb = {
+        focus: newFocus,
+        row: newRow,
+    };
+
+    return {
+        ...newZipper,
+        breadcrumbs: [newCrumb, ...newZipper.breadcrumbs],
+    };
 };
 
 const transformRow = (
     row: types.Row,
-    callback: <T extends types.Node>(node: T) => T,
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U;
+    },
 ): types.Row => {
+    callback.enter?.(row);
+
     const newChildren = transformNodes(row.children, callback);
     const changed = newChildren.some(
         (child, index: number) => child !== row.children[index],
     );
 
     return changed
-        ? callback({
+        ? callback.exit({
               ...row,
               children: newChildren,
           })
-        : callback(row);
+        : callback.exit(row);
 };
 
 export const transformNode = <T extends types.Node>(
     node: T,
-    callback: <U extends types.Node>(node: U) => U,
+    callback: {
+        enter?: <U extends types.Node>(node: U) => void;
+        exit: <U extends types.Node>(node: U) => U;
+    },
 ): T => {
     if (node.type === "atom") {
-        return callback(node);
+        callback.enter?.(node);
+        return callback.exit(node);
     }
 
     // The top-level node is a row
@@ -114,6 +150,7 @@ export const transformNode = <T extends types.Node>(
         return result;
     }
 
+    callback.enter?.(node);
     const newChildren = node.children.map((row) => {
         return row && transformRow(row, callback);
     });
@@ -123,27 +160,31 @@ export const transformNode = <T extends types.Node>(
     );
 
     return changed
-        ? callback({
+        ? callback.exit({
               ...node,
               children: newChildren,
           })
-        : callback(node);
+        : callback.exit(node);
 };
+
+type ColorMap = Map<number, string>;
 
 export const applyColorMapToEditorNode = (
     node: types.Node,
     colorMap: ColorMap,
 ): types.Node => {
-    return transformNode(node, (node) => {
-        const color = colorMap.get(node.id);
-        return color
-            ? {
-                  ...node,
-                  style: {
-                      ...node.style,
-                      color,
-                  },
-              }
-            : node;
+    return transformNode(node, {
+        exit: (node) => {
+            const color = colorMap.get(node.id);
+            return color
+                ? {
+                      ...node,
+                      style: {
+                          ...node.style,
+                          color,
+                      },
+                  }
+                : node;
+        },
     });
 };

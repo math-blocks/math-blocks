@@ -11,7 +11,9 @@ describe("transformNode", () => {
                 builders.glyph("y"),
             ]);
 
-            const result = transformNode(node, (node) => node);
+            const result = transformNode(node, {
+                exit: (node) => node,
+            });
 
             expect(result).toBe(node);
         });
@@ -22,7 +24,9 @@ describe("transformNode", () => {
                 [builders.glyph("y")],
             );
 
-            const result = transformNode(node, (node) => node);
+            const result = transformNode(node, {
+                exit: (node) => node,
+            });
 
             expect(result).toBe(node);
         });
@@ -46,9 +50,9 @@ describe("transformNode", () => {
                 builders.glyph("y"),
             ]);
 
-            const result = transformNode(node, (node) =>
-                setColor(node, "blue"),
-            );
+            const result = transformNode(node, {
+                exit: (node) => setColor(node, "blue"),
+            });
 
             expect(result).not.toBe(node);
             node.style.color = "blue";
@@ -64,9 +68,9 @@ describe("transformNode", () => {
                 [builders.glyph("y")],
             );
 
-            const result = transformNode(node, (node) =>
-                setColor(node, "blue"),
-            );
+            const result = transformNode(node, {
+                exit: (node) => setColor(node, "blue"),
+            });
 
             expect(result).not.toBe(node);
             node.style.color = "blue";

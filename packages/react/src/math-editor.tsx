@@ -136,124 +136,62 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             const {detail} = e;
             if (detail.type === "color") {
                 const color = detail.value;
-                console.log("set color to " + color);
-
                 const {selection} = zipper.row;
-                console.log("selection = ", selection);
+
+                let inSelection = false;
+
                 if (selection.length > 0) {
                     const selectedNodeIds = selection.map((node) => node.id);
-                    // TODO: we need a way to format nodes within a selection
-                    // i.e. apply a transform to all nodes that are descendants
-                    // of a given node or list of nodes
-                    const newStartZipper = Editor.transforms.transformZipper(
-                        startZipper,
-                        // @ts-expect-error: we should be able to fix this with enter/exit props
-                        (node) => {
-                            if (selectedNodeIds.includes(node.id)) {
-                                if (
-                                    node.type === "atom" ||
-                                    node.type === "frac" ||
-                                    node.type === "row"
-                                ) {
-                                    console.log("updating the color of ", node);
-                                    return Editor.transforms.transformNode(
-                                        node,
-                                        (node) => {
-                                            return {
-                                                ...node,
-                                                style: {
-                                                    ...node.style,
-                                                    color: color,
-                                                },
-                                            };
-                                        },
-                                    );
-                                }
-                                if (node.type === "zfrac") {
-                                    return {
-                                        ...node,
-                                        left: Editor.transforms.transformNodes(
-                                            node.left,
-                                            (node) => {
-                                                return (
-                                                    node && {
-                                                        ...node,
-                                                        style: {
-                                                            ...node.style,
-                                                            color: color,
-                                                        },
-                                                    }
-                                                );
-                                            },
-                                        ),
-                                        right: Editor.transforms.transformNodes(
-                                            node.right,
-                                            (node) => {
-                                                return (
-                                                    node && {
-                                                        ...node,
-                                                        style: {
-                                                            ...node.style,
-                                                            color: color,
-                                                        },
-                                                    }
-                                                );
-                                            },
-                                        ),
-                                        style: {
-                                            ...node.style,
-                                            color: color,
-                                        },
-                                    };
-                                }
-                                if (node.type === "zrow") {
-                                    return {
-                                        ...node,
-                                        left: Editor.transforms.transformNodes(
-                                            node.left,
-                                            (node) => {
-                                                return (
-                                                    node && {
-                                                        ...node,
-                                                        style: {
-                                                            ...node.style,
-                                                            color: color,
-                                                        },
-                                                    }
-                                                );
-                                            },
-                                        ),
-                                        right: Editor.transforms.transformNodes(
-                                            node.right,
-                                            (node) => {
-                                                return (
-                                                    node && {
-                                                        ...node,
-                                                        style: {
-                                                            ...node.style,
-                                                            color: color,
-                                                        },
-                                                    }
-                                                );
-                                            },
-                                        ),
-                                        style: {
-                                            ...node.style,
-                                            color: color,
-                                        },
-                                    };
-                                }
+                    const callback: Editor.transforms.ZipperCallback = {
+                        enter: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = true;
                             }
+                        },
+                        exit: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = false;
+                            }
+                            if (
+                                inSelection ||
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                return {
+                                    ...node,
+                                    style: {
+                                        ...node.style,
+                                        color: color,
+                                    },
+                                };
+                            }
+
                             return node;
                         },
+                    };
+                    // We transform both the start and end zipper in order for
+                    // things to work with Case 3 in selectionZipperFromZippers.
+                    const newStartZipper = Editor.transforms.transformZipper(
+                        startZipper,
+                        callback,
+                    );
+                    const newEndZipper = Editor.transforms.transformZipper(
+                        endZipper,
+                        callback,
                     );
                     const newSelectionZippper = Editor.selectionZipperFromZippers(
                         newStartZipper,
-                        endZipper,
+                        newEndZipper,
                     );
 
                     if (newSelectionZippper) {
                         setStartZipper(newStartZipper);
+                        setEndZipper(newEndZipper);
                         setZipper(newSelectionZippper);
                     }
                 }
