@@ -1,49 +1,65 @@
-import type {Focus, Zipper, Breadcrumb} from "../reducer/types";
+import type {
+    Focus,
+    Zipper,
+    Breadcrumb,
+    BreadcrumbRow,
+    ZRow,
+} from "../reducer/types";
 import * as types from "./types";
 
 type ColorMap = Map<number, string>;
 
-const transformNodes = (
+// TODO: instead of a single callback, we should have an object with
+// 'enter' and 'exit' properties
+
+export const transformNodes = (
     nodes: readonly types.Node[],
     callback: <U extends types.Node>(node: U) => U,
 ): readonly types.Node[] => nodes.map((node) => transformNode(node, callback));
 
-// Do we actually need this function?
 export const transformZipper = (
     zipper: Zipper,
-    callback: <T extends Focus | types.Node>(node: T) => T,
+    callback: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+        node: T,
+    ) => T,
 ): Zipper => {
+    // TODO: check that things have actually changed before returning a new object
+
     const breadcrumbs = zipper.breadcrumbs.map((crumb) => {
         const {row, focus} = crumb;
 
+        const newFocus: Focus = {
+            ...focus,
+            // @ts-expect-error: TypeScript can't map a union of tuples
+            left: focus.left.map(
+                (node) => node && transformNode(node, callback),
+            ),
+            // @ts-expect-error: TypeScript can't map a union of tuples
+            right: focus.right.map(
+                (node) => node && transformNode(node, callback),
+            ),
+        };
+
+        const newRow: BreadcrumbRow = {
+            ...row,
+            left: transformNodes(row.left, callback),
+            right: transformNodes(row.right, callback),
+        };
+
         const newCrumb: Breadcrumb = {
-            focus: {
-                ...focus,
-                left: focus.left.map(
-                    (node) => node && transformNode(node, callback),
-                ),
-                right: focus.left.map(
-                    (node) => node && transformNode(node, callback),
-                ),
-            },
-            row: {
-                ...row,
-                left: transformNodes(row.left, callback),
-                right: transformNodes(row.right, callback),
-            },
+            focus: callback(newFocus),
+            row: callback(newRow),
         };
 
         return newCrumb;
     });
 
-    // TODO: remove 'style' from ZRow, BreadcrumbRow, and Row types
-    // TODO: call transformNode on the nodes
-    const row = {
+    const row = callback({
         ...zipper.row,
         left: transformNodes(zipper.row.left, callback),
-        selection: transformNodes(zipper.row.left, callback),
+        selection: transformNodes(zipper.row.selection, callback),
         right: transformNodes(zipper.row.right, callback),
-    };
+    });
 
     return {row, breadcrumbs};
 };
@@ -70,9 +86,7 @@ const transformRow = (
     row: types.Row,
     callback: <T extends types.Node>(node: T) => T,
 ): types.Row => {
-    const newChildren = row.children.map((child) =>
-        transformNode(child, callback),
-    );
+    const newChildren = transformNodes(row.children, callback);
     const changed = newChildren.some(
         (child, index: number) => child !== row.children[index],
     );
@@ -95,12 +109,12 @@ export const transformNode = <T extends types.Node>(
 
     // The top-level node is a row
     if (node.type === "row") {
-        return transformRow(node as types.Row, callback);
+        const result = transformRow(node, callback);
+        // @ts-expect-error: TypeScript doesn't realize that T is equivalent to types.Row here
+        return result;
     }
 
-    // TypeScript can't handle this kind of polymorphism
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newChildren = node.children.map((row: any) => {
+    const newChildren = node.children.map((row) => {
         return row && transformRow(row, callback);
     });
 
@@ -111,7 +125,6 @@ export const transformNode = <T extends types.Node>(
     return changed
         ? callback({
               ...node,
-              // @ts-expect-error: TypeScript can't handle this kind of polymorphism
               children: newChildren,
           })
         : callback(node);
