@@ -128,6 +128,10 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         stroke: "red",
     };
 
+    type OverlayRect = {xMin: number; yMin: number; xMax: number; yMax: number};
+
+    let cancel: OverlayRect | null = null;
+
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
 
@@ -152,6 +156,27 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         }
 
         section.forEach((node) => {
+            if (node.style.cancel && layer == "content") {
+                const yMin = -Math.max(Layout.getHeight(node), ascent);
+                const height = Math.max(
+                    Layout.getHeight(node) + Layout.getDepth(node),
+                    fontSize,
+                );
+                const yMax = yMin + height;
+
+                if (!cancel) {
+                    cancel = {
+                        xMin: pen.x,
+                        xMax: pen.x,
+                        yMin,
+                        yMax,
+                    };
+                } else {
+                    cancel.yMin = Math.min(cancel.yMin, yMin);
+                    cancel.yMax = Math.max(cancel.yMax, yMax);
+                }
+            }
+
             if (isSelection && layer === "selection") {
                 const yMin = -Math.max(Layout.getHeight(node), ascent);
 
@@ -271,8 +296,41 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
             }
 
             pen.x += advance;
+
+            if (node.style.cancel && cancel) {
+                cancel.xMax = pen.x;
+            }
+            if (cancel && !node.style.cancel && layer === "content") {
+                children.push({
+                    type: "line",
+                    x1: cancel.xMin,
+                    y1: cancel.yMin,
+                    x2: cancel.xMax,
+                    y2: cancel.yMax,
+                    thickness: 5,
+                    style: {},
+                });
+                cancel = null;
+            }
         });
     });
+
+    if (cancel !== null && layer === "content") {
+        children.push({
+            type: "line",
+            // @ts-expect-error: TypeScript doesn't understand forEach loops
+            x1: cancel.xMin,
+            // @ts-expect-error: TypeScript doesn't understand forEach loops
+            y1: cancel.yMax,
+            // @ts-expect-error: TypeScript doesn't understand forEach loops
+            x2: cancel.xMax,
+            // @ts-expect-error: TypeScript doesn't understand forEach loops
+            y2: cancel.yMin,
+            thickness: 5,
+            style: {},
+        });
+        cancel = null;
+    }
 
     // Draw the selection.
     if (layer === "selection") {

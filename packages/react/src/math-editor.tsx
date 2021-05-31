@@ -126,10 +126,14 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     useEventListener("keydown", handleKeydown);
 
-    type FormattingEvent = {
-        type: "color";
-        value: string;
-    };
+    type FormattingEvent =
+        | {
+              type: "color";
+              value: string;
+          }
+        | {
+              type: "cancel";
+          };
 
     const handleFormatting = useCallback(
         (e: CustomEvent<FormattingEvent>): void => {
@@ -167,6 +171,70 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                                     style: {
                                         ...node.style,
                                         color: color,
+                                    },
+                                };
+                            }
+                        },
+                    };
+                    // We transform both the start and end zipper in order for
+                    // things to work with Case 3 in selectionZipperFromZippers.
+                    const newStartZipper = Editor.transforms.traverseZipper(
+                        startZipper,
+                        callback,
+                    );
+                    const newEndZipper = Editor.transforms.traverseZipper(
+                        endZipper,
+                        callback,
+                    );
+                    const newSelectionZippper = Editor.selectionZipperFromZippers(
+                        newStartZipper,
+                        newEndZipper,
+                    );
+
+                    if (newSelectionZippper) {
+                        setStartZipper(newStartZipper);
+                        setEndZipper(newEndZipper);
+                        setZipper(newSelectionZippper);
+                    }
+                }
+            } else if (detail.type === "cancel") {
+                const {selection} = zipper.row;
+
+                let inSelection = false;
+
+                if (selection.length > 0) {
+                    const selectedNodeIds = selection.map((node) => node.id);
+                    const callback: Editor.transforms.ZipperCallback = {
+                        enter: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = true;
+                            }
+                        },
+                        exit: (node) => {
+                            if (
+                                node.type !== "atom" &&
+                                selectedNodeIds.includes(node.id)
+                            ) {
+                                inSelection = false;
+                            }
+                            if (inSelection) {
+                                return {
+                                    ...node,
+                                    style: {
+                                        ...node.style,
+                                        cancel: false,
+                                    },
+                                };
+                            }
+                            if (selectedNodeIds.includes(node.id)) {
+                                return {
+                                    ...node,
+                                    style: {
+                                        ...node.style,
+                                        cancel: true,
                                     },
                                 };
                             }
