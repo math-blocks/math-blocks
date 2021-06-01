@@ -691,4 +691,11 @@ describe("renderer", () => {
             expect(<Selection />).toMatchSVGSnapshot();
         });
     });
+
+    describe("cancelling", () => {
+        test("multiple selections side-by-side, frac, radicand", async () => {
+            const Cancelling = await storyToComponent(stories.Cancelling);
+            expect(<Cancelling />).toMatchSVGSnapshot();
+        });
+    });
 });

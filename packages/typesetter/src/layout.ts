@@ -16,7 +16,7 @@ export type Dim = {
 
 type Style = {
     color?: string;
-    cancel?: boolean;
+    cancel?: number; // The ID of the cancel notation
 };
 
 type Common = {
@@ -30,6 +30,10 @@ export type Box = {
     type: "Box";
     kind: BoxKind;
     shift: Dist;
+    // TODO: tighten this up by modeling the possible types of content
+    // - no cursor, no selection
+    // - cursor
+    // - selection
     content: readonly (readonly Node[])[];
     fontSize: number;
 } & Common &
