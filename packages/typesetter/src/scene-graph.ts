@@ -333,6 +333,9 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     });
 
     if (cancelRegion !== null && layer === "content") {
+        const thickness =
+            (fontSize * font.math.constants.fractionRuleThickness.value) /
+            font.head.unitsPerEm;
         children.push({
             type: "line",
             // @ts-expect-error: TypeScript doesn't understand forEach loops
@@ -343,7 +346,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
             x2: cancelRegion.xMax,
             // @ts-expect-error: TypeScript doesn't understand forEach loops
             y2: cancelRegion.yMin,
-            thickness: 5, // TODO: use fontSize and fontData to determine this
+            thickness: thickness,
             style: {},
         });
         cancelRegion = null;
