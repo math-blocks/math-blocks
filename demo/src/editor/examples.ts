@@ -1,6 +1,15 @@
 import * as Editor from "@math-blocks/editor-core";
 
-const simpleRow = Editor.util.row("2x+5=10");
+const simpleRow = Editor.builders.row([
+    Editor.builders.glyph("2"),
+    Editor.builders.glyph("x"),
+    Editor.builders.subsup(undefined, [Editor.builders.glyph("2")]),
+    Editor.builders.glyph("+"),
+    Editor.builders.glyph("5"),
+    Editor.builders.glyph("="),
+    Editor.builders.glyph("1"),
+    Editor.builders.glyph("0"),
+]);
 
 const delimiters = Editor.builders.row([
     Editor.builders.glyph("x"),

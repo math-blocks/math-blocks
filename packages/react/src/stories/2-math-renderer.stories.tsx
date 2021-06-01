@@ -841,3 +841,36 @@ export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
 
     return <MathRenderer scene={prod} style={style} />;
 };
+
+export const Cancelling: Story<EmptyProps> = (args, {loaded: fontData}) => {
+    const editNode = Editor.builders.row([
+        glyph("x"),
+        glyph("y"),
+        glyph("+"),
+        Editor.builders.frac([glyph("a")], [glyph("b")]),
+        glyph("\u2212"),
+        Editor.builders.root(null, [glyph("z"), glyph("+"), glyph("1")]),
+    ]);
+
+    editNode.children[0].style.cancel = 1;
+    editNode.children[1].style.cancel = 2;
+    editNode.children[3].style.cancel = 3;
+    // @ts-expect-error: we know that this is a root
+    editNode.children[5].children[1].children[0].style.cancel = 4;
+    // @ts-expect-error: we know that this is a root
+    editNode.children[5].children[1].children[1].style.cancel = 4;
+    // @ts-expect-error: we know that this is a root
+    editNode.children[5].children[1].children[2].style.cancel = 4;
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(editNode, context);
+
+    return <MathRenderer scene={prod} style={style} />;
+};

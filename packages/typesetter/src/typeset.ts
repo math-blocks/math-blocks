@@ -336,7 +336,7 @@ const typesetFocus = (
             const frac = typesetFrac(numerator, denominator, context);
 
             frac.id = focus.id;
-            frac.style.color = focus.style.color;
+            frac.style = focus.style;
 
             return frac;
         }
@@ -369,7 +369,9 @@ const typesetFocus = (
                 prevEditNode,
                 prevLayoutNode,
             );
+
             parentBox.id = focus.id;
+            parentBox.style = focus.style;
 
             return parentBox;
         }
@@ -399,7 +401,7 @@ const typesetFocus = (
             const root = typesetRoot(index, radicand, context);
 
             root.id = focus.id;
-            root.style.color = focus.style.color;
+            root.style = focus.style;
 
             return root;
         }
@@ -428,7 +430,7 @@ const typesetFocus = (
             const limits = typesetLimits(inner, lowerBox, upperBox, context);
 
             limits.id = focus.id;
-            limits.style.color = focus.style.color;
+            limits.style = focus.style;
 
             return limits;
         }
@@ -460,7 +462,7 @@ const typesetFocus = (
             const delimited = Layout.hpackNat([[open, row, close]], context);
 
             delimited.id = focus.id;
-            delimited.style.color = focus.style.color;
+            delimited.style = focus.style;
 
             return delimited;
         }
@@ -537,6 +539,7 @@ const _typeset = (
             );
 
             parentBox.id = node.id;
+            parentBox.style = node.style;
 
             return parentBox;
         }

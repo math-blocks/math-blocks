@@ -8,7 +8,7 @@ export type Glyph = {
 
 export type Style = {
     color?: string;
-    cancel?: boolean;
+    cancel?: number; // The ID of the cancel notation
 };
 
 type Common = {id: number; style: Style};

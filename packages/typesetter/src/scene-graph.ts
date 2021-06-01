@@ -128,9 +128,17 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         stroke: "red",
     };
 
-    type OverlayRect = {xMin: number; yMin: number; xMax: number; yMax: number};
+    // Each cancel region has its own ID. This allows us to have two cancel
+    // regions side-by-side without them being merged into one.
+    type CancelRegion = {
+        id: number;
+        xMin: number;
+        yMin: number;
+        xMax: number;
+        yMax: number;
+    };
 
-    let cancel: OverlayRect | null = null;
+    let cancelRegion: CancelRegion | null = null;
 
     box.content.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
@@ -156,7 +164,27 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         }
 
         section.forEach((node) => {
-            if (node.style.cancel && layer == "content") {
+            // We've encountered a new cancel id or no cancel id.  Finalize the
+            // current cancel region and reset for the next one.
+            if (
+                cancelRegion &&
+                cancelRegion.id !== node.style.cancel &&
+                layer === "content"
+            ) {
+                children.push({
+                    type: "line",
+                    x1: cancelRegion.xMin,
+                    y1: cancelRegion.yMax,
+                    x2: cancelRegion.xMax,
+                    y2: cancelRegion.yMin,
+                    thickness: 5,
+                    style: {},
+                });
+                cancelRegion = null;
+            }
+            // If the node has a cancel id, continue the current cancel region
+            // or start a new one if there isn't one.
+            if (typeof node.style.cancel === "number" && layer == "content") {
                 const yMin = -Math.max(Layout.getHeight(node), ascent);
                 const height = Math.max(
                     Layout.getHeight(node) + Layout.getDepth(node),
@@ -164,16 +192,17 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
                 );
                 const yMax = yMin + height;
 
-                if (!cancel) {
-                    cancel = {
+                if (!cancelRegion) {
+                    cancelRegion = {
+                        id: node.style.cancel,
                         xMin: pen.x,
                         xMax: pen.x,
                         yMin,
                         yMax,
                     };
                 } else {
-                    cancel.yMin = Math.min(cancel.yMin, yMin);
-                    cancel.yMax = Math.max(cancel.yMax, yMax);
+                    cancelRegion.yMin = Math.min(cancelRegion.yMin, yMin);
+                    cancelRegion.yMax = Math.max(cancelRegion.yMax, yMax);
                 }
             }
 
@@ -297,39 +326,27 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
             pen.x += advance;
 
-            if (node.style.cancel && cancel) {
-                cancel.xMax = pen.x;
-            }
-            if (cancel && !node.style.cancel && layer === "content") {
-                children.push({
-                    type: "line",
-                    x1: cancel.xMin,
-                    y1: cancel.yMin,
-                    x2: cancel.xMax,
-                    y2: cancel.yMax,
-                    thickness: 5,
-                    style: {},
-                });
-                cancel = null;
+            if (node.style.cancel && cancelRegion) {
+                cancelRegion.xMax = pen.x;
             }
         });
     });
 
-    if (cancel !== null && layer === "content") {
+    if (cancelRegion !== null && layer === "content") {
         children.push({
             type: "line",
             // @ts-expect-error: TypeScript doesn't understand forEach loops
-            x1: cancel.xMin,
+            x1: cancelRegion.xMin,
             // @ts-expect-error: TypeScript doesn't understand forEach loops
-            y1: cancel.yMax,
+            y1: cancelRegion.yMax,
             // @ts-expect-error: TypeScript doesn't understand forEach loops
-            x2: cancel.xMax,
+            x2: cancelRegion.xMax,
             // @ts-expect-error: TypeScript doesn't understand forEach loops
-            y2: cancel.yMin,
-            thickness: 5,
+            y2: cancelRegion.yMin,
+            thickness: 5, // TODO: use fontSize and fontData to determine this
             style: {},
         });
-        cancel = null;
+        cancelRegion = null;
     }
 
     // Draw the selection.

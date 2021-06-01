@@ -133,6 +133,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
           }
         | {
               type: "cancel";
+              value?: number;
           };
 
     const handleFormatting = useCallback(
@@ -204,6 +205,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
                 if (selection.length > 0) {
                     const selectedNodeIds = selection.map((node) => node.id);
+                    console.log(selectedNodeIds);
                     const callback: Editor.transforms.ZipperCallback = {
                         enter: (node) => {
                             if (
@@ -225,7 +227,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                                     ...node,
                                     style: {
                                         ...node.style,
-                                        cancel: false,
+                                        cancel: undefined,
                                     },
                                 };
                             }
@@ -234,7 +236,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                                     ...node,
                                     style: {
                                         ...node.style,
-                                        cancel: true,
+                                        cancel: detail.value,
                                     },
                                 };
                             }
