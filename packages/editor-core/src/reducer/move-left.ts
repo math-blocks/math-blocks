@@ -2,7 +2,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../ast/types";
 
-import type {Breadcrumb, Focus, Zipper} from "./types";
+import type {Breadcrumb, Focus, Zipper, State} from "./types";
 import * as util from "./util";
 
 const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
@@ -235,8 +235,16 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
     };
 };
 
-export const moveLeft = (startZipper: Zipper, endZipper?: Zipper): Zipper => {
-    return endZipper
-        ? selectionLeft(startZipper, endZipper)
-        : cursorLeft(startZipper);
+export const moveLeft = (state: State): State => {
+    if (state.endZipper) {
+        return {
+            ...state,
+            endZipper: selectionLeft(state.startZipper, state.endZipper),
+        };
+    } else {
+        return {
+            ...state,
+            startZipper: cursorLeft(state.startZipper),
+        };
+    }
 };

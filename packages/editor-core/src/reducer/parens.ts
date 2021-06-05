@@ -46,7 +46,11 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
 
             // This places the cursor inside the the new `delimited` node to
             // the left of all nodes inside of it.
-            return moveRight(newZipper);
+            return moveRight({
+                startZipper: newZipper,
+                endZipper: null,
+                selecting: false,
+            }).startZipper;
         }
 
         const newZipper: Zipper = {
@@ -134,7 +138,11 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                 },
             };
 
-            return moveRight(nonPending);
+            return moveRight({
+                startZipper: nonPending,
+                endZipper: null,
+                selecting: false,
+            }).startZipper;
         }
 
         rightParen.value.pending = true;
@@ -148,7 +156,11 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             },
         };
 
-        return moveRight(withParens);
+        return moveRight({
+            startZipper: withParens,
+            endZipper: null,
+            selecting: false,
+        }).startZipper;
     } else {
         // If we're inside a row inside of a "delimited" node, check if the
         // closing paren is pending, if it is, re-adjust the size of the
@@ -195,7 +207,11 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                     },
                 };
 
-                return moveRight(newZipper);
+                return moveRight({
+                    startZipper: newZipper,
+                    endZipper: null,
+                    selecting: false,
+                }).startZipper;
             }
         }
 

@@ -4,7 +4,7 @@ import * as builders from "../../ast/builders";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac, root, subsup, zrow} from "../test-util";
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 const limits = (
     inner: types.Node,
@@ -27,8 +27,13 @@ describe("moveRight", () => {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.row.left).toHaveLength(1);
             expect(result.row.right).toHaveLength(2);
@@ -39,8 +44,13 @@ describe("moveRight", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.row.left).toEqual(zipper.row.left);
             expect(result.row.right).toHaveLength(0);
@@ -54,8 +64,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -76,8 +91,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -98,9 +120,14 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -117,8 +144,12 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
-
-            const result = moveRight(zipper);
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -139,8 +170,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -161,9 +199,14 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -180,8 +223,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -202,8 +250,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
@@ -219,8 +274,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -241,8 +301,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
@@ -258,8 +325,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -280,8 +352,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -302,9 +381,14 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -321,8 +405,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -343,8 +432,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
@@ -362,8 +458,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -387,8 +488,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(2);
@@ -407,8 +515,13 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(zipper);
+            const {startZipper: result} = moveRight(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -433,8 +546,15 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(moveRight(moveRight(zipper)));
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(state)),
+            );
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -459,9 +579,14 @@ describe("moveRight", () => {
                 row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveRight(
-                moveRight(moveRight(moveRight(moveRight(zipper)))),
+            const {startZipper: result} = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -479,8 +604,13 @@ describe("moveLeft", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.row.left).toHaveLength(2);
             expect(result.row.right).toHaveLength(1);
@@ -491,8 +621,13 @@ describe("moveLeft", () => {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.row.right).toEqual(zipper.row.right);
             expect(result.row.left).toHaveLength(0);
@@ -506,8 +641,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -528,8 +668,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -550,9 +695,14 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            const {startZipper: result} = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -569,8 +719,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -591,8 +746,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -613,9 +773,14 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            const {startZipper: result} = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -632,8 +797,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -654,8 +824,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
@@ -671,8 +846,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -693,8 +873,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
@@ -710,8 +895,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -732,8 +922,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -754,9 +949,14 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            const {startZipper: result} = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);
@@ -773,8 +973,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -795,8 +1000,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.right).toHaveLength(2);
@@ -814,8 +1024,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -839,8 +1054,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toHaveLength(1);
@@ -859,8 +1079,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(zipper);
+            const {startZipper: result} = moveLeft(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -885,8 +1110,13 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(moveLeft(moveLeft(zipper)));
+            const {startZipper: result} = moveLeft(moveLeft(moveLeft(state)));
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -911,9 +1141,14 @@ describe("moveLeft", () => {
                 row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = moveLeft(
-                moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+            const {startZipper: result} = moveLeft(
+                moveLeft(moveLeft(moveLeft(moveLeft(state)))),
             );
 
             expect(result.breadcrumbs).toHaveLength(0);

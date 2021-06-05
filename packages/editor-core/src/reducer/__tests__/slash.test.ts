@@ -6,7 +6,7 @@ import {row, toEqualEditorNodes} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 import {zrow} from "../test-util";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -240,7 +240,7 @@ describe("slash", () => {
         });
 
         test("selection in breadcrumbs", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [
                         builders.glyph("1"),
@@ -252,16 +252,22 @@ describe("slash", () => {
                 ),
                 breadcrumbs: [],
             };
-
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
             const selectionZipper = selectionZipperFromZippers(
-                startZipper,
-                endZipper,
+                state.startZipper,
+                state.endZipper,
             );
 
             if (!selectionZipper) {

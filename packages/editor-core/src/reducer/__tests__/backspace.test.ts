@@ -13,7 +13,7 @@ import {
 import * as builders from "../../ast/builders";
 import * as types from "../../ast/types";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -623,8 +623,13 @@ describe("backspace", () => {
                     row: zrow([], [delimited("2x+5")]),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(moveRight(zipper));
+                const result = backspace(moveRight(state).startZipper);
 
                 expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(
@@ -658,9 +663,14 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
                 const result = backspace(
-                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+                    moveLeft(moveLeft(moveLeft(moveLeft(state)))).startZipper,
                 );
 
                 expect(result.row.left).toEqualEditorNodes(row("x+5").children);
@@ -698,9 +708,14 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
                 const result = backspace(
-                    moveRight(moveRight(moveRight(zipper))),
+                    moveRight(moveRight(moveRight(state))).startZipper,
                 );
 
                 expect(result.row.left).toEqualEditorNodes(row("2").children);
@@ -757,8 +772,13 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(moveRight(zipper));
+                const result = backspace(moveRight(state).startZipper);
 
                 expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(

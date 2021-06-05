@@ -7,7 +7,7 @@ import {root} from "../root";
 import {row, toEqualEditorNodes, zrow} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -119,7 +119,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                let startZipper: Zipper = {
+                const startZipper: Zipper = {
                     row: zrow(
                         [
                             builders.glyph("1"),
@@ -131,16 +131,22 @@ describe("root", () => {
                     ),
                     breadcrumbs: [],
                 };
-
-                startZipper = moveLeft(startZipper);
-                startZipper = moveLeft(startZipper);
-                let endZipper = startZipper;
-                endZipper = moveLeft(startZipper, endZipper);
-                endZipper = moveLeft(startZipper, endZipper);
+                let state: State = {
+                    startZipper: startZipper,
+                    endZipper: null,
+                    selecting: false,
+                };
+                state = moveLeft(moveLeft(state));
+                state = {
+                    startZipper: state.startZipper,
+                    endZipper: state.startZipper,
+                    selecting: true,
+                };
+                state = moveLeft(moveLeft(state));
 
                 const selectionZipper = selectionZipperFromZippers(
-                    startZipper,
-                    endZipper,
+                    state.startZipper,
+                    state.endZipper,
                 );
 
                 if (!selectionZipper) {
@@ -212,7 +218,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                let startZipper: Zipper = {
+                const startZipper: Zipper = {
                     row: zrow(
                         [
                             builders.glyph("1"),
@@ -224,16 +230,22 @@ describe("root", () => {
                     ),
                     breadcrumbs: [],
                 };
-
-                startZipper = moveLeft(startZipper);
-                startZipper = moveLeft(startZipper);
-                let endZipper = startZipper;
-                endZipper = moveLeft(endZipper);
-                endZipper = moveLeft(endZipper);
+                let state: State = {
+                    startZipper: startZipper,
+                    endZipper: null,
+                    selecting: false,
+                };
+                state = moveLeft(moveLeft(state));
+                state = {
+                    startZipper: state.startZipper,
+                    endZipper: state.startZipper,
+                    selecting: true,
+                };
+                state = moveLeft(moveLeft(state));
 
                 const selectionZipper = selectionZipperFromZippers(
-                    startZipper,
-                    endZipper,
+                    state.startZipper,
+                    state.endZipper,
                 );
 
                 if (!selectionZipper) {

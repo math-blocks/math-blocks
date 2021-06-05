@@ -4,7 +4,7 @@ import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import * as builders from "../../ast/builders";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -173,8 +173,13 @@ describe("parens", () => {
                 row: zrow([], [delimited("2x+5")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(moveRight(zipper), "(");
+            const result = parens(moveRight(state).startZipper, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);
@@ -205,8 +210,13 @@ describe("parens", () => {
                 row: zrow([delimited("2x+5")], []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(moveLeft(zipper), ")");
+            const result = parens(moveLeft(state).startZipper, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(

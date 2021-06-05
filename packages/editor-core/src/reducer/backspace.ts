@@ -68,7 +68,12 @@ export const backspace = (zipper: Zipper): Zipper => {
                 return newZipper;
             }
         } else if (prev.type !== "atom") {
-            return moveLeft(zipper);
+            const state = moveLeft({
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            });
+            return state.startZipper;
         }
 
         return {
