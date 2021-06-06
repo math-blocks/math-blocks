@@ -106,8 +106,10 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     if (success) {
                         setActive(false);
                     }
-                } else if (action) {
-                    const newState = Editor.zipperReducer(state, action);
+                }
+
+                if (action) {
+                    const newState = Editor.reducer(state, action);
                     setState(newState);
 
                     if (
@@ -117,7 +119,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         e.keyCode !== 39 &&
                         e.keyCode !== 40
                     ) {
-                        // TODO: communicate all rows when sending this event
                         props.onChange(newState.zipper);
                     }
                 }
@@ -135,7 +136,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             if (active && !props.readonly) {
                 const action = keyupToAction(e.key);
                 if (action) {
-                    setState(Editor.zipperReducer(state, action));
+                    setState(Editor.reducer(state, action));
                 }
             }
         },
@@ -159,13 +160,13 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         (e: CustomEvent<FormattingEvent>): void => {
             const {detail} = e;
             if (detail.type === "color") {
-                const newState = Editor.zipperReducer(state, {
+                const newState = Editor.reducer(state, {
                     type: "Color",
                     color: detail.value,
                 });
                 setState(newState);
             } else if (detail.type === "cancel") {
-                const newState = Editor.zipperReducer(state, {
+                const newState = Editor.reducer(state, {
                     type: "Cancel",
                     cancelID: detail.value,
                 });
@@ -201,16 +202,16 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         );
 
         const row = Editor.zipperToRow(state.zipper);
-        const newZipper = Editor.rowToZipper(row, intersections);
+        const cursorZipper = Editor.rowToZipper(row, intersections);
 
-        if (newZipper) {
+        if (cursorZipper) {
             const newState = select
-                ? Editor.zipperReducer(state, {type: "StartSelecting"})
-                : Editor.zipperReducer(state, {type: "StopSelecting"});
+                ? Editor.reducer(state, {type: "StartSelecting"})
+                : Editor.reducer(state, {type: "StopSelecting"});
             setState(
-                Editor.zipperReducer(newState, {
+                Editor.reducer(newState, {
                     type: "PositionCursor",
-                    cursor: newZipper,
+                    cursor: cursorZipper,
                 }),
             );
         }
@@ -257,7 +258,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             }}
             onMouseUp={(e) => {
                 setMouseDown(false);
-                setState(Editor.zipperReducer(state, {type: "StopSelecting"}));
+                setState(Editor.reducer(state, {type: "StopSelecting"}));
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}

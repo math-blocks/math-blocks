@@ -561,8 +561,8 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
         selecting: false,
     };
 
-    state = Editor.zipperReducer(state, {type: "ArrowRight"});
-    state = Editor.zipperReducer(state, {type: "ArrowRight"});
+    state = Editor.reducer(state, {type: "ArrowRight"});
+    state = Editor.reducer(state, {type: "ArrowRight"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -612,8 +612,8 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         selecting: true,
     };
 
-    state = Editor.zipperReducer(state, {type: "ArrowRight"});
-    state = Editor.zipperReducer(state, {type: "ArrowRight"});
+    state = Editor.reducer(state, {type: "ArrowRight"});
+    state = Editor.reducer(state, {type: "ArrowRight"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -654,8 +654,8 @@ export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         selecting: false,
     };
 
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -705,11 +705,11 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         selecting: false,
     };
 
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
     state = {...state, selecting: true};
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
-    state = Editor.zipperReducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
+    state = Editor.reducer(state, {type: "ArrowLeft"});
 
     const fontSize = 60;
     const context: Typesetter.Context = {

@@ -7,8 +7,7 @@ export {builders, transforms, types, util};
 
 export {print} from "./printer/printer";
 export {parse} from "./parser/parser";
-
-export {zipperReducer} from "./reducer/reducer";
+export {reducer} from "./reducer/reducer";
 export {
     zipperToRow,
     rowToZipper,

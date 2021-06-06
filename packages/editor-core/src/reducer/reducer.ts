@@ -27,10 +27,7 @@ const initialState: State = {
     selecting: false,
 };
 
-export const zipperReducer = (
-    state: State = initialState,
-    action: Action,
-): State => {
+export const reducer = (state: State = initialState, action: Action): State => {
     switch (action.type) {
         case "ArrowLeft":
             return moveLeft(state);
