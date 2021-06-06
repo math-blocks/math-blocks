@@ -29,7 +29,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -47,7 +47,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -68,7 +68,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -96,7 +96,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -126,7 +126,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -151,7 +151,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -178,7 +178,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -208,7 +208,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -233,7 +233,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -261,7 +261,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -286,7 +286,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -314,7 +314,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -339,7 +339,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -367,7 +367,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -397,7 +397,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -422,7 +422,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -450,7 +450,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -477,7 +477,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -508,7 +508,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -536,7 +536,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -568,7 +568,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -602,7 +602,7 @@ describe("moveRight", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -628,7 +628,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -646,7 +646,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -667,7 +667,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -695,7 +695,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -723,7 +723,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -748,7 +748,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -776,7 +776,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -804,7 +804,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -829,7 +829,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -857,7 +857,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -880,7 +880,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -908,7 +908,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -931,7 +931,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -959,7 +959,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -987,7 +987,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1012,7 +1012,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1040,7 +1040,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1065,7 +1065,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1096,7 +1096,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1122,7 +1122,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1154,7 +1154,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -1186,7 +1186,7 @@ describe("moveLeft", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };

@@ -75,7 +75,7 @@ export const slash = (state: State): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
             zipper: newZipper,
             selecting: false,
         };
@@ -145,7 +145,7 @@ export const slash = (state: State): State => {
 
     return {
         startZipper: newZipper,
-        endZipper: null,
+        endZipper: newZipper,
         zipper: newZipper,
         selecting: false,
     };

@@ -19,7 +19,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -49,7 +49,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -80,7 +80,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -111,7 +111,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -142,7 +142,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -173,7 +173,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -216,7 +216,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -264,7 +264,7 @@ describe("slash", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -302,7 +302,7 @@ describe("slash", () => {
             };
             let state: State = {
                 startZipper: startZipper,
-                endZipper: null,
+                endZipper: startZipper,
                 zipper: startZipper,
                 selecting: false,
             };

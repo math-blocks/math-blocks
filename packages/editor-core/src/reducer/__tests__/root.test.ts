@@ -27,7 +27,7 @@ describe("root", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -63,7 +63,7 @@ describe("root", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             };
@@ -114,7 +114,7 @@ describe("root", () => {
                 };
                 const state: State = {
                     startZipper: zipper,
-                    endZipper: null,
+                    endZipper: zipper,
                     zipper: zipper,
                     selecting: false,
                 };
@@ -151,7 +151,7 @@ describe("root", () => {
                 };
                 let state: State = {
                     startZipper: startZipper,
-                    endZipper: null,
+                    endZipper: startZipper,
                     zipper: startZipper,
                     selecting: false,
                 };
@@ -268,7 +268,7 @@ describe("root", () => {
                 };
                 let state: State = {
                     startZipper: startZipper,
-                    endZipper: null,
+                    endZipper: startZipper,
                     zipper: startZipper,
                     selecting: false,
                 };

@@ -19,7 +19,7 @@ export const backspace = (state: State): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
             zipper: newZipper,
             selecting: false,
         };
@@ -44,7 +44,7 @@ export const backspace = (state: State): State => {
 
                 return {
                     startZipper: newZipper,
-                    endZipper: null,
+                    endZipper: newZipper,
                     zipper: newZipper,
                     selecting: false,
                 };
@@ -81,7 +81,7 @@ export const backspace = (state: State): State => {
 
                 return {
                     startZipper: newZipper,
-                    endZipper: null,
+                    endZipper: newZipper,
                     zipper: newZipper,
                     selecting: false,
                 };
@@ -89,7 +89,7 @@ export const backspace = (state: State): State => {
         } else if (prev.type !== "atom") {
             return moveLeft({
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
                 zipper: zipper,
                 selecting: false,
             });
@@ -105,7 +105,7 @@ export const backspace = (state: State): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
             zipper: newZipper,
             selecting: false,
         };
@@ -116,7 +116,7 @@ export const backspace = (state: State): State => {
     if (breadcrumbs.length === 0) {
         return {
             startZipper: zipper,
-            endZipper: null,
+            endZipper: zipper,
             zipper: zipper,
             selecting: false,
         };
@@ -152,7 +152,7 @@ export const backspace = (state: State): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
             zipper: newZipper,
             selecting: false,
         };
@@ -175,7 +175,7 @@ export const backspace = (state: State): State => {
 
     return {
         startZipper: newZipper,
-        endZipper: null,
+        endZipper: newZipper,
         zipper: newZipper,
         selecting: false,
     };

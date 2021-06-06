@@ -44,7 +44,7 @@ export const root = (state: State, withIndex: boolean): State => {
 
     return {
         startZipper: newZipper,
-        endZipper: null,
+        endZipper: newZipper,
         zipper: newZipper,
         selecting: false,
     };

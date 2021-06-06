@@ -86,33 +86,33 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         if (!selectionZipper) {
                             throw new Error("can't create a selection");
                         }
-                        const newEndZipper = Editor.zipperReducer(
+                        const state = {
                             startZipper,
-                            action,
                             endZipper,
-                            selectionZipper,
-                        );
-                        const newSelectionZipper = Editor.selectionZipperFromZippers(
-                            startZipper,
-                            newEndZipper,
-                        );
-                        if (newSelectionZipper) {
-                            setZipper(newSelectionZipper);
-                            setEndZipper(newEndZipper);
+                            zipper: selectionZipper,
+                            selecting,
+                        };
+                        const newState = Editor.zipperReducer(state, action);
+                        if (newState !== state) {
+                            setZipper(newState.zipper);
+                            setEndZipper(newState.endZipper);
                         }
                     } else {
                         // End a selection
                         setSelecting(false);
                         // Modify the content
-                        const value: Editor.Zipper = Editor.zipperReducer(
-                            zipper,
+                        const newState = Editor.zipperReducer(
+                            {
+                                startZipper: zipper,
+                                endZipper: zipper,
+                                zipper: zipper,
+                                selecting: false,
+                            },
                             action,
-                            null,
-                            zipper,
                         );
-                        setZipper(value);
+                        setZipper(newState.zipper);
                         // Always up the start position when not holding shift
-                        setStartZipper(value);
+                        setStartZipper(newState.startZipper);
                         if (
                             props.onChange &&
                             e.keyCode !== 37 &&
@@ -121,7 +121,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                             e.keyCode !== 40
                         ) {
                             // TODO: communicate all rows when sending this event
-                            props.onChange(value);
+                            props.onChange(newState.zipper);
                         }
                     }
                 }

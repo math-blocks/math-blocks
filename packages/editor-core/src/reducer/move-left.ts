@@ -1,9 +1,10 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../ast/types";
+import * as util from "./util";
+import {selectionZipperFromZippers} from "./convert";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
-import * as util from "./util";
 
 const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
@@ -236,15 +237,26 @@ const selectionLeft = (startZipper: Zipper, endZipper: Zipper): Zipper => {
 };
 
 export const moveLeft = (state: State): State => {
-    if (state.endZipper) {
+    if (state.selecting) {
+        const newEndZipper = selectionLeft(state.startZipper, state.endZipper);
+        const selectionZipper = selectionZipperFromZippers(
+            state.startZipper,
+            newEndZipper,
+        );
+        if (!selectionZipper) {
+            throw new Error("Unable to create selection zipper");
+        }
         return {
             ...state,
-            endZipper: selectionLeft(state.startZipper, state.endZipper),
+            endZipper: newEndZipper,
+            zipper: selectionZipper,
         };
     } else {
+        const newZipper = cursorLeft(state.startZipper);
         return {
             ...state,
-            startZipper: cursorLeft(state.startZipper),
+            startZipper: newZipper,
+            zipper: newZipper,
         };
     }
 };

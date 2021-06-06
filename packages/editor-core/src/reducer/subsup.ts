@@ -57,7 +57,7 @@ export const subsup = (state: State, index: 0 | 1): State => {
 
             return {
                 startZipper: newZipper,
-                endZipper: null,
+                endZipper: newZipper,
                 zipper: newZipper,
                 selecting: false,
             };
@@ -99,7 +99,7 @@ export const subsup = (state: State, index: 0 | 1): State => {
 
     return {
         startZipper: newZipper,
-        endZipper: null,
+        endZipper: newZipper,
         zipper: newZipper,
         selecting: false,
     };
