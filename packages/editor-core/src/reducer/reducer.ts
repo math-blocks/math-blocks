@@ -8,6 +8,9 @@ import {parens} from "./parens";
 import {root} from "./root";
 import {slash} from "./slash";
 import {subsup} from "./subsup";
+import {color} from "./color";
+import {cancel} from "./cancel";
+
 import {zrow} from "./util";
 import type {Zipper, State} from "./types";
 
@@ -23,7 +26,8 @@ const initialState: State = {
     selecting: false,
 };
 
-type Action = {type: string};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Action = {type: string; detail?: any};
 
 export const zipperReducer = (
     state: State = initialState,
@@ -59,6 +63,12 @@ export const zipperReducer = (
         // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
         case "\u221A": {
             return root(state, false);
+        }
+        case "Color": {
+            return color(state, action.detail);
+        }
+        case "Cancel": {
+            return cancel(state, action.detail);
         }
         // We don't handle any other actions yet so ignore them and return the
         // current startZipper.
