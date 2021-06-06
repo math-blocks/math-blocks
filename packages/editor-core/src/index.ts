@@ -21,4 +21,5 @@ export type {
     ZRow,
     ZFrac,
     State,
+    Action,
 } from "./reducer/types";

@@ -34,6 +34,42 @@ type Props = {
     showHitboxes?: boolean;
 };
 
+const keyToAction = (key: string): Editor.Action | null => {
+    switch (key) {
+        case "(":
+        case ")":
+        case "[":
+        case "]":
+        case "{":
+        case "}":
+            return {type: "Parens", char: key};
+        case "ArrowLeft":
+            return {type: "ArrowLeft"};
+        case "ArrowRight":
+            return {type: "ArrowRight"};
+        case "Backspace":
+            return {type: "Backspace"};
+        case "_":
+            return {type: "Subscript"};
+        case "^":
+            return {type: "Superscript"};
+        case "/":
+            return {type: "Fraction"};
+        case "\u221A":
+            return {type: "Root"};
+        case "*":
+            return {type: "InsertChar", char: "\u00B7"};
+        case "-":
+            return {type: "InsertChar", char: "\u2212"};
+        default: {
+            if (key.length === 1 && key.charCodeAt(0) > 32) {
+                return {type: "InsertChar", char: key};
+            }
+        }
+    }
+    return null;
+};
+
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState<boolean>(false);
@@ -56,9 +92,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             console.log(e.key);
 
             if (active && !props.readonly) {
-                const action = {
-                    type: e.key,
-                };
+                const action = keyToAction(e.key);
+
                 if (e.key === "Enter" && props.onSubmit) {
                     // TODO: submit all rows
                     const success = props.onSubmit(zipper);
@@ -74,6 +109,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                             setEndZipper(startZipper);
                             setSelecting(true);
                         }
+                    } else if (!action) {
+                        return;
                     } else if (
                         e.shiftKey &&
                         (e.key === "ArrowLeft" || e.key === "ArrowRight")
@@ -158,7 +195,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 };
                 const newState = Editor.zipperReducer(state, {
                     type: "Color",
-                    detail: detail.value,
+                    color: detail.value,
                 });
                 if (newState !== state) {
                     setStartZipper(newState.startZipper);
@@ -174,7 +211,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 };
                 const newState = Editor.zipperReducer(state, {
                     type: "Cancel",
-                    detail: detail.value,
+                    cancelID: detail.value,
                 });
                 if (newState !== state) {
                     setStartZipper(newState.startZipper);

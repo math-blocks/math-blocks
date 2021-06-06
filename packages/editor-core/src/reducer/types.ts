@@ -133,3 +133,43 @@ export type State = {
     zipper: Zipper;
     selecting: boolean;
 };
+
+export type Action =
+    | {
+          type: "ArrowLeft";
+      }
+    | {
+          type: "ArrowRight";
+      }
+    | {
+          type: "Backspace";
+      }
+    | {
+          type: "Subscript";
+      }
+    | {
+          type: "Superscript";
+      }
+    | {
+          type: "Parens";
+          char: "(" | ")" | "[" | "]" | "{" | "}";
+      }
+    | {
+          type: "Fraction";
+      }
+    | {
+          // TODO: add support for an index
+          type: "Root";
+      }
+    | {
+          type: "Color";
+          color: string;
+      }
+    | {
+          type: "Cancel";
+          cancelID?: number;
+      }
+    | {
+          type: "InsertChar";
+          char: string;
+      };
