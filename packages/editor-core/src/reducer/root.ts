@@ -6,8 +6,7 @@ import * as util from "./util";
 import type {Zipper, Focus, Breadcrumb, State} from "./types";
 
 export const root = (state: State, withIndex: boolean): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {selection} = zipper.row;
 
     const focus: Focus = withIndex
@@ -46,6 +45,7 @@ export const root = (state: State, withIndex: boolean): State => {
     return {
         startZipper: newZipper,
         endZipper: null,
+        zipper: newZipper,
         selecting: false,
     };
 };

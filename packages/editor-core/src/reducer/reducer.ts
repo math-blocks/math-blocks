@@ -22,12 +22,14 @@ export const zipperReducer = (
     startZipper: Zipper = initialState,
     action: Action,
     endZipper: Zipper | null = null,
+    zipper: Zipper,
 ): Zipper => {
     switch (action.type) {
         case "ArrowLeft": {
             const state: State = {
                 startZipper,
                 endZipper,
+                zipper,
                 selecting: false,
             };
             const newState = moveLeft(state);
@@ -38,6 +40,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = moveRight(state);
             return newState.endZipper || newState.startZipper;
@@ -47,6 +50,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = backspace(state);
             return newState.endZipper || newState.startZipper;
@@ -56,6 +60,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = subsup(state, 0);
             return newState.endZipper || newState.startZipper;
@@ -65,6 +70,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = subsup(state, 1);
             return newState.endZipper || newState.startZipper;
@@ -79,6 +85,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = parens(state, action.type);
             return newState.endZipper || newState.startZipper;
@@ -88,6 +95,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = slash(state);
             return newState.endZipper || newState.startZipper;
@@ -98,6 +106,7 @@ export const zipperReducer = (
                 startZipper,
                 endZipper,
                 selecting: false,
+                zipper,
             };
             const newState = root(state, false);
             return newState.endZipper || newState.startZipper;
@@ -117,6 +126,7 @@ export const zipperReducer = (
                     startZipper,
                     endZipper,
                     selecting: false,
+                    zipper,
                 };
                 const newState = insertChar(state, char);
                 return newState.endZipper || newState.startZipper;

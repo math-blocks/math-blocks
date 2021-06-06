@@ -20,6 +20,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -49,6 +50,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -79,6 +81,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -109,6 +112,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -139,6 +143,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -169,6 +174,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -211,6 +217,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -258,6 +265,7 @@ describe("slash", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -295,12 +303,14 @@ describe("slash", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(state));
@@ -316,8 +326,9 @@ describe("slash", () => {
 
             const {startZipper: result} = slash({
                 // TODO: update this once we've added .zipper to State
-                startZipper: selectionZipper,
-                endZipper: null,
+                startZipper: state.startZipper,
+                endZipper: state.endZipper,
+                zipper: selectionZipper,
                 selecting: false,
             });
 

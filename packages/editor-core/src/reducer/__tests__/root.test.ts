@@ -28,6 +28,7 @@ describe("root", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -63,6 +64,7 @@ describe("root", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -113,6 +115,7 @@ describe("root", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -149,12 +152,14 @@ describe("root", () => {
                 let state: State = {
                     startZipper: startZipper,
                     endZipper: null,
+                    zipper: startZipper,
                     selecting: false,
                 };
                 state = moveLeft(moveLeft(state));
                 state = {
                     startZipper: state.startZipper,
                     endZipper: state.startZipper,
+                    zipper: state.startZipper,
                     selecting: true,
                 };
                 state = moveLeft(moveLeft(state));
@@ -171,8 +176,9 @@ describe("root", () => {
                 const {startZipper: result} = root(
                     {
                         // TODO: update this once we've added .zipper to State
-                        startZipper: selectionZipper,
-                        endZipper: null,
+                        startZipper: state.startZipper,
+                        endZipper: state.endZipper,
+                        zipper: selectionZipper,
                         selecting: false,
                     },
                     false,
@@ -212,9 +218,11 @@ describe("root", () => {
                     },
                     breadcrumbs: [],
                 };
+                // TODO: fix this test so that startZipper and endZipper are accurate
                 const state: State = {
                     startZipper: zipper,
-                    endZipper: null,
+                    endZipper: zipper,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -261,12 +269,14 @@ describe("root", () => {
                 let state: State = {
                     startZipper: startZipper,
                     endZipper: null,
+                    zipper: startZipper,
                     selecting: false,
                 };
                 state = moveLeft(moveLeft(state));
                 state = {
                     startZipper: state.startZipper,
                     endZipper: state.startZipper,
+                    zipper: state.startZipper,
                     selecting: true,
                 };
                 state = moveLeft(moveLeft(state));
@@ -282,9 +292,10 @@ describe("root", () => {
 
                 const {startZipper: result} = root(
                     {
-                        // TODO: update this once we've added .zipper to State
-                        startZipper: selectionZipper,
-                        endZipper: null,
+                        // TODO: fix this test so that startZipper and endZipper are accurate
+                        startZipper: state.startZipper,
+                        endZipper: state.endZipper,
+                        zipper: selectionZipper,
                         selecting: false,
                     },
                     true, // index

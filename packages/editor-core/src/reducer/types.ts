@@ -130,5 +130,6 @@ export type Zipper = {
 export type State = {
     startZipper: Zipper;
     endZipper: Zipper | null;
+    zipper: Zipper;
     selecting: boolean;
 };

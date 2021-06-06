@@ -39,6 +39,7 @@ export const insertChar = (state: State, char: string): State => {
         return {
             startZipper: newZipper,
             endZipper: null,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -53,6 +54,7 @@ export const insertChar = (state: State, char: string): State => {
     return {
         startZipper: newZipper,
         endZipper: null,
+        zipper: newZipper,
         selecting: false,
     };
 };

@@ -40,6 +40,7 @@ describe("backspace", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -57,6 +58,7 @@ describe("backspace", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -74,6 +76,7 @@ describe("backspace", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -109,6 +112,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -143,6 +147,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -161,6 +166,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -206,6 +212,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -240,6 +247,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -274,6 +282,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -308,6 +317,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -331,6 +341,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -358,6 +369,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -403,6 +415,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -437,6 +450,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -471,6 +485,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -489,6 +504,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -516,6 +532,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -562,6 +579,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -597,6 +615,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -632,6 +651,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -652,6 +672,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -683,6 +704,7 @@ describe("backspace", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -713,6 +735,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -741,6 +764,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -781,6 +805,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -826,6 +851,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -868,6 +894,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -895,6 +922,7 @@ describe("backspace", () => {
                 const state: State = {
                     startZipper: zipper,
                     endZipper: null,
+                    zipper: zipper,
                     selecting: false,
                 };
 
@@ -927,6 +955,7 @@ describe("backspace", () => {
                 // a selection, and one without
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 

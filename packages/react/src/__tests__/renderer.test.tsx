@@ -301,7 +301,12 @@ describe("renderer", () => {
 
             test("2 cursor in superscript", () => {
                 const moveLeft = () => {
-                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                    zipper = Editor.zipperReducer(
+                        zipper,
+                        {type: "ArrowLeft"},
+                        null,
+                        zipper,
+                    );
                 };
                 moveLeft();
 
@@ -318,7 +323,12 @@ describe("renderer", () => {
 
             test("3 cursor in subscript", () => {
                 const moveLeft = () => {
-                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                    zipper = Editor.zipperReducer(
+                        zipper,
+                        {type: "ArrowLeft"},
+                        null,
+                        zipper,
+                    );
                 };
                 moveLeft();
                 moveLeft();
@@ -337,7 +347,12 @@ describe("renderer", () => {
 
             test("4 cursor inside delimited", () => {
                 const moveLeft = () => {
-                    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+                    zipper = Editor.zipperReducer(
+                        zipper,
+                        {type: "ArrowLeft"},
+                        null,
+                        zipper,
+                    );
                 };
                 moveLeft();
                 moveLeft();
@@ -402,9 +417,14 @@ describe("renderer", () => {
                 };
 
                 const moveLeft = () => {
-                    startZipper = Editor.zipperReducer(startZipper, {
-                        type: "ArrowLeft",
-                    });
+                    startZipper = Editor.zipperReducer(
+                        startZipper,
+                        {
+                            type: "ArrowLeft",
+                        },
+                        null,
+                        startZipper,
+                    );
                 };
                 moveLeft(); // into subscript
                 moveLeft();
@@ -419,10 +439,18 @@ describe("renderer", () => {
             test("1 selection in denominator", () => {
                 let endZipper = startZipper;
                 const selectRight = () => {
+                    const selectionZipper = Editor.selectionZipperFromZippers(
+                        startZipper,
+                        endZipper,
+                    );
+                    if (!selectionZipper) {
+                        throw new Error("can't create a selection");
+                    }
                     endZipper = Editor.zipperReducer(
                         startZipper,
                         {type: "ArrowRight"},
                         endZipper,
+                        selectionZipper,
                     );
                 };
                 selectRight();
@@ -450,10 +478,18 @@ describe("renderer", () => {
             test("2 fraction selected", () => {
                 let endZipper = startZipper;
                 const selectRight = () => {
+                    const selectionZipper = Editor.selectionZipperFromZippers(
+                        startZipper,
+                        endZipper,
+                    );
+                    if (!selectionZipper) {
+                        throw new Error("can't create a selection");
+                    }
                     endZipper = Editor.zipperReducer(
                         startZipper,
                         {type: "ArrowRight"},
                         endZipper,
+                        selectionZipper,
                     );
                 };
                 selectRight();
@@ -482,10 +518,18 @@ describe("renderer", () => {
             test("3 delimited selected", () => {
                 let endZipper = startZipper;
                 const selectRight = () => {
+                    const selectionZipper = Editor.selectionZipperFromZippers(
+                        startZipper,
+                        endZipper,
+                    );
+                    if (!selectionZipper) {
+                        throw new Error("can't create a selection");
+                    }
                     endZipper = Editor.zipperReducer(
                         startZipper,
                         {type: "ArrowRight"},
                         endZipper,
+                        selectionZipper,
                     );
                 };
                 selectRight();
@@ -515,10 +559,18 @@ describe("renderer", () => {
             test("4 subsup selected", () => {
                 let endZipper = startZipper;
                 const selectRight = () => {
+                    const selectionZipper = Editor.selectionZipperFromZippers(
+                        startZipper,
+                        endZipper,
+                    );
+                    if (!selectionZipper) {
+                        throw new Error("can't create a selection");
+                    }
                     endZipper = Editor.zipperReducer(
                         startZipper,
                         {type: "ArrowRight"},
                         endZipper,
+                        selectionZipper,
                     );
                 };
                 selectRight();

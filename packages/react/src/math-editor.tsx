@@ -79,17 +79,25 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         (e.key === "ArrowLeft" || e.key === "ArrowRight")
                     ) {
                         // Handle modifying the current selection.
+                        const selectionZipper = Editor.selectionZipperFromZippers(
+                            startZipper,
+                            endZipper,
+                        );
+                        if (!selectionZipper) {
+                            throw new Error("can't create a selection");
+                        }
                         const newEndZipper = Editor.zipperReducer(
                             startZipper,
                             action,
                             endZipper,
+                            selectionZipper,
                         );
-                        const selectionZipper = Editor.selectionZipperFromZippers(
+                        const newSelectionZipper = Editor.selectionZipperFromZippers(
                             startZipper,
                             newEndZipper,
                         );
-                        if (selectionZipper) {
-                            setZipper(selectionZipper);
+                        if (newSelectionZipper) {
+                            setZipper(newSelectionZipper);
                             setEndZipper(newEndZipper);
                         }
                     } else {
@@ -99,6 +107,8 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                         const value: Editor.Zipper = Editor.zipperReducer(
                             zipper,
                             action,
+                            null,
+                            zipper,
                         );
                         setZipper(value);
                         // Always up the start position when not holding shift

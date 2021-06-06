@@ -36,7 +36,7 @@ const isOperator = (char: string): boolean => {
 
 export const slash = (state: State): State => {
     // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {left, selection} = zipper.row;
 
     if (selection.length > 0) {
@@ -76,6 +76,7 @@ export const slash = (state: State): State => {
         return {
             startZipper: newZipper,
             endZipper: null,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -145,6 +146,7 @@ export const slash = (state: State): State => {
     return {
         startZipper: newZipper,
         endZipper: null,
+        zipper: newZipper,
         selecting: false,
     };
 };

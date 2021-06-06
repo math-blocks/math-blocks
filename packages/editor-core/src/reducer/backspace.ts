@@ -20,6 +20,7 @@ export const backspace = (state: State): State => {
         return {
             startZipper: newZipper,
             endZipper: null,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -44,6 +45,7 @@ export const backspace = (state: State): State => {
                 return {
                     startZipper: newZipper,
                     endZipper: null,
+                    zipper: newZipper,
                     selecting: false,
                 };
             } else {
@@ -80,21 +82,17 @@ export const backspace = (state: State): State => {
                 return {
                     startZipper: newZipper,
                     endZipper: null,
+                    zipper: newZipper,
                     selecting: false,
                 };
             }
         } else if (prev.type !== "atom") {
-            const state = moveLeft({
+            return moveLeft({
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             });
-
-            return {
-                startZipper: state.startZipper,
-                endZipper: null,
-                selecting: false,
-            };
         }
 
         const newZipper = {
@@ -108,6 +106,7 @@ export const backspace = (state: State): State => {
         return {
             startZipper: newZipper,
             endZipper: null,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -118,6 +117,7 @@ export const backspace = (state: State): State => {
         return {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
     }
@@ -153,6 +153,7 @@ export const backspace = (state: State): State => {
         return {
             startZipper: newZipper,
             endZipper: null,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -175,6 +176,7 @@ export const backspace = (state: State): State => {
     return {
         startZipper: newZipper,
         endZipper: null,
+        zipper: newZipper,
         selecting: false,
     };
 };

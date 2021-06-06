@@ -19,6 +19,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveRight(state);
@@ -44,6 +45,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveRight(moveRight(state));
@@ -69,6 +71,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveLeft(moveRight(moveRight(state)));
@@ -94,6 +97,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -126,6 +130,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
@@ -167,6 +172,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -207,6 +213,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(moveRight(state));
@@ -247,6 +254,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -287,6 +295,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -329,6 +338,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -369,6 +379,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -411,6 +422,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(state);
@@ -462,6 +474,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(moveRight(state));
@@ -511,6 +524,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(moveRight(state));
@@ -560,6 +574,7 @@ describe("moveRight w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveRight(moveRight(state));
@@ -599,6 +614,7 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveLeft(state);
@@ -625,6 +641,7 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(state));
@@ -651,6 +668,7 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: startZipper,
+                zipper: startZipper,
                 selecting: true,
             };
             state = moveRight(moveLeft(moveLeft(state)));
@@ -686,12 +704,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(state));
@@ -726,12 +746,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(state);
@@ -766,12 +788,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(moveLeft(state)));
@@ -806,12 +830,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(moveLeft(moveLeft(state))));
@@ -846,12 +872,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveRight(moveLeft(moveLeft(moveLeft(state))));
@@ -886,12 +914,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveRight(moveRight(moveLeft(moveLeft(moveLeft(state)))));
@@ -926,12 +956,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(state);
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveRight(
@@ -976,12 +1008,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(state));
@@ -1023,12 +1057,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveLeft(moveLeft(moveLeft(moveLeft(moveLeft(state)))));
@@ -1070,12 +1106,14 @@ describe("moveLeft w/ selecting = true", () => {
             let state: State = {
                 startZipper: startZipper,
                 endZipper: null,
+                zipper: startZipper,
                 selecting: false,
             };
             state = moveLeft(moveLeft(state));
             state = {
                 startZipper: state.startZipper,
                 endZipper: state.startZipper,
+                zipper: state.startZipper,
                 selecting: true,
             };
             state = moveRight(

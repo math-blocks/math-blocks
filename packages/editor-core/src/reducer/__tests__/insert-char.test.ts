@@ -15,6 +15,7 @@ describe("insertChar", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -32,6 +33,7 @@ describe("insertChar", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -49,6 +51,7 @@ describe("insertChar", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -66,6 +69,7 @@ describe("insertChar", () => {
         const state: State = {
             startZipper: zipper,
             endZipper: null,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -97,6 +101,7 @@ describe("insertChar", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -121,6 +126,7 @@ describe("insertChar", () => {
             const state: State = {
                 startZipper: zipper,
                 endZipper: null,
+                zipper: zipper,
                 selecting: false,
             };
 

@@ -555,8 +555,8 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
         breadcrumbs: [],
     };
 
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"}, null, zipper);
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowRight"}, null, zipper);
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -601,21 +601,31 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     };
 
     let endZipper = startZipper;
-    endZipper = Editor.zipperReducer(
+    let selectionZipper = Editor.selectionZipperFromZippers(
         startZipper,
-        {type: "ArrowRight"},
         endZipper,
     );
+    if (!selectionZipper) {
+        throw new Error("can't create a selection from zippers");
+    }
     endZipper = Editor.zipperReducer(
         startZipper,
         {type: "ArrowRight"},
         endZipper,
+        selectionZipper,
+    );
+    selectionZipper = Editor.selectionZipperFromZippers(startZipper, endZipper);
+    if (!selectionZipper) {
+        throw new Error("can't create a selection from zippers");
+    }
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowRight"},
+        endZipper,
+        selectionZipper,
     );
 
-    const selectionZipper = Editor.selectionZipperFromZippers(
-        startZipper,
-        endZipper,
-    );
+    selectionZipper = Editor.selectionZipperFromZippers(startZipper, endZipper);
 
     if (!selectionZipper) {
         throw new Error("Cannot form selection zipper");
@@ -654,8 +664,8 @@ export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         breadcrumbs: [],
     };
 
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
-    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"});
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"}, null, zipper);
+    zipper = Editor.zipperReducer(zipper, {type: "ArrowLeft"}, null, zipper);
 
     const fontSize = 60;
     const context: Typesetter.Context = {
@@ -699,24 +709,44 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
         breadcrumbs: [],
     };
 
-    startZipper = Editor.zipperReducer(startZipper, {type: "ArrowLeft"});
-    startZipper = Editor.zipperReducer(startZipper, {type: "ArrowLeft"});
-    let endZipper = startZipper;
-    endZipper = Editor.zipperReducer(
+    startZipper = Editor.zipperReducer(
         startZipper,
         {type: "ArrowLeft"},
+        null,
+        startZipper,
+    );
+    startZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowLeft"},
+        null,
+        startZipper,
+    );
+    let endZipper = startZipper;
+    let selectionZipper = Editor.selectionZipperFromZippers(
+        startZipper,
         endZipper,
     );
+    if (!selectionZipper) {
+        throw new Error("can't create a selection from zippers");
+    }
     endZipper = Editor.zipperReducer(
         startZipper,
         {type: "ArrowLeft"},
         endZipper,
+        selectionZipper,
+    );
+    selectionZipper = Editor.selectionZipperFromZippers(startZipper, endZipper);
+    if (!selectionZipper) {
+        throw new Error("can't create a selection from zippers");
+    }
+    endZipper = Editor.zipperReducer(
+        startZipper,
+        {type: "ArrowLeft"},
+        endZipper,
+        selectionZipper,
     );
 
-    const selectionZipper = Editor.selectionZipperFromZippers(
-        startZipper,
-        endZipper,
-    );
+    selectionZipper = Editor.selectionZipperFromZippers(startZipper, endZipper);
 
     if (!selectionZipper) {
         throw new Error("Cannot form selection zipper");
