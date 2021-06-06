@@ -1,6 +1,6 @@
 import * as builders from "../ast/builders";
 
-import type {Zipper} from "./types";
+import type {Zipper, State} from "./types";
 
 // TODO: place cursor in lower limits
 const LIMIT_CHARS = [
@@ -10,7 +10,9 @@ const LIMIT_CHARS = [
     // TODO: handle \lim (need to make sure we exclude the upper limit)
 ];
 
-export const insertChar = (zipper: Zipper, char: string): Zipper => {
+export const insertChar = (state: State, char: string): State => {
+    // TODO: change this to const {zipper} = state.zipper; once we've added it
+    const zipper = state.startZipper;
     const {left, selection} = zipper.row;
     let newNode;
     if (LIMIT_CHARS.includes(char)) {
@@ -26,7 +28,7 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
             ? [...left, newNode, ...selection]
             : [...left, newNode];
 
-        return {
+        const newZipper: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
@@ -34,13 +36,23 @@ export const insertChar = (zipper: Zipper, char: string): Zipper => {
                 left: newLeft,
             },
         };
+        return {
+            startZipper: newZipper,
+            endZipper: null,
+            selecting: false,
+        };
     }
 
-    return {
+    const newZipper: Zipper = {
         ...zipper,
         row: {
             ...zipper.row,
             left: [...left, newNode],
         },
+    };
+    return {
+        startZipper: newZipper,
+        endZipper: null,
+        selecting: false,
     };
 };

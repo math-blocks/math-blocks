@@ -1,7 +1,7 @@
 import {getId} from "@math-blocks/core";
 
 import {zrow} from "./util";
-import type {Zipper, Focus} from "./types";
+import type {Zipper, Focus, State} from "./types";
 
 // TODO: dedupe with isOperator in typeset.ts
 const isOperator = (char: string): boolean => {
@@ -34,7 +34,9 @@ const isOperator = (char: string): boolean => {
     return false;
 };
 
-export const slash = (zipper: Zipper): Zipper => {
+export const slash = (state: State): State => {
+    // TODO: change this to const {zipper} = state.zipper; once we've added it
+    const zipper = state.startZipper;
     const {left, selection} = zipper.row;
 
     if (selection.length > 0) {
@@ -53,7 +55,7 @@ export const slash = (zipper: Zipper): Zipper => {
             style: {},
         };
 
-        return {
+        const newZipper: Zipper = {
             ...zipper,
             row: zrow(getId(), [], []),
             breadcrumbs: [
@@ -69,6 +71,12 @@ export const slash = (zipper: Zipper): Zipper => {
                     focus,
                 },
             ],
+        };
+
+        return {
+            startZipper: newZipper,
+            endZipper: null,
+            selecting: false,
         };
     }
 
@@ -116,7 +124,7 @@ export const slash = (zipper: Zipper): Zipper => {
         style: {},
     };
 
-    return {
+    const newZipper: Zipper = {
         ...zipper,
         row: zrow(getId(), [], []),
         breadcrumbs: [
@@ -132,5 +140,11 @@ export const slash = (zipper: Zipper): Zipper => {
                 focus,
             },
         ],
+    };
+
+    return {
+        startZipper: newZipper,
+        endZipper: null,
+        selecting: false,
     };
 };

@@ -1,15 +1,17 @@
 import {getId} from "@math-blocks/core";
 
 import {zrow, zsubsup} from "./util";
-import type {Zipper} from "./types";
+import type {Zipper, State} from "./types";
 
 /**
  * Add a new subscript or superscript or navigate into an existing one.
  *
- * @param {Zipper} zipper
+ * @param {State} state
  * @param {0 | 1} index 0 = subscript, 1 = superscript
  */
-export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
+export const subsup = (state: State, index: 0 | 1): State => {
+    // TODO: change this to const {zipper} = state.zipper; once we've added it
+    const zipper = state.startZipper;
     const {row, breadcrumbs} = zipper;
 
     // The selection will be inserted at the start of the new/existing
@@ -24,7 +26,7 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
         if (next.type === "subsup") {
             const [sub, sup] = next.children;
 
-            return {
+            const newZipper: Zipper = {
                 ...zipper,
                 breadcrumbs: [
                     ...breadcrumbs,
@@ -52,10 +54,16 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
                         : // ...add a superscript to the existing subsup
                           zrow(getId(), selection, []),
             };
+
+            return {
+                startZipper: newZipper,
+                endZipper: null,
+                selecting: false,
+            };
         }
     }
 
-    return {
+    const newZipper: Zipper = {
         ...zipper,
         breadcrumbs: [
             ...zipper.breadcrumbs,
@@ -86,5 +94,11 @@ export const subsup = (zipper: Zipper, index: 0 | 1): Zipper => {
             },
         ],
         row: zrow(getId(), selection, []),
+    };
+
+    return {
+        startZipper: newZipper,
+        endZipper: null,
+        selecting: false,
     };
 };

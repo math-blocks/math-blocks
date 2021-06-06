@@ -3,9 +3,11 @@ import {getId} from "@math-blocks/core";
 import * as builders from "../ast/builders";
 
 import * as util from "./util";
-import type {Zipper, Focus, Breadcrumb} from "./types";
+import type {Zipper, Focus, Breadcrumb, State} from "./types";
 
-export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
+export const root = (state: State, withIndex: boolean): State => {
+    // TODO: change this to const {zipper} = state.zipper; once we've added it
+    const zipper = state.startZipper;
     const {selection} = zipper.row;
 
     const focus: Focus = withIndex
@@ -35,9 +37,15 @@ export const root = (zipper: Zipper, withIndex: boolean): Zipper => {
         focus,
     };
 
-    return {
+    const newZipper: Zipper = {
         ...zipper,
         breadcrumbs: [...zipper.breadcrumbs, crumb],
         row: util.zrow(getId(), selection, []),
+    };
+
+    return {
+        startZipper: newZipper,
+        endZipper: null,
+        selecting: false,
     };
 };

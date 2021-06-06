@@ -2,7 +2,7 @@ import * as builders from "../ast/builders";
 
 import {moveRight} from "./move-right";
 
-import type {Zipper} from "./types";
+import type {Zipper, State} from "./types";
 
 type Delimiters = "(" | ")" | "[" | "]" | "{" | "}";
 
@@ -24,7 +24,9 @@ const rightGlyphMap = {
     "]": "]",
 };
 
-export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
+export const parens = (state: State, char: Delimiters): State => {
+    // TODO: change this to const {zipper} = state.zipper; once we've added it
+    const zipper = state.startZipper;
     const {left, selection, right} = zipper.row;
 
     const leftParen = builders.glyph(leftGlyphMap[char]);
@@ -50,7 +52,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                 startZipper: newZipper,
                 endZipper: null,
                 selecting: false,
-            }).startZipper;
+            });
         }
 
         const newZipper: Zipper = {
@@ -65,7 +67,11 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             },
         };
 
-        return newZipper;
+        return {
+            startZipper: newZipper,
+            endZipper: null,
+            selecting: false,
+        };
     }
 
     if (leftParen.value.char === char) {
@@ -81,7 +87,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             ) {
                 // Move everything to the left of the cursor outside the
                 // "delimited" node.
-                return {
+                const newZipper: Zipper = {
                     ...zipper,
                     breadcrumbs: [
                         ...breadcrumbs.slice(0, -1),
@@ -109,6 +115,12 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                         ...zipper.row,
                         left: [],
                     },
+                };
+
+                return {
+                    startZipper: newZipper,
+                    endZipper: null,
+                    selecting: false,
                 };
             }
         }
@@ -142,7 +154,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                 startZipper: nonPending,
                 endZipper: null,
                 selecting: false,
-            }).startZipper;
+            });
         }
 
         rightParen.value.pending = true;
@@ -160,7 +172,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
             startZipper: withParens,
             endZipper: null,
             selecting: false,
-        }).startZipper;
+        });
     } else {
         // If we're inside a row inside of a "delimited" node, check if the
         // closing paren is pending, if it is, re-adjust the size of the
@@ -211,7 +223,7 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
                     startZipper: newZipper,
                     endZipper: null,
                     selecting: false,
-                }).startZipper;
+                });
             }
         }
 
@@ -242,18 +254,28 @@ export const parens = (zipper: Zipper, char: Delimiters): Zipper => {
 
             // We're already to the right of the rightDelim so no move is
             // necessary.
-            return nonPending;
+            return {
+                startZipper: nonPending,
+                endZipper: null,
+                selecting: false,
+            };
         }
 
         leftParen.value.pending = true;
 
         // put everything to the left inside a Delimited node
-        return {
+        const newZipper: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
                 left: [builders.delimited(left, leftParen, rightParen)],
             },
+        };
+
+        return {
+            startZipper: newZipper,
+            endZipper: null,
+            selecting: false,
         };
     }
 };
