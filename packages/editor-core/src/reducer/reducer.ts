@@ -1,4 +1,4 @@
-import {getId} from "@math-blocks/core";
+import {getId, UnreachableCaseError} from "@math-blocks/core";
 
 import {backspace} from "./backspace";
 import {insertChar} from "./insert-char";
@@ -10,6 +10,7 @@ import {frac} from "./frac";
 import {subsup} from "./subsup";
 import {color} from "./color";
 import {cancel} from "./cancel";
+import {positionCursor} from "./position-cursor";
 
 import {zrow} from "./util";
 import type {Zipper, State, Action} from "./types";
@@ -57,7 +58,23 @@ export const zipperReducer = (
         // current startZipper.
         case "InsertChar":
             return insertChar(state, action.char);
+        case "StartSelecting":
+            return state.selecting
+                ? state
+                : {
+                      ...state,
+                      selecting: true,
+                  };
+        case "StopSelecting":
+            return state.selecting
+                ? {
+                      ...state,
+                      selecting: false,
+                  }
+                : state;
+        case "PositionCursor":
+            return positionCursor(state, action.cursor);
         default:
-            return state;
+            throw new UnreachableCaseError(action);
     }
 };

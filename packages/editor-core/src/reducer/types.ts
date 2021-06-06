@@ -172,4 +172,14 @@ export type Action =
     | {
           type: "InsertChar";
           char: string;
+      }
+    | {
+          type: "StartSelecting";
+      }
+    | {
+          type: "StopSelecting";
+      }
+    | {
+          type: "PositionCursor";
+          cursor: Zipper;
       };

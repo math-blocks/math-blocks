@@ -249,7 +249,7 @@ export const moveRight = (state: State): State => {
             zipper: selectionZipper,
         };
     } else {
-        const newZipper = cursorRight(state.startZipper);
+        const newZipper = cursorRight(state.zipper);
         return {
             ...state,
             startZipper: newZipper,
