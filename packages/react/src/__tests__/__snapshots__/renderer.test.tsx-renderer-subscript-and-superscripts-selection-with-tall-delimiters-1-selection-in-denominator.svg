@@ -2,6 +2,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 229.67 218.04000000000002" width="229.67" height="218.04000000000002">
     <g fill="currentColor" stroke="currentColor">
         <g transform="translate(0,123.12)" id="16">
+            <rect type="rect" x="203.94" y="-123.12" width="23.73" height="218.04000000000002" stroke="none" fill="Highlight"></rect>
+            <rect type="rect" x="0" y="-94.92" width="203.94" height="157.44" stroke="none" fill="Highlight"></rect>
             <g transform="translate(0,0)" id="9">
                 <g transform="translate(31.14,0)" id="10">
                     <g transform="translate(0,-15.48)" id="4">
@@ -9,9 +11,7 @@
                             <g transform="translate(34.68,0)" id="1"></g>
                         </g>
                         <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
-                        <g transform="translate(0,57.24)" id="6">
-                            <rect type="rect" x="54.06" y="-46.2" width="33.54" height="60" stroke="none" fill="Highlight"></rect>
-                        </g>
+                        <g transform="translate(0,57.24)" id="6"></g>
                     </g>
                 </g>
             </g>
