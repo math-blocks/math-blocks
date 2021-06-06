@@ -253,6 +253,7 @@ export const moveRight = (state: State): State => {
         return {
             ...state,
             startZipper: newZipper,
+            endZipper: newZipper,
             zipper: newZipper,
         };
     }
