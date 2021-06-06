@@ -14,4 +14,11 @@ export {
     rowToZipper,
     selectionZipperFromZippers,
 } from "./reducer/convert";
-export type {Breadcrumb, Focus, Zipper, ZRow, ZFrac} from "./reducer/types";
+export type {
+    Breadcrumb,
+    Focus,
+    Zipper,
+    ZRow,
+    ZFrac,
+    State,
+} from "./reducer/types";

@@ -50,7 +50,8 @@ export const parens = (state: State, char: Delimiters): State => {
             // the left of all nodes inside of it.
             return moveRight({
                 startZipper: newZipper,
-                endZipper: null,
+                endZipper: newZipper,
+                zipper: newZipper,
                 selecting: false,
             });
         }
@@ -69,7 +70,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
+            zipper: newZipper,
             selecting: false,
         };
     }
@@ -119,7 +121,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
                 return {
                     startZipper: newZipper,
-                    endZipper: null,
+                    endZipper: newZipper,
+                    zipper: newZipper,
                     selecting: false,
                 };
             }
@@ -152,7 +155,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
             return moveRight({
                 startZipper: nonPending,
-                endZipper: null,
+                endZipper: nonPending,
+                zipper: nonPending,
                 selecting: false,
             });
         }
@@ -170,7 +174,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
         return moveRight({
             startZipper: withParens,
-            endZipper: null,
+            endZipper: withParens,
+            zipper: withParens,
             selecting: false,
         });
     } else {
@@ -221,7 +226,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
                 return moveRight({
                     startZipper: newZipper,
-                    endZipper: null,
+                    endZipper: newZipper,
+                    zipper: newZipper,
                     selecting: false,
                 });
             }
@@ -256,7 +262,8 @@ export const parens = (state: State, char: Delimiters): State => {
             // necessary.
             return {
                 startZipper: nonPending,
-                endZipper: null,
+                endZipper: nonPending,
+                zipper: nonPending,
                 selecting: false,
             };
         }
@@ -274,7 +281,8 @@ export const parens = (state: State, char: Delimiters): State => {
 
         return {
             startZipper: newZipper,
-            endZipper: null,
+            endZipper: newZipper,
+            zipper: newZipper,
             selecting: false,
         };
     }

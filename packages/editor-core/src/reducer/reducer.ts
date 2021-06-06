@@ -11,63 +11,39 @@ import {subsup} from "./subsup";
 import {zrow} from "./util";
 import type {Zipper, State} from "./types";
 
-const initialState: Zipper = {
+const initialZipper: Zipper = {
     row: zrow(getId(), [], []),
     breadcrumbs: [],
+};
+
+const initialState: State = {
+    startZipper: initialZipper,
+    endZipper: initialZipper,
+    zipper: initialZipper,
+    selecting: false,
 };
 
 type Action = {type: string};
 
 export const zipperReducer = (
-    startZipper: Zipper = initialState,
+    state: State = initialState,
     action: Action,
-    endZipper: Zipper | null = null,
-): Zipper => {
+): State => {
     switch (action.type) {
         case "ArrowLeft": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = moveLeft(state);
-            return newState.endZipper || newState.startZipper;
+            return moveLeft(state);
         }
         case "ArrowRight": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = moveRight(state);
-            return newState.endZipper || newState.startZipper;
+            return moveRight(state);
         }
         case "Backspace": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = backspace(state);
-            return newState.endZipper || newState.startZipper;
+            return backspace(state);
         }
         case "_": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = subsup(state, 0);
-            return newState.endZipper || newState.startZipper;
+            return subsup(state, 0);
         }
         case "^": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = subsup(state, 1);
-            return newState.endZipper || newState.startZipper;
+            return subsup(state, 1);
         }
         case "(":
         case ")":
@@ -75,32 +51,14 @@ export const zipperReducer = (
         case "]":
         case "{":
         case "}": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = parens(state, action.type);
-            return newState.endZipper || newState.startZipper;
+            return parens(state, action.type);
         }
         case "/": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = slash(state);
-            return newState.endZipper || newState.startZipper;
+            return slash(state);
         }
         // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
         case "\u221A": {
-            const state: State = {
-                startZipper,
-                endZipper,
-                selecting: false,
-            };
-            const newState = root(state, false);
-            return newState.endZipper || newState.startZipper;
+            return root(state, false);
         }
         // We don't handle any other actions yet so ignore them and return the
         // current startZipper.
@@ -113,15 +71,9 @@ export const zipperReducer = (
                 } else if (char === "-") {
                     char = "\u2212";
                 }
-                const state: State = {
-                    startZipper,
-                    endZipper,
-                    selecting: false,
-                };
-                const newState = insertChar(state, char);
-                return newState.endZipper || newState.startZipper;
+                return insertChar(state, char);
             }
-            return startZipper;
+            return state;
         }
     }
 };

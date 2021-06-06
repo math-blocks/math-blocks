@@ -24,7 +24,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -56,7 +57,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -86,7 +88,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -123,7 +126,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -145,7 +149,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -182,7 +187,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -205,7 +211,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -242,7 +249,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -275,7 +283,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -327,7 +336,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -366,7 +376,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -398,7 +409,8 @@ describe("parens", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 

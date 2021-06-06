@@ -14,7 +14,8 @@ describe("insertChar", () => {
         };
         const state: State = {
             startZipper: zipper,
-            endZipper: null,
+            endZipper: zipper,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -31,7 +32,8 @@ describe("insertChar", () => {
         };
         const state: State = {
             startZipper: zipper,
-            endZipper: null,
+            endZipper: zipper,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -48,7 +50,8 @@ describe("insertChar", () => {
         };
         const state: State = {
             startZipper: zipper,
-            endZipper: null,
+            endZipper: zipper,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -65,7 +68,8 @@ describe("insertChar", () => {
         };
         const state: State = {
             startZipper: zipper,
-            endZipper: null,
+            endZipper: zipper,
+            zipper: zipper,
             selecting: false,
         };
 
@@ -96,7 +100,8 @@ describe("insertChar", () => {
             };
             const state: State = {
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 
@@ -119,8 +124,10 @@ describe("insertChar", () => {
                 breadcrumbs: [],
             };
             const state: State = {
+                // TODO: update startZipper and endZipper to be realistic
                 startZipper: zipper,
-                endZipper: null,
+                endZipper: zipper,
+                zipper: zipper,
                 selecting: false,
             };
 

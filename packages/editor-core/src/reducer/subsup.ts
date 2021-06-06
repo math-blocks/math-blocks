@@ -11,7 +11,7 @@ import type {Zipper, State} from "./types";
  */
 export const subsup = (state: State, index: 0 | 1): State => {
     // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {row, breadcrumbs} = zipper;
 
     // The selection will be inserted at the start of the new/existing
@@ -57,7 +57,8 @@ export const subsup = (state: State, index: 0 | 1): State => {
 
             return {
                 startZipper: newZipper,
-                endZipper: null,
+                endZipper: newZipper,
+                zipper: newZipper,
                 selecting: false,
             };
         }
@@ -98,7 +99,8 @@ export const subsup = (state: State, index: 0 | 1): State => {
 
     return {
         startZipper: newZipper,
-        endZipper: null,
+        endZipper: newZipper,
+        zipper: newZipper,
         selecting: false,
     };
 };
