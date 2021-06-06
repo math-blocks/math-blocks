@@ -4,7 +4,7 @@ import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import * as builders from "../../ast/builders";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -22,8 +22,13 @@ describe("parens", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, "(");
+            const {startZipper: result} = parens(state, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("x+5").children);
@@ -49,8 +54,13 @@ describe("parens", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, ")");
+            const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.glyph("2"),
@@ -74,8 +84,13 @@ describe("parens", () => {
                 row: zrow([], []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, "(");
+            const {startZipper: result} = parens(state, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes([]);
@@ -106,8 +121,13 @@ describe("parens", () => {
                 row: zrow([], []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, ")");
+            const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -123,8 +143,13 @@ describe("parens", () => {
                 row: zrow([], row("2x+5").children),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, "(");
+            const {startZipper: result} = parens(state, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);
@@ -155,8 +180,13 @@ describe("parens", () => {
                 row: zrow(row("2x+5").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, ")");
+            const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -173,8 +203,13 @@ describe("parens", () => {
                 row: zrow([], [delimited("2x+5")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(moveRight(zipper), "(");
+            const {startZipper: result} = parens(moveRight(state), "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);
@@ -205,8 +240,13 @@ describe("parens", () => {
                 row: zrow([delimited("2x+5")], []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(moveLeft(zipper), ")");
+            const {startZipper: result} = parens(moveLeft(state), ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -233,8 +273,13 @@ describe("parens", () => {
                 ),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, "(");
+            const {startZipper: result} = parens(state, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes([
@@ -280,8 +325,13 @@ describe("parens", () => {
                 ),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, ")");
+            const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -314,8 +364,13 @@ describe("parens", () => {
                 ),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, ")");
+            const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
@@ -341,8 +396,13 @@ describe("parens", () => {
                 ),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = parens(zipper, "(");
+            const {startZipper: result} = parens(state, "(");
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("2x+5").children);

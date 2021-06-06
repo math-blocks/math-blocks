@@ -7,7 +7,7 @@ import {root} from "../root";
 import {row, toEqualEditorNodes, zrow} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -25,8 +25,13 @@ describe("root", () => {
                 row: zrow(row("1+").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = root(zipper, false);
+            const {startZipper: result} = root(state, false);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -55,8 +60,13 @@ describe("root", () => {
                 row: zrow(row("1+").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = root(zipper, true);
+            const {startZipper: result} = root(state, true);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -100,8 +110,13 @@ describe("root", () => {
                     },
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = root(zipper, false);
+                const {startZipper: result} = root(state, false);
 
                 // The cursor is inside the radicand
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
@@ -119,7 +134,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                let startZipper: Zipper = {
+                const startZipper: Zipper = {
                     row: zrow(
                         [
                             builders.glyph("1"),
@@ -131,23 +146,37 @@ describe("root", () => {
                     ),
                     breadcrumbs: [],
                 };
-
-                startZipper = moveLeft(startZipper);
-                startZipper = moveLeft(startZipper);
-                let endZipper = startZipper;
-                endZipper = moveLeft(startZipper, endZipper);
-                endZipper = moveLeft(startZipper, endZipper);
+                let state: State = {
+                    startZipper: startZipper,
+                    endZipper: null,
+                    selecting: false,
+                };
+                state = moveLeft(moveLeft(state));
+                state = {
+                    startZipper: state.startZipper,
+                    endZipper: state.startZipper,
+                    selecting: true,
+                };
+                state = moveLeft(moveLeft(state));
 
                 const selectionZipper = selectionZipperFromZippers(
-                    startZipper,
-                    endZipper,
+                    state.startZipper,
+                    state.endZipper,
                 );
 
                 if (!selectionZipper) {
                     throw new Error("Can't create selection from zippers");
                 }
 
-                const result = root(selectionZipper, false);
+                const {startZipper: result} = root(
+                    {
+                        // TODO: update this once we've added .zipper to State
+                        startZipper: selectionZipper,
+                        endZipper: null,
+                        selecting: false,
+                    },
+                    false,
+                );
 
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(
@@ -183,8 +212,13 @@ describe("root", () => {
                     },
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = root(zipper, true);
+                const {startZipper: result} = root(state, true);
 
                 // The cursor is inside the radicand
                 expect(result.row.left).toEqualEditorNodes(row("2+3").children);
@@ -212,7 +246,7 @@ describe("root", () => {
             });
 
             test("selection in breadcrumbs", () => {
-                let startZipper: Zipper = {
+                const startZipper: Zipper = {
                     row: zrow(
                         [
                             builders.glyph("1"),
@@ -224,23 +258,37 @@ describe("root", () => {
                     ),
                     breadcrumbs: [],
                 };
-
-                startZipper = moveLeft(startZipper);
-                startZipper = moveLeft(startZipper);
-                let endZipper = startZipper;
-                endZipper = moveLeft(endZipper);
-                endZipper = moveLeft(endZipper);
+                let state: State = {
+                    startZipper: startZipper,
+                    endZipper: null,
+                    selecting: false,
+                };
+                state = moveLeft(moveLeft(state));
+                state = {
+                    startZipper: state.startZipper,
+                    endZipper: state.startZipper,
+                    selecting: true,
+                };
+                state = moveLeft(moveLeft(state));
 
                 const selectionZipper = selectionZipperFromZippers(
-                    startZipper,
-                    endZipper,
+                    state.startZipper,
+                    state.endZipper,
                 );
 
                 if (!selectionZipper) {
                     throw new Error("Can't create selection from zippers");
                 }
 
-                const result = root(selectionZipper, true); // index
+                const {startZipper: result} = root(
+                    {
+                        // TODO: update this once we've added .zipper to State
+                        startZipper: selectionZipper,
+                        endZipper: null,
+                        selecting: false,
+                    },
+                    true, // index
+                );
 
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(

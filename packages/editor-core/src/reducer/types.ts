@@ -126,3 +126,9 @@ export type Zipper = {
     // nearest to zipper.row in the breadrcumbs.
     breadcrumbs: readonly Breadcrumb[]; // any ZRow in here should have a non-null `focus`
 };
+
+export type State = {
+    startZipper: Zipper;
+    endZipper: Zipper | null;
+    selecting: boolean;
+};

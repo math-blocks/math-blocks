@@ -4,7 +4,7 @@ import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {row, frac} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 import {zrow} from "../test-util";
 
 // TODO: add a serializer or custom matcher to help with assertions
@@ -16,12 +16,19 @@ describe("moveRight w/ selecting = true", () => {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveRight(state);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
-                throw new Error("Can't create selectino from zippers");
+                throw new Error("Can't create selection from zippers");
             }
 
             expect(result.row.left).toHaveLength(0);
@@ -34,13 +41,19 @@ describe("moveRight w/ selecting = true", () => {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(state));
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
-                throw new Error("Can't create selectino from zippers");
+                throw new Error("Can't create selection from zippers");
             }
 
             expect(result.row.left).toHaveLength(0);
@@ -53,15 +66,19 @@ describe("moveRight w/ selecting = true", () => {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveRight(moveRight(state)));
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
-                throw new Error("Can't create selectino from zippers");
+                throw new Error("Can't create selection from zippers");
             }
 
             expect(result.row.left).toHaveLength(0);
@@ -70,19 +87,30 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("tries to select past the start", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow([], row("1+2").children),
                 breadcrumbs: [],
             };
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
-                throw new Error("Can't create selectino from zippers");
+                throw new Error("Can't create selection from zippers");
             }
 
             expect(result.row.left).toHaveLength(0);
@@ -91,19 +119,30 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("tries to select past the end", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(state));
 
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
-                throw new Error("Can't create selectino from zippers");
+                throw new Error("Can't create selection from zippers");
             }
 
             expect(result.row.left).toHaveLength(2);
@@ -114,7 +153,7 @@ describe("moveRight w/ selecting = true", () => {
 
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -125,13 +164,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(state));
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -144,7 +193,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -155,13 +204,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(moveRight(state));
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(state);
 
-            startZipper = moveRight(startZipper);
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -174,7 +233,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("selecting to the right from the first breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -185,14 +244,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(moveRight(state)));
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -205,7 +273,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("selecting to the right edge of the bottom breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -216,16 +284,25 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
+            );
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -238,7 +315,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -249,15 +326,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveRight(moveRight(moveRight(state))));
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -270,7 +355,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -281,16 +366,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(moveRight(moveRight(moveRight(state)))));
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -305,7 +397,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("move back to the starting location", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -316,17 +408,25 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(
+                moveLeft(moveLeft(moveRight(moveRight(moveRight(state))))),
+            );
 
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -341,7 +441,7 @@ describe("moveRight w/ selecting = true", () => {
 
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -359,14 +459,23 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(moveRight(state));
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(state));
 
-            startZipper = moveRight(startZipper);
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -381,7 +490,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("expanding selection out of the outer fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -399,17 +508,25 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(moveRight(state));
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(
+                moveRight(moveRight(moveRight(moveRight(state)))),
+            );
 
-            startZipper = moveRight(startZipper);
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -422,7 +539,7 @@ describe("moveRight w/ selecting = true", () => {
         });
 
         test("constricting selection in from the outer fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [],
                     builders.row([
@@ -440,18 +557,25 @@ describe("moveRight w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveRight(moveRight(state));
+            state = {
+                ...state,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(
+                moveRight(moveRight(moveRight(moveRight(moveRight(state))))),
+            );
 
-            startZipper = moveRight(startZipper);
-            startZipper = moveRight(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveRight(startZipper, endZipper); // select '1'
-            endZipper = moveRight(startZipper, endZipper); // select '1/2' fraction
-            endZipper = moveRight(startZipper, endZipper); // select '+'
-            endZipper = moveRight(startZipper, endZipper); // select '3'
-            endZipper = moveRight(startZipper, endZipper); // select 'x'
-            endZipper = moveLeft(startZipper, endZipper); // de-select 'x'
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -472,11 +596,17 @@ describe("moveLeft w/ selecting = true", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveLeft(state);
 
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -492,12 +622,17 @@ describe("moveLeft w/ selecting = true", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -513,13 +648,17 @@ describe("moveLeft w/ selecting = true", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveLeft(moveLeft(state)));
 
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -533,7 +672,7 @@ describe("moveLeft w/ selecting = true", () => {
 
     describe("frac in a row", () => {
         test("moving out of the fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -544,13 +683,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -563,7 +712,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("moving out of the fraction (starting at the edge)", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -574,13 +723,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(state);
 
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -593,7 +752,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("selecting to the left from the first breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -604,14 +763,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(moveLeft(state)));
 
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -624,7 +792,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("selecting to the left edge of the bottom breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -635,16 +803,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(moveLeft(moveLeft(state))));
 
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -657,7 +832,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("constricting the selection to the left from the first breadcrumb", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -668,15 +843,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveLeft(moveLeft(moveLeft(state))));
 
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -689,7 +872,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("constricting the selection from first breadcrumb back into starting row", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -700,16 +883,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(moveRight(moveLeft(moveLeft(moveLeft(state)))));
 
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -722,7 +912,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("move back to the starting location", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -733,17 +923,25 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(
+                moveRight(moveRight(moveLeft(moveLeft(moveLeft(state))))),
+            );
 
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -757,7 +955,7 @@ describe("moveLeft w/ selecting = true", () => {
 
     describe("frac in a frac", () => {
         test("expanding selection out of the inner fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -775,14 +973,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -795,7 +1002,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("expanding selection out of the outer fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -813,17 +1020,23 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(moveLeft(moveLeft(moveLeft(state)))));
 
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");
@@ -836,7 +1049,7 @@ describe("moveLeft w/ selecting = true", () => {
         });
 
         test("constricting selection in from the outer fraction", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
                         builders.glyph("1"),
@@ -854,18 +1067,25 @@ describe("moveLeft w/ selecting = true", () => {
                 ),
                 breadcrumbs: [],
             };
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveRight(
+                moveLeft(moveLeft(moveLeft(moveLeft(moveLeft(state))))),
+            );
 
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveRight(startZipper, endZipper);
-
-            const result = selectionZipperFromZippers(startZipper, endZipper);
+            const result = selectionZipperFromZippers(
+                state.startZipper,
+                state.endZipper,
+            );
 
             if (!result) {
                 throw new Error("Can't create selection from zippers");

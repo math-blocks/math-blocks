@@ -6,7 +6,7 @@ import {row, toEqualEditorNodes} from "../test-util";
 import {selectionZipperFromZippers} from "../convert";
 import {zrow} from "../test-util";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -17,8 +17,13 @@ describe("slash", () => {
                 row: zrow(row("1+2").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -41,8 +46,13 @@ describe("slash", () => {
                 row: zrow(row("1+ab").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -66,8 +76,13 @@ describe("slash", () => {
                 row: zrow(row("(1+2)").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -91,8 +106,13 @@ describe("slash", () => {
                 row: zrow(row("1+(a)(b)").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -116,8 +136,13 @@ describe("slash", () => {
                 row: zrow(row("(1").children, row("+2)").children),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -141,8 +166,13 @@ describe("slash", () => {
                 row: zrow(row("x=1").children, []),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -178,8 +208,13 @@ describe("slash", () => {
                 ),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -220,8 +255,13 @@ describe("slash", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = slash(zipper);
+            const {startZipper: result} = slash(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -240,7 +280,7 @@ describe("slash", () => {
         });
 
         test("selection in breadcrumbs", () => {
-            let startZipper: Zipper = {
+            const startZipper: Zipper = {
                 row: zrow(
                     [
                         builders.glyph("1"),
@@ -252,23 +292,34 @@ describe("slash", () => {
                 ),
                 breadcrumbs: [],
             };
-
-            startZipper = moveLeft(startZipper);
-            startZipper = moveLeft(startZipper);
-            let endZipper = startZipper;
-            endZipper = moveLeft(startZipper, endZipper);
-            endZipper = moveLeft(startZipper, endZipper);
+            let state: State = {
+                startZipper: startZipper,
+                endZipper: null,
+                selecting: false,
+            };
+            state = moveLeft(moveLeft(state));
+            state = {
+                startZipper: state.startZipper,
+                endZipper: state.startZipper,
+                selecting: true,
+            };
+            state = moveLeft(moveLeft(state));
 
             const selectionZipper = selectionZipperFromZippers(
-                startZipper,
-                endZipper,
+                state.startZipper,
+                state.endZipper,
             );
 
             if (!selectionZipper) {
                 throw new Error("Can't create selection from zippers");
             }
 
-            const result = slash(selectionZipper);
+            const {startZipper: result} = slash({
+                // TODO: update this once we've added .zipper to State
+                startZipper: selectionZipper,
+                endZipper: null,
+                selecting: false,
+            });
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("").children);

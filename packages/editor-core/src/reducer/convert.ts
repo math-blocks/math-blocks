@@ -214,8 +214,12 @@ const getLeftSelectionRight = (
 // TODO: write a test for this.
 export const selectionZipperFromZippers = (
     startZipper: Zipper,
-    endZipper: Zipper,
+    endZipper: Zipper | null,
 ): Zipper | void => {
+    if (!endZipper) {
+        return;
+    }
+
     // Case 1: Common row
     if (startZipper.row.id == endZipper.row.id) {
         // TODO: do some validation on the rows to check that they contain the

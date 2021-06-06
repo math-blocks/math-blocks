@@ -2,7 +2,7 @@ import * as builders from "../../ast/builders";
 
 import {insertChar} from "../insert-char";
 import {row, toEqualEditorNodes, zrow} from "../test-util";
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -12,8 +12,13 @@ describe("insertChar", () => {
             row: zrow(row("1+").children, []),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = insertChar(zipper, "2");
+        const {startZipper: result} = insertChar(state, "2");
 
         expect(result.row.left).toEqualEditorNodes(row("1+2").children);
         expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -24,8 +29,13 @@ describe("insertChar", () => {
             row: zrow([], row("+2").children),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = insertChar(zipper, "1");
+        const {startZipper: result} = insertChar(state, "1");
 
         expect(result.row.left).toEqualEditorNodes(row("1").children);
         expect(result.row.right).toEqualEditorNodes(row("+2").children);
@@ -36,8 +46,13 @@ describe("insertChar", () => {
             row: zrow([builders.glyph("1")], [builders.glyph("2")]),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = insertChar(zipper, "+");
+        const {startZipper: result} = insertChar(state, "+");
 
         expect(result.row.left).toEqualEditorNodes(row("1+").children);
         expect(result.row.right).toEqualEditorNodes(row("2").children);
@@ -48,8 +63,13 @@ describe("insertChar", () => {
             row: zrow(row("1+").children, []),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = insertChar(zipper, "\u03a3"); // \sum
+        const {startZipper: result} = insertChar(state, "\u03a3"); // \sum
 
         expect(result.row.left).toEqualEditorNodes(
             builders.row([
@@ -74,14 +94,19 @@ describe("insertChar", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = insertChar(zipper, "\u2122");
+            const {startZipper: result} = insertChar(state, "\u2122");
 
             expect(result.row.left).toEqualEditorNodes(row("1\u2122").children);
             expect(result.row.right).toEqualEditorNodes(row("2").children);
         });
 
-        test("inserts 'limits' characte before selection", () => {
+        test("inserts 'limits' character before selection", () => {
             const zipper: Zipper = {
                 row: {
                     id: 0,
@@ -93,8 +118,13 @@ describe("insertChar", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = insertChar(zipper, "\u03a3"); // \sum
+            const {startZipper: result} = insertChar(state, "\u03a3"); // \sum
 
             expect(result.row.left).toEqualEditorNodes(
                 builders.row([

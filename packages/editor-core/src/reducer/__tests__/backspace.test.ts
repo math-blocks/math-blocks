@@ -13,7 +13,7 @@ import {
 import * as builders from "../../ast/builders";
 import * as types from "../../ast/types";
 
-import type {Zipper} from "../types";
+import type {Zipper, State} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -37,8 +37,13 @@ describe("backspace", () => {
             row: zrow(row("1+2").children, []),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = backspace(zipper);
+        const {startZipper: result} = backspace(state);
 
         expect(result.row.left).toEqualEditorNodes(row("1+").children);
         expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -49,8 +54,13 @@ describe("backspace", () => {
             row: zrow(row("1+").children, row("2").children),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = backspace(zipper);
+        const {startZipper: result} = backspace(state);
 
         expect(result.row.left).toEqualEditorNodes(row("1").children);
         expect(result.row.right).toEqualEditorNodes(row("2").children);
@@ -61,8 +71,13 @@ describe("backspace", () => {
             row: zrow([], row("1+2").children),
             breadcrumbs: [],
         };
+        const state: State = {
+            startZipper: zipper,
+            endZipper: null,
+            selecting: false,
+        };
 
-        const result = backspace(zipper);
+        const {startZipper: result} = backspace(state);
 
         expect(result.row.left).toEqualEditorNodes(row("").children);
         expect(result.row.right).toEqualEditorNodes(row("1+2").children);
@@ -91,8 +106,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("1+").children);
             expect(result.row.right).toEqualEditorNodes(row("23").children);
@@ -120,8 +140,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("1+2").children);
             expect(result.row.right).toEqualEditorNodes(row("3").children);
@@ -133,8 +158,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -173,8 +203,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("x").children);
             expect(result.row.right).toEqualEditorNodes(row("n").children);
@@ -202,8 +237,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("x").children);
             expect(result.row.right).toEqualEditorNodes(row("n2").children);
@@ -231,8 +271,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("x").children);
             expect(result.row.right).toEqualEditorNodes(row("2").children);
@@ -260,8 +305,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(
                 builders.row([
@@ -278,8 +328,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -300,8 +355,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -340,8 +400,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("1+").children);
             expect(result.row.right).toEqualEditorNodes(row("27").children);
@@ -369,8 +434,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("1+3").children);
             expect(result.row.right).toEqualEditorNodes(row("27").children);
@@ -398,8 +468,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("1+").children);
             expect(result.row.right).toEqualEditorNodes(row("327").children);
@@ -411,8 +486,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -433,8 +513,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -474,8 +559,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("x->0x").children);
@@ -504,8 +594,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("").children);
             expect(result.row.right).toEqualEditorNodes(row("i=0ni").children);
@@ -534,8 +629,13 @@ describe("backspace", () => {
                     },
                 ],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("i=0").children);
             expect(result.row.right).toEqualEditorNodes(row("ni").children);
@@ -549,8 +649,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -575,8 +680,13 @@ describe("backspace", () => {
                 row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
                 breadcrumbs: [],
             };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus).toEqual({
@@ -600,8 +710,13 @@ describe("backspace", () => {
                     row: zrow([delimited("2x+5")], []),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(zipper);
+                const {startZipper: result} = backspace(state);
 
                 expect(result.row.left).toEqualEditorNodes(
                     row("2x+5").children,
@@ -623,8 +738,13 @@ describe("backspace", () => {
                     row: zrow([], [delimited("2x+5")]),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(moveRight(zipper));
+                const {startZipper: result} = backspace(moveRight(state));
 
                 expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(
@@ -658,9 +778,14 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(
-                    moveLeft(moveLeft(moveLeft(moveLeft(zipper)))),
+                const {startZipper: result} = backspace(
+                    moveLeft(moveLeft(moveLeft(moveLeft(state)))),
                 );
 
                 expect(result.row.left).toEqualEditorNodes(row("x+5").children);
@@ -698,9 +823,14 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(
-                    moveRight(moveRight(moveRight(zipper))),
+                const {startZipper: result} = backspace(
+                    moveRight(moveRight(moveRight(state))),
                 );
 
                 expect(result.row.left).toEqualEditorNodes(row("2").children);
@@ -735,8 +865,13 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(zipper);
+                const {startZipper: result} = backspace(state);
 
                 expect(result.row.left).toEqualEditorNodes(
                     row("2x+5").children,
@@ -757,8 +892,13 @@ describe("backspace", () => {
                     ),
                     breadcrumbs: [],
                 };
+                const state: State = {
+                    startZipper: zipper,
+                    endZipper: null,
+                    selecting: false,
+                };
 
-                const result = backspace(moveRight(zipper));
+                const {startZipper: result} = backspace(moveRight(state));
 
                 expect(result.row.left).toEqualEditorNodes([]);
                 expect(result.row.right).toEqualEditorNodes(
@@ -781,8 +921,16 @@ describe("backspace", () => {
                 },
                 breadcrumbs: [],
             };
+            const state: State = {
+                // TODO: set this as the .zipper prop once it's been added to State
+                // TODO: update State to have two different Zipper types, one with
+                // a selection, and one without
+                startZipper: zipper,
+                endZipper: null,
+                selecting: false,
+            };
 
-            const result = backspace(zipper);
+            const {startZipper: result} = backspace(state);
 
             expect(result.row.left).toEqualEditorNodes(row("2x").children);
             expect(result.row.right).toEqualEditorNodes(row("=10").children);
