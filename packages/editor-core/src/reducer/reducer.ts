@@ -6,7 +6,7 @@ import {moveLeft} from "./move-left";
 import {moveRight} from "./move-right";
 import {parens} from "./parens";
 import {root} from "./root";
-import {slash} from "./slash";
+import {frac} from "./frac";
 import {subsup} from "./subsup";
 import {color} from "./color";
 import {cancel} from "./cancel";
@@ -58,7 +58,7 @@ export const zipperReducer = (
             return parens(state, action.type);
         }
         case "/": {
-            return slash(state);
+            return frac(state);
         }
         // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities
         case "\u221A": {

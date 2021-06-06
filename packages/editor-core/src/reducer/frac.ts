@@ -34,8 +34,7 @@ const isOperator = (char: string): boolean => {
     return false;
 };
 
-export const slash = (state: State): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
+export const frac = (state: State): State => {
     const zipper = state.zipper;
     const {left, selection} = zipper.row;
 
