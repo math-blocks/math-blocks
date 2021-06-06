@@ -9,7 +9,7 @@ import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
-const {useEffect, useState, useRef, useContext, useCallback} = React;
+const {useEffect, useState, useRef, useContext, useCallback, useMemo} = React;
 
 type Props = {
     // The initial value for the editor
@@ -34,7 +34,7 @@ type Props = {
     showHitboxes?: boolean;
 };
 
-const keyToAction = (key: string): Editor.Action | null => {
+const keydownToAction = (key: string): Editor.Action | null => {
     switch (key) {
         case "(":
         case ")":
@@ -61,6 +61,8 @@ const keyToAction = (key: string): Editor.Action | null => {
             return {type: "InsertChar", char: "\u00B7"};
         case "-":
             return {type: "InsertChar", char: "\u2212"};
+        case "Shift":
+            return {type: "StartSelecting"};
         default: {
             if (key.length === 1 && key.charCodeAt(0) > 32) {
                 return {type: "InsertChar", char: key};
@@ -70,96 +72,53 @@ const keyToAction = (key: string): Editor.Action | null => {
     return null;
 };
 
-export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [active, setActive] = useState<boolean>(false);
-    const [selecting, setSelecting] = useState<boolean>(false);
+const keyupToAction = (key: string): Editor.Action | null => {
+    switch (key) {
+        case "Shift":
+            return {type: "StopSelecting"};
+        default:
+            return null;
+    }
+};
 
-    // In the future we may want to provide a way to set both the start and end
-    // positions so that we set a starting selection.
-    const [startZipper, setStartZipper] = useState<Editor.Zipper>(props.zipper);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [endZipper, setEndZipper] = useState<Editor.Zipper>(props.zipper);
-    const [zipper, setZipper] = useState<Editor.Zipper>(props.zipper);
+export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
+    const memoizedState = useMemo(() => Editor.stateFromZipper(props.zipper), [
+        props.zipper,
+    ]);
+
+    const [state, setState] = useState<Editor.State>(memoizedState);
+    const [active, setActive] = useState<boolean>(false);
     const [mouseDown, setMouseDown] = useState<boolean>(false);
 
     const fontData = useContext(FontDataContext);
+
+    const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
     const handleKeydown = useCallback(
         (e: KeyboardEvent): void => {
-            console.log(e.key);
-
             if (active && !props.readonly) {
-                const action = keyToAction(e.key);
+                const action = keydownToAction(e.key);
 
                 if (e.key === "Enter" && props.onSubmit) {
-                    // TODO: submit all rows
-                    const success = props.onSubmit(zipper);
+                    const success = props.onSubmit(state.zipper);
                     if (success) {
                         setActive(false);
                     }
-                } else {
-                    // pressing up/down on the shift key will restart a selection
-                    // even if no other key has been pressed in the interim.
-                    if (e.key === "Shift") {
-                        if (!selecting) {
-                            // Start a selection
-                            setEndZipper(startZipper);
-                            setSelecting(true);
-                        }
-                    } else if (!action) {
-                        return;
-                    } else if (
-                        e.shiftKey &&
-                        (e.key === "ArrowLeft" || e.key === "ArrowRight")
+                } else if (action) {
+                    const newState = Editor.zipperReducer(state, action);
+                    setState(newState);
+
+                    if (
+                        props.onChange &&
+                        e.keyCode !== 37 &&
+                        e.keyCode !== 38 &&
+                        e.keyCode !== 39 &&
+                        e.keyCode !== 40
                     ) {
-                        // Handle modifying the current selection.
-                        const selectionZipper = Editor.selectionZipperFromZippers(
-                            startZipper,
-                            endZipper,
-                        );
-                        if (!selectionZipper) {
-                            throw new Error("can't create a selection");
-                        }
-                        const state = {
-                            startZipper,
-                            endZipper,
-                            zipper: selectionZipper,
-                            selecting,
-                        };
-                        const newState = Editor.zipperReducer(state, action);
-                        if (newState !== state) {
-                            setZipper(newState.zipper);
-                            setEndZipper(newState.endZipper);
-                        }
-                    } else {
-                        // End a selection
-                        setSelecting(false);
-                        // Modify the content
-                        const newState = Editor.zipperReducer(
-                            {
-                                startZipper: zipper,
-                                endZipper: zipper,
-                                zipper: zipper,
-                                selecting: false,
-                            },
-                            action,
-                        );
-                        setZipper(newState.zipper);
-                        // Always up the start position when not holding shift
-                        setStartZipper(newState.startZipper);
-                        if (
-                            props.onChange &&
-                            e.keyCode !== 37 &&
-                            e.keyCode !== 38 &&
-                            e.keyCode !== 39 &&
-                            e.keyCode !== 40
-                        ) {
-                            // TODO: communicate all rows when sending this event
-                            props.onChange(newState.zipper);
-                        }
+                        // TODO: communicate all rows when sending this event
+                        props.onChange(newState.zipper);
                     }
                 }
 
@@ -168,10 +127,23 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 e.stopPropagation();
             }
         },
-        [zipper, startZipper, endZipper, selecting, props, active],
+        [state, props, active],
+    );
+
+    const handleKeyUp = useCallback(
+        (e: KeyboardEvent): void => {
+            if (active && !props.readonly) {
+                const action = keyupToAction(e.key);
+                if (action) {
+                    setState(Editor.zipperReducer(state, action));
+                }
+            }
+        },
+        [props, state, active],
     );
 
     useEventListener("keydown", handleKeydown);
+    useEventListener("keyup", handleKeyUp);
 
     type FormattingEvent =
         | {
@@ -187,40 +159,20 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         (e: CustomEvent<FormattingEvent>): void => {
             const {detail} = e;
             if (detail.type === "color") {
-                const state = {
-                    startZipper: startZipper,
-                    endZipper: endZipper,
-                    zipper: zipper,
-                    selecting: selecting,
-                };
                 const newState = Editor.zipperReducer(state, {
                     type: "Color",
                     color: detail.value,
                 });
-                if (newState !== state) {
-                    setStartZipper(newState.startZipper);
-                    setEndZipper(newState.endZipper);
-                    setZipper(newState.zipper);
-                }
+                setState(newState);
             } else if (detail.type === "cancel") {
-                const state = {
-                    startZipper: startZipper,
-                    endZipper: endZipper,
-                    zipper: zipper,
-                    selecting: selecting,
-                };
                 const newState = Editor.zipperReducer(state, {
                     type: "Cancel",
                     cancelID: detail.value,
                 });
-                if (newState !== state) {
-                    setStartZipper(newState.startZipper);
-                    setEndZipper(newState.endZipper);
-                    setZipper(newState.zipper);
-                }
+                setState(newState);
             }
         },
-        [zipper, startZipper, endZipper, selecting],
+        [state],
     ) as EventListener;
 
     useEffect(
@@ -248,31 +200,26 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             scene.hitboxes,
         );
 
-        const row = Editor.zipperToRow(zipper);
+        const row = Editor.zipperToRow(state.zipper);
         const newZipper = Editor.rowToZipper(row, intersections);
 
         if (newZipper) {
-            if (select) {
-                const selectionZipper = Editor.selectionZipperFromZippers(
-                    startZipper,
-                    newZipper,
-                );
-                if (selectionZipper) {
-                    setEndZipper(newZipper);
-                    setZipper(selectionZipper);
-                }
-            } else {
-                setStartZipper(newZipper);
-                setEndZipper(newZipper);
-                setZipper(newZipper);
-            }
+            const newState = select
+                ? Editor.zipperReducer(state, {type: "StartSelecting"})
+                : Editor.zipperReducer(state, {type: "StopSelecting"});
+            setState(
+                Editor.zipperReducer(newState, {
+                    type: "PositionCursor",
+                    cursor: newZipper,
+                }),
+            );
         }
     };
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
     React.useEffect(() => {
-        setZipper(props.zipper);
+        setState(Editor.stateFromZipper(props.zipper));
     }, [props.zipper]);
 
     const {style, fontSize, showHitboxes} = props;
@@ -288,7 +235,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const options = {showCursor: active, debug: true};
 
-    const scene = Typesetter.typesetZipper(zipper, context, options);
+    const scene = Typesetter.typesetZipper(state.zipper, context, options);
 
     return (
         <div
@@ -298,10 +245,9 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 inputRef?.current?.focus();
             }}
             onMouseDown={(e) => {
+                e.preventDefault(); // prevent blurring the input
                 setActive(true);
                 setMouseDown(true);
-                // prevent blurring the input
-                e.preventDefault();
                 positionCursor(e, e.shiftKey);
             }}
             onMouseMove={(e) => {
@@ -311,6 +257,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             }}
             onMouseUp={(e) => {
                 setMouseDown(false);
+                setState(Editor.zipperReducer(state, {type: "StopSelecting"}));
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}
