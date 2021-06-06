@@ -3,7 +3,7 @@ import * as Semantic from "@math-blocks/semantic";
 import * as types from "../ast/types";
 import * as builders from "../ast/builders";
 
-import type {ZRow} from "./types";
+import type {ZRow, Zipper, State} from "./types";
 
 export const row = (str: string): types.Row =>
     builders.row(
@@ -87,4 +87,38 @@ export const zrow = (
         right: right,
         style: {},
     };
+};
+
+export const stateFromZipper = (zipper: Zipper): State => {
+    if (zipper.row.selection.length > 0) {
+        const startZipper = {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                selection: [],
+                right: [...zipper.row.selection, ...zipper.row.right],
+            },
+        };
+        const endZipper = {
+            ...zipper,
+            row: {
+                ...zipper.row,
+                left: [...zipper.row.left, ...zipper.row.selection],
+                selection: [],
+            },
+        };
+        return {
+            startZipper,
+            endZipper,
+            zipper,
+            selecting: true,
+        };
+    } else {
+        return {
+            startZipper: zipper,
+            endZipper: zipper,
+            zipper,
+            selecting: false,
+        };
+    }
 };
