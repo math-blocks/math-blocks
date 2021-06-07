@@ -50,7 +50,9 @@ export const reducer = (state: State = initialState, action: Action): State => {
             return color(state, action.color);
         // Split this into cancel and uncancel
         case "Cancel":
-            return cancel(state, action.cancelID);
+            return cancel(state, getId());
+        case "Uncancel":
+            return cancel(state, undefined);
         // We don't handle any other actions yet so ignore them and return the
         // current startZipper.
         case "InsertChar":

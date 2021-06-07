@@ -153,7 +153,9 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
           }
         | {
               type: "cancel";
-              value?: number;
+          }
+        | {
+              type: "uncancel";
           };
 
     const handleFormatting = useCallback(
@@ -166,10 +168,10 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 });
                 setState(newState);
             } else if (detail.type === "cancel") {
-                const newState = Editor.reducer(state, {
-                    type: "Cancel",
-                    cancelID: detail.value,
-                });
+                const newState = Editor.reducer(state, {type: "Cancel"});
+                setState(newState);
+            } else if (detail.type === "uncancel") {
+                const newState = Editor.reducer(state, {type: "Uncancel"});
                 setState(newState);
             }
         },

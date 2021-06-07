@@ -167,7 +167,9 @@ export type Action =
       }
     | {
           type: "Cancel";
-          cancelID?: number;
+      }
+    | {
+          type: "Uncancel";
       }
     | {
           type: "InsertChar";

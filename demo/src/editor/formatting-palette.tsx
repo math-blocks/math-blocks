@@ -1,7 +1,5 @@
 import * as React from "react";
 
-import {getId} from "@math-blocks/core";
-
 type EmptyProps = Record<string, never>;
 
 type FormattingEvent =
@@ -11,7 +9,9 @@ type FormattingEvent =
       }
     | {
           type: "cancel";
-          value?: number;
+      }
+    | {
+          type: "uncancel";
       };
 
 // TODO: determine the color based on the current selection
@@ -48,7 +48,6 @@ const FormattingPalette: React.FC<EmptyProps> = (props) => {
                             {
                                 detail: {
                                     type: "cancel",
-                                    value: getId(),
                                 },
                                 bubbles: true,
                                 cancelable: true,
@@ -68,7 +67,7 @@ const FormattingPalette: React.FC<EmptyProps> = (props) => {
                             "formatting",
                             {
                                 detail: {
-                                    type: "cancel",
+                                    type: "uncancel",
                                 },
                                 bubbles: true,
                                 cancelable: true,
