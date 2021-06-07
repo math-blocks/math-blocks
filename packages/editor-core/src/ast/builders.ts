@@ -75,6 +75,21 @@ export function delimited(
     };
 }
 
+export function table(
+    colCount: number,
+    rowCount: number,
+    cells: (readonly types.Node[] | null)[],
+): types.Table {
+    return {
+        id: getId(),
+        type: "table",
+        colCount,
+        rowCount,
+        children: cells.map((cell) => cell && row(cell)),
+        style: {},
+    };
+}
+
 export function atom(value: types.Glyph): types.Atom {
     return {
         id: getId(),

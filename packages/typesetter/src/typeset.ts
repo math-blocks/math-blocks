@@ -314,6 +314,16 @@ const childContextForLimits = (context: Context): Context => {
     return childContext;
 };
 
+type Row = {
+    children: Layout.Box[];
+    height: number;
+    depth: number;
+};
+type Col = {
+    children: Layout.Box[];
+    width: number;
+};
+
 const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
@@ -466,6 +476,103 @@ const typesetFocus = (
 
             return delimited;
         }
+        case "ztable": {
+            const focusedCell = _typesetZipper(zipper, context);
+
+            const typesetFocusLeft = focus.left.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const typesetFocusRight = focus.right.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const typesetChildren = [
+                ...typesetFocusLeft,
+                focusedCell,
+                ...typesetFocusRight,
+            ];
+
+            const columns: Col[] = [];
+            const rows: Row[] = [];
+
+            // Group cells into rows and columns and determine the width of each
+            // columna and the depth/height of each row.
+            for (let i = 0; i < focus.colCount; i++) {
+                for (let j = 0; j < focus.rowCount; j++) {
+                    if (!columns[i]) {
+                        columns[i] = {
+                            children: [],
+                            width: 0,
+                        };
+                    }
+                    if (!rows[j]) {
+                        rows[j] = {
+                            children: [],
+                            height: 0,
+                            depth: 0,
+                        };
+                    }
+                    let cell = typesetChildren[j * focus.colCount + i];
+                    if (cell) {
+                        columns[i].width = Math.max(
+                            cell.width,
+                            columns[i].width,
+                        );
+                        rows[j].height = Math.max(cell.height, rows[j].height);
+                        rows[j].depth = Math.max(cell.depth, rows[j].depth);
+                    } else {
+                        // Use an empty Layout.Box for children that were null
+                        cell = {
+                            type: "Box",
+                            kind: "hbox",
+                            shift: 0,
+                            content: [],
+                            // These values don't matter since the box is empty
+                            fontSize: 0,
+                            style: {},
+                            // These will get filled in later
+                            width: 0,
+                            height: 0,
+                            depth: 0,
+                        };
+                    }
+
+                    columns[i].children.push(cell);
+                    rows[j].children.push(cell);
+                }
+            }
+
+            // Adjust the width of cells in the same column to be the same
+            for (let i = 0; i < columns.length; i++) {
+                const col = columns[i];
+                for (let j = 0; j < col.children.length; j++) {
+                    col.children[j].width = col.width;
+                }
+            }
+
+            // Adjust the height/depth of cells in the same row to be the same
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                for (let j = 0; j < row.children.length; j++) {
+                    row.children[j].height = row.height;
+                    row.children[j].depth = row.depth;
+                }
+            }
+
+            const rowBoxes = rows.map((row) =>
+                Layout.hpackNat([row.children], context),
+            );
+            const width = columns.reduce((sum, col) => sum + col.width, 0);
+
+            return Layout.makeVBox(
+                width,
+                rowBoxes[0],
+                [],
+                rowBoxes.slice(1),
+                context,
+            );
+        }
         default:
             throw new UnreachableCaseError(focus);
     }
@@ -615,6 +722,91 @@ const _typeset = (
             delimited.style = node.style;
 
             return delimited;
+        }
+        case "table": {
+            const typesetChildren = node.children.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const columns: Col[] = [];
+            const rows: Row[] = [];
+
+            // Group cells into rows and columns and determine the width of each
+            // columna and the depth/height of each row.
+            for (let i = 0; i < node.colCount; i++) {
+                for (let j = 0; j < node.rowCount; j++) {
+                    if (!columns[i]) {
+                        columns[i] = {
+                            children: [],
+                            width: 0,
+                        };
+                    }
+                    if (!rows[j]) {
+                        rows[j] = {
+                            children: [],
+                            height: 0,
+                            depth: 0,
+                        };
+                    }
+                    let cell = typesetChildren[j * node.colCount + i];
+                    if (cell) {
+                        columns[i].width = Math.max(
+                            cell.width,
+                            columns[i].width,
+                        );
+                        rows[j].height = Math.max(cell.height, rows[j].height);
+                        rows[j].depth = Math.max(cell.depth, rows[j].depth);
+                    } else {
+                        // Use an empty Layout.Box for children that were null
+                        cell = {
+                            type: "Box",
+                            kind: "hbox",
+                            shift: 0,
+                            content: [],
+                            // These values don't matter since the box is empty
+                            fontSize: 0,
+                            style: {},
+                            // These will get filled in later
+                            width: 0,
+                            height: 0,
+                            depth: 0,
+                        };
+                    }
+
+                    columns[i].children.push(cell);
+                    rows[j].children.push(cell);
+                }
+            }
+
+            // Adjust the width of cells in the same column to be the same
+            for (let i = 0; i < columns.length; i++) {
+                const col = columns[i];
+                for (let j = 0; j < col.children.length; j++) {
+                    col.children[j].width = col.width;
+                }
+            }
+
+            // Adjust the height/depth of cells in the same row to be the same
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                for (let j = 0; j < row.children.length; j++) {
+                    row.children[j].height = row.height;
+                    row.children[j].depth = row.depth;
+                }
+            }
+
+            const rowBoxes = rows.map((row) =>
+                Layout.hpackNat([row.children], context),
+            );
+            const width = columns.reduce((sum, col) => sum + col.width, 0);
+
+            return Layout.makeVBox(
+                width,
+                rowBoxes[0],
+                [],
+                rowBoxes.slice(1),
+                context,
+            );
         }
         case "atom": {
             return _typesetAtom(node, context);
