@@ -90,8 +90,8 @@ export type ZDelimited = {
 export type ZTable = {
     id: number;
     type: "ztable";
-    left: readonly types.Row[];
-    right: readonly types.Row[];
+    left: readonly (types.Row | null)[];
+    right: readonly (types.Row | null)[];
     rowCount: number;
     colCount: number;
     style: types.Style;

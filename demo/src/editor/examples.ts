@@ -163,7 +163,9 @@ addingFractions.children[2].children[0].style.color = "orange";
 addingFractions.children[2].children[0].children[0].style.color = "pink";
 
 const matrix = Editor.builders.row([
-    Editor.builders.table(3, 2, [
+    Editor.builders.glyph("A"),
+    Editor.builders.glyph("="),
+    Editor.builders.table(3, 3, [
         // first row
         [Editor.builders.glyph("a")],
         [Editor.builders.glyph("b")],
@@ -177,6 +179,11 @@ const matrix = Editor.builders.row([
             Editor.builders.glyph("1"),
         ],
         [Editor.builders.glyph("f")],
+
+        // third row
+        [Editor.builders.glyph("0")],
+        [Editor.builders.glyph("0")],
+        [Editor.builders.glyph("1")],
     ]),
 ]);
 

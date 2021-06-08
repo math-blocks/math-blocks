@@ -65,6 +65,11 @@ const cursorRight = (zipper: Zipper): Zipper => {
                     focus = util.zdelimited(next);
                     break;
                 }
+                case "table": {
+                    // TODO: handle skipping over empty cells
+                    focus = util.ztable(next, 0);
+                    break;
+                }
                 default:
                     throw new UnreachableCaseError(next);
             }
@@ -127,6 +132,32 @@ const cursorRight = (zipper: Zipper): Zipper => {
             return exitNode(util.delimited(focus, exitedRow));
         }
 
+        if (focus.type === "ztable") {
+            const focusRight = (row: types.Row): Zipper => ({
+                breadcrumbs: [
+                    ...zipper.breadcrumbs.slice(0, -1),
+                    {
+                        row: parentRow,
+                        focus: {
+                            ...focus,
+                            left: [...focus.left, exitedRow],
+                            right: focus.right.slice(1),
+                        },
+                    },
+                ],
+                row: util.zrow(row.id, [], row.children, row.style),
+            });
+
+            const next = focus.right[0];
+
+            return next
+                ? focusRight(next)
+                : exitNode(util.focusToNode(focus, exitedRow));
+        }
+
+        // TODO: handle moving between cells in a table, we nee to grab the
+        // first available row from focus.right[] and move the cursor the start
+        // of that row.
         const focusRight = (row: types.Row): Zipper => ({
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),

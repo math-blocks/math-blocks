@@ -6,6 +6,8 @@ import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
 import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
+import {typesetTable} from "./typesetters/table";
+
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
@@ -314,16 +316,6 @@ const childContextForLimits = (context: Context): Context => {
     return childContext;
 };
 
-type Row = {
-    children: Layout.Box[];
-    height: number;
-    depth: number;
-};
-type Col = {
-    children: Layout.Box[];
-    width: number;
-};
-
 const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
@@ -493,85 +485,17 @@ const typesetFocus = (
                 ...typesetFocusRight,
             ];
 
-            const columns: Col[] = [];
-            const rows: Row[] = [];
-
-            // Group cells into rows and columns and determine the width of each
-            // columna and the depth/height of each row.
-            for (let i = 0; i < focus.colCount; i++) {
-                for (let j = 0; j < focus.rowCount; j++) {
-                    if (!columns[i]) {
-                        columns[i] = {
-                            children: [],
-                            width: 0,
-                        };
-                    }
-                    if (!rows[j]) {
-                        rows[j] = {
-                            children: [],
-                            height: 0,
-                            depth: 0,
-                        };
-                    }
-                    let cell = typesetChildren[j * focus.colCount + i];
-                    if (cell) {
-                        columns[i].width = Math.max(
-                            cell.width,
-                            columns[i].width,
-                        );
-                        rows[j].height = Math.max(cell.height, rows[j].height);
-                        rows[j].depth = Math.max(cell.depth, rows[j].depth);
-                    } else {
-                        // Use an empty Layout.Box for children that were null
-                        cell = {
-                            type: "Box",
-                            kind: "hbox",
-                            shift: 0,
-                            content: [],
-                            // These values don't matter since the box is empty
-                            fontSize: 0,
-                            style: {},
-                            // These will get filled in later
-                            width: 0,
-                            height: 0,
-                            depth: 0,
-                        };
-                    }
-
-                    columns[i].children.push(cell);
-                    rows[j].children.push(cell);
-                }
-            }
-
-            // Adjust the width of cells in the same column to be the same
-            for (let i = 0; i < columns.length; i++) {
-                const col = columns[i];
-                for (let j = 0; j < col.children.length; j++) {
-                    col.children[j].width = col.width;
-                }
-            }
-
-            // Adjust the height/depth of cells in the same row to be the same
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                for (let j = 0; j < row.children.length; j++) {
-                    row.children[j].height = row.height;
-                    row.children[j].depth = row.depth;
-                }
-            }
-
-            const rowBoxes = rows.map((row) =>
-                Layout.hpackNat([row.children], context),
-            );
-            const width = columns.reduce((sum, col) => sum + col.width, 0);
-
-            return Layout.makeVBox(
-                width,
-                rowBoxes[0],
-                [],
-                rowBoxes.slice(1),
+            const table = typesetTable(
+                typesetChildren,
+                focus.colCount,
+                focus.rowCount,
                 context,
             );
+
+            table.id = focus.id;
+            table.style = focus.style;
+
+            return table;
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -728,85 +652,17 @@ const _typeset = (
                 return child && typesetRow(child, context);
             });
 
-            const columns: Col[] = [];
-            const rows: Row[] = [];
-
-            // Group cells into rows and columns and determine the width of each
-            // columna and the depth/height of each row.
-            for (let i = 0; i < node.colCount; i++) {
-                for (let j = 0; j < node.rowCount; j++) {
-                    if (!columns[i]) {
-                        columns[i] = {
-                            children: [],
-                            width: 0,
-                        };
-                    }
-                    if (!rows[j]) {
-                        rows[j] = {
-                            children: [],
-                            height: 0,
-                            depth: 0,
-                        };
-                    }
-                    let cell = typesetChildren[j * node.colCount + i];
-                    if (cell) {
-                        columns[i].width = Math.max(
-                            cell.width,
-                            columns[i].width,
-                        );
-                        rows[j].height = Math.max(cell.height, rows[j].height);
-                        rows[j].depth = Math.max(cell.depth, rows[j].depth);
-                    } else {
-                        // Use an empty Layout.Box for children that were null
-                        cell = {
-                            type: "Box",
-                            kind: "hbox",
-                            shift: 0,
-                            content: [],
-                            // These values don't matter since the box is empty
-                            fontSize: 0,
-                            style: {},
-                            // These will get filled in later
-                            width: 0,
-                            height: 0,
-                            depth: 0,
-                        };
-                    }
-
-                    columns[i].children.push(cell);
-                    rows[j].children.push(cell);
-                }
-            }
-
-            // Adjust the width of cells in the same column to be the same
-            for (let i = 0; i < columns.length; i++) {
-                const col = columns[i];
-                for (let j = 0; j < col.children.length; j++) {
-                    col.children[j].width = col.width;
-                }
-            }
-
-            // Adjust the height/depth of cells in the same row to be the same
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                for (let j = 0; j < row.children.length; j++) {
-                    row.children[j].height = row.height;
-                    row.children[j].depth = row.depth;
-                }
-            }
-
-            const rowBoxes = rows.map((row) =>
-                Layout.hpackNat([row.children], context),
-            );
-            const width = columns.reduce((sum, col) => sum + col.width, 0);
-
-            return Layout.makeVBox(
-                width,
-                rowBoxes[0],
-                [],
-                rowBoxes.slice(1),
+            const table = typesetTable(
+                typesetChildren,
+                node.colCount,
+                node.rowCount,
                 context,
             );
+
+            table.id = node.id;
+            table.style = node.style;
+
+            return table;
         }
         case "atom": {
             return _typesetAtom(node, context);

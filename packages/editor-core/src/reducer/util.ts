@@ -10,6 +10,7 @@ import type {
     ZLimits,
     ZDelimited,
     Focus,
+    ZTable,
 } from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
@@ -141,6 +142,29 @@ export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
           };
 };
 
+export const table = (focus: ZTable, replacement: types.Row): types.Table => {
+    return {
+        id: focus.id,
+        type: "table",
+        rowCount: focus.rowCount,
+        colCount: focus.colCount,
+        children: [...focus.left, replacement, ...focus.right],
+        style: focus.style,
+    };
+};
+
+export const ztable = (node: types.Table, index: number): ZTable => {
+    return {
+        id: node.id,
+        type: "ztable",
+        rowCount: node.rowCount,
+        colCount: node.colCount,
+        left: node.children.slice(0, index),
+        right: node.children.slice(index + 1),
+        style: node.style,
+    };
+};
+
 export const delimited = (
     focus: ZDelimited,
     replacement: types.Row,
@@ -182,6 +206,8 @@ export const focusToNode = (
             return root(focus, replacement);
         case "zdelimited":
             return delimited(focus, replacement);
+        case "ztable":
+            return table(focus, replacement);
         default: {
             throw new UnreachableCaseError(focus);
         }
