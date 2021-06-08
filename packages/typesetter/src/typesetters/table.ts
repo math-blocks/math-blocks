@@ -108,6 +108,10 @@ export const typesetTable = (
         }
     }
 
+    // TODO: adjust the reboxing above in order to drop the kerns we add here.
+    // This will make it easier to position a cursor within a table since right
+    // now clicking on one of these kerns will result in the cursor being ejected
+    // from the table.
     const rowBoxes = rows.map((row) =>
         Layout.hpackNat([interspaceKerns(row.children, COL_GAP)], context),
     );
