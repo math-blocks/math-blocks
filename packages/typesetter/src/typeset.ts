@@ -79,36 +79,60 @@ const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
     dim.height = Math.max(dim.height, height);
 };
 
-const getChildMathStyle = (mathStyle: MathStyle): MathStyle => {
-    return {
+const childContextForFrac = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
         [MathStyle.Display]: MathStyle.Text,
         [MathStyle.Text]: MathStyle.Script,
         [MathStyle.Script]: MathStyle.ScriptScript,
         [MathStyle.ScriptScript]: MathStyle.ScriptScript,
     }[mathStyle];
-};
 
-const childContextForFrac = (context: Context): Context => {
-    return {
+    const childContext: Context = {
         ...context,
-        mathStyle: getChildMathStyle(context.mathStyle),
+        mathStyle: childMathStyle,
     };
+
+    return childContext;
 };
 
 const childContextForSubsup = (context: Context): Context => {
-    return {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
         ...context,
-        mathStyle: getChildMathStyle(context.mathStyle),
+        mathStyle: childMathStyle,
         cramped: true,
     };
+
+    return childContext;
 };
 
 const childContextForLimits = (context: Context): Context => {
-    return {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
         ...context,
-        mathStyle: getChildMathStyle(context.mathStyle),
+        mathStyle: childMathStyle,
         cramped: true,
     };
+
+    return childContext;
 };
 
 const getTypesetChildren = (
