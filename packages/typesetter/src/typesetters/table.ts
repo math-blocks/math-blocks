@@ -13,19 +13,6 @@ type Col = {
     width: number;
 };
 
-const interspaceKerns = (
-    boxes: Layout.Box[],
-    kernSize: number,
-): Layout.Node[] => {
-    return boxes.flatMap((box, index) => {
-        if (index > 0) {
-            return [Layout.makeKern(kernSize), box];
-        } else {
-            return [box];
-        }
-    });
-};
-
 const COL_GAP = 50;
 
 export const typesetTable = (
@@ -87,11 +74,17 @@ export const typesetTable = (
         for (let j = 0; j < col.children.length; j++) {
             // center the cell content
             const originalWidth = Layout.getWidth(col.children[j]);
-            const kernSize = (col.width - originalWidth) / 2;
+            const baseKernSize = (col.width - originalWidth) / 2;
+            const rightKernSize =
+                i < columns.length - 1
+                    ? baseKernSize + COL_GAP / 2
+                    : baseKernSize;
+            const leftKernSize =
+                i > 0 ? baseKernSize + COL_GAP / 2 : baseKernSize;
             const cell = Layout.rebox(
                 col.children[j],
-                Layout.makeKern(kernSize, "start"),
-                Layout.makeKern(kernSize, "end"),
+                Layout.makeKern(leftKernSize, "start"),
+                Layout.makeKern(rightKernSize, "end"),
             );
             col.children[j] = cell;
             // rows[] has its own references so we need to update it as well
@@ -108,12 +101,8 @@ export const typesetTable = (
         }
     }
 
-    // TODO: adjust the reboxing above in order to drop the kerns we add here.
-    // This will make it easier to position a cursor within a table since right
-    // now clicking on one of these kerns will result in the cursor being ejected
-    // from the table.
     const rowBoxes = rows.map((row) =>
-        Layout.hpackNat([interspaceKerns(row.children, COL_GAP)], context),
+        Layout.hpackNat([row.children], context),
     );
     const width =
         columns.reduce((sum, col) => sum + col.width, 0) +
