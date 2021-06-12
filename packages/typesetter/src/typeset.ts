@@ -6,6 +6,8 @@ import {processBox} from "./scene-graph";
 import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
 import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
 
+import {typesetTable} from "./typesetters/table";
+
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
@@ -466,6 +468,35 @@ const typesetFocus = (
 
             return delimited;
         }
+        case "ztable": {
+            const focusedCell = _typesetZipper(zipper, context);
+
+            const typesetFocusLeft = focus.left.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const typesetFocusRight = focus.right.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const typesetChildren = [
+                ...typesetFocusLeft,
+                focusedCell,
+                ...typesetFocusRight,
+            ];
+
+            const table = typesetTable(
+                typesetChildren,
+                focus.colCount,
+                focus.rowCount,
+                context,
+            );
+
+            table.id = focus.id;
+            table.style = focus.style;
+
+            return table;
+        }
         default:
             throw new UnreachableCaseError(focus);
     }
@@ -615,6 +646,23 @@ const _typeset = (
             delimited.style = node.style;
 
             return delimited;
+        }
+        case "table": {
+            const typesetChildren = node.children.map((child) => {
+                return child && typesetRow(child, context);
+            });
+
+            const table = typesetTable(
+                typesetChildren,
+                node.colCount,
+                node.rowCount,
+                context,
+            );
+
+            table.id = node.id;
+            table.style = node.style;
+
+            return table;
         }
         case "atom": {
             return _typesetAtom(node, context);

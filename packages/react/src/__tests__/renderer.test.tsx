@@ -658,4 +658,11 @@ describe("renderer", () => {
             expect(<Cancelling />).toMatchSVGSnapshot();
         });
     });
+
+    describe("tables", () => {
+        test("3x3 bracket matrix", async () => {
+            const Matrix = await storyToComponent(stories.Matrix);
+            expect(<Matrix />).toMatchSVGSnapshot();
+        });
+    });
 });

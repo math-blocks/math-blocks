@@ -82,11 +82,10 @@ export const traverseZipper = (
     const focusRight = focus.right.map((row) => {
         return row && traverseRow(row, callback);
     });
+    // @ts-expect-error: TypeScript can't map a union of tuples
     let newFocus: Focus = {
         ...focus,
-        // @ts-expect-error: TypeScript can't map a union of tuples
         left: focusLeft,
-        // @ts-expect-error: TypeScript can't map a union of tuples
         right: focusRight,
     };
     newFocus = callback.exit(newFocus) || newFocus;

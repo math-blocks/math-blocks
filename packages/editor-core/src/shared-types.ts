@@ -13,6 +13,13 @@ export type Delimited<A, C> = C & {
     rightDelim: Atom<A, C>;
 };
 
+export type Table<A, C> = C & {
+    type: "table";
+    children: readonly (Row<A, C> | null)[];
+    rowCount: number;
+    colCount: number;
+};
+
 export type SubSup<A, C> = C & {
     type: "subsup";
     children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
@@ -42,6 +49,7 @@ export type Atom<A, C> = C & {
 export type Node<A, C> =
     | Row<A, C>
     | Delimited<A, C>
+    | Table<A, C>
     | SubSup<A, C>
     | Limits<A, C>
     | Frac<A, C>

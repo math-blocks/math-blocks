@@ -308,6 +308,15 @@ const lex = (node: types.Node, path: number[], offset: number): Node => {
                 loc: location(path, offset, offset + 1),
             };
         }
+        case "table": {
+            return {
+                type: "table",
+                colCount: node.colCount,
+                rowCount: node.rowCount,
+                children: node.children.map((child) => child && lexRow(child)),
+                loc: location(path, offset, offset + 1),
+            };
+        }
         case "atom":
             throw new Error("lexChildren coalesces glyphs, use it instead");
         default:

@@ -138,6 +138,14 @@ const print = (
                 loc.start
             }:${loc.end} ${open} ${inner} ${close})`;
         }
+        case "table": {
+            const children = ast.children.map(
+                (child) => child && print(child, serialize, indent),
+            );
+            return `(table@[${loc.path.map(String).join(",")}]:${loc.start}:${
+                loc.end
+            } ${children.join(" ")})`;
+        }
         default:
             throw new UnreachableCaseError(ast);
     }

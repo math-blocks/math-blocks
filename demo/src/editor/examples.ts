@@ -162,10 +162,36 @@ addingFractions.children[2].children[0].style.color = "orange";
 // @ts-expect-error: we don't both refining the type since we know what it is
 addingFractions.children[2].children[0].children[0].style.color = "pink";
 
+const matrix = Editor.builders.row([
+    Editor.builders.glyph("A"),
+    Editor.builders.glyph("="),
+    Editor.builders.table(3, 3, [
+        // first row
+        [Editor.builders.glyph("a")],
+        [Editor.builders.glyph("b")],
+        [Editor.builders.glyph("c")],
+
+        // second row
+        [Editor.builders.glyph("d")],
+        [
+            Editor.builders.glyph("e"),
+            Editor.builders.glyph("+"),
+            Editor.builders.glyph("1"),
+        ],
+        [Editor.builders.glyph("f")],
+
+        // third row
+        [Editor.builders.glyph("0")],
+        [Editor.builders.glyph("0")],
+        [Editor.builders.glyph("1")],
+    ]),
+]);
+
 export const examples = [
     simpleRow,
     addingFractions,
     allNodeTypes,
     delimiters,
     nestedFractions,
+    matrix,
 ];

@@ -152,6 +152,17 @@ export function nodeAtPath(
                 }
                 return nodeAtPath(headChild, tail);
             }
+            case "table": {
+                const [head, ...tail] = path;
+                if (head > root.children.length - 1) {
+                    throw new Error("invalid path");
+                }
+                const headChild = root.children[head];
+                if (!headChild) {
+                    throw new Error("invalid path");
+                }
+                return nodeAtPath(headChild, tail);
+            }
             default: {
                 const [head, ...tail] = path;
                 return nodeAtPath(root.children[head], tail);

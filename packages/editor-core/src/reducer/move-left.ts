@@ -66,6 +66,11 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                     focus = util.zdelimited(prev);
                     break;
                 }
+                case "table": {
+                    // TODO: handle skipping over empty cells
+                    focus = util.ztable(prev, prev.children.length - 1);
+                    break;
+                }
                 default: {
                     throw new UnreachableCaseError(prev);
                 }
@@ -84,7 +89,11 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                 focus: focus,
             };
 
-            const focusedRow = rightChild || leftChild;
+            let focusedRow = rightChild || leftChild;
+            if (prev.type === "table") {
+                // TODO: handle empty cells
+                focusedRow = prev.children[prev.children.length - 1];
+            }
             if (!focusedRow) {
                 throw new Error("subsup without subscript or superscript");
             }
@@ -129,6 +138,31 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
             return exitNode(util.delimited(focus, exitedRow));
         }
 
+        if (focus.type === "ztable") {
+            const focusLeft = (row: types.Row): Zipper => ({
+                breadcrumbs: [
+                    ...zipper.breadcrumbs.slice(0, -1),
+                    {
+                        row: parentRow,
+                        focus: {
+                            ...focus,
+                            left: focus.left.slice(0, -1),
+                            right: [exitedRow, ...focus.right],
+                        },
+                    },
+                ],
+                row: util.zrow(row.id, row.children, [], row.style),
+            });
+
+            const prev = focus.left[focus.left.length - 1];
+
+            return prev
+                ? focusLeft(prev)
+                : exitNode(util.focusToNode(focus, exitedRow));
+        }
+
+        // TODO: handle moving between cells in a table.  Do the mirror image
+        // of what's described in move-right.ts.
         const focusLeft = (row: types.Row): Zipper => ({
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),

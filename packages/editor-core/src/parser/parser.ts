@@ -106,14 +106,16 @@ const getPrefixParselet = (
                     return Parser.builders.parens(result);
                 },
             };
+        case "table":
+            throw new Error("We don't handle 'table' tokens yet");
         // TODO: Handle subsup at the start of a row, useful in Chemistry
         case "subsup":
-            throw new Error(`Unexpected 'subsup' token`);
+            throw new Error("Unexpected 'subsup' token");
         // TODO: Handle limits at the start of a row
         case "limits":
-            throw new Error(`Unexpected 'limits' token`);
+            throw new Error("Unexpected 'limits' token");
         case "row":
-            throw new Error(`Unexpected 'row' token`);
+            throw new Error("Unexpected 'row' token");
         default:
             throw new UnreachableCaseError(token);
     }
@@ -365,6 +367,8 @@ const getInfixParselet = (
                 },
             };
         }
+        case "table":
+            throw new Error("We don't handle 'table' tokens yet");
         case "limits":
             throw new Error(`Unexpected 'limits' token`);
         case "row":

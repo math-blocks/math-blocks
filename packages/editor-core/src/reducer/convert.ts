@@ -10,6 +10,7 @@ import {
     zsubsup,
     zroot,
     zdelimited,
+    ztable,
 } from "./util";
 
 export const zipperToRow = (zipper: Zipper): Row => {
@@ -97,6 +98,7 @@ export const rowToZipper = (
         case "limits":
         case "subsup":
         case "root":
+        case "table":
         case "delimited": {
             focusIndex = child.children.findIndex(
                 (child) => int.type === "content" && int.id === child?.id,
@@ -152,7 +154,19 @@ export const rowToZipper = (
             break;
         }
         case "delimited": {
-            focus = zdelimited(child); // sets dir = Dir.None
+            focus = zdelimited(child);
+            focusRow = child.children[focusIndex];
+            break;
+        }
+        case "table": {
+            if (focusIndex > child.children.length - 1 || focusIndex < 0) {
+                throw new Error(
+                    `Invalid focusIndex: ${focusIndex} for "table"`,
+                );
+            }
+            focus = ztable(child, focusIndex);
+            // TODO: handle null cells
+            // @ts-expect-error: child.children can contain null cell
             focusRow = child.children[focusIndex];
             break;
         }

@@ -15,6 +15,7 @@ type Common = {id: number; style: Style};
 
 export type Row = sharedTypes.Row<Glyph, Common>;
 export type Delimited = sharedTypes.Delimited<Glyph, Common>;
+export type Table = sharedTypes.Table<Glyph, Common>;
 export type SubSup = sharedTypes.SubSup<Glyph, Common>;
 export type Limits = sharedTypes.Limits<Glyph, Common>;
 export type Frac = sharedTypes.Frac<Glyph, Common>;
@@ -23,7 +24,15 @@ export type Atom = sharedTypes.Atom<Glyph, Common>;
 
 // TODO: split the concept of Node and Children where Children doesn't include
 // Row.
-export type Node = Row | Delimited | SubSup | Limits | Frac | Root | Atom;
+export type Node =
+    | Row
+    | Delimited
+    | Table
+    | SubSup
+    | Limits
+    | Frac
+    | Root
+    | Atom;
 
 // The editor nodes need IDs so we can position the cursor relative to
 // layout nodes which get their ID from the editor nodes.

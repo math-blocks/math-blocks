@@ -32,11 +32,11 @@ const EditorPage: React.FunctionComponent = () => {
     const [zipper, setZipper] = React.useState<Editor.Zipper>({
         breadcrumbs: [],
         row: {
-            id: examples[0].id,
+            id: examples[5].id,
             type: "zrow",
             left: [],
             selection: [],
-            right: examples[0].children,
+            right: examples[5].children,
             style: {},
         },
     });
@@ -172,13 +172,14 @@ const EditorPage: React.FunctionComponent = () => {
                         };
                         setZipper(zipper);
                     }}
-                    defaultValue={0}
+                    defaultValue={5}
                 >
                     <option value={0}>Simple Equation</option>
                     <option value={1}>Adding Fractions</option>
                     <option value={2}>All Node Types</option>
                     <option value={3}>Tall Delimiters</option>
                     <option value={4}>Nested Fractions</option>
+                    <option value={5}>Matrix</option>
                 </select>
                 <span
                     style={{
