@@ -3,25 +3,21 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
-import {MathStyle, RenderMode, RadicalDegreeAlgorithm} from "./enums";
-import {multiplierForContext, fontSizeForContext, makeDelimiter} from "./utils";
+import {MathStyle, RenderMode} from "./enums";
+import {fontSizeForContext} from "./utils";
 
+import {typesetDelimited} from "./typesetters/delimited";
+import {typesetFrac} from "./typesetters/frac";
+import {typesetLimits} from "./typesetters/limits";
+import {typesetRoot} from "./typesetters/root";
+import {typesetSubsup} from "./typesetters/subsup";
 import {typesetTable} from "./typesetters/table";
 
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
-// Dedupe this with editor/src/util.ts
-export const isGlyph = (
-    node: Editor.types.Node,
-    char: string,
-): node is Editor.types.Atom => node.type === "atom" && node.value.char == char;
-
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
-    const box = Layout.hpackNat(
-        [_typesetChildren(row.children, context)],
-        context,
-    );
+    const box = Layout.hpackNat([typesetNodes(row.children, context)], context);
     box.id = row.id;
     box.style.color = row.style.color;
 
@@ -83,237 +79,54 @@ const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
     dim.height = Math.max(dim.height, height);
 };
 
-const typesetFrac = (
-    numerator: Layout.Box,
-    denominator: Layout.Box,
-    context: Context,
-): Layout.Box => {
-    return Layout.makeFract(numerator, denominator, context);
-};
-
-const typesetSubsup = (
-    subBox: Layout.Box | null,
-    supBox: Layout.Box | null,
-    context: Context,
-    prevEditNode?: Editor.types.Node | Editor.Focus,
-    prevLayoutNode?: Layout.Node,
-): Layout.Box => {
-    return Layout.makeSubSup(
-        subBox,
-        supBox,
-        context,
-        prevEditNode,
-        prevLayoutNode,
-    );
-};
-
-const typesetRoot = (
-    // TODO: rename all uses of radical `index` to `degree` to match this
-    degree: Layout.Box | null,
-    radicand: Layout.Box,
-    context: Context,
-): Layout.Box => {
-    const multiplier = multiplierForContext(context);
-
-    // Give the radicand a minimal width in case it's empty
-    radicand.width = Math.max(radicand.width, 30 * multiplier);
-
-    const thresholdOptions = {
-        value: "sum" as const,
-        strict: true,
-    };
-
-    const surd = Layout.hpackNat(
-        [[makeDelimiter("\u221A", radicand, thresholdOptions, context)]],
-        context,
-    );
-
-    const fontSize = fontSizeForContext(context);
-    const {font} = context.fontData;
-    const {constants} = context.fontData.font.math;
-    const thickness =
-        (fontSize * constants.radicalRuleThickness.value) /
-        font.head.unitsPerEm;
-    const endPadding = thickness; // Add extra space at the end of the radicand
-    const stroke = Layout.makeHRule(thickness, radicand.width + endPadding);
-
-    const radicalWithRule = Layout.makeVBox(
-        radicand.width,
-        radicand,
-        [Layout.makeKern(6), stroke],
-        [],
-        context,
-    );
-
-    // Compute the shift to align the top of the surd with the radical rule
-    const shift = surd.height - radicalWithRule.height;
-
-    surd.shift = shift;
-
-    let root;
-    if (degree) {
-        const afterDegreeKern = Layout.makeKern(
-            (fontSize * constants.radicalKernAfterDegree.value) /
-                font.head.unitsPerEm,
-        );
-
-        // TODO: take into account constants.radicalKernBeforeDegree
-        const beforeDegreeKern = Layout.makeKern(
-            Math.max(0, -afterDegreeKern.size - degree.width),
-        );
-
-        // This follows the instructions from 3.3.3.3 describing the alphabetic
-        // baseline of the index.
-        // https://mathml-refresh.github.io/mathml-core/#root-with-index
-        //
-        // NOTE: This doesn't account for an index with a large descender, but
-        // neither does TeX's layout algorithm.  Most of the the time the index
-        // is a single number or `n`, neither of whcih have a descender.
-        const degreeBottomRaisePercent =
-            constants.radicalDegreeBottomRaisePercent / 100;
-
-        // We default to MathML/Word beahavior since that's what most fonts
-        // seem to use.
-        const algorithm =
-            context.radicalDegreeAlgorithm ?? RadicalDegreeAlgorithm.MathML;
-
-        switch (algorithm) {
-            case RadicalDegreeAlgorithm.OpenType:
-                degree.shift =
-                    shift - // match shift of surdHBox
-                    // The OpenType spec says `radicalDegreeBottomRaisePercent` is
-                    // with respect to the ascender of the radical glyph.
-                    degreeBottomRaisePercent * surd.height;
-                break;
-            case RadicalDegreeAlgorithm.MathML:
-                degree.shift =
-                    shift + // match shift of surdHBox
-                    surd.depth - // align the index to the bottom of surdHBox
-                    // The MathML Core spec says `radicalDegreeBottomRaisePercent`
-                    // is with respect to the height of the radical glyph.
-                    degreeBottomRaisePercent * Layout.vsize(surd);
-                break;
-        }
-
-        root = Layout.hpackNat(
-            [
-                [
-                    beforeDegreeKern,
-                    degree,
-                    afterDegreeKern,
-                    surd,
-                    radicalWithRule,
-                ],
-            ],
-            context,
-        );
-    } else {
-        root = Layout.hpackNat([[surd, radicalWithRule]], context);
-    }
-
-    root.width += endPadding;
-
-    return root;
-};
-
-const typesetLimits = (
-    inner: Layout.Node,
-    lowerBox: Layout.Box,
-    upperBox: Layout.Box | null,
-    context: Context,
-): Layout.Box => {
-    const innerWidth = Layout.getWidth(inner);
-    const width = Math.max(
-        innerWidth,
-        lowerBox.width || 0,
-        upperBox?.width || 0,
-    );
-
-    const newInner =
-        innerWidth < width
-            ? Layout.hpackNat(
-                  [
-                      [
-                          Layout.makeKern((width - innerWidth) / 2),
-                          inner,
-                          Layout.makeKern((width - innerWidth) / 2),
-                      ],
-                  ],
-                  context,
-              )
-            : inner;
-    if (lowerBox.width < width) {
-        lowerBox.shift = (width - lowerBox.width) / 2;
-    }
-    if (upperBox && upperBox.width < width) {
-        upperBox.shift = (width - upperBox.width) / 2;
-    }
-
-    const limits = Layout.makeVBox(
-        width,
-        newInner,
-        upperBox ? [Layout.makeKern(6), upperBox] : [],
-        [Layout.makeKern(4), lowerBox],
-        context,
-    );
-
-    return limits;
-};
-
-const childContextForFrac = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
+const getChildMathStyle = (mathStyle: MathStyle): MathStyle => {
+    return {
         [MathStyle.Display]: MathStyle.Text,
         [MathStyle.Text]: MathStyle.Script,
         [MathStyle.Script]: MathStyle.ScriptScript,
         [MathStyle.ScriptScript]: MathStyle.ScriptScript,
     }[mathStyle];
+};
 
-    const childContext: Context = {
+const childContextForFrac = (context: Context): Context => {
+    return {
         ...context,
-        mathStyle: childMathStyle,
+        mathStyle: getChildMathStyle(context.mathStyle),
     };
-
-    return childContext;
 };
 
 const childContextForSubsup = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childContext: Context = {
+    return {
         ...context,
-        mathStyle: childMathStyle,
+        mathStyle: getChildMathStyle(context.mathStyle),
         cramped: true,
     };
-
-    return childContext;
 };
 
 const childContextForLimits = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childContext: Context = {
+    return {
         ...context,
-        mathStyle: childMathStyle,
+        mathStyle: getChildMathStyle(context.mathStyle),
         cramped: true,
     };
+};
 
-    return childContext;
+const getTypesetChildren = (
+    zipper: Editor.Zipper,
+    focus: Editor.Focus,
+    childContext: Context,
+): (Layout.Box | null)[] => {
+    const focusedCell = _typesetZipper(zipper, childContext);
+
+    return [
+        ...focus.left.map((child) => {
+            return child && typesetRow(child, childContext);
+        }),
+        focusedCell,
+        ...focus.right.map((child) => {
+            return child && typesetRow(child, childContext);
+        }),
+    ];
 };
 
 const typesetFocus = (
@@ -327,57 +140,35 @@ const typesetFocus = (
         case "zfrac": {
             const childContext = childContextForFrac(context);
 
-            const numerator = focus.left[0]
-                ? typesetRow(focus.left[0], childContext)
-                : _typesetZipper(zipper, childContext);
+            const typesetChildren = getTypesetChildren(
+                zipper,
+                focus,
+                childContext,
+            );
 
-            const denominator = focus.right[0]
-                ? typesetRow(focus.right[0], childContext)
-                : _typesetZipper(zipper, childContext);
-
-            const frac = typesetFrac(numerator, denominator, context);
-
-            frac.id = focus.id;
-            frac.style = focus.style;
-
-            return frac;
+            return typesetFrac(typesetChildren, focus, context);
         }
         case "zsubsup": {
             const childContext = childContextForSubsup(context);
 
-            const [sub, sup] =
-                focus.left.length === 0 && focus.right.length === 1
-                    ? [zipper.row, focus.right[0]]
-                    : [focus.left[0], zipper.row];
+            const typesetChildren = getTypesetChildren(
+                zipper,
+                focus,
+                childContext,
+            );
 
-            // TODO: document this better so I know what's going on here.
-            const subBox = sub
-                ? sub.type === "row"
-                    ? typesetRow(sub, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : null;
-
-            // TODO: document this better so I know what's going on here.
-            const supBox = sup
-                ? sup.type === "row"
-                    ? typesetRow(sup, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : null;
-
-            const parentBox = typesetSubsup(
-                subBox,
-                supBox,
+            return typesetSubsup(
+                typesetChildren,
+                focus,
                 context,
                 prevEditNode,
                 prevLayoutNode,
             );
-
-            parentBox.id = focus.id;
-            parentBox.style = focus.style;
-
-            return parentBox;
         }
         case "zroot": {
+            // NOTE: We can't reuse the same pattern as the others since the
+            // index and the radicand are typeset using different contexts so
+            // that their sizes are different.
             const [ind, rad] = focus.right[0]
                 ? [zipper.row, focus.right[0]]
                 : [focus.left[0], zipper.row];
@@ -408,94 +199,39 @@ const typesetFocus = (
             return root;
         }
         case "zlimits": {
+            // TODO: render as a subsup if mathStyle isn't MathStyle.Display
             const childContext = childContextForLimits(context);
 
-            const [lower, upper] = focus.left[0]
-                ? [focus.left[0], zipper.row]
-                : [zipper.row, focus.right[0]];
+            const typesetChildren = getTypesetChildren(
+                zipper,
+                focus,
+                childContext,
+            );
 
-            const lowerBox =
-                lower.type === "row"
-                    ? typesetRow(lower, childContext)
-                    : _typesetZipper(zipper, childContext);
-
-            const upperBox = upper
-                ? upper.type === "row"
-                    ? typesetRow(upper, childContext)
-                    : _typesetZipper(zipper, childContext)
-                : null;
-
-            const inner = _typeset(focus.inner, {...context, operator: true});
+            const inner = typesetNode(focus.inner, {
+                ...context,
+                operator: true,
+            });
             inner.id = focus.inner.id;
             inner.style.color = focus.inner.style.color;
 
-            const limits = typesetLimits(inner, lowerBox, upperBox, context);
-
-            limits.id = focus.id;
-            limits.style = focus.style;
-
-            return limits;
+            return typesetLimits(typesetChildren, focus, inner, context);
         }
         case "zdelimited": {
             const row = _typesetZipper(zipper, context);
 
-            const thresholdOptions = {
-                value: "both" as const,
-                strict: true,
-            };
-
-            const open = makeDelimiter(
-                focus.leftDelim.value.char,
-                row,
-                thresholdOptions,
-                context,
-            );
-
-            const close = makeDelimiter(
-                focus.rightDelim.value.char,
-                row,
-                thresholdOptions,
-                context,
-            );
-
-            open.pending = focus.leftDelim.value.pending;
-            close.pending = focus.rightDelim.value.pending;
-
-            const delimited = Layout.hpackNat([[open, row, close]], context);
-
-            delimited.id = focus.id;
-            delimited.style = focus.style;
-
-            return delimited;
+            return typesetDelimited(row, focus, context);
         }
         case "ztable": {
-            const focusedCell = _typesetZipper(zipper, context);
+            const childContext = childContextForFrac(context);
 
-            const typesetFocusLeft = focus.left.map((child) => {
-                return child && typesetRow(child, context);
-            });
-
-            const typesetFocusRight = focus.right.map((child) => {
-                return child && typesetRow(child, context);
-            });
-
-            const typesetChildren = [
-                ...typesetFocusLeft,
-                focusedCell,
-                ...typesetFocusRight,
-            ];
-
-            const table = typesetTable(
-                typesetChildren,
-                focus.colCount,
-                focus.rowCount,
-                context,
+            const typesetChildren = getTypesetChildren(
+                zipper,
+                focus,
+                childContext,
             );
 
-            table.id = focus.id;
-            table.style = focus.style;
-
-            return table;
+            return typesetTable(typesetChildren, focus, context);
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -528,7 +264,7 @@ const _typesetAtom = (
     return glyph;
 };
 
-const _typeset = (
+const typesetNode = (
     node: Editor.types.Node,
     context: Context,
     prevEditNode?: Editor.types.Node | Editor.Focus,
@@ -542,37 +278,26 @@ const _typeset = (
         case "frac": {
             const childContext = childContextForFrac(context);
 
-            const [num, den] = node.children;
-            const numerator = typesetRow(num, childContext);
-            const denominator = typesetRow(den, childContext);
+            const typesetChildren = node.children.map((child) =>
+                typesetRow(child, childContext),
+            );
 
-            const frac = typesetFrac(numerator, denominator, context);
-
-            frac.id = node.id;
-            frac.style = node.style;
-
-            return frac;
+            return typesetFrac(typesetChildren, node, context);
         }
         case "subsup": {
             const childContext = childContextForSubsup(context);
 
-            const [sub, sup] = node.children;
+            const typesetChildren = node.children.map(
+                (child) => child && typesetRow(child, childContext),
+            );
 
-            const subBox = sub && typesetRow(sub, childContext);
-            const supBox = sup && typesetRow(sup, childContext);
-
-            const parentBox = typesetSubsup(
-                subBox,
-                supBox,
+            return typesetSubsup(
+                typesetChildren,
+                node,
                 context,
                 prevEditNode,
                 prevLayoutNode,
             );
-
-            parentBox.id = node.id;
-            parentBox.style = node.style;
-
-            return parentBox;
         }
         case "root": {
             const [ind, rad] = node.children;
@@ -596,73 +321,31 @@ const _typeset = (
         }
         case "limits": {
             // TODO: render as a subsup if mathStyle isn't MathStyle.Display
-
             const childContext = childContextForLimits(context);
 
-            const [lower, upper] = node.children;
+            const typesetChildren = node.children.map(
+                (child) => child && typesetRow(child, childContext),
+            );
 
-            const lowerBox = typesetRow(lower, childContext);
-            const upperBox = upper && typesetRow(upper, childContext);
-
-            const inner = _typeset(node.inner, {...context, operator: true});
+            const inner = typesetNode(node.inner, {...context, operator: true});
             inner.id = node.inner.id;
             inner.style.color = node.inner.style.color;
 
-            const limits = typesetLimits(inner, lowerBox, upperBox, context);
-
-            limits.id = node.id;
-            limits.style = node.style;
-
-            return limits;
+            return typesetLimits(typesetChildren, node, inner, context);
         }
         case "delimited": {
             const row = typesetRow(node.children[0], context);
 
-            const thresholdOptions = {
-                value: "both" as const,
-                strict: true,
-            };
-
-            const open = makeDelimiter(
-                node.leftDelim.value.char,
-                row,
-                thresholdOptions,
-                context,
-            );
-
-            const close = makeDelimiter(
-                node.rightDelim.value.char,
-                row,
-                thresholdOptions,
-                context,
-            );
-
-            open.pending = node.leftDelim.value.pending;
-            close.pending = node.rightDelim.value.pending;
-
-            const delimited = Layout.hpackNat([[open, row, close]], context);
-
-            delimited.id = node.id;
-            delimited.style = node.style;
-
-            return delimited;
+            return typesetDelimited(row, node, context);
         }
         case "table": {
+            const childContext = childContextForFrac(context);
+
             const typesetChildren = node.children.map((child) => {
-                return child && typesetRow(child, context);
+                return child && typesetRow(child, childContext);
             });
 
-            const table = typesetTable(
-                typesetChildren,
-                node.colCount,
-                node.rowCount,
-                context,
-            );
-
-            table.id = node.id;
-            table.style = node.style;
-
-            return table;
+            return typesetTable(typesetChildren, node, context);
         }
         case "atom": {
             return _typesetAtom(node, context);
@@ -748,13 +431,13 @@ const shouldHavePadding = (
     return true;
 };
 
-const _typesetChildren = (
-    children: readonly Editor.types.Node[],
+const typesetNodes = (
+    nodes: readonly Editor.types.Node[],
     context: Context,
     prevChild?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
 ): readonly Layout.Node[] => {
-    return children.map((child) => {
+    return nodes.map((child) => {
         if (child.type === "atom") {
             const glyph = _typesetAtom(child, context);
             const result = shouldHavePadding(prevChild, child, context)
@@ -772,7 +455,12 @@ const _typesetChildren = (
             prevChild = child;
             return result;
         } else {
-            const result = _typeset(child, context, prevChild, prevLayoutNode);
+            const result = typesetNode(
+                child,
+                context,
+                prevChild,
+                prevLayoutNode,
+            );
             prevLayoutNode = result;
             prevChild = child;
             return result;
@@ -792,7 +480,7 @@ const _typesetZipper = (
 
         const nodes: Layout.Node[] = [];
 
-        nodes.push(..._typesetChildren(row.left, context));
+        nodes.push(...typesetNodes(row.left, context));
         const nextZipper: Editor.Zipper = {
             ...zipper,
             breadcrumbs: restCrumbs,
@@ -807,7 +495,7 @@ const _typesetZipper = (
             ),
         );
         nodes.push(
-            ..._typesetChildren(
+            ...typesetNodes(
                 row.right,
                 context,
                 crumb.focus, // previous edit node
@@ -827,10 +515,10 @@ const _typesetZipper = (
     } else {
         const row = zipper.row;
 
-        const left = _typesetChildren(row.left, context);
+        const left = typesetNodes(row.left, context);
         const selection =
             row.selection.length > 0
-                ? _typesetChildren(
+                ? typesetNodes(
                       row.selection,
                       context,
                       row.left[row.left.length - 1],
@@ -845,7 +533,7 @@ const _typesetZipper = (
         const prevLayoutNode =
             selection[selection.length - 1] || left[left.length - 1];
 
-        const right = _typesetChildren(
+        const right = typesetNodes(
             row.right,
             context,
             prevEditNode,
@@ -882,6 +570,6 @@ export const typeset = (
     context: Context,
     options: Options = {},
 ): Scene => {
-    const box = _typeset(node, context) as Layout.Box;
+    const box = typesetNode(node, context) as Layout.Box;
     return processBox(box, context.fontData, options);
 };

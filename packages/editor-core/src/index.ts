@@ -18,8 +18,12 @@ export type {
     Breadcrumb,
     Focus,
     Zipper,
-    ZRow,
+    ZDelimited,
     ZFrac,
+    ZLimits,
+    ZRow,
+    ZSubSup,
+    ZTable,
     State,
     Action,
 } from "./reducer/types";
