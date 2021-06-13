@@ -11,10 +11,10 @@ import type {Context} from "../types";
 
 export const typesetRoot = (
     // TODO: rename all uses of radical `index` to `degree` to match this
-    degree: Layout.Box | null,
-    radicand: Layout.Box,
+    degree: Layout.HBox | null,
+    radicand: Layout.HBox,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     const multiplier = multiplierForContext(context);
 
     // Give the radicand a minimal width in case it's empty
@@ -25,8 +25,8 @@ export const typesetRoot = (
         strict: true,
     };
 
-    const surd = Layout.hpackNat(
-        [[makeDelimiter("\u221A", radicand, thresholdOptions, context)]],
+    const surd = Layout.makeStaticHBox(
+        [makeDelimiter("\u221A", radicand, thresholdOptions, context)],
         context,
     );
 
@@ -97,20 +97,12 @@ export const typesetRoot = (
                 break;
         }
 
-        root = Layout.hpackNat(
-            [
-                [
-                    beforeDegreeKern,
-                    degree,
-                    afterDegreeKern,
-                    surd,
-                    radicalWithRule,
-                ],
-            ],
+        root = Layout.makeStaticHBox(
+            [beforeDegreeKern, degree, afterDegreeKern, surd, radicalWithRule],
             context,
         );
     } else {
-        root = Layout.hpackNat([[surd, radicalWithRule]], context);
+        root = Layout.makeStaticHBox([surd, radicalWithRule], context);
     }
 
     root.width += endPadding;

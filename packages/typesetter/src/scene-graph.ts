@@ -99,7 +99,7 @@ export type LayoutCursor = {
 
 const CURSOR_WIDTH = 2;
 
-const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
+const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     const selectionBoxes: Rect[] = [];
@@ -107,9 +107,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     const children: Node[] = [];
 
     const hasSelection =
-        !context.inSelection &&
-        box.content.length === 3 &&
-        box.content[1].length > 0;
+        !context.inSelection && box.content.type === "selection";
 
     const {
         layer,
@@ -140,7 +138,19 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
 
     let cancelRegion: CancelRegion | null = null;
 
-    box.content.forEach((section, index) => {
+    const sections = [];
+    if (box.content.type === "static") {
+        sections.push(box.content.nodes);
+    } else if (box.content.type === "cursor") {
+        sections.push(box.content.left);
+        sections.push(box.content.right);
+    } else {
+        sections.push(box.content.left);
+        sections.push(box.content.selection);
+        sections.push(box.content.right);
+    }
+
+    sections.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
 
         // There should only be two sections max.  If there are two sections
@@ -230,7 +240,8 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
             const depth = Layout.getDepth(node);
 
             switch (node.type) {
-                case "Box": {
+                case "HBox":
+                case "VBox": {
                     const child = _processBox(
                         node,
                         {x: pen.x, y: pen.y + node.shift},
@@ -380,7 +391,7 @@ const processHBox = (box: Layout.Box, loc: Point, context: Context): Group => {
     };
 };
 
-const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
+const processVBox = (box: Layout.VBox, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
@@ -393,113 +404,112 @@ const processVBox = (box: Layout.Box, loc: Point, context: Context): Group => {
         stroke: "red",
     };
 
-    box.content.forEach((section) => {
-        section.forEach((node) => {
-            const width = Layout.getWidth(node);
-            const height = Layout.getHeight(node);
-            const depth = Layout.getDepth(node);
+    box.content.forEach((node) => {
+        const width = Layout.getWidth(node);
+        const height = Layout.getHeight(node);
+        const depth = Layout.getDepth(node);
 
-            switch (node.type) {
-                case "Box": {
-                    // TODO: reconsider whether we should be taking the shift into
-                    // account when computing the height, maybe we can drop this
-                    // and simplify things.  The reason why we zero out the shift
-                    // here is that when we render a box inside of a vbox, the shift
-                    // is a horizontal shift as opposed to a vertical one.
-                    // I'm not sure we can do this properly since how the shift is
-                    // used depends on the parent box type.  We could pass that info
-                    // to the getHeight() function... we should probably do an audit
-                    // of all the callsites for getHeight()
-                    const height = Layout.getHeight({...node, shift: 0});
-                    const depth = Layout.getDepth({...node, shift: 0});
+        switch (node.type) {
+            case "HBox":
+            case "VBox": {
+                // TODO: reconsider whether we should be taking the shift into
+                // account when computing the height, maybe we can drop this
+                // and simplify things.  The reason why we zero out the shift
+                // here is that when we render a box inside of a vbox, the shift
+                // is a horizontal shift as opposed to a vertical one.
+                // I'm not sure we can do this properly since how the shift is
+                // used depends on the parent box type.  We could pass that info
+                // to the getHeight() function... we should probably do an audit
+                // of all the callsites for getHeight()
+                const height = Layout.getHeight({...node, shift: 0});
+                const depth = Layout.getDepth({...node, shift: 0});
 
-                    pen.y += height;
-                    // TODO: see if we can get rid of this check in the future
-                    if (Number.isNaN(pen.y)) {
-                        // eslint-disable-next-line no-debugger
-                        debugger;
-                    }
-
-                    const child = _processBox(
-                        node,
-                        {x: pen.x + node.shift, y: pen.y},
-                        context,
-                    );
-
-                    // We always have to include child groups regardless of the
-                    // layer.  TODO: drop this once we flatten the scene graph.
-                    children.push(child);
-
-                    if (layer === "debug") {
-                        children.push({
-                            type: "rect",
-                            id: node.id,
-                            x: pen.x + node.shift,
-                            y: pen.y - height,
-                            width: width,
-                            height: depth + height,
-                            style: debugStyle,
-                        });
-                    }
-
-                    pen.y += depth;
-                    break;
+                pen.y += height;
+                // TODO: see if we can get rid of this check in the future
+                if (Number.isNaN(pen.y)) {
+                    // eslint-disable-next-line no-debugger
+                    debugger;
                 }
-                case "HRule": {
-                    pen.y += height;
-                    const child = processHRule(node, pen);
-                    if (layer === "content") {
-                        children.push(child);
-                    }
-                    pen.y += depth;
-                    break;
+
+                const child = _processBox(
+                    node,
+                    {x: pen.x + node.shift, y: pen.y},
+                    context,
+                );
+
+                // We always have to include child groups regardless of the
+                // layer.  TODO: drop this once we flatten the scene graph.
+                children.push(child);
+
+                if (layer === "debug") {
+                    children.push({
+                        type: "rect",
+                        id: node.id,
+                        x: pen.x + node.shift,
+                        y: pen.y - height,
+                        width: width,
+                        height: depth + height,
+                        style: debugStyle,
+                    });
                 }
-                case "Glyph": {
-                    // Although there currently isn't anything that uses a glyph
-                    // in a vbox, we'll likely need it for accents.
-                    pen.y += height;
-                    const child = processGlyph(node, pen);
 
-                    if (layer === "content") {
-                        children.push(child);
-                    }
-
-                    if (layer === "debug") {
-                        children.push({
-                            type: "rect",
-                            id: node.id,
-                            x: pen.x,
-                            y: pen.y,
-                            width: width,
-                            height: depth + height,
-                            style: debugStyle,
-                        });
-                    }
-
-                    if (layer === "hitboxes") {
-                        // TODO: do a second pass on the hitboxes to expand them
-                        // to their full height
-                        children.push({
-                            type: "rect",
-                            id: node.id,
-                            x: pen.x,
-                            y: pen.y,
-                            width: width,
-                            height: depth + height,
-                            style: debugStyle,
-                        });
-                    }
-
-                    pen.y += depth;
-                    break;
-                }
-                case "Kern":
-                    pen.y += node.size;
-                    break;
-                default:
-                    throw new UnreachableCaseError(node);
+                pen.y += depth;
+                break;
             }
-        });
+            case "HRule": {
+                pen.y += height;
+                const child = processHRule(node, pen);
+                if (layer === "content") {
+                    children.push(child);
+                }
+                pen.y += depth;
+                break;
+            }
+            case "Glyph": {
+                // Although there currently isn't anything that uses a glyph
+                // in a vbox, we'll likely need it for accents.
+                pen.y += height;
+                const child = processGlyph(node, pen);
+
+                if (layer === "content") {
+                    children.push(child);
+                }
+
+                if (layer === "debug") {
+                    children.push({
+                        type: "rect",
+                        id: node.id,
+                        x: pen.x,
+                        y: pen.y,
+                        width: width,
+                        height: depth + height,
+                        style: debugStyle,
+                    });
+                }
+
+                if (layer === "hitboxes") {
+                    // TODO: do a second pass on the hitboxes to expand them
+                    // to their full height
+                    children.push({
+                        type: "rect",
+                        id: node.id,
+                        x: pen.x,
+                        y: pen.y,
+                        width: width,
+                        height: depth + height,
+                        style: debugStyle,
+                    });
+                }
+
+                pen.y += depth;
+                break;
+            }
+            case "Kern":
+                pen.y += node.size;
+                break;
+            default:
+                throw new UnreachableCaseError(node);
+        }
     });
 
     return {
@@ -534,11 +544,15 @@ type Context = {
     layer: "content" | "selection" | "debug" | "hitboxes";
 };
 
-const _processBox = (box: Layout.Box, loc: Point, context: Context): Group => {
-    switch (box.kind) {
-        case "hbox":
+const _processBox = (
+    box: Layout.HBox | Layout.VBox,
+    loc: Point,
+    context: Context,
+): Group => {
+    switch (box.type) {
+        case "HBox":
             return processHBox(box, loc, context);
-        case "vbox":
+        case "VBox":
             return processVBox(box, loc, context);
     }
 };
@@ -554,7 +568,7 @@ export type Scene = {
 };
 
 export const processBox = (
-    box: Layout.Box,
+    box: Layout.HBox,
     fontData: FontData,
     options: Options = {},
 ): Scene => {

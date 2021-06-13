@@ -6,22 +6,22 @@ import {fontSizeForContext, makeDelimiter} from "../utils";
 import type {Context} from "../types";
 
 type Row = {
-    children: Layout.Box[];
+    children: Layout.HBox[];
     height: number;
     depth: number;
 };
 type Col = {
-    children: Layout.Box[];
+    children: Layout.HBox[];
     width: number;
 };
 
 const COL_GAP = 50;
 
 export const typesetTable = (
-    typesetChildren: (Layout.Box | null)[],
+    typesetChildren: (Layout.HBox | null)[],
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
 
@@ -50,10 +50,12 @@ export const typesetTable = (
             } else {
                 // Use an empty Layout.Box for children that were null
                 cell = {
-                    type: "Box",
-                    kind: "hbox",
+                    type: "HBox",
                     shift: 0,
-                    content: [],
+                    content: {
+                        type: "static",
+                        nodes: [],
+                    },
                     // These values don't matter since the box is empty
                     fontSize: 0,
                     style: {},
@@ -103,7 +105,7 @@ export const typesetTable = (
     }
 
     const rowBoxes = rows.map((row) =>
-        Layout.hpackNat([row.children], context),
+        Layout.makeStaticHBox(row.children, context),
     );
     const width =
         columns.reduce((sum, col) => sum + col.width, 0) +
@@ -134,7 +136,7 @@ export const typesetTable = (
     const open = makeDelimiter("[", inner, thresholdOptions, context);
     const close = makeDelimiter("]", inner, thresholdOptions, context);
 
-    const table = Layout.hpackNat([[open, inner, close]], context);
+    const table = Layout.makeStaticHBox([open, inner, close], context);
 
     table.id = node.id;
     table.style = node.style;

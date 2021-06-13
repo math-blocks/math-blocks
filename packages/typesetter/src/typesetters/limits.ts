@@ -6,11 +6,11 @@ import type {Context} from "../types";
 
 // TODO: render as a subsup if mathStyle isn't MathStyle.Display
 export const typesetLimits = (
-    typesetChildren: readonly (Layout.Box | null)[],
+    typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.Limits | Editor.ZLimits,
     inner: Layout.Node,
     context: Context,
-): Layout.Box => {
+): Layout.VBox => {
     const [lowerBox, upperBox] = typesetChildren;
 
     if (!lowerBox) {
@@ -26,13 +26,11 @@ export const typesetLimits = (
 
     const newInner =
         innerWidth < width
-            ? Layout.hpackNat(
+            ? Layout.makeStaticHBox(
                   [
-                      [
-                          Layout.makeKern((width - innerWidth) / 2),
-                          inner,
-                          Layout.makeKern((width - innerWidth) / 2),
-                      ],
+                      Layout.makeKern((width - innerWidth) / 2),
+                      inner,
+                      Layout.makeKern((width - innerWidth) / 2),
                   ],
                   context,
               )

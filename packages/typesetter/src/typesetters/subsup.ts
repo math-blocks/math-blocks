@@ -5,12 +5,12 @@ import * as Layout from "../layout";
 import type {Context} from "../types";
 
 export const typesetSubsup = (
-    typesetChildren: readonly (Layout.Box | null)[],
+    typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.SubSup | Editor.ZSubSup,
     context: Context,
     prevEditNode?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
-): Layout.Box => {
+): Layout.VBox => {
     const [subBox, supBox] = typesetChildren;
 
     if (!supBox && !subBox) {
@@ -28,7 +28,10 @@ export const typesetSubsup = (
     // filter them out.  Anything else that's in a box is some sort of compound
     // layout structure (frac, delimited, etc.) and should have its subscript
     // and/or superscript positioned based on the size of the box.
-    if (prevEditNode?.type !== "atom" && prevLayoutNode?.type === "Box") {
+    if (
+        prevEditNode?.type !== "atom" &&
+        (prevLayoutNode?.type === "HBox" || prevLayoutNode?.type === "VBox")
+    ) {
         const {
             superscriptBaselineDropMax,
             subscriptBaselineDropMin,
@@ -126,7 +129,7 @@ export const typesetSubsup = (
             );
 
             if (gap < gapMin) {
-                if (upList[0].type === "Kern" && upList[1].type === "Box") {
+                if (upList[0].type === "Kern" && upList[1].type === "HBox") {
                     // shift the superscript up to increase the gap
                     const correction = gapMin - gap;
                     upList[0].size += correction;

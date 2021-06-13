@@ -22,17 +22,35 @@ type Common = {
     style: Style;
 };
 
-type BoxKind = "hbox" | "vbox";
+type Content =
+    | {
+          type: "static";
+          nodes: readonly Node[];
+      }
+    | {
+          type: "cursor";
+          left: readonly Node[];
+          right: readonly Node[];
+      }
+    | {
+          type: "selection";
+          left: readonly Node[];
+          selection: readonly Node[];
+          right: readonly Node[];
+      };
 
-export type Box = {
-    type: "Box";
-    kind: BoxKind;
+export type HBox = {
+    type: "HBox";
     shift: Dist;
-    // TODO: tighten this up by modeling the possible types of content
-    // - no cursor, no selection
-    // - cursor
-    // - selection
-    content: readonly (readonly Node[])[];
+    content: Content;
+    fontSize: number;
+} & Common &
+    Dim;
+
+export type VBox = {
+    type: "VBox";
+    shift: Dist;
+    content: readonly Node[];
     fontSize: number;
 } & Common &
     Dim;
@@ -59,17 +77,11 @@ export type HRule = {
     width: number;
 } & Common;
 
-export type Node = Box | Glyph | Kern | HRule;
+export type Node = HBox | VBox | Glyph | Kern | HRule;
 
-export const makeBox = (
-    kind: BoxKind,
-    dim: Dim,
-    content: readonly (readonly Node[])[],
-    context: Context,
-): Box => {
+const makeHBox = (dim: Dim, content: Content, context: Context): HBox => {
     return {
-        type: "Box",
-        kind,
+        type: "HBox",
         ...dim,
         shift: 0,
         content,
@@ -78,36 +90,26 @@ export const makeBox = (
     };
 };
 
-export const rebox = (box: Box, before: Kern, after: Kern): Box => {
-    if (box.content.length === 1) {
+export const rebox = (box: HBox, before: Kern, after: Kern): HBox => {
+    if (box.content.type === "static") {
         return {
             ...box,
-            width: box.width + before.size + after.size,
-            content: [[before, ...box.content[0], after]],
-        };
-    } else if (box.content.length === 2) {
-        return {
-            ...box,
-            width: box.width + before.size + after.size,
-            content: [
-                [before, ...box.content[0]],
-                [...box.content[1], after],
-            ],
-        };
-    } else if (box.content.length === 3) {
-        return {
-            ...box,
-            width: box.width + before.size + after.size,
-            content: [
-                [before, ...box.content[0]],
-                box.content[1],
-                [...box.content[2], after],
-            ],
+            width: before.size + box.width + after.size,
+            content: {
+                ...box.content,
+                nodes: [before, ...box.content.nodes, after],
+            },
         };
     } else {
-        throw new Error(
-            `box.content.length = ${box.content.length} which is invalid`,
-        );
+        return {
+            ...box,
+            width: before.size + box.width + after.size,
+            content: {
+                ...box.content,
+                left: [before, ...box.content.left],
+                right: [...box.content.right, after],
+            },
+        };
     }
 };
 
@@ -192,7 +194,9 @@ export const getCharDepth = (glyph: Glyph): number => {
 
 export const getWidth = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.width;
+        case "VBox":
             return node.width;
         case "Glyph":
             return getCharAdvance(node);
@@ -207,7 +211,9 @@ export const getWidth = (node: Node): number => {
 
 export const getHeight = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.height - node.shift;
+        case "VBox":
             return node.height - node.shift;
         case "Glyph":
             return getCharHeight(node);
@@ -222,7 +228,9 @@ export const getHeight = (node: Node): number => {
 
 export const getDepth = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.depth + node.shift;
+        case "VBox":
             return node.depth + node.shift;
         case "Glyph":
             return getCharDepth(node);
@@ -235,24 +243,11 @@ export const getDepth = (node: Node): number => {
     }
 };
 
-const vwidth = (node: Node): number => {
-    switch (node.type) {
-        case "Box":
-            return node.width + node.shift;
-        case "Glyph":
-            return getCharAdvance(node);
-        case "Kern":
-            return 0;
-        case "HRule":
-            return node.width;
-        default:
-            throw new UnreachableCaseError(node);
-    }
-};
-
 export const vsize = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.height + node.depth;
+        case "VBox":
             return node.height + node.depth;
         case "Glyph":
             return getCharHeight(node) + getCharDepth(node);
@@ -275,20 +270,68 @@ export const hlistWidth = (nodes: readonly Node[]): number =>
 const hlistHeight = (nodes: readonly Node[]): number =>
     max(nodes.map(getHeight));
 const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
 const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (
-    nl: readonly (readonly Node[])[],
+export const makeStaticHBox = (
+    nodes: readonly Node[],
     context: Context,
-): Box => {
+): HBox => {
     const dim = {
-        width: sum(nl.map(hlistWidth)),
-        height: max(nl.map(hlistHeight)),
-        depth: max(nl.map(hlistDepth)),
+        width: hlistWidth(nodes),
+        height: hlistHeight(nodes),
+        depth: hlistDepth(nodes),
     };
-    return makeBox("hbox", dim, nl, context);
+    const content: Content = {
+        type: "static",
+        nodes,
+    };
+    return makeHBox(dim, content, context);
+};
+
+export const makeCursorHBox = (
+    left: readonly Node[],
+    right: readonly Node[],
+    context: Context,
+): HBox => {
+    const dim = {
+        width: hlistWidth(left) + hlistWidth(right),
+        height: Math.max(hlistHeight(left), hlistHeight(right)),
+        depth: Math.max(hlistDepth(left), hlistDepth(right)),
+    };
+    const content: Content = {
+        type: "cursor",
+        left,
+        right,
+    };
+    return makeHBox(dim, content, context);
+};
+
+export const makeSelectionHBox = (
+    left: readonly Node[],
+    selection: readonly Node[],
+    right: readonly Node[],
+    context: Context,
+): HBox => {
+    const dim = {
+        width: hlistWidth(left) + hlistWidth(selection) + hlistWidth(right),
+        height: Math.max(
+            hlistHeight(left),
+            hlistHeight(selection),
+            hlistHeight(right),
+        ),
+        depth: Math.max(
+            hlistDepth(left),
+            hlistDepth(selection),
+            hlistDepth(right),
+        ),
+    };
+    const content: Content = {
+        type: "selection",
+        left,
+        selection,
+        right,
+    };
+    return makeHBox(dim, content, context);
 };
 
 export const makeVBox = (
@@ -297,7 +340,7 @@ export const makeVBox = (
     upList: readonly Node[],
     dnList: readonly Node[],
     context: Context,
-): Box => {
+): VBox => {
     const dim = {
         width,
         depth:
@@ -312,7 +355,15 @@ export const makeVBox = (
     const upListCopy = [...upList];
     // TODO: get rid of the need to reverse the uplist
     const nodeList = [...upListCopy.reverse(), node, ...dnList];
-    return makeBox("vbox", dim, [nodeList], context);
+
+    return {
+        type: "VBox",
+        ...dim,
+        shift: 0,
+        content: nodeList,
+        fontSize: fontSizeForContext(context),
+        style: {},
+    };
 };
 
 export const getConstantValue = (
