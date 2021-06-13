@@ -1,7 +1,7 @@
 import * as builders from "../ast/builders";
 import * as types from "../ast/types";
 
-import type {State, Zipper, BreadcrumbRow, Breadcrumb, ZTable} from "./types";
+import type {State, Zipper, Breadcrumb, ZTable, ZRow} from "./types";
 
 export type MatrixActions =
     | {
@@ -25,13 +25,16 @@ export type MatrixActions =
 type Cell = {
     row: number;
     col: number;
-    content: types.Row | BreadcrumbRow | null;
+    content: types.Row | ZRow | null;
 };
 
 // TODO: make the Breadcrumb type generic
-const getCellsFromCrumb = (focus: ZTable, bcrow: BreadcrumbRow): Cell[] => {
+const getCellsFromCrumb = (
+    crumb: Breadcrumb<ZTable>,
+    zipper: Zipper,
+): Cell[] => {
     const cells: Cell[] = [];
-    const {colCount, left, right} = focus;
+    const {colCount, left, right} = crumb.focus;
 
     let index = 0;
     for (let i = 0; i < left.length; i++) {
@@ -48,7 +51,7 @@ const getCellsFromCrumb = (focus: ZTable, bcrow: BreadcrumbRow): Cell[] => {
     cells[index++] = {
         row,
         col,
-        content: bcrow,
+        content: zipper.row,
     };
     for (let i = 0; i < right.length; i++) {
         const col = index % colCount;
@@ -65,52 +68,51 @@ const getCellsFromCrumb = (focus: ZTable, bcrow: BreadcrumbRow): Cell[] => {
 
 const getCrumbFromCells = (
     cells: Cell[],
-    focus: ZTable,
+    crumb: Breadcrumb<ZTable>,
     orientation: "row" | "col",
 ): Breadcrumb => {
-    const orderedContent: (types.Row | BreadcrumbRow | null)[] = [];
+    const orderedContent: (types.Row | ZRow | null)[] = [];
     for (const cell of cells) {
         const {row, col, content} = cell;
         const index =
             orientation === "row"
-                ? row * focus.colCount + col
-                : row * (focus.colCount + 1) + col;
+                ? row * crumb.focus.colCount + col
+                : row * (crumb.focus.colCount + 1) + col;
         orderedContent[index] = content;
     }
 
-    const indexOfBreadcrumbRow = orderedContent.findIndex(
-        (item) => item?.type === "bcrow",
+    const indexOfZRow = orderedContent.findIndex(
+        (item) => item?.type === "zrow",
     );
 
-    if (indexOfBreadcrumbRow === -1) {
-        throw new Error("Breadcrumb row is missing");
+    if (indexOfZRow === -1) {
+        throw new Error("ZRow cell is missing");
     }
 
     const newLeft = orderedContent.slice(
         0,
-        indexOfBreadcrumbRow,
+        indexOfZRow,
     ) as (types.Row | null)[];
-    const newRow = orderedContent[indexOfBreadcrumbRow] as BreadcrumbRow;
     const newRight = orderedContent.slice(
-        indexOfBreadcrumbRow + 1,
+        indexOfZRow + 1,
     ) as (types.Row | null)[];
 
     if (orientation === "row") {
         return {
-            row: newRow,
+            ...crumb,
             focus: {
-                ...focus,
-                rowCount: focus.rowCount + 1,
+                ...crumb.focus,
+                rowCount: crumb.focus.rowCount + 1,
                 left: newLeft,
                 right: newRight,
             },
         };
     } else {
         return {
-            row: newRow,
+            ...crumb,
             focus: {
-                ...focus,
-                colCount: focus.colCount + 1,
+                ...crumb.focus,
+                colCount: crumb.focus.colCount + 1,
                 left: newLeft,
                 right: newRight,
             },
@@ -171,7 +173,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
         if (crumb?.focus.type === "ztable") {
             const {colCount, left} = crumb.focus;
 
-            const cells = getCellsFromCrumb(crumb.focus, crumb.row);
+            const cells = getCellsFromCrumb(
+                crumb as Breadcrumb<ZTable>,
+                state.zipper,
+            );
 
             const cursorIndex = left.length;
             const cursorRow = Math.floor(cursorIndex / colCount);
@@ -204,7 +209,11 @@ export const matrix = (state: State, action: MatrixActions): State => {
                 }
             }
 
-            const newCrumb = getCrumbFromCells(cells, crumb.focus, "row");
+            const newCrumb = getCrumbFromCells(
+                cells,
+                crumb as Breadcrumb<ZTable>,
+                "row",
+            );
             const restCrumbs = breadcrumbs.slice(0, -1);
 
             const {zipper} = state;
@@ -227,7 +236,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
         if (crumb?.focus.type === "ztable") {
             const {colCount, rowCount, left} = crumb.focus;
 
-            const cells = getCellsFromCrumb(crumb.focus, crumb.row);
+            const cells = getCellsFromCrumb(
+                crumb as Breadcrumb<ZTable>,
+                state.zipper,
+            );
 
             const cursorIndex = left.length;
             const cursorCol = cursorIndex % colCount;
@@ -260,7 +272,11 @@ export const matrix = (state: State, action: MatrixActions): State => {
                 }
             }
 
-            const newCrumb = getCrumbFromCells(cells, crumb.focus, "col");
+            const newCrumb = getCrumbFromCells(
+                cells,
+                crumb as Breadcrumb<ZTable>,
+                "col",
+            );
             const restCrumbs = breadcrumbs.slice(0, -1);
 
             const {zipper} = state;
@@ -277,7 +293,208 @@ export const matrix = (state: State, action: MatrixActions): State => {
         }
     }
 
-    // TODO: handle deleting the current row/column
+    if (action.type === "DeleteRow") {
+        const {breadcrumbs} = state.zipper;
+        const crumb = breadcrumbs[breadcrumbs.length - 1];
+        if (crumb?.focus.type === "ztable") {
+            const {colCount, rowCount, left} = crumb.focus;
+
+            const cursorIndex = left.length;
+            const cursorRow = Math.floor(cursorIndex / colCount);
+
+            const cells = getCellsFromCrumb(
+                crumb as Breadcrumb<ZTable>,
+                state.zipper,
+            )
+                // remove all cells in the current row
+                .filter((cell) => cell.row !== cursorRow);
+
+            for (const cell of cells) {
+                if (cell.row > cursorRow) {
+                    cell.row--;
+                }
+            }
+
+            if (cells.length === 0) {
+                const restCrumbs = breadcrumbs.slice(0, -1);
+                const newZipper: Zipper = {
+                    row: {
+                        ...crumb.row,
+                        type: "zrow",
+                        selection: [],
+                    },
+                    breadcrumbs: restCrumbs,
+                };
+                return {
+                    startZipper: newZipper,
+                    endZipper: newZipper,
+                    zipper: newZipper,
+                    selecting: false,
+                };
+            }
+
+            const indexOfZRow =
+                cursorRow < rowCount - 1 ? cursorIndex : cursorIndex - colCount;
+
+            const orderedContent: (types.Row | ZRow | null)[] = [];
+            for (const cell of cells) {
+                const {row, col, content} = cell;
+                const index = row * crumb.focus.colCount + col;
+                orderedContent[index] = content;
+            }
+
+            const row = orderedContent[indexOfZRow];
+            if (row?.type === "row") {
+                orderedContent[indexOfZRow] = {
+                    id: row.id,
+                    type: "zrow",
+                    left: [],
+                    selection: [],
+                    right: row.children,
+                    style: row.style,
+                };
+            } else {
+                throw new Error(
+                    `No ordereredContent item with index ${indexOfZRow}`,
+                );
+            }
+
+            const newLeft = orderedContent.slice(
+                0,
+                indexOfZRow,
+            ) as (types.Row | null)[];
+            const newRight = orderedContent.slice(
+                indexOfZRow + 1,
+            ) as (types.Row | null)[];
+
+            const newCrumb: Breadcrumb = {
+                ...crumb,
+                focus: {
+                    ...crumb.focus,
+                    rowCount: rowCount - 1,
+                    left: newLeft,
+                    right: newRight,
+                },
+            };
+            const restCrumbs = breadcrumbs.slice(0, -1);
+
+            const {zipper} = state;
+            const newZipper: Zipper = {
+                ...zipper,
+                row: orderedContent[indexOfZRow] as ZRow,
+                breadcrumbs: [...restCrumbs, newCrumb],
+            };
+            return {
+                startZipper: newZipper,
+                endZipper: newZipper,
+                zipper: newZipper,
+                selecting: false,
+            };
+        }
+    }
+
+    if (action.type === "DeleteColumn") {
+        const {breadcrumbs} = state.zipper;
+        const crumb = breadcrumbs[breadcrumbs.length - 1];
+        if (crumb?.focus.type === "ztable") {
+            const {colCount, left} = crumb.focus;
+
+            const cursorIndex = left.length;
+            const cursorCol = cursorIndex % colCount;
+
+            const cells = getCellsFromCrumb(
+                crumb as Breadcrumb<ZTable>,
+                state.zipper,
+            )
+                // remove all cells in the current column
+                .filter((cell) => cell.col !== cursorCol);
+
+            for (const cell of cells) {
+                if (cell.col > cursorCol) {
+                    cell.col--;
+                }
+            }
+
+            if (cells.length === 0) {
+                const restCrumbs = breadcrumbs.slice(0, -1);
+                const newZipper: Zipper = {
+                    row: {
+                        ...crumb.row,
+                        type: "zrow",
+                        selection: [],
+                    },
+                    breadcrumbs: restCrumbs,
+                };
+                return {
+                    startZipper: newZipper,
+                    endZipper: newZipper,
+                    zipper: newZipper,
+                    selecting: false,
+                };
+            }
+
+            const newColCount = colCount - 1;
+            const orderedContent: (types.Row | ZRow | null)[] = [];
+            for (const cell of cells) {
+                const {row, col, content} = cell;
+                const index = row * newColCount + col;
+                orderedContent[index] = content;
+            }
+
+            // Determine the new location of the cursor after removing a column.
+            const cursorRow = Math.floor(cursorIndex / colCount);
+            const indexOfZRow =
+                cursorRow * newColCount + Math.min(cursorCol, newColCount - 1);
+
+            const row = orderedContent[indexOfZRow];
+            if (row?.type === "row") {
+                orderedContent[indexOfZRow] = {
+                    id: row.id,
+                    type: "zrow",
+                    left: [],
+                    selection: [],
+                    right: row.children,
+                    style: row.style,
+                };
+            } else {
+                throw new Error(
+                    `No ordereredContent item with index ${indexOfZRow}`,
+                );
+            }
+
+            const newLeft = orderedContent.slice(
+                0,
+                indexOfZRow,
+            ) as (types.Row | null)[];
+            const newRight = orderedContent.slice(
+                indexOfZRow + 1,
+            ) as (types.Row | null)[];
+
+            const newCrumb: Breadcrumb = {
+                ...crumb,
+                focus: {
+                    ...crumb.focus,
+                    colCount: colCount - 1,
+                    left: newLeft,
+                    right: newRight,
+                },
+            };
+            const restCrumbs = breadcrumbs.slice(0, -1);
+
+            const {zipper} = state;
+            const newZipper: Zipper = {
+                ...zipper,
+                row: orderedContent[indexOfZRow] as ZRow,
+                breadcrumbs: [...restCrumbs, newCrumb],
+            };
+            return {
+                startZipper: newZipper,
+                endZipper: newZipper,
+                zipper: newZipper,
+                selecting: false,
+            };
+        }
+    }
 
     return state;
 };

@@ -91,9 +91,9 @@ export type BreadcrumbRow = {
     style: types.Style;
 };
 
-export type Breadcrumb = {
+export type Breadcrumb<F extends Focus = Focus> = {
     row: BreadcrumbRow;
-    focus: Focus; // The item from the row that the cursor is inside of
+    focus: F; // The item from the row that the cursor is inside of
 };
 
 export type Zipper = {
