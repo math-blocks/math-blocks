@@ -6,10 +6,10 @@ import {makeDelimiter} from "../utils";
 import type {Context} from "../types";
 
 export const typesetDelimited = (
-    row: Layout.Box,
+    row: Layout.HBox,
     node: Editor.types.Delimited | Editor.ZDelimited,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     const thresholdOptions = {
         value: "both" as const,
         strict: true,

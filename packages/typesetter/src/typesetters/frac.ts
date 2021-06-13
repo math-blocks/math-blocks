@@ -8,14 +8,14 @@ import type {Context} from "../types";
 
 const makeList = (
     size: Layout.Dist,
-    box: Layout.Box,
+    box: Layout.HBox,
 ): readonly Layout.Node[] => [Layout.makeKern(size), box];
 
 export const typesetFrac = (
-    typesetChildren: readonly (Layout.Box | null)[],
+    typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.Frac | Editor.ZFrac,
     context: Context,
-): Layout.Box => {
+): Layout.VBox => {
     let [numBox, denBox] = typesetChildren;
     if (!numBox || !denBox) {
         throw new Error("The numerator and denominator must both be defined");

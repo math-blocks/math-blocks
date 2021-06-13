@@ -16,7 +16,7 @@ import {typesetTable} from "./typesetters/table";
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
-const typesetRow = (row: Editor.types.Row, context: Context): Layout.Box => {
+const typesetRow = (row: Editor.types.Row, context: Context): Layout.HBox => {
     const box = Layout.hpackNat([typesetNodes(row.children, context)], context);
     box.id = row.id;
     box.style.color = row.style.color;
@@ -139,7 +139,7 @@ const getTypesetChildren = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
     childContext: Context,
-): (Layout.Box | null)[] => {
+): (Layout.HBox | null)[] => {
     const focusedCell = _typesetZipper(zipper, childContext);
 
     return [
@@ -159,7 +159,7 @@ const typesetFocus = (
     context: Context,
     prevEditNode?: Editor.types.Node,
     prevLayoutNode?: Layout.Node,
-): Layout.Box => {
+): Layout.Node => {
     switch (focus.type) {
         case "zfrac": {
             const childContext = childContextForFrac(context);
@@ -495,7 +495,7 @@ const typesetNodes = (
 const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     // The bottommost crumb is the outermost row
     const [crumb, ...restCrumbs] = zipper.breadcrumbs;
 
@@ -585,7 +585,7 @@ export const typesetZipper = (
     context: Context,
     options: Options = {},
 ): Scene => {
-    const box = _typesetZipper(zipper, context) as Layout.Box;
+    const box = _typesetZipper(zipper, context) as Layout.HBox;
     return processBox(box, context.fontData, options);
 };
 
@@ -594,6 +594,6 @@ export const typeset = (
     context: Context,
     options: Options = {},
 ): Scene => {
-    const box = typesetNode(node, context) as Layout.Box;
+    const box = typesetNode(node, context) as Layout.HBox;
     return processBox(box, context.fontData, options);
 };

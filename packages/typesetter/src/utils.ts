@@ -36,7 +36,7 @@ type ThresholdOptions = {
 // glyphs on that row.
 const getDelimiter = (
     char: string,
-    box: Layout.Box,
+    box: Layout.HBox | Layout.VBox,
     thresholdOptions: ThresholdOptions,
     context: Context,
 ): number => {
@@ -115,7 +115,7 @@ const getDelimiter = (
  */
 export const makeDelimiter = (
     char: string,
-    box: Layout.Box,
+    box: Layout.HBox | Layout.VBox,
     thresholdOptions: ThresholdOptions,
     context: Context,
 ): Layout.Glyph => {

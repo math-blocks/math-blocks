@@ -5,12 +5,12 @@ import * as Layout from "../layout";
 import type {Context} from "../types";
 
 export const typesetSubsup = (
-    typesetChildren: readonly (Layout.Box | null)[],
+    typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.SubSup | Editor.ZSubSup,
     context: Context,
     prevEditNode?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
-): Layout.Box => {
+): Layout.VBox => {
     const [subBox, supBox] = typesetChildren;
 
     if (!supBox && !subBox) {

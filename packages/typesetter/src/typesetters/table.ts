@@ -6,22 +6,22 @@ import {fontSizeForContext, makeDelimiter} from "../utils";
 import type {Context} from "../types";
 
 type Row = {
-    children: Layout.Box[];
+    children: Layout.HBox[];
     height: number;
     depth: number;
 };
 type Col = {
-    children: Layout.Box[];
+    children: Layout.HBox[];
     width: number;
 };
 
 const COL_GAP = 50;
 
 export const typesetTable = (
-    typesetChildren: (Layout.Box | null)[],
+    typesetChildren: (Layout.HBox | null)[],
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
 

@@ -22,11 +22,9 @@ type Common = {
     style: Style;
 };
 
-type BoxKind = "hbox" | "vbox";
-
-export type Box = {
+export type HBox = {
     type: "Box";
-    kind: BoxKind;
+    kind: "hbox";
     shift: Dist;
     // TODO: tighten this up by modeling the possible types of content
     // - no cursor, no selection
@@ -36,6 +34,17 @@ export type Box = {
     fontSize: number;
 } & Common &
     Dim;
+
+export type VBox = {
+    type: "Box";
+    kind: "vbox";
+    shift: Dist;
+    content: readonly Node[];
+    fontSize: number;
+} & Common &
+    Dim;
+
+type Box = HBox | VBox;
 
 export type Glyph = {
     type: "Glyph";
@@ -61,15 +70,14 @@ export type HRule = {
 
 export type Node = Box | Glyph | Kern | HRule;
 
-export const makeBox = (
-    kind: BoxKind,
+export const makeHBox = (
     dim: Dim,
     content: readonly (readonly Node[])[],
     context: Context,
-): Box => {
+): HBox => {
     return {
         type: "Box",
-        kind,
+        kind: "hbox",
         ...dim,
         shift: 0,
         content,
@@ -78,7 +86,7 @@ export const makeBox = (
     };
 };
 
-export const rebox = (box: Box, before: Kern, after: Kern): Box => {
+export const rebox = (box: HBox, before: Kern, after: Kern): HBox => {
     if (box.content.length === 1) {
         return {
             ...box,
@@ -282,13 +290,13 @@ const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 export const hpackNat = (
     nl: readonly (readonly Node[])[],
     context: Context,
-): Box => {
+): HBox => {
     const dim = {
         width: sum(nl.map(hlistWidth)),
         height: max(nl.map(hlistHeight)),
         depth: max(nl.map(hlistDepth)),
     };
-    return makeBox("hbox", dim, nl, context);
+    return makeHBox(dim, nl, context);
 };
 
 export const makeVBox = (
@@ -297,7 +305,7 @@ export const makeVBox = (
     upList: readonly Node[],
     dnList: readonly Node[],
     context: Context,
-): Box => {
+): VBox => {
     const dim = {
         width,
         depth:
@@ -312,7 +320,16 @@ export const makeVBox = (
     const upListCopy = [...upList];
     // TODO: get rid of the need to reverse the uplist
     const nodeList = [...upListCopy.reverse(), node, ...dnList];
-    return makeBox("vbox", dim, [nodeList], context);
+
+    return {
+        type: "Box",
+        kind: "vbox",
+        ...dim,
+        shift: 0,
+        content: nodeList,
+        fontSize: fontSizeForContext(context),
+        style: {},
+    };
 };
 
 export const getConstantValue = (

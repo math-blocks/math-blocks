@@ -11,10 +11,10 @@ import type {Context} from "../types";
 
 export const typesetRoot = (
     // TODO: rename all uses of radical `index` to `degree` to match this
-    degree: Layout.Box | null,
-    radicand: Layout.Box,
+    degree: Layout.HBox | null,
+    radicand: Layout.HBox,
     context: Context,
-): Layout.Box => {
+): Layout.HBox => {
     const multiplier = multiplierForContext(context);
 
     // Give the radicand a minimal width in case it's empty
