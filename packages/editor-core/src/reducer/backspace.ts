@@ -4,8 +4,7 @@ import {moveLeft} from "./move-left";
 import type {Breadcrumb, Zipper, State} from "./types";
 
 export const backspace = (state: State): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {selection} = zipper.row;
 
     if (selection.length > 0) {
