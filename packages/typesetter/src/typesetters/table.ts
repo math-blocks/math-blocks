@@ -50,8 +50,7 @@ export const typesetTable = (
             } else {
                 // Use an empty Layout.Box for children that were null
                 cell = {
-                    type: "Box",
-                    kind: "hbox",
+                    type: "HBox",
                     shift: 0,
                     content: [],
                     // These values don't matter since the box is empty

@@ -23,8 +23,7 @@ type Common = {
 };
 
 export type HBox = {
-    type: "Box";
-    kind: "hbox";
+    type: "HBox";
     shift: Dist;
     // TODO: tighten this up by modeling the possible types of content
     // - no cursor, no selection
@@ -36,15 +35,12 @@ export type HBox = {
     Dim;
 
 export type VBox = {
-    type: "Box";
-    kind: "vbox";
+    type: "VBox";
     shift: Dist;
     content: readonly Node[];
     fontSize: number;
 } & Common &
     Dim;
-
-type Box = HBox | VBox;
 
 export type Glyph = {
     type: "Glyph";
@@ -68,7 +64,7 @@ export type HRule = {
     width: number;
 } & Common;
 
-export type Node = Box | Glyph | Kern | HRule;
+export type Node = HBox | VBox | Glyph | Kern | HRule;
 
 export const makeHBox = (
     dim: Dim,
@@ -76,8 +72,7 @@ export const makeHBox = (
     context: Context,
 ): HBox => {
     return {
-        type: "Box",
-        kind: "hbox",
+        type: "HBox",
         ...dim,
         shift: 0,
         content,
@@ -200,7 +195,9 @@ export const getCharDepth = (glyph: Glyph): number => {
 
 export const getWidth = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.width;
+        case "VBox":
             return node.width;
         case "Glyph":
             return getCharAdvance(node);
@@ -215,7 +212,9 @@ export const getWidth = (node: Node): number => {
 
 export const getHeight = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.height - node.shift;
+        case "VBox":
             return node.height - node.shift;
         case "Glyph":
             return getCharHeight(node);
@@ -230,7 +229,9 @@ export const getHeight = (node: Node): number => {
 
 export const getDepth = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.depth + node.shift;
+        case "VBox":
             return node.depth + node.shift;
         case "Glyph":
             return getCharDepth(node);
@@ -243,24 +244,11 @@ export const getDepth = (node: Node): number => {
     }
 };
 
-const vwidth = (node: Node): number => {
-    switch (node.type) {
-        case "Box":
-            return node.width + node.shift;
-        case "Glyph":
-            return getCharAdvance(node);
-        case "Kern":
-            return 0;
-        case "HRule":
-            return node.width;
-        default:
-            throw new UnreachableCaseError(node);
-    }
-};
-
 export const vsize = (node: Node): number => {
     switch (node.type) {
-        case "Box":
+        case "HBox":
+            return node.height + node.depth;
+        case "VBox":
             return node.height + node.depth;
         case "Glyph":
             return getCharHeight(node) + getCharDepth(node);
@@ -283,8 +271,6 @@ export const hlistWidth = (nodes: readonly Node[]): number =>
 const hlistHeight = (nodes: readonly Node[]): number =>
     max(nodes.map(getHeight));
 const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const vlistWidth = (nodes: readonly Node[]): number => max(nodes.map(vwidth));
 const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
 export const hpackNat = (
@@ -322,8 +308,7 @@ export const makeVBox = (
     const nodeList = [...upListCopy.reverse(), node, ...dnList];
 
     return {
-        type: "Box",
-        kind: "vbox",
+        type: "VBox",
         ...dim,
         shift: 0,
         content: nodeList,

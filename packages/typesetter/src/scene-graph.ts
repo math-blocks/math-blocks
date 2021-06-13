@@ -230,7 +230,8 @@ const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
             const depth = Layout.getDepth(node);
 
             switch (node.type) {
-                case "Box": {
+                case "HBox":
+                case "VBox": {
                     const child = _processBox(
                         node,
                         {x: pen.x, y: pen.y + node.shift},
@@ -399,7 +400,8 @@ const processVBox = (box: Layout.VBox, loc: Point, context: Context): Group => {
         const depth = Layout.getDepth(node);
 
         switch (node.type) {
-            case "Box": {
+            case "HBox":
+            case "VBox": {
                 // TODO: reconsider whether we should be taking the shift into
                 // account when computing the height, maybe we can drop this
                 // and simplify things.  The reason why we zero out the shift
@@ -537,10 +539,10 @@ const _processBox = (
     loc: Point,
     context: Context,
 ): Group => {
-    switch (box.kind) {
-        case "hbox":
+    switch (box.type) {
+        case "HBox":
             return processHBox(box, loc, context);
-        case "vbox":
+        case "VBox":
             return processVBox(box, loc, context);
     }
 };
