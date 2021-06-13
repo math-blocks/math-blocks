@@ -11,8 +11,7 @@ const LIMIT_CHARS = [
 ];
 
 export const insertChar = (state: State, char: string): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {left, selection} = zipper.row;
     let newNode;
     if (LIMIT_CHARS.includes(char)) {
