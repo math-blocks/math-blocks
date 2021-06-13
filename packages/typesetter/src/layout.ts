@@ -42,10 +42,6 @@ type Content =
 export type HBox = {
     type: "HBox";
     shift: Dist;
-    // TODO: tighten this up by modeling the possible types of content
-    // - no cursor, no selection
-    // - cursor
-    // - selection
     content: Content;
     fontSize: number;
 } & Common &
