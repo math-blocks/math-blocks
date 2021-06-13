@@ -22,6 +22,7 @@ export type {
     ZFrac,
     ZLimits,
     ZRow,
+    ZRoot,
     ZSubSup,
     ZTable,
     State,

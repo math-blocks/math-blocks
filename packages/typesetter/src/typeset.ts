@@ -138,20 +138,29 @@ const childContextForLimits = (context: Context): Context => {
     return childContext;
 };
 
+/**
+ * @param {Editor.Zipper} zipper
+ * @param {Editor.Focus} focus
+ * @param {Function} childContextForIndex
+ */
 const getTypesetChildren = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
-    childContext: Context,
+    childContextForIndex: (index: number) => Context,
 ): (Layout.HBox | null)[] => {
-    const focusedCell = _typesetZipper(zipper, childContext);
-
     return [
-        ...focus.left.map((child) => {
-            return child && typesetRow(child, childContext);
+        ...focus.left.map((child, index) => {
+            return child && typesetRow(child, childContextForIndex(index));
         }),
-        focusedCell,
-        ...focus.right.map((child) => {
-            return child && typesetRow(child, childContext);
+        _typesetZipper(zipper, childContextForIndex(focus.left.length)),
+        ...focus.right.map((child, index) => {
+            return (
+                child &&
+                typesetRow(
+                    child,
+                    childContextForIndex(focus.left.length + index + 1),
+                )
+            );
         }),
     ];
 };
@@ -170,7 +179,7 @@ const typesetFocus = (
             const typesetChildren = getTypesetChildren(
                 zipper,
                 focus,
-                childContext,
+                () => childContext,
             );
 
             return typesetFrac(typesetChildren, focus, context);
@@ -181,7 +190,7 @@ const typesetFocus = (
             const typesetChildren = getTypesetChildren(
                 zipper,
                 focus,
-                childContext,
+                () => childContext,
             );
 
             return typesetSubsup(
@@ -193,18 +202,6 @@ const typesetFocus = (
             );
         }
         case "zroot": {
-            // NOTE: We can't reuse the same pattern as the others since the
-            // index and the radicand are typeset using different contexts so
-            // that their sizes are different.
-            const [ind, rad] = focus.right[0]
-                ? [zipper.row, focus.right[0]]
-                : [focus.left[0], zipper.row];
-
-            const radicand =
-                rad.type === "row"
-                    ? typesetRow(rad, context)
-                    : _typesetZipper(zipper, context);
-
             const indexContext: Context = {
                 ...context,
                 // It doesn't matter what the mathStyle is of the parent, we
@@ -212,18 +209,11 @@ const typesetFocus = (
                 mathStyle: MathStyle.ScriptScript,
             };
 
-            const index = ind
-                ? ind.type === "row"
-                    ? typesetRow(ind, indexContext)
-                    : _typesetZipper(zipper, indexContext)
-                : null;
+            const typesetChildren = getTypesetChildren(zipper, focus, (index) =>
+                index === 0 ? indexContext : context,
+            );
 
-            const root = typesetRoot(index, radicand, context);
-
-            root.id = focus.id;
-            root.style = focus.style;
-
-            return root;
+            return typesetRoot(typesetChildren, focus, context);
         }
         case "zlimits": {
             // TODO: render as a subsup if mathStyle isn't MathStyle.Display
@@ -232,22 +222,19 @@ const typesetFocus = (
             const typesetChildren = getTypesetChildren(
                 zipper,
                 focus,
-                childContext,
+                () => childContext,
             );
 
-            const inner = typesetNode(focus.inner, {
-                ...context,
-                operator: true,
-            });
-            inner.id = focus.inner.id;
-            inner.style.color = focus.inner.style.color;
-
-            return typesetLimits(typesetChildren, focus, inner, context);
+            return typesetLimits(typesetChildren, focus, context, typesetNode);
         }
         case "zdelimited": {
-            const row = _typesetZipper(zipper, context);
+            const typesetChildren = getTypesetChildren(
+                zipper,
+                focus,
+                () => context,
+            );
 
-            return typesetDelimited(row, focus, context);
+            return typesetDelimited(typesetChildren, focus, context);
         }
         case "ztable": {
             const childContext = childContextForFrac(context);
@@ -255,7 +242,7 @@ const typesetFocus = (
             const typesetChildren = getTypesetChildren(
                 zipper,
                 focus,
-                childContext,
+                () => childContext,
             );
 
             return typesetTable(typesetChildren, focus, context);
@@ -327,24 +314,19 @@ const typesetNode = (
             );
         }
         case "root": {
-            const [ind, rad] = node.children;
+            const [deg, rad] = node.children;
 
             const radicand = typesetRow(rad, context);
+            const degree =
+                deg &&
+                typesetRow(deg, {
+                    ...context,
+                    // It doesn't matter what the mathStyle is of the parent, we
+                    // always use ScriptScript for root indicies.
+                    mathStyle: MathStyle.ScriptScript,
+                });
 
-            const indexContext: Context = {
-                ...context,
-                // It doesn't matter what the mathStyle is of the parent, we
-                // always use ScriptScript for root indicies.
-                mathStyle: MathStyle.ScriptScript,
-            };
-            const index = ind && typesetRow(ind, indexContext);
-
-            const root = typesetRoot(index, radicand, context);
-
-            root.id = node.id;
-            root.style = node.style;
-
-            return root;
+            return typesetRoot([degree, radicand], node, context);
         }
         case "limits": {
             // TODO: render as a subsup if mathStyle isn't MathStyle.Display
@@ -354,16 +336,14 @@ const typesetNode = (
                 (child) => child && typesetRow(child, childContext),
             );
 
-            const inner = typesetNode(node.inner, {...context, operator: true});
-            inner.id = node.inner.id;
-            inner.style.color = node.inner.style.color;
-
-            return typesetLimits(typesetChildren, node, inner, context);
+            return typesetLimits(typesetChildren, node, context, typesetNode);
         }
         case "delimited": {
-            const row = typesetRow(node.children[0], context);
+            const typesetChildren = node.children.map((child) =>
+                typesetRow(child, context),
+            );
 
-            return typesetDelimited(row, node, context);
+            return typesetDelimited(typesetChildren, node, context);
         }
         case "table": {
             const childContext = childContextForFrac(context);
@@ -504,14 +484,13 @@ const _typesetZipper = (
 
     if (crumb) {
         const row = crumb.row;
-
-        const nodes: Layout.Node[] = [];
-
-        nodes.push(...typesetNodes(row.left, context));
         const nextZipper: Editor.Zipper = {
             ...zipper,
             breadcrumbs: restCrumbs,
         };
+        const nodes: Layout.Node[] = [];
+
+        nodes.push(...typesetNodes(row.left, context));
         nodes.push(
             typesetFocus(
                 crumb.focus,
@@ -542,30 +521,15 @@ const _typesetZipper = (
     } else {
         const row = zipper.row;
 
-        const left = typesetNodes(row.left, context);
-        const selection =
-            row.selection.length > 0
-                ? typesetNodes(
-                      row.selection,
-                      context,
-                      row.left[row.left.length - 1],
-                  )
-                : [];
+        const input = [...row.left, ...row.selection, ...row.right];
+        const output = typesetNodes(input, context);
 
-        const prevEditNode =
-            row.selection.length > 0
-                ? row.selection[row.selection.length - 1]
-                : row.left[row.left.length - 1];
+        const firstCut = row.left.length;
+        const secondCut = firstCut + row.selection.length;
 
-        const prevLayoutNode =
-            selection[selection.length - 1] || left[left.length - 1];
-
-        const right = typesetNodes(
-            row.right,
-            context,
-            prevEditNode,
-            prevLayoutNode,
-        );
+        const left = output.slice(0, firstCut);
+        const selection = output.slice(firstCut, secondCut);
+        const right = output.slice(secondCut);
 
         const box =
             selection.length > 0
