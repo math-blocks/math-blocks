@@ -71,6 +71,9 @@ export const typesetSubsup = (
             context,
         );
 
+        subsupBox.id = node.id;
+        subsupBox.style = node.style;
+
         return subsupBox;
     }
 
