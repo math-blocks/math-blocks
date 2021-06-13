@@ -32,7 +32,7 @@ export const typesetDelimited = (
     open.pending = node.leftDelim.value.pending;
     close.pending = node.rightDelim.value.pending;
 
-    const delimited = Layout.hpackNat([[open, row, close]], context);
+    const delimited = Layout.makeStaticHBox([open, row, close], context);
 
     delimited.id = node.id;
     delimited.style = node.style;

@@ -90,8 +90,8 @@ export const typesetFrac = (
 
     const upList = makeList(minNumGap, numBox);
     const dnList = makeList(minDenGap, denBox);
-    const stroke = Layout.hpackNat(
-        [[Layout.makeHRule(thickness, width)]],
+    const stroke = Layout.makeStaticHBox(
+        [Layout.makeHRule(thickness, width)],
         context,
     );
 

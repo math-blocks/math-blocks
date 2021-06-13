@@ -22,6 +22,23 @@ type Common = {
     style: Style;
 };
 
+type Content =
+    | {
+          type: "static";
+          nodes: readonly Node[];
+      }
+    | {
+          type: "cursor";
+          left: readonly Node[];
+          right: readonly Node[];
+      }
+    | {
+          type: "selection";
+          left: readonly Node[];
+          selection: readonly Node[];
+          right: readonly Node[];
+      };
+
 export type HBox = {
     type: "HBox";
     shift: Dist;
@@ -29,7 +46,7 @@ export type HBox = {
     // - no cursor, no selection
     // - cursor
     // - selection
-    content: readonly (readonly Node[])[];
+    content: Content;
     fontSize: number;
 } & Common &
     Dim;
@@ -66,11 +83,7 @@ export type HRule = {
 
 export type Node = HBox | VBox | Glyph | Kern | HRule;
 
-export const makeHBox = (
-    dim: Dim,
-    content: readonly (readonly Node[])[],
-    context: Context,
-): HBox => {
+const makeHBox = (dim: Dim, content: Content, context: Context): HBox => {
     return {
         type: "HBox",
         ...dim,
@@ -82,35 +95,25 @@ export const makeHBox = (
 };
 
 export const rebox = (box: HBox, before: Kern, after: Kern): HBox => {
-    if (box.content.length === 1) {
+    if (box.content.type === "static") {
         return {
             ...box,
-            width: box.width + before.size + after.size,
-            content: [[before, ...box.content[0], after]],
-        };
-    } else if (box.content.length === 2) {
-        return {
-            ...box,
-            width: box.width + before.size + after.size,
-            content: [
-                [before, ...box.content[0]],
-                [...box.content[1], after],
-            ],
-        };
-    } else if (box.content.length === 3) {
-        return {
-            ...box,
-            width: box.width + before.size + after.size,
-            content: [
-                [before, ...box.content[0]],
-                box.content[1],
-                [...box.content[2], after],
-            ],
+            width: before.size + box.width + after.size,
+            content: {
+                ...box.content,
+                nodes: [before, ...box.content.nodes, after],
+            },
         };
     } else {
-        throw new Error(
-            `box.content.length = ${box.content.length} which is invalid`,
-        );
+        return {
+            ...box,
+            width: before.size + box.width + after.size,
+            content: {
+                ...box.content,
+                left: [before, ...box.content.left],
+                right: [...box.content.right, after],
+            },
+        };
     }
 };
 
@@ -273,16 +276,66 @@ const hlistHeight = (nodes: readonly Node[]): number =>
 const hlistDepth = (nodes: readonly Node[]): number => max(nodes.map(getDepth));
 const vlistVsize = (nodes: readonly Node[]): number => sum(nodes.map(vsize));
 
-export const hpackNat = (
-    nl: readonly (readonly Node[])[],
+export const makeStaticHBox = (
+    nodes: readonly Node[],
     context: Context,
 ): HBox => {
     const dim = {
-        width: sum(nl.map(hlistWidth)),
-        height: max(nl.map(hlistHeight)),
-        depth: max(nl.map(hlistDepth)),
+        width: hlistWidth(nodes),
+        height: hlistHeight(nodes),
+        depth: hlistDepth(nodes),
     };
-    return makeHBox(dim, nl, context);
+    const content: Content = {
+        type: "static",
+        nodes,
+    };
+    return makeHBox(dim, content, context);
+};
+
+export const makeCursorHBox = (
+    left: readonly Node[],
+    right: readonly Node[],
+    context: Context,
+): HBox => {
+    const dim = {
+        width: hlistWidth(left) + hlistWidth(right),
+        height: Math.max(hlistHeight(left), hlistHeight(right)),
+        depth: Math.max(hlistDepth(left), hlistDepth(right)),
+    };
+    const content: Content = {
+        type: "cursor",
+        left,
+        right,
+    };
+    return makeHBox(dim, content, context);
+};
+
+export const makeSelectionHBox = (
+    left: readonly Node[],
+    selection: readonly Node[],
+    right: readonly Node[],
+    context: Context,
+): HBox => {
+    const dim = {
+        width: hlistWidth(left) + hlistWidth(selection) + hlistWidth(right),
+        height: Math.max(
+            hlistHeight(left),
+            hlistHeight(selection),
+            hlistHeight(right),
+        ),
+        depth: Math.max(
+            hlistDepth(left),
+            hlistDepth(selection),
+            hlistDepth(right),
+        ),
+    };
+    const content: Content = {
+        type: "selection",
+        left,
+        selection,
+        right,
+    };
+    return makeHBox(dim, content, context);
 };
 
 export const makeVBox = (

@@ -17,7 +17,10 @@ import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
 const typesetRow = (row: Editor.types.Row, context: Context): Layout.HBox => {
-    const box = Layout.hpackNat([typesetNodes(row.children, context)], context);
+    const box = Layout.makeStaticHBox(
+        typesetNodes(row.children, context),
+        context,
+    );
     box.id = row.id;
     box.style.color = row.style.color;
 
@@ -38,8 +41,8 @@ const withOperatorPadding = (
     // We need to tweak this loic so that we only add padding on the right side
     // for binary operators below.  This is so that we don't get extra space
     // when adding/subtracting something just to the right of an "=" in the above
-    return Layout.hpackNat(
-        [[Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)]],
+    return Layout.makeStaticHBox(
+        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
         context,
     );
 };
@@ -527,7 +530,7 @@ const _typesetZipper = (
             ),
         );
 
-        const box = Layout.hpackNat([nodes], context);
+        const box = Layout.makeStaticHBox(nodes, context);
         box.id = row.id;
         box.style.color = row.style.color;
 
@@ -564,7 +567,11 @@ const _typesetZipper = (
             prevLayoutNode,
         );
 
-        const box = Layout.hpackNat([left, selection, right], context);
+        const box =
+            selection.length > 0
+                ? Layout.makeSelectionHBox(left, selection, right, context)
+                : Layout.makeCursorHBox(left, right, context);
+
         box.id = row.id;
         box.style.color = row.style.color;
 

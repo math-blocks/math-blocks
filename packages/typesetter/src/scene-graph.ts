@@ -107,9 +107,7 @@ const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
     const children: Node[] = [];
 
     const hasSelection =
-        !context.inSelection &&
-        box.content.length === 3 &&
-        box.content[1].length > 0;
+        !context.inSelection && box.content.type === "selection";
 
     const {
         layer,
@@ -140,7 +138,19 @@ const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
 
     let cancelRegion: CancelRegion | null = null;
 
-    box.content.forEach((section, index) => {
+    const sections = [];
+    if (box.content.type === "static") {
+        sections.push(box.content.nodes);
+    } else if (box.content.type === "cursor") {
+        sections.push(box.content.left);
+        sections.push(box.content.right);
+    } else {
+        sections.push(box.content.left);
+        sections.push(box.content.selection);
+        sections.push(box.content.right);
+    }
+
+    sections.forEach((section, index) => {
         const isSelection = hasSelection && index === 1;
 
         // There should only be two sections max.  If there are two sections

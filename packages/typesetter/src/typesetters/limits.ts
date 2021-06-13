@@ -26,13 +26,11 @@ export const typesetLimits = (
 
     const newInner =
         innerWidth < width
-            ? Layout.hpackNat(
+            ? Layout.makeStaticHBox(
                   [
-                      [
-                          Layout.makeKern((width - innerWidth) / 2),
-                          inner,
-                          Layout.makeKern((width - innerWidth) / 2),
-                      ],
+                      Layout.makeKern((width - innerWidth) / 2),
+                      inner,
+                      Layout.makeKern((width - innerWidth) / 2),
                   ],
                   context,
               )

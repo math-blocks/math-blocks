@@ -52,7 +52,10 @@ export const typesetTable = (
                 cell = {
                     type: "HBox",
                     shift: 0,
-                    content: [],
+                    content: {
+                        type: "static",
+                        nodes: [],
+                    },
                     // These values don't matter since the box is empty
                     fontSize: 0,
                     style: {},
@@ -102,7 +105,7 @@ export const typesetTable = (
     }
 
     const rowBoxes = rows.map((row) =>
-        Layout.hpackNat([row.children], context),
+        Layout.makeStaticHBox(row.children, context),
     );
     const width =
         columns.reduce((sum, col) => sum + col.width, 0) +
@@ -133,7 +136,7 @@ export const typesetTable = (
     const open = makeDelimiter("[", inner, thresholdOptions, context);
     const close = makeDelimiter("]", inner, thresholdOptions, context);
 
-    const table = Layout.hpackNat([[open, inner, close]], context);
+    const table = Layout.makeStaticHBox([open, inner, close], context);
 
     table.id = node.id;
     table.style = node.style;
