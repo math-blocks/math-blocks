@@ -6,7 +6,7 @@ import {makeDelimiter} from "../utils";
 import type {Context} from "../types";
 
 export const typesetDelimited = (
-    row: Layout.HBox,
+    typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.Delimited | Editor.ZDelimited,
     context: Context,
 ): Layout.HBox => {
@@ -14,6 +14,11 @@ export const typesetDelimited = (
         value: "both" as const,
         strict: true,
     };
+
+    const row = typesetChildren[0];
+    if (!row) {
+        throw new Error("Delimited's content should be defined");
+    }
 
     const open = makeDelimiter(
         node.leftDelim.value.char,

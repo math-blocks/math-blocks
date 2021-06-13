@@ -8,14 +8,18 @@ import type {Context} from "../types";
 export const typesetLimits = (
     typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.Limits | Editor.ZLimits,
-    inner: Layout.Node,
     context: Context,
+    typesetNode: (node: Editor.types.Node, context: Context) => Layout.Node,
 ): Layout.VBox => {
     const [lowerBox, upperBox] = typesetChildren;
 
     if (!lowerBox) {
         throw new Error("Lower limit should always be defined");
     }
+
+    const inner = typesetNode(node.inner, {...context, operator: true});
+    inner.id = node.inner.id;
+    inner.style.color = node.inner.style.color;
 
     const innerWidth = Layout.getWidth(inner);
     const width = Math.max(

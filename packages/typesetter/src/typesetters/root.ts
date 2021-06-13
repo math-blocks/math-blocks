@@ -1,3 +1,5 @@
+import * as Editor from "@math-blocks/editor-core";
+
 import * as Layout from "../layout";
 
 import {RadicalDegreeAlgorithm} from "../enums";
@@ -10,11 +12,16 @@ import {
 import type {Context} from "../types";
 
 export const typesetRoot = (
-    // TODO: rename all uses of radical `index` to `degree` to match this
-    degree: Layout.HBox | null,
-    radicand: Layout.HBox,
+    typesetChildren: readonly (Layout.HBox | null)[],
+    node: Editor.types.Root | Editor.ZRoot,
     context: Context,
 ): Layout.HBox => {
+    const [degree, radicand] = typesetChildren;
+
+    if (!radicand) {
+        throw new Error("Radicand must be defined");
+    }
+
     const multiplier = multiplierForContext(context);
 
     // Give the radicand a minimal width in case it's empty
@@ -106,6 +113,9 @@ export const typesetRoot = (
     }
 
     root.width += endPadding;
+
+    root.id = node.id;
+    root.style = node.style;
 
     return root;
 };
