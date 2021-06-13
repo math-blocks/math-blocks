@@ -46,21 +46,6 @@ const isOperator = (char: string): boolean => {
     return false;
 };
 
-const withOperatorPadding = (
-    node: Layout.Node,
-    context: Context,
-): Layout.Node => {
-    const fontSize = fontSizeForContext(context);
-
-    // We need to tweak this loic so that we only add padding on the right side
-    // for binary operators below.  This is so that we don't get extra space
-    // when adding/subtracting something just to the right of an "=" in the above
-    return Layout.makeStaticHBox(
-        [Layout.makeKern(fontSize / 4), node, Layout.makeKern(fontSize / 4)],
-        context,
-    );
-};
-
 const shouldHavePadding = (
     prevNode: Editor.types.Node | Editor.Focus | undefined,
     currentNode: Editor.types.Atom,
@@ -102,8 +87,16 @@ export const maybeAddOperatorPadding = (
     context: Context,
 ): Layout.Node => {
     const glyph = typesetAtom(currentNode, context);
+    const fontSize = fontSizeForContext(context);
     const result = shouldHavePadding(prevNode, currentNode, context)
-        ? withOperatorPadding(glyph, context)
+        ? Layout.makeStaticHBox(
+              [
+                  Layout.makeKern(fontSize / 4),
+                  glyph,
+                  Layout.makeKern(fontSize / 4),
+              ],
+              context,
+          )
         : glyph;
     if (result !== glyph) {
         result.id = glyph.id;
