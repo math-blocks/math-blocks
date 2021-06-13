@@ -14,9 +14,6 @@ import type {Context} from "../types";
 export const typesetRoot = (
     typesetChildren: readonly (Layout.HBox | null)[],
     node: Editor.types.Root | Editor.ZRoot,
-    // TODO: rename all uses of radical `index` to `degree` to match this
-    // degree: Layout.HBox | null,
-    // radicand: Layout.HBox,
     context: Context,
 ): Layout.HBox => {
     const [degree, radicand] = typesetChildren;

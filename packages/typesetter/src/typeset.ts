@@ -139,26 +139,28 @@ const childContextForLimits = (context: Context): Context => {
 };
 
 /**
+ * Typesets the children of a Focus and associated Zipper.
+ *
  * @param {Editor.Zipper} zipper
  * @param {Editor.Focus} focus
- * @param {Function} childContextForIndex
+ * @param {Function} contextForIndex
  */
 const getTypesetChildren = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
-    childContextForIndex: (index: number) => Context,
+    contextForIndex: (index: number) => Context,
 ): (Layout.HBox | null)[] => {
     return [
         ...focus.left.map((child, index) => {
-            return child && typesetRow(child, childContextForIndex(index));
+            return child && typesetRow(child, contextForIndex(index));
         }),
-        _typesetZipper(zipper, childContextForIndex(focus.left.length)),
+        _typesetZipper(zipper, contextForIndex(focus.left.length)),
         ...focus.right.map((child, index) => {
             return (
                 child &&
                 typesetRow(
                     child,
-                    childContextForIndex(focus.left.length + index + 1),
+                    contextForIndex(focus.left.length + index + 1),
                 )
             );
         }),
