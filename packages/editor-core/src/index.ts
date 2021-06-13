@@ -26,5 +26,5 @@ export type {
     ZSubSup,
     ZTable,
     State,
-    Action,
 } from "./reducer/types";
+export type {Action} from "./reducer/action-types";

@@ -11,9 +11,11 @@ import {subsup} from "./subsup";
 import {color} from "./color";
 import {cancel} from "./cancel";
 import {positionCursor} from "./position-cursor";
+import {matrix} from "./matrix";
 
 import {zrow} from "./util";
-import type {Zipper, State, Action} from "./types";
+import type {Zipper, State} from "./types";
+import type {Action} from "./action-types";
 
 const initialZipper: Zipper = {
     row: zrow(getId(), [], []),
@@ -73,6 +75,12 @@ export const reducer = (state: State = initialState, action: Action): State => {
                 : state;
         case "PositionCursor":
             return positionCursor(state, action.cursor);
+        case "InsertMatrix":
+        case "AddRow":
+        case "AddColumn":
+        case "DeleteRow":
+        case "DeleteColumn":
+            return matrix(state, action);
         default:
             throw new UnreachableCaseError(action);
     }

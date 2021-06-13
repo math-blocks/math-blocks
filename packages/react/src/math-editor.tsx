@@ -9,6 +9,8 @@ import styles from "./editor.module.css";
 import MathRenderer from "./math-renderer";
 import useEventListener from "./use-event-listener";
 
+import type {EditingEvent} from "./math-keypad";
+
 const {useEffect, useState, useRef, useContext, useCallback, useMemo} = React;
 
 type Props = {
@@ -189,6 +191,29 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             };
         },
         [handleFormatting], // Re-run if the handler changes
+    );
+
+    const handleEditing = useCallback(
+        (e: CustomEvent<EditingEvent>): void => {
+            const {detail} = e;
+            console.log(detail);
+            const newState = Editor.reducer(state, detail);
+            setState(newState);
+        },
+        [state],
+    ) as EventListener;
+
+    useEffect(
+        () => {
+            // Add event listener
+            window.addEventListener("editing", handleEditing);
+
+            // Remove event listener on cleanup
+            return () => {
+                window.removeEventListener("editing", handleEditing);
+            };
+        },
+        [handleEditing], // Re-run if the handler changes
     );
 
     const positionCursor = (e: React.MouseEvent, select: boolean): void => {
