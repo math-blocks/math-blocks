@@ -1,38 +1,8 @@
 import {getId} from "@math-blocks/core";
 
+import {isOperator} from "../ast/util";
 import {zrow} from "./util";
 import type {Zipper, Focus, State} from "./types";
-
-// TODO: dedupe with isOperator in typeset.ts
-const isOperator = (char: string): boolean => {
-    // We don't include unary +/- in the numerator.  This mimic's mathquill's
-    // behavior.
-    const operators = [
-        "+",
-        "\u2212", // \minus
-        "\u00B1", // \pm
-        "\u00B7", // \times
-        "=",
-        "<",
-        ">",
-        "\u2260", // \neq
-        "\u2265", // \geq
-        "\u2264", // \leq
-    ];
-
-    if (operators.includes(char)) {
-        return true;
-    }
-
-    const charCode = char.charCodeAt(0);
-
-    // Arrows
-    if (charCode >= 0x2190 && charCode <= 0x21ff) {
-        return true;
-    }
-
-    return false;
-};
 
 export const frac = (state: State): State => {
     const zipper = state.zipper;
@@ -94,11 +64,7 @@ export const frac = (state: State): State => {
             break;
         }
 
-        if (
-            child.type === "atom" &&
-            parenCount === 0 &&
-            isOperator(child.value.char)
-        ) {
+        if (child.type === "atom" && parenCount === 0 && isOperator(child)) {
             break;
         }
 

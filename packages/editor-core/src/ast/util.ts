@@ -203,3 +203,35 @@ export type HasChildren = types.Row;
 export const hasChildren = (node: types.Node): node is HasChildren => {
     return node.type === "row";
 };
+
+export const isOperator = (atom: types.Atom): boolean => {
+    const char = atom.value.char;
+
+    // We don't include unary +/- in the numerator.  This mimic's mathquill's
+    // behavior.
+    const operators = [
+        "+",
+        "\u2212", // \minus
+        "\u00B1", // \pm
+        "\u00B7", // \times
+        "=",
+        "<",
+        ">",
+        "\u2260", // \neq
+        "\u2265", // \geq
+        "\u2264", // \leq
+    ];
+
+    if (operators.includes(char)) {
+        return true;
+    }
+
+    const charCode = char.charCodeAt(0);
+
+    // Arrows
+    if (charCode >= 0x2190 && charCode <= 0x21ff) {
+        return true;
+    }
+
+    return false;
+};

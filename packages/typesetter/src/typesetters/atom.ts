@@ -15,37 +15,6 @@ const canBeUnary = (char: string): boolean => {
     return unaryOperators.includes(char);
 };
 
-// TODO: dedupe with isOperator in slash.ts
-const isOperator = (char: string): boolean => {
-    // We don't include unary +/- in the numerator.  This mimic's mathquill's
-    // behavior.
-    const operators = [
-        "+",
-        "\u2212", // \minus
-        "\u00B1", // \pm
-        "\u00B7", // \times
-        "=",
-        "<",
-        ">",
-        "\u2260", // \neq
-        "\u2264", // \geq
-        "\u2265", // \leq
-    ];
-
-    if (operators.includes(char)) {
-        return true;
-    }
-
-    const charCode = char.charCodeAt(0);
-
-    // Arrows
-    if (charCode >= 0x2190 && charCode <= 0x21ff) {
-        return true;
-    }
-
-    return false;
-};
-
 const shouldHavePadding = (
     prevNode: Editor.types.Node | Editor.Focus | undefined,
     currentNode: Editor.types.Atom,
@@ -55,7 +24,7 @@ const shouldHavePadding = (
 
     // We only add padding around operators, so if we get a non-operator char
     // we can return early.
-    if (!isOperator(currentChar)) {
+    if (!Editor.util.isOperator(currentNode)) {
         return false;
     }
 
@@ -69,7 +38,7 @@ const shouldHavePadding = (
     if (canBeUnary(currentChar)) {
         if (
             !prevNode ||
-            (prevNode.type === "atom" && isOperator(prevNode.value.char)) ||
+            (prevNode.type === "atom" && Editor.util.isOperator(prevNode)) ||
             prevNode.type === "limits" ||
             prevNode.type === "zlimits"
         ) {
