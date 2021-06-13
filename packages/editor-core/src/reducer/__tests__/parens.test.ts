@@ -16,18 +16,20 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2").children,
-                    selection: row("x+5").children,
-                    right: row("=10").children,
+                    selection: [],
+                    right: row("x+5=10").children,
                     style: {},
                 },
                 breadcrumbs: [],
             };
-            const state: State = {
+            let state: State = {
                 startZipper: zipper,
                 endZipper: zipper,
                 zipper: zipper,
-                selecting: false,
+                selecting: true,
             };
+
+            state = moveRight(moveRight(moveRight(state)));
 
             const {startZipper: result} = parens(state, "(");
 
@@ -49,18 +51,20 @@ describe("parens", () => {
                     id: 0,
                     type: "zrow",
                     left: row("2").children,
-                    selection: row("x+5").children,
-                    right: row("=10").children,
+                    selection: [],
+                    right: row("x+5=10").children,
                     style: {},
                 },
                 breadcrumbs: [],
             };
-            const state: State = {
+            let state: State = {
                 startZipper: zipper,
                 endZipper: zipper,
                 zipper: zipper,
-                selecting: false,
+                selecting: true,
             };
+
+            state = moveRight(moveRight(moveRight(state)));
 
             const {startZipper: result} = parens(state, ")");
 

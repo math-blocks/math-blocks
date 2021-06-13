@@ -25,8 +25,7 @@ const rightGlyphMap = {
 };
 
 export const parens = (state: State, char: Delimiters): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
-    const zipper = state.startZipper;
+    const zipper = state.zipper;
     const {left, selection, right} = zipper.row;
 
     const leftParen = builders.glyph(leftGlyphMap[char]);

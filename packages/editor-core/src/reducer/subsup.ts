@@ -10,7 +10,6 @@ import type {Zipper, State} from "./types";
  * @param {0 | 1} index 0 = subscript, 1 = superscript
  */
 export const subsup = (state: State, index: 0 | 1): State => {
-    // TODO: change this to const {zipper} = state.zipper; once we've added it
     const zipper = state.zipper;
     const {row, breadcrumbs} = zipper;
 

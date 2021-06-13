@@ -14,6 +14,7 @@ import * as builders from "../../ast/builders";
 import * as types from "../../ast/types";
 
 import type {Zipper, State} from "../types";
+import {getId} from "@math-blocks/core";
 
 expect.extend({toEqualEditorNodes});
 
@@ -64,6 +65,34 @@ describe("backspace", () => {
 
         const {startZipper: result} = backspace(state);
 
+        expect(result.row.left).toEqualEditorNodes(row("1").children);
+        expect(result.row.right).toEqualEditorNodes(row("2").children);
+    });
+
+    test("it deletes a fraction in the middle", () => {
+        const zipper: Zipper = {
+            row: {
+                id: getId(),
+                type: "zrow",
+                left: [builders.glyph("1")],
+                selection: [],
+                right: [
+                    builders.frac([builders.glyph("a")], [builders.glyph("b")]),
+                    builders.glyph("2"),
+                ],
+                style: {},
+            },
+            breadcrumbs: [],
+        };
+        let state: State = {
+            startZipper: zipper,
+            endZipper: zipper,
+            zipper: zipper,
+            selecting: true,
+        };
+        state = moveRight(state);
+
+        const {zipper: result} = backspace(state);
         expect(result.row.left).toEqualEditorNodes(row("1").children);
         expect(result.row.right).toEqualEditorNodes(row("2").children);
     });

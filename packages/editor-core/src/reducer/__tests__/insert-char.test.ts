@@ -1,6 +1,7 @@
 import * as builders from "../../ast/builders";
 
 import {insertChar} from "../insert-char";
+import {moveRight} from "../move-right";
 import {row, toEqualEditorNodes, zrow} from "../test-util";
 import type {Zipper, State} from "../types";
 
@@ -92,18 +93,19 @@ describe("insertChar", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("1")],
-                    selection: [builders.glyph("+")],
-                    right: [builders.glyph("2")],
+                    selection: [],
+                    right: [builders.glyph("+"), builders.glyph("2")],
                     style: {},
                 },
                 breadcrumbs: [],
             };
-            const state: State = {
+            let state: State = {
                 startZipper: zipper,
                 endZipper: zipper,
                 zipper: zipper,
-                selecting: false,
+                selecting: true,
             };
+            state = moveRight(state);
 
             const {startZipper: result} = insertChar(state, "\u2122");
 
@@ -117,19 +119,20 @@ describe("insertChar", () => {
                     id: 0,
                     type: "zrow",
                     left: [builders.glyph("1")],
-                    selection: [builders.glyph("+")],
-                    right: [builders.glyph("2")],
+                    selection: [],
+                    right: [builders.glyph("+"), builders.glyph("2")],
                     style: {},
                 },
                 breadcrumbs: [],
             };
-            const state: State = {
-                // TODO: update startZipper and endZipper to be realistic
+            let state: State = {
                 startZipper: zipper,
                 endZipper: zipper,
                 zipper: zipper,
-                selecting: false,
+                selecting: true,
             };
+
+            state = moveRight(state);
 
             const {startZipper: result} = insertChar(state, "\u03a3"); // \sum
 
