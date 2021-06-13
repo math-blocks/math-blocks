@@ -1,3 +1,5 @@
+import * as Editor from "@math-blocks/editor-core";
+
 import * as Layout from "../layout";
 import {fontSizeForContext, makeDelimiter} from "../utils";
 
@@ -17,8 +19,7 @@ const COL_GAP = 50;
 
 export const typesetTable = (
     typesetChildren: (Layout.Box | null)[],
-    colCount: number,
-    rowCount: number,
+    node: Editor.types.Table | Editor.ZTable,
     context: Context,
 ): Layout.Box => {
     const columns: Col[] = [];
@@ -26,8 +27,8 @@ export const typesetTable = (
 
     // Group cells into rows and columns and determine the width of each
     // columna and the depth/height of each row.
-    for (let i = 0; i < colCount; i++) {
-        for (let j = 0; j < rowCount; j++) {
+    for (let i = 0; i < node.colCount; i++) {
+        for (let j = 0; j < node.rowCount; j++) {
             if (!columns[i]) {
                 columns[i] = {
                     children: [],
@@ -41,7 +42,7 @@ export const typesetTable = (
                     depth: 0,
                 };
             }
-            let cell = typesetChildren[j * colCount + i];
+            let cell = typesetChildren[j * node.colCount + i];
             if (cell) {
                 columns[i].width = Math.max(cell.width, columns[i].width);
                 rows[j].height = Math.max(cell.height, rows[j].height);
@@ -134,6 +135,9 @@ export const typesetTable = (
     const close = makeDelimiter("]", inner, thresholdOptions, context);
 
     const table = Layout.hpackNat([[open, inner, close]], context);
+
+    table.id = node.id;
+    table.style = node.style;
 
     return table;
 };

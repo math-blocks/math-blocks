@@ -1,100 +1,80 @@
 import * as types from "../ast/types";
 
-export type ZRow = {
-    id: number;
+type ZCommon = {id: number; style: types.Style};
+
+export type ZRow = ZCommon & {
     type: "zrow";
     left: readonly types.Node[];
     selection: readonly types.Node[];
     right: readonly types.Node[];
-    style: types.Style;
 };
 
 export type ZFrac =
-    | {
-          id: number;
+    | (ZCommon & {
           type: "zfrac";
           left: readonly [];
           right: readonly [types.Row];
-          style: types.Style;
-      }
-    | {
-          id: number;
+      })
+    | (ZCommon & {
           type: "zfrac";
           left: readonly [types.Row];
           right: readonly [];
-          style: types.Style;
-      };
+      });
 
 // TODO: consider splitting up SubSup into three different types.
 // If both `sub` and `sup` are `null` then the node is invalid.
 export type ZSubSup =
-    | {
-          id: number;
+    | (ZCommon & {
           type: "zsubsup";
           left: readonly [];
           right: readonly [types.Row | null];
-          style: types.Style;
-      }
-    | {
-          id: number;
+      })
+    | (ZCommon & {
           type: "zsubsup";
           left: readonly [types.Row | null];
           right: readonly [];
-          style: types.Style;
-      };
+      });
 
 export type ZLimits =
-    | {
-          id: number;
+    | (ZCommon & {
           type: "zlimits";
           left: readonly [];
           right: readonly [types.Row | null];
           inner: types.Node;
-          style: types.Style;
-      }
-    | {
-          id: number;
+      })
+    | (ZCommon & {
           type: "zlimits";
           left: readonly [types.Row];
           right: readonly [];
           inner: types.Node;
-          style: types.Style;
-      };
+      });
 
 export type ZRoot =
-    | {
-          id: number;
+    | (ZCommon & {
           type: "zroot";
           left: readonly [];
           right: readonly [types.Row];
-          style: types.Style;
-      }
-    | {
-          id: number;
+      })
+    | (ZCommon & {
           type: "zroot";
           left: readonly [types.Row | null];
           right: readonly [];
-          style: types.Style;
-      };
+      });
 
-export type ZDelimited = {
-    id: number;
+export type ZDelimited = ZCommon & {
     type: "zdelimited";
     left: readonly [];
     right: readonly [];
     leftDelim: types.Atom;
     rightDelim: types.Atom;
-    style: types.Style;
 };
 
-export type ZTable = {
-    id: number;
+export type ZTable = ZCommon & {
     type: "ztable";
     left: readonly (types.Row | null)[];
     right: readonly (types.Row | null)[];
     rowCount: number;
     colCount: number;
-    style: types.Style;
 };
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
