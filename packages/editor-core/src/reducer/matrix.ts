@@ -28,7 +28,6 @@ type Cell = {
     content: types.Row | ZRow | null;
 };
 
-// TODO: make the Breadcrumb type generic
 const getCellsFromCrumb = (
     crumb: Breadcrumb<ZTable>,
     zipper: Zipper,
