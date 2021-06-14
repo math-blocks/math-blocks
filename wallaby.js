@@ -6,6 +6,7 @@ module.exports = function (wallaby) {
             "packages/**/*.js",
             "packages/**/*.ts",
             "packages/**/*.tsx",
+            "packages/**/*.css",
             "package.json",
             "!packages/**/*.d.ts",
             "!packages/**/__tests__/*.ts",

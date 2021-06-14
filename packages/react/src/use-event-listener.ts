@@ -3,6 +3,8 @@ import {useEffect} from "react";
 export default function useEventListener(
     eventName: "keypress" | "keydown" | "keyup",
     handler: (event: KeyboardEvent) => void,
+    // TODO: don't add event listener to window otherwise this event will
+    // affect multiple MathEditor instances
     element: WindowProxy = window,
 ): void {
     useEffect(

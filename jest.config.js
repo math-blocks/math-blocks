@@ -1,6 +1,7 @@
 module.exports = {
     transform: {
         "^.+\\.[t|j]sx?$": "babel-jest",
+        ".+\\.(css|styl|less|sass|scss)$": "jest-css-modules-transform",
     },
     modulePathIgnorePatterns: ["/out/"],
     moduleNameMapper: {
@@ -12,6 +13,7 @@ module.exports = {
     coveragePathIgnorePatterns: [
         "/node_modules/",
         "/stories/",
+        "\\.d\\.ts",
         "packages/grader/src/test-util.ts",
         "packages/solver/src/test-util.ts",
     ],

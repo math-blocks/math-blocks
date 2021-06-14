@@ -162,6 +162,9 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const handleFormatting = useCallback(
         (e: CustomEvent<FormattingEvent>): void => {
+            if (!active || props.readonly) {
+                return;
+            }
             const {detail} = e;
             if (detail.type === "color") {
                 const newState = Editor.reducer(state, {
@@ -177,9 +180,11 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 setState(newState);
             }
         },
-        [state],
+        [state, active, props.readonly],
     ) as EventListener;
 
+    // TODO: don't add event listener to window otherwise this event will
+    // affect multiple MathEditor instances
     useEffect(
         () => {
             // Add event listener
@@ -195,14 +200,19 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
     const handleEditing = useCallback(
         (e: CustomEvent<EditingEvent>): void => {
+            if (!active || props.readonly) {
+                return;
+            }
             const {detail} = e;
             console.log(detail);
             const newState = Editor.reducer(state, detail);
             setState(newState);
         },
-        [state],
+        [state, active, props.readonly],
     ) as EventListener;
 
+    // TODO: don't add event listener to window otherwise this event will
+    // affect multiple MathEditor instances
     useEffect(
         () => {
             // Add event listener
