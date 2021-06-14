@@ -1,3 +1,4 @@
+/* eslint-disable jest-dom/prefer-to-have-style */
 import {color} from "../color";
 import {moveRight} from "../move-right";
 

@@ -1,6 +1,7 @@
 module.exports = {
     transform: {
         "^.+\\.[t|j]sx?$": "babel-jest",
+        ".+\\.(css|styl|less|sass|scss)$": "jest-css-modules-transform",
     },
     modulePathIgnorePatterns: ["/out/"],
     moduleNameMapper: {

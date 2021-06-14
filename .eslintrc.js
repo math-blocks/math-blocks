@@ -1,7 +1,9 @@
 module.exports = {
     extends: [
         "plugin:import/typescript",
+        "plugin:jest-dom/recommended",
         "plugin:react-hooks/recommended",
+        "plugin:testing-library/react",
         "typescript",
         "typescript/react",
     ],
@@ -55,6 +57,9 @@ module.exports = {
         browser: true,
         node: true,
     },
-    parserOptions: {ecmaVersion: 2018},
+    parserOptions: {
+        ecmaVersion: 2018,
+        sourceType: "module",
+    },
     settings: {react: {version: "detect"}},
 };
