@@ -13,6 +13,7 @@ module.exports = {
     coveragePathIgnorePatterns: [
         "/node_modules/",
         "/stories/",
+        "\\.d\\.ts",
         "packages/grader/src/test-util.ts",
         "packages/solver/src/test-util.ts",
     ],
