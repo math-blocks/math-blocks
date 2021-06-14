@@ -91,9 +91,9 @@ export type BreadcrumbRow = {
     style: types.Style;
 };
 
-export type Breadcrumb = {
+export type Breadcrumb<F extends Focus = Focus> = {
     row: BreadcrumbRow;
-    focus: Focus; // The item from the row that the cursor is inside of
+    focus: F; // The item from the row that the cursor is inside of
 };
 
 export type Zipper = {
@@ -112,55 +112,3 @@ export type State = {
     zipper: Zipper;
     selecting: boolean;
 };
-
-export type Action =
-    | {
-          type: "ArrowLeft";
-      }
-    | {
-          type: "ArrowRight";
-      }
-    | {
-          type: "Backspace";
-      }
-    | {
-          type: "Subscript";
-      }
-    | {
-          type: "Superscript";
-      }
-    | {
-          type: "Parens";
-          char: "(" | ")" | "[" | "]" | "{" | "}";
-      }
-    | {
-          type: "Fraction";
-      }
-    | {
-          // TODO: add support for an index
-          type: "Root";
-      }
-    | {
-          type: "Color";
-          color: string;
-      }
-    | {
-          type: "Cancel";
-      }
-    | {
-          type: "Uncancel";
-      }
-    | {
-          type: "InsertChar";
-          char: string;
-      }
-    | {
-          type: "StartSelecting";
-      }
-    | {
-          type: "StopSelecting";
-      }
-    | {
-          type: "PositionCursor";
-          cursor: Zipper;
-      };
