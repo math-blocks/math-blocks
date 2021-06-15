@@ -44,6 +44,7 @@ const keydownToAction = (key: string): Editor.Action | null => {
         case "]":
         case "{":
         case "}":
+        case "|":
             return {type: "Parens", char: key};
         case "ArrowLeft":
             return {type: "ArrowLeft"};

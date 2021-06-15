@@ -1,10 +1,11 @@
 import * as builders from "../ast/builders";
+import * as types from "../ast/types";
 
 import {moveRight} from "./move-right";
 
-import type {Zipper, State} from "./types";
+import type {Zipper, State, ZDelimited} from "./types";
 
-type Delimiters = "(" | ")" | "[" | "]" | "{" | "}";
+type Delimiters = "(" | ")" | "[" | "]" | "{" | "}" | "|";
 
 const leftGlyphMap = {
     "(": "(",
@@ -13,6 +14,7 @@ const leftGlyphMap = {
     "}": "{",
     "[": "[",
     "]": "[",
+    "|": "|",
 };
 
 const rightGlyphMap = {
@@ -22,6 +24,105 @@ const rightGlyphMap = {
     "}": "}",
     "[": "]",
     "]": "]",
+    "|": "|",
+};
+
+const makePermanent = <T extends ZDelimited | types.Delimited>(
+    focusOrNode: T,
+    delim: "leftDelim" | "rightDelim",
+): T => {
+    const atom = focusOrNode[delim];
+    return {
+        ...focusOrNode,
+        [delim]: {
+            ...atom,
+            value: {
+                ...atom.value,
+                pending: false,
+            },
+        },
+    };
+};
+
+const maybeFinishLeft = (zipper: Zipper): Zipper | null => {
+    const {breadcrumbs} = zipper;
+    const last = breadcrumbs[breadcrumbs.length - 1];
+
+    if (
+        !last ||
+        last.focus.type !== "zdelimited" ||
+        !last.focus.leftDelim.value.pending
+    ) {
+        return null;
+    }
+
+    // Move everything to the left of the cursor outside the
+    // "delimited" node.
+    const newZipper: Zipper = {
+        ...zipper,
+        breadcrumbs: [
+            ...breadcrumbs.slice(0, -1),
+            {
+                ...last,
+                row: {
+                    ...last.row,
+                    // update last.row.left
+                    left: [...last.row.left, ...zipper.row.left],
+                },
+                focus: makePermanent(last.focus, "leftDelim"),
+            },
+        ],
+        row: {
+            ...zipper.row,
+            left: [],
+        },
+    };
+    return newZipper;
+};
+
+const stateFromZipper = (zipper: Zipper): State => {
+    return {
+        startZipper: zipper,
+        endZipper: zipper,
+        zipper: zipper,
+        selecting: false,
+    };
+};
+
+const maybeFinishRight = (zipper: Zipper): Zipper | null => {
+    const {breadcrumbs} = zipper;
+    const last = breadcrumbs[breadcrumbs.length - 1];
+
+    if (
+        !last ||
+        last.focus.type !== "zdelimited" ||
+        !last.focus.rightDelim.value.pending
+    ) {
+        return null;
+    }
+
+    // Move everything to the right of the cursor outside the
+    // "delimited" node.
+    const newZipper: Zipper = {
+        ...zipper,
+        breadcrumbs: [
+            ...breadcrumbs.slice(0, -1),
+            {
+                ...last,
+                row: {
+                    ...last.row,
+                    // update last.row.right
+                    right: [...zipper.row.right, ...last.row.right],
+                },
+                focus: makePermanent(last.focus, "rightDelim"),
+            },
+        ],
+        row: {
+            ...zipper.row,
+            right: [],
+        },
+    };
+    return newZipper;
 };
 
 export const parens = (state: State, char: Delimiters): State => {
@@ -47,12 +148,7 @@ export const parens = (state: State, char: Delimiters): State => {
 
             // This places the cursor inside the the new `delimited` node to
             // the left of all nodes inside of it.
-            return moveRight({
-                startZipper: newZipper,
-                endZipper: newZipper,
-                zipper: newZipper,
-                selecting: false,
-            });
+            return moveRight(stateFromZipper(newZipper));
         }
 
         const newZipper: Zipper = {
@@ -67,12 +163,7 @@ export const parens = (state: State, char: Delimiters): State => {
             },
         };
 
-        return {
-            startZipper: newZipper,
-            endZipper: newZipper,
-            zipper: newZipper,
-            selecting: false,
-        };
+        return stateFromZipper(newZipper);
     }
 
     if (leftParen.value.char === char) {
@@ -81,49 +172,16 @@ export const parens = (state: State, char: Delimiters): State => {
         // "delimited" node and make the opening paren non-pending
         const {breadcrumbs} = zipper;
         if (breadcrumbs.length > 0) {
-            const last = breadcrumbs[breadcrumbs.length - 1];
-            if (
-                last.focus.type === "zdelimited" &&
-                last.focus.leftDelim.value.pending
-            ) {
-                // Move everything to the left of the cursor outside the
-                // "delimited" node.
-                const newZipper: Zipper = {
-                    ...zipper,
-                    breadcrumbs: [
-                        ...breadcrumbs.slice(0, -1),
-                        {
-                            ...last,
-                            row: {
-                                ...last.row,
-                                // update last.row.left
-                                left: [...last.row.left, ...zipper.row.left],
-                            },
-                            // set last.focus.leftDelim.value.pending = false;
-                            focus: {
-                                ...last.focus,
-                                leftDelim: {
-                                    ...last.focus.leftDelim,
-                                    value: {
-                                        ...last.focus.leftDelim.value,
-                                        pending: false,
-                                    },
-                                },
-                            },
-                        },
-                    ],
-                    row: {
-                        ...zipper.row,
-                        left: [],
-                    },
-                };
+            // "|" is a special case.  The left and right delims are the same
+            // so we always are either creating a new delimited node to the
+            // right or finishing an existing one on the right.
+            const newZipper =
+                maybeFinishLeft(zipper) ||
+                (char === "|" && maybeFinishRight(zipper));
 
-                return {
-                    startZipper: newZipper,
-                    endZipper: newZipper,
-                    zipper: newZipper,
-                    selecting: false,
-                };
+            if (newZipper) {
+                const state = stateFromZipper(newZipper);
+                return char === "|" ? moveRight(state) : state;
             }
         }
 
@@ -137,27 +195,13 @@ export const parens = (state: State, char: Delimiters): State => {
                 row: {
                     ...zipper.row,
                     right: [
-                        {
-                            ...next,
-                            leftDelim: {
-                                ...next.leftDelim,
-                                value: {
-                                    ...next.leftDelim.value,
-                                    pending: false,
-                                },
-                            },
-                        },
+                        makePermanent(next, "leftDelim"),
                         ...right.slice(1),
                     ],
                 },
             };
 
-            return moveRight({
-                startZipper: nonPending,
-                endZipper: nonPending,
-                zipper: nonPending,
-                selecting: false,
-            });
+            return moveRight(stateFromZipper(nonPending));
         }
 
         rightParen.value.pending = true;
@@ -171,64 +215,17 @@ export const parens = (state: State, char: Delimiters): State => {
             },
         };
 
-        return moveRight({
-            startZipper: withParens,
-            endZipper: withParens,
-            zipper: withParens,
-            selecting: false,
-        });
+        return moveRight(stateFromZipper(withParens));
     } else {
         // If we're inside a row inside of a "delimited" node, check if the
         // closing paren is pending, if it is, re-adjust the size of the
         // "delimited" node and make the closing paren non-pending.
         const {breadcrumbs} = zipper;
         if (breadcrumbs.length > 0) {
-            const crumb = breadcrumbs[breadcrumbs.length - 1];
-            if (
-                crumb.focus.type === "zdelimited" &&
-                crumb.focus.rightDelim.value.pending
-            ) {
-                // Move everything to the right of the cursor outside the
-                // "delimited" node.
-                const newZipper: Zipper = {
-                    ...zipper,
-                    breadcrumbs: [
-                        ...breadcrumbs.slice(0, -1),
-                        {
-                            ...crumb,
-                            row: {
-                                ...crumb.row,
-                                // update last.row.right
-                                right: [
-                                    ...zipper.row.right,
-                                    ...crumb.row.right,
-                                ],
-                            },
-                            // set last.focus.leftDelim.value.pending = false;
-                            focus: {
-                                ...crumb.focus,
-                                rightDelim: {
-                                    ...crumb.focus.rightDelim,
-                                    value: {
-                                        ...crumb.focus.rightDelim.value,
-                                        pending: false,
-                                    },
-                                },
-                            },
-                        },
-                    ],
-                    row: {
-                        ...zipper.row,
-                        right: [],
-                    },
-                };
+            const newZipper = maybeFinishRight(zipper);
 
-                return moveRight({
-                    startZipper: newZipper,
-                    endZipper: newZipper,
-                    zipper: newZipper,
-                    selecting: false,
-                });
+            if (newZipper) {
+                return moveRight(stateFromZipper(newZipper));
             }
         }
 
@@ -243,28 +240,14 @@ export const parens = (state: State, char: Delimiters): State => {
                     ...zipper.row,
                     left: [
                         ...left.slice(0, -1),
-                        {
-                            ...prev,
-                            rightDelim: {
-                                ...prev.rightDelim,
-                                value: {
-                                    ...prev.rightDelim.value,
-                                    pending: false,
-                                },
-                            },
-                        },
+                        makePermanent(prev, "rightDelim"),
                     ],
                 },
             };
 
             // We're already to the right of the rightDelim so no move is
             // necessary.
-            return {
-                startZipper: nonPending,
-                endZipper: nonPending,
-                zipper: nonPending,
-                selecting: false,
-            };
+            return stateFromZipper(nonPending);
         }
 
         leftParen.value.pending = true;
@@ -278,11 +261,6 @@ export const parens = (state: State, char: Delimiters): State => {
             },
         };
 
-        return {
-            startZipper: newZipper,
-            endZipper: newZipper,
-            zipper: newZipper,
-            selecting: false,
-        };
+        return stateFromZipper(newZipper);
     }
 };
