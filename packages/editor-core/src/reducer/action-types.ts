@@ -19,7 +19,7 @@ export type Action =
       }
     | {
           type: "Parens";
-          char: "(" | ")" | "[" | "]" | "{" | "}";
+          char: "(" | ")" | "[" | "]" | "{" | "}" | "|";
       }
     | {
           type: "Fraction";
