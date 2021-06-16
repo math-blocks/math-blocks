@@ -38,8 +38,6 @@ const cursorLeft = (zipper: Zipper): Zipper => {
         // Rows should only be used as children of non-rows
         // move into node to the left
         else if (prev.type !== "row") {
-            const [leftChild, rightChild] = prev.children;
-
             // const index = prev.children.findLastIndex(item => item != null);
             let index = prev.children.length - 1;
             for (; index > -1; index--) {
@@ -62,13 +60,9 @@ const cursorLeft = (zipper: Zipper): Zipper => {
                 focus: focus,
             };
 
-            let focusedRow = rightChild || leftChild;
-            if (prev.type === "table") {
-                // TODO: handle empty cells
-                focusedRow = prev.children[prev.children.length - 1];
-            }
+            const focusedRow = prev.children[index];
             if (!focusedRow) {
-                throw new Error("subsup without subscript or superscript");
+                throw new Error("no non-null row to navigate into");
             }
 
             return {

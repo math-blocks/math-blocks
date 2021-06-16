@@ -38,8 +38,6 @@ const cursorRight = (zipper: Zipper): Zipper => {
         // Rows should only be used as children of non-rows
         // move into row to the right
         else if (next.type !== "row") {
-            const [leftChild, rightChild] = next.children;
-
             const index = next.children.findIndex((item) => item != null);
             const focus: Focus = util.nodeToFocus(next, index);
 
@@ -56,9 +54,9 @@ const cursorRight = (zipper: Zipper): Zipper => {
                 focus: focus,
             };
 
-            const focusedRow = leftChild || rightChild;
+            const focusedRow = next.children[index];
             if (!focusedRow) {
-                throw new Error("subsup without subscript or superscript");
+                throw new Error("no non-null row to navigate into");
             }
 
             return {
@@ -109,8 +107,8 @@ const cursorRight = (zipper: Zipper): Zipper => {
         }
 
         // Navigate to the next row within the node.
-        const leftOfNext = focus.left.slice(0, nextIndex);
-        const rightOfNext = focus.left.slice(nextIndex + 1);
+        const leftOfNext = focus.right.slice(0, nextIndex);
+        const rightOfNext = focus.right.slice(nextIndex + 1);
         return {
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),
