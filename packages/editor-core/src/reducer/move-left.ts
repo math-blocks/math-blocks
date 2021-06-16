@@ -1,12 +1,10 @@
-import {UnreachableCaseError} from "@math-blocks/core";
-
 import * as types from "../ast/types";
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
 
-const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
+const cursorLeft = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the left
@@ -40,41 +38,14 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
         // Rows should only be used as children of non-rows
         // move into node to the left
         else if (prev.type !== "row") {
-            const [leftChild, rightChild] = prev.children;
-
-            let focus: Focus;
-            switch (prev.type) {
-                case "frac": {
-                    focus = util.zfrac(prev, 1);
+            // const index = prev.children.findLastIndex(item => item != null);
+            let index = prev.children.length - 1;
+            for (; index > -1; index--) {
+                if (prev.children[index] != null) {
                     break;
-                }
-                case "subsup": {
-                    const index = prev.children[1] ? 1 : 0;
-                    focus = util.zsubsup(prev, index);
-                    break;
-                }
-                case "root": {
-                    focus = util.zroot(prev, 1);
-                    break;
-                }
-                case "limits": {
-                    const index = prev.children[1] ? 1 : 0;
-                    focus = util.zlimits(prev, index);
-                    break;
-                }
-                case "delimited": {
-                    focus = util.zdelimited(prev);
-                    break;
-                }
-                case "table": {
-                    // TODO: handle skipping over empty cells
-                    focus = util.ztable(prev, prev.children.length - 1);
-                    break;
-                }
-                default: {
-                    throw new UnreachableCaseError(prev);
                 }
             }
+            const focus: Focus = util.nodeToFocus(prev, index);
 
             const breadcrumb: Breadcrumb = {
                 row: {
@@ -89,13 +60,9 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
                 focus: focus,
             };
 
-            let focusedRow = rightChild || leftChild;
-            if (prev.type === "table") {
-                // TODO: handle empty cells
-                focusedRow = prev.children[prev.children.length - 1];
-            }
+            const focusedRow = prev.children[index];
             if (!focusedRow) {
-                throw new Error("subsup without subscript or superscript");
+                throw new Error("no non-null row to navigate into");
             }
 
             return {
@@ -121,66 +88,58 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
-        const exitNode = (updatedNode: types.Node): Zipper => ({
-            breadcrumbs: zipper.breadcrumbs.slice(0, -1),
-            // place the fraction we exited on our right
-            row: {
-                type: "zrow",
-                id: parentRow.id,
-                left: parentRow.left,
-                selection: [],
-                right: [updatedNode, ...parentRow.right],
-                style: parentRow.style,
-            },
-        });
+        // const prevIndex = focus.left.findLastIndex((item) => item != null);
+        let prevIndex = focus.left.length - 1;
+        for (; prevIndex > -1; prevIndex--) {
+            if (focus.left[prevIndex] != null) {
+                break;
+            }
+        }
+        const prev = focus.left[prevIndex];
 
-        if (focus.type === "zdelimited") {
-            return exitNode(util.delimited(focus, exitedRow));
+        if (prev == null) {
+            // Exit the current focus since there are now rows within the node
+            // to the left.
+            return {
+                breadcrumbs: zipper.breadcrumbs.slice(0, -1),
+                // place the fraction we exited on our right
+                row: {
+                    type: "zrow",
+                    id: parentRow.id,
+                    left: parentRow.left,
+                    selection: [],
+                    right: [
+                        // Place the exited node to the right of the cursor in
+                        // the parent row.
+                        util.focusToNode(focus, exitedRow),
+                        ...parentRow.right,
+                    ],
+                    style: parentRow.style,
+                },
+            };
         }
 
-        if (focus.type === "ztable") {
-            const focusLeft = (row: types.Row): Zipper => ({
-                breadcrumbs: [
-                    ...zipper.breadcrumbs.slice(0, -1),
-                    {
-                        row: parentRow,
-                        focus: {
-                            ...focus,
-                            left: focus.left.slice(0, -1),
-                            right: [exitedRow, ...focus.right],
-                        },
-                    },
-                ],
-                row: util.zrow(row.id, row.children, [], row.style),
-            });
-
-            const prev = focus.left[focus.left.length - 1];
-
-            return prev
-                ? focusLeft(prev)
-                : exitNode(util.focusToNode(focus, exitedRow));
-        }
-
-        // TODO: handle moving between cells in a table.  Do the mirror image
-        // of what's described in move-right.ts.
-        const focusLeft = (row: types.Row): Zipper => ({
+        // Navigate to the prev row within the node.
+        const leftOfPrev = focus.left.slice(0, prevIndex);
+        const rightOfPrev = focus.left.slice(prevIndex + 1);
+        return {
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),
                 {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        left: [],
-                        right: [exitedRow],
-                    },
+                        left: leftOfPrev,
+                        right: [
+                            ...rightOfPrev, // we skipped over these (all null)
+                            exitedRow,
+                            ...focus.right,
+                        ],
+                    } as Focus,
                 },
             ],
-            row: util.zrow(row.id, row.children, [], row.style),
-        });
-
-        return focus.left[0]
-            ? focusLeft(focus.left[0])
-            : exitNode(util.focusToNode(focus, exitedRow));
+            row: util.zrow(prev.id, prev.children, [], prev.style),
+        };
     }
 
     return zipper;
