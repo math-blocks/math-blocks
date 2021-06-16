@@ -214,6 +214,46 @@ export const focusToNode = (
     }
 };
 
+export const nodeToFocus = (
+    node:
+        | types.Frac
+        | types.SubSup
+        | types.Root
+        | types.Limits
+        | types.Delimited
+        | types.Table,
+    index: number,
+): Focus => {
+    switch (node.type) {
+        case "frac":
+            if (index !== 0 && index !== 1) {
+                throw new Error("index outside of range [0, 1]");
+            }
+            return zfrac(node, index);
+        case "subsup":
+            if (index !== 0 && index !== 1) {
+                throw new Error("index outside of range [0, 1]");
+            }
+            return zsubsup(node, index);
+        case "root":
+            if (index !== 0 && index !== 1) {
+                throw new Error("index outside of range [0, 1]");
+            }
+            return zroot(node, index);
+        case "limits":
+            if (index !== 0 && index !== 1) {
+                throw new Error("index outside of range [0, 1]");
+            }
+            return zlimits(node, index);
+        case "delimited":
+            return zdelimited(node);
+        case "table":
+            return ztable(node, index);
+        default:
+            throw new UnreachableCaseError(node);
+    }
+};
+
 export const insertRight = <
     T extends {left: readonly types.Node[]; right: readonly types.Node[]}
 >(

@@ -1,12 +1,10 @@
-import {UnreachableCaseError} from "@math-blocks/core";
-
 import * as types from "../ast/types";
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
 
-const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
+const cursorLeft = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the left
@@ -42,39 +40,14 @@ const cursorLeft = (zipper: Zipper, startZipper?: Zipper): Zipper => {
         else if (prev.type !== "row") {
             const [leftChild, rightChild] = prev.children;
 
-            let focus: Focus;
-            switch (prev.type) {
-                case "frac": {
-                    focus = util.zfrac(prev, 1);
+            // const index = prev.children.findLastIndex(item => item != null);
+            let index = prev.children.length - 1;
+            for (; index > -1; index--) {
+                if (prev.children[index] != null) {
                     break;
-                }
-                case "subsup": {
-                    const index = prev.children[1] ? 1 : 0;
-                    focus = util.zsubsup(prev, index);
-                    break;
-                }
-                case "root": {
-                    focus = util.zroot(prev, 1);
-                    break;
-                }
-                case "limits": {
-                    const index = prev.children[1] ? 1 : 0;
-                    focus = util.zlimits(prev, index);
-                    break;
-                }
-                case "delimited": {
-                    focus = util.zdelimited(prev);
-                    break;
-                }
-                case "table": {
-                    // TODO: handle skipping over empty cells
-                    focus = util.ztable(prev, prev.children.length - 1);
-                    break;
-                }
-                default: {
-                    throw new UnreachableCaseError(prev);
                 }
             }
+            const focus: Focus = util.nodeToFocus(prev, index);
 
             const breadcrumb: Breadcrumb = {
                 row: {

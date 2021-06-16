@@ -1,5 +1,3 @@
-import {UnreachableCaseError} from "@math-blocks/core";
-
 import * as types from "../ast/types";
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
@@ -42,37 +40,8 @@ const cursorRight = (zipper: Zipper): Zipper => {
         else if (next.type !== "row") {
             const [leftChild, rightChild] = next.children;
 
-            let focus: Focus;
-            switch (next.type) {
-                case "frac": {
-                    focus = util.zfrac(next, 0);
-                    break;
-                }
-                case "subsup": {
-                    const index = next.children[0] ? 0 : 1;
-                    focus = util.zsubsup(next, index);
-                    break;
-                }
-                case "root": {
-                    const index = next.children[0] ? 0 : 1;
-                    focus = util.zroot(next, index);
-                    break;
-                }
-                case "limits":
-                    focus = util.zlimits(next, 0);
-                    break;
-                case "delimited": {
-                    focus = util.zdelimited(next);
-                    break;
-                }
-                case "table": {
-                    // TODO: handle skipping over empty cells
-                    focus = util.ztable(next, 0);
-                    break;
-                }
-                default:
-                    throw new UnreachableCaseError(next);
-            }
+            const index = next.children.findIndex((item) => item != null);
+            const focus: Focus = util.nodeToFocus(next, index);
 
             const breadcrumb: Breadcrumb = {
                 row: {
