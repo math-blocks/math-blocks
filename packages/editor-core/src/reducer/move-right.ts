@@ -115,67 +115,51 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
-        const exitNode = (updatedNode: types.Node): Zipper => ({
-            breadcrumbs: zipper.breadcrumbs.slice(0, -1),
-            // place the subsup we exited on our left
-            row: {
-                type: "zrow",
-                id: parentRow.id,
-                left: [...parentRow.left, updatedNode],
-                selection: [],
-                right: parentRow.right,
-                style: parentRow.style,
-            },
-        });
+        const nextIndex = focus.right.findIndex((item) => item != null);
+        const next = focus.right[nextIndex];
 
-        if (focus.type === "zdelimited") {
-            return exitNode(util.delimited(focus, exitedRow));
+        if (next == null) {
+            // Exit the current focus since there are now rows within the node
+            // to the right.
+            return {
+                breadcrumbs: zipper.breadcrumbs.slice(0, -1),
+                row: {
+                    type: "zrow",
+                    id: parentRow.id,
+                    left: [
+                        ...parentRow.left,
+                        // Place the exited node to the left of the cursor in
+                        // the parent row.
+                        util.focusToNode(focus, exitedRow),
+                    ],
+                    selection: [],
+                    right: parentRow.right,
+                    style: parentRow.style,
+                },
+            };
         }
 
-        if (focus.type === "ztable") {
-            const focusRight = (row: types.Row): Zipper => ({
-                breadcrumbs: [
-                    ...zipper.breadcrumbs.slice(0, -1),
-                    {
-                        row: parentRow,
-                        focus: {
-                            ...focus,
-                            left: [...focus.left, exitedRow],
-                            right: focus.right.slice(1),
-                        },
-                    },
-                ],
-                row: util.zrow(row.id, [], row.children, row.style),
-            });
-
-            const next = focus.right[0];
-
-            return next
-                ? focusRight(next)
-                : exitNode(util.focusToNode(focus, exitedRow));
-        }
-
-        // TODO: handle moving between cells in a table, we nee to grab the
-        // first available row from focus.right[] and move the cursor the start
-        // of that row.
-        const focusRight = (row: types.Row): Zipper => ({
+        // Navigate to the next row within the node.
+        const leftOfNext = focus.left.slice(0, nextIndex);
+        const rightOfNext = focus.left.slice(nextIndex + 1);
+        return {
             breadcrumbs: [
                 ...zipper.breadcrumbs.slice(0, -1),
                 {
                     row: parentRow,
                     focus: {
                         ...focus,
-                        left: [exitedRow],
-                        right: [],
-                    },
+                        left: [
+                            ...focus.left,
+                            exitedRow,
+                            ...leftOfNext, // we skipped over these (all null)
+                        ],
+                        right: rightOfNext,
+                    } as Focus,
                 },
             ],
-            row: util.zrow(row.id, [], row.children, row.style),
-        });
-
-        return focus.right[0]
-            ? focusRight(focus.right[0])
-            : exitNode(util.focusToNode(focus, exitedRow));
+            row: util.zrow(next.id, [], next.children, next.style),
+        };
     }
 
     return zipper;
