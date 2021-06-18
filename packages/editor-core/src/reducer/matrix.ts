@@ -22,13 +22,13 @@ export type MatrixActions =
           type: "DeleteColumn";
       };
 
-type Cell = {
+export type Cell = {
     row: number;
     col: number;
     content: types.Row | ZRow | null;
 };
 
-const getCellsFromCrumb = (
+export const getCellsFromCrumb = (
     crumb: Breadcrumb<ZTable>,
     zipper: Zipper,
 ): Cell[] => {

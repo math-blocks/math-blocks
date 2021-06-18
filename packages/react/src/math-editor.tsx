@@ -50,6 +50,10 @@ const keydownToAction = (key: string): Editor.Action | null => {
             return {type: "ArrowLeft"};
         case "ArrowRight":
             return {type: "ArrowRight"};
+        case "ArrowUp":
+            return {type: "ArrowUp"};
+        case "ArrowDown":
+            return {type: "ArrowDown"};
         case "Backspace":
             return {type: "Backspace"};
         case "_":

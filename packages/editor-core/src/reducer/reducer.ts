@@ -12,6 +12,7 @@ import {color} from "./color";
 import {cancel} from "./cancel";
 import {positionCursor} from "./position-cursor";
 import {matrix} from "./matrix";
+import {moveVertically} from "./move-vertically";
 
 import {zrow} from "./util";
 import type {Zipper, State} from "./types";
@@ -35,6 +36,10 @@ export const reducer = (state: State = initialState, action: Action): State => {
             return moveLeft(state);
         case "ArrowRight":
             return moveRight(state);
+        case "ArrowUp":
+            return moveVertically(state, "up");
+        case "ArrowDown":
+            return moveVertically(state, "down");
         case "Backspace":
             return backspace(state);
         case "Subscript":

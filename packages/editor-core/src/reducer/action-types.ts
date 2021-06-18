@@ -9,6 +9,12 @@ export type Action =
           type: "ArrowRight";
       }
     | {
+          type: "ArrowUp";
+      }
+    | {
+          type: "ArrowDown";
+      }
+    | {
           type: "Backspace";
       }
     | {
