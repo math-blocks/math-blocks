@@ -1,5 +1,11 @@
 import * as types from "../ast/types";
 
+type Zipperize<T extends types.Node> = {
+    type: `z${T["type"]}`;
+    left: readonly (types.Row | null)[];
+    right: readonly (types.Row | null)[];
+} & Omit<T, "children" | "type">;
+
 type ZCommon = {id: number; style: types.Style};
 
 export type ZRow = ZCommon & {
@@ -9,73 +15,12 @@ export type ZRow = ZCommon & {
     right: readonly types.Node[];
 };
 
-export type ZFrac =
-    | (ZCommon & {
-          type: "zfrac";
-          left: readonly [];
-          right: readonly [types.Row];
-      })
-    | (ZCommon & {
-          type: "zfrac";
-          left: readonly [types.Row];
-          right: readonly [];
-      });
-
-// TODO: consider splitting up SubSup into three different types.
-// If both `sub` and `sup` are `null` then the node is invalid.
-export type ZSubSup =
-    | (ZCommon & {
-          type: "zsubsup";
-          left: readonly [];
-          right: readonly [types.Row | null];
-      })
-    | (ZCommon & {
-          type: "zsubsup";
-          left: readonly [types.Row | null];
-          right: readonly [];
-      });
-
-export type ZLimits =
-    | (ZCommon & {
-          type: "zlimits";
-          left: readonly [];
-          right: readonly [types.Row | null];
-          inner: types.Node;
-      })
-    | (ZCommon & {
-          type: "zlimits";
-          left: readonly [types.Row];
-          right: readonly [];
-          inner: types.Node;
-      });
-
-export type ZRoot =
-    | (ZCommon & {
-          type: "zroot";
-          left: readonly [];
-          right: readonly [types.Row];
-      })
-    | (ZCommon & {
-          type: "zroot";
-          left: readonly [types.Row | null];
-          right: readonly [];
-      });
-
-export type ZDelimited = ZCommon & {
-    type: "zdelimited";
-    left: readonly [];
-    right: readonly [];
-    leftDelim: types.Atom;
-    rightDelim: types.Atom;
-};
-
-export type ZTable = ZCommon & {
-    type: "ztable";
-    left: readonly (types.Row | null)[];
-    right: readonly (types.Row | null)[];
-    rowCount: number;
-    colCount: number;
-};
+export type ZFrac = Zipperize<types.Frac>;
+export type ZSubSup = Zipperize<types.SubSup>;
+export type ZLimits = Zipperize<types.Limits>;
+export type ZRoot = Zipperize<types.Root>;
+export type ZDelimited = Zipperize<types.Delimited>;
+export type ZTable = Zipperize<types.Table>;
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 

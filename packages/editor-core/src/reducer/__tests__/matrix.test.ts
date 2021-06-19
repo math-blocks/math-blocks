@@ -29,12 +29,16 @@ describe("matrix", () => {
             const {zipper: result} = matrix(state, {type: "InsertMatrix"});
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
-                builders.table(2, 2, [
-                    [builders.glyph("1")],
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                    [builders.glyph("1")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("1")],
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                        [builders.glyph("1")],
+                    ],
+                    2,
+                    2,
+                ),
             ]);
         });
 
@@ -62,12 +66,16 @@ describe("matrix", () => {
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
                 builders.glyph("1"),
-                builders.table(2, 2, [
-                    [builders.glyph("1")],
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                    [builders.glyph("1")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("1")],
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                        [builders.glyph("1")],
+                    ],
+                    2,
+                    2,
+                ),
             ]);
             expect(result.row.selection).toEqual([]);
             expect(result.row.right).toEqualEditorNodes([builders.glyph("2")]);
@@ -80,12 +88,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -101,14 +113,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(2, 3, [
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                        [builders.glyph("a")],
+                        [builders.glyph("b")],
+                        [builders.glyph("c")],
+                        [builders.glyph("d")],
+                    ],
+                    2,
+                    3,
+                ),
             ]);
         });
 
@@ -117,12 +133,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -138,14 +158,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(2, 3, [
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("a")],
+                        [builders.glyph("b")],
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                        [builders.glyph("c")],
+                        [builders.glyph("d")],
+                    ],
+                    2,
+                    3,
+                ),
             ]);
         });
 
@@ -153,12 +177,16 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                     [],
                 ),
@@ -175,14 +203,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(2, 3, [
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("a")],
+                        [builders.glyph("b")],
+                        [builders.glyph("c")],
+                        [builders.glyph("d")],
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                    ],
+                    2,
+                    3,
+                ),
             ]);
         });
     });
@@ -193,12 +225,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -214,14 +250,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(3, 2, [
-                    [builders.glyph("0")],
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("0")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("0")],
+                        [builders.glyph("a")],
+                        [builders.glyph("b")],
+                        [builders.glyph("0")],
+                        [builders.glyph("c")],
+                        [builders.glyph("d")],
+                    ],
+                    3,
+                    2,
+                ),
             ]);
         });
 
@@ -230,12 +270,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -251,14 +295,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(3, 2, [
-                    [builders.glyph("a")],
-                    [builders.glyph("0")],
-                    [builders.glyph("b")],
-                    [builders.glyph("c")],
-                    [builders.glyph("0")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("a")],
+                        [builders.glyph("0")],
+                        [builders.glyph("b")],
+                        [builders.glyph("c")],
+                        [builders.glyph("0")],
+                        [builders.glyph("d")],
+                    ],
+                    3,
+                    2,
+                ),
             ]);
         });
 
@@ -266,12 +314,16 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                     [],
                 ),
@@ -288,14 +340,18 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(3, 2, [
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("0")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                    [builders.glyph("0")],
-                ]),
+                builders.table(
+                    [
+                        [builders.glyph("a")],
+                        [builders.glyph("b")],
+                        [builders.glyph("0")],
+                        [builders.glyph("c")],
+                        [builders.glyph("d")],
+                        [builders.glyph("0")],
+                    ],
+                    3,
+                    2,
+                ),
             ]);
         });
     });
@@ -306,12 +362,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -327,10 +387,11 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(2, 1, [
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [[builders.glyph("c")], [builders.glyph("d")]],
+                    2,
+                    1,
+                ),
             ]);
         });
 
@@ -338,12 +399,16 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                     [],
                 ),
@@ -360,10 +425,11 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(2, 1, [
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                ]),
+                builders.table(
+                    [[builders.glyph("a")], [builders.glyph("b")]],
+                    2,
+                    1,
+                ),
             ]);
         });
 
@@ -372,12 +438,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -403,12 +473,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],
@@ -424,22 +498,27 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(1, 2, [
-                    [builders.glyph("b")],
-                    [builders.glyph("d")],
-                ]),
+                builders.table(
+                    [[builders.glyph("b")], [builders.glyph("d")]],
+                    1,
+                    2,
+                ),
             ]);
         });
         test("deleting the last column", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                     [],
                 ),
@@ -456,10 +535,11 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(1, 2, [
-                    [builders.glyph("a")],
-                    [builders.glyph("c")],
-                ]),
+                builders.table(
+                    [[builders.glyph("a")], [builders.glyph("c")]],
+                    1,
+                    2,
+                ),
             ]);
         });
         test("deleting all columns", () => {
@@ -467,12 +547,16 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(2, 2, [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
-                        ]),
+                        builders.table(
+                            [
+                                [builders.glyph("a")],
+                                [builders.glyph("b")],
+                                [builders.glyph("c")],
+                                [builders.glyph("d")],
+                            ],
+                            2,
+                            2,
+                        ),
                     ],
                 ),
                 breadcrumbs: [],

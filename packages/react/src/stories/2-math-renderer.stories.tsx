@@ -868,26 +868,34 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const matrix = Editor.builders.row([
         Editor.builders.glyph("A"),
         Editor.builders.glyph("="),
-        Editor.builders.table(3, 3, [
-            // first row
-            [Editor.builders.glyph("a")],
-            [Editor.builders.glyph("b")],
-            [Editor.builders.glyph("c")],
-
-            // second row
-            [Editor.builders.glyph("d")],
+        Editor.builders.table(
             [
-                Editor.builders.glyph("e"),
-                Editor.builders.glyph("+"),
-                Editor.builders.glyph("1"),
-            ],
-            [Editor.builders.glyph("f")],
+                // first row
+                [Editor.builders.glyph("a")],
+                [Editor.builders.glyph("b")],
+                [Editor.builders.glyph("c")],
 
-            // third row
-            [Editor.builders.glyph("0")],
-            [Editor.builders.glyph("0")],
-            [Editor.builders.glyph("1")],
-        ]),
+                // second row
+                [Editor.builders.glyph("d")],
+                [
+                    Editor.builders.glyph("e"),
+                    Editor.builders.glyph("+"),
+                    Editor.builders.glyph("1"),
+                ],
+                [Editor.builders.glyph("f")],
+
+                // third row
+                [Editor.builders.glyph("0")],
+                [Editor.builders.glyph("0")],
+                [Editor.builders.glyph("1")],
+            ],
+            3,
+            3,
+            {
+                left: Editor.builders.glyph("["),
+                right: Editor.builders.glyph("]"),
+            },
+        ),
     ]);
 
     const fontSize = 60;

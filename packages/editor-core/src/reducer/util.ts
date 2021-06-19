@@ -148,6 +148,7 @@ export const table = (focus: ZTable, replacement: types.Row): types.Table => {
         type: "table",
         rowCount: focus.rowCount,
         colCount: focus.colCount,
+        delimiters: focus.delimiters,
         children: [...focus.left, replacement, ...focus.right],
         style: focus.style,
     };
@@ -159,6 +160,7 @@ export const ztable = (node: types.Table, index: number): ZTable => {
         type: "ztable",
         rowCount: node.rowCount,
         colCount: node.colCount,
+        delimiters: node.delimiters,
         left: node.children.slice(0, index),
         right: node.children.slice(index + 1),
         style: node.style,
@@ -255,7 +257,7 @@ export const nodeToFocus = (
 };
 
 export const insertRight = <
-    T extends {left: readonly types.Node[]; right: readonly types.Node[]}
+    T extends {left: readonly types.Node[]; right: readonly types.Node[]},
 >(
     zrow: T,
     node: types.Node,
