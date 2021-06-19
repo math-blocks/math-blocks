@@ -14,7 +14,7 @@ expect.extend({toEqualEditorNodes});
 
 describe("matrix", () => {
     describe("InsertMatrix", () => {
-        test("no selection", () => {
+        test("no selection, delimiters: 'brackets'", () => {
             const zipper: Zipper = {
                 row: zrow([], []),
                 breadcrumbs: [],
@@ -26,7 +26,10 @@ describe("matrix", () => {
                 selecting: false,
             };
 
-            const {zipper: result} = matrix(state, {type: "InsertMatrix"});
+            const {zipper: result} = matrix(state, {
+                type: "InsertMatrix",
+                delimiters: "brackets",
+            });
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
                 builders.table(
@@ -38,6 +41,45 @@ describe("matrix", () => {
                     ],
                     2,
                     2,
+                    {
+                        left: builders.glyph("["),
+                        right: builders.glyph("]"),
+                    },
+                ),
+            ]);
+        });
+
+        test("no selection, delimiters: 'parens'", () => {
+            const zipper: Zipper = {
+                row: zrow([], []),
+                breadcrumbs: [],
+            };
+            const state: State = {
+                startZipper: zipper,
+                endZipper: zipper,
+                zipper: zipper,
+                selecting: false,
+            };
+
+            const {zipper: result} = matrix(state, {
+                type: "InsertMatrix",
+                delimiters: "parens",
+            });
+            expect(result.breadcrumbs).toHaveLength(0);
+            expect(result.row.left).toEqualEditorNodes([
+                builders.table(
+                    [
+                        [builders.glyph("1")],
+                        [builders.glyph("0")],
+                        [builders.glyph("0")],
+                        [builders.glyph("1")],
+                    ],
+                    2,
+                    2,
+                    {
+                        left: builders.glyph("("),
+                        right: builders.glyph(")"),
+                    },
                 ),
             ]);
         });
@@ -62,7 +104,10 @@ describe("matrix", () => {
             };
             state = moveRight(state);
 
-            const {zipper: result} = matrix(state, {type: "InsertMatrix"});
+            const {zipper: result} = matrix(state, {
+                type: "InsertMatrix",
+                delimiters: "brackets",
+            });
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
                 builders.glyph("1"),
@@ -75,6 +120,10 @@ describe("matrix", () => {
                     ],
                     2,
                     2,
+                    {
+                        left: builders.glyph("["),
+                        right: builders.glyph("]"),
+                    },
                 ),
             ]);
             expect(result.row.selection).toEqual([]);

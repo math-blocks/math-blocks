@@ -11,6 +11,7 @@ type CharButton = {
 export type EditingEvent =
     | {
           type: "InsertMatrix";
+          delimiters: "brackets" | "parens";
       }
     | {
           type: "AddColumn";
@@ -89,11 +90,27 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
                 <div
                     className={styles.item2}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleMatrixClick({type: "InsertMatrix"})}
+                    onClick={() =>
+                        handleMatrixClick({
+                            type: "InsertMatrix",
+                            delimiters: "brackets",
+                        })
+                    }
                 >
-                    + matrix
+                    + bmatrix
                 </div>
-                <div></div>
+                <div
+                    className={styles.item2}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                        handleMatrixClick({
+                            type: "InsertMatrix",
+                            delimiters: "parens",
+                        })
+                    }
+                >
+                    + pmatrix
+                </div>
                 <div></div>
                 <div
                     className={styles.item2}
