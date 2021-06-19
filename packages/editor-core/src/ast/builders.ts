@@ -76,16 +76,21 @@ export function delimited(
 }
 
 export function table(
+    cells: (readonly types.Node[] | null)[],
     colCount: number,
     rowCount: number,
-    cells: (readonly types.Node[] | null)[],
+    delimiters?: {
+        left: types.Atom;
+        right: types.Atom;
+    },
 ): types.Table {
     return {
         id: getId(),
         type: "table",
+        children: cells.map((cell) => cell && row(cell)),
         colCount,
         rowCount,
-        children: cells.map((cell) => cell && row(cell)),
+        delimiters,
         style: {},
     };
 }

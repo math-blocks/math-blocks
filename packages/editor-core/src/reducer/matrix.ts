@@ -3,9 +3,11 @@ import * as types from "../ast/types";
 
 import type {State, Zipper, Breadcrumb, ZTable, ZRow} from "./types";
 
+// TODO: dedupe with math-keypad.ts
 export type MatrixActions =
     | {
           type: "InsertMatrix";
+          delimiters: "brackets" | "parens";
       }
     | {
           type: "AddRow";
@@ -125,12 +127,25 @@ export const matrix = (state: State, action: MatrixActions): State => {
     if (action.type === "InsertMatrix") {
         const zipper = state.zipper;
         const {left, selection} = zipper.row;
-        const newNode = builders.table(2, 2, [
-            [builders.glyph("1")],
-            [builders.glyph("0")],
-            [builders.glyph("0")],
-            [builders.glyph("1")],
-        ]);
+        const newNode = builders.table(
+            [
+                [builders.glyph("1")],
+                [builders.glyph("0")],
+                [builders.glyph("0")],
+                [builders.glyph("1")],
+            ],
+            2,
+            2,
+            action.delimiters === "brackets"
+                ? {
+                      left: builders.glyph("["),
+                      right: builders.glyph("]"),
+                  }
+                : {
+                      left: builders.glyph("("),
+                      right: builders.glyph(")"),
+                  },
+        );
 
         if (selection.length > 0) {
             const newLeft = [...left, newNode];

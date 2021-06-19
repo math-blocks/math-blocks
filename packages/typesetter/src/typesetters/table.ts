@@ -21,7 +21,7 @@ export const typesetTable = (
     typesetChildren: (Layout.HBox | null)[],
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
-): Layout.HBox => {
+): Layout.HBox | Layout.VBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
 
@@ -133,8 +133,25 @@ export const typesetTable = (
         strict: true,
     };
 
-    const open = makeDelimiter("[", inner, thresholdOptions, context);
-    const close = makeDelimiter("]", inner, thresholdOptions, context);
+    if (!node.delimiters) {
+        inner.id = node.id;
+        inner.style = node.style;
+
+        return inner;
+    }
+
+    const open = makeDelimiter(
+        node.delimiters.left.value.char,
+        inner,
+        thresholdOptions,
+        context,
+    );
+    const close = makeDelimiter(
+        node.delimiters.right.value.char,
+        inner,
+        thresholdOptions,
+        context,
+    );
 
     const table = Layout.makeStaticHBox([open, inner, close], context);
 

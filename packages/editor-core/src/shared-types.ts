@@ -7,9 +7,9 @@ export type Row<A, C> = C & {
 
 export type Delimited<A, C> = C & {
     type: "delimited";
-    // How do we limit what can be used as a delimiter?
-    leftDelim: Atom<A, C>;
     children: readonly [Row<A, C>];
+    // How do we limit what can be used as a delimiter?s
+    leftDelim: Atom<A, C>;
     rightDelim: Atom<A, C>;
 };
 
@@ -18,6 +18,11 @@ export type Table<A, C> = C & {
     children: readonly (Row<A, C> | null)[];
     rowCount: number;
     colCount: number;
+    // How do we limit what can be used as a delimiter?s
+    delimiters?: {
+        left: Atom<A, C>;
+        right: Atom<A, C>;
+    };
 };
 
 export type SubSup<A, C> = C & {

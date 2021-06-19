@@ -19,21 +19,29 @@ const zipperToState = (zipper: Zipper): State => {
 };
 
 describe("moveVertically", () => {
-    const smallTable = builders.table(2, 2, [
-        [builders.glyph("a")],
-        [builders.glyph("b")],
-        [builders.glyph("c")],
-        [builders.glyph("d")],
-    ]);
+    const smallTable = builders.table(
+        [
+            [builders.glyph("a")],
+            [builders.glyph("b")],
+            [builders.glyph("c")],
+            [builders.glyph("d")],
+        ],
+        2,
+        2,
+    );
 
-    const largeTable = builders.table(2, 3, [
-        [builders.glyph("a")],
-        [builders.glyph("b")],
-        null,
-        null,
-        [builders.glyph("c")],
-        [builders.glyph("d")],
-    ]);
+    const largeTable = builders.table(
+        [
+            [builders.glyph("a")],
+            [builders.glyph("b")],
+            null,
+            null,
+            [builders.glyph("c")],
+            [builders.glyph("d")],
+        ],
+        2,
+        3,
+    );
 
     test("moving down", () => {
         const zipper: Zipper = {
@@ -131,12 +139,16 @@ describe("moveVertically", () => {
         const zipper: Zipper = {
             row: zrow(
                 [
-                    builders.table(2, 2, [
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
-                    ]),
+                    builders.table(
+                        [
+                            [builders.glyph("a")],
+                            [builders.glyph("b")],
+                            [builders.glyph("c")],
+                            [builders.glyph("d")],
+                        ],
+                        2,
+                        2,
+                    ),
                 ],
                 [],
             ),

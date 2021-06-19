@@ -58,29 +58,48 @@ describe("MathKeypad", () => {
         expect(mockKeyDown).toHaveBeenCalled();
     });
 
-    test("'+ matrix' should trigger 'InsertMatrix' editing event", () => {
+    test("'+ bmatrix' should trigger 'InsertMatrix' editing event", () => {
         // Arrange
         const editMock = jest.fn();
         render(<TestComp editMock={editMock} />);
 
         // Act
         screen.getByRole("textbox").focus();
-        userEvent.click(screen.getByText("+ matrix"));
+        userEvent.click(screen.getByText("+ bmatrix"));
 
         // Assert
-        expect(editMock).toHaveBeenCalledWith({type: "InsertMatrix"});
+        expect(editMock).toHaveBeenCalledWith({
+            type: "InsertMatrix",
+            delimiters: "brackets",
+        });
+    });
+
+    test("'+ pmatrix' should trigger 'InsertMatrix' editing event", () => {
+        // Arrange
+        const editMock = jest.fn();
+        render(<TestComp editMock={editMock} />);
+
+        // Act
+        screen.getByRole("textbox").focus();
+        userEvent.click(screen.getByText("+ pmatrix"));
+
+        // Assert
+        expect(editMock).toHaveBeenCalledWith({
+            type: "InsertMatrix",
+            delimiters: "parens",
+        });
     });
 
     // TODO: create a separate button component so that we only have to test
     // the focus behavior once.
-    test("clicking '+ matrix' doesn't unfocus input", () => {
+    test("clicking '+ bmatrix' doesn't unfocus input", () => {
         // Arrange
         const editMock = jest.fn();
         render(<TestComp editMock={editMock} />);
 
         // Act
         screen.getByRole("textbox").focus();
-        userEvent.click(screen.getByText("+ matrix"));
+        userEvent.click(screen.getByText("+ bmatrix"));
 
         // Assert
         expect(screen.getByRole("textbox")).toHaveFocus();
