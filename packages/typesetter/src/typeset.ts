@@ -12,7 +12,7 @@ import {typesetLimits} from "./typesetters/limits";
 import {typesetRoot} from "./typesetters/root";
 import {typesetSubsup} from "./typesetters/subsup";
 import {typesetTable} from "./typesetters/table";
-import {typesetAtom, maybeAddOperatorPadding} from "./typesetters/atom";
+import {maybeAddOperatorPadding} from "./typesetters/atom";
 
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
@@ -174,7 +174,7 @@ const typesetNode = (
             return typesetTable(typesetChild, node, context);
         }
         case "atom": {
-            return typesetAtom(node, context);
+            return maybeAddOperatorPadding(prevEditNode, node, context);
         }
         default:
             throw new UnreachableCaseError(node);
@@ -188,22 +188,10 @@ const typesetNodes = (
     prevLayoutNode?: Layout.Node,
 ): readonly Layout.Node[] => {
     return nodes.map((child) => {
-        if (child.type === "atom") {
-            const result = maybeAddOperatorPadding(prevChild, child, context);
-            prevLayoutNode = result;
-            prevChild = child;
-            return result;
-        } else {
-            const result = typesetNode(
-                child,
-                context,
-                prevChild,
-                prevLayoutNode,
-            );
-            prevLayoutNode = result;
-            prevChild = child;
-            return result;
-        }
+        const result = typesetNode(child, context, prevChild, prevLayoutNode);
+        prevLayoutNode = result;
+        prevChild = child;
+        return result;
     });
 };
 
