@@ -18,6 +18,7 @@ export type Table<A, C> = C & {
     children: readonly (Row<A, C> | null)[];
     rowCount: number;
     colCount: number;
+    gutterWidth?: number;
     // How do we limit what can be used as a delimiter?s
     delimiters?: {
         left: Atom<A, C>;

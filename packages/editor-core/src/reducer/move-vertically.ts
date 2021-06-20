@@ -1,5 +1,6 @@
 import * as types from "../ast/types";
 import * as util from "./util";
+import {verticalWork} from "./vertical-work";
 
 import type {ZRow, Zipper, State} from "./types";
 
@@ -8,7 +9,7 @@ export const moveVertically = (
     direction: "up" | "down",
 ): State => {
     if (state.selecting) {
-        return state;
+        return verticalWork(state);
     }
 
     const {breadcrumbs} = state.zipper;
@@ -97,5 +98,5 @@ export const moveVertically = (
         };
     }
 
-    return state;
+    return verticalWork(state);
 };

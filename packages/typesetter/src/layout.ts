@@ -22,7 +22,7 @@ type Common = {
     style: Style;
 };
 
-type Content =
+export type Content =
     | {
           type: "static";
           nodes: readonly Node[];

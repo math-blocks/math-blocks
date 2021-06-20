@@ -232,7 +232,7 @@ const typesetFocus = (
                 () => childContext,
             );
 
-            return typesetTable(typesetChildren, focus, context);
+            return typesetTable(typesetChildren, focus, context, zipper);
         }
         default:
             throw new UnreachableCaseError(focus);

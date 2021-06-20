@@ -3,7 +3,6 @@ import {builders} from "@math-blocks/editor-core";
 const simpleRow = builders.row([
     builders.glyph("2"),
     builders.glyph("x"),
-    builders.subsup(undefined, [builders.glyph("2")]),
     builders.glyph("+"),
     builders.glyph("5"),
     builders.glyph("="),

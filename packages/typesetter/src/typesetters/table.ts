@@ -15,18 +15,53 @@ type Col = {
     width: number;
 };
 
-const COL_GAP = 50;
+const DEFAULT_GUTTER_WIDTH = 50;
+
+const padContent = (
+    content: Layout.Content,
+    kernSize: number,
+): Layout.Content => {
+    if (content.type === "static") {
+        return {
+            type: "static",
+            nodes: [
+                Layout.makeKern(kernSize),
+                ...content.nodes,
+                Layout.makeKern(kernSize),
+            ],
+        };
+    } else if (content.type === "cursor") {
+        return {
+            type: "cursor",
+            left: [Layout.makeKern(kernSize), ...content.left],
+            right: [...content.right, Layout.makeKern(kernSize)],
+        };
+    } else {
+        return {
+            type: "selection",
+            left: [Layout.makeKern(kernSize), ...content.left],
+            selection: content.selection,
+            right: [...content.right, Layout.makeKern(kernSize)],
+        };
+    }
+};
 
 export const typesetTable = (
     typesetChildren: (Layout.HBox | null)[],
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
+    zipper?: Editor.Zipper,
 ): Layout.HBox | Layout.VBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
 
+    const gutterWidth: number =
+        typeof node.gutterWidth === "undefined"
+            ? DEFAULT_GUTTER_WIDTH
+            : node.gutterWidth;
+
     // Group cells into rows and columns and determine the width of each
-    // columna and the depth/height of each row.
+    // column and the depth/height of each row.
     for (let i = 0; i < node.colCount; i++) {
         for (let j = 0; j < node.rowCount; j++) {
             if (!columns[i]) {
@@ -42,8 +77,27 @@ export const typesetTable = (
                     depth: 0,
                 };
             }
-            let cell = typesetChildren[j * node.colCount + i];
+            const cellIndex = j * node.colCount + i;
+            let cell = typesetChildren[cellIndex];
+            const children =
+                node.type === "table"
+                    ? node.children
+                    : [
+                          ...node.left,
+                          Editor.zrowToRow(zipper.row),
+                          ...node.right,
+                      ];
+            const child = children[cellIndex];
             if (cell) {
+                if (
+                    child &&
+                    child.children.length === 1 &&
+                    child.children[0]?.type === "atom" &&
+                    ["+", "\u2212"].includes(child.children[0].value.char)
+                ) {
+                    cell.width += 32;
+                    cell.content = padContent(cell.content, 16);
+                }
                 columns[i].width = Math.max(cell.width, columns[i].width);
                 rows[j].height = Math.max(cell.height, rows[j].height);
                 rows[j].depth = Math.max(cell.depth, rows[j].depth);
@@ -71,6 +125,15 @@ export const typesetTable = (
         }
     }
 
+    const cursorIndex = node.type === "ztable" ? node.left.length : -1;
+    console.log(`cursorIndex = ${cursorIndex}`);
+    if (cursorIndex !== -1) {
+        const cursorCol = cursorIndex % node.colCount;
+        if (columns[cursorCol].width === 0) {
+            columns[cursorCol].width = 32;
+        }
+    }
+
     // Adjust the width of cells in the same column to be the same
     for (let i = 0; i < columns.length; i++) {
         const col = columns[i];
@@ -80,10 +143,10 @@ export const typesetTable = (
             const baseKernSize = (col.width - originalWidth) / 2;
             const rightKernSize =
                 i < columns.length - 1
-                    ? baseKernSize + COL_GAP / 2
+                    ? baseKernSize + gutterWidth / 2
                     : baseKernSize;
             const leftKernSize =
-                i > 0 ? baseKernSize + COL_GAP / 2 : baseKernSize;
+                i > 0 ? baseKernSize + gutterWidth / 2 : baseKernSize;
             const cell = Layout.rebox(
                 col.children[j],
                 Layout.makeKern(leftKernSize, "start"),
@@ -109,7 +172,7 @@ export const typesetTable = (
     );
     const width =
         columns.reduce((sum, col) => sum + col.width, 0) +
-        COL_GAP * (columns.length - 1);
+        gutterWidth * (columns.length - 1);
 
     const inner = Layout.makeVBox(
         width,

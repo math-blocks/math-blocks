@@ -14,6 +14,7 @@ export {
     selectionZipperFromZippers,
 } from "./reducer/convert";
 export {stateFromZipper} from "./reducer/test-util";
+export {zrowToRow} from "./reducer/util";
 export type {
     Breadcrumb,
     Focus,
