@@ -3,7 +3,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
-import {MathStyle, RenderMode} from "./enums";
+import {RenderMode} from "./enums";
 import {fontSizeForContext} from "./utils";
 
 import {typesetDelimited} from "./typesetters/delimited";
@@ -12,7 +12,7 @@ import {typesetLimits} from "./typesetters/limits";
 import {typesetRoot} from "./typesetters/root";
 import {typesetSubsup} from "./typesetters/subsup";
 import {typesetTable} from "./typesetters/table";
-import {typesetAtom, maybeAddOperatorPadding} from "./typesetters/atom";
+import {maybeAddOperatorPadding} from "./typesetters/atom";
 
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
@@ -67,89 +67,32 @@ const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
     dim.height = Math.max(dim.height, height);
 };
 
-const childContextForFrac = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Text,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childContext: Context = {
-        ...context,
-        mathStyle: childMathStyle,
-    };
-
-    return childContext;
-};
-
-const childContextForSubsup = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childContext: Context = {
-        ...context,
-        mathStyle: childMathStyle,
-        cramped: true,
-    };
-
-    return childContext;
-};
-
-const childContextForLimits = (context: Context): Context => {
-    const {mathStyle} = context;
-
-    const childMathStyle = {
-        [MathStyle.Display]: MathStyle.Script,
-        [MathStyle.Text]: MathStyle.Script,
-        [MathStyle.Script]: MathStyle.ScriptScript,
-        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-    }[mathStyle];
-
-    const childContext: Context = {
-        ...context,
-        mathStyle: childMathStyle,
-        cramped: true,
-    };
-
-    return childContext;
-};
-
-/**
- * Typesets the children of a Focus and associated Zipper.
- *
- * @param {Editor.Zipper} zipper
- * @param {Editor.Focus} focus
- * @param {Function} contextForIndex
- */
-const getTypesetChildren = (
+const getTypesetChildFromZipper = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
-    contextForIndex: (index: number) => Context,
-): (Layout.HBox | null)[] => {
-    return [
-        ...focus.left.map((child, index) => {
-            return child && typesetRow(child, contextForIndex(index));
-        }),
-        _typesetZipper(zipper, contextForIndex(focus.left.length)),
-        ...focus.right.map((child, index) => {
-            return (
-                child &&
-                typesetRow(
-                    child,
-                    contextForIndex(focus.left.length + index + 1),
-                )
-            );
-        }),
-    ];
+): ((index: number, context: Context) => Layout.HBox | null) => {
+    return (index: number, context: Context): Layout.HBox | null => {
+        if (index < focus.left.length) {
+            const child = focus.left[index];
+            return child && typesetRow(child, context);
+        } else if (index === focus.left.length) {
+            return _typesetZipper(zipper, context);
+        } else {
+            const child = focus.right[index - focus.left.length - 1];
+            return child && typesetRow(child, context);
+        }
+    };
+};
+
+const getTypesetChildFromNodes = <
+    T extends readonly (Editor.types.Row | null)[],
+>(
+    children: T,
+): ((index: number, context: Context) => Layout.HBox | null) => {
+    return (index: number, context: Context): Layout.HBox | null => {
+        const child = children[index];
+        return child && typesetRow(child, context);
+    };
 };
 
 const typesetFocus = (
@@ -159,29 +102,14 @@ const typesetFocus = (
     prevEditNode?: Editor.types.Node,
     prevLayoutNode?: Layout.Node,
 ): Layout.Node => {
+    const typesetChild = getTypesetChildFromZipper(zipper, focus);
     switch (focus.type) {
         case "zfrac": {
-            const childContext = childContextForFrac(context);
-
-            const typesetChildren = getTypesetChildren(
-                zipper,
-                focus,
-                () => childContext,
-            );
-
-            return typesetFrac(typesetChildren, focus, context);
+            return typesetFrac(typesetChild, focus, context);
         }
         case "zsubsup": {
-            const childContext = childContextForSubsup(context);
-
-            const typesetChildren = getTypesetChildren(
-                zipper,
-                focus,
-                () => childContext,
-            );
-
             return typesetSubsup(
-                typesetChildren,
+                typesetChild,
                 focus,
                 context,
                 prevEditNode,
@@ -189,50 +117,16 @@ const typesetFocus = (
             );
         }
         case "zroot": {
-            const indexContext: Context = {
-                ...context,
-                // It doesn't matter what the mathStyle is of the parent, we
-                // always use ScriptScript for root indicies.
-                mathStyle: MathStyle.ScriptScript,
-            };
-
-            const typesetChildren = getTypesetChildren(zipper, focus, (index) =>
-                index === 0 ? indexContext : context,
-            );
-
-            return typesetRoot(typesetChildren, focus, context);
+            return typesetRoot(typesetChild, focus, context);
         }
         case "zlimits": {
-            // TODO: render as a subsup if mathStyle isn't MathStyle.Display
-            const childContext = childContextForLimits(context);
-
-            const typesetChildren = getTypesetChildren(
-                zipper,
-                focus,
-                () => childContext,
-            );
-
-            return typesetLimits(typesetChildren, focus, context, typesetNode);
+            return typesetLimits(typesetChild, focus, context, typesetNode);
         }
         case "zdelimited": {
-            const typesetChildren = getTypesetChildren(
-                zipper,
-                focus,
-                () => context,
-            );
-
-            return typesetDelimited(typesetChildren, focus, context);
+            return typesetDelimited(typesetChild, focus, context);
         }
         case "ztable": {
-            const childContext = childContextForFrac(context);
-
-            const typesetChildren = getTypesetChildren(
-                zipper,
-                focus,
-                () => childContext,
-            );
-
-            return typesetTable(typesetChildren, focus, context, zipper);
+            return typesetTable(typesetChild, focus, context, zipper);
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -251,23 +145,12 @@ const typesetNode = (
             return typesetRow(node, context);
         }
         case "frac": {
-            const childContext = childContextForFrac(context);
-
-            const typesetChildren = node.children.map((child) =>
-                typesetRow(child, childContext),
-            );
-
-            return typesetFrac(typesetChildren, node, context);
+            const typesetChild = getTypesetChildFromNodes(node.children);
+            return typesetFrac(typesetChild, node, context);
         }
         case "subsup": {
-            const childContext = childContextForSubsup(context);
-
-            const typesetChildren = node.children.map(
-                (child) => child && typesetRow(child, childContext),
-            );
-
             return typesetSubsup(
-                typesetChildren,
+                getTypesetChildFromNodes(node.children),
                 node,
                 context,
                 prevEditNode,
@@ -275,48 +158,23 @@ const typesetNode = (
             );
         }
         case "root": {
-            const [deg, rad] = node.children;
-
-            const radicand = typesetRow(rad, context);
-            const degree =
-                deg &&
-                typesetRow(deg, {
-                    ...context,
-                    // It doesn't matter what the mathStyle is of the parent, we
-                    // always use ScriptScript for root indicies.
-                    mathStyle: MathStyle.ScriptScript,
-                });
-
-            return typesetRoot([degree, radicand], node, context);
+            const typesetChild = getTypesetChildFromNodes(node.children);
+            return typesetRoot(typesetChild, node, context);
         }
         case "limits": {
-            // TODO: render as a subsup if mathStyle isn't MathStyle.Display
-            const childContext = childContextForLimits(context);
-
-            const typesetChildren = node.children.map(
-                (child) => child && typesetRow(child, childContext),
-            );
-
-            return typesetLimits(typesetChildren, node, context, typesetNode);
+            const typesetChild = getTypesetChildFromNodes(node.children);
+            return typesetLimits(typesetChild, node, context, typesetNode);
         }
         case "delimited": {
-            const typesetChildren = node.children.map((child) =>
-                typesetRow(child, context),
-            );
-
-            return typesetDelimited(typesetChildren, node, context);
+            const typesetChild = getTypesetChildFromNodes(node.children);
+            return typesetDelimited(typesetChild, node, context);
         }
         case "table": {
-            const childContext = childContextForFrac(context);
-
-            const typesetChildren = node.children.map((child) => {
-                return child && typesetRow(child, childContext);
-            });
-
-            return typesetTable(typesetChildren, node, context);
+            const typesetChild = getTypesetChildFromNodes(node.children);
+            return typesetTable(typesetChild, node, context);
         }
         case "atom": {
-            return typesetAtom(node, context);
+            return maybeAddOperatorPadding(prevEditNode, node, context);
         }
         default:
             throw new UnreachableCaseError(node);
@@ -330,22 +188,10 @@ const typesetNodes = (
     prevLayoutNode?: Layout.Node,
 ): readonly Layout.Node[] => {
     return nodes.map((child) => {
-        if (child.type === "atom") {
-            const result = maybeAddOperatorPadding(prevChild, child, context);
-            prevLayoutNode = result;
-            prevChild = child;
-            return result;
-        } else {
-            const result = typesetNode(
-                child,
-                context,
-                prevChild,
-                prevLayoutNode,
-            );
-            prevLayoutNode = result;
-            prevChild = child;
-            return result;
-        }
+        const result = typesetNode(child, context, prevChild, prevLayoutNode);
+        prevLayoutNode = result;
+        prevChild = child;
+        return result;
     });
 };
 

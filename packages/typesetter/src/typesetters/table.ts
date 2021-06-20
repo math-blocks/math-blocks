@@ -2,6 +2,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "../layout";
 import {fontSizeForContext, makeDelimiter} from "../utils";
+import {MathStyle} from "../enums";
 
 import type {Context} from "../types";
 
@@ -46,14 +47,33 @@ const padContent = (
     }
 };
 
+const childContextForTable = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Text,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+    };
+
+    return childContext;
+};
+
 export const typesetTable = (
-    typesetChildren: (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
     zipper?: Editor.Zipper,
 ): Layout.HBox | Layout.VBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
+    const childContext = childContextForTable(context);
 
     const gutterWidth: number =
         typeof node.gutterWidth === "undefined"
@@ -77,8 +97,9 @@ export const typesetTable = (
                     depth: 0,
                 };
             }
+
             const cellIndex = j * node.colCount + i;
-            let cell = typesetChildren[cellIndex];
+            let cell = typesetChild(j * node.colCount + i, childContext);
             const children =
                 node.type === "table"
                     ? node.children
@@ -88,6 +109,7 @@ export const typesetTable = (
                           ...node.right,
                       ];
             const child = children[cellIndex];
+
             if (cell) {
                 if (
                     child &&

@@ -1,17 +1,39 @@
 import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "../layout";
+import {MathStyle} from "../enums";
 
 import type {Context} from "../types";
 
-// TODO: render as a subsup if mathStyle isn't MathStyle.Display
+const childContextForLimits = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
+// TODO: render as a subsup if context.mathStyle isn't MathStyle.Display
 export const typesetLimits = (
-    typesetChildren: readonly (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Limits | Editor.ZLimits,
     context: Context,
     typesetNode: (node: Editor.types.Node, context: Context) => Layout.Node,
 ): Layout.VBox => {
-    const [lowerBox, upperBox] = typesetChildren;
+    const childContext = childContextForLimits(context);
+    const lowerBox = typesetChild(0, childContext);
+    const upperBox = typesetChild(1, childContext);
 
     if (!lowerBox) {
         throw new Error("Lower limit should always be defined");
