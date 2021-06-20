@@ -2,6 +2,7 @@ import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "../layout";
 import {fontSizeForContext, makeDelimiter} from "../utils";
+import {MathStyle} from "../enums";
 
 import type {Context} from "../types";
 
@@ -17,13 +18,32 @@ type Col = {
 
 const COL_GAP = 50;
 
+const childContextForTable = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Text,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+    };
+
+    return childContext;
+};
+
 export const typesetTable = (
-    typesetChildren: (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
 ): Layout.HBox | Layout.VBox => {
     const columns: Col[] = [];
     const rows: Row[] = [];
+    const childContext = childContextForTable(context);
 
     // Group cells into rows and columns and determine the width of each
     // columna and the depth/height of each row.
@@ -42,7 +62,7 @@ export const typesetTable = (
                     depth: 0,
                 };
             }
-            let cell = typesetChildren[j * node.colCount + i];
+            let cell = typesetChild(j * node.colCount + i, childContext);
             if (cell) {
                 columns[i].width = Math.max(cell.width, columns[i].width);
                 rows[j].height = Math.max(cell.height, rows[j].height);

@@ -1,6 +1,7 @@
 import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "../layout";
+import {MathStyle} from "../enums";
 
 import {RadicalDegreeAlgorithm} from "../enums";
 import {
@@ -12,11 +13,18 @@ import {
 import type {Context} from "../types";
 
 export const typesetRoot = (
-    typesetChildren: readonly (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Root | Editor.ZRoot,
     context: Context,
 ): Layout.HBox => {
-    const [degree, radicand] = typesetChildren;
+    const degreeContext = {
+        ...context,
+        // It doesn't matter what the mathStyle is of the parent, we
+        // always use ScriptScript for root indicies.
+        mathStyle: MathStyle.ScriptScript,
+    };
+    const degree = typesetChild(0, degreeContext);
+    const radicand = typesetChild(1, context);
 
     if (!radicand) {
         throw new Error("Radicand must be defined");

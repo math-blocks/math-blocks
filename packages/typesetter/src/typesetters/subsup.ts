@@ -1,17 +1,39 @@
 import * as Editor from "@math-blocks/editor-core";
 
 import * as Layout from "../layout";
+import {MathStyle} from "../enums";
 
 import type {Context} from "../types";
 
+const childContextForSubsup = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Script,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+        cramped: true,
+    };
+
+    return childContext;
+};
+
 export const typesetSubsup = (
-    typesetChildren: readonly (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.SubSup | Editor.ZSubSup,
     context: Context,
     prevEditNode?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
 ): Layout.VBox => {
-    const [subBox, supBox] = typesetChildren;
+    const childContext = childContextForSubsup(context);
+    const subBox = typesetChild(0, childContext);
+    const supBox = typesetChild(1, childContext);
 
     if (!supBox && !subBox) {
         throw new Error("at least one of supBox and subBox must be defined");
@@ -28,14 +50,9 @@ export const typesetSubsup = (
     // filter them out.  Anything else that's in a box is some sort of compound
     // layout structure (frac, delimited, etc.) and should have its subscript
     // and/or superscript positioned based on the size of the box.
-    if (
-        prevEditNode?.type !== "atom" &&
-        (prevLayoutNode?.type === "HBox" || prevLayoutNode?.type === "VBox")
-    ) {
-        const {
-            superscriptBaselineDropMax,
-            subscriptBaselineDropMin,
-        } = font.math.constants;
+    if (prevEditNode?.type !== "atom" && prevLayoutNode) {
+        const {superscriptBaselineDropMax, subscriptBaselineDropMin} =
+            font.math.constants;
 
         const baselineDropMax = Layout.getConstantValue(
             superscriptBaselineDropMax,
@@ -50,7 +67,7 @@ export const typesetSubsup = (
         const dnList = [];
 
         if (supBox) {
-            const shift = prevLayoutNode.height;
+            const shift = Layout.getHeight(prevLayoutNode);
             const kernShift = shift - baselineDropMax;
 
             upList.push(Layout.makeKern(kernShift));
@@ -58,7 +75,7 @@ export const typesetSubsup = (
         }
 
         if (subBox) {
-            const shift = prevLayoutNode.depth;
+            const shift = Layout.getDepth(prevLayoutNode);
             const kernSize = shift - baselineDropMin;
 
             dnList.push(Layout.makeKern(kernSize));
