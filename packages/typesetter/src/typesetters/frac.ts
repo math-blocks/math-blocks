@@ -11,12 +11,33 @@ const makeList = (
     box: Layout.HBox,
 ): readonly Layout.Node[] => [Layout.makeKern(size), box];
 
+const childContextForFrac = (context: Context): Context => {
+    const {mathStyle} = context;
+
+    const childMathStyle = {
+        [MathStyle.Display]: MathStyle.Text,
+        [MathStyle.Text]: MathStyle.Script,
+        [MathStyle.Script]: MathStyle.ScriptScript,
+        [MathStyle.ScriptScript]: MathStyle.ScriptScript,
+    }[mathStyle];
+
+    const childContext: Context = {
+        ...context,
+        mathStyle: childMathStyle,
+    };
+
+    return childContext;
+};
+
 export const typesetFrac = (
-    typesetChildren: readonly (Layout.HBox | null)[],
+    typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Frac | Editor.ZFrac,
     context: Context,
 ): Layout.VBox => {
-    let [numBox, denBox] = typesetChildren;
+    const childContext = childContextForFrac(context);
+    let numBox = typesetChild(0, childContext);
+    let denBox = typesetChild(1, childContext);
+
     if (!numBox || !denBox) {
         throw new Error("The numerator and denominator must both be defined");
     }
