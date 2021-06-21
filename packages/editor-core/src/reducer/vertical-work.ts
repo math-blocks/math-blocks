@@ -6,16 +6,6 @@ import * as builders from "../ast/builders";
 import * as util from "./util";
 
 export const verticalWork = (state: State): State => {
-    // TODO:
-    // - check if cursor is at the root level
-    // - if it is, when pressing down, replace the root level row with a table
-    //   with the root level row as the first table row and an empty table row
-    //   below it
-    // - update the logic to split the root level row into multiple cells with
-    //   - empty cells being added to the start and end
-    //   - empty cells being added around relationship operators
-    //   - empty cells being added before binary plus/minus operations
-    //
     // Does it make sense if the root is not a Row?  Is this how we could prevent
     // users from exiting the table?
 
