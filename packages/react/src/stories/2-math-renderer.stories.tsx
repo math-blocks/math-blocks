@@ -914,8 +914,7 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
 export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const {builders} = Editor;
     const verticalWork = builders.row([
-        builders.table(
-            "algebra",
+        builders.algebra(
             [
                 // first row
                 [],

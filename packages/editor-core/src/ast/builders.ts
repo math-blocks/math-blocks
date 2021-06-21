@@ -84,6 +84,7 @@ export function table(
         left: types.Atom;
         right: types.Atom;
     },
+    gutterWidth?: number,
 ): types.Table {
     return {
         id: getId(),
@@ -94,8 +95,16 @@ export function table(
         rowCount,
         delimiters,
         style: {},
-        gutterWidth: undefined,
+        gutterWidth,
     };
+}
+
+export function algebra(
+    cells: (readonly types.Node[] | null)[],
+    colCount: number,
+    rowCount: number,
+): types.Table {
+    return table("algebra", cells, colCount, rowCount, undefined, 0);
 }
 
 export function matrix(
