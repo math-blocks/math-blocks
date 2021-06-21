@@ -9,7 +9,7 @@ import {RadicalDegreeAlgorithm} from "@math-blocks/typesetter";
 import FormattingPalette from "./formatting-palette";
 import {examples} from "./examples";
 
-const initialExample = 5;
+const initialExample = 0;
 
 const EditorPage: React.FunctionComponent = () => {
     const [stixFontData, setStixFontData] = React.useState<FontData | null>(
@@ -19,10 +19,8 @@ const EditorPage: React.FunctionComponent = () => {
     const [bonumFontData, setBonumFontData] = React.useState<FontData | null>(
         null,
     );
-    const [
-        pagellaFontData,
-        setPagellaFontData,
-    ] = React.useState<FontData | null>(null);
+    const [pagellaFontData, setPagellaFontData] =
+        React.useState<FontData | null>(null);
     const [scholaFontData, setScholaFontData] = React.useState<FontData | null>(
         null,
     );
@@ -43,9 +41,8 @@ const EditorPage: React.FunctionComponent = () => {
         },
     });
 
-    const [radicalDegreeAlgorithm, setRadicalDegreeAlgorithm] = React.useState<
-        RadicalDegreeAlgorithm
-    >(RadicalDegreeAlgorithm.OpenType);
+    const [radicalDegreeAlgorithm, setRadicalDegreeAlgorithm] =
+        React.useState<RadicalDegreeAlgorithm>(RadicalDegreeAlgorithm.OpenType);
 
     const [showHitboxes, setShowHitboxes] = React.useState<boolean>(false);
 

@@ -54,19 +54,22 @@ export const maybeAddOperatorPadding = (
     prevNode: Editor.types.Node | Editor.Focus | undefined,
     currentNode: Editor.types.Atom,
     context: Context,
+    padOperator?: boolean,
 ): Layout.Node => {
     const glyph = typesetAtom(currentNode, context);
     const fontSize = fontSizeForContext(context);
-    const result = shouldHavePadding(prevNode, currentNode, context)
-        ? Layout.makeStaticHBox(
-              [
-                  Layout.makeKern(fontSize / 4),
-                  glyph,
-                  Layout.makeKern(fontSize / 4),
-              ],
-              context,
-          )
-        : glyph;
+    const result =
+        (padOperator && Editor.util.isOperator(currentNode)) ||
+        shouldHavePadding(prevNode, currentNode, context)
+            ? Layout.makeStaticHBox(
+                  [
+                      Layout.makeKern(fontSize / 4),
+                      glyph,
+                      Layout.makeKern(fontSize / 4),
+                  ],
+                  context,
+              )
+            : glyph;
     if (result !== glyph) {
         result.id = glyph.id;
         delete glyph.id;

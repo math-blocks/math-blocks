@@ -4,22 +4,14 @@ import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
 import {moveVertically} from "../move-vertically";
 import {toEqualEditorNodes, zrow} from "../test-util";
+import {zipperToState} from "../util";
 
-import type {Zipper, State} from "../types";
+import type {Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
-const zipperToState = (zipper: Zipper): State => {
-    return {
-        startZipper: zipper,
-        endZipper: zipper,
-        zipper: zipper,
-        selecting: false,
-    };
-};
-
 describe("moveVertically", () => {
-    const smallTable = builders.table(
+    const smallTable = builders.matrix(
         [
             [builders.glyph("a")],
             [builders.glyph("b")],
@@ -30,7 +22,7 @@ describe("moveVertically", () => {
         2,
     );
 
-    const largeTable = builders.table(
+    const largeTable = builders.matrix(
         [
             [builders.glyph("a")],
             [builders.glyph("b")],
@@ -139,7 +131,7 @@ describe("moveVertically", () => {
         const zipper: Zipper = {
             row: zrow(
                 [
-                    builders.table(
+                    builders.matrix(
                         [
                             [builders.glyph("a")],
                             [builders.glyph("b")],

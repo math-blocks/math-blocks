@@ -76,6 +76,38 @@ export function delimited(
 }
 
 export function table(
+    subtype: "matrix" | "algebra",
+    cells: (readonly types.Node[] | null)[],
+    colCount: number,
+    rowCount: number,
+    delimiters?: {
+        left: types.Atom;
+        right: types.Atom;
+    },
+    gutterWidth?: number,
+): types.Table {
+    return {
+        id: getId(),
+        type: "table",
+        subtype,
+        children: cells.map((cell) => cell && row(cell)),
+        colCount,
+        rowCount,
+        delimiters,
+        style: {},
+        gutterWidth,
+    };
+}
+
+export function algebra(
+    cells: (readonly types.Node[] | null)[],
+    colCount: number,
+    rowCount: number,
+): types.Table {
+    return table("algebra", cells, colCount, rowCount, undefined, 0);
+}
+
+export function matrix(
     cells: (readonly types.Node[] | null)[],
     colCount: number,
     rowCount: number,
@@ -84,15 +116,7 @@ export function table(
         right: types.Atom;
     },
 ): types.Table {
-    return {
-        id: getId(),
-        type: "table",
-        children: cells.map((cell) => cell && row(cell)),
-        colCount,
-        rowCount,
-        delimiters,
-        style: {},
-    };
+    return table("matrix", cells, colCount, rowCount, delimiters);
 }
 
 export function atom(value: types.Glyph): types.Atom {

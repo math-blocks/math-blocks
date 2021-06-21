@@ -127,7 +127,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
     if (action.type === "InsertMatrix") {
         const zipper = state.zipper;
         const {left, selection} = zipper.row;
-        const newNode = builders.table(
+        const newNode = builders.matrix(
             [
                 [builders.glyph("1")],
                 [builders.glyph("0")],

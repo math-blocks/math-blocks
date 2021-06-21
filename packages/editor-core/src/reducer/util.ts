@@ -11,6 +11,8 @@ import type {
     ZDelimited,
     Focus,
     ZTable,
+    Zipper,
+    State,
 } from "./types";
 
 export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
@@ -146,9 +148,11 @@ export const table = (focus: ZTable, replacement: types.Row): types.Table => {
     return {
         id: focus.id,
         type: "table",
+        subtype: focus.subtype,
         rowCount: focus.rowCount,
         colCount: focus.colCount,
         delimiters: focus.delimiters,
+        gutterWidth: focus.gutterWidth,
         children: [...focus.left, replacement, ...focus.right],
         style: focus.style,
     };
@@ -158,9 +162,11 @@ export const ztable = (node: types.Table, index: number): ZTable => {
     return {
         id: node.id,
         type: "ztable",
+        subtype: node.subtype,
         rowCount: node.rowCount,
         colCount: node.colCount,
         delimiters: node.delimiters,
+        gutterWidth: node.gutterWidth,
         left: node.children.slice(0, index),
         right: node.children.slice(index + 1),
         style: node.style,
@@ -290,3 +296,12 @@ export const zrow = (
     right,
     style: style ?? {},
 });
+
+export const zipperToState = (zipper: Zipper): State => {
+    return {
+        startZipper: zipper,
+        endZipper: zipper,
+        zipper: zipper,
+        selecting: false,
+    };
+};

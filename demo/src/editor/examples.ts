@@ -3,7 +3,6 @@ import {builders} from "@math-blocks/editor-core";
 const simpleRow = builders.row([
     builders.glyph("2"),
     builders.glyph("x"),
-    builders.subsup(undefined, [builders.glyph("2")]),
     builders.glyph("+"),
     builders.glyph("5"),
     builders.glyph("="),
@@ -136,7 +135,7 @@ addingFractions.children[2].children[0].children[0].style.color = "pink";
 const matrix = builders.row([
     builders.glyph("A"),
     builders.glyph("="),
-    builders.table(
+    builders.matrix(
         [
             // first row
             [builders.glyph("a")],

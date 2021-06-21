@@ -15,9 +15,11 @@ export type Delimited<A, C> = C & {
 
 export type Table<A, C> = C & {
     type: "table";
+    subtype: "matrix" | "algebra";
     children: readonly (Row<A, C> | null)[];
     rowCount: number;
     colCount: number;
+    gutterWidth?: number;
     // How do we limit what can be used as a delimiter?s
     delimiters?: {
         left: Atom<A, C>;

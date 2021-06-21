@@ -32,7 +32,7 @@ describe("matrix", () => {
             });
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("1")],
                         [builders.glyph("0")],
@@ -67,7 +67,7 @@ describe("matrix", () => {
             });
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("1")],
                         [builders.glyph("0")],
@@ -111,7 +111,7 @@ describe("matrix", () => {
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
                 builders.glyph("1"),
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("1")],
                         [builders.glyph("0")],
@@ -137,7 +137,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -161,8 +161,21 @@ describe("matrix", () => {
             state = matrix(state, {type: "AddRow", side: "above"});
 
             const row = zipperToRow(state.zipper);
+            row.children; // ?
+            builders.matrix(
+                [
+                    [builders.glyph("0")],
+                    [builders.glyph("0")],
+                    [builders.glyph("a")],
+                    [builders.glyph("b")],
+                    [builders.glyph("c")],
+                    [builders.glyph("d")],
+                ],
+                2,
+                3,
+            ); // ?
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("0")],
                         [builders.glyph("0")],
@@ -182,7 +195,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -207,7 +220,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("a")],
                         [builders.glyph("b")],
@@ -226,7 +239,7 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -252,7 +265,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("a")],
                         [builders.glyph("b")],
@@ -274,7 +287,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -299,7 +312,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("0")],
                         [builders.glyph("a")],
@@ -319,7 +332,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -344,7 +357,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("a")],
                         [builders.glyph("0")],
@@ -363,7 +376,7 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -389,7 +402,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [
                         [builders.glyph("a")],
                         [builders.glyph("b")],
@@ -411,7 +424,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -436,7 +449,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [[builders.glyph("c")], [builders.glyph("d")]],
                     2,
                     1,
@@ -448,7 +461,7 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -474,7 +487,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [[builders.glyph("a")], [builders.glyph("b")]],
                     2,
                     1,
@@ -487,7 +500,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -522,7 +535,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -547,7 +560,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [[builders.glyph("b")], [builders.glyph("d")]],
                     1,
                     2,
@@ -558,7 +571,7 @@ describe("matrix", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],
@@ -584,7 +597,7 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
-                builders.table(
+                builders.matrix(
                     [[builders.glyph("a")], [builders.glyph("c")]],
                     1,
                     2,
@@ -596,7 +609,7 @@ describe("matrix", () => {
                 row: zrow(
                     [],
                     [
-                        builders.table(
+                        builders.matrix(
                             [
                                 [builders.glyph("a")],
                                 [builders.glyph("b")],

@@ -17,9 +17,19 @@ import {maybeAddOperatorPadding} from "./typesetters/atom";
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
-const typesetRow = (row: Editor.types.Row, context: Context): Layout.HBox => {
+const typesetRow = (
+    row: Editor.types.Row,
+    context: Context,
+    padFirstOperator?: boolean,
+): Layout.HBox => {
     const box = Layout.makeStaticHBox(
-        typesetNodes(row.children, context),
+        typesetNodes(
+            row.children,
+            context,
+            undefined,
+            undefined,
+            padFirstOperator,
+        ),
         context,
     );
     box.id = row.id;
@@ -71,15 +81,19 @@ const getTypesetChildFromZipper = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
 ): ((index: number, context: Context) => Layout.HBox | null) => {
-    return (index: number, context: Context): Layout.HBox | null => {
+    return (
+        index: number,
+        context: Context,
+        padFirstOperator?: boolean,
+    ): Layout.HBox | null => {
         if (index < focus.left.length) {
             const child = focus.left[index];
-            return child && typesetRow(child, context);
+            return child && typesetRow(child, context, padFirstOperator);
         } else if (index === focus.left.length) {
-            return _typesetZipper(zipper, context);
+            return _typesetZipper(zipper, context, padFirstOperator);
         } else {
             const child = focus.right[index - focus.left.length - 1];
-            return child && typesetRow(child, context);
+            return child && typesetRow(child, context, padFirstOperator);
         }
     };
 };
@@ -89,9 +103,13 @@ const getTypesetChildFromNodes = <
 >(
     children: T,
 ): ((index: number, context: Context) => Layout.HBox | null) => {
-    return (index: number, context: Context): Layout.HBox | null => {
+    return (
+        index: number,
+        context: Context,
+        padFirstOperator?: boolean,
+    ): Layout.HBox | null => {
         const child = children[index];
-        return child && typesetRow(child, context);
+        return child && typesetRow(child, context, padFirstOperator);
     };
 };
 
@@ -126,7 +144,7 @@ const typesetFocus = (
             return typesetDelimited(typesetChild, focus, context);
         }
         case "ztable": {
-            return typesetTable(typesetChild, focus, context);
+            return typesetTable(typesetChild, focus, context, zipper);
         }
         default:
             throw new UnreachableCaseError(focus);
@@ -138,6 +156,7 @@ const typesetNode = (
     context: Context,
     prevEditNode?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
+    padFirstOperator?: boolean,
 ): Layout.Node => {
     switch (node.type) {
         case "row": {
@@ -174,7 +193,12 @@ const typesetNode = (
             return typesetTable(typesetChild, node, context);
         }
         case "atom": {
-            return maybeAddOperatorPadding(prevEditNode, node, context);
+            return maybeAddOperatorPadding(
+                prevEditNode,
+                node,
+                context,
+                padFirstOperator,
+            );
         }
         default:
             throw new UnreachableCaseError(node);
@@ -186,9 +210,16 @@ const typesetNodes = (
     context: Context,
     prevChild?: Editor.types.Node | Editor.Focus,
     prevLayoutNode?: Layout.Node,
+    padFirstOperator?: boolean,
 ): readonly Layout.Node[] => {
-    return nodes.map((child) => {
-        const result = typesetNode(child, context, prevChild, prevLayoutNode);
+    return nodes.map((child, index) => {
+        const result = typesetNode(
+            child,
+            context,
+            prevChild,
+            prevLayoutNode,
+            index === 0 ? padFirstOperator : undefined,
+        );
         prevLayoutNode = result;
         prevChild = child;
         return result;
@@ -198,6 +229,7 @@ const typesetNodes = (
 const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
+    padFirstOperator?: boolean,
 ): Layout.HBox => {
     // The bottommost crumb is the outermost row
     const [crumb, ...restCrumbs] = zipper.breadcrumbs;
@@ -210,7 +242,15 @@ const _typesetZipper = (
         };
         const nodes: Layout.Node[] = [];
 
-        nodes.push(...typesetNodes(row.left, context));
+        nodes.push(
+            ...typesetNodes(
+                row.left,
+                context,
+                undefined,
+                undefined,
+                padFirstOperator,
+            ),
+        );
         nodes.push(
             typesetFocus(
                 crumb.focus,
@@ -226,6 +266,7 @@ const _typesetZipper = (
                 context,
                 crumb.focus, // previous edit node
                 nodes[nodes.length - 1], // previous layout node
+                padFirstOperator,
             ),
         );
 
@@ -242,7 +283,13 @@ const _typesetZipper = (
         const row = zipper.row;
 
         const input = [...row.left, ...row.selection, ...row.right];
-        const output = typesetNodes(input, context);
+        const output = typesetNodes(
+            input,
+            context,
+            undefined,
+            undefined,
+            padFirstOperator,
+        );
 
         const firstCut = row.left.length;
         const secondCut = firstCut + row.selection.length;
