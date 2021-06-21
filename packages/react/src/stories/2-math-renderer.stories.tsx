@@ -868,7 +868,7 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const matrix = Editor.builders.row([
         Editor.builders.glyph("A"),
         Editor.builders.glyph("="),
-        Editor.builders.table(
+        Editor.builders.matrix(
             [
                 // first row
                 [Editor.builders.glyph("a")],

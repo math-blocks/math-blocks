@@ -95,7 +95,8 @@ export type Token =
     | Lim
     | EOL;
 
-const TOKEN_REGEX = /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+const TOKEN_REGEX =
+    /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source glyphs in parsed tokens
 
@@ -311,6 +312,7 @@ const lex = (node: types.Node, path: number[], offset: number): Node => {
         case "table": {
             return {
                 type: "table",
+                subtype: node.subtype,
                 colCount: node.colCount,
                 rowCount: node.rowCount,
                 children: node.children.map((child) => child && lexRow(child)),

@@ -135,7 +135,7 @@ addingFractions.children[2].children[0].children[0].style.color = "pink";
 const matrix = builders.row([
     builders.glyph("A"),
     builders.glyph("="),
-    builders.table(
+    builders.matrix(
         [
             // first row
             [builders.glyph("a")],

@@ -18,35 +18,6 @@ type Col = {
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
-const padContent = (
-    content: Layout.Content,
-    kernSize: number,
-): Layout.Content => {
-    if (content.type === "static") {
-        return {
-            type: "static",
-            nodes: [
-                Layout.makeKern(kernSize),
-                ...content.nodes,
-                Layout.makeKern(kernSize),
-            ],
-        };
-    } else if (content.type === "cursor") {
-        return {
-            type: "cursor",
-            left: [Layout.makeKern(kernSize), ...content.left],
-            right: [...content.right, Layout.makeKern(kernSize)],
-        };
-    } else {
-        return {
-            type: "selection",
-            left: [Layout.makeKern(kernSize), ...content.left],
-            selection: content.selection,
-            right: [...content.right, Layout.makeKern(kernSize)],
-        };
-    }
-};
-
 const childContextForTable = (context: Context): Context => {
     const {mathStyle} = context;
 
@@ -66,7 +37,11 @@ const childContextForTable = (context: Context): Context => {
 };
 
 export const typesetTable = (
-    typesetChild: (index: number, context: Context) => Layout.HBox | null,
+    typesetChild: (
+        index: number,
+        context: Context,
+        padFirstOperator?: boolean,
+    ) => Layout.HBox | null,
     node: Editor.types.Table | Editor.ZTable,
     context: Context,
     zipper?: Editor.Zipper,
@@ -82,8 +57,8 @@ export const typesetTable = (
 
     // Group cells into rows and columns and determine the width of each
     // column and the depth/height of each row.
-    for (let i = 0; i < node.colCount; i++) {
-        for (let j = 0; j < node.rowCount; j++) {
+    for (let j = 0; j < node.rowCount; j++) {
+        for (let i = 0; i < node.colCount; i++) {
             if (!columns[i]) {
                 columns[i] = {
                     children: [],
@@ -98,28 +73,68 @@ export const typesetTable = (
                 };
             }
 
-            const cellIndex = j * node.colCount + i;
-            let cell = typesetChild(j * node.colCount + i, childContext);
             const children =
                 node.type === "table"
                     ? node.children
                     : [
                           ...node.left,
+                          // @ts-expect-error: zipper is always defined when
+                          // node is a ZTable
                           Editor.zrowToRow(zipper.row),
                           ...node.right,
                       ];
-            const child = children[cellIndex];
+
+            let padFirstOperator = false;
+
+            // We only want to add padding around the first operator in some
+            // cells when the table is being used for showing work vertically
+            // which is what the "algebra" subtype is for.
+            if (node.subtype === "algebra") {
+                // Pad the first operator in cells if the cell in the top row
+                // of the same column is empty.
+                if (j > 0) {
+                    const content = rows[0].children[i].content;
+                    if (
+                        content.type === "static" &&
+                        content.nodes.length === 0
+                    ) {
+                        padFirstOperator = true;
+                    } else if (
+                        content.type === "cursor" &&
+                        content.left.length === 0 &&
+                        content.right.length === 0
+                    ) {
+                        padFirstOperator = true;
+                    } else if (
+                        content.type === "selection" &&
+                        content.left.length === 0 &&
+                        content.selection.length === 0 &&
+                        content.right.length === 0
+                    ) {
+                        padFirstOperator = true;
+                    }
+                }
+            }
+
+            // Pad if the cell in the top row is a single plus/minus operator,
+            // including the cell in the top row.
+            const topRowChild = children[i];
+            if (
+                topRowChild &&
+                topRowChild.children.length === 1 &&
+                topRowChild.children[0].type === "atom" &&
+                ["+", "\u2212"].includes(topRowChild.children[0].value.char)
+            ) {
+                padFirstOperator = true;
+            }
+
+            let cell = typesetChild(
+                j * node.colCount + i,
+                childContext,
+                padFirstOperator,
+            );
 
             if (cell) {
-                if (
-                    child &&
-                    child.children.length === 1 &&
-                    child.children[0]?.type === "atom" &&
-                    ["+", "\u2212"].includes(child.children[0].value.char)
-                ) {
-                    cell.width += 32;
-                    cell.content = padContent(cell.content, 16);
-                }
                 columns[i].width = Math.max(cell.width, columns[i].width);
                 rows[j].height = Math.max(cell.height, rows[j].height);
                 rows[j].depth = Math.max(cell.depth, rows[j].depth);
@@ -148,7 +163,6 @@ export const typesetTable = (
     }
 
     const cursorIndex = node.type === "ztable" ? node.left.length : -1;
-    console.log(`cursorIndex = ${cursorIndex}`);
     if (cursorIndex !== -1) {
         const cursorCol = cursorIndex % node.colCount;
         if (columns[cursorCol].width === 0) {

@@ -148,6 +148,7 @@ export const table = (focus: ZTable, replacement: types.Row): types.Table => {
     return {
         id: focus.id,
         type: "table",
+        subtype: focus.subtype,
         rowCount: focus.rowCount,
         colCount: focus.colCount,
         delimiters: focus.delimiters,
@@ -161,6 +162,7 @@ export const ztable = (node: types.Table, index: number): ZTable => {
     return {
         id: node.id,
         type: "ztable",
+        subtype: node.subtype,
         rowCount: node.rowCount,
         colCount: node.colCount,
         delimiters: node.delimiters,

@@ -15,6 +15,7 @@ export type Delimited<A, C> = C & {
 
 export type Table<A, C> = C & {
     type: "table";
+    subtype: "matrix" | "algebra";
     children: readonly (Row<A, C> | null)[];
     rowCount: number;
     colCount: number;

@@ -9,7 +9,7 @@ export const moveVertically = (
     direction: "up" | "down",
 ): State => {
     if (state.selecting) {
-        return verticalWork(state);
+        return direction === "down" ? verticalWork(state) : state;
     }
 
     const {breadcrumbs} = state.zipper;
@@ -98,5 +98,5 @@ export const moveVertically = (
         };
     }
 
-    return verticalWork(state);
+    return direction === "down" ? verticalWork(state) : state;
 };

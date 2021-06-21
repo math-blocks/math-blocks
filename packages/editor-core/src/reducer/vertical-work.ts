@@ -49,9 +49,6 @@ export const verticalWork = (state: State): State => {
                 }
                 // Place an extra cell in front of the '+'
                 splitRows.push(builders.row([]));
-                // splitRows.push(builders.row([]));
-                // splitRows.push(null);
-                splitRows.push(null);
                 splitRows.push(builders.row([child]));
             } else {
                 prevChildren.push(child);
@@ -93,6 +90,7 @@ export const verticalWork = (state: State): State => {
     const table: ZTable = {
         id: getId(),
         type: "ztable",
+        subtype: "algebra",
         rowCount: 2,
         colCount: splitRows.length + 2,
         left,
