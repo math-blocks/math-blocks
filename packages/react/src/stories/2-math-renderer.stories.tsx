@@ -910,3 +910,51 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
     return <MathRenderer scene={prod} style={style} />;
 };
+
+export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
+    const {builders} = Editor;
+    const verticalWork = builders.row([
+        builders.table(
+            "algebra",
+            [
+                // first row
+                [],
+                [builders.glyph("2"), builders.glyph("x")],
+                [],
+                [builders.glyph("+")],
+                [builders.glyph("5")],
+                [],
+                [builders.glyph("=")],
+                [],
+                [builders.glyph("1"), builders.glyph("0")],
+                [],
+
+                // second row
+                [],
+                [],
+                [builders.glyph("\u2212"), builders.glyph("y")],
+                [builders.glyph("\u2212")],
+                [builders.glyph("5")],
+                [],
+                [],
+                [builders.glyph("\u2212")],
+                [builders.glyph("5")],
+                [],
+            ],
+            10,
+            2,
+        ),
+    ]);
+
+    const fontSize = 60;
+    const context: Typesetter.Context = {
+        fontData: fontData,
+        baseFontSize: fontSize,
+        mathStyle: Typesetter.MathStyle.Display,
+        renderMode: Typesetter.RenderMode.Dynamic,
+        cramped: false,
+    };
+    const prod = Typesetter.typeset(verticalWork, context);
+
+    return <MathRenderer scene={prod} style={style} />;
+};

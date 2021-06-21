@@ -664,5 +664,10 @@ describe("renderer", () => {
             const Matrix = await storyToComponent(stories.Matrix);
             expect(<Matrix />).toMatchSVGSnapshot();
         });
+
+        test("showing work vertically", async () => {
+            const VerticalWork = await storyToComponent(stories.VerticalWork);
+            expect(<VerticalWork />).toMatchSVGSnapshot();
+        });
     });
 });
