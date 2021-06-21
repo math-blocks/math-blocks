@@ -163,7 +163,7 @@ export const typesetTable = (
     }
 
     const cursorIndex = node.type === "ztable" ? node.left.length : -1;
-    if (cursorIndex !== -1) {
+    if (node.subtype === "algebra" && cursorIndex !== -1) {
         const cursorCol = cursorIndex % node.colCount;
         if (columns[cursorCol].width === 0) {
             columns[cursorCol].width = 32;

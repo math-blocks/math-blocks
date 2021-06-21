@@ -94,7 +94,7 @@ export function table(
         rowCount,
         delimiters,
         style: {},
-        gutterWidth: 0,
+        gutterWidth: undefined,
     };
 }
 
