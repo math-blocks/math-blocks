@@ -913,37 +913,49 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
 export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const {builders} = Editor;
-    const verticalWork = builders.row([
-        builders.algebra(
-            [
-                // first row
-                [],
-                [builders.glyph("2"), builders.glyph("x")],
-                [],
-                [builders.glyph("+")],
-                [builders.glyph("5")],
-                [],
-                [builders.glyph("=")],
-                [],
-                [builders.glyph("1"), builders.glyph("0")],
-                [],
+    const table = builders.algebra(
+        [
+            // first row
+            [],
+            [builders.glyph("2"), builders.glyph("x")],
+            [],
+            [builders.glyph("+")],
+            [builders.glyph("5")],
+            [],
+            [builders.glyph("=")],
+            [],
+            [builders.glyph("1"), builders.glyph("0")],
+            [],
 
-                // second row
-                [],
-                [],
-                [builders.glyph("\u2212"), builders.glyph("y")],
-                [builders.glyph("\u2212")],
-                [builders.glyph("5")],
-                [],
-                [],
-                [builders.glyph("\u2212")],
-                [builders.glyph("5")],
-                [],
-            ],
-            10,
-            2,
-        ),
-    ]);
+            // second row
+            [],
+            [],
+            [builders.glyph("\u2212"), builders.glyph("y")],
+            [builders.glyph("\u2212")],
+            [builders.glyph("5")],
+            [],
+            [],
+            [builders.glyph("\u2212")],
+            [builders.glyph("5")],
+            [],
+
+            // third row
+            [],
+            [builders.glyph("2"), builders.glyph("x")],
+            [builders.glyph("\u2212"), builders.glyph("y")],
+            [builders.glyph("\u2212")],
+            [builders.glyph("5")],
+            [],
+            [builders.glyph("=")],
+            [],
+            [builders.glyph("5")],
+            [],
+        ],
+        10,
+        3,
+    );
+    table.rowStyles = [null, null, {border: "top"}];
+    const verticalWork = builders.row([table]);
 
     const fontSize = 60;
     const context: Typesetter.Context = {

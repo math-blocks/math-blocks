@@ -93,6 +93,8 @@ export function table(
         children: cells.map((cell) => cell && row(cell)),
         colCount,
         rowCount,
+        rowStyles: undefined,
+        colStyles: undefined,
         delimiters,
         style: {},
         gutterWidth,
