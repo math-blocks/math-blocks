@@ -10,8 +10,56 @@ export const verticalWork = (state: State): State => {
     // users from exiting the table?
 
     const {zipper} = state;
+    const {breadcrumbs} = zipper;
 
-    if (zipper.breadcrumbs.length > 0) {
+    if (
+        breadcrumbs.length === 1 &&
+        breadcrumbs[0].focus.type === "ztable" &&
+        breadcrumbs[0].focus.subtype === "algebra"
+    ) {
+        const {focus} = breadcrumbs[0];
+
+        const cellIndex = focus.left.length;
+        const row = Math.floor(cellIndex / focus.colCount);
+
+        if (focus.rowCount === 2 && row === 1) {
+            const nodes = [
+                ...focus.left,
+                util.zrowToRow(zipper.row),
+                ...focus.right,
+            ];
+            for (let i = 0; i < focus.colCount; i++) {
+                nodes.push(builders.row([]));
+            }
+
+            const left = nodes.slice(0, cellIndex + focus.colCount);
+            const right = nodes.slice(cellIndex + focus.colCount + 1);
+
+            const table: ZTable = {
+                ...focus,
+                rowCount: 3,
+                left,
+                right,
+                rowStyles: [null, null, {border: "top"}],
+            };
+
+            const newZipper: Zipper = {
+                row: util.zrow(getId(), [], []),
+                breadcrumbs: [
+                    {
+                        ...breadcrumbs[0],
+                        focus: table,
+                    },
+                ],
+            };
+
+            return util.zipperToState(newZipper);
+        }
+
+        return state;
+    }
+
+    if (breadcrumbs.length > 0) {
         return state;
     }
 

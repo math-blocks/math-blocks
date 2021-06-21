@@ -13,6 +13,16 @@ export type Delimited<A, C> = C & {
     rightDelim: Atom<A, C>;
 };
 
+type RowStyle = {
+    border?: "top" | "bottom";
+    alignment?: "top" | "middle" | "bottom";
+};
+
+type ColStyle = {
+    border?: "left" | "right";
+    alignment?: "left" | "center" | "right";
+};
+
 export type Table<A, C> = C & {
     type: "table";
     subtype: "matrix" | "algebra";
@@ -25,6 +35,8 @@ export type Table<A, C> = C & {
         left: Atom<A, C>;
         right: Atom<A, C>;
     };
+    rowStyles?: (RowStyle | null)[];
+    colStyles?: (ColStyle | null)[];
 };
 
 export type SubSup<A, C> = C & {

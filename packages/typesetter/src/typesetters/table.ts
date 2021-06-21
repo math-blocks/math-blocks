@@ -203,12 +203,47 @@ export const typesetTable = (
         }
     }
 
-    const rowBoxes = rows.map((row) =>
-        Layout.makeStaticHBox(row.children, context),
-    );
     const width =
         columns.reduce((sum, col) => sum + col.width, 0) +
         gutterWidth * (columns.length - 1);
+
+    const {constants} = context.fontData.font.math;
+    const fontSize = fontSizeForContext(context);
+
+    const rowBoxes = rows.map((row, index) => {
+        const result = Layout.makeStaticHBox(row.children, context);
+        const style = node.rowStyles?.[index];
+        if (style?.border === "top") {
+            const thickness =
+                (fontSize * constants.fractionRuleThickness.value) / 1000;
+            const stroke = Layout.makeStaticHBox(
+                [Layout.makeHRule(thickness, width)],
+                context,
+            );
+
+            const {mathStyle} = context;
+            const useDisplayStyle = mathStyle === MathStyle.Display;
+
+            const minDenGap = useDisplayStyle
+                ? (fontSize * constants.fractionDenomDisplayStyleGapMin.value) /
+                  1000
+                : (fontSize * constants.fractionDenominatorGapMin.value) / 1000;
+
+            const minNumGap = useDisplayStyle
+                ? (fontSize * constants.fractionNumDisplayStyleGapMin.value) /
+                  1000
+                : (fontSize * constants.fractionNumeratorGapMin.value) / 1000;
+
+            return Layout.makeVBox(
+                width,
+                stroke,
+                [Layout.makeKern(minNumGap)],
+                [Layout.makeKern(minDenGap), result],
+                context,
+            );
+        }
+        return result;
+    });
 
     const inner = Layout.makeVBox(
         width,
@@ -218,8 +253,6 @@ export const typesetTable = (
         context,
     );
 
-    const {constants} = context.fontData.font.math;
-    const fontSize = fontSizeForContext(context);
     const shift = (fontSize * constants.axisHeight.value) / 1000;
     // Equalize the depth and height and then shift up so the center of the
     // table aligns with the central axis.

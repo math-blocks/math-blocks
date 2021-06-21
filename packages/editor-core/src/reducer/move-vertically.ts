@@ -56,7 +56,7 @@ export const moveVertically = (
         }
 
         if (!focusedChild) {
-            return state;
+            return direction === "down" ? verticalWork(state) : state;
         }
 
         // TODO: determine cursorIndex based on column alignment, e.g. if
