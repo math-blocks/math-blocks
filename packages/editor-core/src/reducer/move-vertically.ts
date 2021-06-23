@@ -9,12 +9,18 @@ export const moveVertically = (
     direction: "up" | "down",
 ): State => {
     if (state.selecting) {
-        return direction === "down" ? verticalWork(state) : state;
+        return verticalWork(state, direction);
     }
 
     const {breadcrumbs} = state.zipper;
     const crumb = breadcrumbs[breadcrumbs.length - 1];
     if (crumb?.focus.type === "ztable") {
+        if (crumb.focus.subtype === "algebra" && direction === "up") {
+            const newState = verticalWork(state, direction);
+            if (newState !== state) {
+                return newState;
+            }
+        }
         const {colCount, rowCount, left, right} = crumb.focus;
 
         const oldRow: ZRow = state.zipper.row;
@@ -56,7 +62,7 @@ export const moveVertically = (
         }
 
         if (!focusedChild) {
-            return direction === "down" ? verticalWork(state) : state;
+            return verticalWork(state, direction);
         }
 
         // TODO: determine cursorIndex based on column alignment, e.g. if
@@ -98,5 +104,5 @@ export const moveVertically = (
         };
     }
 
-    return direction === "down" ? verticalWork(state) : state;
+    return verticalWork(state, direction);
 };
