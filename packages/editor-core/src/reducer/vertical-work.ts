@@ -1,11 +1,11 @@
-import {getId} from "@math-blocks/core";
+import {getId, UnreachableCaseError} from "@math-blocks/core";
 import type {State, ZTable, Zipper} from "./types";
 
 import * as types from "../ast/types";
 import * as builders from "../ast/builders";
 import * as util from "./util";
 
-export const verticalWork = (state: State): State => {
+const moveDown = (state: State): State => {
     // Does it make sense if the root is not a Row?  Is this how we could prevent
     // users from exiting the table?
 
@@ -70,8 +70,8 @@ export const verticalWork = (state: State): State => {
     let prevChildren: types.Node[] = [];
     let prevChild: types.Node | null = null;
     // Invariants:
-    // - child is either directly to splitRows in its own cell or it's added to
-    //   prevChildren
+    // - child is either directly to splitRows in its own cell (in the case of
+    //   plus/minus operators) or it's added to prevChildren.
     for (const child of row.children) {
         if (
             child.type === "atom" &&
@@ -154,4 +154,104 @@ export const verticalWork = (state: State): State => {
     };
 
     return util.zipperToState(newZipper);
+};
+
+const moveUp = (state: State): State => {
+    const {zipper} = state;
+    const {breadcrumbs} = zipper;
+
+    if (
+        breadcrumbs.length === 1 &&
+        breadcrumbs[0].focus.type === "ztable" &&
+        breadcrumbs[0].focus.subtype === "algebra"
+    ) {
+        const {focus} = breadcrumbs[0];
+        const cellIndex = focus.left.length;
+        const cursorRow = Math.floor(cellIndex / focus.colCount);
+
+        const cells = [
+            ...focus.left,
+            util.zrowToRow(state.zipper.row),
+            ...focus.right,
+        ];
+
+        if (focus.rowCount === 3 && cursorRow === 2) {
+            const rowCells = cells.filter((cell, index) => {
+                const row = Math.floor(index / focus.colCount);
+                return row === cursorRow;
+            });
+            const isEmpty = rowCells.every(
+                (cell) => !cell || cell.children.length === 0,
+            );
+            if (isEmpty) {
+                const newCells = cells.slice(0, 2 * focus.colCount);
+                const newCursorIndex = cellIndex - focus.colCount;
+
+                const table: ZTable = {
+                    ...focus,
+                    rowCount: 2,
+                    left: newCells.slice(0, newCursorIndex),
+                    right: newCells.slice(newCursorIndex + 1),
+                    rowStyles: [null, null],
+                };
+
+                // TODO: we probably want to have two table variants: one where
+                // all cells are navigable to and one where some cells can't be
+                // navigated to.
+                const newCursorCell = cells[newCursorIndex];
+
+                const newZipper: Zipper = {
+                    row: util.zrow(
+                        newCursorCell?.id ?? getId(),
+                        [],
+                        newCursorCell?.children ?? [],
+                    ),
+                    breadcrumbs: [
+                        {
+                            ...breadcrumbs[0],
+                            focus: table,
+                        },
+                    ],
+                };
+
+                return util.zipperToState(newZipper);
+            }
+        }
+
+        if (focus.rowCount === 2 && cursorRow === 1) {
+            const rowCells = cells.filter((cell, index) => {
+                const row = Math.floor(index / focus.colCount);
+                return row === cursorRow;
+            });
+            const isEmpty = rowCells.every(
+                (cell) => !cell || cell.children.length === 0,
+            );
+            if (isEmpty) {
+                // Merge all cells into a single row
+                const newCells = cells.slice(0, focus.colCount);
+                const nodes = newCells.flatMap((cell) => cell?.children ?? []);
+
+                const newZipper: Zipper = {
+                    // TODO: determine where to place the cursor
+                    row: util.zrow(getId(), [], nodes),
+                    breadcrumbs: [],
+                };
+
+                return util.zipperToState(newZipper);
+            }
+        }
+    }
+
+    return state;
+};
+
+export const verticalWork = (state: State, direction: "up" | "down"): State => {
+    switch (direction) {
+        case "down":
+            return moveDown(state);
+        case "up":
+            return moveUp(state);
+        default:
+            throw new UnreachableCaseError(direction);
+    }
 };
