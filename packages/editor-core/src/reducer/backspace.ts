@@ -1,7 +1,22 @@
-import {zdelimited, zrow} from "./util";
+import * as types from "../ast/types";
+
+import * as util from "./util";
 import {moveLeft} from "./move-left";
 
 import type {Breadcrumb, Zipper, State} from "./types";
+
+const isAtom = (node: types.Node, charOrChars: string | string[]): boolean => {
+    if (node.type === "atom") {
+        return Array.isArray(charOrChars)
+            ? charOrChars.includes(node.value.char)
+            : charOrChars === node.value.char;
+    }
+    return false;
+};
+
+const isCellPlusMinus = (cell: types.Row | null): cell is types.Row =>
+    cell?.children.length === 1 &&
+    isAtom(cell.children[0], ["+", "\u2212", "="]);
 
 export const backspace = (state: State): State => {
     const zipper = state.zipper;
@@ -57,7 +72,7 @@ export const backspace = (state: State): State => {
                         style: zipper.row.style,
                     },
                     focus: {
-                        ...zdelimited(prev),
+                        ...util.zdelimited(prev),
                         rightDelim: {
                             ...prev.rightDelim,
                             value: {
@@ -71,7 +86,7 @@ export const backspace = (state: State): State => {
                 const newZipper: Zipper = {
                     ...zipper,
                     breadcrumbs: [...zipper.breadcrumbs, crumb],
-                    row: zrow(
+                    row: util.zrow(
                         prev.children[0].id,
                         prev.children[0].children,
                         right,
@@ -121,8 +136,8 @@ export const backspace = (state: State): State => {
         };
     }
 
-    const parent = breadcrumbs[breadcrumbs.length - 1];
-    const {focus, row} = parent;
+    const crumb = breadcrumbs[breadcrumbs.length - 1];
+    const {focus, row} = crumb;
 
     // Special deleting from the start of a superscript when there's both a
     // superscript and subscript.
@@ -155,6 +170,36 @@ export const backspace = (state: State): State => {
             zipper: newZipper,
             selecting: false,
         };
+    }
+
+    if (focus.type === "ztable") {
+        if (focus.subtype === "algebra") {
+            const prevCell = focus.left[focus.left.length - 1];
+            // If the previous cell is a single plus/minus character, delete it
+            // and move into that cell.
+            if (isCellPlusMinus(prevCell)) {
+                // Erase the contents of the previous cell
+                const newPrevCell = {
+                    ...prevCell,
+                    children: [],
+                };
+                const newCrumb: Breadcrumb = {
+                    ...crumb,
+                    focus: {
+                        ...focus,
+                        left: [...focus.left.slice(0, -1), newPrevCell],
+                    },
+                };
+                const newZipper: Zipper = {
+                    ...zipper,
+                    breadcrumbs: [...breadcrumbs.slice(0, -1), newCrumb],
+                };
+                // Move left into the now empty cell.
+                return moveLeft(util.zipperToState(newZipper));
+            }
+        }
+
+        return moveLeft(util.zipperToState(zipper));
     }
 
     const leftChildren = focus.left[0] ? focus.left[0].children : [];

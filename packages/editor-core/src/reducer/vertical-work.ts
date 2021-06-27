@@ -65,6 +65,7 @@ const moveDown = (state: State): State => {
 
     // TODO: figure out which cell the cursor should be in after splitting up
     // the row.
+    // TODO: move this into a separate function an unit test it
     const row = util.zrowToRow(zipper.row);
     const splitRows: (types.Row | null)[] = [];
     let prevChildren: types.Node[] = [];
