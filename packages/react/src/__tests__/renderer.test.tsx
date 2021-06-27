@@ -764,5 +764,8 @@ describe("renderer", () => {
             );
             expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
+
+        // TODO: write tests for the third row, when there are items in the
+        // second row as well.
     });
 });

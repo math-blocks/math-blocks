@@ -1,9 +1,12 @@
 import {getId, UnreachableCaseError} from "@math-blocks/core";
-import type {State, ZTable, Zipper} from "./types";
 
 import * as types from "../ast/types";
 import * as builders from "../ast/builders";
+import {isAtom} from "../ast/util";
+
 import * as util from "./util";
+
+import type {State, ZTable, Zipper, Focus} from "./types";
 
 const moveDown = (state: State): State => {
     // Does it make sense if the root is not a Row?  Is this how we could prevent
@@ -255,4 +258,56 @@ export const verticalWork = (state: State, direction: "up" | "down"): State => {
         default:
             throw new UnreachableCaseError(direction);
     }
+};
+
+const isCellSkippable = (cell: types.Row | null): boolean =>
+    cell?.children.length === 1 &&
+    isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
+
+const isEmpty = (cell: types.Row | null): boolean =>
+    (cell?.children?.length ?? 0) === 0;
+
+export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
+    const children = [
+        ...focus.left,
+        util.zrowToRow(zipper.row),
+        ...focus.right,
+    ];
+
+    // By default all non-null cells are allowed
+    const allowed = children.map((child) => child != null);
+    const cursorIndex = focus.left.length;
+
+    // When showing work vertically we want the cursor to skip over certain
+    // cells to avoid the appearance that the cursor is stuck at the cell
+    // boundary due to there being no gutter between columns.
+    if (focus.type === "ztable" && focus.subtype === "algebra") {
+        for (let j = 1; j < focus.rowCount; j++) {
+            for (let i = 0; i < focus.colCount; i++) {
+                const cellIndex = j * focus.colCount + i;
+                if (
+                    isCellSkippable(children[cellIndex]) &&
+                    isCellSkippable(children[i])
+                ) {
+                    allowed[cellIndex] = false;
+                }
+            }
+        }
+
+        const cursorRow = Math.floor(cursorIndex / focus.colCount);
+        if (cursorRow === 2) {
+            for (let i = 0; i < focus.colCount; i++) {
+                const col = [
+                    children[0 * focus.colCount + i],
+                    children[1 * focus.colCount + i],
+                    children[2 * focus.colCount + i],
+                ];
+                if (col.every(isEmpty)) {
+                    allowed[2 * focus.colCount + i] = false;
+                }
+            }
+        }
+    }
+
+    return allowed;
 };
