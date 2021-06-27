@@ -488,7 +488,6 @@ describe("verticalWork", () => {
             expect(newZipper.row.left).toEqualEditorNodes([glyph("a")]);
         });
     });
-
     // TODO:
     // - create snapshot tests when navigating horizontall across the second row,
     //   this is to ensure that the padding stays the way we want it
