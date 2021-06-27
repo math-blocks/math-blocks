@@ -1,18 +1,10 @@
 import * as types from "../ast/types";
+import {isAtom} from "../ast/util";
 
 import * as util from "./util";
 import {moveLeft} from "./move-left";
 
 import type {Breadcrumb, Zipper, State} from "./types";
-
-const isAtom = (node: types.Node, charOrChars: string | string[]): boolean => {
-    if (node.type === "atom") {
-        return Array.isArray(charOrChars)
-            ? charOrChars.includes(node.value.char)
-            : charOrChars === node.value.char;
-    }
-    return false;
-};
 
 const isCellPlusMinus = (cell: types.Row | null): cell is types.Row =>
     cell?.children.length === 1 &&

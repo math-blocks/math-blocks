@@ -1,5 +1,6 @@
 import * as builders from "../ast/builders";
 import * as types from "../ast/types";
+import {isAtom} from "../ast/util";
 
 import * as util from "./util";
 import {moveRight} from "./move-right";
@@ -13,15 +14,6 @@ const LIMIT_CHARS = [
     "\u222B", // \int
     // TODO: handle \lim (need to make sure we exclude the upper limit)
 ];
-
-const isAtom = (node: types.Node, charOrChars: string | string[]): boolean => {
-    if (node.type === "atom") {
-        return Array.isArray(charOrChars)
-            ? charOrChars.includes(node.value.char)
-            : charOrChars === node.value.char;
-    }
-    return false;
-};
 
 const isCellPlusMinus = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["+", "\u2212"]);
