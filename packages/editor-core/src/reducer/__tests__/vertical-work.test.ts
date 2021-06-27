@@ -412,6 +412,50 @@ describe("verticalWork", () => {
 
             expect(state).toEqual(newState);
         });
+
+        test("can't wrap around from one row to the previous when navigating left even if there's a empty column", () => {
+            const node: types.Table = builders.algebra(
+                [
+                    // first row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [glyph("+")],
+                    [glyph("5")],
+                    [],
+
+                    // second row
+                    [],
+                    [],
+                    [glyph("\u2212")],
+                    [glyph("5")],
+                    [],
+
+                    // third row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [glyph("+")],
+                    [glyph("0")],
+                    [],
+                ],
+                5,
+                3,
+            );
+
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], row("2x").children),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 11),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveLeft(state);
+
+            expect(state).toEqual(newState);
+        });
     });
 
     describe("entering characters", () => {
