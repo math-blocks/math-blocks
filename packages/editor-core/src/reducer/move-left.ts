@@ -1,14 +1,10 @@
 import * as types from "../ast/types";
-import {isAtom} from "../ast/util";
 
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
+import {getAllowed} from "./vertical-work";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
-
-const isCellSkippable = (cell: types.Row | null): boolean =>
-    cell?.children.length === 1 &&
-    isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
 const cursorLeft = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
@@ -101,40 +97,27 @@ const cursorLeft = (zipper: Zipper): Zipper => {
         }
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
+        const allowed = getAllowed(zipper, focus);
+        const cursorIndex = focus.left.length;
+        const allowedLeft = allowed.slice(0, cursorIndex);
 
         // const prevIndex = focus.left.findLastIndex((item) => item != null);
         let prevIndex = focus.left.length - 1;
         for (; prevIndex > -1; prevIndex--) {
-            if (focus.left[prevIndex] != null) {
+            if (allowedLeft[prevIndex]) {
                 break;
             }
         }
-        let prev = focus.left[prevIndex];
+        const prev = focus.left[prevIndex];
 
-        // If we're showing work vertically, skip over cells containing only a
-        // plus/minus operator.
-        // TODO: also skip over empty columns when cursor is in the bottom row
-        if (
-            focus.type === "ztable" &&
-            focus.subtype === "algebra" &&
-            isCellSkippable(prev)
-        ) {
-            const children = [
-                ...focus.left,
-                util.zrowToRow(zipper.row),
-                ...focus.right,
-            ];
-
-            const topRowChildren = children.slice(0, focus.colCount);
-            const cursorIndex = focus.left.length;
-            const col = cursorIndex % focus.colCount;
-
+        if (focus.type === "ztable" && focus.subtype === "algebra") {
+            // Don't allow people to wrap around from one row to the previous
+            // when showing work vertically.
             if (
-                focus.left[prevIndex - 1] &&
-                isCellSkippable(topRowChildren[col - 1])
+                Math.floor(cursorIndex / focus.colCount) !==
+                Math.floor(prevIndex / focus.colCount)
             ) {
-                prevIndex--;
-                prev = focus.left[prevIndex];
+                return zipper;
             }
         }
 

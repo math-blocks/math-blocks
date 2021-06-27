@@ -176,7 +176,26 @@ export const typesetTable = (
         const col = cursorIndex % node.colCount;
         const zrow = zipper?.row;
 
-        if (zrow) {
+        // We don't want to add padding to cells in a column if the current
+        // cell is empty and there's another cell that isn't empty.
+        let canAddPadding = true;
+        if (node.rowCount > 2) {
+            const child1 = children[1 * node.colCount + col];
+            const child2 = children[2 * node.colCount + col];
+            const length1 = child1?.children?.length ?? 0;
+            const length2 = child2?.children?.length ?? 0;
+            if (length1 !== length2 && length1 * length2 === 0) {
+                const row = Math.floor(cursorIndex / node.colCount);
+                if (row === 1 && length1 === 0) {
+                    canAddPadding = false;
+                }
+                if (row === 2 && length2 === 0) {
+                    canAddPadding = false;
+                }
+            }
+        }
+
+        if (zrow && canAddPadding) {
             if (
                 isCellEqualSign(topRowChildren[col + 1]) &&
                 zrow.left.length === 0

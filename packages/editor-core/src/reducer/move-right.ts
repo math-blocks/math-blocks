@@ -1,14 +1,10 @@
 import * as types from "../ast/types";
-import {isAtom} from "../ast/util";
 
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
+import {getAllowed} from "./vertical-work";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
-
-const isCellSkippable = (cell: types.Row | null): boolean =>
-    cell?.children.length === 1 &&
-    isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
 const cursorRight = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
@@ -96,36 +92,20 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
-        let nextIndex = focus.right.findIndex((item) => item != null);
-        let next = focus.right[nextIndex];
-
-        // If we're showing work vertically, skip over cells containing only a
-        // plus/minus operator.
-        // TODO: also skip over empty columns when cursor is in the bottom row
-        if (
-            focus.type === "ztable" &&
-            focus.subtype === "algebra" &&
-            isCellSkippable(next)
-        ) {
-            const children = [
-                ...focus.left,
-                util.zrowToRow(zipper.row),
-                ...focus.right,
-            ];
-
-            const topRowChildren = children.slice(0, focus.colCount);
-            const cursorIndex = focus.left.length;
-            const col = cursorIndex % focus.colCount;
-            if (
-                focus.right[nextIndex + 1] &&
-                isCellSkippable(topRowChildren[col + 1])
-            ) {
-                nextIndex++;
-                next = focus.right[nextIndex];
-            }
-        }
+        const allowed = getAllowed(zipper, focus);
+        const cursorIndex = focus.left.length;
+        const allowedRight = allowed.slice(cursorIndex + 1);
+        const nextIndex = focus.right.findIndex(
+            (_, index) => allowedRight[index],
+        );
+        const next = focus.right[nextIndex];
 
         if (next == null) {
+            // Don't allow people to exit the table when showing work vertically
+            if (focus.type === "ztable" && focus.subtype === "algebra") {
+                return zipper;
+            }
+
             // Exit the current focus since there are now rows within the node
             // to the right.
             return {

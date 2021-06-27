@@ -764,5 +764,131 @@ describe("renderer", () => {
             );
             expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
         });
+
+        test("don't pad an empty cell in the bottom row if there is an non-empty cell above", async () => {
+            const {glyph} = Editor.builders;
+            const node: Editor.types.Table = Editor.builders.algebra(
+                [
+                    // first row
+                    [glyph("x")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("y")],
+
+                    // second row
+                    [],
+                    [glyph("+"), glyph("1")],
+                    [],
+                    [],
+                    [],
+
+                    // third row
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                ],
+                5,
+                3,
+            );
+
+            const bcRow: Editor.BreadcrumbRow = {
+                id: Core.getId(),
+                type: "bcrow",
+                left: [],
+                right: [],
+                style: {},
+            };
+
+            const zipper: Editor.Zipper = {
+                row: Editor.zrow(Core.getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        // third row, second column
+                        focus: Editor.nodeToFocus(node, 11),
+                    },
+                ],
+            };
+
+            const fontData = await stixFontLoader();
+            const fontSize = 60;
+            const context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Dynamic,
+                cramped: false,
+            };
+            const options = {showCursor: true};
+
+            const scene = Typesetter.typesetZipper(zipper, context, options);
+            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+        });
+
+        test("don't pad an empty cell in the middle row if there is non-empty cells in below it", async () => {
+            const {glyph} = Editor.builders;
+            const node: Editor.types.Table = Editor.builders.algebra(
+                [
+                    // first row
+                    [glyph("x")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("y")],
+
+                    // second row
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+
+                    // third row
+                    [],
+                    [glyph("+"), glyph("1")],
+                    [],
+                    [],
+                    [],
+                ],
+                5,
+                3,
+            );
+
+            const bcRow: Editor.BreadcrumbRow = {
+                id: Core.getId(),
+                type: "bcrow",
+                left: [],
+                right: [],
+                style: {},
+            };
+
+            const zipper: Editor.Zipper = {
+                row: Editor.zrow(Core.getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        // second row, second column
+                        focus: Editor.nodeToFocus(node, 6),
+                    },
+                ],
+            };
+
+            const fontData = await stixFontLoader();
+            const fontSize = 60;
+            const context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Dynamic,
+                cramped: false,
+            };
+            const options = {showCursor: true};
+
+            const scene = Typesetter.typesetZipper(zipper, context, options);
+            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+        });
     });
 });
