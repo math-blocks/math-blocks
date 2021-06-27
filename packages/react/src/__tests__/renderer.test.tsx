@@ -871,7 +871,7 @@ describe("renderer", () => {
                     {
                         row: bcRow,
                         // second row, second column
-                        focus: Editor.nodeToFocus(node, 5),
+                        focus: Editor.nodeToFocus(node, 6),
                     },
                 ],
             };
