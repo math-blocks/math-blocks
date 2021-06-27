@@ -368,6 +368,50 @@ describe("verticalWork", () => {
             expect(newZipper.row.left).toEqualEditorNodes([]);
             expect(newZipper.row.right).toEqualEditorNodes([glyph("5")]);
         });
+
+        test("can't exit table to right even if last column is empty", () => {
+            const node: types.Table = builders.algebra(
+                [
+                    // first row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [glyph("+")],
+                    [glyph("5")],
+                    [],
+
+                    // second row
+                    [],
+                    [],
+                    [glyph("\u2212")],
+                    [glyph("5")],
+                    [],
+
+                    // third row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [glyph("+")],
+                    [glyph("0")],
+                    [],
+                ],
+                5,
+                3,
+            );
+
+            const zipper: Zipper = {
+                row: util.zrow(getId(), row("0").children, []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 13),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveRight(state);
+
+            expect(state).toEqual(newState);
+        });
     });
 
     describe("entering characters", () => {
