@@ -732,7 +732,19 @@ describe("renderer", () => {
             return newState;
         };
 
-        test("first cell, second row", async () => {
+        test.each`
+            column
+            ${0}
+            ${1}
+            ${2}
+            ${3}
+            ${4}
+            ${5}
+            ${6}
+            ${7}
+            ${8}
+            ${9}
+        `("row 2, column $column", async ({column}) => {
             const fontData = await stixFontLoader();
             const fontSize = 60;
             const context = {
@@ -744,196 +756,7 @@ describe("renderer", () => {
             };
             const options = {showCursor: true};
 
-            const state = Editor.stateFromZipper(zipper);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("second cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 1);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("third cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 2);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("fourth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 3);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("fifth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 4);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("sixth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 5);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("seventh cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 6);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("eighth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 7);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("nineth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 8);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
-        });
-
-        test("tenth cell, second row", async () => {
-            const fontData = await stixFontLoader();
-            const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
-
-            const state = moveRight(Editor.stateFromZipper(zipper), 9);
+            const state = moveRight(Editor.stateFromZipper(zipper), column);
             const scene = Typesetter.typesetZipper(
                 state.zipper,
                 context,
