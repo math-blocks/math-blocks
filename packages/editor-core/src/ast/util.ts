@@ -235,3 +235,15 @@ export const isOperator = (atom: types.Atom): boolean => {
 
     return false;
 };
+
+export const isAtom = (
+    node: types.Node,
+    charOrChars: string | string[],
+): boolean => {
+    if (node.type === "atom") {
+        return Array.isArray(charOrChars)
+            ? charOrChars.includes(node.value.char)
+            : charOrChars === node.value.char;
+    }
+    return false;
+};

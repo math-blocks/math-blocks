@@ -670,4 +670,99 @@ describe("renderer", () => {
             expect(<VerticalWork />).toMatchSVGSnapshot();
         });
     });
+
+    describe("showing work vertically", () => {
+        const {glyph} = Editor.builders;
+        const node: Editor.types.Table = Editor.builders.algebra(
+            [
+                // first row
+                [],
+                [glyph("2"), glyph("x")],
+                [],
+                [glyph("+")],
+                [glyph("5")],
+                [],
+                [glyph("=")],
+                [],
+                [glyph("1"), glyph("0")],
+                [],
+
+                // second row
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+            ],
+            10,
+            2,
+        );
+
+        const bcRow: Editor.BreadcrumbRow = {
+            id: Core.getId(),
+            type: "bcrow",
+            left: [],
+            right: [],
+            style: {},
+        };
+
+        const zipper: Editor.Zipper = {
+            row: Editor.zrow(Core.getId(), [], []),
+            breadcrumbs: [
+                {
+                    row: bcRow,
+                    focus: Editor.nodeToFocus(node, 10),
+                },
+            ],
+        };
+
+        const moveRight = (
+            state: Editor.State,
+            count: number,
+        ): Editor.State => {
+            let newState = state;
+            for (let i = 0; i < count; i++) {
+                newState = Editor.reducer(newState, {type: "ArrowRight"});
+            }
+            return newState;
+        };
+
+        test.each`
+            column
+            ${0}
+            ${1}
+            ${2}
+            ${3}
+            ${4}
+            ${5}
+            ${6}
+            ${7}
+            ${8}
+            ${9}
+        `("row 2, column $column", async ({column}) => {
+            const fontData = await stixFontLoader();
+            const fontSize = 60;
+            const context = {
+                fontData: fontData,
+                baseFontSize: fontSize,
+                mathStyle: Typesetter.MathStyle.Display,
+                renderMode: Typesetter.RenderMode.Dynamic,
+                cramped: false,
+            };
+            const options = {showCursor: true};
+
+            const state = moveRight(Editor.stateFromZipper(zipper), column);
+            const scene = Typesetter.typesetZipper(
+                state.zipper,
+                context,
+                options,
+            );
+            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+        });
+    });
 });

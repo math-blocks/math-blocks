@@ -18,6 +18,13 @@ type Col = {
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
+const isCellEqualSign = (cell: Editor.types.Row | null): boolean =>
+    cell?.children.length === 1 && Editor.util.isAtom(cell.children[0], "=");
+
+const isCellPlusMinus = (cell: Editor.types.Row | null): boolean =>
+    cell?.children.length === 1 &&
+    Editor.util.isAtom(cell.children[0], ["+", "\u2212"]);
+
 const childContextForTable = (context: Context): Context => {
     const {mathStyle} = context;
 
@@ -55,6 +62,19 @@ export const typesetTable = (
             ? DEFAULT_GUTTER_WIDTH
             : node.gutterWidth;
 
+    const children =
+        node.type === "table"
+            ? node.children
+            : [
+                  ...node.left,
+                  // @ts-expect-error: zipper is always defined when
+                  // node is a ZTable
+                  Editor.zrowToRow(zipper.row),
+                  ...node.right,
+              ];
+
+    const topRowChildren = children.slice(0, node.colCount);
+
     // Group cells into rows and columns and determine the width of each
     // column and the depth/height of each row.
     for (let j = 0; j < node.rowCount; j++) {
@@ -72,17 +92,6 @@ export const typesetTable = (
                     depth: 0,
                 };
             }
-
-            const children =
-                node.type === "table"
-                    ? node.children
-                    : [
-                          ...node.left,
-                          // @ts-expect-error: zipper is always defined when
-                          // node is a ZTable
-                          Editor.zrowToRow(zipper.row),
-                          ...node.right,
-                      ];
 
             let padFirstOperator = false;
 
@@ -118,7 +127,7 @@ export const typesetTable = (
 
             // Pad if the cell in the top row is a single plus/minus operator,
             // including the cell in the top row.
-            const topRowChild = children[i];
+            const topRowChild = topRowChildren[i];
             if (
                 topRowChild &&
                 topRowChild.children.length === 1 &&
@@ -164,9 +173,100 @@ export const typesetTable = (
 
     const cursorIndex = node.type === "ztable" ? node.left.length : -1;
     if (node.subtype === "algebra" && cursorIndex !== -1) {
-        const cursorCol = cursorIndex % node.colCount;
-        if (columns[cursorCol].width === 0) {
-            columns[cursorCol].width = 32;
+        const col = cursorIndex % node.colCount;
+        const zrow = zipper?.row;
+
+        if (zrow) {
+            if (
+                isCellEqualSign(topRowChildren[col + 1]) &&
+                zrow.left.length === 0
+            ) {
+                // Add left padding on every cell in the row except the first
+                for (let row = 1; row < node.rowCount; row++) {
+                    let cell = rows[row].children[col];
+                    cell = Layout.rebox(
+                        cell,
+                        Layout.makeKern(16),
+                        Layout.makeKern(0),
+                    );
+                    rows[row].children[col] = cell;
+                    columns[col].children[row] = cell;
+                    columns[col].width = Math.max(
+                        columns[col].width,
+                        cell.width,
+                    );
+                }
+            } else if (
+                isCellEqualSign(topRowChildren[col - 1]) &&
+                zrow.right.length === 0
+            ) {
+                // Add right padding on every cell in the row except the first
+                for (let row = 1; row < node.rowCount; row++) {
+                    let cell = rows[row].children[col];
+                    cell = Layout.rebox(
+                        cell,
+                        Layout.makeKern(0),
+                        Layout.makeKern(16),
+                    );
+                    rows[row].children[col] = cell;
+                    columns[col].children[row] = cell;
+                    columns[col].width = Math.max(
+                        columns[col].width,
+                        cell.width,
+                    );
+                }
+            } else if (
+                isCellPlusMinus(topRowChildren[col + 1]) &&
+                zrow.left.length === 0
+            ) {
+                // Add left padding on every cell in the row except the first
+                for (let row = 1; row < node.rowCount; row++) {
+                    let cell = rows[row].children[col];
+                    cell = Layout.rebox(
+                        cell,
+                        Layout.makeKern(16),
+                        Layout.makeKern(0),
+                    );
+                    rows[row].children[col] = cell;
+                    columns[col].children[row] = cell;
+                    columns[col].width = Math.max(
+                        columns[col].width,
+                        cell.width,
+                    );
+                }
+            } else if (col === 0 && zrow.right.length === 0) {
+                // Add right padding on every cell in the row except the first
+                for (let row = 1; row < node.rowCount; row++) {
+                    let cell = rows[row].children[col];
+                    cell = Layout.rebox(
+                        cell,
+                        Layout.makeKern(0),
+                        Layout.makeKern(16),
+                    );
+                    rows[row].children[col] = cell;
+                    columns[col].children[row] = cell;
+                    columns[col].width = Math.max(
+                        columns[col].width,
+                        cell.width,
+                    );
+                }
+            } else if (col === node.colCount - 1 && zrow.left.length === 0) {
+                // Add left padding on every cell in the row except the first
+                for (let row = 1; row < node.rowCount; row++) {
+                    let cell = rows[row].children[col];
+                    cell = Layout.rebox(
+                        cell,
+                        Layout.makeKern(16),
+                        Layout.makeKern(0),
+                    );
+                    rows[row].children[col] = cell;
+                    columns[col].children[row] = cell;
+                    columns[col].width = Math.max(
+                        columns[col].width,
+                        cell.width,
+                    );
+                }
+            }
         }
     }
 
@@ -177,12 +277,22 @@ export const typesetTable = (
             // center the cell content
             const originalWidth = Layout.getWidth(col.children[j]);
             const baseKernSize = (col.width - originalWidth) / 2;
-            const rightKernSize =
+            let rightKernSize =
                 i < columns.length - 1
                     ? baseKernSize + gutterWidth / 2
                     : baseKernSize;
-            const leftKernSize =
+            let leftKernSize =
                 i > 0 ? baseKernSize + gutterWidth / 2 : baseKernSize;
+            const child = children[j * node.colCount + i];
+            // Right align any child that has content when showing work
+            if (
+                node.subtype === "algebra" &&
+                child &&
+                child.children.length > 0
+            ) {
+                leftKernSize = baseKernSize * 2;
+                rightKernSize = 0;
+            }
             const cell = Layout.rebox(
                 col.children[j],
                 Layout.makeKern(leftKernSize, "start"),

@@ -1,8 +1,14 @@
 import * as types from "../ast/types";
+import {isAtom} from "../ast/util";
+
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
+
+const isCellSkippable = (cell: types.Row | null): boolean =>
+    cell?.children.length === 1 &&
+    isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
 const cursorRight = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
@@ -76,14 +82,48 @@ const cursorRight = (zipper: Zipper): Zipper => {
 
     // Move out of the current row.
     if (zipper.breadcrumbs.length > 0) {
-        const {focus, row: parentRow} = zipper.breadcrumbs[
-            zipper.breadcrumbs.length - 1
-        ];
+        const {focus, row: parentRow} =
+            zipper.breadcrumbs[zipper.breadcrumbs.length - 1];
+
+        // Prevent moving right from the last column when showing work vertically
+        if (focus.type === "ztable" && focus.subtype === "algebra") {
+            const index = focus.left.length;
+            const col = index % focus.colCount;
+            if (col === focus.colCount - 1) {
+                return zipper;
+            }
+        }
 
         const exitedRow: types.Row = util.zrowToRow(zipper.row);
 
-        const nextIndex = focus.right.findIndex((item) => item != null);
-        const next = focus.right[nextIndex];
+        let nextIndex = focus.right.findIndex((item) => item != null);
+        let next = focus.right[nextIndex];
+
+        // If we're showing work vertically, skip over cells containing only a
+        // plus/minus operator.
+        // TODO: also skip over empty columns when cursor is in the bottom row
+        if (
+            focus.type === "ztable" &&
+            focus.subtype === "algebra" &&
+            isCellSkippable(next)
+        ) {
+            const children = [
+                ...focus.left,
+                util.zrowToRow(zipper.row),
+                ...focus.right,
+            ];
+
+            const topRowChildren = children.slice(0, focus.colCount);
+            const cursorIndex = focus.left.length;
+            const col = cursorIndex % focus.colCount;
+            if (
+                focus.right[nextIndex + 1] &&
+                isCellSkippable(topRowChildren[col + 1])
+            ) {
+                nextIndex++;
+                next = focus.right[nextIndex];
+            }
+        }
 
         if (next == null) {
             // Exit the current focus since there are now rows within the node
@@ -137,9 +177,8 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
     if (endZipper.row.right.length === 0) {
         // leave the node if we can
         if (endZipper.breadcrumbs.length > 0) {
-            const {focus, row: parentRow} = endZipper.breadcrumbs[
-                endZipper.breadcrumbs.length - 1
-            ];
+            const {focus, row: parentRow} =
+                endZipper.breadcrumbs[endZipper.breadcrumbs.length - 1];
 
             const exitNode = (updatedNode: types.Node): Zipper => ({
                 breadcrumbs: endZipper.breadcrumbs.slice(0, -1),

@@ -1,7 +1,17 @@
-import {verticalWork} from "../vertical-work";
-import {stateFromZipper, toEqualEditorNodes, row, zrow} from "../test-util";
+import {getId} from "@math-blocks/core";
 
-import type {Zipper} from "../types";
+import * as types from "../../ast/types";
+import * as builders from "../../ast/builders";
+
+import {stateFromZipper, toEqualEditorNodes, row, zrow} from "../test-util";
+import * as util from "../util";
+import {verticalWork} from "../vertical-work";
+import {backspace} from "../backspace";
+import {moveLeft} from "../move-left";
+import {moveRight} from "../move-right";
+import {insertChar} from "../insert-char";
+
+import type {BreadcrumbRow, Zipper} from "../types";
 
 expect.extend({toEqualEditorNodes});
 
@@ -181,4 +191,304 @@ describe("verticalWork", () => {
             row("2x+5=10").children,
         );
     });
+
+    describe("backspace", () => {
+        const {glyph} = builders;
+        const node: types.Table = builders.algebra(
+            [
+                // first row
+                [glyph("2"), glyph("x")],
+                [glyph("+")],
+                [glyph("5")],
+
+                // second row
+                [glyph("2"), glyph("x")],
+                [glyph("\u2212")],
+                [glyph("5")],
+            ],
+            3,
+            2,
+        );
+
+        const bcRow: BreadcrumbRow = {
+            id: getId(),
+            type: "bcrow",
+            left: [],
+            right: [],
+            style: {},
+        };
+
+        test("backspace moves to the left", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], row("\u2212").children),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 4),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = backspace(state);
+
+            const {zipper: result} = newState;
+            expect(result.row.left).toEqualEditorNodes([
+                glyph("2"),
+                glyph("x"),
+            ]);
+            expect(result.row.right).toEqualEditorNodes([]);
+        });
+
+        test("backspace moves to the left and deletes operators", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], row("5").children),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 5),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = backspace(state);
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(newZipper.row.left).toEqualEditorNodes([]);
+            expect(newZipper.row.right).toEqualEditorNodes([]);
+            expect(focus.left).toHaveLength(4);
+        });
+    });
+
+    describe("moving horizontally", () => {
+        const {glyph} = builders;
+        const node: types.Table = builders.algebra(
+            [
+                // first row
+                [glyph("2"), glyph("x")],
+                [glyph("+")],
+                [glyph("5")],
+
+                // second row
+                [glyph("2"), glyph("x")],
+                [glyph("\u2212")],
+                [glyph("5")],
+            ],
+            3,
+            2,
+        );
+
+        const bcRow: BreadcrumbRow = {
+            id: getId(),
+            type: "bcrow",
+            left: [],
+            right: [],
+            style: {},
+        };
+
+        test("can't move left past the start of a row", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], row("2x").children),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 3),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveLeft(state);
+
+            expect(newState).toEqual(state);
+        });
+
+        test("can't move right past the end of a row", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), row("5").children, []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 5),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveRight(state);
+
+            expect(newState).toEqual(state);
+        });
+
+        test("moving left over an operator skips the cell", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], row("5").children),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 5),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveLeft(state);
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(3);
+            expect(focus.right).toHaveLength(2);
+            expect(newZipper.row.left).toEqualEditorNodes([
+                glyph("2"),
+                glyph("x"),
+            ]);
+            expect(newZipper.row.right).toEqualEditorNodes([]);
+        });
+
+        test("moving right over an operator skips the cell", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), row("2x").children, []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 3),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = moveRight(state);
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(5);
+            expect(focus.right).toHaveLength(0);
+            expect(newZipper.row.left).toEqualEditorNodes([]);
+            expect(newZipper.row.right).toEqualEditorNodes([glyph("5")]);
+        });
+    });
+
+    describe("entering characters", () => {
+        const {glyph} = builders;
+        const node: types.Table = builders.algebra(
+            [
+                // first row
+                [glyph("2"), glyph("x")],
+                [glyph("+")],
+                [glyph("5")],
+                [glyph("=")],
+                [glyph("1"), glyph("0")],
+
+                // second row
+                [glyph("2"), glyph("x")],
+                [],
+                [],
+                [],
+                [],
+            ],
+            5,
+            2,
+        );
+
+        const bcRow: BreadcrumbRow = {
+            id: getId(),
+            type: "bcrow",
+            left: [],
+            right: [],
+            style: {},
+        };
+
+        test("plus/minus operator in a plus/mins column will insert and move to the next cell", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 6),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = insertChar(state, "\u2212");
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(7);
+            expect(focus.right).toHaveLength(2);
+            expect(focus.left[6]?.children).toEqualEditorNodes([
+                glyph("\u2212"),
+            ]);
+        });
+
+        test("non plus/minus operator in plus/minus column will move to the next cell and then insert", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 6),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = insertChar(state, "a");
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(7);
+            expect(focus.right).toHaveLength(2);
+            expect(focus.left[6]?.children).toEqualEditorNodes([]);
+            expect(newZipper.row.left).toEqualEditorNodes([glyph("a")]);
+        });
+
+        test("relation operator in a relation column will insert and then move to the next cell", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 8),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = insertChar(state, "=");
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(9);
+            expect(focus.right).toHaveLength(0);
+            expect(focus.left[8]?.children).toEqualEditorNodes([glyph("=")]);
+        });
+
+        test("non-relation operator in a relation column will move to the next cell and then insert", () => {
+            const zipper: Zipper = {
+                row: util.zrow(getId(), [], []),
+                breadcrumbs: [
+                    {
+                        row: bcRow,
+                        focus: util.nodeToFocus(node, 8),
+                    },
+                ],
+            };
+
+            const state = stateFromZipper(zipper);
+            const newState = insertChar(state, "a");
+
+            const {zipper: newZipper} = newState;
+            const {focus} = newZipper.breadcrumbs[0];
+            expect(focus.left).toHaveLength(9);
+            expect(focus.right).toHaveLength(0);
+            expect(focus.left[6]?.children).toEqualEditorNodes([]);
+            expect(newZipper.row.left).toEqualEditorNodes([glyph("a")]);
+        });
+    });
+    // TODO:
+    // - create snapshot tests when navigating horizontall across the second row,
+    //   this is to ensure that the padding stays the way we want it
 });
