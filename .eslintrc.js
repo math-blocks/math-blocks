@@ -31,7 +31,7 @@ module.exports = {
                 "@typescript-eslint/no-unused-vars": [
                     "error",
                     // NOTE: args: "after-used" doens't work for some reason
-                    {args: "none"},
+                    {args: "none", ignoreRestSiblings: true},
                 ],
             },
         },

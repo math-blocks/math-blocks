@@ -46,15 +46,11 @@ const MistakeMessages: Record<MistakeId, string> = {
 const highlightMistakes = (
     zipper: Editor.Zipper,
     mistakes: readonly Mistake[],
+    color: string,
 ): Editor.Zipper => {
     for (const mistake of mistakes) {
-        let insideHighlight = false;
+        let insideMistake = false;
 
-        // TODO: would it be easier to convert a zipper to node, do the
-        // highlighting, and then convert it back to a zipper?  We could
-        // store the cursor location a path that's an array of indexes.
-        // It does mean recreating the whole object, but this isn't a very
-        // common operation so it should be alright.
         zipper = Editor.transforms.traverseZipper(
             zipper,
             {
@@ -71,14 +67,14 @@ const highlightMistakes = (
                         for (let i = loc.start; i < loc.end; i++) {
                             const nextNodePath = [...loc.path, i];
                             if (arrayEq(nextNodePath, path)) {
-                                insideHighlight = true;
+                                insideMistake = true;
                                 break;
                             }
                         }
                     }
                 },
                 exit(node, path) {
-                    const highlight = insideHighlight;
+                    const highlight = insideMistake;
 
                     for (const nextNode of mistake.nextNodes) {
                         const loc = nextNode.loc;
@@ -88,7 +84,7 @@ const highlightMistakes = (
                         for (let i = loc.start; i < loc.end; i++) {
                             const nextNodePath = [...loc.path, i];
                             if (arrayEq(nextNodePath, path)) {
-                                insideHighlight = false;
+                                insideMistake = false;
                                 break;
                             }
                         }
@@ -99,7 +95,7 @@ const highlightMistakes = (
                             ...node,
                             style: {
                                 ...node.style,
-                                color: "darkCyan",
+                                color: color,
                             },
                         };
                     }
@@ -109,6 +105,24 @@ const highlightMistakes = (
         );
     }
     return zipper;
+};
+
+const removeAllColor = (zipper: Editor.Zipper): Editor.Zipper => {
+    return Editor.transforms.traverseZipper(
+        zipper,
+        {
+            exit(node) {
+                if (node.style.color) {
+                    const {color, ...restStyle} = node.style;
+                    return {
+                        ...node,
+                        style: restStyle,
+                    };
+                }
+            },
+        },
+        [],
+    );
 };
 
 function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
@@ -132,7 +146,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
         const {result, mistakes} = checkStep(parsedPrev, parsedNext);
 
+        const zipper = removeAllColor(step.value);
+
         if (result) {
+            if (zipper !== step.value) {
+                dispatch({type: "update", value: zipper});
+            }
+
             if (
                 parsedNext.type === "eq" &&
                 parsedNext.args[0].type === "identifier" &&
@@ -157,6 +177,10 @@ const Step: React.FunctionComponent<Props> = (props) => {
             return true;
         } else {
             dispatch({type: "wrong", mistakes});
+            dispatch({
+                type: "update",
+                value: highlightMistakes(zipper, mistakes, "darkCyan"),
+            });
         }
 
         return false;
@@ -273,12 +297,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    let zipper = step.value;
-
-    if (step.status === StepStatus.Incorrect && parsedNextRef.current) {
-        zipper = highlightMistakes(zipper, step.mistakes);
-    }
-
     const correctMistake = (mistake: Mistake): void => {
         if (parsedNextRef.current) {
             for (const correction of mistake.corrections) {
@@ -322,7 +340,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             >
                 <MathEditor
                     readonly={readonly}
-                    zipper={zipper}
+                    zipper={step.value}
                     stepChecker={true}
                     onSubmit={handleCheckStep}
                     onChange={onChange}
