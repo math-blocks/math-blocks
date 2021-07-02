@@ -10,17 +10,24 @@ import * as types from "./types";
 export const traverseNodes = (
     nodes: readonly types.Node[],
     callback: {
-        enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U | void;
+        enter?: <U extends types.Node>(node: U, path: number[]) => void;
+        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
     },
-): readonly types.Node[] => nodes.map((node) => traverseNode(node, callback));
+    path: number[],
+    offset: number,
+): readonly types.Node[] =>
+    nodes.map((node, index) =>
+        traverseNode(node, callback, [...path, offset + index]),
+    );
 
 export type ZipperCallback = {
     enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
+        path: number[],
     ) => void;
     exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
+        path: number[],
     ) => T | void;
 };
 
@@ -32,6 +39,7 @@ export type ZipperCallback = {
 export const traverseZipper = (
     zipper: Zipper,
     callback: ZipperCallback,
+    path: number[],
 ): Zipper => {
     const {breadcrumbs} = zipper;
 
@@ -39,14 +47,26 @@ export const traverseZipper = (
         // Base case
         const {row} = zipper;
 
-        callback.enter?.(row);
+        callback.enter?.(row, path);
+        // TODO: we want the numbers in the path to correspond to SourceLocations
+        // which don't know about selection
         let newRow = {
             ...row,
-            left: traverseNodes(row.left, callback),
-            selection: traverseNodes(row.selection, callback),
-            right: traverseNodes(row.right, callback),
+            left: traverseNodes(row.left, callback, path, 0),
+            selection: traverseNodes(
+                row.selection,
+                callback,
+                path,
+                row.left.length,
+            ),
+            right: traverseNodes(
+                row.right,
+                callback,
+                path,
+                row.left.length + row.right.length,
+            ),
         };
-        newRow = callback.exit(newRow) || newRow;
+        newRow = callback.exit(newRow, path) || newRow;
 
         return {
             row: newRow,
@@ -60,43 +80,53 @@ export const traverseZipper = (
     const {row, focus} = crumb;
 
     // start processing the row
-    callback.enter?.(row);
-    const rowLeft = traverseNodes(row.left, callback);
+    callback.enter?.(row, path);
+    const rowLeft = traverseNodes(row.left, callback, path, 0);
 
     // start processing the focus
-    callback.enter?.(focus);
-    const focusLeft = focus.left.map((row) => {
-        return row && traverseRow(row, callback);
+    const rowGapIndex = row.left.length;
+    callback.enter?.(focus, [...path, rowGapIndex]);
+    const focusLeft = focus.left.map((row, index) => {
+        return row && traverseRow(row, callback, [...path, rowGapIndex, index]);
     });
 
     // recurse
+    const focusGapIndex = focus.left.length;
     const newZipper = traverseZipper(
         {
             ...zipper,
             breadcrumbs: restCrumbs,
         },
         callback,
+        [...path, rowGapIndex, focusGapIndex],
     );
 
     // finish processing the focus
-    const focusRight = focus.right.map((row) => {
-        return row && traverseRow(row, callback);
+    const focusRight = focus.right.map((row, index) => {
+        return (
+            row &&
+            traverseRow(row, callback, [
+                ...path,
+                rowGapIndex,
+                focusGapIndex + index,
+            ])
+        );
     });
     let newFocus: Focus = {
         ...focus,
         left: focusLeft,
         right: focusRight,
     };
-    newFocus = callback.exit(newFocus) || newFocus;
+    newFocus = callback.exit(newFocus, [...path, rowGapIndex]) || newFocus;
 
     // finish processing the row
-    const rowRight = traverseNodes(row.right, callback);
+    const rowRight = traverseNodes(row.right, callback, path, rowGapIndex + 1);
     let newRow: BreadcrumbRow = {
         ...row,
         left: rowLeft,
         right: rowRight,
     };
-    newRow = callback.exit(newRow) || newRow;
+    newRow = callback.exit(newRow, path) || newRow;
 
     const newCrumb: Breadcrumb = {
         focus: newFocus,
@@ -112,13 +142,14 @@ export const traverseZipper = (
 const traverseRow = (
     row: types.Row,
     callback: {
-        enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U | void;
+        enter?: <U extends types.Node>(node: U, path: number[]) => void;
+        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
     },
+    path: number[],
 ): types.Row => {
-    callback.enter?.(row);
+    callback.enter?.(row, path);
 
-    const newChildren = traverseNodes(row.children, callback);
+    const newChildren = traverseNodes(row.children, callback, path, 0);
     const changed = newChildren.some(
         (child, index: number) => child !== row.children[index],
     );
@@ -128,34 +159,35 @@ const traverseRow = (
             ...row,
             children: newChildren,
         };
-        return callback.exit(newRow) || newRow;
+        return callback.exit(newRow, path) || newRow;
     }
 
-    return callback.exit(row) || row;
+    return callback.exit(row, path) || row;
 };
 
 export const traverseNode = <T extends types.Node>(
     node: T,
     callback: {
-        enter?: <U extends types.Node>(node: U) => void;
-        exit: <U extends types.Node>(node: U) => U | void;
+        enter?: <U extends types.Node>(node: U, path: number[]) => void;
+        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
     },
+    path: number[],
 ): T => {
     if (node.type === "atom") {
-        callback.enter?.(node);
-        return callback.exit(node) || node;
+        callback.enter?.(node, path);
+        return callback.exit(node, path) || node;
     }
 
     // The top-level node is a row
     if (node.type === "row") {
-        const result = traverseRow(node, callback);
+        const result = traverseRow(node, callback, path);
         // @ts-expect-error: TypeScript doesn't realize that T is equivalent to types.Row here
         return result;
     }
 
-    callback.enter?.(node);
-    const newChildren = node.children.map((row) => {
-        return row && traverseRow(row, callback);
+    callback.enter?.(node, path);
+    const newChildren = node.children.map((row, index) => {
+        return row && traverseRow(row, callback, [...path, index]);
     });
 
     const changed = newChildren.some(
@@ -167,10 +199,10 @@ export const traverseNode = <T extends types.Node>(
             ...node,
             children: newChildren,
         };
-        return callback.exit(newNode) || newNode;
+        return callback.exit(newNode, path) || newNode;
     }
 
-    return callback.exit(node) || node;
+    return callback.exit(node, path) || node;
 };
 
 type ColorMap = Map<number, string>;
@@ -179,18 +211,22 @@ export const applyColorMapToEditorNode = (
     node: types.Node,
     colorMap: ColorMap,
 ): types.Node => {
-    return traverseNode(node, {
-        exit: (node) => {
-            const color = colorMap.get(node.id);
-            return color
-                ? {
-                      ...node,
-                      style: {
-                          ...node.style,
-                          color,
-                      },
-                  }
-                : node;
+    return traverseNode(
+        node,
+        {
+            exit: (node, path) => {
+                const color = colorMap.get(node.id);
+                return color
+                    ? {
+                          ...node,
+                          style: {
+                              ...node.style,
+                              color,
+                          },
+                      }
+                    : node;
+            },
         },
-    });
+        [],
+    );
 };

@@ -11,7 +11,7 @@ export type Style = {
     cancel?: number; // The ID of the cancel notation
 };
 
-type Common = {id: number; style: Style};
+type Common = {id: number; style: Readonly<Style>};
 
 export type Row = sharedTypes.Row<Glyph, Common>;
 export type Delimited = sharedTypes.Delimited<Glyph, Common>;

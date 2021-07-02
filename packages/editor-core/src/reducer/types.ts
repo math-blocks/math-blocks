@@ -28,12 +28,10 @@ export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 // - create functions to convert between ZRow and BreadcrumbRow and back
 //   if the ZRow we're trying to convert has a selection, throw
 
-export type BreadcrumbRow = {
-    id: number;
+export type BreadcrumbRow = ZCommon & {
     type: "bcrow";
     left: readonly types.Node[];
     right: readonly types.Node[];
-    style: types.Style;
 };
 
 export type Breadcrumb<F extends Focus = Focus> = {

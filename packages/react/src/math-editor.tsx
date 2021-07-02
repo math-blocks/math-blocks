@@ -30,8 +30,6 @@ type Props = {
 
     stepChecker?: boolean;
 
-    colorMap?: Map<number, string>;
-
     // Renders bounding boxes around each group and glyph.
     showHitboxes?: boolean;
 };
@@ -89,9 +87,10 @@ const keyupToAction = (key: string): Editor.Action | null => {
 };
 
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
-    const memoizedState = useMemo(() => Editor.stateFromZipper(props.zipper), [
-        props.zipper,
-    ]);
+    const memoizedState = useMemo(
+        () => Editor.stateFromZipper(props.zipper),
+        [props.zipper],
+    );
 
     const [state, setState] = useState<Editor.State>(memoizedState);
     const [active, setActive] = useState<boolean>(false);
@@ -119,13 +118,12 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                     const newState = Editor.reducer(state, action);
                     setState(newState);
 
-                    if (
-                        props.onChange &&
-                        e.keyCode !== 37 &&
-                        e.keyCode !== 38 &&
-                        e.keyCode !== 39 &&
-                        e.keyCode !== 40
-                    ) {
+                    // We always call on change even when the user is moving the
+                    // cursor.  The underlying content doesn't change, but how
+                    // it's represented in memory is.  If we don't do this, when
+                    // the tutor tries to highlight mistakes it will be doing so
+                    // with a stale value.
+                    if (props.onChange) {
                         props.onChange(newState.zipper);
                     }
                 }

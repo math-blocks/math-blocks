@@ -90,6 +90,7 @@ describe("cancel", () => {
             },
             breadcrumbs: [],
         };
+        // @ts-expect-error: ignore readonly
         zipper.row.selection.forEach((node) => (node.style.cancel = -1));
         const state = stateFromZipper(zipper);
 
