@@ -841,8 +841,11 @@ export const Cancelling: Story<EmptyProps> = (args, {loaded: fontData}) => {
         Editor.builders.root(null, [glyph("z"), glyph("+"), glyph("1")]),
     ]);
 
+    // @ts-expect-error: ignore readonly
     editNode.children[0].style.cancel = 1;
+    // @ts-expect-error: ignore readonly
     editNode.children[1].style.cancel = 2;
+    // @ts-expect-error: ignore readonly
     editNode.children[3].style.cancel = 3;
     // @ts-expect-error: we know that this is a root
     editNode.children[5].children[1].children[0].style.cancel = 4;

@@ -45,8 +45,12 @@ export const cancel = (state: State, cancelId?: number): State => {
         };
         // We transform both the start and end zipper in order for
         // things to work with Case 3 in selectionZipperFromZippers.
-        const newStartZipper = transforms.traverseZipper(startZipper, callback);
-        const newEndZipper = transforms.traverseZipper(endZipper, callback);
+        const newStartZipper = transforms.traverseZipper(
+            startZipper,
+            callback,
+            [],
+        );
+        const newEndZipper = transforms.traverseZipper(endZipper, callback, []);
         const newSelectionZippper = selectionZipperFromZippers(
             newStartZipper,
             newEndZipper,

@@ -1,3 +1,5 @@
+// TODO: make all of these object types readonly
+
 // A = Atom type
 // C = Common type
 export type Row<A, C> = C & {

@@ -126,6 +126,7 @@ const addingFractions = builders.row([
     builders.glyph("y"),
 ]);
 
+// @ts-expect-error: ignore readonly
 addingFractions.children[2].style.color = "teal";
 // @ts-expect-error: we don't both refining the type since we know what it is
 addingFractions.children[2].children[0].style.color = "orange";

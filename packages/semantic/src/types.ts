@@ -547,7 +547,7 @@ export type Complexes = Common & {
 export interface Common {
     id: number;
     loc?: SourceLocation;
-    source?: string;
+    source?: string; // TODO: rename this to something less ambiguous
 }
 
 // TODO: dedupe with editor-core and parser-factory

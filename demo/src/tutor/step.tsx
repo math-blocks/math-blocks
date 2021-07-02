@@ -43,120 +43,77 @@ const MistakeMessages: Record<MistakeId, string> = {
     [MistakeId.DECOMP_MUL]: "decomposition of multiplication is incorrect",
 };
 
-// TODO: dedupe with Location in editor-parser
-type Location = {
-    path: readonly number[];
-    start: number;
-    end: number;
-};
+const highlightMistakes = (
+    zipper: Editor.Zipper,
+    mistakes: readonly Mistake[],
+): Editor.Zipper => {
+    for (const mistake of mistakes) {
+        let insideHighlight = false;
 
-// TODO: dedupe with locFromRange in editor-parser
-const mergeLocation = (start: Location, end: Location): Location => {
-    // TODO: assert start.path === end.path
-    return {
-        path: start.path,
-        start: start.start,
-        end: end.end,
-    };
-};
-
-const findParent = (
-    root: Semantic.types.Node,
-    node: Semantic.types.Node,
-): Semantic.types.Node | undefined => {
-    const stack: Semantic.types.Node[] = [];
-    let result: Semantic.types.Node | undefined = undefined;
-
-    // traverse needs enter and exit semantics so that we can push/pop items
-    // from the stack.
-    Semantic.util.traverse(root, {
-        enter: (n) => {
-            if (n === node) {
-                result = stack[stack.length - 1];
-            }
-            stack.push(n);
-        },
-        exit: (n) => {
-            stack.pop();
-        },
-    });
-
-    return result;
-};
-
-const colorLocation = (
-    editorRoot: Editor.types.Row,
-    loc: Location,
-    colorMap: Map<number, string>,
-): void => {
-    const editNode = Editor.util.nodeAtPath(editorRoot, loc.path);
-    if (editNode && Editor.util.hasChildren(editNode)) {
-        for (let i = loc.start; i < loc.end; i++) {
-            colorMap.set(editNode.children[i].id, "darkCyan");
-        }
-    }
-};
-
-const highlightMistake = (
-    editorRoot: Editor.types.Row,
-    semanticRoot: Semantic.types.Node,
-    mistake: Mistake,
-    colorMap: Map<number, string>,
-): void => {
-    // It's possible that nodes for given mistake may have different parent
-    // nodes.  This map is used only for nodes that are children of 'add' or
-    // 'mul'.
-    const entriesByParentId = new Map<number, [number, Location][]>();
-
-    for (const node of mistake.nextNodes) {
-        // There's no gaurantee that the nodes come in ascending order so let's
-        // order them first
-        if (node.loc) {
-            const parentNode = findParent(semanticRoot, node);
-            if (
-                parentNode &&
-                (parentNode.type === "add" || parentNode.type === "mul")
-            ) {
-                const index = parentNode.args.indexOf(
-                    node as Semantic.types.NumericNode,
-                );
-                if (parentNode) {
-                    if (entriesByParentId.has(parentNode.id)) {
-                        entriesByParentId
-                            .get(parentNode.id)
-                            ?.push([index, node.loc]);
-                    } else {
-                        entriesByParentId.set(parentNode.id, [
-                            [index, node.loc],
-                        ]);
+        // TODO: would it be easier to convert a zipper to node, do the
+        // highlighting, and then convert it back to a zipper?  We could
+        // store the cursor location a path that's an array of indexes.
+        // It does mean recreating the whole object, but this isn't a very
+        // common operation so it should be alright.
+        zipper = Editor.transforms.traverseZipper(
+            zipper,
+            {
+                enter(node, path) {
+                    if (path.length === 0) {
+                        return;
                     }
-                }
-            } else {
-                // If the parent isn't an 'add' or 'mul' we color it immediately
-                colorLocation(editorRoot, node.loc, colorMap);
-            }
-        }
+
+                    for (const nextNode of mistake.nextNodes) {
+                        const loc = nextNode.loc;
+                        if (!loc) {
+                            continue;
+                        }
+                        for (let i = loc.start; i < loc.end; i++) {
+                            const nextNodePath = [...loc.path, i];
+                            if (arrayEq(nextNodePath, path)) {
+                                insideHighlight = true;
+                                break;
+                            }
+                        }
+                    }
+                },
+                exit(node, path) {
+                    const highlight = insideHighlight;
+
+                    for (const nextNode of mistake.nextNodes) {
+                        const loc = nextNode.loc;
+                        if (!loc) {
+                            continue;
+                        }
+                        for (let i = loc.start; i < loc.end; i++) {
+                            const nextNodePath = [...loc.path, i];
+                            if (arrayEq(nextNodePath, path)) {
+                                insideHighlight = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (highlight) {
+                        return {
+                            ...node,
+                            style: {
+                                ...node.style,
+                                color: "darkCyan",
+                            },
+                        };
+                    }
+                },
+            },
+            [],
+        );
     }
-
-    for (const childEntries of entriesByParentId.values()) {
-        const sortedEntries = childEntries.sort((a, b) => a[0] - b[0]);
-        let prevIndex = sortedEntries[0][0];
-        let loc = sortedEntries[0][1];
-
-        for (let i = 1; i < sortedEntries.length; i++) {
-            const index = sortedEntries[i][0];
-            if (index > prevIndex + 1) {
-                colorLocation(editorRoot, loc, colorMap);
-                loc = sortedEntries[i][1];
-            } else {
-                loc = mergeLocation(loc, sortedEntries[i][1]);
-            }
-            prevIndex = index;
-        }
-
-        colorLocation(editorRoot, loc, colorMap);
-    }
+    return zipper;
 };
+
+function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
+    return a.length === b.length && a.every((e, i) => e === b[i]);
+}
 
 const Step: React.FunctionComponent<Props> = (props) => {
     const {readonly, prevStep, step, onChange} = props;
@@ -316,17 +273,10 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    const colorMap = new Map<number, string>();
+    let zipper = step.value;
 
     if (step.status === StepStatus.Incorrect && parsedNextRef.current) {
-        for (const mistake of step.mistakes) {
-            highlightMistake(
-                Editor.zipperToRow(step.value),
-                parsedNextRef.current,
-                mistake,
-                colorMap,
-            );
-        }
+        zipper = highlightMistakes(zipper, step.mistakes);
     }
 
     const correctMistake = (mistake: Mistake): void => {
@@ -362,8 +312,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
         }
     };
 
-    const zipper: Editor.Zipper = step.value;
-
     return (
         <VStack>
             <HStack
@@ -379,7 +327,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     onSubmit={handleCheckStep}
                     onChange={onChange}
                     style={{flexGrow: 1}}
-                    colorMap={colorMap}
                 />
                 <VStack
                     style={{

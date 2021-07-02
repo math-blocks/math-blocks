@@ -54,8 +54,11 @@ describe("color", () => {
             },
             breadcrumbs: [],
         };
+        // @ts-expect-error: ignore readonly
         zipper.row.left.forEach((node) => (node.style.color = "orange"));
+        // @ts-expect-error: ignore readonly
         zipper.row.selection.forEach((node) => (node.style.color = "orange"));
+        // @ts-expect-error: ignore readonly
         zipper.row.right.forEach((node) => (node.style.color = "orange"));
 
         const state = stateFromZipper(zipper);
