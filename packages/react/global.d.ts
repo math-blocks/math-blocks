@@ -1,5 +1,5 @@
-type OneOrMore<T> = readonly [T, ...T[]];
-type TwoOrMore<T> = readonly [T, T, ...T[]];
+type OneOrMore<T> = readonly [T, ...(readonly T[])];
+type TwoOrMore<T> = readonly [T, T, ...(readonly T[])];
 
 declare module "*.module.css" {
     const classes: {readonly [key: string]: string};

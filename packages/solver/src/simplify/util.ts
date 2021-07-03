@@ -24,7 +24,7 @@ export const isNegative = (node: Semantic.types.NumericNode): boolean => {
 
 export const simplifyMul = (
     node: Semantic.types.Mul, // restrict this to 2 factors
-    steps?: Step[],
+    steps?: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     const [a, b] = node.args;
 

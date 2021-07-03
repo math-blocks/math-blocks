@@ -1,20 +1,11 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {fontSizeForContext, makeDelimiter} from "../utils";
 import {MathStyle} from "../enums";
 
 import type {Context} from "../types";
-
-type Row = {
-    children: Layout.HBox[];
-    height: number;
-    depth: number;
-};
-type Col = {
-    children: Layout.HBox[];
-    width: number;
-};
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
@@ -53,6 +44,16 @@ export const typesetTable = (
     context: Context,
     zipper?: Editor.Zipper,
 ): Layout.HBox | Layout.VBox => {
+    type Row = {
+        children: Mutable<Layout.HBox>[];
+        height: number;
+        depth: number;
+    };
+    type Col = {
+        children: Mutable<Layout.HBox>[];
+        width: number;
+    };
+
     const columns: Col[] = [];
     const rows: Row[] = [];
     const childContext = childContextForTable(context);
@@ -380,7 +381,7 @@ export const typesetTable = (
         [],
         rowBoxes.slice(1),
         context,
-    );
+    ) as Mutable<Layout.VBox>;
 
     const shift = (fontSize * constants.axisHeight.value) / 1000;
     // Equalize the depth and height and then shift up so the center of the
@@ -414,7 +415,10 @@ export const typesetTable = (
         context,
     );
 
-    const table = Layout.makeStaticHBox([open, inner, close], context);
+    const table = Layout.makeStaticHBox(
+        [open, inner, close],
+        context,
+    ) as Mutable<Layout.HBox>;
 
     table.id = node.id;
     table.style = node.style;

@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {makeDelimiter} from "../utils";
@@ -25,19 +26,22 @@ export const typesetDelimited = (
         row,
         thresholdOptions,
         context,
-    );
+    ) as Mutable<Layout.Glyph>;
 
     const close = makeDelimiter(
         node.rightDelim.value.char,
         row,
         thresholdOptions,
         context,
-    );
+    ) as Mutable<Layout.Glyph>;
 
     open.pending = node.leftDelim.value.pending;
     close.pending = node.rightDelim.value.pending;
 
-    const delimited = Layout.makeStaticHBox([open, row, close], context);
+    const delimited = Layout.makeStaticHBox(
+        [open, row, close],
+        context,
+    ) as Mutable<Layout.HBox>;
 
     delimited.id = node.id;
     delimited.style = node.style;

@@ -1,5 +1,6 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
@@ -31,9 +32,12 @@ const typesetRow = (
             padFirstOperator,
         ),
         context,
-    );
+    ) as Mutable<Layout.HBox>;
     box.id = row.id;
-    box.style.color = row.style.color;
+    box.style = {
+        ...box.style,
+        color: row.style.color,
+    };
 
     if (context.renderMode === RenderMode.Dynamic) {
         ensureMinDepthAndHeight(box, context);
@@ -53,11 +57,14 @@ const typesetRow = (
  * TODO: add originalDepth and originalHeight so that getDelimiter can make its
  * decisions based on the original dimensions of the box.
  *
- * @param {Layout.Box} dim
+ * @param {Mutable<Layout.Dim>} dim
  * @param {Context} context
  * @return {void}
  */
-const ensureMinDepthAndHeight = (dim: Layout.Dim, context: Context): void => {
+const ensureMinDepthAndHeight = (
+    dim: Mutable<Layout.Dim>,
+    context: Context,
+): void => {
     const {
         fontData: {font},
     } = context;
@@ -270,9 +277,15 @@ const _typesetZipper = (
             ),
         );
 
-        const box = Layout.makeStaticHBox(nodes, context);
+        const box = Layout.makeStaticHBox(
+            nodes,
+            context,
+        ) as Mutable<Layout.HBox>;
         box.id = row.id;
-        box.style.color = row.style.color;
+        box.style = {
+            ...box.style,
+            color: row.style.color,
+        };
 
         if (context.renderMode === RenderMode.Dynamic) {
             ensureMinDepthAndHeight(box, context);
@@ -298,13 +311,17 @@ const _typesetZipper = (
         const selection = output.slice(firstCut, secondCut);
         const right = output.slice(secondCut);
 
-        const box =
+        const box = (
             selection.length > 0
                 ? Layout.makeSelectionHBox(left, selection, right, context)
-                : Layout.makeCursorHBox(left, right, context);
+                : Layout.makeCursorHBox(left, right, context)
+        ) as Mutable<Layout.HBox>;
 
         box.id = row.id;
-        box.style.color = row.style.color;
+        box.style = {
+            ...box.style,
+            color: row.style.color,
+        };
 
         if (context.renderMode === RenderMode.Dynamic) {
             ensureMinDepthAndHeight(box, context);
@@ -315,7 +332,7 @@ const _typesetZipper = (
 };
 
 export type Options = {
-    showCursor?: boolean;
+    readonly showCursor?: boolean;
 };
 
 export const typesetZipper = (

@@ -19,12 +19,12 @@ import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
 
 type Props = {
-    readonly: boolean;
+    readonly readonly: boolean;
 
-    prevStep: _Step;
-    step: _Step;
+    readonly prevStep: _Step;
+    readonly step: _Step;
 
-    onChange: (value: Editor.Zipper) => unknown;
+    readonly onChange: (value: Editor.Zipper) => unknown;
 };
 
 const MistakeMessages: Record<MistakeId, string> = {

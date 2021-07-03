@@ -3,42 +3,42 @@ import type {MathTable} from "./tables/math";
 import type {Glyph, TopDict} from "./tables/cff-types";
 
 export type TableRecord = {
-    tableTag: string; // 4 bytes
-    checksum: number; // uint32
-    offset: number; // uint32
-    length: number; // uint32
+    readonly tableTag: string; // 4 bytes
+    readonly checksum: number; // uint32
+    readonly offset: number; // uint32
+    readonly length: number; // uint32
 };
 
 export type TableDirectory = {
-    sfntVersion: string; // 4 bytes
-    numTables: number; // uint16
-    searchRange: number; // uint16
-    entrySelector: number; // uint16
-    rangeShift: number; // uint16
-    tableRecords: Record<string, TableRecord>;
+    readonly sfntVersion: string; // 4 bytes
+    readonly numTables: number; // uint16
+    readonly searchRange: number; // uint16
+    readonly entrySelector: number; // uint16
+    readonly rangeShift: number; // uint16
+    readonly tableRecords: Record<string, TableRecord>;
 };
 
 export type GlyphMetrics = {
-    advance: number;
-    bearingX: number;
-    bearingY: number;
-    width: number;
-    height: number;
+    readonly advance: number;
+    readonly bearingX: number;
+    readonly bearingY: number;
+    readonly width: number;
+    readonly height: number;
 };
 
 export type Font = {
-    cff: {
-        name: string;
-        topDict: TopDict;
+    readonly cff: {
+        readonly name: string;
+        readonly topDict: TopDict;
     };
-    head: HeaderTable;
-    math: MathTable;
-    getGlyphID: (char: string) => number;
-    getGlyph: (glyphID: number) => Glyph;
-    getGlyphMetrics: (glyphID: number) => GlyphMetrics;
+    readonly head: HeaderTable;
+    readonly math: MathTable;
+    readonly getGlyphID: (char: string) => number;
+    readonly getGlyph: (glyphID: number) => Glyph;
+    readonly getGlyphMetrics: (glyphID: number) => GlyphMetrics;
 };
 
 export type FontData = {
-    font: Font;
-    fontFamily: string; // e.g. "Comic Sans", "STIX2", etc.
+    readonly font: Font;
+    readonly fontFamily: string; // e.g. "Comic Sans", "STIX2", etc.
 };

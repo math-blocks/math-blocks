@@ -1,11 +1,12 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
+import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "./util";
 import {Row} from "../ast/types";
-import {Node} from "./types";
+import {Node, SourceLocation} from "./types";
 
 type Token = Node;
 
@@ -133,29 +134,28 @@ const getPrefixParselet = (
 //     };
 // };
 
-const parseNaryInfix = (op: NAryOperator) => (
-    parser: EditorParser,
-    left: Parser.types.Node,
-): Parser.types.Node => {
-    const [right, ...rest] = parseNaryArgs(parser, op);
-    const loc = locFromRange(
-        left.loc,
-        rest.length > 0 ? rest[rest.length - 1].loc : right.loc,
-    );
+const parseNaryInfix =
+    (op: NAryOperator) =>
+    (parser: EditorParser, left: Parser.types.Node): Parser.types.Node => {
+        const [right, ...rest] = parseNaryArgs(parser, op);
+        const loc = locFromRange(
+            left.loc,
+            rest.length > 0 ? rest[rest.length - 1].loc : right.loc,
+        );
 
-    switch (op) {
-        case "add":
-        case "sub":
-        case "plusminus":
-            return Parser.builders.add([left, right, ...rest], loc);
-        case "mul.imp":
-            return Parser.builders.mul([left, right, ...rest], true, loc);
-        case "mul.exp":
-            return Parser.builders.mul([left, right, ...rest], false, loc);
-        case "eq":
-            return Parser.builders.eq([left, right, ...rest], loc);
-    }
-};
+        switch (op) {
+            case "add":
+            case "sub":
+            case "plusminus":
+                return Parser.builders.add([left, right, ...rest], loc);
+            case "mul.imp":
+                return Parser.builders.mul([left, right, ...rest], true, loc);
+            case "mul.exp":
+                return Parser.builders.mul([left, right, ...rest], false, loc);
+            case "eq":
+                return Parser.builders.eq([left, right, ...rest], loc);
+        }
+    };
 
 /**
  * Returns an array or one or more nodes that are arguments for the given
@@ -307,7 +307,10 @@ const getInfixParselet = (
 
                     if (left.type === "identifier") {
                         if (sub) {
-                            left.subscript = editorParser.parse(sub.children);
+                            left = {
+                                ...left,
+                                subscript: editorParser.parse(sub.children),
+                            };
                         }
                     } else {
                         if (sub) {
@@ -318,7 +321,10 @@ const getInfixParselet = (
                     }
 
                     if (sup) {
-                        const loc = locFromRange(left.loc, left.loc);
+                        const loc = locFromRange(
+                            left.loc,
+                            left.loc,
+                        ) as Mutable<SourceLocation>;
                         if (loc) {
                             // Add 1 to account for the subsup itself since left
                             // is the node the supsub is being applied to

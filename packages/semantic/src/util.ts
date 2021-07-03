@@ -166,8 +166,8 @@ export const hasArgs = (a: types.Node): a is HasArgs =>
 
 // TODO: dedupe with grader package
 type Options = {
-    skipEvalChecker?: boolean;
-    evalFractions?: boolean;
+    readonly skipEvalChecker?: boolean;
+    readonly evalFractions?: boolean;
 };
 
 // TODO: create a wrapper around this that returns a Semantic.Types.NumericNode
@@ -214,8 +214,8 @@ export const evalNode = (
 export const traverse = (
     node: types.Node,
     callbacks: {
-        enter?: (node: types.Node) => void;
-        exit?: (node: types.Node) => types.Node | void;
+        readonly enter?: (node: types.Node) => void;
+        readonly exit?: (node: types.Node) => types.Node | void;
     },
 ): types.Node => {
     if (callbacks.enter) {

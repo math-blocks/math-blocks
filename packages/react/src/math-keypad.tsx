@@ -3,29 +3,29 @@ import * as React from "react";
 import styles from "./keypad.module.css";
 
 type CharButton = {
-    type: "InsertChar";
-    char: string;
-    name: string;
+    readonly type: "InsertChar";
+    readonly char: string;
+    readonly name: string;
 };
 
 export type EditingEvent =
     | {
-          type: "InsertMatrix";
-          delimiters: "brackets" | "parens";
+          readonly type: "InsertMatrix";
+          readonly delimiters: "brackets" | "parens";
       }
     | {
-          type: "AddColumn";
-          side: "left" | "right";
+          readonly type: "AddColumn";
+          readonly side: "left" | "right";
       }
     | {
-          type: "AddRow";
-          side: "above" | "below";
+          readonly type: "AddRow";
+          readonly side: "above" | "below";
       }
     | {
-          type: "DeleteColumn";
+          readonly type: "DeleteColumn";
       }
     | {
-          type: "DeleteRow";
+          readonly type: "DeleteRow";
       };
 
 const buttons: readonly CharButton[] = [

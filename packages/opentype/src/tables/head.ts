@@ -1,22 +1,22 @@
 export type HeaderTable = {
-    majorVersion: number; // uint16
-    minorVersion: number; // uint16
-    fontRevision: number; // signed fixed-point number 16.16
-    checksumAdjustment: number; // uint32
-    magicNumber: number; // uint32
-    flags: number; // uint16
-    unitsPerEm: number; // uint16
-    created: number; // BigInt; // LONGDATETIME
-    modified: number; // BigInt; // LONGDATETIME
-    xMin: number; // int16
-    yMin: number; // int16
-    xMax: number; // int16
-    yMax: number; // int16
-    macStyle: number; // uint16 - bitfield
-    lowestRecPPEM: number; // uint16
-    fontDirectionHint: number; // int16
-    indexToLocFormat: number; // int16
-    glyphDataFormat: number; // int16
+    readonly majorVersion: number; // uint16
+    readonly minorVersion: number; // uint16
+    readonly fontRevision: number; // signed fixed-point number 16.16
+    readonly checksumAdjustment: number; // uint32
+    readonly magicNumber: number; // uint32
+    readonly flags: number; // uint16
+    readonly unitsPerEm: number; // uint16
+    readonly created: number; // BigInt; // LONGDATETIME
+    readonly modified: number; // BigInt; // LONGDATETIME
+    readonly xMin: number; // int16
+    readonly yMin: number; // int16
+    readonly xMax: number; // int16
+    readonly yMax: number; // int16
+    readonly macStyle: number; // uint16 - bitfield
+    readonly lowestRecPPEM: number; // uint16
+    readonly fontDirectionHint: number; // int16
+    readonly indexToLocFormat: number; // int16
+    readonly glyphDataFormat: number; // int16
 };
 
 export const parseHead = async (blob: Blob): Promise<HeaderTable> => {

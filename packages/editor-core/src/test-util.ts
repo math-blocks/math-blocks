@@ -4,7 +4,7 @@ import * as types from "./ast/types";
 export const toEqualMath = (
     received: Semantic.types.Node,
     actual: Semantic.types.Node,
-): {message: () => string; pass: boolean} => {
+): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Semantic trees did not match";
     if (Semantic.util.deepEquals(received, actual)) {
         return {
@@ -21,7 +21,7 @@ export const toEqualMath = (
 export const toEqualEditorNode = (
     received: types.Node,
     actual: types.Node,
-): {message: () => string; pass: boolean} => {
+): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Semantic trees did not match";
     if (Semantic.util.deepEquals(received, actual)) {
         return {

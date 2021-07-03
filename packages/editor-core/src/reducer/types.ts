@@ -1,18 +1,18 @@
 import * as types from "../ast/types";
 
 type Zipperize<T extends types.Node> = {
-    type: `z${T["type"]}`;
-    left: readonly (types.Row | null)[];
-    right: readonly (types.Row | null)[];
+    readonly type: `z${T["type"]}`;
+    readonly left: readonly (types.Row | null)[];
+    readonly right: readonly (types.Row | null)[];
 } & Omit<T, "children" | "type">;
 
-type ZCommon = {id: number; style: types.Style};
+type ZCommon = {readonly id: number; readonly style: types.Style};
 
 export type ZRow = ZCommon & {
-    type: "zrow";
-    left: readonly types.Node[];
-    selection: readonly types.Node[];
-    right: readonly types.Node[];
+    readonly type: "zrow";
+    readonly left: readonly types.Node[];
+    readonly selection: readonly types.Node[];
+    readonly right: readonly types.Node[];
 };
 
 export type ZFrac = Zipperize<types.Frac>;
@@ -29,29 +29,29 @@ export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 //   if the ZRow we're trying to convert has a selection, throw
 
 export type BreadcrumbRow = ZCommon & {
-    type: "bcrow";
-    left: readonly types.Node[];
-    right: readonly types.Node[];
+    readonly type: "bcrow";
+    readonly left: readonly types.Node[];
+    readonly right: readonly types.Node[];
 };
 
 export type Breadcrumb<F extends Focus = Focus> = {
-    row: BreadcrumbRow;
-    focus: F; // The item from the row that the cursor is inside of
+    readonly row: BreadcrumbRow;
+    readonly focus: F; // The item from the row that the cursor is inside of
 };
 
 export type Zipper = {
     // NOTE: zipper.row.id is not stable since the current row can change as
     // a user navigates into child rows (e.g. numerator or denominator of a
     // fraction).
-    row: ZRow;
+    readonly row: ZRow;
     // TODO: Consider making this a linked list where the "head" is the node
     // nearest to zipper.row in the breadrcumbs.
-    breadcrumbs: readonly Breadcrumb[]; // any ZRow in here should have a non-null `focus`
+    readonly breadcrumbs: readonly Breadcrumb[]; // any ZRow in here should have a non-null `focus`
 };
 
 export type State = {
-    startZipper: Zipper;
-    endZipper: Zipper;
-    zipper: Zipper;
-    selecting: boolean;
+    readonly startZipper: Zipper;
+    readonly endZipper: Zipper;
+    readonly zipper: Zipper;
+    readonly selecting: boolean;
 };

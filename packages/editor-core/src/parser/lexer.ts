@@ -13,7 +13,7 @@ import * as types from "../ast/types";
 import {Node, Row, Atom, SourceLocation} from "./types";
 
 export const location = (
-    path: number[],
+    path: readonly number[],
     start: number,
     end: number,
 ): SourceLocation => ({
@@ -28,20 +28,20 @@ export const location = (
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-type Ident = {kind: "identifier"; name: string};
-type Num = {kind: "number"; value: string};
-type Plus = {kind: "plus"};
-type Minus = {kind: "minus"};
-type PlusMinus = {kind: "plusminus"};
-type Times = {kind: "times"};
-type Equal = {kind: "eq"};
-type LParens = {kind: "lparens"};
-type RParens = {kind: "rparens"};
-type Ellipsis = {kind: "ellipsis"};
-type Sum = {kind: "sum"};
-type Prod = {kind: "prod"};
-type Lim = {kind: "lim"};
-type EOL = {kind: "eol"};
+type Ident = {readonly kind: "identifier"; readonly name: string};
+type Num = {readonly kind: "number"; readonly value: string};
+type Plus = {readonly kind: "plus"};
+type Minus = {readonly kind: "minus"};
+type PlusMinus = {readonly kind: "plusminus"};
+type Times = {readonly kind: "times"};
+type Equal = {readonly kind: "eq"};
+type LParens = {readonly kind: "lparens"};
+type RParens = {readonly kind: "rparens"};
+type Ellipsis = {readonly kind: "ellipsis"};
+type Sum = {readonly kind: "sum"};
+type Prod = {readonly kind: "prod"};
+type Lim = {readonly kind: "lim"};
+type EOL = {readonly kind: "eol"};
 
 export const atom = (token: Token, loc: SourceLocation): Atom => ({
     type: "atom",
@@ -101,8 +101,8 @@ const TOKEN_REGEX =
 // TODO: include ids of source glyphs in parsed tokens
 
 const processGlyphs = (
-    glyphs: types.Glyph[],
-    path: number[],
+    glyphs: readonly types.Glyph[],
+    path: readonly number[],
     offset: number,
 ): readonly Atom[] => {
     const tokens: Atom[] = [];
@@ -178,7 +178,10 @@ const processGlyphs = (
     return tokens;
 };
 
-const lexChildren = (nodes: readonly types.Node[], path: number[]): Node[] => {
+const lexChildren = (
+    nodes: readonly types.Node[],
+    path: readonly number[],
+): Node[] => {
     // TODO: assert that nodes.length > 0
 
     const tokens: Node[] = [];
@@ -212,7 +215,7 @@ function assertOneOrMore<T>(
     }
 }
 
-export const lexRow = (row: types.Row, path: number[] = []): Row => {
+export const lexRow = (row: types.Row, path: readonly number[] = []): Row => {
     assertOneOrMore(row.children, "rows cannot be empty");
     return {
         type: "row",
@@ -221,7 +224,11 @@ export const lexRow = (row: types.Row, path: number[] = []): Row => {
     };
 };
 
-const lex = (node: types.Node, path: number[], offset: number): Node => {
+const lex = (
+    node: types.Node,
+    path: readonly number[],
+    offset: number,
+): Node => {
     switch (node.type) {
         case "row":
             // This never gets called because rows must be children of

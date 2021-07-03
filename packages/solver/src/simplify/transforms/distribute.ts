@@ -1,5 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 import {Step} from "@math-blocks/step-utils";
+import type {Mutable} from "utility-types";
 
 import {Transform} from "../types";
 import {simplifyMul} from "../util";
@@ -7,13 +8,14 @@ import {simplifyMul} from "../util";
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
     node: Semantic.types.Neg,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.NumericNode[] | undefined => {
     const add = node.arg;
     const mulNegOne = Semantic.builders.mul(
         [Semantic.builders.number("-1"), add],
         true,
     ) as Semantic.types.Mul;
+    // TODO: return new steps instead of mutating
     substeps.push({
         message: "negation is the same as multipyling by one",
         before: node,
@@ -26,10 +28,11 @@ const distSub = (
 // a - b -> a + -b
 const subToNeg = (
     before: Semantic.types.NumericNode,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     if (Semantic.util.isSubtraction(before)) {
         const after = Semantic.builders.neg(before.arg, false);
+        // TODO: return new steps instead of mutating
         substeps.push({
             message: "subtraction is the same as adding the negative",
             before,
@@ -45,10 +48,11 @@ const subToNeg = (
 const negToSub = (
     before: Semantic.types.NumericNode,
     index: number,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     if (before.type === "neg" && !before.subtraction && index > 0) {
         const after = Semantic.builders.neg(before.arg, true);
+        // TODO: return new steps instead of mutating
         substeps.push({
             message: "adding the negative is the same as subtraction",
             before,
@@ -62,8 +66,8 @@ const negToSub = (
 
 // a(b + c) -> ab + bc
 const distMul = (
-    node: Readonly<Semantic.types.Mul>,
-    substeps: Step[],
+    node: Semantic.types.Mul,
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
@@ -84,12 +88,14 @@ const distMul = (
 
             // If we changed subtractions to negatives, create a new mul node
             // expressing that change
-            const before = changed
-                ? Semantic.builders.mul(
-                      [node.args[0], Semantic.builders.add(terms)],
-                      true,
-                  )
-                : node;
+            const before = (
+                changed
+                    ? Semantic.builders.mul(
+                          [node.args[0], Semantic.builders.add(terms)],
+                          true,
+                      )
+                    : node
+            ) as Mutable<Semantic.types.Mul>;
 
             // HACK: In order for us to be able to apply the step, we need to
             // ensure that before.id is the same as node.id.  We create a new
@@ -104,6 +110,7 @@ const distMul = (
                 ),
             ) as Semantic.types.Add;
 
+            // TODO: return new steps instead of mutating
             substeps.push({
                 message: "multiply each term",
                 before,
@@ -135,12 +142,14 @@ const distMul = (
 
             // If we changed subtractions to negatives, create a new mul node
             // expressing that change
-            const before = changed
-                ? Semantic.builders.mul(
-                      [Semantic.builders.add(terms), node.args[1]],
-                      true,
-                  )
-                : node;
+            const before = (
+                changed
+                    ? Semantic.builders.mul(
+                          [Semantic.builders.add(terms), node.args[1]],
+                          true,
+                      )
+                    : node
+            ) as Mutable<Semantic.types.Mul>;
 
             // HACK: In order for us to be able to apply the step, we need to
             // ensure that before.id is the same as node.id.  We create a new
@@ -155,6 +164,7 @@ const distMul = (
                 ),
             ) as Semantic.types.Add;
 
+            // TODO: return new steps instead of mutating
             substeps.push({
                 message: "multiply each term",
                 before,

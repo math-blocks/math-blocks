@@ -5,59 +5,59 @@ import * as Layout from "./layout";
 import type {FontData} from "@math-blocks/opentype";
 
 type Style = {
-    fill?: string;
-    stroke?: string;
+    readonly fill?: string;
+    readonly stroke?: string;
 };
 
 type Common = {
-    id?: number;
-    style: Style;
+    readonly id?: number;
+    readonly style: Style;
 };
 
 export type Group = {
-    type: "group";
+    readonly type: "group";
     // pen position of the group within its parent
-    x: number;
-    y: number;
+    readonly x: number;
+    readonly y: number;
     // `bounds` includes height and depth which is even information to compute
     // the bounding box of the group in `findIntersections`.
-    bounds: Layout.Dim;
-    children: readonly Node[];
+    readonly bounds: Layout.Dim;
+    readonly children: readonly Node[];
 } & Common;
 
 export type Glyph = {
-    type: "glyph";
-    x: number;
-    y: number;
-    width: number;
-    glyph: Layout.Glyph;
+    readonly type: "glyph";
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly glyph: Layout.Glyph;
 } & Common;
 
 export type Line = {
-    type: "line";
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-    thickness: number;
+    readonly type: "line";
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+    readonly thickness: number;
 } & Common;
 
 export type Rect = {
-    type: "rect";
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    fill?: string;
-    stroke?: string;
-    flag?: "start" | "end";
+    readonly type: "rect";
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly fill?: string;
+    readonly stroke?: string;
+    readonly flag?: "start" | "end";
 } & Common;
 
 export type Node = Group | Glyph | Line | Rect;
 
 export type Point = {
-    x: number;
-    y: number;
+    readonly x: number;
+    readonly y: number;
 };
 
 const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
@@ -91,10 +91,10 @@ const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
 };
 
 export type LayoutCursor = {
-    parent: number;
-    prev: number;
-    next: number;
-    selection: boolean;
+    readonly parent: number;
+    readonly prev: number;
+    readonly next: number;
+    readonly selection: boolean;
 };
 
 const CURSOR_WIDTH = 2;
@@ -530,18 +530,18 @@ const processVBox = (box: Layout.VBox, loc: Point, context: Context): Group => {
 };
 
 type Options = {
-    showCursor?: boolean;
-    debug?: boolean;
+    readonly showCursor?: boolean;
+    readonly debug?: boolean;
 };
 
 type Context = {
-    fontData: FontData;
-    showCursor: boolean;
-    inSelection: boolean;
+    readonly fontData: FontData;
+    readonly showCursor: boolean;
+    readonly inSelection: boolean;
     // When computing "hitboxes", only Groups and Rect and returned.  Groups
     // remain unchanged from other layers, but Rects and the bounding boxes of
     // Glyphs and horizontal Kerns.
-    layer: "content" | "selection" | "debug" | "hitboxes";
+    readonly layer: "content" | "selection" | "debug" | "hitboxes";
 };
 
 const _processBox = (
@@ -558,13 +558,13 @@ const _processBox = (
 };
 
 export type Scene = {
-    width: number;
-    height: number;
+    readonly width: number;
+    readonly height: number;
     // group these into .layers?
-    content: Group;
-    selection: Group;
-    hitboxes: Group;
-    debug: Group;
+    readonly content: Group;
+    readonly selection: Group;
+    readonly hitboxes: Group;
+    readonly debug: Group;
 };
 
 export const processBox = (
@@ -580,15 +580,12 @@ export const processBox = (
         layer: "content",
     };
     const contentLayer = _processBox(box, loc, context);
-
-    context.layer = "selection";
-    const selectionLayer = _processBox(box, loc, context);
-
-    context.layer = "debug";
-    const debugLayer = _processBox(box, loc, context);
-
-    context.layer = "hitboxes";
-    const hitboxes = _processBox(box, loc, context);
+    const selectionLayer = _processBox(box, loc, {
+        ...context,
+        layer: "selection",
+    });
+    const debugLayer = _processBox(box, loc, {...context, layer: "debug"});
+    const hitboxes = _processBox(box, loc, {...context, layer: "hitboxes"});
 
     const scene: Scene = {
         width: contentLayer.bounds.width,
@@ -605,10 +602,10 @@ export const processBox = (
 type Side = "left" | "right";
 
 type Bounds = {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
 };
 
 const isPointInBounds = (point: Point, bounds: Bounds): Side | undefined => {
@@ -648,8 +645,8 @@ const getBounds = (child: Group | Rect, translation: Point): Bounds => {
 };
 
 type Intersection =
-    | {type: "content"; id: number; side: Side}
-    | {type: "padding"; flag: "start" | "end"};
+    | {readonly type: "content"; readonly id: number; readonly side: Side}
+    | {readonly type: "padding"; readonly flag: "start" | "end"};
 
 const getIntersection = (
     child: Group | Rect,

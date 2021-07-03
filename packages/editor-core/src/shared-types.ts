@@ -3,68 +3,68 @@
 // A = Atom type
 // C = Common type
 export type Row<A, C> = C & {
-    type: "row";
-    children: readonly Node<A, C>[];
+    readonly type: "row";
+    readonly children: readonly Node<A, C>[];
 };
 
 export type Delimited<A, C> = C & {
-    type: "delimited";
-    children: readonly [Row<A, C>];
+    readonly type: "delimited";
+    readonly children: readonly [Row<A, C>];
     // How do we limit what can be used as a delimiter?s
-    leftDelim: Atom<A, C>;
-    rightDelim: Atom<A, C>;
+    readonly leftDelim: Atom<A, C>;
+    readonly rightDelim: Atom<A, C>;
 };
 
 type RowStyle = {
-    border?: "top" | "bottom";
-    alignment?: "top" | "middle" | "bottom";
+    readonly border?: "top" | "bottom";
+    readonly alignment?: "top" | "middle" | "bottom";
 };
 
 type ColStyle = {
-    border?: "left" | "right";
-    alignment?: "left" | "center" | "right";
+    readonly border?: "left" | "right";
+    readonly alignment?: "left" | "center" | "right";
 };
 
 export type Table<A, C> = C & {
-    type: "table";
-    subtype: "matrix" | "algebra";
-    children: readonly (Row<A, C> | null)[];
-    rowCount: number;
-    colCount: number;
-    gutterWidth?: number;
+    readonly type: "table";
+    readonly subtype: "matrix" | "algebra";
+    readonly children: readonly (Row<A, C> | null)[];
+    readonly rowCount: number;
+    readonly colCount: number;
+    readonly gutterWidth?: number;
     // How do we limit what can be used as a delimiter?s
-    delimiters?: {
-        left: Atom<A, C>;
-        right: Atom<A, C>;
+    readonly delimiters?: {
+        readonly left: Atom<A, C>;
+        readonly right: Atom<A, C>;
     };
-    rowStyles?: (RowStyle | null)[];
-    colStyles?: (ColStyle | null)[];
+    readonly rowStyles?: readonly (RowStyle | null)[];
+    readonly colStyles?: readonly (ColStyle | null)[];
 };
 
 export type SubSup<A, C> = C & {
-    type: "subsup";
-    children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
+    readonly type: "subsup";
+    readonly children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
 };
 
 export type Limits<A, C> = C & {
-    type: "limits";
-    inner: Node<A, C>;
-    children: readonly [Row<A, C>, Row<A, C> | null]; // lower, upper
+    readonly type: "limits";
+    readonly inner: Node<A, C>;
+    readonly children: readonly [Row<A, C>, Row<A, C> | null]; // lower, upper
 };
 
 export type Frac<A, C> = C & {
-    type: "frac";
-    children: readonly [Row<A, C>, Row<A, C>]; // numerator, denominator
+    readonly type: "frac";
+    readonly children: readonly [Row<A, C>, Row<A, C>]; // numerator, denominator
 };
 
 export type Root<A, C> = C & {
-    type: "root";
-    children: readonly [Row<A, C> | null, Row<A, C>]; // index, radicand
+    readonly type: "root";
+    readonly children: readonly [Row<A, C> | null, Row<A, C>]; // index, radicand
 };
 
 export type Atom<A, C> = C & {
-    type: "atom";
-    value: A;
+    readonly type: "atom";
+    readonly value: A;
 };
 
 export type Node<A, C> =

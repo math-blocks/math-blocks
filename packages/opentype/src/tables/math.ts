@@ -190,7 +190,7 @@ const parseGlyphConstruction = (
 };
 
 type MathGlyphInfo = {
-    isExtendedShape: (glyphID: number) => boolean;
+    readonly isExtendedShape: (glyphID: number) => boolean;
 };
 
 const parseMathGlyphInfo = async (
@@ -290,9 +290,9 @@ const parseVariants = async (
 };
 
 export type MathTable = {
-    constants: MathConstants;
-    variants: MathVariants;
-    glyphInfo: MathGlyphInfo;
+    readonly constants: MathConstants;
+    readonly variants: MathVariants;
+    readonly glyphInfo: MathGlyphInfo;
 };
 
 export const parseMATH = async (blob: Blob): Promise<MathTable> => {

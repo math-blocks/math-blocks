@@ -64,7 +64,7 @@ export const insertChar = (state: State, char: string): State => {
             const row = Math.floor(currentIndex / focus.colCount);
 
             if (row > 0) {
-                const cells: (types.Row | null)[] = [
+                const cells: readonly (types.Row | null)[] = [
                     ...focus.left,
                     util.zrowToRow(oldRow),
                     ...focus.right,

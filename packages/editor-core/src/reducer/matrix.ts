@@ -1,3 +1,5 @@
+import type {Mutable} from "utility-types";
+
 import * as builders from "../ast/builders";
 import * as types from "../ast/types";
 
@@ -6,28 +8,28 @@ import type {State, Zipper, Breadcrumb, ZTable, ZRow} from "./types";
 // TODO: dedupe with math-keypad.ts
 export type MatrixActions =
     | {
-          type: "InsertMatrix";
-          delimiters: "brackets" | "parens";
+          readonly type: "InsertMatrix";
+          readonly delimiters: "brackets" | "parens";
       }
     | {
-          type: "AddRow";
-          side: "above" | "below";
+          readonly type: "AddRow";
+          readonly side: "above" | "below";
       }
     | {
-          type: "AddColumn";
-          side: "left" | "right";
+          readonly type: "AddColumn";
+          readonly side: "left" | "right";
       }
     | {
-          type: "DeleteRow";
+          readonly type: "DeleteRow";
       }
     | {
-          type: "DeleteColumn";
+          readonly type: "DeleteColumn";
       };
 
 export type Cell = {
-    row: number;
-    col: number;
-    content: types.Row | ZRow | null;
+    readonly row: number;
+    readonly col: number;
+    readonly content: types.Row | ZRow | null;
 };
 
 export const getCellsFromCrumb = (
@@ -68,7 +70,7 @@ export const getCellsFromCrumb = (
 };
 
 const getCrumbFromCells = (
-    cells: Cell[],
+    cells: readonly Cell[],
     crumb: Breadcrumb<ZTable>,
     orientation: "row" | "col",
 ): Breadcrumb => {
@@ -190,7 +192,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const cells = getCellsFromCrumb(
                 crumb as Breadcrumb<ZTable>,
                 state.zipper,
-            );
+            ) as Mutable<Cell>[];
 
             const cursorIndex = left.length;
             const cursorRow = Math.floor(cursorIndex / colCount);
@@ -253,7 +255,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const cells = getCellsFromCrumb(
                 crumb as Breadcrumb<ZTable>,
                 state.zipper,
-            );
+            ) as Mutable<Cell>[];
 
             const cursorIndex = left.length;
             const cursorCol = cursorIndex % colCount;
@@ -321,7 +323,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                 state.zipper,
             )
                 // remove all cells in the current row
-                .filter((cell) => cell.row !== cursorRow);
+                .filter((cell) => cell.row !== cursorRow) as Mutable<Cell>[];
 
             for (const cell of cells) {
                 if (cell.row > cursorRow) {
@@ -421,7 +423,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                 state.zipper,
             )
                 // remove all cells in the current column
-                .filter((cell) => cell.col !== cursorCol);
+                .filter((cell) => cell.col !== cursorCol) as Mutable<Cell>[];
 
             for (const cell of cells) {
                 if (cell.col > cursorCol) {

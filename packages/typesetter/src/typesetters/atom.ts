@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {fontSizeForContext} from "../utils";
@@ -56,19 +57,19 @@ export const maybeAddOperatorPadding = (
     context: Context,
     padOperator?: boolean,
 ): Layout.Node => {
-    const glyph = typesetAtom(currentNode, context);
+    const glyph = typesetAtom(currentNode, context) as Mutable<Layout.Glyph>;
     const fontSize = fontSizeForContext(context);
     const result =
         (padOperator && Editor.util.isOperator(currentNode)) ||
         shouldHavePadding(prevNode, currentNode, context)
-            ? Layout.makeStaticHBox(
+            ? (Layout.makeStaticHBox(
                   [
                       Layout.makeKern(fontSize / 4),
                       glyph,
                       Layout.makeKern(fontSize / 4),
                   ],
                   context,
-              )
+              ) as Mutable<Layout.HBox>)
             : glyph;
     if (result !== glyph) {
         result.id = glyph.id;
@@ -90,7 +91,11 @@ export const typesetAtom = (
     const {value} = node;
 
     const glyphID = font.getGlyphID(value.char);
-    let glyph = Layout.makeGlyph(value.char, glyphID, context);
+    let glyph = Layout.makeGlyph(
+        value.char,
+        glyphID,
+        context,
+    ) as Mutable<Layout.Glyph>;
 
     // Convert individual glyphs to italic glyphs if they exist in the
     // current font.

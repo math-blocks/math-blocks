@@ -1,30 +1,30 @@
 // TODO: dedupe with parser-factory and semantic
 export type SourceLocation = {
-    path: readonly number[];
-    start: number;
-    end: number;
+    readonly path: readonly number[];
+    readonly start: number;
+    readonly end: number;
 };
 
 import * as sharedTypes from "../shared-types";
 
 // TODO: dedupe with lexer.ts
 export type Token =
-    | {kind: "identifier"; name: string}
-    | {kind: "number"; value: string}
-    | {kind: "plus"}
-    | {kind: "minus"}
-    | {kind: "plusminus"}
-    | {kind: "times"}
-    | {kind: "eq"}
-    | {kind: "lparens"}
-    | {kind: "rparens"}
-    | {kind: "ellipsis"}
-    | {kind: "sum"}
-    | {kind: "prod"}
-    | {kind: "lim"}
-    | {kind: "eol"};
+    | {readonly kind: "identifier"; readonly name: string}
+    | {readonly kind: "number"; readonly value: string}
+    | {readonly kind: "plus"}
+    | {readonly kind: "minus"}
+    | {readonly kind: "plusminus"}
+    | {readonly kind: "times"}
+    | {readonly kind: "eq"}
+    | {readonly kind: "lparens"}
+    | {readonly kind: "rparens"}
+    | {readonly kind: "ellipsis"}
+    | {readonly kind: "sum"}
+    | {readonly kind: "prod"}
+    | {readonly kind: "lim"}
+    | {readonly kind: "eol"};
 
-type Common = {loc: SourceLocation};
+type Common = {readonly loc: SourceLocation};
 
 export type Row = sharedTypes.Row<Token, Common>;
 export type Delimited = sharedTypes.Delimited<Token, Common>;

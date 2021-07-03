@@ -8,7 +8,7 @@ import type {Result, Mistake} from "../types";
 export const checkStep = (
     prev: string,
     next: string,
-): Result & {successfulChecks: Set<string>} => {
+): Result & {readonly successfulChecks: Set<string>} => {
     const {result, successfulChecks} = _checkStep(
         Testing.parse(prev),
         Testing.parse(next),
@@ -48,7 +48,7 @@ const myParse = (text: string): Semantic.types.Node => {
 export const toParseLike = (
     received: string,
     expected: string,
-): {message: () => string; pass: boolean} => {
+): {readonly message: () => string; readonly pass: boolean} => {
     if (Semantic.util.deepEquals(received, myParse(expected))) {
         return {
             message: () => `expected steps not to match`,
@@ -65,7 +65,7 @@ export function toHaveMessages(
     this: any,
     received: Result,
     expected: readonly string[],
-): {message: () => string; pass: boolean} {
+): {readonly message: () => string; readonly pass: boolean} {
     if (this.isNot) {
         expect(received.steps.map((step) => step.message)).not.toEqual(
             expected,
@@ -82,8 +82,8 @@ export function toHaveMessages(
 
 export const toHaveStepsLike = (
     received: Result,
-    expected: readonly [string, string][],
-): {message: () => string; pass: boolean} => {
+    expected: readonly (readonly [string, string])[],
+): {readonly message: () => string; readonly pass: boolean} => {
     if (received.steps.length !== expected.length) {
         return {
             message: () =>

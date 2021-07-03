@@ -1,4 +1,6 @@
-import type {Breadcrumb, Zipper, Focus} from "./types";
+import type {Mutable} from "utility-types";
+
+import type {Breadcrumb, Zipper, Focus, ZRow} from "./types";
 import type {Row, Node} from "../ast/types";
 
 import {
@@ -25,7 +27,7 @@ export const zipperToRow = (zipper: Zipper): Row => {
 
     const newRight = [...crumb.row.left, focusedNode, ...crumb.row.right];
 
-    const row = zrow(crumb.row.id, [], newRight);
+    const row = zrow(crumb.row.id, [], newRight) as Mutable<ZRow>;
     row.style = crumb.row.style;
 
     return zipperToRow({
@@ -36,19 +38,19 @@ export const zipperToRow = (zipper: Zipper): Row => {
 
 type Side = "left" | "right";
 type Intersection =
-    | {type: "content"; id: number; side: Side}
-    | {type: "padding"; flag: "start" | "end"};
+    | {readonly type: "content"; readonly id: number; readonly side: Side}
+    | {readonly type: "padding"; readonly flag: "start" | "end"};
 
 export const rowToZipper = (
     row: Row,
-    intersections: Intersection[],
+    intersections: readonly Intersection[],
 ): Zipper | void => {
     if (intersections.length === 0) {
         return;
     }
 
     let int: Intersection;
-    let rest: Intersection[];
+    let rest: readonly Intersection[];
 
     [int, ...rest] = intersections;
 
@@ -201,13 +203,13 @@ export const rowToZipper = (
 };
 
 const getLeftSelectionRight = (
-    row1: {left: readonly Node[]; right: readonly Node[]},
-    row2: {left: readonly Node[]; right: readonly Node[]},
-    children: Node[],
+    row1: {readonly left: readonly Node[]; readonly right: readonly Node[]},
+    row2: {readonly left: readonly Node[]; readonly right: readonly Node[]},
+    children: readonly Node[],
 ): {
-    left: Node[];
-    selection: Node[];
-    right: Node[];
+    readonly left: readonly Node[];
+    readonly selection: readonly Node[];
+    readonly right: readonly Node[];
 } => {
     const firstIndex = Math.min(row1.left.length, row2.left.length);
     const lastIndex =

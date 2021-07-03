@@ -2,98 +2,102 @@
 // UFWORD - uint16 that describes a quantity in font design units
 
 export type MathValueRecord = {
-    value: number; // FWORD
-    deviceOffset: number; // Offset16
+    readonly value: number; // FWORD
+    readonly deviceOffset: number; // Offset16
 };
 
 export type MathConstants = {
-    scriptPercentScaleDown: number; // int16
-    scriptScriptPercentScaleDown: number; // int16
-    delimitedSubFormulaMinHeight: number; // UFWORD
-    displayOperatorMinHeight: number; // UFWORD
-    mathLeading: MathValueRecord;
-    axisHeight: MathValueRecord;
-    accentBaseHeight: MathValueRecord;
-    flattenedAccentBaseHeight: MathValueRecord;
-    subscriptShiftDown: MathValueRecord;
-    subscriptTopMax: MathValueRecord;
-    subscriptBaselineDropMin: MathValueRecord;
-    superscriptShiftUp: MathValueRecord;
-    superscriptShiftUpCramped: MathValueRecord;
-    superscriptBottomMin: MathValueRecord;
-    superscriptBaselineDropMax: MathValueRecord;
-    subSuperscriptGapMin: MathValueRecord;
-    superscriptBottomMaxWithSubscript: MathValueRecord;
-    spaceAfterScript: MathValueRecord;
-    upperLimitGapMin: MathValueRecord;
-    upperLimitBaselineRiseMin: MathValueRecord;
-    lowerLimitGapMin: MathValueRecord;
-    lowerLimitBaselineDropMin: MathValueRecord;
-    stackTopShiftUp: MathValueRecord;
-    stackTopDisplayStyleShiftUp: MathValueRecord;
-    stackBottomShiftDown: MathValueRecord;
-    stackBottomDisplayStyleShiftDown: MathValueRecord;
-    stackGapMin: MathValueRecord;
-    stackDisplayStyleGapMin: MathValueRecord;
-    stretchStackTopShiftUp: MathValueRecord;
-    stretchStackBottomShiftDown: MathValueRecord;
-    stretchStackGapAboveMin: MathValueRecord;
-    stretchStackGapBelowMin: MathValueRecord;
-    fractionNumeratorShiftUp: MathValueRecord;
-    fractionNumeratorDisplayStyleShiftUp: MathValueRecord;
-    fractionDenominatorShiftDown: MathValueRecord;
-    fractionDenominatorDisplayStyleShiftDown: MathValueRecord;
-    fractionNumeratorGapMin: MathValueRecord;
-    fractionNumDisplayStyleGapMin: MathValueRecord;
-    fractionRuleThickness: MathValueRecord;
-    fractionDenominatorGapMin: MathValueRecord;
-    fractionDenomDisplayStyleGapMin: MathValueRecord;
-    skewedFractionHorizontalGap: MathValueRecord;
-    skewedFractionVerticalGap: MathValueRecord;
-    overbarVerticalGap: MathValueRecord;
-    overbarRuleThickness: MathValueRecord;
-    overbarExtraAscender: MathValueRecord;
-    underbarVerticalGap: MathValueRecord;
-    underbarRuleThickness: MathValueRecord;
-    underbarExtraDescender: MathValueRecord;
-    radicalVerticalGap: MathValueRecord;
-    radicalDisplayStyleVerticalGap: MathValueRecord;
-    radicalRuleThickness: MathValueRecord;
-    radicalExtraAscender: MathValueRecord;
-    radicalKernBeforeDegree: MathValueRecord;
-    radicalKernAfterDegree: MathValueRecord;
-    radicalDegreeBottomRaisePercent: number; // int16
+    readonly scriptPercentScaleDown: number; // int16
+    readonly scriptScriptPercentScaleDown: number; // int16
+    readonly delimitedSubFormulaMinHeight: number; // UFWORD
+    readonly displayOperatorMinHeight: number; // UFWORD
+    readonly mathLeading: MathValueRecord;
+    readonly axisHeight: MathValueRecord;
+    readonly accentBaseHeight: MathValueRecord;
+    readonly flattenedAccentBaseHeight: MathValueRecord;
+    readonly subscriptShiftDown: MathValueRecord;
+    readonly subscriptTopMax: MathValueRecord;
+    readonly subscriptBaselineDropMin: MathValueRecord;
+    readonly superscriptShiftUp: MathValueRecord;
+    readonly superscriptShiftUpCramped: MathValueRecord;
+    readonly superscriptBottomMin: MathValueRecord;
+    readonly superscriptBaselineDropMax: MathValueRecord;
+    readonly subSuperscriptGapMin: MathValueRecord;
+    readonly superscriptBottomMaxWithSubscript: MathValueRecord;
+    readonly spaceAfterScript: MathValueRecord;
+    readonly upperLimitGapMin: MathValueRecord;
+    readonly upperLimitBaselineRiseMin: MathValueRecord;
+    readonly lowerLimitGapMin: MathValueRecord;
+    readonly lowerLimitBaselineDropMin: MathValueRecord;
+    readonly stackTopShiftUp: MathValueRecord;
+    readonly stackTopDisplayStyleShiftUp: MathValueRecord;
+    readonly stackBottomShiftDown: MathValueRecord;
+    readonly stackBottomDisplayStyleShiftDown: MathValueRecord;
+    readonly stackGapMin: MathValueRecord;
+    readonly stackDisplayStyleGapMin: MathValueRecord;
+    readonly stretchStackTopShiftUp: MathValueRecord;
+    readonly stretchStackBottomShiftDown: MathValueRecord;
+    readonly stretchStackGapAboveMin: MathValueRecord;
+    readonly stretchStackGapBelowMin: MathValueRecord;
+    readonly fractionNumeratorShiftUp: MathValueRecord;
+    readonly fractionNumeratorDisplayStyleShiftUp: MathValueRecord;
+    readonly fractionDenominatorShiftDown: MathValueRecord;
+    readonly fractionDenominatorDisplayStyleShiftDown: MathValueRecord;
+    readonly fractionNumeratorGapMin: MathValueRecord;
+    readonly fractionNumDisplayStyleGapMin: MathValueRecord;
+    readonly fractionRuleThickness: MathValueRecord;
+    readonly fractionDenominatorGapMin: MathValueRecord;
+    readonly fractionDenomDisplayStyleGapMin: MathValueRecord;
+    readonly skewedFractionHorizontalGap: MathValueRecord;
+    readonly skewedFractionVerticalGap: MathValueRecord;
+    readonly overbarVerticalGap: MathValueRecord;
+    readonly overbarRuleThickness: MathValueRecord;
+    readonly overbarExtraAscender: MathValueRecord;
+    readonly underbarVerticalGap: MathValueRecord;
+    readonly underbarRuleThickness: MathValueRecord;
+    readonly underbarExtraDescender: MathValueRecord;
+    readonly radicalVerticalGap: MathValueRecord;
+    readonly radicalDisplayStyleVerticalGap: MathValueRecord;
+    readonly radicalRuleThickness: MathValueRecord;
+    readonly radicalExtraAscender: MathValueRecord;
+    readonly radicalKernBeforeDegree: MathValueRecord;
+    readonly radicalKernAfterDegree: MathValueRecord;
+    readonly radicalDegreeBottomRaisePercent: number; // int16
 };
 
 export type GlyphVariantRecord = {
-    variantGlyph: number; // Glyph ID
-    advanceMeasurement: number; // UFWORD (uint16 in design units)
+    readonly variantGlyph: number; // Glyph ID
+    readonly advanceMeasurement: number; // UFWORD (uint16 in design units)
 };
 
 export type GlyphPartRecord = {
-    glyphID: number; // uint16
-    startConnectorLength: number; // UFWORD (uint16 in design units)
-    endConnectorLength: number; // UFWORD (uint16 in design units)
-    fullAdvance: number; // UFWORD (uint16 in design units)
-    partsFlags: number; // uint16
+    readonly glyphID: number; // uint16
+    readonly startConnectorLength: number; // UFWORD (uint16 in design units)
+    readonly endConnectorLength: number; // UFWORD (uint16 in design units)
+    readonly fullAdvance: number; // UFWORD (uint16 in design units)
+    readonly partsFlags: number; // uint16
 };
 
 export type GlyphAssembly = {
-    italicsCorrection: MathValueRecord;
-    partRecords: GlyphPartRecord[];
+    readonly italicsCorrection: MathValueRecord;
+    readonly partRecords: readonly GlyphPartRecord[];
 };
 
 export type GlyphConstruction = {
-    glyphAssembly: GlyphAssembly | null;
-    mathGlyphVariantRecords: GlyphVariantRecord[];
+    readonly glyphAssembly: GlyphAssembly | null;
+    readonly mathGlyphVariantRecords: readonly GlyphVariantRecord[];
 };
 
 export type MathVariants = {
-    minConnectorOverlap: number; // UFWORD (uint16 in design units)
-    vertGlyphCoverageOffset: number; // Offset16 (uint16)
-    horizGlyphCoverageOffset: number; // Offset16 (uint16)
-    vertGlyphCount: number; // uint16
-    horizGlyphCount: number; // uint16
-    getVertGlyphConstruction: (glyphID: number) => GlyphConstruction | null;
-    getHorizGlyphConstruction: (glyphID: number) => GlyphConstruction | null;
+    readonly minConnectorOverlap: number; // UFWORD (uint16 in design units)
+    readonly vertGlyphCoverageOffset: number; // Offset16 (uint16)
+    readonly horizGlyphCoverageOffset: number; // Offset16 (uint16)
+    readonly vertGlyphCount: number; // uint16
+    readonly horizGlyphCount: number; // uint16
+    readonly getVertGlyphConstruction: (
+        glyphID: number,
+    ) => GlyphConstruction | null;
+    readonly getHorizGlyphConstruction: (
+        glyphID: number,
+    ) => GlyphConstruction | null;
 };

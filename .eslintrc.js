@@ -9,6 +9,7 @@ module.exports = {
     ],
     plugins: [
         "flowtype",
+        "functional",
         "import",
         "jest",
         "react-hooks",
@@ -32,6 +33,11 @@ module.exports = {
                     "error",
                     // NOTE: args: "after-used" doens't work for some reason
                     {args: "none", ignoreRestSiblings: true},
+                ],
+
+                "functional/prefer-readonly-type": [
+                    "error",
+                    {allowLocalMutation: true, allowMutableReturnType: true},
                 ],
             },
         },
@@ -60,6 +66,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: 2018,
         sourceType: "module",
+        project: ["./packages/**/tsconfig.json", "./demo/tsconfig.json"],
     },
     settings: {react: {version: "detect"}},
 };

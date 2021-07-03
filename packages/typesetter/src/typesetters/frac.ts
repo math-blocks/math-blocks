@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {multiplierForContext, fontSizeForContext} from "../utils";
@@ -116,7 +117,13 @@ export const typesetFrac = (
         context,
     );
 
-    const fracBox = Layout.makeVBox(width, stroke, upList, dnList, context);
+    const fracBox = Layout.makeVBox(
+        width,
+        stroke,
+        upList,
+        dnList,
+        context,
+    ) as Mutable<Layout.VBox>;
     fracBox.shift = -shift;
 
     fracBox.id = node.id;

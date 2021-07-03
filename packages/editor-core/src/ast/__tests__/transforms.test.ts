@@ -253,6 +253,7 @@ describe("transformZipper", () => {
             // @ts-expect-error: we know that focus.right[0] is defined
             zipper.breadcrumbs[0].focus.right[0].children[0].style.color =
                 "blue";
+            // @ts-expect-error: ignore readonly
             zipper.breadcrumbs[0].row.style.color = "blue";
             // @ts-expect-error: ignore readonly
             zipper.breadcrumbs[0].row.left[0].style.color = "blue";
@@ -260,6 +261,7 @@ describe("transformZipper", () => {
             zipper.breadcrumbs[0].row.left[1].style.color = "blue";
             // @ts-expect-error: ignore readonly
             zipper.row.right[0].style.color = "blue";
+            // @ts-expect-error: ignore readonly
             zipper.row.style.color = "blue";
             expect(result).toEqual(zipper);
         });

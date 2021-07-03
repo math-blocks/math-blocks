@@ -61,7 +61,7 @@ export const delimited = (children: string): types.Delimited =>
 export const toEqualEditorNodes = (
     received: readonly types.Node[],
     actual: readonly types.Node[],
-): {message: () => string; pass: boolean} => {
+): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
         return {

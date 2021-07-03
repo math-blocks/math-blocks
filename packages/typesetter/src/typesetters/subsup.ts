@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {MathStyle} from "../enums";
@@ -89,7 +90,7 @@ export const typesetSubsup = (
             upList,
             dnList,
             context,
-        );
+        ) as Mutable<Layout.VBox>;
 
         subsupBox.id = node.id;
         subsupBox.style = node.style;
@@ -123,8 +124,8 @@ export const typesetSubsup = (
         // that doesn't require this correction
         const kernShift = -supBox.depth + shift;
 
-        upList.push(Layout.makeKern(kernShift));
-        upList.push(supBox);
+        upList.push(Layout.makeKern(kernShift) as Mutable<Layout.Kern>);
+        upList.push(supBox as Mutable<Layout.HBox>);
     }
 
     const dnList = [];
@@ -187,7 +188,7 @@ export const typesetSubsup = (
         upList,
         dnList,
         context,
-    );
+    ) as Mutable<Layout.VBox>;
 
     subsupBox.id = node.id;
     subsupBox.style = node.style;

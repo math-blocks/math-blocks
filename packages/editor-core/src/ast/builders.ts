@@ -11,7 +11,10 @@ export function row(children: readonly types.Node[]): types.Row {
     };
 }
 
-export function subsup(sub?: types.Node[], sup?: types.Node[]): types.SubSup {
+export function subsup(
+    sub?: readonly types.Node[],
+    sup?: readonly types.Node[],
+): types.SubSup {
     return {
         id: getId(),
         type: "subsup",
@@ -22,8 +25,8 @@ export function subsup(sub?: types.Node[], sup?: types.Node[]): types.SubSup {
 
 export function limits(
     inner: types.Node,
-    lower: types.Node[],
-    upper?: types.Node[],
+    lower: readonly types.Node[],
+    upper?: readonly types.Node[],
 ): types.Limits {
     return {
         id: getId(),
@@ -49,8 +52,8 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    index: types.Node[] | null,
-    radicand: types.Node[],
+    index: readonly types.Node[] | null,
+    radicand: readonly types.Node[],
 ): types.Root {
     return {
         id: getId(),
@@ -77,12 +80,12 @@ export function delimited(
 
 export function table(
     subtype: "matrix" | "algebra",
-    cells: (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.Node[] | null)[],
     colCount: number,
     rowCount: number,
     delimiters?: {
-        left: types.Atom;
-        right: types.Atom;
+        readonly left: types.Atom;
+        readonly right: types.Atom;
     },
     gutterWidth?: number,
 ): types.Table {
@@ -102,7 +105,7 @@ export function table(
 }
 
 export function algebra(
-    cells: (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.Node[] | null)[],
     colCount: number,
     rowCount: number,
 ): types.Table {
@@ -110,12 +113,12 @@ export function algebra(
 }
 
 export function matrix(
-    cells: (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.Node[] | null)[],
     colCount: number,
     rowCount: number,
     delimiters?: {
-        left: types.Atom;
-        right: types.Atom;
+        readonly left: types.Atom;
+        readonly right: types.Atom;
     },
 ): types.Table {
     return table("matrix", cells, colCount, rowCount, delimiters);

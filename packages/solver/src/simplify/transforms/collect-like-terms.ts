@@ -35,7 +35,7 @@ export const collectLikeTerms: Transform = (node): Step | undefined => {
     };
 };
 
-type Groups = Map<
+type Groups = ReadonlyMap<
     Semantic.types.NumericNode | null,
     readonly Semantic.types.NumericNode[]
 >;
@@ -95,7 +95,7 @@ const getGroups = (terms: readonly Semantic.types.NumericNode[]): Groups => {
  */
 const subToAddNeg = (
     node: Semantic.types.Add,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.Add => {
     let changed = false;
 
@@ -134,7 +134,7 @@ const subToAddNeg = (
 const orderTerms = (
     node: Semantic.types.NumericNode,
     groups: Groups,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode | undefined => {
     const keys = [...groups.keys()];
 
@@ -181,7 +181,7 @@ const orderTerms = (
 const groupTerms = (
     node: Semantic.types.NumericNode,
     groups: Groups,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     const newTerms: Semantic.types.NumericNode[] = [];
     for (const [key, values] of groups.entries()) {
@@ -214,7 +214,7 @@ const groupTerms = (
  */
 const evaluteCoeffs = (
     node: Semantic.types.NumericNode,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     const newTerms = Semantic.util.getTerms(node).map((term) => {
         // What if there was a term that was initial a sum of numbers, we wouldn't?
@@ -254,7 +254,7 @@ const evaluteCoeffs = (
  */
 const simplifyTerms = (
     node: Semantic.types.NumericNode,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     let changed = false;
     const newTerms = Semantic.util.getTerms(node).map((term) => {
@@ -291,7 +291,7 @@ const simplifyTerms = (
  */
 const addNegToSub = (
     node: Semantic.types.NumericNode,
-    substeps: Step[],
+    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     let changed = false;
     const newTerms = Semantic.util.getTerms(node).map((term, index) => {

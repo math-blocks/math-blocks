@@ -3,60 +3,60 @@ import type {Zipper} from "./types";
 
 export type Action =
     | {
-          type: "ArrowLeft";
+          readonly type: "ArrowLeft";
       }
     | {
-          type: "ArrowRight";
+          readonly type: "ArrowRight";
       }
     | {
-          type: "ArrowUp";
+          readonly type: "ArrowUp";
       }
     | {
-          type: "ArrowDown";
+          readonly type: "ArrowDown";
       }
     | {
-          type: "Backspace";
+          readonly type: "Backspace";
       }
     | {
-          type: "Subscript";
+          readonly type: "Subscript";
       }
     | {
-          type: "Superscript";
+          readonly type: "Superscript";
       }
     | {
-          type: "Parens";
-          char: "(" | ")" | "[" | "]" | "{" | "}" | "|";
+          readonly type: "Parens";
+          readonly char: "(" | ")" | "[" | "]" | "{" | "}" | "|";
       }
     | {
-          type: "Fraction";
+          readonly type: "Fraction";
       }
     | {
           // TODO: add support for an index
-          type: "Root";
+          readonly type: "Root";
       }
     | {
-          type: "InsertChar";
-          char: string;
+          readonly type: "InsertChar";
+          readonly char: string;
       }
     | {
-          type: "StartSelecting";
+          readonly type: "StartSelecting";
       }
     | {
-          type: "StopSelecting";
+          readonly type: "StopSelecting";
       }
     | {
-          type: "PositionCursor";
-          cursor: Zipper;
+          readonly type: "PositionCursor";
+          readonly cursor: Zipper;
       }
     // Formatting actions
     | {
-          type: "Color";
-          color: string;
+          readonly type: "Color";
+          readonly color: string;
       }
     | {
-          type: "Cancel";
+          readonly type: "Cancel";
       }
     | {
-          type: "Uncancel";
+          readonly type: "Uncancel";
       }
     | MatrixActions;

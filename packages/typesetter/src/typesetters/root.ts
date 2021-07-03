@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {MathStyle} from "../enums";
@@ -23,8 +24,11 @@ export const typesetRoot = (
         // always use ScriptScript for root indicies.
         mathStyle: MathStyle.ScriptScript,
     };
-    const degree = typesetChild(0, degreeContext);
-    const radicand = typesetChild(1, context);
+    const degree = typesetChild(
+        0,
+        degreeContext,
+    ) as Mutable<Layout.HBox> | null;
+    const radicand = typesetChild(1, context) as Mutable<Layout.HBox> | null;
 
     if (!radicand) {
         throw new Error("Radicand must be defined");
@@ -43,7 +47,7 @@ export const typesetRoot = (
     const surd = Layout.makeStaticHBox(
         [makeDelimiter("\u221A", radicand, thresholdOptions, context)],
         context,
-    );
+    ) as Mutable<Layout.HBox>;
 
     const fontSize = fontSizeForContext(context);
     const {font} = context.fontData;
@@ -115,9 +119,12 @@ export const typesetRoot = (
         root = Layout.makeStaticHBox(
             [beforeDegreeKern, degree, afterDegreeKern, surd, radicalWithRule],
             context,
-        );
+        ) as Mutable<Layout.HBox>;
     } else {
-        root = Layout.makeStaticHBox([surd, radicalWithRule], context);
+        root = Layout.makeStaticHBox(
+            [surd, radicalWithRule],
+            context,
+        ) as Mutable<Layout.HBox>;
     }
 
     root.width += endPadding;

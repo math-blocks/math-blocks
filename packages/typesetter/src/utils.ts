@@ -27,8 +27,8 @@ export const fontSizeForContext = (context: Context): number => {
 };
 
 type ThresholdOptions = {
-    value: "both" | "sum";
-    strict: boolean;
+    readonly value: "both" | "sum";
+    readonly strict: boolean;
 };
 
 // TODO: special case how we compute the delimiters for rows including "y" or
