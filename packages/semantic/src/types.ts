@@ -37,34 +37,34 @@ export type NumericNode =
  * - add ComplexNumber type
  */
 export type Num = Common & {
-    type: "number";
-    value: string;
+    readonly type: "number";
+    readonly value: string;
 };
 
 /**
  * Identifier
  */
 export type Ident = Common & {
-    type: "identifier";
-    name: string;
-    subscript?: NumericNode;
+    readonly type: "identifier";
+    readonly name: string;
+    readonly subscript?: NumericNode;
 };
 
 /**
  * Addition
  */
 export type Add = Common & {
-    type: "add";
-    args: TwoOrMore<NumericNode>;
+    readonly type: "add";
+    readonly args: TwoOrMore<NumericNode>;
 };
 
 /**
  * Multiplication
  */
 export type Mul = Common & {
-    type: "mul";
-    args: TwoOrMore<NumericNode>;
-    implicit: boolean;
+    readonly type: "mul";
+    readonly args: TwoOrMore<NumericNode>;
+    readonly implicit: boolean;
 };
 
 /**
@@ -72,37 +72,37 @@ export type Mul = Common & {
  * Can be used to represent negative values as well as subtraction
  */
 export type Neg = Common & {
-    type: "neg";
-    arg: NumericNode;
-    subtraction: boolean; // TODO: change this to `arity: "unary" | "binary";`
+    readonly type: "neg";
+    readonly arg: NumericNode;
+    readonly subtraction: boolean; // TODO: change this to `arity: "unary" | "binary";`
 };
 
 export type PlusMinus = Common & {
-    type: "plusminus";
-    arg: NumericNode;
-    arity: "unary" | "binary";
+    readonly type: "plusminus";
+    readonly arg: NumericNode;
+    readonly arity: "unary" | "binary";
 };
 
 export type MinusPlus = Common & {
-    type: "minusplus";
-    arg: NumericNode;
-    arity: "unary" | "binary";
+    readonly type: "minusplus";
+    readonly arg: NumericNode;
+    readonly arity: "unary" | "binary";
 };
 
 /**
  * Division
  */
 export type Div = Common & {
-    type: "div";
-    args: readonly [NumericNode, NumericNode];
+    readonly type: "div";
+    readonly args: readonly [NumericNode, NumericNode];
 };
 
 /**
  * Modulus
  */
 export type Mod = Common & {
-    type: "mod";
-    args: readonly [NumericNode, NumericNode];
+    readonly type: "mod";
+    readonly args: readonly [NumericNode, NumericNode];
 };
 
 /**
@@ -110,28 +110,28 @@ export type Mod = Common & {
  * Can be used for square roots as well nth-degree roots
  */
 export type Root = Common & {
-    type: "root";
-    radicand: NumericNode;
-    index: NumericNode;
-    sqrt: boolean; // implies index = 2 and that the index should not be rendered
+    readonly type: "root";
+    readonly radicand: NumericNode;
+    readonly index: NumericNode;
+    readonly sqrt: boolean; // implies index = 2 and that the index should not be rendered
 };
 
 /**
  * Power
  */
 export type Pow = Common & {
-    type: "pow";
-    base: NumericNode;
-    exp: NumericNode;
+    readonly type: "pow";
+    readonly base: NumericNode;
+    readonly exp: NumericNode;
 };
 
 /**
  * Logarithm
  */
 export type Log = Common & {
-    type: "log";
-    base: NumericNode;
-    arg: NumericNode;
+    readonly type: "log";
+    readonly base: NumericNode;
+    readonly arg: NumericNode;
 };
 
 /**
@@ -139,16 +139,16 @@ export type Log = Common & {
  * Can be used to represent function declaration as well as application.
  */
 export type Func = Common & {
-    type: "func";
-    func: NumericNode;
-    args: OneOrMore<NumericNode>;
+    readonly type: "func";
+    readonly func: NumericNode;
+    readonly args: OneOrMore<NumericNode>;
 };
 
 /**
  * Infinity
  */
 export type Infinity = Common & {
-    type: "infinity";
+    readonly type: "infinity";
 };
 
 /**
@@ -156,14 +156,14 @@ export type Infinity = Common & {
  * TODO: Why is pi special?  Maybe we should just use Ident for pi.  What about e?
  */
 export type Pi = Common & {
-    type: "pi";
+    readonly type: "pi";
 };
 
 /**
  * Ellipsis
  */
 export type Ellipsis = Common & {
-    type: "ellipsis";
+    readonly type: "ellipsis";
 };
 
 /**
@@ -172,18 +172,18 @@ export type Ellipsis = Common & {
  * e.g. 5! = 1 * 2 * 3 * 4 * 5
  */
 export type Abs = Common & {
-    type: "abs";
-    arg: NumericNode;
+    readonly type: "abs";
+    readonly arg: NumericNode;
 };
 
 export type Parens = Common & {
-    type: "parens";
-    arg: Node;
+    readonly type: "parens";
+    readonly arg: Node;
 };
 
 type Bound = {
-    value: NumericNode;
-    inclusive: boolean; // NOTE: if `value` is +Infinity or -Infinity, this should be false
+    readonly value: NumericNode;
+    readonly inclusive: boolean; // NOTE: if `value` is +Infinity or -Infinity, this should be false
 };
 
 /**
@@ -191,72 +191,72 @@ type Bound = {
  * etc.  Not a node itself and has no id.
  */
 type Limits = {
-    lower: Bound;
-    upper: Bound;
+    readonly lower: Bound;
+    readonly upper: Bound;
 };
 
 /**
  * Summation
  */
 export type Sum = Common & {
-    type: "sum";
-    arg: NumericNode;
-    bvar: Ident; // bound variable, i.e. the variable being summed over
-    limits: Limits; // TODO: support `condition` and `domainofapplication` as well, see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
+    readonly type: "sum";
+    readonly arg: NumericNode;
+    readonly bvar: Ident; // bound variable, i.e. the variable being summed over
+    readonly limits: Limits; // TODO: support `condition` and `domainofapplication` as well, see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
 };
 
 /**
  * Product
  */
 export type Prod = Common & {
-    type: "prod";
-    arg: NumericNode;
-    bvar: Ident; // bound variable, i.e. the variable being multiplied over
-    limits: Limits;
+    readonly type: "prod";
+    readonly arg: NumericNode;
+    readonly bvar: Ident; // bound variable, i.e. the variable being multiplied over
+    readonly limits: Limits;
 };
 
 type TendsTo = {
-    value: NumericNode;
-    from?: "above" | "below";
+    readonly value: NumericNode;
+    readonly from?: "above" | "below";
 };
 
 /**
  * Limit
  */
 export type Limit = Common & {
-    type: "lim";
-    arg: NumericNode;
-    bvar: Ident;
-    tendsTo: TendsTo;
+    readonly type: "lim";
+    readonly arg: NumericNode;
+    readonly bvar: Ident;
+    readonly tendsTo: TendsTo;
 };
 
 /**
  * Derivative
  */
 export type Diff = Common & {
-    type: "diff";
-    arg: NumericNode;
-    degree?: number; // if no degree is provided this is treated as the first derivative
+    readonly type: "diff";
+    readonly arg: NumericNode;
+    readonly degree?: number; // if no degree is provided this is treated as the first derivative
 };
 
 /**
  * Partial derivative
  */
 export type PDiff = Common & {
-    type: "pdiff";
+    readonly type: "pdiff";
     // TODO: This is insufficient to model high degree partial derivatives
     // https://www.w3.org/TR/MathML3/chapter4.html#contm.partialdiff
-    args: [NumericNode, NumericNode];
+    readonly args: readonly [NumericNode, NumericNode];
 };
 
 /**
  * Integral
  */
 export type Int = Common & {
-    type: "int";
-    arg: NumericNode;
-    bvar: Ident;
-    limits: Limits; // TODO: support `domainofapplication`, see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
+    readonly type: "int";
+    readonly arg: NumericNode;
+    readonly bvar: Ident;
+    readonly limits: Limits; // TODO: support `domainofapplication`, see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
 };
 
 /**
@@ -290,154 +290,160 @@ export type LogicNode =
  * True
  */
 export type True = Common & {
-    type: "true";
+    readonly type: "true";
 };
 
 /**
  * False
  */
 export type False = Common & {
-    type: "false";
+    readonly type: "false";
 };
 
 /**
  * Logical And (Conjunction)
  */
 export type And = Common & {
-    type: "and";
-    args: TwoOrMore<LogicNode>;
+    readonly type: "and";
+    readonly args: TwoOrMore<LogicNode>;
 };
 
 /**
  * Logical Or (Disjunction)
  */
 export type Or = Common & {
-    type: "or";
-    args: TwoOrMore<LogicNode>;
+    readonly type: "or";
+    readonly args: TwoOrMore<LogicNode>;
 };
 
 /**
  * Logical Not (Inverse)
  */
 export type Not = Common & {
-    type: "not";
-    arg: LogicNode;
+    readonly type: "not";
+    readonly arg: LogicNode;
 };
 
 /**
  * Exclusive Or
  */
 export type Xor = Common & {
-    type: "xor";
-    args: TwoOrMore<LogicNode>;
+    readonly type: "xor";
+    readonly args: TwoOrMore<LogicNode>;
 };
 
 export type Implies = Common & {
-    type: "implies";
-    args: readonly [LogicNode, LogicNode];
+    readonly type: "implies";
+    readonly args: readonly [LogicNode, LogicNode];
 };
 
 export type Iff = Common & {
-    type: "iff";
-    args: TwoOrMore<LogicNode>;
+    readonly type: "iff";
+    readonly args: TwoOrMore<LogicNode>;
 };
 
 /**
  * Equals
  */
 export type Eq = Common & {
-    type: "eq";
-    args: TwoOrMore<NumericNode> | TwoOrMore<LogicNode> | TwoOrMore<SetNode>;
+    readonly type: "eq";
+    readonly args:
+        | TwoOrMore<NumericNode>
+        | TwoOrMore<LogicNode>
+        | TwoOrMore<SetNode>;
 };
 
 /**
  * Not Equals
  */
 export type Neq = Common & {
-    type: "neq";
-    args: TwoOrMore<NumericNode> | TwoOrMore<LogicNode> | TwoOrMore<SetNode>;
+    readonly type: "neq";
+    readonly args:
+        | TwoOrMore<NumericNode>
+        | TwoOrMore<LogicNode>
+        | TwoOrMore<SetNode>;
 };
 
 /**
  * Less Than
  */
 export type Lt = Common & {
-    type: "lt";
-    args: TwoOrMore<NumericNode>;
+    readonly type: "lt";
+    readonly args: TwoOrMore<NumericNode>;
 };
 
 /**
  * Less Than or Equal to
  */
 export type Lte = Common & {
-    type: "lte";
-    args: TwoOrMore<NumericNode>;
+    readonly type: "lte";
+    readonly args: TwoOrMore<NumericNode>;
 };
 
 /**
  * Greater Than
  */
 export type Gt = Common & {
-    type: "gt";
-    args: TwoOrMore<NumericNode>;
+    readonly type: "gt";
+    readonly args: TwoOrMore<NumericNode>;
 };
 
 /**
  * Greater Than or Equal to
  */
 export type Gte = Common & {
-    type: "gte";
-    args: TwoOrMore<NumericNode>;
+    readonly type: "gte";
+    readonly args: TwoOrMore<NumericNode>;
 };
 
 /**
  * Element in set
  */
 export type In = Common & {
-    type: "in";
-    element: Node;
-    set: SetNode;
+    readonly type: "in";
+    readonly element: Node;
+    readonly set: SetNode;
 };
 
 /**
  * Element is not a set
  */
 export type NotIn = Common & {
-    type: "notin";
-    element: Node;
-    set: SetNode;
+    readonly type: "notin";
+    readonly element: Node;
+    readonly set: SetNode;
 };
 
 /**
  * Subset
  */
 export type Subset = Common & {
-    type: "subset";
-    args: TwoOrMore<SetNode>;
+    readonly type: "subset";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
  * Proper Subset
  */
 export type ProperSubset = Common & {
-    type: "prsubset";
-    args: TwoOrMore<SetNode>;
+    readonly type: "prsubset";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
  * Not a Subset
  */
 export type NotSubset = Common & {
-    type: "notsubset";
-    args: TwoOrMore<SetNode>;
+    readonly type: "notsubset";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
  * Propert Not a Subset
  */
 export type NotProperSubset = Common & {
-    type: "notprsubset";
-    args: TwoOrMore<SetNode>;
+    readonly type: "notprsubset";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
@@ -445,7 +451,7 @@ export type NotProperSubset = Common & {
  */
 export type SetNode =
     | Ident
-    | Set
+    | Set // eslint-disable-line functional/prefer-readonly-type
     | EmptySet
     | Union
     | Intersection
@@ -462,8 +468,8 @@ export type SetNode =
  * Set containing zero or more elements
  */
 export type Set = Common & {
-    type: "set";
-    args: readonly Node[]; // TODO: expand this to include other things like words, shapes, images, etc.
+    readonly type: "set";
+    readonly args: readonly Node[]; // TODO: expand this to include other things like words, shapes, images, etc.
 };
 
 /**
@@ -471,39 +477,39 @@ export type Set = Common & {
  * A set containing no elements.
  */
 export type EmptySet = Common & {
-    type: "empty";
+    readonly type: "empty";
 };
 
 /**
  * Union
  */
 export type Union = Common & {
-    type: "union";
-    args: TwoOrMore<SetNode>;
+    readonly type: "union";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
  * Intersection
  */
 export type Intersection = Common & {
-    type: "intersection";
-    args: TwoOrMore<SetNode>;
+    readonly type: "intersection";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
  * Set Difference
  */
 export type SetDiff = Common & {
-    type: "setdiff";
-    args: [SetNode, SetNode];
+    readonly type: "setdiff";
+    readonly args: readonly [SetNode, SetNode];
 };
 
 /**
  * Cartesian Product
  */
 export type CartesianProduct = Common & {
-    type: "cartesian_product";
-    args: TwoOrMore<SetNode>;
+    readonly type: "cartesian_product";
+    readonly args: TwoOrMore<SetNode>;
 };
 
 /**
@@ -511,7 +517,7 @@ export type CartesianProduct = Common & {
  * e.g. 1, 2, 3, ...
  */
 export type Naturals = Common & {
-    type: "naturals";
+    readonly type: "naturals";
 };
 
 /**
@@ -519,7 +525,7 @@ export type Naturals = Common & {
  * e.g. ..., -2, -1, 0, 1, 2, ...
  */
 export type Integers = Common & {
-    type: "integers";
+    readonly type: "integers";
 };
 
 /**
@@ -527,32 +533,33 @@ export type Integers = Common & {
  * p / q, where p and q are integers
  */
 export type Rationals = Common & {
-    type: "rationals";
+    readonly type: "rationals";
 };
 
 /**
  * Real Numbers
  */
 export type Reals = Common & {
-    type: "reals";
+    readonly type: "reals";
 };
 
 /**
  * Complex Numbers
  */
 export type Complexes = Common & {
-    type: "complexes";
+    readonly type: "complexes";
 };
 
 export interface Common {
-    id: number;
-    loc?: SourceLocation;
-    source?: string; // TODO: rename this to something less ambiguous
+    readonly id: number;
+    readonly loc?: SourceLocation;
+    // TODO: rename this to something less ambiguous
+    source?: string; // eslint-disable-line functional/prefer-readonly-type
 }
 
 // TODO: dedupe with editor-core and parser-factory
 export interface SourceLocation {
-    path: readonly number[];
-    start: number;
-    end: number;
+    readonly path: readonly number[];
+    readonly start: number;
+    readonly end: number;
 }

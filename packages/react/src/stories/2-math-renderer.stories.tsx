@@ -1,5 +1,6 @@
 import * as React from "react";
 import type {Story} from "@storybook/react";
+import type {Mutable} from "utility-types";
 
 import * as Editor from "@math-blocks/editor-core";
 import * as Semantic from "@math-blocks/semantic";
@@ -956,7 +957,7 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
         ],
         10,
         3,
-    );
+    ) as Mutable<Editor.types.Table>;
     table.rowStyles = [null, null, {border: "top"}];
     const verticalWork = builders.row([table]);
 

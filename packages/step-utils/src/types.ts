@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
 export type Step = {
-    message: string;
-    before: Semantic.types.Node;
-    after: Semantic.types.Node;
-    substeps: readonly Step[];
+    readonly message: string;
+    readonly before: Semantic.types.Node;
+    readonly after: Semantic.types.Node;
+    readonly substeps: readonly Step[];
 };

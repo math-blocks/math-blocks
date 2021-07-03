@@ -137,8 +137,8 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
 };
 
 type Props = {
-    math: Semantic.types.Node | null;
-    style?: React.CSSProperties;
+    readonly math: Semantic.types.Node | null;
+    readonly style?: React.CSSProperties;
 };
 
 const MathmlRenderer = React.forwardRef<HTMLElement, Props>((props, ref) => {

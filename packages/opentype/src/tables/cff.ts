@@ -1,16 +1,18 @@
+import type {Mutable} from "utility-types";
+
 import {STANDARD_STRINGS} from "./cff-standard-strings";
 
-import type {Glyph, GlyphData, Path, TopDict} from "./cff-types";
+import type {Glyph, GlyphData, Command, TopDict} from "./cff-types";
 
 // TODO: handle parsing operands that are real numbers
 // Thus, the value –2.25 is encoded by the byte sequence (1e e2 a2 5f) and the
 // value 0.140541E–3 by the sequence (1e 0a 14 05 41 c3 ff).
 
 type Index = {
-    count: number; // Card16 (uint16)
-    offSize: number; // OffSize (1 - 4)
-    offsets: number[]; // length = count + 1
-    data: Uint8Array;
+    readonly count: number; // Card16 (uint16)
+    readonly offSize: number; // OffSize (1 - 4)
+    readonly offsets: readonly number[]; // length = count + 1
+    readonly data: Uint8Array;
 };
 
 const parseIndex = async (
@@ -111,7 +113,7 @@ const getString = (operand: number, stringIndex: Index): string => {
 
 const parseTopDictData = (
     data: Uint8Array,
-    dict: TopDict, // this value is mutated
+    dict: Mutable<TopDict>,
     stringIndex: Index,
 ): void => {
     const stack: number[] = [];
@@ -337,7 +339,7 @@ const parseCharstring = (
     let hasWidth = false;
     let nStems = 0;
 
-    const path: Path = [];
+    const path: Command[] = [];
 
     let open = false;
     const newContour = (x: number, y: number): void => {
@@ -914,9 +916,9 @@ const parseCharset = async (
 };
 
 type CFFResult = {
-    name: string;
-    topDict: TopDict;
-    getGlyph: (gid: number) => Glyph;
+    readonly name: string;
+    readonly topDict: TopDict;
+    readonly getGlyph: (gid: number) => Glyph;
 };
 
 const getBias = (subrsIndex: Index): number => {

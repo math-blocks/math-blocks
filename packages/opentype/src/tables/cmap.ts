@@ -1,13 +1,13 @@
 type EncodingRecord = {
-    platformID: number; // uint16
-    encodingID: number; // uint16
-    subtableOffset: number; // uint32
+    readonly platformID: number; // uint16
+    readonly encodingID: number; // uint16
+    readonly subtableOffset: number; // uint32
 };
 
 type CmapHeader = {
-    version: number; // uint16
-    numTables: number; // uint16
-    encodingRecords: EncodingRecord[];
+    readonly version: number; // uint16
+    readonly numTables: number; // uint16
+    readonly encodingRecords: readonly EncodingRecord[];
 };
 
 const parseEncodingRecords = async (
@@ -56,14 +56,14 @@ const parseCmapHeader = async (blob: Blob): Promise<CmapHeader> => {
 };
 
 type SequentialMapGroup = {
-    startCharCode: number; // uint32
-    endCharCode: number; // uint32
-    startGlyphID: number; // uint32
+    readonly startCharCode: number; // uint32
+    readonly endCharCode: number; // uint32
+    readonly startGlyphID: number; // uint32
 };
 
 // Returns a map between character codes and GID.
 const getGlyphIndexMap = (
-    groups: SequentialMapGroup[],
+    groups: readonly SequentialMapGroup[],
 ): Record<number, number> => {
     const result: Record<number, number> = {};
 

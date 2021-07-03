@@ -15,23 +15,23 @@ const {useEffect, useState, useRef, useContext, useCallback, useMemo} = React;
 
 type Props = {
     // The initial value for the editor
-    zipper: Editor.Zipper;
-    readonly: boolean;
-    fontSize?: number;
-    radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
+    readonly zipper: Editor.Zipper;
+    readonly readonly: boolean;
+    readonly fontSize?: number;
+    readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
 
-    onSubmit?: (zipper: Editor.Zipper) => unknown;
-    onChange?: (zipper: Editor.Zipper) => unknown;
+    readonly onSubmit?: (zipper: Editor.Zipper) => unknown;
+    readonly onChange?: (zipper: Editor.Zipper) => unknown;
 
     /**
      * Style
      */
-    style?: React.CSSProperties;
+    readonly style?: React.CSSProperties;
 
-    stepChecker?: boolean;
+    readonly stepChecker?: boolean;
 
     // Renders bounding boxes around each group and glyph.
-    showHitboxes?: boolean;
+    readonly showHitboxes?: boolean;
 };
 
 const keydownToAction = (key: string): Editor.Action | null => {

@@ -19,10 +19,11 @@ export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
     return {
         id: focus.id,
         type: "frac",
-        children: [...focus.left, replacement, ...focus.right] as [
-            types.Row,
-            types.Row,
-        ],
+        children: [
+            ...focus.left,
+            replacement,
+            ...focus.right,
+        ] as readonly (types.Row | null)[] as readonly [types.Row, types.Row],
         style: focus.style,
     };
 };
@@ -45,6 +46,9 @@ export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
           };
 };
 
+const nums: readonly number[] = [1, 2, 3];
+console.log(nums);
+
 export const subsup = (
     focus: ZSubSup,
     replacement: types.Row,
@@ -52,7 +56,11 @@ export const subsup = (
     return {
         id: focus.id,
         type: "subsup",
-        children: [...focus.left, replacement, ...focus.right] as [
+        children: [
+            ...focus.left,
+            replacement,
+            ...focus.right,
+        ] as readonly (types.Row | null)[] as readonly [
             types.Row | null,
             types.Row | null,
         ],
@@ -82,7 +90,11 @@ export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
     return {
         id: focus.id,
         type: "root",
-        children: [...focus.left, replacement, ...focus.right] as [
+        children: [
+            ...focus.left,
+            replacement,
+            ...focus.right,
+        ] as readonly (types.Row | null)[] as readonly [
             types.Row | null,
             types.Row,
         ],
@@ -116,7 +128,11 @@ export const limits = (
         id: focus.id,
         type: "limits",
         inner: focus.inner,
-        children: [...focus.left, replacement, ...focus.right] as [
+        children: [
+            ...focus.left,
+            replacement,
+            ...focus.right,
+        ] as readonly (types.Row | null)[] as readonly [
             types.Row,
             types.Row | null,
         ],
@@ -267,7 +283,10 @@ export const nodeToFocus = (
 };
 
 export const insertRight = <
-    T extends {left: readonly types.Node[]; right: readonly types.Node[]},
+    T extends {
+        readonly left: readonly types.Node[];
+        readonly right: readonly types.Node[];
+    },
 >(
     zrow: T,
     node: types.Node,

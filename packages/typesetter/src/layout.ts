@@ -6,75 +6,75 @@ import type {Context} from "./types";
 
 export type Dist = number;
 
-export type Dim = {
-    width: Dist;
-    depth: Dist;
-    height: Dist;
-};
+export type Dim = Readonly<{
+    readonly width: Dist;
+    readonly depth: Dist;
+    readonly height: Dist;
+}>;
 
 type Style = {
-    color?: string;
-    cancel?: number; // The ID of the cancel notation
+    readonly color?: string;
+    readonly cancel?: number; // The ID of the cancel notation
 };
 
 type Common = {
-    id?: number;
-    style: Style;
+    readonly id?: number;
+    readonly style: Style;
 };
 
 export type Content =
     | {
-          type: "static";
-          nodes: readonly Node[];
+          readonly type: "static";
+          readonly nodes: readonly Node[];
       }
     | {
-          type: "cursor";
-          left: readonly Node[];
-          right: readonly Node[];
+          readonly type: "cursor";
+          readonly left: readonly Node[];
+          readonly right: readonly Node[];
       }
     | {
-          type: "selection";
-          left: readonly Node[];
-          selection: readonly Node[];
-          right: readonly Node[];
+          readonly type: "selection";
+          readonly left: readonly Node[];
+          readonly selection: readonly Node[];
+          readonly right: readonly Node[];
       };
 
 export type HBox = {
-    type: "HBox";
-    shift: Dist;
-    content: Content;
-    fontSize: number;
+    readonly type: "HBox";
+    readonly shift: Dist;
+    readonly content: Content;
+    readonly fontSize: number;
 } & Common &
     Dim;
 
 export type VBox = {
-    type: "VBox";
-    shift: Dist;
-    content: readonly Node[];
-    fontSize: number;
+    readonly type: "VBox";
+    readonly shift: Dist;
+    readonly content: readonly Node[];
+    readonly fontSize: number;
 } & Common &
     Dim;
 
 export type Glyph = {
-    type: "Glyph";
-    char?: string;
-    glyphID: number; // This is specific to the Font in FontData
-    size: number;
-    fontData: FontData;
-    pending?: boolean;
+    readonly type: "Glyph";
+    readonly char?: string;
+    readonly glyphID: number; // This is specific to the Font in FontData
+    readonly size: number;
+    readonly fontData: FontData;
+    readonly pending?: boolean;
 } & Common;
 
 export type Kern = {
-    type: "Kern";
-    size: Dist;
+    readonly type: "Kern";
+    readonly size: Dist;
     // Used for hitboxes at the start/end of a numerator or denominator
-    flag?: "start" | "end";
+    readonly flag?: "start" | "end";
 } & Common;
 
 export type HRule = {
-    type: "HRule";
-    thickness: number;
-    width: number;
+    readonly type: "HRule";
+    readonly thickness: number;
+    readonly width: number;
 } & Common;
 
 export type Node = HBox | VBox | Glyph | Kern | HRule;

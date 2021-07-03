@@ -1,99 +1,99 @@
 export type TopDict = {
-    version?: string;
-    Notice?: string;
-    Copyright?: string;
-    FullName?: string;
-    FamilyName?: string;
-    Weight?: string;
-    isFixedPitch: boolean; // default: false
-    ItalicAngle: number; // default: 0
-    UnderlinePosition: number; // default: -100
-    UnderlineThickness: number; // default: 5
-    PaintType: number; // default: 0
-    CharstringType: number; // default: 2
-    fontMatrix: number[]; // default: 0.001, 0, 0, 0.001, 0, 0
-    UniqueID?: number;
-    FontBBox: number[]; // default: [0, 0, 0, 0]; [xMin, yMin, xMax, yMax]
-    StrokeWidth: number; // default: 0
-    XUID?: number[];
-    charset: number; // default: 0, charset offset (0)
-    Encoding: number; // default: 0, encoding offset (0)
-    CharStrings?: number;
-    Private?: [number, number]; // private DICT size and offset (0)
-    SyntheticBase?: number;
-    PostScript?: string; // notes: embedded PostScript language code
-    BaseFontName?: string;
-    BaseFontBlend?: number;
+    readonly version?: string;
+    readonly Notice?: string;
+    readonly Copyright?: string;
+    readonly FullName?: string;
+    readonly FamilyName?: string;
+    readonly Weight?: string;
+    readonly isFixedPitch: boolean; // default: false
+    readonly ItalicAngle: number; // default: 0
+    readonly UnderlinePosition: number; // default: -100
+    readonly UnderlineThickness: number; // default: 5
+    readonly PaintType: number; // default: 0
+    readonly CharstringType: number; // default: 2
+    readonly fontMatrix: readonly number[]; // default: 0.001, 0, 0, 0.001, 0, 0
+    readonly UniqueID?: number;
+    readonly FontBBox: readonly number[]; // default: [0, 0, 0, 0]; [xMin, yMin, xMax, yMax]
+    readonly StrokeWidth: number; // default: 0
+    readonly XUID?: readonly number[];
+    readonly charset: number; // default: 0, charset offset (0)
+    readonly Encoding: number; // default: 0, encoding offset (0)
+    readonly CharStrings?: number;
+    readonly Private?: readonly [number, number]; // private DICT size and offset (0)
+    readonly SyntheticBase?: number;
+    readonly PostScript?: string; // notes: embedded PostScript language code
+    readonly BaseFontName?: string;
+    readonly BaseFontBlend?: number;
 
     // Private DICT values
-    BlueValues?: number[]; // delta: encoded
-    OtherBlues?: number[]; // delta: encoded
-    FamilyBlues?: number[]; // delta: encoded
-    FamilyOtherBlues?: number[]; // delta encoded
-    BlueScale: number; // default: 0.039625
-    BlueShift: number; // default: 7
-    BlueFuzz: number; // default: 1
-    StdHW?: number;
-    StdVW?: number;
-    StemSnapH?: number[]; // delta encoded
-    StemSnapV?: number[]; // delta encoded
-    ForceBold: boolean; // default: false
-    LanguageGroup: number; // default: 0
-    ExpansionFactor: number; // default: 0.06
-    initialRandomSee: number; // default: 0
-    Subrs?: number;
+    readonly BlueValues?: readonly number[]; // delta: encoded
+    readonly OtherBlues?: readonly number[]; // delta: encoded
+    readonly FamilyBlues?: readonly number[]; // delta: encoded
+    readonly FamilyOtherBlues?: readonly number[]; // delta encoded
+    readonly BlueScale: number; // default: 0.039625
+    readonly BlueShift: number; // default: 7
+    readonly BlueFuzz: number; // default: 1
+    readonly StdHW?: number;
+    readonly StdVW?: number;
+    readonly StemSnapH?: readonly number[]; // delta encoded
+    readonly StemSnapV?: readonly number[]; // delta encoded
+    readonly ForceBold: boolean; // default: false
+    readonly LanguageGroup: number; // default: 0
+    readonly ExpansionFactor: number; // default: 0.06
+    readonly initialRandomSee: number; // default: 0
+    readonly Subrs?: number;
 
     // If the char width matches the defaultWidthX, it can be omitted.
-    defaultWidthX: number; // default: 0
+    readonly defaultWidthX: number; // default: 0
 
     // If not, then the char width is the charstring width plus nominalWidthX.
-    nominalWidthX: number; // default: 0
+    readonly nominalWidthX: number; // default: 0
 };
 
 export type Command =
     | {
-          type: "M";
-          x: number;
-          y: number;
+          readonly type: "M";
+          readonly x: number;
+          readonly y: number;
       }
     | {
-          type: "L";
-          x: number;
-          y: number;
+          readonly type: "L";
+          readonly x: number;
+          readonly y: number;
       }
     | {
-          type: "Q";
-          x1: number;
-          y1: number;
-          x: number;
-          y: number;
+          readonly type: "Q";
+          readonly x1: number;
+          readonly y1: number;
+          readonly x: number;
+          readonly y: number;
       }
     | {
-          type: "C";
-          x1: number;
-          y1: number;
-          x2: number;
-          y2: number;
-          x: number;
-          y: number;
+          readonly type: "C";
+          readonly x1: number;
+          readonly y1: number;
+          readonly x2: number;
+          readonly y2: number;
+          readonly x: number;
+          readonly y: number;
       }
     | {
-          type: "Z";
+          readonly type: "Z";
       };
 
-export type Path = Command[];
+export type Path = readonly Command[];
 
 export type GlyphData = {
-    path: Path;
-    advanceWidth: number;
+    readonly path: Path;
+    readonly advanceWidth: number;
 };
 
 type Metrics = {
-    advance: number;
+    readonly advance: number;
 };
 
 export type Glyph = {
-    path: Path;
-    metrics: Metrics;
-    name: string;
+    readonly path: Path;
+    readonly metrics: Metrics;
+    readonly name: string;
 };

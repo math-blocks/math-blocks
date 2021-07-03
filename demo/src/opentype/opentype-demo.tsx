@@ -1,5 +1,6 @@
 import * as React from "react";
-import {parse} from "@math-blocks/opentype";
+import {GlyphMetrics, parse} from "@math-blocks/opentype";
+import type {Mutable} from "utility-types";
 
 import type {Font, Glyph, Path} from "@math-blocks/opentype";
 
@@ -31,7 +32,7 @@ const lerp = (a: number, b: number, amount: number): number => {
 };
 
 const lerpPath = (path1: Path, path2: Path, amount: number): string => {
-    const commands: Path = [];
+    const commands: Mutable<Path> = [];
 
     for (let i = 0; i < path1.length; i++) {
         const cmd1 = path1[i];
@@ -205,7 +206,7 @@ const OpenTypeDemo: React.FC = () => {
             }
         }
 
-        const metrics = font.getGlyphMetrics(gid);
+        const metrics = font.getGlyphMetrics(gid) as Mutable<GlyphMetrics>;
         metrics.bearingX *= scale;
         metrics.bearingY *= scale;
         metrics.width *= scale;

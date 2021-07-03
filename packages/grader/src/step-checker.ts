@@ -19,10 +19,10 @@ const defaultOptions: Options = {
 };
 
 class StepChecker implements IStepChecker {
-    options: Options;
-    checks: Check[];
+    readonly options: Options;
+    readonly checks: readonly Check[];
 
-    constructor(options?: Options, checks: Check[] = ALL_CHECKS) {
+    constructor(options?: Options, checks: readonly Check[] = ALL_CHECKS) {
         this.options = {
             ...defaultOptions,
             ...options,
@@ -30,7 +30,7 @@ class StepChecker implements IStepChecker {
         this.checks = checks;
     }
 
-    checkStep: Check = (prev, next, context) => {
+    readonly checkStep: Check = (prev, next, context) => {
         // We return the first successful check.  This is necessary to reduce
         // computation to a manageable amount, but it means that the order of
         // the checks is important.
@@ -44,14 +44,16 @@ export default StepChecker;
 
 const checker = new StepChecker();
 
-const areSetsEqual = <T>(a: Set<T>, b: Set<T>): boolean => {
+const areSetsEqual = <T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean => {
     if (a.size === b.size) {
         return [...a.values()].every((x) => b.has(x));
     }
     return false;
 };
 
-const setOfIds = <T extends {id: number}>(array: readonly T[]): Set<number> => {
+const setOfIds = <T extends {readonly id: number}>(
+    array: readonly T[],
+): Set<number> => {
     return new Set(array.map((item) => item.id));
 };
 
@@ -66,7 +68,7 @@ const areMistakesEqual = (m1: Mistake, m2: Mistake): boolean => {
 };
 
 const filterMistakes = (
-    mistakes: Mistake[],
+    mistakes: readonly Mistake[],
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
 ): readonly Mistake[] => {
@@ -115,9 +117,9 @@ export const checkStep = (
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
 ): {
-    result?: Result;
-    successfulChecks: Set<string>;
-    mistakes: readonly Mistake[];
+    readonly result?: Result;
+    readonly successfulChecks: Set<string>;
+    readonly mistakes: readonly Mistake[];
 } => {
     const successfulChecks = new Set<string>();
     const context: Context = {

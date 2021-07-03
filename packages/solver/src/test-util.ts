@@ -4,8 +4,8 @@ import {Step, applyStep} from "@math-blocks/step-utils";
 
 export const toHaveSubstepsLike = (
     received: Step,
-    expected: [string, string][],
-): {message: () => string; pass: boolean} => {
+    expected: readonly (readonly [string, string])[],
+): {readonly message: () => string; readonly pass: boolean} => {
     if (received.substeps.length !== expected.length) {
         return {
             message: () =>
@@ -60,8 +60,11 @@ export const toHaveSubstepsLike = (
 
 export const toHaveFullStepsLike = (
     received: Semantic.types.Node,
-    expected: {steps: Step[]; expressions: string[]},
-): {message: () => string; pass: boolean} => {
+    expected: {
+        readonly steps: readonly Step[];
+        readonly expressions: readonly string[];
+    },
+): {readonly message: () => string; readonly pass: boolean} => {
     if (expected.steps.length + 1 !== expected.expressions.length) {
         return {
             message: () =>

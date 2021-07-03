@@ -141,9 +141,9 @@ const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
 const CURSOR_WIDTH = 2;
 
 type Props = {
-    scene: SceneGraph.Scene;
-    style?: React.CSSProperties;
-    showHitboxes?: boolean;
+    readonly scene: SceneGraph.Scene;
+    readonly style?: React.CSSProperties;
+    readonly showHitboxes?: boolean;
 };
 
 const MathRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {

@@ -1,4 +1,5 @@
 import * as Editor from "@math-blocks/editor-core";
+import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
 import {MathStyle} from "../enums";
@@ -32,16 +33,28 @@ export const typesetLimits = (
     typesetNode: (node: Editor.types.Node, context: Context) => Layout.Node,
 ): Layout.VBox => {
     const childContext = childContextForLimits(context);
-    const lowerBox = typesetChild(0, childContext);
-    const upperBox = typesetChild(1, childContext);
+    const lowerBox = typesetChild(
+        0,
+        childContext,
+    ) as Mutable<Layout.HBox> | null;
+    const upperBox = typesetChild(
+        1,
+        childContext,
+    ) as Mutable<Layout.HBox> | null;
 
     if (!lowerBox) {
         throw new Error("Lower limit should always be defined");
     }
 
-    const inner = typesetNode(node.inner, {...context, operator: true});
+    const inner = typesetNode(node.inner, {
+        ...context,
+        operator: true,
+    }) as Mutable<Layout.Node>;
     inner.id = node.inner.id;
-    inner.style.color = node.inner.style.color;
+    inner.style = {
+        ...inner.style,
+        color: node.inner.style.color,
+    };
 
     const innerWidth = Layout.getWidth(inner);
     const width = Math.max(
@@ -52,14 +65,14 @@ export const typesetLimits = (
 
     const newInner =
         innerWidth < width
-            ? Layout.makeStaticHBox(
+            ? (Layout.makeStaticHBox(
                   [
                       Layout.makeKern((width - innerWidth) / 2),
                       inner,
                       Layout.makeKern((width - innerWidth) / 2),
                   ],
                   context,
-              )
+              ) as Mutable<Layout.HBox>)
             : inner;
     if (lowerBox.width < width) {
         lowerBox.shift = (width - lowerBox.width) / 2;
@@ -74,7 +87,7 @@ export const typesetLimits = (
         upperBox ? [Layout.makeKern(6), upperBox] : [],
         [Layout.makeKern(4), lowerBox],
         context,
-    );
+    ) as Mutable<Layout.VBox>;
 
     limits.id = node.id;
     limits.style = node.style;

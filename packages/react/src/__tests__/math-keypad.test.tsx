@@ -7,7 +7,7 @@ import MathKeypad from "../math-keypad";
 import type {EditingEvent} from "../math-keypad";
 
 type Props = {
-    editMock: (event: EditingEvent) => unknown;
+    readonly editMock: (event: EditingEvent) => unknown;
 };
 
 const TestComp: React.FunctionComponent<Props> = (props: Props) => {

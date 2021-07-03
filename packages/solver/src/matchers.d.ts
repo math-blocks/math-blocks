@@ -1,12 +1,13 @@
 declare namespace jest {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface Matchers<R, T> {
-        toHaveSubstepsLike(
-            expected: [string, string][],
-        ): {message: () => string; pass: boolean};
+        toHaveSubstepsLike(expected: readonly (readonly [string, string])[]): {
+            readonly message: () => string;
+            readonly pass: boolean;
+        };
         toHaveFullStepsLike(expected: {
-            steps: readonly Step[];
-            expressions: readonly string[];
-        }): {message: () => string; pass: boolean};
+            readonly steps: readonly Step[];
+            readonly expressions: readonly string[];
+        }): {readonly message: () => string; readonly pass: boolean};
     }
 }

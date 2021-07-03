@@ -17,7 +17,7 @@ let stixFontData: FontData | null = null;
 const toEqualEditorNodes = (
     received: readonly Editor.types.Node[],
     actual: readonly Editor.types.Node[],
-): {message: () => string; pass: boolean} => {
+): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
         return {
@@ -48,7 +48,7 @@ const stixFontLoader = async (): Promise<FontData> => {
     return stixFontData;
 };
 
-type Point = {x: number; y: number};
+type Point = {readonly x: number; readonly y: number};
 
 const getSelectionZipper = async (
     math: Editor.types.Row,

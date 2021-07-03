@@ -59,7 +59,7 @@ export const isEqual = (a: types.Node, b: types.Node): boolean => {
 };
 
 export type ID = {
-    id: number;
+    readonly id: number;
 };
 
 export const row = (str: string): types.Row =>
@@ -238,7 +238,7 @@ export const isOperator = (atom: types.Atom): boolean => {
 
 export const isAtom = (
     node: types.Node,
-    charOrChars: string | string[],
+    charOrChars: string | readonly string[],
 ): boolean => {
     if (node.type === "atom") {
         return Array.isArray(charOrChars)

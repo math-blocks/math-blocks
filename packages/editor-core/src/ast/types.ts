@@ -1,17 +1,17 @@
 import * as sharedTypes from "../shared-types";
 
 export type Glyph = {
-    kind: "glyph";
-    char: string;
-    pending?: boolean; // TODO: move this into Style
+    readonly kind: "glyph";
+    readonly char: string;
+    readonly pending?: boolean; // TODO: move this into Style
 };
 
 export type Style = {
-    color?: string;
-    cancel?: number; // The ID of the cancel notation
+    readonly color?: string;
+    readonly cancel?: number; // The ID of the cancel notation
 };
 
-type Common = {id: number; style: Readonly<Style>};
+type Common = {readonly id: number; readonly style: Readonly<Style>};
 
 export type Row = sharedTypes.Row<Glyph, Common>;
 export type Delimited = sharedTypes.Delimited<Glyph, Common>;
@@ -40,8 +40,8 @@ export type Node =
 export type HasChildren = Row;
 
 export type Cursor = {
-    path: number[];
+    readonly path: readonly number[];
     // these are indices of the node inside the parent
-    prev: number;
-    next: number;
+    readonly prev: number;
+    readonly next: number;
 };

@@ -4,7 +4,7 @@ import {Token} from "./lexer";
 import {locFromRange} from "./util";
 import {Node, Row, SubSup, Frac, Root, Atom, SourceLocation} from "./types";
 
-export function row(children: Node[]): Row {
+export function row(children: readonly Node[]): Row {
     // What should the location be for an empty row?
     const loc =
         children.length > 0
@@ -20,8 +20,8 @@ export function row(children: Node[]): Row {
 }
 
 export function subsup(
-    sub: Node[] | void,
-    sup: Node[] | void,
+    sub: readonly Node[] | void,
+    sup: readonly Node[] | void,
     loc: SourceLocation,
 ): SubSup {
     return {
@@ -32,8 +32,8 @@ export function subsup(
 }
 
 export function frac(
-    numerator: Node[],
-    denominator: Node[],
+    numerator: readonly Node[],
+    denominator: readonly Node[],
     loc: SourceLocation,
 ): Frac {
     return {
@@ -46,8 +46,8 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    radicand: Node[],
-    index: Node[] | null,
+    radicand: readonly Node[],
+    index: readonly Node[] | null,
     loc: SourceLocation,
 ): Root {
     return {

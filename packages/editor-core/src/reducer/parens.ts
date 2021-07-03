@@ -204,14 +204,20 @@ export const parens = (state: State, char: Delimiters): State => {
             return moveRight(stateFromZipper(nonPending));
         }
 
-        rightParen.value.pending = true;
-
         // Create a new "delimited" node
         const withParens: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
-                right: [builders.delimited(right, leftParen, rightParen)],
+                right: [
+                    builders.delimited(right, leftParen, {
+                        ...rightParen,
+                        value: {
+                            ...rightParen.value,
+                            pending: true,
+                        },
+                    }),
+                ],
             },
         };
 
@@ -250,14 +256,24 @@ export const parens = (state: State, char: Delimiters): State => {
             return stateFromZipper(nonPending);
         }
 
-        leftParen.value.pending = true;
-
         // put everything to the left inside a Delimited node
         const newZipper: Zipper = {
             ...zipper,
             row: {
                 ...zipper.row,
-                left: [builders.delimited(left, leftParen, rightParen)],
+                left: [
+                    builders.delimited(
+                        left,
+                        {
+                            ...leftParen,
+                            value: {
+                                ...leftParen.value,
+                                pending: true,
+                            },
+                        },
+                        rightParen,
+                    ),
+                ],
             },
         };
 

@@ -10,10 +10,16 @@ import * as types from "./types";
 export const traverseNodes = (
     nodes: readonly types.Node[],
     callback: {
-        enter?: <U extends types.Node>(node: U, path: number[]) => void;
-        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
+        readonly enter?: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => void;
+        readonly exit: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => U | void;
     },
-    path: number[],
+    path: readonly number[],
     offset: number,
 ): readonly types.Node[] =>
     nodes.map((node, index) =>
@@ -21,13 +27,13 @@ export const traverseNodes = (
     );
 
 export type ZipperCallback = {
-    enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+    readonly enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
-        path: number[],
+        path: readonly number[],
     ) => void;
-    exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+    readonly exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
         node: T,
-        path: number[],
+        path: readonly number[],
     ) => T | void;
 };
 
@@ -39,7 +45,7 @@ export type ZipperCallback = {
 export const traverseZipper = (
     zipper: Zipper,
     callback: ZipperCallback,
-    path: number[],
+    path: readonly number[],
 ): Zipper => {
     const {breadcrumbs} = zipper;
 
@@ -142,10 +148,16 @@ export const traverseZipper = (
 const traverseRow = (
     row: types.Row,
     callback: {
-        enter?: <U extends types.Node>(node: U, path: number[]) => void;
-        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
+        readonly enter?: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => void;
+        readonly exit: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => U | void;
     },
-    path: number[],
+    path: readonly number[],
 ): types.Row => {
     callback.enter?.(row, path);
 
@@ -168,10 +180,16 @@ const traverseRow = (
 export const traverseNode = <T extends types.Node>(
     node: T,
     callback: {
-        enter?: <U extends types.Node>(node: U, path: number[]) => void;
-        exit: <U extends types.Node>(node: U, path: number[]) => U | void;
+        readonly enter?: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => void;
+        readonly exit: <U extends types.Node>(
+            node: U,
+            path: readonly number[],
+        ) => U | void;
     },
-    path: number[],
+    path: readonly number[],
 ): T => {
     if (node.type === "atom") {
         callback.enter?.(node, path);
@@ -205,7 +223,7 @@ export const traverseNode = <T extends types.Node>(
     return callback.exit(node, path) || node;
 };
 
-type ColorMap = Map<number, string>;
+type ColorMap = ReadonlyMap<number, string>;
 
 export const applyColorMapToEditorNode = (
     node: types.Node,
