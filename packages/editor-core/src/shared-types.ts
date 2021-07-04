@@ -27,6 +27,7 @@ type ColStyle = {
 
 export type Table<A, C> = C & {
     readonly type: "table";
+    // TODO: rename 'algebra' to 'vert_add'
     readonly subtype: "matrix" | "algebra";
     readonly children: readonly (Row<A, C> | null)[];
     readonly rowCount: number;

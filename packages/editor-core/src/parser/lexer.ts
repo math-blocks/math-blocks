@@ -10,7 +10,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../ast/types";
 
-import {Node, Row, Atom, SourceLocation} from "./types";
+import {Node, Row, Atom, SourceLocation, Token} from "./types";
 
 export const location = (
     path: readonly number[],
@@ -27,21 +27,6 @@ export const location = (
 // functions: sin, cos, tan, log, lim, etc.
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
-
-type Ident = {readonly kind: "identifier"; readonly name: string};
-type Num = {readonly kind: "number"; readonly value: string};
-type Plus = {readonly kind: "plus"};
-type Minus = {readonly kind: "minus"};
-type PlusMinus = {readonly kind: "plusminus"};
-type Times = {readonly kind: "times"};
-type Equal = {readonly kind: "eq"};
-type LParens = {readonly kind: "lparens"};
-type RParens = {readonly kind: "rparens"};
-type Ellipsis = {readonly kind: "ellipsis"};
-type Sum = {readonly kind: "sum"};
-type Prod = {readonly kind: "prod"};
-type Lim = {readonly kind: "lim"};
-type EOL = {readonly kind: "eol"};
 
 export const atom = (token: Token, loc: SourceLocation): Atom => ({
     type: "atom",
@@ -78,22 +63,6 @@ export const ellipsis = (loc: SourceLocation): Atom =>
     atom({kind: "ellipsis"}, loc);
 
 export const eq = (loc: SourceLocation): Atom => atom({kind: "eq"}, loc);
-
-export type Token =
-    | Ident
-    | Num
-    | Plus
-    | Minus
-    | PlusMinus
-    | Times
-    | Equal
-    | LParens
-    | RParens
-    | Ellipsis
-    | Sum
-    | Prod
-    | Lim
-    | EOL;
 
 const TOKEN_REGEX =
     /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
@@ -322,7 +291,12 @@ const lex = (
                 subtype: node.subtype,
                 colCount: node.colCount,
                 rowCount: node.rowCount,
-                children: node.children.map((child) => child && lexRow(child)),
+                children: node.children.map((child) => {
+                    if (child && child.children.length > 0) {
+                        return lexRow(child);
+                    }
+                    return null;
+                }),
                 loc: location(path, offset, offset + 1),
             };
         }

@@ -115,6 +115,39 @@ const print = (
                   )})`
                 : `(${ast.type} :base ${base} :exp ${exp})`;
         }
+        case "vert_add": {
+            const printCell = (cell: Semantic.types.Node | null): string =>
+                cell ? print(cell, serialize, indent) : "null";
+            const printAction = (
+                action: Semantic.types.VerticalWorkAction | null,
+            ): string =>
+                action
+                    ? `${action.operator}:${print(
+                          action.value,
+                          serialize,
+                          indent,
+                      )}`
+                    : "null";
+
+            return `(vert_add\n${indent(
+                `:start [${ast.start.left.map(
+                    printCell,
+                )}] [${ast.start.right.map(printCell)}]`,
+            )}\n${indent(
+                `:start [${ast.actions.left.map(
+                    printAction,
+                )}] [${ast.actions.right.map(printAction)}]`,
+            )}${
+                ast.result
+                    ? "\n" +
+                      indent(
+                          `:start [${ast.result.left.map(
+                              printCell,
+                          )}] [${ast.result.right.map(printCell)}]`,
+                      )
+                    : ""
+            })`;
+        }
         case "infinity":
         case "pi":
         case "ellipsis":

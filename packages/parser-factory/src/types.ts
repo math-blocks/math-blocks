@@ -3,7 +3,53 @@
  * packages/semantic/src/types.ts and then run tools/build-types.js.
  */
 
-export type Node = NumericNode | LogicNode | SetNode;
+export type Node = NumericNode | LogicNode | SetNode | VerticalAdd;
+
+// This is a special node describing vertically arranged work, e.g. adding the
+// same value to both sides of an equation.
+// TODO: support different types of vertical work:
+// - arithmetic algorithms
+//   - long addition
+//   - long subtraction
+//   - long multiplication
+//   - long division
+// - synthetic division/factoring
+// - system of equations (adding/subtracting on equation from another)
+export type VerticalAdd = Common & {
+    // we can use "long_add" to differentiae this from long addition
+    readonly type: "vert_add";
+    readonly operator: "eq" | "lt" | "gt";
+    // expand to TwoOrMore<Node> in the future?
+    readonly start: {
+        // `null` is allowed in these arrays to support round-tripping of
+        // sparse rows.  In particular, if a term is added to both sides, add
+        // there's no like-term in the top row on one side the, there needs to
+        // be a gap there.
+        readonly left: readonly (Node | null)[];
+        readonly right: readonly (Node | null)[];
+    };
+    readonly actions: {
+        readonly left: readonly (VerticalWorkAction | null)[];
+        readonly right: readonly (VerticalWorkAction | null)[];
+    };
+
+    // This is optional because a student could show their work, but adding
+    // vertically on one step and then showing the result on the next step.
+    // expand to TwoOrMore<Node> in the future?
+    readonly result?: {
+        // `null` is allowed in these arrays to support round-tripping of
+        // sparse rows.  In particular, adding the additive inverse to a column
+        // can result in an empty column in the result row if the user doesn't
+        // enter a zero there.
+        readonly left: readonly (Node | null)[];
+        readonly right: readonly (Node | null)[];
+    };
+};
+
+export type VerticalWorkAction = {
+    readonly operator: "plus" | "minus";
+    readonly value: Node;
+};
 
 /**
  * When a numeric node is evaluated it should return another numeric node.
@@ -552,7 +598,8 @@ export type Complexes = Common & {
 export interface Common {
     readonly id: number;
     readonly loc?: SourceLocation;
-    readonly source?: string;
+    // TODO: rename this to something less ambiguous
+    source?: string; // eslint-disable-line functional/prefer-readonly-type
 }
 
 // TODO: dedupe with editor-core and parser-factory

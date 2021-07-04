@@ -16,6 +16,8 @@ export type Token =
     | {readonly kind: "plusminus"}
     | {readonly kind: "times"}
     | {readonly kind: "eq"}
+    | {readonly kind: "lt"}
+    | {readonly kind: "gt"}
     | {readonly kind: "lparens"}
     | {readonly kind: "rparens"}
     | {readonly kind: "ellipsis"}

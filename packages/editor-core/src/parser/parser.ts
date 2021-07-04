@@ -1,4 +1,4 @@
-import {UnreachableCaseError} from "@math-blocks/core";
+import {getId, UnreachableCaseError} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
 import * as Semantic from "@math-blocks/semantic";
 import type {Mutable} from "utility-types";
@@ -6,7 +6,7 @@ import type {Mutable} from "utility-types";
 import * as Lexer from "./lexer";
 import {locFromRange} from "./util";
 import {Row} from "../ast/types";
-import {Node, SourceLocation} from "./types";
+import {Node, SourceLocation, Row as EditorRow} from "./types";
 
 type Token = Node;
 
@@ -29,6 +29,104 @@ type EditorParser = Parser.IParser<Token, Parser.types.Node, Operator>;
 
 const isIdentifier = (node: Token): boolean =>
     node.type === "atom" && node.value.kind === "identifier";
+
+const parseTableCells = (
+    cells: readonly (EditorRow | null)[],
+): (Parser.types.Node | null)[] => {
+    const terms: (Parser.types.Node | null)[] = [];
+    let op: "plus" | "minus" | null = null;
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (cell == null || cell.children.length === 0) {
+            // The first column is only ever occupied by a single +/- operator
+            // which will get combined with the cell from the next column so we
+            // don't include this empty cell in the terms we return.
+            if (i > 0) {
+                terms.push(null);
+            }
+            op = null;
+        } else if (
+            cell.children.length === 1 &&
+            cell.children[0].type === "atom" &&
+            ["plus", "minus"].includes(cell.children[0].value.kind)
+        ) {
+            op = cell.children[0].value.kind as "plus" | "minus";
+        } else if (op) {
+            const term = editorParser.parse(cell.children);
+            if (op === "minus") {
+                terms.push(Parser.builders.neg(term, true));
+            } else {
+                terms.push(term);
+            }
+            op = null; // we've consumed the op
+        } else {
+            if (
+                cell.children[0].type === "atom" &&
+                ["plus", "minus"].includes(cell.children[0].value.kind)
+            ) {
+                const [firstChild, ...restChildren] = cell.children;
+                const op = firstChild.value.kind as "plus" | "minus";
+                const term = editorParser.parse(restChildren);
+                if (op === "minus") {
+                    terms.push(Parser.builders.neg(term, true));
+                } else {
+                    terms.push(term);
+                }
+            } else {
+                const term = editorParser.parse(cell.children);
+                terms.push(term);
+            }
+        }
+    }
+    return terms;
+};
+
+const parseTableCellActions = (
+    cells: readonly (EditorRow | null)[],
+): (Parser.types.VerticalWorkAction | null)[] => {
+    const actions: (Parser.types.VerticalWorkAction | null)[] = [];
+    let op: "plus" | "minus" | null = null;
+    for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (cell == null || cell.children.length === 0) {
+            // The first column is only ever occupied by a single +/- operator
+            // which will get combined with the cell from the next column so we
+            // don't include this empty cell in the terms we return.
+            if (i > 0) {
+                actions.push(null);
+            }
+            op = null;
+        } else if (
+            cell.children.length === 1 &&
+            cell.children[0].type === "atom" &&
+            ["plus", "minus"].includes(cell.children[0].value.kind)
+        ) {
+            op = cell.children[0].value.kind as "plus" | "minus";
+        } else if (op) {
+            const term = editorParser.parse(cell.children);
+            actions.push({
+                operator: op,
+                value: term,
+            });
+            op = null; // we've consumed the op
+        } else {
+            const [firstChild, ...restChildren] = cell.children;
+            if (firstChild.type !== "atom") {
+                throw new Error("Missing operator");
+            }
+            if (!["plus", "minus"].includes(firstChild.value.kind)) {
+                throw new Error("Missing plus or minus");
+            }
+            const op = firstChild.value.kind as "plus" | "minus";
+            const term = editorParser.parse(restChildren);
+            actions.push({
+                operator: op,
+                value: term,
+            });
+        }
+    }
+    return actions;
+};
 
 const getPrefixParselet = (
     token: Token,
@@ -108,7 +206,152 @@ const getPrefixParselet = (
                 },
             };
         case "table":
-            throw new Error("We don't handle 'table' tokens yet");
+            switch (token.subtype) {
+                case "algebra": {
+                    return {
+                        parse: () => {
+                            const {rowCount, colCount, children} = token;
+
+                            if (rowCount === 3) {
+                                const startRow = children.slice(0, colCount);
+                                const actionRow = children.slice(
+                                    colCount,
+                                    2 * colCount,
+                                );
+                                const resultRow = children.slice(2 * colCount);
+
+                                // We have to segment the cells first in lhs and rhs
+                                const relIndex = startRow.findIndex((cell) => {
+                                    if (cell && cell.children.length === 1) {
+                                        const child = cell.children[0];
+                                        if (
+                                            child.type === "atom" &&
+                                            ["eq", "lt", "gt"].includes(
+                                                child.value.kind,
+                                            )
+                                        ) {
+                                            return true;
+                                        }
+                                    }
+                                });
+
+                                // TODO: Parse allow rows simultaneously so that
+                                // can deal with situations like '+ 3y - z' being
+                                // in a single column.  This needs to be broken up
+                                // into two columns.
+
+                                const result: Parser.types.VerticalAdd = {
+                                    id: getId(),
+                                    type: "vert_add",
+                                    operator: "eq",
+                                    start: {
+                                        left: parseTableCells(
+                                            startRow.slice(0, relIndex),
+                                        ),
+                                        right: parseTableCells(
+                                            startRow.slice(relIndex + 1),
+                                        ),
+                                    },
+                                    actions: {
+                                        left: parseTableCellActions(
+                                            actionRow.slice(0, relIndex),
+                                        ),
+                                        right: parseTableCellActions(
+                                            actionRow.slice(relIndex + 1),
+                                        ),
+                                    },
+                                    result: {
+                                        left: parseTableCells(
+                                            resultRow.slice(0, relIndex),
+                                        ),
+                                        right: parseTableCells(
+                                            resultRow.slice(relIndex + 1),
+                                        ),
+                                    },
+                                };
+
+                                return result;
+                            } else if (rowCount === 2) {
+                                const startRow = children.slice(0, colCount);
+                                const actionRow = children.slice(
+                                    colCount,
+                                    2 * colCount,
+                                );
+
+                                // We have to segment the cells first in lhs and rhs
+                                const relIndex = startRow.findIndex((cell) => {
+                                    if (cell && cell.children.length === 1) {
+                                        const child = cell.children[0];
+                                        if (
+                                            child.type === "atom" &&
+                                            ["eq", "lt", "gt"].includes(
+                                                child.value.kind,
+                                            )
+                                        ) {
+                                            return true;
+                                        }
+                                    }
+                                });
+
+                                const result: Parser.types.VerticalAdd = {
+                                    id: getId(),
+                                    type: "vert_add",
+                                    operator: "eq",
+                                    start: {
+                                        left: parseTableCells(
+                                            startRow.slice(0, relIndex),
+                                        ),
+                                        right: parseTableCells(
+                                            startRow.slice(relIndex + 1),
+                                        ),
+                                    },
+                                    actions: {
+                                        left: parseTableCellActions(
+                                            actionRow.slice(0, relIndex),
+                                        ),
+                                        right: parseTableCellActions(
+                                            actionRow.slice(relIndex + 1),
+                                        ),
+                                    },
+                                };
+
+                                return result;
+                            } else {
+                                throw new Error("Invalid number of rows");
+                            }
+                        },
+                    };
+
+                    // Try to parse this as vertical work:
+                    // - parse each non-null child
+                    //   - we allow cells to contain a single operator
+                    // - determine which terms in the start/result rows are negative
+                    // - do some validation, e.g.
+                    //   - if the top two rows are empty the last should be as well
+                    //   - only plus/minus operators are allowed alone in cells one
+                    //     either side of the (in)equality
+                    //   - there must be a single (in)equality and it must be in the
+                    //     same column and should not appear in the middle row
+
+                    // Handle the following case:
+                    // 2x         + 5 =   10
+                    //   + 3y - z - 5   -  5 + 3y - z
+                    //
+                    // '+ 3y - z' is a single cell
+                    // The only time we want to treat a leading +/- operator as
+                    // a unary operator is when the cell to the left has a single
+                    // +/- operator in it.
+
+                    throw new Error("We don't parse 'algebra' tables yet");
+                }
+                case "matrix": {
+                    throw new Error("We don't parse matrices yet");
+                }
+                default: {
+                    // We can't use UnreachableCaseError here for some reason
+                    throw new Error("This should never happen");
+                }
+            }
         // TODO: Handle subsup at the start of a row, useful in Chemistry
         case "subsup":
             throw new Error("Unexpected 'subsup' token");

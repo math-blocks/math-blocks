@@ -3,6 +3,7 @@ import * as Testing from "@math-blocks/testing";
 import {row, glyph, subsup} from "../../ast/builders";
 import * as builders from "../../ast/builders";
 import * as util from "../../ast/util";
+import * as types from "../../ast/types";
 
 import * as parser from "../parser";
 
@@ -764,6 +765,173 @@ describe("EditorParser", () => {
                 (add
                   (parens (neg a))
                   (parens (neg b)))
+            `);
+        });
+    });
+
+    describe("showing work vertically", () => {
+        test("no edge cases", () => {
+            const {glyph} = builders;
+            const table: types.Table = builders.algebra(
+                [
+                    // first row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [glyph("+")],
+                    [glyph("5")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("1"), glyph("0")],
+                    [],
+
+                    // second row
+                    [],
+                    [],
+                    [],
+                    [glyph("\u2212")],
+                    [glyph("5")],
+                    [],
+                    [],
+                    [glyph("\u2212")],
+                    [glyph("5")],
+                    [],
+
+                    // third row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [glyph("+")],
+                    [glyph("0")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("5")],
+                    [],
+                ],
+                10,
+                3,
+            );
+            const input = builders.row([table]);
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert_add
+                  :start [(mul.imp 2 x),null,5,null] [10,null]
+                  :start [null,null,minus:5,null] [minus:5,null]
+                  :start [(mul.imp 2 x),null,0,null] [5,null])
+            `);
+        });
+
+        test("interpret neg 5 without operator as subtract 5", () => {
+            const {glyph} = builders;
+            const table: types.Table = builders.algebra(
+                [
+                    // first row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [glyph("+")],
+                    [glyph("5")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("1"), glyph("0")],
+                    [],
+
+                    // second row
+                    [],
+                    [],
+                    [],
+                    [glyph("\u2212")],
+                    [glyph("5")],
+                    [],
+                    [],
+                    [],
+                    [glyph("\u2212"), glyph("5")],
+                    [],
+
+                    // third row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [glyph("+")],
+                    [glyph("0")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("5")],
+                    [],
+                ],
+                10,
+                3,
+            );
+            const input = builders.row([table]);
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert_add
+                  :start [(mul.imp 2 x),null,5,null] [10,null]
+                  :start [null,null,minus:5,null] [minus:5,null]
+                  :start [(mul.imp 2 x),null,0,null] [5,null])
+            `);
+        });
+
+        test("subtract 2x from both sides", () => {
+            const {glyph} = builders;
+            const table: types.Table = builders.algebra(
+                [
+                    // first row
+                    [],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [glyph("+")],
+                    [glyph("5")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("1"), glyph("0")],
+                    [],
+
+                    // second row
+                    [glyph("\u2212")],
+                    [glyph("2"), glyph("x")],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [],
+                    [glyph("\u2212"), glyph("2"), glyph("x")],
+
+                    // third row
+                    [],
+                    [],
+                    [],
+                    [],
+                    [glyph("5")],
+                    [],
+                    [glyph("=")],
+                    [],
+                    [glyph("10")],
+                    [glyph("\u2212"), glyph("2"), glyph("x")],
+                ],
+                10,
+                3,
+            );
+            const input = builders.row([table]);
+
+            const ast = parser.parse(input);
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert_add
+                  :start [(mul.imp 2 x),null,5,null] [10,null]
+                  :start [minus:(mul.imp 2 x),null,null,null,null] [null,minus:(mul.imp 2 x)]
+                  :start [null,null,null,5,null] [10,(neg.sub (mul.imp 2 x))])
             `);
         });
     });
