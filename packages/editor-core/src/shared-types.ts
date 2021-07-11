@@ -15,7 +15,7 @@ export type Delimited<A, C> = C & {
     readonly rightDelim: Atom<A, C>;
 };
 
-type RowStyle = {
+export type RowStyle = {
     readonly border?: "top" | "bottom";
     readonly alignment?: "top" | "middle" | "bottom";
 };

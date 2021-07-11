@@ -5,8 +5,22 @@ import * as builders from "../ast/builders";
 import {isAtom} from "../ast/util";
 
 import * as util from "./util";
+import {
+    zipperToVerticalWork,
+    verticalWorkToZTable,
+    adjustEmptyColumns,
+} from "./vertical-work-utils";
 
 import type {State, ZTable, Zipper, Focus} from "./types";
+
+const removeEmptyColumns = (zipper: Zipper): Zipper => {
+    const work = zipperToVerticalWork(zipper);
+    if (!work) {
+        return zipper;
+    }
+    const adjustedWork = adjustEmptyColumns(work);
+    return verticalWorkToZTable(adjustedWork);
+};
 
 const moveDown = (state: State): State => {
     // Does it make sense if the root is not a Row?  Is this how we could prevent
@@ -25,6 +39,8 @@ const moveDown = (state: State): State => {
         const cellIndex = focus.left.length;
         const row = Math.floor(cellIndex / focus.colCount);
 
+        // If we're in the bottom row of a two-row table, and the user presses
+        // down, add a third row.
         if (focus.rowCount === 2 && row === 1) {
             const nodes = [
                 ...focus.left,
@@ -56,7 +72,8 @@ const moveDown = (state: State): State => {
                 ],
             };
 
-            return util.zipperToState(newZipper);
+            // TODO: update vertical work helpers to main the row style
+            return util.zipperToState(removeEmptyColumns(newZipper));
         }
 
         return state;
@@ -89,8 +106,6 @@ const moveDown = (state: State): State => {
                     splitRows.push(builders.row(prevChildren));
                     prevChildren = [];
                 }
-                // Place an extra cell in front of the '+'
-                splitRows.push(builders.row([]));
                 splitRows.push(builders.row([child]));
             } else {
                 prevChildren.push(child);
@@ -103,10 +118,7 @@ const moveDown = (state: State): State => {
                 splitRows.push(builders.row(prevChildren));
                 prevChildren = [];
             }
-            // Place extra cells around the '='
-            splitRows.push(builders.row([]));
             splitRows.push(builders.row([child]));
-            splitRows.push(builders.row([]));
         } else {
             prevChildren.push(child);
         }
@@ -116,7 +128,7 @@ const moveDown = (state: State): State => {
         splitRows.push(builders.row(prevChildren));
     }
 
-    const left = [builders.row([]), ...splitRows, builders.row([])];
+    const left = [...splitRows];
     // left.push(builders.row([])); // first cell in second table row
     const right: (types.Row | null)[] = [];
     // empty cells below first table row's splitRows
@@ -127,14 +139,13 @@ const moveDown = (state: State): State => {
             right.push(builders.row([]));
         }
     }
-    right.push(builders.row([])); // last cell in second table row
 
     const table: ZTable = {
         id: getId(),
         type: "ztable",
         subtype: "algebra",
         rowCount: 2,
-        colCount: splitRows.length + 2,
+        colCount: splitRows.length,
         left,
         right,
         style: {},
@@ -157,7 +168,8 @@ const moveDown = (state: State): State => {
         ],
     };
 
-    return util.zipperToState(newZipper);
+    const finalZipper = removeEmptyColumns(newZipper);
+    return util.zipperToState(finalZipper);
 };
 
 const moveUp = (state: State): State => {
@@ -218,7 +230,7 @@ const moveUp = (state: State): State => {
                     ],
                 };
 
-                return util.zipperToState(newZipper);
+                return util.zipperToState(removeEmptyColumns(newZipper));
             }
         }
 
@@ -241,7 +253,7 @@ const moveUp = (state: State): State => {
                     breadcrumbs: [],
                 };
 
-                return util.zipperToState(newZipper);
+                return util.zipperToState(removeEmptyColumns(newZipper));
             }
         }
     }
