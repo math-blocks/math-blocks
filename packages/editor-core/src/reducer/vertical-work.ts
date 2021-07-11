@@ -76,6 +76,28 @@ const moveDown = (state: State): State => {
             return util.zipperToState(removeEmptyColumns(newZipper));
         }
 
+        if (row < focus.rowCount - 1) {
+            const work = zipperToVerticalWork(zipper);
+            if (!work) {
+                return state;
+            }
+            const col = work.columns.find((col) =>
+                col.some((cell) => cell.id === work.cursorId),
+            );
+            if (!col) {
+                throw new Error(
+                    "Couldn't find the column containing the cursor",
+                );
+            }
+            const newCell = col[row + 1];
+            const adjustedWork = adjustEmptyColumns({
+                ...work,
+                cursorId: newCell.id,
+            });
+            const newZipper: Zipper = verticalWorkToZTable(adjustedWork);
+            return util.zipperToState(newZipper);
+        }
+
         return state;
     }
 
@@ -149,7 +171,6 @@ const moveDown = (state: State): State => {
         left,
         right,
         style: {},
-        gutterWidth: 0,
     };
 
     const newZipper: Zipper = {
@@ -256,6 +277,28 @@ const moveUp = (state: State): State => {
                 return util.zipperToState(removeEmptyColumns(newZipper));
             }
         }
+
+        if (cursorRow > 0) {
+            const work = zipperToVerticalWork(zipper);
+            if (!work) {
+                return state;
+            }
+            const col = work.columns.find((col) =>
+                col.some((cell) => cell.id === work.cursorId),
+            );
+            if (!col) {
+                throw new Error(
+                    "Couldn't find the column containing the cursor",
+                );
+            }
+            const newCell = col[cursorRow - 1];
+            const adjustedWork = adjustEmptyColumns({
+                ...work,
+                cursorId: newCell.id,
+            });
+            const newZipper: Zipper = verticalWorkToZTable(adjustedWork);
+            return util.zipperToState(newZipper);
+        }
     }
 
     return state;
@@ -272,7 +315,7 @@ export const verticalWork = (state: State, direction: "up" | "down"): State => {
     }
 };
 
-const isCellSkippable = (cell: types.Row | null): boolean =>
+export const isCellSkippable = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 &&
     isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
@@ -290,19 +333,11 @@ export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
     const allowed = children.map((child) => child != null);
     const cursorIndex = focus.left.length;
 
-    // When showing work vertically we want the cursor to skip over certain
-    // cells to avoid the appearance that the cursor is stuck at the cell
-    // boundary due to there being no gutter between columns.
     if (focus.type === "ztable" && focus.subtype === "algebra") {
-        for (let j = 1; j < focus.rowCount; j++) {
-            for (let i = 0; i < focus.colCount; i++) {
-                const cellIndex = j * focus.colCount + i;
-                if (
-                    isCellSkippable(children[cellIndex]) &&
-                    isCellSkippable(children[i])
-                ) {
-                    allowed[cellIndex] = false;
-                }
+        // TODO: handle situations where there's an +/- in a column with operands
+        for (let i = 0; i < children.length; i++) {
+            if (isCellSkippable(children[i])) {
+                allowed[i] = false;
             }
         }
 

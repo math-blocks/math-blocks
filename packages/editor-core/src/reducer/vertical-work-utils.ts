@@ -1,6 +1,7 @@
 import {getId} from "@math-blocks/core";
 import * as types from "../ast/types";
 import * as builders from "../ast/builders";
+import * as util from "../ast/util";
 import type {ZTable, Zipper, Breadcrumb} from "./types";
 import {zrowToRow, zrow} from "./util";
 
@@ -75,7 +76,6 @@ export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
         colCount: colCount,
         left: cells.slice(0, index),
         right: cells.slice(index + 1),
-        gutterWidth: 0, // TODO: infer this from the subtype
         rowStyles: work.rowStyles,
         style: {},
     };
@@ -93,16 +93,26 @@ export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
     return newZipper;
 };
 
-const isCellEmpty = (cell: types.Row | null): boolean =>
+export const isCellEmpty = (cell: types.Row | null): boolean =>
     !cell || cell.children.length === 0;
-const isColumnEmpty = (col: Column | null): boolean =>
+export const isColumnEmpty = (col: Column | null): boolean =>
     !col || col.every(isCellEmpty);
+
+const isCellPlusMinus = (cell: types.Row | null): boolean =>
+    cell?.children.length === 1 &&
+    util.isAtom(cell.children[0], ["+", "\u2212"]);
+
+const isCellEqualSign = (cell: types.Row | null): boolean =>
+    cell?.children.length === 1 && util.isAtom(cell.children[0], "=");
+
+const isOperator = (cell: types.Row | null): boolean =>
+    isCellPlusMinus(cell) || isCellEqualSign(cell);
 
 export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     // TODO:
     // - reposition cursor appropriate when removing a column containing the cursor
     // - add any empty columns that are missing
-    const {columns, colCount, rowCount, cursorId} = work;
+    const {columns, rowCount, colCount, cursorId} = work;
 
     let cursorRow = -1;
     for (let i = 0; i < rowCount; i++) {
@@ -111,19 +121,33 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
         }
     }
 
+    // TODO: if there are two completely empty columns beside, remove one of
+    // them.
     const colsToRemove: number[] = [];
     for (let i = 0; i < colCount; i++) {
+        const prevColumn = columns[i - 1];
+        const nextColumn = columns[i + 1];
         const isPrevCellEmpty = isCellEmpty(
             i > 0 ? columns[i - 1][cursorRow] : null,
         );
         const isNextCellEmpty = isCellEmpty(
             i < colCount - 1 ? columns[i + 1][cursorRow] : null,
         );
-        if (
-            (!isPrevCellEmpty || !isNextCellEmpty) &&
-            isColumnEmpty(columns[i])
-        ) {
-            colsToRemove.push(i);
+        if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
+            if (prevColumn && nextColumn) {
+                const otherPrevCells = prevColumn.filter(
+                    (cell, index) => index !== cursorRow,
+                );
+                const otherNextCells = nextColumn.filter(
+                    (cell, index) => index !== cursorRow,
+                );
+                if (
+                    otherPrevCells.every(isCellEmpty) &&
+                    otherNextCells.every(isCellEmpty)
+                ) {
+                    colsToRemove.push(i);
+                }
+            }
         }
     }
 
@@ -184,7 +208,26 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                 }
                 finalColumns.push(emptyColumn);
             }
+        } else if (
+            !isFirstColumn &&
+            !isPrevColumnEmpty &&
+            filteredColumns[i].some(isOperator)
+        ) {
+            if (
+                isOperator(filteredColumns[i][cursorRow]) &&
+                !isCellEmpty(filteredColumns[i - 1][cursorRow])
+            ) {
+                // Don't add an empty column if there's an operand to the left
+                // of the operator in the cursor row.
+            } else {
+                const emptyColumn: types.Row[] = [];
+                for (let j = 0; j < rowCount; j++) {
+                    emptyColumn.push(builders.row([]));
+                }
+                finalColumns.push(emptyColumn);
+            }
         }
+
         finalColumns.push(filteredColumns[i]);
 
         // Last column, current cell is empty, and the current cell is not
