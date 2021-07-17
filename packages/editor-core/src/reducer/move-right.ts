@@ -6,7 +6,7 @@ import {getAllowed} from "./vertical-work/utils";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
 
-const cursorRight = (zipper: Zipper): Zipper => {
+export const cursorRight = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the right
