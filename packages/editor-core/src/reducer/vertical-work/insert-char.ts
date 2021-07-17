@@ -10,15 +10,15 @@ import {
     isColumnEmpty,
     isCellEmpty,
 } from "./utils";
-import {moveRight} from "../move-right";
+import {cursorRight} from "../move-right";
 
 import type {State, Zipper} from "../types";
 import type {VerticalWork, Column} from "./utils";
 
-const isCellPlusMinus = (cell: types.Row | null): boolean =>
+const isPlusMinus = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["+", "\u2212"]);
 
-const isCellRelationOperator = (cell: types.Row | null): boolean =>
+const isRelOp = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["=", ">", "<"]);
 
 // TODO: place cursor in lower limits
@@ -39,6 +39,14 @@ const insert = (zipper: Zipper, node: types.Node): Zipper => {
             left: [...zipper.row.left, node],
         },
     };
+};
+
+const createEmptyColumn = (rowCount: number): Column => {
+    const emptyCol: types.Row[] = [];
+    for (let i = 0; i < rowCount; i++) {
+        emptyCol.push(builders.row([]));
+    }
+    return emptyCol;
 };
 
 export const insertChar = (state: State, char: string): State => {
@@ -84,19 +92,13 @@ export const insertChar = (state: State, char: string): State => {
             const cursorRow = cursorCol.findIndex(
                 (cell) => cell.id === cursorCell.id,
             );
-            const newEmptyCol: types.Row[] = [];
-            for (let i = 0; i < rowCount; i++) {
-                newEmptyCol.push(builders.row([]));
-            }
+            const newEmptyCol = createEmptyColumn(rowCount);
             const newPlusMinusCol: Column = [
                 ...cursorCol.slice(0, cursorRow),
                 builders.row([newNode]),
                 ...cursorCol.slice(cursorRow + 1),
             ];
-            const newCursorCol: types.Row[] = [];
-            for (let i = 0; i < rowCount; i++) {
-                newCursorCol.push(builders.row([]));
-            }
+            const newCursorCol = createEmptyColumn(rowCount);
             const newColumns = [
                 ...columns.slice(0, cursorColIndex),
                 newEmptyCol,
@@ -135,10 +137,7 @@ export const insertChar = (state: State, char: string): State => {
                     newPlusMinusCol.push(builders.row([]));
                 }
             }
-            const newCursorCol: types.Row[] = [];
-            for (let i = 0; i < rowCount; i++) {
-                newCursorCol.push(builders.row([]));
-            }
+            const newCursorCol = createEmptyColumn(rowCount);
             const newColumns = [
                 ...columns.slice(0, cursorColIndex + 1),
                 newPlusMinusCol,
@@ -167,46 +166,24 @@ export const insertChar = (state: State, char: string): State => {
     }
 
     // If there's a +/- in one of the other cells in the current column...
-    if (cursorCell.children.length === 0 && otherCells.some(isCellPlusMinus)) {
-        // ...and the char being inserted is a +/-...
+    if (isCellEmpty(cursorCell) && otherCells.some(isPlusMinus)) {
         if (["+", "\u2212"].includes(char)) {
-            // ...insert the char...
-            const newZipper = insert(zipper, newNode);
-            // ...and then move right...
-            return moveRight(util.zipperToState(newZipper));
+            // ...and we're inserting a +/-, insert the char and move right.
+            return util.zipperToState(cursorRight(insert(zipper, newNode)));
         } else {
-            // ...otherwise, move to the right first...
-            const newState = moveRight({
-                ...state,
-                selecting: false,
-            });
-            // ...and then insert the char
-            const newZipper = insert(newState.zipper, newNode);
-            return util.zipperToState(newZipper);
+            // ...otherwise, move right right and then insert the new char.
+            return util.zipperToState(insert(cursorRight(zipper), newNode));
         }
     }
-    // If there's a relationship operator in one of the other cells in
-    // the current column...
-    else if (
-        cursorCell.children.length === 0 &&
-        otherCells.some(isCellRelationOperator)
-    ) {
-        // ...and the current char being inserted is also a relationship
-        // operator...
+
+    // We disallow inserting non-rel-ops in columns with rel-ops in other cells.
+    else if (isCellEmpty(cursorCell) && otherCells.some(isRelOp)) {
         if (["=", ">", "<"].includes(char)) {
-            // ...insert the char...
-            const newZipper = insert(zipper, newNode);
-            // ...and then move right...
-            return moveRight(util.zipperToState(newZipper));
+            // TODO: disallow inserting a rel-op if there isn't already one
+            // in the current column.
+            return util.zipperToState(cursorRight(insert(zipper, newNode)));
         } else {
-            // ...otherwise, move to the right first...
-            const newState = moveRight({
-                ...state,
-                selecting: false,
-            });
-            // ...and then insert the character
-            const newZipper = insert(newState.zipper, newNode);
-            return util.zipperToState(newZipper);
+            return util.zipperToState(insert(cursorRight(zipper), newNode));
         }
     }
 
