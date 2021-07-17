@@ -1,21 +1,22 @@
 import {getId} from "@math-blocks/core";
 
-import * as types from "../../ast/types";
-import * as builders from "../../ast/builders";
+import * as types from "../../../ast/types";
+import * as builders from "../../../ast/builders";
 
-import {stateFromZipper, toEqualEditorNodes, row, zrow} from "../test-util";
-import * as util from "../util";
-import {verticalWork} from "../vertical-work";
-import {backspace} from "../backspace";
-import {moveLeft} from "../move-left";
-import {moveRight} from "../move-right";
-import {insertChar} from "../insert-char";
+import {stateFromZipper, toEqualEditorNodes, row, zrow} from "../../test-util";
+import * as util from "../../util";
+import {backspace} from "../../backspace";
+import {moveLeft} from "../../move-left";
+import {moveRight} from "../../move-right";
+import {insertChar} from "../../insert-char";
 
-import type {BreadcrumbRow, Zipper} from "../types";
+import {verticalWork} from "../reducer";
+
+import type {BreadcrumbRow, Zipper} from "../../types";
 
 expect.extend({toEqualEditorNodes});
 
-describe("verticalWork", () => {
+describe("verticalWork reducer", () => {
     test("pressing down splits the row into a table", () => {
         const zipper: Zipper = {
             row: zrow([], row("2x+5=10").children),
@@ -23,7 +24,7 @@ describe("verticalWork", () => {
         };
         const state = stateFromZipper(zipper);
 
-        const newState = verticalWork(state, "down");
+        const newState = verticalWork(state, {type: "ArrowDown"});
 
         const focus = newState.zipper.breadcrumbs[0].focus;
         if (focus.type !== "ztable") {
@@ -67,7 +68,10 @@ describe("verticalWork", () => {
         };
         const state = stateFromZipper(zipper);
 
-        const newState = verticalWork(verticalWork(state, "down"), "down");
+        const newState = verticalWork(
+            verticalWork(state, {type: "ArrowDown"}),
+            {type: "ArrowDown"},
+        );
 
         const focus = newState.zipper.breadcrumbs[0].focus;
         if (focus.type !== "ztable") {
@@ -125,8 +129,10 @@ describe("verticalWork", () => {
         const state = stateFromZipper(zipper);
 
         const newState = verticalWork(
-            verticalWork(verticalWork(state, "down"), "down"),
-            "down",
+            verticalWork(verticalWork(state, {type: "ArrowDown"}), {
+                type: "ArrowDown",
+            }),
+            {type: "ArrowDown"},
         );
 
         const focus = newState.zipper.breadcrumbs[0].focus;
@@ -145,8 +151,10 @@ describe("verticalWork", () => {
         const state = stateFromZipper(zipper);
 
         const newState = verticalWork(
-            verticalWork(verticalWork(state, "down"), "down"),
-            "up",
+            verticalWork(verticalWork(state, {type: "ArrowDown"}), {
+                type: "ArrowDown",
+            }),
+            {type: "ArrowUp"},
         );
 
         const focus = newState.zipper.breadcrumbs[0].focus;
@@ -183,7 +191,10 @@ describe("verticalWork", () => {
         };
         const state = stateFromZipper(zipper);
 
-        const newState = verticalWork(verticalWork(state, "down"), "up");
+        const newState = verticalWork(
+            verticalWork(state, {type: "ArrowDown"}),
+            {type: "ArrowUp"},
+        );
 
         expect(newState.zipper.breadcrumbs).toHaveLength(0);
         expect(newState.zipper.row.left).toEqualEditorNodes([]);

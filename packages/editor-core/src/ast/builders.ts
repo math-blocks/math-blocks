@@ -87,7 +87,6 @@ export function table(
         readonly left: types.Atom;
         readonly right: types.Atom;
     },
-    gutterWidth?: number,
 ): types.Table {
     return {
         id: getId(),
@@ -100,7 +99,6 @@ export function table(
         colStyles: undefined,
         delimiters,
         style: {},
-        gutterWidth,
     };
 }
 
@@ -109,7 +107,7 @@ export function algebra(
     colCount: number,
     rowCount: number,
 ): types.Table {
-    return table("algebra", cells, colCount, rowCount, undefined, 0);
+    return table("algebra", cells, colCount, rowCount, undefined);
 }
 
 export function matrix(

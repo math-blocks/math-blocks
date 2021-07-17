@@ -1,9 +1,9 @@
 import {getId} from "@math-blocks/core";
-import * as types from "../ast/types";
-import * as builders from "../ast/builders";
-import * as util from "../ast/util";
-import type {ZTable, Zipper, Breadcrumb} from "./types";
-import {zrowToRow, zrow} from "./util";
+import * as types from "../../ast/types";
+import * as builders from "../../ast/builders";
+import * as util from "../../ast/util";
+import type {ZTable, Zipper, Breadcrumb, Focus} from "../types";
+import {zrowToRow, zrow} from "../util";
 
 export type Column = readonly types.Row[];
 
@@ -245,4 +245,44 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
         columns: finalColumns,
         colCount: finalColumns.length,
     };
+};
+
+export const isCellSkippable = (cell: types.Row | null): boolean =>
+    cell?.children.length === 1 &&
+    util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
+
+export const isEmpty = (cell: types.Row | null): boolean =>
+    (cell?.children?.length ?? 0) === 0;
+
+export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
+    const children = [...focus.left, zrowToRow(zipper.row), ...focus.right];
+
+    // By default all non-null cells are allowed
+    const allowed = children.map((child) => child != null);
+    const cursorIndex = focus.left.length;
+
+    if (focus.type === "ztable" && focus.subtype === "algebra") {
+        // TODO: handle situations where there's an +/- in a column with operands
+        for (let i = 0; i < children.length; i++) {
+            if (isCellSkippable(children[i])) {
+                allowed[i] = false;
+            }
+        }
+
+        const cursorRow = Math.floor(cursorIndex / focus.colCount);
+        if (cursorRow === 2) {
+            for (let i = 0; i < focus.colCount; i++) {
+                const col = [
+                    children[0 * focus.colCount + i],
+                    children[1 * focus.colCount + i],
+                    children[2 * focus.colCount + i],
+                ];
+                if (col.every(isEmpty)) {
+                    allowed[2 * focus.colCount + i] = false;
+                }
+            }
+        }
+    }
+
+    return allowed;
 };

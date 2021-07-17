@@ -1,22 +1,22 @@
 import {getId} from "@math-blocks/core";
 
-import * as types from "../ast/types";
-import * as builders from "../ast/builders";
-import {isAtom} from "../ast/util";
+import * as types from "../../ast/types";
+import * as builders from "../../ast/builders";
+import {isAtom} from "../../ast/util";
 
-import * as util from "./util";
+import * as util from "../util";
 import {
     zipperToVerticalWork,
     verticalWorkToZTable,
     adjustEmptyColumns,
     isColumnEmpty,
     isCellEmpty,
-} from "./vertical-work-utils";
-import {moveRight} from "./move-right";
+} from "./utils";
+import {moveRight} from "../move-right";
 
-import type {State, ZTable, Zipper, Focus} from "./types";
-import type {Action} from "./action-types";
-import type {VerticalWork, Column} from "./vertical-work-utils";
+import type {State, ZTable, Zipper} from "../types";
+import type {Action} from "../action-types";
+import type {VerticalWork, Column} from "./utils";
 
 // TODO: place cursor in lower limits
 // TODO: dedupe this with insert-char.ts
@@ -531,48 +531,4 @@ export const verticalWork = (state: State, action: Action): State => {
         default:
             return state;
     }
-};
-
-export const isCellSkippable = (cell: types.Row | null): boolean =>
-    cell?.children.length === 1 &&
-    isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
-
-const isEmpty = (cell: types.Row | null): boolean =>
-    (cell?.children?.length ?? 0) === 0;
-
-export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
-    const children = [
-        ...focus.left,
-        util.zrowToRow(zipper.row),
-        ...focus.right,
-    ];
-
-    // By default all non-null cells are allowed
-    const allowed = children.map((child) => child != null);
-    const cursorIndex = focus.left.length;
-
-    if (focus.type === "ztable" && focus.subtype === "algebra") {
-        // TODO: handle situations where there's an +/- in a column with operands
-        for (let i = 0; i < children.length; i++) {
-            if (isCellSkippable(children[i])) {
-                allowed[i] = false;
-            }
-        }
-
-        const cursorRow = Math.floor(cursorIndex / focus.colCount);
-        if (cursorRow === 2) {
-            for (let i = 0; i < focus.colCount; i++) {
-                const col = [
-                    children[0 * focus.colCount + i],
-                    children[1 * focus.colCount + i],
-                    children[2 * focus.colCount + i],
-                ];
-                if (col.every(isEmpty)) {
-                    allowed[2 * focus.colCount + i] = false;
-                }
-            }
-        }
-    }
-
-    return allowed;
 };

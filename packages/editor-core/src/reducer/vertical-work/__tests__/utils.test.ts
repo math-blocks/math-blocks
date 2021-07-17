@@ -1,9 +1,9 @@
-import {row} from "../test-util";
-import {adjustEmptyColumns} from "../vertical-work-utils";
-import type {VerticalWork, Column} from "../vertical-work-utils";
-import type {Breadcrumb} from "../types";
+import {row} from "../../test-util";
+import {adjustEmptyColumns} from "../utils";
+import type {VerticalWork, Column} from "../utils";
+import type {Breadcrumb} from "../../types";
 import {getId} from "@math-blocks/core";
-import {toEqualEditorNodes} from "../test-util";
+import {toEqualEditorNodes} from "../../test-util";
 
 expect.extend({toEqualEditorNodes});
 

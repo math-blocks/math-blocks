@@ -1,7 +1,7 @@
 import * as builders from "../ast/builders";
 
 import * as util from "./util";
-import {verticalWork} from "./vertical-work";
+import {verticalWork} from "./vertical-work/reducer";
 
 import type {Zipper, State} from "./types";
 

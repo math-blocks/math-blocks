@@ -1,6 +1,6 @@
 import * as types from "../ast/types";
 import * as util from "./util";
-import {verticalWork} from "./vertical-work";
+import {verticalWork} from "./vertical-work/reducer";
 
 import type {ZRow, Zipper, State} from "./types";
 import type {Action} from "./action-types";
