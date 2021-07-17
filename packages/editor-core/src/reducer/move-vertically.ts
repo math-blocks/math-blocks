@@ -3,13 +3,11 @@ import * as util from "./util";
 import {verticalWork} from "./vertical-work";
 
 import type {ZRow, Zipper, State} from "./types";
+import type {Action} from "./action-types";
 
-export const moveVertically = (
-    state: State,
-    direction: "up" | "down",
-): State => {
+export const moveVertically = (state: State, action: Action): State => {
     if (state.selecting) {
-        return verticalWork(state, direction);
+        return verticalWork(state, action);
     }
 
     const {breadcrumbs} = state.zipper;
@@ -18,7 +16,7 @@ export const moveVertically = (
         if (crumb.focus.subtype === "algebra") {
             // We defer to 'verticalWork' to handle vertical navigation for
             // 'algebra' tables.
-            return verticalWork(state, direction);
+            return verticalWork(state, action);
         }
         const {colCount, rowCount, left, right} = crumb.focus;
 
@@ -35,7 +33,7 @@ export const moveVertically = (
 
         let newCursorRow = focusRow;
         let focusedChild: types.Row | null = null;
-        if (direction === "down") {
+        if (action.type === "ArrowDown") {
             newCursorRow++;
             while (newCursorRow < rowCount) {
                 const newFocusIndex =
@@ -47,7 +45,7 @@ export const moveVertically = (
                 newCursorRow++;
             }
         }
-        if (direction === "up") {
+        if (action.type === "ArrowUp") {
             newCursorRow--;
             while (newCursorRow >= 0) {
                 const newFocusIndex =
@@ -103,5 +101,5 @@ export const moveVertically = (
         };
     }
 
-    return verticalWork(state, direction);
+    return verticalWork(state, action);
 };

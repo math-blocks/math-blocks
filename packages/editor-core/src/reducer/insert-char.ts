@@ -63,6 +63,7 @@ export const insertChar = (state: State, char: string): State => {
     }
 
     const work = zipperToVerticalWork(zipper);
+    // TODO: move this logic into vertical-work.ts
     if (work) {
         const {cursorId, columns, rowCount, crumb, rowStyles} = work;
 
@@ -163,6 +164,14 @@ export const insertChar = (state: State, char: string): State => {
                 return util.zipperToState(newZipper);
             }
         }
+
+        // TODO: handle adding an operator in the middle of a cell, e.g.
+        // 23 -> 2 + 3
+        // TODO: handle deleting an operator and combing cells, if it makes sense
+        // we can probably emove the comining part to adjustEmptyColumns and rename
+        // it to be adjust columns, e.g.
+        // | | | -> |  |
+        // |2|3| -> |23|
 
         // If there's a +/- in one of the other cells in the current column...
         if (

@@ -13,7 +13,10 @@ module.exports = function (wallaby) {
             "!packages/**/__tests__/*.tsx",
         ],
 
-        tests: ["packages/**/__tests__/*.ts", "packages/**/__tests__/*.tsx"],
+        tests: [
+            "packages/*/src/**/__tests__/*.test.ts",
+            "packages/*/src/**/__tests__/*.test.tsx",
+        ],
 
         env: {
             type: "node",

@@ -1,4 +1,4 @@
-import {getId, UnreachableCaseError} from "@math-blocks/core";
+import {getId} from "@math-blocks/core";
 
 import * as types from "../ast/types";
 import * as builders from "../ast/builders";
@@ -12,6 +12,7 @@ import {
 } from "./vertical-work-utils";
 
 import type {State, ZTable, Zipper, Focus} from "./types";
+import type {Action} from "./action-types";
 
 const removeEmptyColumns = (zipper: Zipper): Zipper => {
     const work = zipperToVerticalWork(zipper);
@@ -304,14 +305,14 @@ const moveUp = (state: State): State => {
     return state;
 };
 
-export const verticalWork = (state: State, direction: "up" | "down"): State => {
-    switch (direction) {
-        case "down":
-            return moveDown(state);
-        case "up":
+export const verticalWork = (state: State, action: Action): State => {
+    switch (action.type) {
+        case "ArrowUp":
             return moveUp(state);
+        case "ArrowDown":
+            return moveDown(state);
         default:
-            throw new UnreachableCaseError(direction);
+            return state;
     }
 };
 

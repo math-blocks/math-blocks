@@ -73,6 +73,7 @@ export const typesetTable = (
               ];
 
     const topRowChildren = children.slice(0, node.colCount);
+    const MIN_WIDTH = 32; // only use this for debugging purposes.
 
     // Group cells into rows and columns and determine the width of each
     // column and the depth/height of each row.
@@ -81,7 +82,7 @@ export const typesetTable = (
             if (!columns[i]) {
                 columns[i] = {
                     children: [],
-                    width: 0,
+                    width: MIN_WIDTH,
                 };
             }
             if (!rows[j]) {
