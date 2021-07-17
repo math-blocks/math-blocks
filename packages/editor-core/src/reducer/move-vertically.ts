@@ -59,7 +59,9 @@ export const moveVertically = (state: State, action: Action): State => {
         }
 
         if (!focusedChild) {
-            throw new Error("focusedChild should always be defined here");
+            // We've navigated past the top or bottom row which isn't possible
+            // so return the original state.
+            return state;
         }
 
         // TODO: determine cursorIndex based on column alignment, e.g. if

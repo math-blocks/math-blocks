@@ -274,7 +274,9 @@ export const moveUp = (state: State): State => {
                     breadcrumbs: [],
                 };
 
-                return util.zipperToState(removeEmptyColumns(newZipper));
+                // We don't call removeEmptyColumns here because there is no
+                // matrix at this point.
+                return util.zipperToState(newZipper);
             }
         }
 

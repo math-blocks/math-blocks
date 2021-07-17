@@ -35,7 +35,6 @@ const insert = (zipper: Zipper, node: types.Node): Zipper => {
         ...zipper,
         row: {
             ...zipper.row,
-            // safe b/c we moved to the start of next cell
             left: [...zipper.row.left, node],
         },
     };
