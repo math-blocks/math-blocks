@@ -119,33 +119,24 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     // TODO:
     // - reposition cursor appropriate when removing a column containing the cursor
     // - add any empty columns that are missing
-    const {columns, rowCount, colCount, cursorId} = work;
+    const {columns, rowCount, colCount} = work;
 
-    let cursorRow = -1;
-    let cursorCol = -1;
-    columns.forEach((col, colIndex) => {
-        col.forEach((cell, rowIndex) => {
-            if (cell.id === cursorId) {
-                cursorRow = rowIndex;
-                cursorCol = colIndex;
-            }
-        });
-    });
+    const cursorLoc = getCursorLoc(work);
 
     const colsToRemove = new Set<number>();
     for (let i = 0; i < colCount; i++) {
         const prevColumn = columns[i - 1];
         const nextColumn = columns[i + 1];
-        const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorRow]);
-        const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorRow]);
+        const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorLoc.row]);
+        const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorLoc.row]);
 
         if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
             if (prevColumn && nextColumn) {
                 const otherPrevCells = prevColumn.filter(
-                    (cell, index) => index !== cursorRow,
+                    (cell, index) => index !== cursorLoc.row,
                 );
                 const otherNextCells = nextColumn.filter(
-                    (cell, index) => index !== cursorRow,
+                    (cell, index) => index !== cursorLoc.row,
                 );
                 if (
                     otherPrevCells.every(isCellEmpty) &&
@@ -160,10 +151,10 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
             // If there are two empty columns in a row, delete them while not
             // deleting the column containing the cursor.
             if (isColumnEmpty(columns[i - 1]) && isColumnEmpty(columns[i])) {
-                if (cursorCol !== i - 1) {
+                if (cursorLoc.col !== i - 1) {
                     colsToRemove.add(i - 1);
                 }
-                if (cursorCol !== i) {
+                if (cursorLoc.col !== i) {
                     colsToRemove.add(i);
                 }
             }
@@ -172,8 +163,8 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
     // TODO: figure out if we can move the cursor to the left in this situation
     // Prevent the column containing the cursor for being removed
-    if (colsToRemove.has(cursorCol)) {
-        colsToRemove.delete(cursorCol);
+    if (colsToRemove.has(cursorLoc.col)) {
+        colsToRemove.delete(cursorLoc.col);
     }
 
     const filteredColumns = columns.filter(
@@ -183,13 +174,15 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     const finalColumns: Column[] = [];
     for (let i = 0; i < filteredColumns.length; i++) {
         const isPrevCellEmpty = isCellEmpty(
-            i > 0 ? filteredColumns[i - 1][cursorRow] : null,
+            i > 0 ? filteredColumns[i - 1][cursorLoc.row] : null,
         );
 
         const isFirstColumn = i === 0;
         const isLastColumn = i === filteredColumns.length - 1;
 
-        const isCurrentCellEmpty = isCellEmpty(filteredColumns[i][cursorRow]);
+        const isCurrentCellEmpty = isCellEmpty(
+            filteredColumns[i][cursorLoc.row],
+        );
         const isCurrentColumnEmpty = isColumnEmpty(filteredColumns[i]);
         const isPrevColumnEmpty = isColumnEmpty(filteredColumns[i - 1]);
 
@@ -239,8 +232,8 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
             filteredColumns[i].some(isOperator)
         ) {
             if (
-                isOperator(filteredColumns[i][cursorRow]) &&
-                !isCellEmpty(filteredColumns[i - 1][cursorRow])
+                isOperator(filteredColumns[i][cursorLoc.row]) &&
+                !isCellEmpty(filteredColumns[i - 1][cursorLoc.row])
             ) {
                 // Don't add an empty column if there's an operand to the left
                 // of the operator in the cursor row.
@@ -310,4 +303,70 @@ export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
     }
 
     return allowed;
+};
+
+export type CursorLoc = {
+    readonly col: number;
+    readonly row: number;
+};
+
+export const getCursorLoc = (work: VerticalWork): CursorLoc => {
+    const {columns, cursorId, colCount, rowCount} = work;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 0; row < rowCount; row++) {
+            const cell = columns[col][row];
+            if (cell.id === cursorId) {
+                return {row, col};
+            }
+        }
+    }
+
+    throw new Error(`Couldn't find cell with id: ${cursorId}`);
+};
+
+export const getCursorCell = (work: VerticalWork): types.Row => {
+    const {columns, cursorId, colCount, rowCount} = work;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 0; row < rowCount; row++) {
+            const cell = columns[col][row];
+            if (cell.id === cursorId) {
+                return cell;
+            }
+        }
+    }
+
+    throw new Error(`Couldn't find cell with id: ${cursorId}`);
+};
+
+export const getOtherCells = (
+    col: Column,
+    keepCell: types.Row,
+): types.Row[] => {
+    return col.filter((cell: types.Row) => cell !== keepCell);
+};
+
+export const createEmptyColumn = (rowCount: number): Column => {
+    const emptyCol: types.Row[] = [];
+    for (let i = 0; i < rowCount; i++) {
+        emptyCol.push(builders.row([]));
+    }
+    return emptyCol;
+};
+
+export const createEmptyColumnWithCell = (
+    rowCount: number,
+    cursorRow: number,
+    cell: types.Row,
+): Column => {
+    const col: types.Row[] = [];
+    for (let i = 0; i < rowCount; i++) {
+        if (i === cursorRow) {
+            col.push(cell);
+        } else {
+            col.push(builders.row([]));
+        }
+    }
+    return col;
 };

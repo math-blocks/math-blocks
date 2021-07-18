@@ -1,4 +1,5 @@
 import * as types from "../../ast/types";
+import * as builders from "../../ast/builders";
 import {isAtom} from "../../ast/util";
 
 import * as util from "../util";
@@ -7,8 +8,14 @@ import {
     zipperToVerticalWork,
     verticalWorkToZTable,
     adjustEmptyColumns,
+    isCellEmpty,
+    getCursorLoc,
+    getCursorCell,
+    getOtherCells,
+    createEmptyColumnWithCell,
 } from "./utils";
 
+import type {VerticalWork} from "./utils";
 import type {Breadcrumb, Zipper, State} from "../types";
 
 // TODO: rename this and move into utils
@@ -28,7 +35,7 @@ const isPlusMinus = (cell: types.Row | null): cell is types.Row =>
 export const backspace = (state: State): State => {
     const zipper = state.zipper;
 
-    const {breadcrumbs} = zipper;
+    const {breadcrumbs, row} = zipper;
     if (breadcrumbs.length === 0) {
         return state;
     }
@@ -39,7 +46,64 @@ export const backspace = (state: State): State => {
     const prevCell = focus.left[focus.left.length - 1];
     // If the previous cell is a single plus/minus character, delete it
     // and move into that cell.
-    if (isPlusMinus(prevCell)) {
+    if (row.left.length === 0 && isPlusMinus(prevCell)) {
+        // Try to merge the cells
+        const prevPrevCell = focus.left[focus.left.length - 2];
+        const work = zipperToVerticalWork(zipper);
+        if (work && prevPrevCell && row.right.length > 0) {
+            const {columns, rowCount, rowStyles} = work;
+            const cursorLoc = getCursorLoc(work);
+            const cursorCell = getCursorCell(work);
+
+            const cursorCol = columns[cursorLoc.col];
+            const prevCol = columns[cursorLoc.col - 1];
+            const prevPrevCol = columns[cursorLoc.col - 2];
+
+            const otherCells = getOtherCells(cursorCol, cursorCell);
+            const prevOtherCells = getOtherCells(prevCol, prevCell);
+            const prevPrevOtherCells = getOtherCells(prevPrevCol, prevPrevCell);
+
+            // In order to merge cells, we require all other cells in the
+            // columns of the cells to be merge to be empty.
+            if (
+                otherCells.every(isCellEmpty) &&
+                prevOtherCells.every(isCellEmpty) &&
+                prevPrevOtherCells.every(isCellEmpty)
+            ) {
+                const mergedCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
+                    builders.row([
+                        ...prevPrevCell.children,
+                        ...cursorCell.children,
+                    ]),
+                );
+
+                const newColumns = [
+                    ...columns.slice(0, cursorLoc.col - 2),
+                    mergedCol,
+                    ...columns.slice(cursorLoc.col + 1),
+                ];
+
+                // TODO: create a helper function for updating a VerticalWork
+                // object with new columns and changing the cursor location.
+                const newWork: VerticalWork = {
+                    columns: newColumns,
+                    colCount: newColumns.length,
+                    rowCount: rowCount,
+                    cursorId: mergedCol[cursorLoc.row].id,
+                    cursorIndex: prevPrevCell.children.length,
+                    crumb: crumb,
+                    rowStyles: rowStyles,
+                };
+
+                const newZipper = verticalWorkToZTable(
+                    adjustEmptyColumns(newWork),
+                );
+                return util.zipperToState(newZipper);
+            }
+        }
+
         // Erase the contents of the previous cell
         const newPrevCell = {
             ...prevCell,

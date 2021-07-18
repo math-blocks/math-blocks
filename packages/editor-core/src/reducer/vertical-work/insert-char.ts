@@ -9,6 +9,11 @@ import {
     adjustEmptyColumns,
     isColumnEmpty,
     isCellEmpty,
+    getCursorLoc,
+    getCursorCell,
+    getOtherCells,
+    createEmptyColumn,
+    createEmptyColumnWithCell,
 } from "./utils";
 import {cursorRight} from "../move-right";
 
@@ -40,14 +45,6 @@ const insert = (zipper: Zipper, node: types.Node): Zipper => {
     };
 };
 
-const createEmptyColumn = (rowCount: number): Column => {
-    const emptyCol: types.Row[] = [];
-    for (let i = 0; i < rowCount; i++) {
-        emptyCol.push(builders.row([]));
-    }
-    return emptyCol;
-};
-
 // TODO: rename this and move into utils
 const removeEmptyColumns = (zipper: Zipper): Zipper => {
     const work = zipperToVerticalWork(zipper);
@@ -68,21 +65,13 @@ export const insertChar = (state: State, char: string): State => {
         return state;
     }
 
-    const {cursorId, columns, rowCount, crumb, rowStyles} = work;
+    const {columns, rowCount, crumb, rowStyles} = work;
 
-    const cursorCol = columns.find((col) =>
-        col.some((cell) => cell.id === cursorId),
-    );
-    if (!cursorCol) {
-        throw new Error(
-            "Couldn't find column with a cell.id matching cursorId",
-        );
-    }
-    const cursorCell = cursorCol.find((cell) => cell.id === cursorId);
-    const otherCells = cursorCol.filter((cell) => cell.id !== cursorId);
-    if (!cursorCell) {
-        throw new Error("Couldn't find a cell with id matching cursorId");
-    }
+    const cursorCell = getCursorCell(work);
+    const cursorLoc = getCursorLoc(work);
+
+    const cursorCol = columns[cursorLoc.col];
+    const otherCells = getOtherCells(cursorCol, cursorCell);
 
     const newNode = LIMIT_CHARS.includes(char)
         ? builders.limits(builders.glyph(char), [], [])
@@ -98,14 +87,11 @@ export const insertChar = (state: State, char: string): State => {
             const cursorColIndex = columns.findIndex(
                 (col) => col === cursorCol,
             );
-            const cursorRow = cursorCol.findIndex(
-                (cell) => cell.id === cursorCell.id,
-            );
             const newEmptyCol = createEmptyColumn(rowCount);
             const newPlusMinusCol: Column = [
-                ...cursorCol.slice(0, cursorRow),
+                ...cursorCol.slice(0, cursorLoc.row),
                 builders.row([newNode]),
-                ...cursorCol.slice(cursorRow + 1),
+                ...cursorCol.slice(cursorLoc.row + 1),
             ];
             const newCursorCol = createEmptyColumn(rowCount);
             const newColumns = [
@@ -119,7 +105,7 @@ export const insertChar = (state: State, char: string): State => {
                 columns: newColumns,
                 colCount: newColumns.length,
                 rowCount: rowCount,
-                cursorId: newCursorCol[cursorRow].id,
+                cursorId: newCursorCol[cursorLoc.row].id,
                 cursorIndex: 0,
                 crumb: crumb,
                 rowStyles: rowStyles,
@@ -136,12 +122,9 @@ export const insertChar = (state: State, char: string): State => {
             const cursorColIndex = columns.findIndex(
                 (col) => col === cursorCol,
             );
-            const cursorRow = cursorCol.findIndex(
-                (cell) => cell.id === cursorCell.id,
-            );
             const newPlusMinusCol: types.Row[] = [];
             for (let i = 0; i < rowCount; i++) {
-                if (i === cursorRow) {
+                if (i === cursorLoc.row) {
                     newPlusMinusCol.push(builders.row([newNode]));
                 } else {
                     newPlusMinusCol.push(builders.row([]));
@@ -158,7 +141,7 @@ export const insertChar = (state: State, char: string): State => {
                 columns: newColumns,
                 colCount: newColumns.length,
                 rowCount: rowCount,
-                cursorId: newCursorCol[cursorRow].id,
+                cursorId: newCursorCol[cursorLoc.row].id,
                 cursorIndex: 0,
                 crumb: crumb,
                 rowStyles: rowStyles,
@@ -167,45 +150,35 @@ export const insertChar = (state: State, char: string): State => {
             return util.zipperToState(newZipper);
         }
 
-        // TODO: handle adding an operator in the middle of a cell, e.g.
-        // 23 -> 2 + 3
-        // TODO: handle deleting an operator and combing cells, if it makes sense
-        // we can probably emove the comining part to adjustEmptyColumns and rename
-        // it to be adjust columns, e.g.
-        // | | | -> |  |
-        // |2|3| -> |23|
-
         if (zipper.row.right.length > 0 && zipper.row.left.length > 0) {
             const prevNode = zipper.row.left[zipper.row.left.length - 1];
             if (
+                // TODO: handle the situation where there are other non-empty
+                // cells in the current column
+                // otherCells.every(isCellEmpty) &&
+                // If there's a +/- operate just to the left of the cursor that
+                // would indicate that this operand has one or more unary +/-.
                 prevNode.type !== "atom" ||
                 !["+", "\u2212"].includes(prevNode.value.char)
             ) {
-                // split
-                // for now we assume this is the only cell in the current column
-                // with content
-
                 const cursorColIndex = columns.findIndex(
                     (col) => col === cursorCol,
                 );
-                const cursorRow = cursorCol.findIndex(
-                    (cell) => cell.id === cursorCell.id,
-                );
-                const leftCol: Column = [
-                    ...cursorCol.slice(0, cursorRow),
+                const leftCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
                     builders.row(zipper.row.left),
-                    ...cursorCol.slice(cursorRow + 1),
-                ];
-                const newPlusMinusCol: Column = [
-                    ...cursorCol.slice(0, cursorRow),
+                );
+                const newPlusMinusCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
                     builders.row([newNode]),
-                    ...cursorCol.slice(cursorRow + 1),
-                ];
-                const rightCol: Column = [
-                    ...cursorCol.slice(0, cursorRow),
+                );
+                const rightCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
                     builders.row(zipper.row.right),
-                    ...cursorCol.slice(cursorRow + 1),
-                ];
+                );
                 const newColumns = [
                     ...columns.slice(0, cursorColIndex),
                     leftCol,
@@ -217,7 +190,7 @@ export const insertChar = (state: State, char: string): State => {
                     columns: newColumns,
                     colCount: newColumns.length,
                     rowCount: rowCount,
-                    cursorId: rightCol[cursorRow].id,
+                    cursorId: rightCol[cursorLoc.row].id,
                     cursorIndex: 0,
                     crumb: crumb,
                     rowStyles: rowStyles,

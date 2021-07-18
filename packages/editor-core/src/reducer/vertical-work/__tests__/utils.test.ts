@@ -59,6 +59,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[0][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -83,6 +84,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[0][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -114,6 +116,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[0][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -144,6 +147,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -175,6 +179,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -205,6 +210,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -236,6 +242,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -260,6 +267,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -293,6 +301,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -330,6 +339,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -369,6 +379,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -411,6 +422,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -452,6 +464,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][0].id,
+            cursorIndex: 0,
             crumb,
         };
 
@@ -494,6 +507,7 @@ describe("adjustEmptyColumns", () => {
             rowCount: 2,
             // which column the cursor is in doesn't matter
             cursorId: columns[1][1].id,
+            cursorIndex: 0,
             crumb,
         };
 
