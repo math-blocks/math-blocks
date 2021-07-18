@@ -1,5 +1,6 @@
 import {insertChar} from "./insert-char";
 import {moveUp, moveDown} from "./move-vertically";
+import {backspace} from "./backspace";
 
 import type {State} from "../types";
 import type {Action} from "../action-types";
@@ -12,6 +13,8 @@ export const verticalWork = (state: State, action: Action): State => {
             return moveDown(state);
         case "InsertChar":
             return insertChar(state, action.char);
+        case "Backspace":
+            return backspace(state);
         default:
             return state;
     }

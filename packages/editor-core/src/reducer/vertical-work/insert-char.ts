@@ -48,6 +48,16 @@ const createEmptyColumn = (rowCount: number): Column => {
     return emptyCol;
 };
 
+// TODO: rename this and move into utils
+const removeEmptyColumns = (zipper: Zipper): Zipper => {
+    const work = zipperToVerticalWork(zipper);
+    if (!work) {
+        return zipper;
+    }
+    const adjustedWork = adjustEmptyColumns(work);
+    return verticalWorkToZTable(adjustedWork);
+};
+
 export const insertChar = (state: State, char: string): State => {
     const zipper = state.zipper;
 
@@ -110,6 +120,7 @@ export const insertChar = (state: State, char: string): State => {
                 colCount: newColumns.length,
                 rowCount: rowCount,
                 cursorId: newCursorCol[cursorRow].id,
+                cursorIndex: 0,
                 crumb: crumb,
                 rowStyles: rowStyles,
             };
@@ -148,6 +159,7 @@ export const insertChar = (state: State, char: string): State => {
                 colCount: newColumns.length,
                 rowCount: rowCount,
                 cursorId: newCursorCol[cursorRow].id,
+                cursorIndex: 0,
                 crumb: crumb,
                 rowStyles: rowStyles,
             };
@@ -162,6 +174,60 @@ export const insertChar = (state: State, char: string): State => {
         // it to be adjust columns, e.g.
         // | | | -> |  |
         // |2|3| -> |23|
+
+        if (zipper.row.right.length > 0 && zipper.row.left.length > 0) {
+            const prevNode = zipper.row.left[zipper.row.left.length - 1];
+            if (
+                prevNode.type !== "atom" ||
+                !["+", "\u2212"].includes(prevNode.value.char)
+            ) {
+                // split
+                // for now we assume this is the only cell in the current column
+                // with content
+
+                const cursorColIndex = columns.findIndex(
+                    (col) => col === cursorCol,
+                );
+                const cursorRow = cursorCol.findIndex(
+                    (cell) => cell.id === cursorCell.id,
+                );
+                const leftCol: Column = [
+                    ...cursorCol.slice(0, cursorRow),
+                    builders.row(zipper.row.left),
+                    ...cursorCol.slice(cursorRow + 1),
+                ];
+                const newPlusMinusCol: Column = [
+                    ...cursorCol.slice(0, cursorRow),
+                    builders.row([newNode]),
+                    ...cursorCol.slice(cursorRow + 1),
+                ];
+                const rightCol: Column = [
+                    ...cursorCol.slice(0, cursorRow),
+                    builders.row(zipper.row.right),
+                    ...cursorCol.slice(cursorRow + 1),
+                ];
+                const newColumns = [
+                    ...columns.slice(0, cursorColIndex),
+                    leftCol,
+                    newPlusMinusCol,
+                    rightCol,
+                    ...columns.slice(cursorColIndex + 1),
+                ];
+                const newWork: VerticalWork = {
+                    columns: newColumns,
+                    colCount: newColumns.length,
+                    rowCount: rowCount,
+                    cursorId: rightCol[cursorRow].id,
+                    cursorIndex: 0,
+                    crumb: crumb,
+                    rowStyles: rowStyles,
+                };
+                const newZipper = verticalWorkToZTable(
+                    adjustEmptyColumns(newWork),
+                );
+                return util.zipperToState(newZipper);
+            }
+        }
     }
 
     // If there's a +/- in one of the other cells in the current column...
@@ -186,5 +252,13 @@ export const insertChar = (state: State, char: string): State => {
         }
     }
 
-    return state;
+    const newZipper: Zipper = {
+        ...zipper,
+        row: {
+            ...zipper.row,
+            left: [...zipper.row.left, newNode],
+        },
+    };
+
+    return util.zipperToState(removeEmptyColumns(newZipper));
 };

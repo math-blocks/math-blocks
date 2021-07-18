@@ -30,7 +30,7 @@ describe("verticalWork reducer", () => {
         if (focus.type !== "ztable") {
             throw new Error("focus should be a ZTable");
         }
-        expect(focus.left).toHaveLength(10);
+        expect(focus.left).toHaveLength(11);
 
         // Empty cells are place at the start and end
         expect(focus.left[0]?.children).toEqualEditorNodes([]);
@@ -45,9 +45,10 @@ describe("verticalWork reducer", () => {
         expect(focus.left[7]?.children).toEqualEditorNodes([]);
         expect(focus.left[8]?.children).toEqualEditorNodes(row("10").children);
         expect(focus.left[9]?.children).toEqualEditorNodes([]);
+        expect(focus.left[10]?.children).toEqualEditorNodes([]); // second row
 
-        // The cursor is placed in the first column of the second row
-        expect(focus.right).toHaveLength(9);
+        // The cursor is placed in the second column of the second row
+        expect(focus.right).toHaveLength(8);
 
         // All cells in the second row are empty to being with
         expect(focus.right[0]?.children).toEqualEditorNodes([]);
@@ -58,7 +59,6 @@ describe("verticalWork reducer", () => {
         expect(focus.right[5]?.children).toEqualEditorNodes([]);
         expect(focus.right[6]?.children).toEqualEditorNodes([]);
         expect(focus.right[7]?.children).toEqualEditorNodes([]);
-        expect(focus.right[8]?.children).toEqualEditorNodes([]);
     });
 
     test("pressing down a second time will add a third row with a bar", () => {
@@ -77,7 +77,7 @@ describe("verticalWork reducer", () => {
         if (focus.type !== "ztable") {
             throw new Error("focus should be a ZTable");
         }
-        expect(focus.left).toHaveLength(20);
+        expect(focus.left).toHaveLength(21);
 
         // Empty cells are place at the start and end
         expect(focus.left[0]?.children).toEqualEditorNodes([]);
@@ -93,9 +93,6 @@ describe("verticalWork reducer", () => {
         expect(focus.left[8]?.children).toEqualEditorNodes(row("10").children);
         expect(focus.left[9]?.children).toEqualEditorNodes([]);
 
-        // The cursor is placed in the first column of the second row
-        expect(focus.right).toHaveLength(9);
-
         // All cells in the second row are empty to begin with
         expect(focus.left[10]?.children).toEqualEditorNodes([]);
         expect(focus.left[11]?.children).toEqualEditorNodes([]);
@@ -105,7 +102,10 @@ describe("verticalWork reducer", () => {
         expect(focus.left[15]?.children).toEqualEditorNodes([]);
         expect(focus.left[16]?.children).toEqualEditorNodes([]);
         expect(focus.left[17]?.children).toEqualEditorNodes([]);
-        expect(focus.left[18]?.children).toEqualEditorNodes([]);
+        expect(focus.left[18]?.children).toEqualEditorNodes([]); // first column, third row
+
+        // The cursor is placed in the second column of the third row
+        expect(focus.right).toHaveLength(8);
 
         // All cells in the third row are empty to begin with
         expect(focus.right[0]?.children).toEqualEditorNodes([]);
@@ -116,7 +116,6 @@ describe("verticalWork reducer", () => {
         expect(focus.right[5]?.children).toEqualEditorNodes([]);
         expect(focus.right[6]?.children).toEqualEditorNodes([]);
         expect(focus.right[7]?.children).toEqualEditorNodes([]);
-        expect(focus.right[8]?.children).toEqualEditorNodes([]);
 
         expect(focus.rowStyles).toEqual([null, null, {border: "top"}]);
     });
@@ -161,7 +160,7 @@ describe("verticalWork reducer", () => {
         if (focus.type !== "ztable") {
             throw new Error("focus should be a ZTable");
         }
-        expect(focus.left).toHaveLength(10);
+        expect(focus.left).toHaveLength(11);
 
         // Empty cells are place at the start and end
         expect(focus.left[0]?.children).toEqualEditorNodes([]);
@@ -176,9 +175,10 @@ describe("verticalWork reducer", () => {
         expect(focus.left[7]?.children).toEqualEditorNodes([]);
         expect(focus.left[8]?.children).toEqualEditorNodes(row("10").children);
         expect(focus.left[9]?.children).toEqualEditorNodes([]);
+        expect(focus.left[10]?.children).toEqualEditorNodes([]); // first column, second row
 
         // The cursor is placed in the first column of the second row
-        expect(focus.right).toHaveLength(9);
+        expect(focus.right).toHaveLength(8);
         expect(focus.rowCount).toEqual(2);
 
         expect(focus.rowStyles).toEqual([null, null]);
@@ -229,6 +229,8 @@ describe("verticalWork reducer", () => {
             style: {},
         };
 
+        // TODO: figure out what the rows should look like after the columns
+        // have been adjusted
         test("backspace moves to the left", () => {
             const zipper: Zipper = {
                 row: util.zrow(getId(), [], row("\u2212").children),
@@ -251,6 +253,8 @@ describe("verticalWork reducer", () => {
             expect(result.row.right).toEqualEditorNodes([]);
         });
 
+        // TODO: figure out what the rows should look like after the columns
+        // have been adjusted
         test("backspace moves to the left and deletes operators", () => {
             const zipper: Zipper = {
                 row: util.zrow(getId(), [], row("5").children),

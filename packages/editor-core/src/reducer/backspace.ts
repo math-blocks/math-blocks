@@ -1,14 +1,8 @@
-import * as types from "../ast/types";
-import {isAtom} from "../ast/util";
-
 import * as util from "./util";
 import {moveLeft} from "./move-left";
+import {verticalWork} from "./vertical-work/reducer";
 
 import type {Breadcrumb, Zipper, State} from "./types";
-
-const isCellPlusMinus = (cell: types.Row | null): cell is types.Row =>
-    cell?.children.length === 1 &&
-    isAtom(cell.children[0], ["+", "\u2212", "="]);
 
 export const backspace = (state: State): State => {
     const zipper = state.zipper;
@@ -166,29 +160,7 @@ export const backspace = (state: State): State => {
 
     if (focus.type === "ztable") {
         if (focus.subtype === "algebra") {
-            const prevCell = focus.left[focus.left.length - 1];
-            // If the previous cell is a single plus/minus character, delete it
-            // and move into that cell.
-            if (isCellPlusMinus(prevCell)) {
-                // Erase the contents of the previous cell
-                const newPrevCell = {
-                    ...prevCell,
-                    children: [],
-                };
-                const newCrumb: Breadcrumb = {
-                    ...crumb,
-                    focus: {
-                        ...focus,
-                        left: [...focus.left.slice(0, -1), newPrevCell],
-                    },
-                };
-                const newZipper: Zipper = {
-                    ...zipper,
-                    breadcrumbs: [...breadcrumbs.slice(0, -1), newCrumb],
-                };
-                // Move left into the now empty cell.
-                return moveLeft(util.zipperToState(newZipper));
-            }
+            return verticalWork(state, {type: "Backspace"});
         }
 
         return moveLeft(util.zipperToState(zipper));

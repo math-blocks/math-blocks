@@ -7,14 +7,16 @@ import {zrowToRow, zrow} from "../util";
 
 export type Column = readonly types.Row[];
 
-// TODO: capture row styles from ZTable
 export type VerticalWork = {
     readonly columns: readonly Column[];
     readonly colCount: number;
     readonly rowCount: number;
+    // The id of the cell in which the cursor resides.
     // We use an id for the cursor so that we can move it to the appropriate
     // cell after adding/removing columns.
     readonly cursorId: number;
+    // Location of the cursor within a cell.
+    readonly cursorIndex: number;
     readonly crumb: Breadcrumb;
     readonly rowStyles?: ZTable["rowStyles"];
 };
@@ -47,6 +49,7 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
             colCount,
             rowCount,
             cursorId: cursorRow.id,
+            cursorIndex: cursorRow.left.length,
             crumb,
             rowStyles: focus.rowStyles,
         };
@@ -56,7 +59,7 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
 };
 
 export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
-    const {columns, colCount, rowCount, cursorId, crumb} = work;
+    const {columns, colCount, rowCount, cursorId, cursorIndex, crumb} = work;
 
     const cells: types.Row[] = [];
     for (let i = 0; i < rowCount; i++) {
@@ -81,7 +84,11 @@ export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
     };
 
     const newZipper: Zipper = {
-        row: zrow(cursorCell.id, [], cursorCell.children),
+        row: zrow(
+            cursorCell.id,
+            cursorCell.children.slice(0, cursorIndex),
+            cursorCell.children.slice(cursorIndex),
+        ),
         breadcrumbs: [
             {
                 row: crumb.row,
@@ -115,24 +122,23 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     const {columns, rowCount, colCount, cursorId} = work;
 
     let cursorRow = -1;
-    for (let i = 0; i < rowCount; i++) {
-        if (columns.some((col) => col[i].id === cursorId)) {
-            cursorRow = i;
-        }
-    }
+    let cursorCol = -1;
+    columns.forEach((col, colIndex) => {
+        col.forEach((cell, rowIndex) => {
+            if (cell.id === cursorId) {
+                cursorRow = rowIndex;
+                cursorCol = colIndex;
+            }
+        });
+    });
 
-    // TODO: if there are two completely empty columns beside, remove one of
-    // them.
-    const colsToRemove: number[] = [];
+    const colsToRemove = new Set<number>();
     for (let i = 0; i < colCount; i++) {
         const prevColumn = columns[i - 1];
         const nextColumn = columns[i + 1];
-        const isPrevCellEmpty = isCellEmpty(
-            i > 0 ? columns[i - 1][cursorRow] : null,
-        );
-        const isNextCellEmpty = isCellEmpty(
-            i < colCount - 1 ? columns[i + 1][cursorRow] : null,
-        );
+        const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorRow]);
+        const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorRow]);
+
         if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
             if (prevColumn && nextColumn) {
                 const otherPrevCells = prevColumn.filter(
@@ -145,14 +151,33 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                     otherPrevCells.every(isCellEmpty) &&
                     otherNextCells.every(isCellEmpty)
                 ) {
-                    colsToRemove.push(i);
+                    colsToRemove.add(i);
+                }
+            }
+        }
+
+        if (i > 0) {
+            // If there are two empty columns in a row, delete them while not
+            // deleting the column containing the cursor.
+            if (isColumnEmpty(columns[i - 1]) && isColumnEmpty(columns[i])) {
+                if (cursorCol !== i - 1) {
+                    colsToRemove.add(i - 1);
+                }
+                if (cursorCol !== i) {
+                    colsToRemove.add(i);
                 }
             }
         }
     }
 
+    // TODO: figure out if we can move the cursor to the left in this situation
+    // Prevent the column containing the cursor for being removed
+    if (colsToRemove.has(cursorCol)) {
+        colsToRemove.delete(cursorCol);
+    }
+
     const filteredColumns = columns.filter(
-        (col, index) => !colsToRemove.includes(index),
+        (col, index) => !colsToRemove.has(index),
     );
 
     const finalColumns: Column[] = [];
