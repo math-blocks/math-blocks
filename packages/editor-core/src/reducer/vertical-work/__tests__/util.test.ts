@@ -1,6 +1,6 @@
 import {row} from "../../test-util";
-import {adjustEmptyColumns} from "../utils";
-import type {VerticalWork, Column} from "../utils";
+import {adjustEmptyColumns} from "../util";
+import type {VerticalWork, Column} from "../util";
 import type {Breadcrumb} from "../../types";
 import {getId} from "@math-blocks/core";
 import {toEqualEditorNodes} from "../../test-util";

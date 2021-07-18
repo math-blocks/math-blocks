@@ -2,7 +2,7 @@ import * as types from "../ast/types";
 
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
-import {getAllowed} from "./vertical-work/utils";
+import {getAllowed} from "./vertical-work/util";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
 

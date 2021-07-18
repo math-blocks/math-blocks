@@ -19,7 +19,7 @@ export {
     zipperToVerticalWork,
     isColumnEmpty,
     isCellEmpty,
-} from "./reducer/vertical-work/utils";
+} from "./reducer/vertical-work/util";
 export type {
     Breadcrumb,
     BreadcrumbRow,

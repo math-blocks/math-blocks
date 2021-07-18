@@ -14,11 +14,11 @@ import {
     getOtherCells,
     createEmptyColumn,
     createEmptyColumnWithCell,
-} from "./utils";
+} from "./util";
 import {cursorRight} from "../move-right";
 
 import type {State, Zipper} from "../types";
-import type {VerticalWork, Column} from "./utils";
+import type {VerticalWork, Column} from "./util";
 
 const isPlusMinus = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["+", "\u2212"]);

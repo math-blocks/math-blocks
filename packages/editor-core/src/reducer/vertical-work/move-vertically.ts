@@ -8,7 +8,7 @@ import {
     zipperToVerticalWork,
     verticalWorkToZTable,
     adjustEmptyColumns,
-} from "./utils";
+} from "./util";
 
 import type {State, ZTable, Zipper} from "../types";
 

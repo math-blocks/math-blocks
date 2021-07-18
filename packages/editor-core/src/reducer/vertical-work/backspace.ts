@@ -13,9 +13,9 @@ import {
     getCursorCell,
     getOtherCells,
     createEmptyColumnWithCell,
-} from "./utils";
+} from "./util";
 
-import type {VerticalWork} from "./utils";
+import type {VerticalWork} from "./util";
 import type {Breadcrumb, Zipper, State} from "../types";
 
 // TODO: rename this and move into utils
