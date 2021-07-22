@@ -6,6 +6,7 @@ import * as util from "../../util";
 import {backspace} from "../../backspace";
 import {moveLeft} from "../../move-left";
 import {moveRight} from "../../move-right";
+import {moveUp, moveDown} from "../move-vertically";
 import {insertChar} from "../../insert-char";
 
 import {verticalWork} from "../reducer";
@@ -313,6 +314,40 @@ describe("verticalWork reducer", () => {
 
             expect(result).toEqualZipper(expected);
         });
+
+        test("merges cells when possible", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | | | |  | |+|5| 
+             |  | |+|2|+|@3| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const newState = backspace(state);
+
+            const {zipper: result} = newState;
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |  | |+|2@3| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("doesn't merge cells when it doesn't make sense to do so", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | | |+| 5| 
+             |  | |+|2|+|@3| `);
+
+            const state = stateFromZipper(zipper);
+            const newState = backspace(state);
+
+            const {zipper: result} = newState;
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | | | |+|5| 
+             |  | |+|2| |@|3| `);
+
+            expect(result).toEqualZipper(expected);
+        });
     });
 
     describe("moving horizontally", () => {
@@ -369,7 +404,58 @@ describe("verticalWork reducer", () => {
         });
     });
 
-    describe("entering characters", () => {
+    describe("moving vertically", () => {
+        describe("moving down", () => {
+            test("adds extra columns as insertion points as needed", () => {
+                const zipper: Zipper = textRepToZipper(`
+                 |2x| |+|5@|=|10|  
+                 |2x| | |  | |  | `);
+
+                const state = stateFromZipper(zipper);
+                const {zipper: result} = moveDown(state);
+
+                const expected: Zipper = textRepToZipper(`
+                 |2x| |+|5| |=| |10|  
+                 |2x| | |@| | | |  | `);
+
+                expect(result).toEqualZipper(expected);
+            });
+
+            test("removes extra columns if no longer needed", () => {
+                const zipper: Zipper = textRepToZipper(`
+                 | | | | | |+|5@|  
+                 |+|x| |+|y| |  | `);
+
+                const state = stateFromZipper(zipper);
+                const {zipper: result} = moveDown(state);
+
+                const expected: Zipper = textRepToZipper(`
+                 | | | | | |+|5|  
+                 |+|x|+|y| | |@| `);
+
+                expect(result).toEqualZipper(expected);
+            });
+        });
+
+        describe("moving up", () => {
+            test("removes extra columns if no longer needed", () => {
+                const zipper: Zipper = textRepToZipper(`
+                |2x| |+|5| |=| |10|  
+                |2x| | |@| | | |  | `);
+
+                const state = stateFromZipper(zipper);
+                const {zipper: result} = moveUp(state);
+
+                const expected: Zipper = textRepToZipper(`
+                 |2x| |+|@5|=|10|  
+                 |2x| | |  | |  | `);
+
+                expect(result).toEqualZipper(expected);
+            });
+        });
+    });
+
+    describe("inserting characters", () => {
         test("plus/minus operator in a plus/minus column will insert and move to the next cell", () => {
             const zipper: Zipper = textRepToZipper(`
              |2x| |+|5| 
@@ -394,8 +480,38 @@ describe("verticalWork reducer", () => {
             const {zipper: result} = insertChar(state, "a");
 
             const expected: Zipper = textRepToZipper(`
-            |2x| |+|5 | 
-            |2x| | |a@| `);
+             |2x| |+|5 | 
+             |2x| | |a@| `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("plus/minus operator at the end of a non-empty cell", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | |  | |+|5| 
+             |2x| |+|x@| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | | | | |+|5| 
+             |2x| |+|x|+|@| | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("plus/minus operator in an empty column", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| |+|5| 
+             |2x|@| | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | | |+|5| 
+             |2x| |+|@| | | `);
 
             expect(result).toEqualZipper(expected);
         });
@@ -429,9 +545,24 @@ describe("verticalWork reducer", () => {
 
             expect(result).toEqualZipper(expected);
         });
+
+        test("plus/minus operator splitting a cell", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |2x| |+|2@3| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | | | |  | |+|5| 
+             |2x| |+|2|+|@3| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
     });
 
     // TODO:
-    // - create snapshot tests when navigating horizontall across the second row,
+    // - create snapshot tests when navigating horizontally across the second row,
     //   this is to ensure that the padding stays the way we want it
 });
