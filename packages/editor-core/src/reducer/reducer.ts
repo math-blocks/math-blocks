@@ -37,9 +37,9 @@ export const reducer = (state: State = initialState, action: Action): State => {
         case "ArrowRight":
             return moveRight(state);
         case "ArrowUp":
-            return moveVertically(state, "up");
+            return moveVertically(state, action);
         case "ArrowDown":
-            return moveVertically(state, "down");
+            return moveVertically(state, action);
         case "Backspace":
             return backspace(state);
         case "Subscript":

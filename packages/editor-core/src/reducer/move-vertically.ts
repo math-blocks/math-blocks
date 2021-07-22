@@ -1,25 +1,22 @@
 import * as types from "../ast/types";
 import * as util from "./util";
-import {verticalWork} from "./vertical-work";
+import {verticalWork} from "./vertical-work/reducer";
 
 import type {ZRow, Zipper, State} from "./types";
+import type {Action} from "./action-types";
 
-export const moveVertically = (
-    state: State,
-    direction: "up" | "down",
-): State => {
+export const moveVertically = (state: State, action: Action): State => {
     if (state.selecting) {
-        return verticalWork(state, direction);
+        return verticalWork(state, action);
     }
 
     const {breadcrumbs} = state.zipper;
     const crumb = breadcrumbs[breadcrumbs.length - 1];
     if (crumb?.focus.type === "ztable") {
-        if (crumb.focus.subtype === "algebra" && direction === "up") {
-            const newState = verticalWork(state, direction);
-            if (newState !== state) {
-                return newState;
-            }
+        if (crumb.focus.subtype === "algebra") {
+            // We defer to 'verticalWork' to handle vertical navigation for
+            // 'algebra' tables.
+            return verticalWork(state, action);
         }
         const {colCount, rowCount, left, right} = crumb.focus;
 
@@ -36,7 +33,7 @@ export const moveVertically = (
 
         let newCursorRow = focusRow;
         let focusedChild: types.Row | null = null;
-        if (direction === "down") {
+        if (action.type === "ArrowDown") {
             newCursorRow++;
             while (newCursorRow < rowCount) {
                 const newFocusIndex =
@@ -48,7 +45,7 @@ export const moveVertically = (
                 newCursorRow++;
             }
         }
-        if (direction === "up") {
+        if (action.type === "ArrowUp") {
             newCursorRow--;
             while (newCursorRow >= 0) {
                 const newFocusIndex =
@@ -62,7 +59,9 @@ export const moveVertically = (
         }
 
         if (!focusedChild) {
-            return verticalWork(state, direction);
+            // We've navigated past the top or bottom row which isn't possible
+            // so return the original state.
+            return state;
         }
 
         // TODO: determine cursorIndex based on column alignment, e.g. if
@@ -104,5 +103,5 @@ export const moveVertically = (
         };
     }
 
-    return verticalWork(state, direction);
+    return verticalWork(state, action);
 };

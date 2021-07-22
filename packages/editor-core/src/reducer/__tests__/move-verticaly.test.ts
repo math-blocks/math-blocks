@@ -42,7 +42,7 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveRight(state);
-        state = moveVertically(state, "down");
+        state = moveVertically(state, {type: "ArrowDown"});
 
         expect(state.zipper.row.right).toEqualEditorNodes([
             builders.glyph("c"),
@@ -56,8 +56,8 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveRight(state);
-        state = moveVertically(state, "down");
-        const newState = moveVertically(state, "down");
+        state = moveVertically(state, {type: "ArrowDown"});
+        const newState = moveVertically(state, {type: "ArrowDown"});
 
         expect(newState).toEqual(state);
     });
@@ -69,7 +69,7 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveRight(state);
-        state = moveVertically(state, "down");
+        state = moveVertically(state, {type: "ArrowDown"});
 
         expect(state.zipper.row.right).toEqualEditorNodes([
             builders.glyph("c"),
@@ -83,7 +83,10 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveRight(state);
-        state = moveVertically({...state, selecting: true}, "down");
+        state = moveVertically(
+            {...state, selecting: true},
+            {type: "ArrowDown"},
+        );
 
         expect(state.zipper.row.right).toEqualEditorNodes([
             builders.glyph("a"),
@@ -97,7 +100,7 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveLeft(state);
-        state = moveVertically(state, "up");
+        state = moveVertically(state, {type: "ArrowUp"});
 
         expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("b")]);
     });
@@ -109,8 +112,8 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveLeft(state);
-        state = moveVertically(state, "up");
-        const newState = moveVertically(state, "up");
+        state = moveVertically(state, {type: "ArrowUp"});
+        const newState = moveVertically(state, {type: "ArrowUp"});
 
         expect(newState).toEqual(state);
     });
@@ -122,7 +125,7 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveLeft(state);
-        state = moveVertically(state, "up");
+        state = moveVertically(state, {type: "ArrowUp"});
 
         expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("b")]);
     });
@@ -148,7 +151,7 @@ describe("moveVertically", () => {
         };
         let state = zipperToState(zipper);
         state = moveLeft(state);
-        state = moveVertically({...state, selecting: true}, "up");
+        state = moveVertically({...state, selecting: true}, {type: "ArrowUp"});
 
         expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("d")]);
     });
@@ -159,7 +162,7 @@ describe("moveVertically", () => {
             breadcrumbs: [],
         };
         const state = zipperToState(zipper);
-        const newState = moveVertically(state, "up");
+        const newState = moveVertically(state, {type: "ArrowUp"});
 
         expect(newState).toEqual(state);
     });

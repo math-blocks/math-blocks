@@ -161,19 +161,6 @@ describe("matrix", () => {
             state = matrix(state, {type: "AddRow", side: "above"});
 
             const row = zipperToRow(state.zipper);
-            row.children; // ?
-            builders.matrix(
-                [
-                    [builders.glyph("0")],
-                    [builders.glyph("0")],
-                    [builders.glyph("a")],
-                    [builders.glyph("b")],
-                    [builders.glyph("c")],
-                    [builders.glyph("d")],
-                ],
-                2,
-                3,
-            ); // ?
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
