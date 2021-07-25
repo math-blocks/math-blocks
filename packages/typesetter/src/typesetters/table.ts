@@ -60,9 +60,6 @@ export const typesetTable = (
         leftKernSize: number,
         rightKernSize: number,
     ): void => {
-        console.log(
-            `reboxing col: ${col} with ${leftKernSize}, ${rightKernSize} padding`,
-        );
         for (let row = 0; row < node.rowCount; row++) {
             let cell = rows[row].children[col];
             cell = Layout.rebox(
