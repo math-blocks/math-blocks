@@ -115,6 +115,14 @@ const isCellEqualSign = (cell: types.Row | null): boolean =>
 const isOperator = (cell: types.Row | null): boolean =>
     isCellPlusMinus(cell) || isCellEqualSign(cell);
 
+const createEmptyCol = (rowCount: number): types.Row[] => {
+    const emptyColumn: types.Row[] = [];
+    for (let j = 0; j < rowCount; j++) {
+        emptyColumn.push(builders.row([]));
+    }
+    return emptyColumn;
+};
+
 export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     // TODO:
     // - reposition cursor appropriate when removing a column containing the cursor
@@ -130,6 +138,9 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
         const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorLoc.row]);
         const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorLoc.row]);
 
+        // If the previous and next cells are not empty but the current column
+        // is empty and all other cells in the previous nad next columns are
+        // empty remove the current column.
         if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
             if (prevColumn && nextColumn) {
                 const otherPrevCells = prevColumn.filter(
@@ -188,11 +199,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
         // First column, current cell is empty, but not the column isn't empty
         if (isFirstColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            const emptyColumn: types.Row[] = [];
-            for (let j = 0; j < rowCount; j++) {
-                emptyColumn.push(builders.row([]));
-            }
-            finalColumns.push(emptyColumn);
+            finalColumns.push(createEmptyCol(rowCount));
         } else if (
             // Not the first column
             !isFirstColumn &&
@@ -220,11 +227,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
             // If the previous column doesn't have any +/- operators than it's
             // safe to insert an empty column here.
             if (!prevColHasPlusMinus) {
-                const emptyColumn: types.Row[] = [];
-                for (let j = 0; j < rowCount; j++) {
-                    emptyColumn.push(builders.row([]));
-                }
-                finalColumns.push(emptyColumn);
+                finalColumns.push(createEmptyCol(rowCount));
             }
         } else if (
             !isFirstColumn &&
@@ -238,11 +241,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                 // Don't add an empty column if there's an operand to the left
                 // of the operator in the cursor row.
             } else {
-                const emptyColumn: types.Row[] = [];
-                for (let j = 0; j < rowCount; j++) {
-                    emptyColumn.push(builders.row([]));
-                }
-                finalColumns.push(emptyColumn);
+                finalColumns.push(createEmptyCol(rowCount));
             }
         }
 
@@ -250,11 +249,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
         // Last column, current cell is empty, and the current cell is not
         if (isLastColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            const emptyColumn: types.Row[] = [];
-            for (let j = 0; j < rowCount; j++) {
-                emptyColumn.push(builders.row([]));
-            }
-            finalColumns.push(emptyColumn);
+            finalColumns.push(createEmptyCol(rowCount));
         }
     }
 

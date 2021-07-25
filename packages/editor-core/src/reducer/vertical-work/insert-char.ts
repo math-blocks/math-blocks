@@ -77,43 +77,44 @@ export const insertChar = (state: State, char: string): State => {
         ? builders.limits(builders.glyph(char), [], [])
         : builders.glyph(char);
 
+    // If we're in an empty column, empty columns will be inserted to the
+    // left and right of the current column.
+    if (isColumnEmpty(cursorCol)) {
+        const cursorColIndex = columns.findIndex((col) => col === cursorCol);
+        const leftEmptyCol = createEmptyColumn(rowCount);
+        const newNodeCol: Column = [
+            ...cursorCol.slice(0, cursorLoc.row),
+            builders.row([newNode]),
+            ...cursorCol.slice(cursorLoc.row + 1),
+        ];
+        const rightEmptyCol = createEmptyColumn(rowCount);
+        const newColumns = [
+            ...columns.slice(0, cursorColIndex),
+            leftEmptyCol,
+            newNodeCol,
+            rightEmptyCol,
+            ...columns.slice(cursorColIndex + 1),
+        ];
+        const newWork: VerticalWork = {
+            columns: newColumns,
+            colCount: newColumns.length,
+            rowCount: rowCount,
+            // If a +/- was inserted the cursor will be moved to the right of
+            // the cell where the character was inserted.
+            cursorId: ["+", "\u2212"].includes(char)
+                ? rightEmptyCol[cursorLoc.row].id
+                : newNodeCol[cursorLoc.row].id,
+            cursorIndex: ["+", "\u2212"].includes(char) ? 0 : 1,
+            crumb: crumb,
+            rowStyles: rowStyles,
+        };
+        const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
+        return util.zipperToState(newZipper);
+    }
+
     // Inserting +/- operators will result in additional empty columns being
     // inserted.
     if (["+", "\u2212"].includes(char)) {
-        // If we're in an empty column, empty columns will be inserted to the
-        // left and right and the cursor will be moved to the right of the cell
-        // where the +/- operator was inserted.
-        if (isColumnEmpty(cursorCol)) {
-            const cursorColIndex = columns.findIndex(
-                (col) => col === cursorCol,
-            );
-            const newEmptyCol = createEmptyColumn(rowCount);
-            const newPlusMinusCol: Column = [
-                ...cursorCol.slice(0, cursorLoc.row),
-                builders.row([newNode]),
-                ...cursorCol.slice(cursorLoc.row + 1),
-            ];
-            const newCursorCol = createEmptyColumn(rowCount);
-            const newColumns = [
-                ...columns.slice(0, cursorColIndex),
-                newEmptyCol,
-                newPlusMinusCol,
-                newCursorCol,
-                ...columns.slice(cursorColIndex + 1),
-            ];
-            const newWork: VerticalWork = {
-                columns: newColumns,
-                colCount: newColumns.length,
-                rowCount: rowCount,
-                cursorId: newCursorCol[cursorLoc.row].id,
-                cursorIndex: 0,
-                crumb: crumb,
-                rowStyles: rowStyles,
-            };
-            const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
-            return util.zipperToState(newZipper);
-        }
-
         // If the current cell isn't empty and the cursor is at the right end
         // of the cell, we insert two now columns to the right.  The +/- operator
         // is inserted into the first new column at the current row and the cursor
@@ -148,6 +149,11 @@ export const insertChar = (state: State, char: string): State => {
             };
             const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
             return util.zipperToState(newZipper);
+        }
+
+        if (!isCellEmpty(cursorCell) && zipper.row.left.length === 0) {
+            // TODO: handle inserting a +/- at the start of a cell if there
+            // isn't a +/- in the cell the left
         }
 
         if (zipper.row.right.length > 0 && zipper.row.left.length > 0) {
