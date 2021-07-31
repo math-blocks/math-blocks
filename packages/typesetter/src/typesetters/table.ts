@@ -87,7 +87,6 @@ export const typesetTable = (
                   ...node.right,
               ];
 
-    const topRowChildren = children.slice(0, node.colCount);
     const MIN_WIDTH = 0; // 32; // only use this for debugging purposes.
 
     // Group cells into rows and columns and determine the width of each
@@ -108,49 +107,13 @@ export const typesetTable = (
                 };
             }
 
-            let padFirstOperator = false;
-
-            // We only want to add padding around the first operator in some
-            // cells when the table is being used for showing work vertically
-            // which is what the "algebra" subtype is for.
-            if (node.subtype === "algebra") {
-                // Pad the first operator in cells if the cell in the top row
-                // of the same column is empty.
-                if (j > 0) {
-                    const content = rows[0].children[i].content;
-                    if (
-                        content.type === "static" &&
-                        content.nodes.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    } else if (
-                        content.type === "cursor" &&
-                        content.left.length === 0 &&
-                        content.right.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    } else if (
-                        content.type === "selection" &&
-                        content.left.length === 0 &&
-                        content.selection.length === 0 &&
-                        content.right.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    }
-                }
-            }
-
-            // Pad if the cell in the top row is a single plus/minus operator,
-            // including the cell in the top row.
-            const topRowChild = topRowChildren[i];
-            if (
-                topRowChild &&
-                topRowChild.children.length === 1 &&
-                topRowChild.children[0].type === "atom" &&
-                ["+", "\u2212"].includes(topRowChild.children[0].value.char)
-            ) {
-                padFirstOperator = true;
-            }
+            // We want to add padding around the first operator if it's the only
+            // character in the cell.
+            const child = children[j * node.colCount + i];
+            const padFirstOperator =
+                child?.children?.length === 1 &&
+                child.children[0].type === "atom" &&
+                ["+", "\u2212"].includes(child.children[0].value.char);
 
             let cell = typesetChild(
                 j * node.colCount + i,

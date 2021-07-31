@@ -214,10 +214,10 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                 if (isCellEmpty(cell)) {
                     return false;
                 }
-                const child = cell.children[0];
                 if (
-                    child.type === "atom" &&
-                    ["+", "\u2212"].includes(child.value.char)
+                    cell.children.length === 1 &&
+                    cell.children[0].type === "atom" &&
+                    ["+", "\u2212"].includes(cell.children[0].value.char)
                 ) {
                     return true;
                 }
@@ -333,6 +333,22 @@ export const getCursorCell = (work: VerticalWork): types.Row => {
     }
 
     throw new Error(`Couldn't find cell with id: ${cursorId}`);
+};
+
+export const getPrevCell = (
+    work: VerticalWork,
+    cell: types.Row,
+): types.Row | null => {
+    const {columns, colCount, rowCount} = work;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 0; row < rowCount; row++) {
+            if (columns[col][row] === cell) {
+                return columns[col - 1]?.[row] ?? null;
+            }
+        }
+    }
+    return null;
 };
 
 export const getOtherCells = (
