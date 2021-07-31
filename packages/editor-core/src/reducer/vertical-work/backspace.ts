@@ -126,6 +126,134 @@ export const backspace = (state: State): State => {
         return util.zipperToState(newZipper);
     }
 
+    // Delete a cell with a single char
+    const nextCell = focus.right[0];
+    const nextNextCell = focus.right[1];
+
+    if (
+        row.left.length === 1 &&
+        row.right.length === 0 &&
+        prevCell &&
+        nextCell &&
+        nextNextCell
+    ) {
+        const work = zipperToVerticalWork(zipper);
+        if (work) {
+            const cursorLoc = getCursorLoc(work);
+            const cursorCell = getCursorCell(work);
+            const {columns, rowCount, rowStyles} = work;
+
+            if (isPlusMinus(cursorCell)) {
+                // case: |+|x|-@|y| -> |+|x@y|
+                // delete the current column and merge the prev and next columns
+                const cursorCol = columns[cursorLoc.col];
+                const prevCol = columns[cursorLoc.col - 1];
+                const nextCol = columns[cursorLoc.col + 1];
+
+                const otherCells = getOtherCells(cursorCol, cursorCell);
+                const prevOtherCells = getOtherCells(prevCol, prevCell);
+                const nextOtherCells = getOtherCells(nextCol, nextCell);
+
+                // In order to merge cells, we require all other cells in the
+                // columns of the cells to be merge to be empty.
+                if (
+                    otherCells.every(isCellEmpty) &&
+                    prevOtherCells.every(isCellEmpty) &&
+                    nextOtherCells.every(isCellEmpty) &&
+                    !isCellEmpty(prevCell) &&
+                    !isCellEmpty(nextCell)
+                ) {
+                    const mergedCol = createEmptyColumnWithCell(
+                        rowCount,
+                        cursorLoc.row,
+                        builders.row([
+                            ...prevCell.children,
+                            ...nextCell.children,
+                        ]),
+                    );
+
+                    const newColumns = [
+                        ...columns.slice(0, cursorLoc.col - 1),
+                        mergedCol,
+                        ...columns.slice(cursorLoc.col + 2),
+                    ];
+
+                    // TODO: create a helper function for updating a VerticalWork
+                    // object with new columns and changing the cursor location.
+                    const newWork: VerticalWork = {
+                        columns: newColumns,
+                        colCount: newColumns.length,
+                        rowCount: rowCount,
+                        cursorId: mergedCol[cursorLoc.row].id,
+                        cursorIndex: prevCell.children.length,
+                        crumb: crumb,
+                        rowStyles: rowStyles,
+                    };
+
+                    const newZipper = verticalWorkToZTable(
+                        adjustEmptyColumns(newWork),
+                    );
+                    return util.zipperToState(newZipper);
+                }
+            } else {
+                // case: |+|x@|-|y| -> |+|-y|
+                // Delete the current cell and merge the two cells to the right
+                const cursorCol = columns[cursorLoc.col];
+                const nextCol = columns[cursorLoc.col + 1];
+                const nextNextCol = columns[cursorLoc.col + 2];
+
+                const otherCells = getOtherCells(cursorCol, cursorCell);
+                const nextOtherCells = getOtherCells(nextCol, nextCell);
+                const nextNextOtherCells = getOtherCells(
+                    nextNextCol,
+                    nextNextCell,
+                );
+
+                // In order to merge cells, we require all other cells in the
+                // columns of the cells to be merge to be empty.
+                if (
+                    otherCells.every(isCellEmpty) &&
+                    nextNextOtherCells.every(isCellEmpty) &&
+                    nextOtherCells.every(isCellEmpty) &&
+                    !isCellEmpty(nextCell) &&
+                    !isCellEmpty(nextNextCell)
+                ) {
+                    const mergedCol = createEmptyColumnWithCell(
+                        rowCount,
+                        cursorLoc.row,
+                        builders.row([
+                            ...nextCell.children,
+                            ...nextNextCell.children,
+                        ]),
+                    );
+
+                    const newColumns = [
+                        ...columns.slice(0, cursorLoc.col),
+                        mergedCol,
+                        ...columns.slice(cursorLoc.col + 3),
+                    ];
+
+                    // TODO: create a helper function for updating a VerticalWork
+                    // object with new columns and changing the cursor location.
+                    const newWork: VerticalWork = {
+                        columns: newColumns,
+                        colCount: newColumns.length,
+                        rowCount: rowCount,
+                        cursorId: mergedCol[cursorLoc.row].id,
+                        cursorIndex: 0,
+                        crumb: crumb,
+                        rowStyles: rowStyles,
+                    };
+
+                    const newZipper = verticalWorkToZTable(
+                        adjustEmptyColumns(newWork),
+                    );
+                    return util.zipperToState(newZipper);
+                }
+            }
+        }
+    }
+
     // TODO: figure out what we want to do for deleting at the start of
     // a non-empty cell.
     if (zipper.row.left.length === 0 && zipper.row.right.length === 0) {

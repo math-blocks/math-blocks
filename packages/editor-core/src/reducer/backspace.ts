@@ -25,6 +25,18 @@ export const backspace = (state: State): State => {
         };
     }
 
+    const {breadcrumbs} = zipper;
+    const crumb = breadcrumbs[breadcrumbs.length - 1];
+    if (crumb) {
+        const {focus} = crumb;
+        if (focus.type === "ztable" && focus.subtype === "algebra") {
+            const newState = verticalWork(state, {type: "Backspace"});
+            if (newState !== state) {
+                return newState;
+            }
+        }
+    }
+
     if (zipper.row.left.length > 0) {
         const {left, right} = zipper.row;
         const prev = left[left.length - 1];
@@ -111,8 +123,6 @@ export const backspace = (state: State): State => {
         };
     }
 
-    const {breadcrumbs} = zipper;
-
     if (breadcrumbs.length === 0) {
         return {
             startZipper: zipper,
@@ -122,8 +132,11 @@ export const backspace = (state: State): State => {
         };
     }
 
-    const crumb = breadcrumbs[breadcrumbs.length - 1];
     const {focus, row} = crumb;
+
+    if (focus.type === "ztable" && focus.subtype !== "algebra") {
+        return moveLeft(util.zipperToState(zipper));
+    }
 
     // Special deleting from the start of a superscript when there's both a
     // superscript and subscript.
@@ -156,14 +169,6 @@ export const backspace = (state: State): State => {
             zipper: newZipper,
             selecting: false,
         };
-    }
-
-    if (focus.type === "ztable") {
-        if (focus.subtype === "algebra") {
-            return verticalWork(state, {type: "Backspace"});
-        }
-
-        return moveLeft(util.zipperToState(zipper));
     }
 
     const leftChildren = focus.left[0] ? focus.left[0].children : [];

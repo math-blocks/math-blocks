@@ -9,12 +9,9 @@ import type {Context} from "../types";
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
-const isCellEqualSign = (cell: Editor.types.Row | null): boolean =>
-    cell?.children.length === 1 && Editor.util.isAtom(cell.children[0], "=");
-
-const isCellPlusMinus = (cell: Editor.types.Row | null): boolean =>
+const isOperator = (cell: Editor.types.Row | null): boolean =>
     cell?.children.length === 1 &&
-    Editor.util.isAtom(cell.children[0], ["+", "\u2212"]);
+    Editor.util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
 const childContextForTable = (context: Context): Context => {
     const {mathStyle} = context;
@@ -58,6 +55,24 @@ export const typesetTable = (
     const rows: Row[] = [];
     const childContext = childContextForTable(context);
 
+    const reboxColumn = (
+        col: number,
+        leftKernSize: number,
+        rightKernSize: number,
+    ): void => {
+        for (let row = 0; row < node.rowCount; row++) {
+            let cell = rows[row].children[col];
+            cell = Layout.rebox(
+                cell,
+                Layout.makeKern(leftKernSize),
+                Layout.makeKern(rightKernSize),
+            );
+            rows[row].children[col] = cell;
+            columns[col].children[row] = cell;
+            columns[col].width = Math.max(columns[col].width, cell.width);
+        }
+    };
+
     const gutterWidth: number =
         node.subtype === "algebra" ? 0 : DEFAULT_GUTTER_WIDTH;
 
@@ -72,7 +87,6 @@ export const typesetTable = (
                   ...node.right,
               ];
 
-    const topRowChildren = children.slice(0, node.colCount);
     const MIN_WIDTH = 0; // 32; // only use this for debugging purposes.
 
     // Group cells into rows and columns and determine the width of each
@@ -93,49 +107,13 @@ export const typesetTable = (
                 };
             }
 
-            let padFirstOperator = false;
-
-            // We only want to add padding around the first operator in some
-            // cells when the table is being used for showing work vertically
-            // which is what the "algebra" subtype is for.
-            if (node.subtype === "algebra") {
-                // Pad the first operator in cells if the cell in the top row
-                // of the same column is empty.
-                if (j > 0) {
-                    const content = rows[0].children[i].content;
-                    if (
-                        content.type === "static" &&
-                        content.nodes.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    } else if (
-                        content.type === "cursor" &&
-                        content.left.length === 0 &&
-                        content.right.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    } else if (
-                        content.type === "selection" &&
-                        content.left.length === 0 &&
-                        content.selection.length === 0 &&
-                        content.right.length === 0
-                    ) {
-                        padFirstOperator = true;
-                    }
-                }
-            }
-
-            // Pad if the cell in the top row is a single plus/minus operator,
-            // including the cell in the top row.
-            const topRowChild = topRowChildren[i];
-            if (
-                topRowChild &&
-                topRowChild.children.length === 1 &&
-                topRowChild.children[0].type === "atom" &&
-                ["+", "\u2212"].includes(topRowChild.children[0].value.char)
-            ) {
-                padFirstOperator = true;
-            }
+            // We want to add padding around the first operator if it's the only
+            // character in the cell.
+            const child = children[j * node.colCount + i];
+            const padFirstOperator =
+                child?.children?.length === 1 &&
+                child.children[0].type === "atom" &&
+                ["+", "\u2212"].includes(child.children[0].value.char);
 
             let cell = typesetChild(
                 j * node.colCount + i,
@@ -189,99 +167,51 @@ export const typesetTable = (
         }
 
         if (zrow) {
-            if (
-                col < cellColumns.length - 1 &&
-                cellColumns[col + 1].some(isCellEqualSign) &&
-                zrow.left.length === 0
+            if (col === 0 && !cellColumns[col + 1].some(isOperator)) {
+                // Add right padding on every cell in the first column
+                reboxColumn(col, 0, 16);
+            } else if (
+                col === node.colCount - 1 &&
+                !cellColumns[col - 1].some(isOperator)
             ) {
-                // Add left padding on every cell in the row except the first
-                for (let row = 1; row < node.rowCount; row++) {
-                    let cell = rows[row].children[col];
-                    cell = Layout.rebox(
-                        cell,
-                        Layout.makeKern(16),
-                        Layout.makeKern(0),
-                    );
-                    rows[row].children[col] = cell;
-                    columns[col].children[row] = cell;
-                    columns[col].width = Math.max(
-                        columns[col].width,
-                        cell.width,
-                    );
-                }
+                // Add left padding on every cell in the last column
+                reboxColumn(col, 16, 0);
             } else if (
                 col > 0 &&
-                cellColumns[col - 1].some(isCellEqualSign) &&
-                zrow.right.length === 0
-            ) {
-                // Add right padding on every cell in the row except the first
-                for (let row = 1; row < node.rowCount; row++) {
-                    let cell = rows[row].children[col];
-                    cell = Layout.rebox(
-                        cell,
-                        Layout.makeKern(0),
-                        Layout.makeKern(16),
-                    );
-                    rows[row].children[col] = cell;
-                    columns[col].children[row] = cell;
-                    columns[col].width = Math.max(
-                        columns[col].width,
-                        cell.width,
-                    );
-                }
-            } else if (
                 col < cellColumns.length - 1 &&
-                cellColumns[col + 1].some(isCellPlusMinus) &&
                 Editor.isColumnEmpty(cellColumns[col])
-                // zrow.left.length === 0 && zrow.right.length === 0
             ) {
-                // Add left padding on every cell in the row except the first
-                for (let row = 1; row < node.rowCount; row++) {
-                    let cell = rows[row].children[col];
-                    cell = Layout.rebox(
-                        cell,
-                        Layout.makeKern(16),
-                        Layout.makeKern(0),
-                    );
-                    rows[row].children[col] = cell;
-                    columns[col].children[row] = cell;
-                    columns[col].width = Math.max(
-                        columns[col].width,
-                        cell.width,
-                    );
+                // If the cursor is in an empty column, only add padding to one
+                // side of the column if there's an operator in one of the
+                // columns. The padding goes on the opposite side of the column
+                // with the operator since operators have their own built-in
+                // padding.
+                if (
+                    cellColumns[col - 1].some(isOperator) &&
+                    !cellColumns[col + 1].some(isOperator)
+                ) {
+                    reboxColumn(col, 0, 16);
+                } else if (
+                    cellColumns[col + 1].some(isOperator) &&
+                    !cellColumns[col - 1].some(isOperator)
+                ) {
+                    reboxColumn(col, 16, 0);
                 }
-            } else if (col === 0 && zrow.right.length === 0) {
-                // Add right padding on every cell in the row except the first
-                for (let row = 1; row < node.rowCount; row++) {
-                    let cell = rows[row].children[col];
-                    cell = Layout.rebox(
-                        cell,
-                        Layout.makeKern(0),
-                        Layout.makeKern(16),
-                    );
-                    rows[row].children[col] = cell;
-                    columns[col].children[row] = cell;
-                    columns[col].width = Math.max(
-                        columns[col].width,
-                        cell.width,
-                    );
-                }
-            } else if (col === node.colCount - 1 && zrow.left.length === 0) {
-                // Add left padding on every cell in the row except the first
-                for (let row = 1; row < node.rowCount; row++) {
-                    let cell = rows[row].children[col];
-                    cell = Layout.rebox(
-                        cell,
-                        Layout.makeKern(16),
-                        Layout.makeKern(0),
-                    );
-                    rows[row].children[col] = cell;
-                    columns[col].children[row] = cell;
-                    columns[col].width = Math.max(
-                        columns[col].width,
-                        cell.width,
-                    );
-                }
+            }
+        }
+
+        // If there are any columns with no operators on either side, add both
+        // left and right padding regardless of whether the cursor is in the
+        // column or not.
+        for (let col = 0; col < node.colCount; col++) {
+            if (
+                col > 0 &&
+                col < cellColumns.length - 1 &&
+                Editor.isColumnEmpty(cellColumns[col]) &&
+                !cellColumns[col - 1].some(isOperator) &&
+                !cellColumns[col + 1].some(isOperator)
+            ) {
+                reboxColumn(col, 16, 16);
             }
         }
     }

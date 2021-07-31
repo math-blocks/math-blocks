@@ -115,6 +115,14 @@ const isCellEqualSign = (cell: types.Row | null): boolean =>
 const isOperator = (cell: types.Row | null): boolean =>
     isCellPlusMinus(cell) || isCellEqualSign(cell);
 
+const createEmptyCol = (rowCount: number): types.Row[] => {
+    const emptyColumn: types.Row[] = [];
+    for (let j = 0; j < rowCount; j++) {
+        emptyColumn.push(builders.row([]));
+    }
+    return emptyColumn;
+};
+
 export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
     // TODO:
     // - reposition cursor appropriate when removing a column containing the cursor
@@ -130,6 +138,9 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
         const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorLoc.row]);
         const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorLoc.row]);
 
+        // If the previous and next cells are not empty but the current column
+        // is empty and all other cells in the previous nad next columns are
+        // empty remove the current column.
         if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
             if (prevColumn && nextColumn) {
                 const otherPrevCells = prevColumn.filter(
@@ -188,11 +199,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
         // First column, current cell is empty, but not the column isn't empty
         if (isFirstColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            const emptyColumn: types.Row[] = [];
-            for (let j = 0; j < rowCount; j++) {
-                emptyColumn.push(builders.row([]));
-            }
-            finalColumns.push(emptyColumn);
+            finalColumns.push(createEmptyCol(rowCount));
         } else if (
             // Not the first column
             !isFirstColumn &&
@@ -207,10 +214,10 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                 if (isCellEmpty(cell)) {
                     return false;
                 }
-                const child = cell.children[0];
                 if (
-                    child.type === "atom" &&
-                    ["+", "\u2212"].includes(child.value.char)
+                    cell.children.length === 1 &&
+                    cell.children[0].type === "atom" &&
+                    ["+", "\u2212"].includes(cell.children[0].value.char)
                 ) {
                     return true;
                 }
@@ -220,11 +227,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
             // If the previous column doesn't have any +/- operators than it's
             // safe to insert an empty column here.
             if (!prevColHasPlusMinus) {
-                const emptyColumn: types.Row[] = [];
-                for (let j = 0; j < rowCount; j++) {
-                    emptyColumn.push(builders.row([]));
-                }
-                finalColumns.push(emptyColumn);
+                finalColumns.push(createEmptyCol(rowCount));
             }
         } else if (
             !isFirstColumn &&
@@ -238,11 +241,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
                 // Don't add an empty column if there's an operand to the left
                 // of the operator in the cursor row.
             } else {
-                const emptyColumn: types.Row[] = [];
-                for (let j = 0; j < rowCount; j++) {
-                    emptyColumn.push(builders.row([]));
-                }
-                finalColumns.push(emptyColumn);
+                finalColumns.push(createEmptyCol(rowCount));
             }
         }
 
@@ -250,11 +249,7 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
         // Last column, current cell is empty, and the current cell is not
         if (isLastColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            const emptyColumn: types.Row[] = [];
-            for (let j = 0; j < rowCount; j++) {
-                emptyColumn.push(builders.row([]));
-            }
-            finalColumns.push(emptyColumn);
+            finalColumns.push(createEmptyCol(rowCount));
         }
     }
 
@@ -338,6 +333,22 @@ export const getCursorCell = (work: VerticalWork): types.Row => {
     }
 
     throw new Error(`Couldn't find cell with id: ${cursorId}`);
+};
+
+export const getPrevCell = (
+    work: VerticalWork,
+    cell: types.Row,
+): types.Row | null => {
+    const {columns, colCount, rowCount} = work;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 0; row < rowCount; row++) {
+            if (columns[col][row] === cell) {
+                return columns[col - 1]?.[row] ?? null;
+            }
+        }
+    }
+    return null;
 };
 
 export const getOtherCells = (

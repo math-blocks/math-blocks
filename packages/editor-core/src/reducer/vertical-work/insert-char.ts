@@ -11,6 +11,7 @@ import {
     isCellEmpty,
     getCursorLoc,
     getCursorCell,
+    getPrevCell,
     getOtherCells,
     createEmptyColumn,
     createEmptyColumnWithCell,
@@ -25,6 +26,9 @@ const isPlusMinus = (cell: types.Row | null): boolean =>
 
 const isRelOp = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["=", ">", "<"]);
+
+const isOp = (cell: types.Row | null): boolean =>
+    isPlusMinus(cell) || isRelOp(cell);
 
 // TODO: place cursor in lower limits
 // TODO: dedupe this with insert-char.ts
@@ -69,6 +73,7 @@ export const insertChar = (state: State, char: string): State => {
 
     const cursorCell = getCursorCell(work);
     const cursorLoc = getCursorLoc(work);
+    const prevCell = getPrevCell(work, cursorCell);
 
     const cursorCol = columns[cursorLoc.col];
     const otherCells = getOtherCells(cursorCol, cursorCell);
@@ -77,43 +82,51 @@ export const insertChar = (state: State, char: string): State => {
         ? builders.limits(builders.glyph(char), [], [])
         : builders.glyph(char);
 
+    // If we're in an empty column, empty columns will be inserted to the
+    // left and right of the current column.
+    if (isColumnEmpty(cursorCol)) {
+        // if (["+", "\u2212"].includes(char) && isOp(prevCell)) {
+        //     return util.zipperToState(insert(zipper, newNode));
+        // }
+        const cursorColIndex = columns.findIndex((col) => col === cursorCol);
+        const leftEmptyCol = createEmptyColumn(rowCount);
+        const newNodeCol: Column = [
+            ...cursorCol.slice(0, cursorLoc.row),
+            builders.row([newNode]),
+            ...cursorCol.slice(cursorLoc.row + 1),
+        ];
+        const rightEmptyCol = createEmptyColumn(rowCount);
+        const newColumns = [
+            ...columns.slice(0, cursorColIndex),
+            leftEmptyCol,
+            newNodeCol,
+            rightEmptyCol,
+            ...columns.slice(cursorColIndex + 1),
+        ];
+        const newWork: VerticalWork = {
+            columns: newColumns,
+            colCount: newColumns.length,
+            rowCount: rowCount,
+            // If a +/- was inserted the cursor will be moved to the right of
+            // the cell where the character was inserted.
+            cursorId:
+                ["+", "\u2212"].includes(char) && !isOp(prevCell)
+                    ? rightEmptyCol[cursorLoc.row].id
+                    : newNodeCol[cursorLoc.row].id,
+            cursorIndex:
+                ["+", "\u2212"].includes(char) && !isOp(prevCell) ? 0 : 1,
+            crumb: crumb,
+            rowStyles: rowStyles,
+        };
+        const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
+        return util.zipperToState(newZipper);
+    }
+
     // Inserting +/- operators will result in additional empty columns being
     // inserted.
+    // TODO: handle the situation where there are other non-empty cells in the
+    // current column.
     if (["+", "\u2212"].includes(char)) {
-        // If we're in an empty column, empty columns will be inserted to the
-        // left and right and the cursor will be moved to the right of the cell
-        // where the +/- operator was inserted.
-        if (isColumnEmpty(cursorCol)) {
-            const cursorColIndex = columns.findIndex(
-                (col) => col === cursorCol,
-            );
-            const newEmptyCol = createEmptyColumn(rowCount);
-            const newPlusMinusCol: Column = [
-                ...cursorCol.slice(0, cursorLoc.row),
-                builders.row([newNode]),
-                ...cursorCol.slice(cursorLoc.row + 1),
-            ];
-            const newCursorCol = createEmptyColumn(rowCount);
-            const newColumns = [
-                ...columns.slice(0, cursorColIndex),
-                newEmptyCol,
-                newPlusMinusCol,
-                newCursorCol,
-                ...columns.slice(cursorColIndex + 1),
-            ];
-            const newWork: VerticalWork = {
-                columns: newColumns,
-                colCount: newColumns.length,
-                rowCount: rowCount,
-                cursorId: newCursorCol[cursorLoc.row].id,
-                cursorIndex: 0,
-                crumb: crumb,
-                rowStyles: rowStyles,
-            };
-            const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
-            return util.zipperToState(newZipper);
-        }
-
         // If the current cell isn't empty and the cursor is at the right end
         // of the cell, we insert two now columns to the right.  The +/- operator
         // is inserted into the first new column at the current row and the cursor
@@ -150,12 +163,50 @@ export const insertChar = (state: State, char: string): State => {
             return util.zipperToState(newZipper);
         }
 
-        if (zipper.row.right.length > 0 && zipper.row.left.length > 0) {
+        // add a new column with +/- when the cursor is at the start of a cell
+        if (
+            !isCellEmpty(cursorCell) &&
+            !isOp(prevCell) &&
+            zipper.row.left.length === 0 &&
+            otherCells.every(isCellEmpty)
+        ) {
+            const cursorColIndex = columns.findIndex(
+                (col) => col === cursorCol,
+            );
+            const newPlusMinusCol: types.Row[] = [];
+            for (let i = 0; i < rowCount; i++) {
+                if (i === cursorLoc.row) {
+                    newPlusMinusCol.push(builders.row([newNode]));
+                } else {
+                    newPlusMinusCol.push(builders.row([]));
+                }
+            }
+            const newColumns = [
+                ...columns.slice(0, cursorColIndex),
+                newPlusMinusCol,
+                ...columns.slice(cursorColIndex),
+            ];
+            const newWork: VerticalWork = {
+                columns: newColumns,
+                colCount: newColumns.length,
+                rowCount: rowCount,
+                cursorId: cursorCell.id,
+                cursorIndex: 0,
+                crumb: crumb,
+                rowStyles: rowStyles,
+            };
+            const newZipper = verticalWorkToZTable(adjustEmptyColumns(newWork));
+            return util.zipperToState(newZipper);
+        }
+
+        // split a cell with a +/- operator
+        if (
+            zipper.row.right.length > 0 &&
+            zipper.row.left.length > 0 &&
+            otherCells.every(isCellEmpty)
+        ) {
             const prevNode = zipper.row.left[zipper.row.left.length - 1];
             if (
-                // TODO: handle the situation where there are other non-empty
-                // cells in the current column
-                // otherCells.every(isCellEmpty) &&
                 // If there's a +/- operate just to the left of the cursor that
                 // would indicate that this operand has one or more unary +/-.
                 prevNode.type !== "atom" ||
@@ -192,6 +243,56 @@ export const insertChar = (state: State, char: string): State => {
                     rowCount: rowCount,
                     cursorId: rightCol[cursorLoc.row].id,
                     cursorIndex: 0,
+                    crumb: crumb,
+                    rowStyles: rowStyles,
+                };
+                const newZipper = verticalWorkToZTable(
+                    adjustEmptyColumns(newWork),
+                );
+                return util.zipperToState(newZipper);
+            }
+        }
+    }
+
+    // |@+y| -> |x@|+|y|
+    if (!isCellEmpty(cursorCell) && otherCells.every(isCellEmpty)) {
+        if (
+            cursorCell.children.length > 0 &&
+            cursorCell.children[0].type === "atom" &&
+            ["+", "\u2212"].includes(cursorCell.children[0].value.char)
+        ) {
+            if (!["+", "\u2212"].includes(char)) {
+                const cursorColIndex = columns.findIndex(
+                    (col) => col === cursorCol,
+                );
+                const leftCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
+                    builders.row([newNode]),
+                );
+                const plusMinusCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
+                    builders.row([cursorCell.children[0]]),
+                );
+                const rightCol = createEmptyColumnWithCell(
+                    rowCount,
+                    cursorLoc.row,
+                    builders.row(cursorCell.children.slice(1)),
+                );
+                const newColumns = [
+                    ...columns.slice(0, cursorColIndex),
+                    leftCol,
+                    plusMinusCol,
+                    rightCol,
+                    ...columns.slice(cursorColIndex + 1),
+                ];
+                const newWork: VerticalWork = {
+                    columns: newColumns,
+                    colCount: newColumns.length,
+                    rowCount: rowCount,
+                    cursorId: leftCol[cursorLoc.row].id,
+                    cursorIndex: 1,
                     crumb: crumb,
                     rowStyles: rowStyles,
                 };

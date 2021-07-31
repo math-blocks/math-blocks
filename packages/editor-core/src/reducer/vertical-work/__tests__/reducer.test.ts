@@ -560,6 +560,115 @@ describe("verticalWork reducer", () => {
 
             expect(result).toEqualZipper(expected);
         });
+
+        test("plus/minus operator at the start of a cell with nothing to the left", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| |  | |+|5| 
+             |2x| |@3| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |  | |+|5| 
+             |2x| |+|@3| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("plus/minus operator at the start of a cell with an operator to the left", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | |  | |+|5| 
+             |2x| |+|@3| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |2x| |+|+@3| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("plus/minus operator in an empty cell with an operator to the left", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | | | |+|5| 
+             |2x| |+|@| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "+");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |  | |+|5| 
+             |2x| |+|+@| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("plus/minus operator at end of cell with other non-empty cells in the column", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| |+|5 | 
+             |2x| |+|5@| `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(insertChar(state, "+"), "x");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| |+|5| |  | 
+             |2x| |+|5|+|x@| `);
+
+            expect(result).toEqualZipper(expected);
+        });
+    });
+
+    describe("splitting cells", () => {
+        test("operand infront of unary operator", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |2x| |+|@+y| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = insertChar(state, "x");
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |  | | | |+|5| 
+             |2x| |+|x@|+|y| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+    });
+
+    describe("merging cells", () => {
+        test("deleting operands infront of plus/minus operators merge next two cell", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | |  | | | |+|5| 
+             |2x| |+|x@|+|y| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = backspace(state);
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |2x| |+|@+y| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
+
+        test("deleting plus/minus operators merge prev and next cell", () => {
+            const zipper: Zipper = textRepToZipper(`
+             |2x| | | |  | | |+|5| 
+             |2x| |+|x|+@|y| | | | `);
+
+            const state = stateFromZipper(zipper);
+            const {zipper: result} = backspace(state);
+
+            const expected: Zipper = textRepToZipper(`
+             |2x| | |   | |+|5| 
+             |2x| |+|x@y| | | | `);
+
+            expect(result).toEqualZipper(expected);
+        });
     });
 
     // TODO:
