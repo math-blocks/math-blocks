@@ -13,6 +13,7 @@ import {
     getCursorCell,
     getOtherCells,
     createEmptyColumnWithCell,
+    isColumnEmpty,
 } from "./util";
 
 import type {VerticalWork} from "./util";
@@ -130,9 +131,11 @@ export const backspace = (state: State): State => {
     const nextCell = focus.right[0];
     const nextNextCell = focus.right[1];
 
+    // If there's only one glyph left in the current cell...
     if (
         row.left.length === 1 &&
         row.right.length === 0 &&
+        row.left[0].type === "atom" &&
         prevCell &&
         nextCell &&
         nextNextCell
@@ -143,14 +146,15 @@ export const backspace = (state: State): State => {
             const cursorCell = getCursorCell(work);
             const {columns, rowCount, rowStyles} = work;
 
+            const cursorCol = columns[cursorLoc.col];
+            const otherCells = getOtherCells(cursorCol, cursorCell);
+
             if (isPlusMinus(cursorCell)) {
                 // case: |+|x|-@|y| -> |+|x@y|
                 // delete the current column and merge the prev and next columns
-                const cursorCol = columns[cursorLoc.col];
                 const prevCol = columns[cursorLoc.col - 1];
                 const nextCol = columns[cursorLoc.col + 1];
 
-                const otherCells = getOtherCells(cursorCol, cursorCell);
                 const prevOtherCells = getOtherCells(prevCol, prevCell);
                 const nextOtherCells = getOtherCells(nextCol, nextCell);
 
@@ -198,11 +202,9 @@ export const backspace = (state: State): State => {
             } else {
                 // case: |+|x@|-|y| -> |+|-y|
                 // Delete the current cell and merge the two cells to the right
-                const cursorCol = columns[cursorLoc.col];
                 const nextCol = columns[cursorLoc.col + 1];
                 const nextNextCol = columns[cursorLoc.col + 2];
 
-                const otherCells = getOtherCells(cursorCol, cursorCell);
                 const nextOtherCells = getOtherCells(nextCol, nextCell);
                 const nextNextOtherCells = getOtherCells(
                     nextNextCol,
@@ -240,6 +242,37 @@ export const backspace = (state: State): State => {
                         colCount: newColumns.length,
                         rowCount: rowCount,
                         cursorId: mergedCol[cursorLoc.row].id,
+                        cursorIndex: 0,
+                        crumb: crumb,
+                        rowStyles: rowStyles,
+                    };
+
+                    const newZipper = verticalWorkToZTable(
+                        adjustEmptyColumns(newWork),
+                    );
+                    return util.zipperToState(newZipper);
+                }
+
+                // If the next column is empty
+                if (isColumnEmpty(nextCol)) {
+                    // Delete the contents of the current cell
+                    const newCell = builders.row([]);
+                    const updateCursorCol = [
+                        ...cursorCol.slice(0, cursorLoc.row),
+                        newCell,
+                        ...cursorCol.slice(cursorLoc.row + 1),
+                    ];
+                    // Replace the current column and delete the next column
+                    const newColumns = [
+                        ...columns.slice(0, cursorLoc.col),
+                        updateCursorCol,
+                        ...columns.slice(cursorLoc.col + 2),
+                    ];
+                    const newWork: VerticalWork = {
+                        columns: newColumns,
+                        colCount: newColumns.length,
+                        rowCount: rowCount,
+                        cursorId: newCell.id,
                         cursorIndex: 0,
                         crumb: crumb,
                         rowStyles: rowStyles,

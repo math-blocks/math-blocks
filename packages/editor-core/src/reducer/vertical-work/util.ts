@@ -124,9 +124,6 @@ const createEmptyCol = (rowCount: number): types.Row[] => {
 };
 
 export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
-    // TODO:
-    // - reposition cursor appropriate when removing a column containing the cursor
-    // - add any empty columns that are missing
     const {columns, rowCount, colCount} = work;
 
     const cursorLoc = getCursorLoc(work);
@@ -172,15 +169,41 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
         }
     }
 
-    // TODO: figure out if we can move the cursor to the left in this situation
-    // Prevent the column containing the cursor for being removed
-    if (colsToRemove.has(cursorLoc.col)) {
-        colsToRemove.delete(cursorLoc.col);
+    // If we're in the last row, remove all empty columns
+    if (cursorLoc.row === 2) {
+        for (let i = 0; i < colCount; i++) {
+            if (isColumnEmpty(columns[i])) {
+                colsToRemove.add(i);
+            }
+        }
     }
+
+    // If the cursor is in a column that's getting removed, move it into the
+    // cell to the left.
+    const cursorId = colsToRemove.has(cursorLoc.col)
+        ? columns[cursorLoc.col - 1][cursorLoc.row].id
+        : columns[cursorLoc.col][cursorLoc.row].id;
+
+    // Position the cursor on the right side of the cell if we have to move it
+    // into the cell to the left
+    const cursorIndex = colsToRemove.has(cursorLoc.col)
+        ? columns[cursorLoc.col - 1][cursorLoc.row].children.length
+        : work.cursorIndex;
 
     const filteredColumns = columns.filter(
         (col, index) => !colsToRemove.has(index),
     );
+
+    // If we're in the last row, don't re-add any empty columns
+    if (cursorLoc.row === 2) {
+        return {
+            ...work,
+            cursorId,
+            cursorIndex,
+            columns: filteredColumns,
+            colCount: filteredColumns.length,
+        };
+    }
 
     const finalColumns: Column[] = [];
     for (let i = 0; i < filteredColumns.length; i++) {
@@ -255,6 +278,8 @@ export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
 
     return {
         ...work,
+        cursorId,
+        cursorIndex,
         columns: finalColumns,
         colCount: finalColumns.length,
     };
@@ -345,6 +370,22 @@ export const getPrevCell = (
         for (let row = 0; row < rowCount; row++) {
             if (columns[col][row] === cell) {
                 return columns[col - 1]?.[row] ?? null;
+            }
+        }
+    }
+    return null;
+};
+
+export const getNextCell = (
+    work: VerticalWork,
+    cell: types.Row,
+): types.Row | null => {
+    const {columns, colCount, rowCount} = work;
+
+    for (let col = 0; col < colCount; col++) {
+        for (let row = 0; row < rowCount; row++) {
+            if (columns[col][row] === cell) {
+                return columns[col + 1]?.[row] ?? null;
             }
         }
     }

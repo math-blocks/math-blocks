@@ -12,6 +12,7 @@ import {
     getCursorLoc,
     getCursorCell,
     getPrevCell,
+    getNextCell,
     getOtherCells,
     createEmptyColumn,
     createEmptyColumnWithCell,
@@ -74,6 +75,7 @@ export const insertChar = (state: State, char: string): State => {
     const cursorCell = getCursorCell(work);
     const cursorLoc = getCursorLoc(work);
     const prevCell = getPrevCell(work, cursorCell);
+    const nextCell = getNextCell(work, cursorCell);
 
     const cursorCol = columns[cursorLoc.col];
     const otherCells = getOtherCells(cursorCol, cursorCell);
@@ -81,6 +83,19 @@ export const insertChar = (state: State, char: string): State => {
     const newNode = LIMIT_CHARS.includes(char)
         ? builders.limits(builders.glyph(char), [], [])
         : builders.glyph(char);
+
+    if (rowCount === 3 && cursorLoc.row === 2) {
+        if (
+            !isCellEmpty(cursorCell) &&
+            zipper.row.right.length === 0 &&
+            ["+", "\u2212", "=", ">", "<"].includes(char) &&
+            isCellEmpty(nextCell)
+        ) {
+            return util.zipperToState(
+                cursorRight(insert(cursorRight(zipper), newNode)),
+            );
+        }
+    }
 
     // If we're in an empty column, empty columns will be inserted to the
     // left and right of the current column.
