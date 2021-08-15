@@ -81,11 +81,11 @@ describe("zipperToRow", () => {
 
             expect(result.children).toEqualEditorNodes(
                 builders.row([
-                    builders.glyph("1"),
-                    builders.glyph("+"),
+                    builders.char("1"),
+                    builders.char("+"),
                     builders.frac(row("2").children, row("3").children),
-                    builders.glyph("+"),
-                    builders.glyph("4"),
+                    builders.char("+"),
+                    builders.char("4"),
                 ]).children,
             );
         });

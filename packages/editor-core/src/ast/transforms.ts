@@ -191,7 +191,7 @@ export const traverseNode = <T extends types.CharNode>(
     },
     path: readonly number[],
 ): T => {
-    if (node.type === "atom") {
+    if (node.type === "char") {
         callback.enter?.(node, path);
         return callback.exit(node, path) || node;
     }

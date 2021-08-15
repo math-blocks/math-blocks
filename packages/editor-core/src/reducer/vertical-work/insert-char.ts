@@ -81,8 +81,8 @@ export const insertChar = (state: State, char: string): State => {
     const otherCells = getOtherCells(cursorCol, cursorCell);
 
     const newNode = LIMIT_CHARS.includes(char)
-        ? builders.limits(builders.glyph(char), [], [])
-        : builders.glyph(char);
+        ? builders.limits(builders.char(char), [], [])
+        : builders.char(char);
 
     if (rowCount === 3 && cursorLoc.row === 2) {
         if (
@@ -224,8 +224,8 @@ export const insertChar = (state: State, char: string): State => {
             if (
                 // If there's a +/- operate just to the left of the cursor that
                 // would indicate that this operand has one or more unary +/-.
-                prevNode.type !== "atom" ||
-                !["+", "\u2212"].includes(prevNode.value.char)
+                prevNode.type !== "char" ||
+                !["+", "\u2212"].includes(prevNode.char)
             ) {
                 const cursorColIndex = columns.findIndex(
                     (col) => col === cursorCol,
@@ -271,8 +271,8 @@ export const insertChar = (state: State, char: string): State => {
     if (!isCellEmpty(cursorCell) && otherCells.every(isCellEmpty)) {
         if (
             cursorCell.children.length > 0 &&
-            cursorCell.children[0].type === "atom" &&
-            ["+", "\u2212"].includes(cursorCell.children[0].value.char)
+            cursorCell.children[0].type === "char" &&
+            ["+", "\u2212"].includes(cursorCell.children[0].char)
         ) {
             if (!["+", "\u2212"].includes(char)) {
                 const cursorColIndex = columns.findIndex(

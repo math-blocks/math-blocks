@@ -10,7 +10,7 @@ import {getFontData, parse} from "@math-blocks/opentype";
 
 import type {FontData} from "@math-blocks/opentype";
 
-const {row, glyph} = Editor.builders;
+const {row, char: glyph} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 
@@ -186,36 +186,36 @@ describe("moving cursor with mouse", () => {
 
         beforeEach(() => {
             math = Editor.builders.row([
-                Editor.builders.glyph("2"),
-                Editor.builders.glyph("+"),
+                Editor.builders.char("2"),
+                Editor.builders.char("+"),
                 Editor.builders.frac(
                     [
                         Editor.builders.frac(
-                            [Editor.builders.glyph("a")],
-                            [Editor.builders.glyph("b")],
+                            [Editor.builders.char("a")],
+                            [Editor.builders.char("b")],
                         ),
-                        Editor.builders.glyph("+"),
+                        Editor.builders.char("+"),
                         Editor.builders.frac(
-                            [Editor.builders.glyph("c")],
-                            [Editor.builders.glyph("d")],
+                            [Editor.builders.char("c")],
+                            [Editor.builders.char("d")],
                         ),
                     ],
-                    [Editor.builders.glyph("1")],
+                    [Editor.builders.char("1")],
                 ),
-                Editor.builders.glyph("+"),
+                Editor.builders.char("+"),
                 Editor.builders.frac(
                     [
                         Editor.builders.frac(
-                            [Editor.builders.glyph("x")],
-                            [Editor.builders.glyph("y")],
+                            [Editor.builders.char("x")],
+                            [Editor.builders.char("y")],
                         ),
-                        Editor.builders.glyph("+"),
-                        Editor.builders.glyph("1"),
+                        Editor.builders.char("+"),
+                        Editor.builders.char("1"),
                     ],
-                    [Editor.builders.glyph("1")],
+                    [Editor.builders.char("1")],
                 ),
-                Editor.builders.glyph("\u2212"),
-                Editor.builders.glyph("y"),
+                Editor.builders.char("\u2212"),
+                Editor.builders.char("y"),
             ]);
         });
 

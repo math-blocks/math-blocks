@@ -1,7 +1,7 @@
 import * as sharedTypes from "../shared-types";
 
 export type Char = {
-    readonly kind: "char";
+    readonly type: "char";
     readonly char: string;
     readonly pending?: boolean; // TODO: move this into Style
 };

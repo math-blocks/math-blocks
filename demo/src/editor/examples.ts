@@ -1,129 +1,129 @@
 import {builders} from "@math-blocks/editor-core";
 
 const simpleRow = builders.row([
-    builders.glyph("2"),
-    builders.glyph("x"),
-    builders.glyph("+"),
-    builders.glyph("5"),
-    builders.glyph("="),
-    builders.glyph("1"),
-    builders.glyph("0"),
+    builders.char("2"),
+    builders.char("x"),
+    builders.char("+"),
+    builders.char("5"),
+    builders.char("="),
+    builders.char("1"),
+    builders.char("0"),
 ]);
 
 const delimiters = builders.row([
-    builders.glyph("x"),
-    builders.glyph("+"),
+    builders.char("x"),
+    builders.char("+"),
     builders.delimited(
         [
             builders.frac(
                 [
-                    builders.glyph("y"),
-                    builders.glyph("\u2212"),
-                    builders.glyph("1"),
+                    builders.char("y"),
+                    builders.char("\u2212"),
+                    builders.char("1"),
                 ],
-                [builders.glyph("x")],
+                [builders.char("x")],
             ),
         ],
-        builders.glyph("("),
-        builders.glyph(")"),
+        builders.char("("),
+        builders.char(")"),
     ),
-    builders.subsup([builders.glyph("n")], [builders.glyph("2")]),
-    builders.glyph("+"),
-    builders.glyph("z"),
+    builders.subsup([builders.char("n")], [builders.char("2")]),
+    builders.char("+"),
+    builders.char("z"),
 ]);
 
 const allNodeTypes = builders.row([
-    builders.glyph("2"),
-    builders.glyph("+"),
+    builders.char("2"),
+    builders.char("+"),
     builders.frac(
-        [builders.glyph("1")],
+        [builders.char("1")],
         [
             builders.root(
-                [builders.glyph("1"), builders.glyph("2"), builders.glyph("3")],
+                [builders.char("1"), builders.char("2"), builders.char("3")],
                 [
-                    builders.glyph("x"),
-                    builders.subsup(undefined, [builders.glyph("2")]),
-                    builders.glyph("+"),
+                    builders.char("x"),
+                    builders.subsup(undefined, [builders.char("2")]),
+                    builders.char("+"),
                     builders.frac(
-                        [builders.glyph("1")],
+                        [builders.char("1")],
                         [
-                            builders.glyph("a"),
-                            builders.subsup([builders.glyph("n")], undefined),
+                            builders.char("a"),
+                            builders.subsup([builders.char("n")], undefined),
                         ],
                     ),
                 ],
             ),
         ],
     ),
-    builders.glyph("\u2212"),
-    builders.glyph("\u2212"),
-    builders.glyph("y"),
-    builders.glyph("+"),
+    builders.char("\u2212"),
+    builders.char("\u2212"),
+    builders.char("y"),
+    builders.char("+"),
     builders.limits(
         builders.row([
-            builders.glyph("l"),
-            builders.glyph("i"),
-            builders.glyph("m"),
+            builders.char("l"),
+            builders.char("i"),
+            builders.char("m"),
         ]),
         [
-            builders.glyph("x"),
-            builders.glyph("\u2192"), // \rightarrow
-            builders.glyph("0"),
+            builders.char("x"),
+            builders.char("\u2192"), // \rightarrow
+            builders.char("0"),
         ],
     ),
-    builders.glyph("x"),
-    builders.glyph("+"),
+    builders.char("x"),
+    builders.char("+"),
     builders.limits(
-        builders.glyph("\u2211"), // \sum
-        [builders.glyph("i"), builders.glyph("="), builders.glyph("0")],
-        [builders.glyph("\u221E")], // \infty
+        builders.char("\u2211"), // \sum
+        [builders.char("i"), builders.char("="), builders.char("0")],
+        [builders.char("\u221E")], // \infty
     ),
-    builders.glyph("i"),
+    builders.char("i"),
 ]);
 
 const nestedFractions = builders.row([
-    builders.glyph("a"),
-    builders.glyph("+"),
+    builders.char("a"),
+    builders.char("+"),
     builders.frac(
         [
-            builders.glyph("2"),
-            builders.glyph("+"),
+            builders.char("2"),
+            builders.char("+"),
             builders.frac(
-                [builders.glyph("x"), builders.glyph("+"), builders.glyph("1")],
-                [builders.glyph("1")],
+                [builders.char("x"), builders.char("+"), builders.char("1")],
+                [builders.char("1")],
             ),
-            builders.glyph("+"),
-            builders.glyph("\u2212"),
-            builders.glyph("y"),
+            builders.char("+"),
+            builders.char("\u2212"),
+            builders.char("y"),
         ],
-        [builders.glyph("1")],
+        [builders.char("1")],
     ),
-    builders.glyph("+"),
-    builders.glyph("b"),
+    builders.char("+"),
+    builders.char("b"),
 ]);
 
 const addingFractions = builders.row([
-    builders.glyph("2"),
-    builders.glyph("+"),
+    builders.char("2"),
+    builders.char("+"),
     builders.frac(
         [
-            builders.frac([builders.glyph("a")], [builders.glyph("b")]),
-            builders.glyph("+"),
-            builders.frac([builders.glyph("c")], [builders.glyph("d")]),
+            builders.frac([builders.char("a")], [builders.char("b")]),
+            builders.char("+"),
+            builders.frac([builders.char("c")], [builders.char("d")]),
         ],
-        [builders.glyph("1")],
+        [builders.char("1")],
     ),
-    builders.glyph("+"),
+    builders.char("+"),
     builders.frac(
         [
-            builders.frac([builders.glyph("x")], [builders.glyph("y")]),
-            builders.glyph("+"),
-            builders.glyph("1"),
+            builders.frac([builders.char("x")], [builders.char("y")]),
+            builders.char("+"),
+            builders.char("1"),
         ],
-        [builders.glyph("1")],
+        [builders.char("1")],
     ),
-    builders.glyph("\u2212"),
-    builders.glyph("y"),
+    builders.char("\u2212"),
+    builders.char("y"),
 ]);
 
 // @ts-expect-error: ignore readonly
@@ -134,30 +134,30 @@ addingFractions.children[2].children[0].style.color = "orange";
 addingFractions.children[2].children[0].children[0].style.color = "pink";
 
 const matrix = builders.row([
-    builders.glyph("A"),
-    builders.glyph("="),
+    builders.char("A"),
+    builders.char("="),
     builders.matrix(
         [
             // first row
-            [builders.glyph("a")],
-            [builders.glyph("b")],
-            [builders.glyph("c")],
+            [builders.char("a")],
+            [builders.char("b")],
+            [builders.char("c")],
 
             // second row
-            [builders.glyph("d")],
-            [builders.glyph("e"), builders.glyph("+"), builders.glyph("1")],
-            [builders.glyph("f")],
+            [builders.char("d")],
+            [builders.char("e"), builders.char("+"), builders.char("1")],
+            [builders.char("f")],
 
             // third row
-            [builders.glyph("0")],
-            [builders.glyph("0")],
-            [builders.glyph("1")],
+            [builders.char("0")],
+            [builders.char("0")],
+            [builders.char("1")],
         ],
         3,
         3,
         {
-            left: builders.glyph("["),
-            right: builders.glyph("]"),
+            left: builders.char("["),
+            right: builders.char("]"),
         },
     ),
 ]);

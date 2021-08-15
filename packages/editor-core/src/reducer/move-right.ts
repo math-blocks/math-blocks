@@ -26,7 +26,7 @@ export const cursorRight = (zipper: Zipper): Zipper => {
         const next = right[0]; // right.head
 
         // move right
-        if (next.type === "atom") {
+        if (next.type === "char") {
             return {
                 ...zipper,
                 row: {

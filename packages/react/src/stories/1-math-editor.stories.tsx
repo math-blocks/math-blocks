@@ -12,7 +12,7 @@ import {FontDataContext} from "../font-data-context";
 // @ts-expect-error: TypeScript doesn't know about this path
 import fontPath from "../../../../assets/STIX2Math.otf";
 
-const {row, glyph} = Editor.builders;
+const {row, char: glyph} = Editor.builders;
 
 const fontLoader = async (): Promise<FontData> => {
     const res = await fetch(fontPath);

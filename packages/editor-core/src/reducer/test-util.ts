@@ -9,53 +9,53 @@ export const row = (str: string): types.CharRow =>
     builders.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
-                return builders.glyph("\u2212");
+                return builders.char("\u2212");
             }
-            return builders.glyph(glyph);
+            return builders.char(glyph);
         }),
     );
 
 export const frac = (num: string, den: string): types.Frac =>
     builders.frac(
-        num.split("").map((glyph) => builders.glyph(glyph)),
-        den.split("").map((glyph) => builders.glyph(glyph)),
+        num.split("").map((glyph) => builders.char(glyph)),
+        den.split("").map((glyph) => builders.char(glyph)),
     );
 
 export const sqrt = (radicand: string): types.Root =>
     builders.root(
         null,
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
+        radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
 export const root = (index: string | null, radicand: string): types.Root =>
     builders.root(
-        index ? index.split("").map((glyph) => builders.glyph(glyph)) : null,
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
+        index ? index.split("").map((glyph) => builders.char(glyph)) : null,
+        radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
 export const sup = (sup: string): types.SubSup =>
     builders.subsup(
         undefined,
-        sup.split("").map((glyph) => builders.glyph(glyph)),
+        sup.split("").map((glyph) => builders.char(glyph)),
     );
 
 export const sub = (sub: string): types.SubSup =>
     builders.subsup(
-        sub.split("").map((glyph) => builders.glyph(glyph)),
+        sub.split("").map((glyph) => builders.char(glyph)),
         undefined,
     );
 
 export const subsup = (sub: string | null, sup: string | null): types.SubSup =>
     builders.subsup(
-        sub ? sub.split("").map((glyph) => builders.glyph(glyph)) : undefined,
-        sup ? sup.split("").map((glyph) => builders.glyph(glyph)) : undefined,
+        sub ? sub.split("").map((glyph) => builders.char(glyph)) : undefined,
+        sup ? sup.split("").map((glyph) => builders.char(glyph)) : undefined,
     );
 
 export const delimited = (children: string): types.Delimited =>
     builders.delimited(
-        children.split("").map((glyph) => builders.glyph(glyph)),
-        builders.glyph("("),
-        builders.glyph(")"),
+        children.split("").map((glyph) => builders.char(glyph)),
+        builders.char("("),
+        builders.char(")"),
     );
 
 export const toEqualEditorNodes = (

@@ -51,7 +51,7 @@ export const typesetSubsup = (
     // filter them out.  Anything else that's in a box is some sort of compound
     // layout structure (frac, delimited, etc.) and should have its subscript
     // and/or superscript positioned based on the size of the box.
-    if (prevEditNode?.type !== "atom" && prevLayoutNode) {
+    if (prevEditNode?.type !== "char" && prevLayoutNode) {
         const {superscriptBaselineDropMax, subscriptBaselineDropMin} =
             font.math.constants;
 

@@ -61,10 +61,7 @@ export type Root<A, C> = C & {
     readonly children: readonly [Row<A, C> | null, Row<A, C>]; // index, radicand
 };
 
-export type Atom<A, C> = C & {
-    readonly type: "atom";
-    readonly value: A;
-};
+export type Atom<A, C> = C & A;
 
 export type Node<A, C> =
     | Row<A, C>

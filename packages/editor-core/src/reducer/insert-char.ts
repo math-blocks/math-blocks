@@ -18,9 +18,9 @@ export const insertChar = (state: State, char: string): State => {
     const {left, selection} = zipper.row;
     let newNode;
     if (LIMIT_CHARS.includes(char)) {
-        newNode = builders.limits(builders.glyph(char), [], []);
+        newNode = builders.limits(builders.char(char), [], []);
     } else {
-        newNode = builders.glyph(char);
+        newNode = builders.char(char);
     }
 
     if (selection.length > 0) {

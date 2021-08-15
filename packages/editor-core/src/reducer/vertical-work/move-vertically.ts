@@ -113,13 +113,10 @@ export const moveDown = (state: State): State => {
     // - child is either directly to splitRows in its own cell (in the case of
     //   plus/minus operators) or it's added to prevChildren.
     for (const child of row.children) {
-        if (
-            child.type === "atom" &&
-            ["+", "\u2212"].includes(child.value.char)
-        ) {
+        if (child.type === "char" && ["+", "\u2212"].includes(child.char)) {
             if (
-                prevChild?.type !== "atom" ||
-                !["+", "\u2212"].includes(prevChild.value.char)
+                prevChild?.type !== "char" ||
+                !["+", "\u2212"].includes(prevChild.char)
             ) {
                 if (prevChildren.length > 0) {
                     splitRows.push(builders.row(prevChildren));
@@ -130,8 +127,8 @@ export const moveDown = (state: State): State => {
                 prevChildren.push(child);
             }
         } else if (
-            child.type === "atom" &&
-            ["=", ">", "<"].includes(child.value.char)
+            child.type === "char" &&
+            ["=", ">", "<"].includes(child.char)
         ) {
             if (prevChildren.length > 0) {
                 splitRows.push(builders.row(prevChildren));

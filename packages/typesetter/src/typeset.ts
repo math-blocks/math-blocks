@@ -199,7 +199,7 @@ const typesetNode = (
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetTable(typesetChild, node, context);
         }
-        case "atom": {
+        case "char": {
             return maybeAddOperatorPadding(
                 prevEditNode,
                 node,

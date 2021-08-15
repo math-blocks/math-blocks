@@ -163,8 +163,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -204,8 +204,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -245,8 +245,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -286,8 +286,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -329,8 +329,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -370,8 +370,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -413,8 +413,8 @@ describe("moveRight w/ selecting = true", () => {
                     [],
                     builders.row([
                         frac("1", "2"),
-                        builders.glyph("+"),
-                        builders.glyph("3"),
+                        builders.char("+"),
+                        builders.char("3"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -460,13 +460,13 @@ describe("moveRight w/ selecting = true", () => {
                         builders.frac(
                             [
                                 frac("1", "2"),
-                                builders.glyph("+"),
-                                builders.glyph("3"),
+                                builders.char("+"),
+                                builders.char("3"),
                             ],
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                         ),
-                        builders.glyph("+"),
-                        builders.glyph("4"),
+                        builders.char("+"),
+                        builders.char("4"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -510,13 +510,13 @@ describe("moveRight w/ selecting = true", () => {
                         builders.frac(
                             [
                                 frac("1", "2"),
-                                builders.glyph("+"),
-                                builders.glyph("3"),
+                                builders.char("+"),
+                                builders.char("3"),
                             ],
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                         ),
-                        builders.glyph("+"),
-                        builders.glyph("4"),
+                        builders.char("+"),
+                        builders.char("4"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -560,13 +560,13 @@ describe("moveRight w/ selecting = true", () => {
                         builders.frac(
                             [
                                 frac("1", "2"),
-                                builders.glyph("+"),
-                                builders.glyph("3"),
+                                builders.char("+"),
+                                builders.char("3"),
                             ],
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                         ),
-                        builders.glyph("+"),
-                        builders.glyph("4"),
+                        builders.char("+"),
+                        builders.char("4"),
                     ]).children,
                 ),
                 breadcrumbs: [],
@@ -693,8 +693,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -735,8 +735,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -777,8 +777,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -819,8 +819,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -861,8 +861,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -903,8 +903,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -945,8 +945,8 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         frac("2", "3"),
                     ]).children,
                     [],
@@ -990,13 +990,13 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         builders.frac(
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                             [
-                                builders.glyph("2"),
-                                builders.glyph("+"),
+                                builders.char("2"),
+                                builders.char("+"),
                                 frac("3", "4"),
                             ],
                         ),
@@ -1039,13 +1039,13 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         builders.frac(
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                             [
-                                builders.glyph("2"),
-                                builders.glyph("+"),
+                                builders.char("2"),
+                                builders.char("+"),
                                 frac("3", "4"),
                             ],
                         ),
@@ -1088,13 +1088,13 @@ describe("moveLeft w/ selecting = true", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         builders.frac(
-                            [builders.glyph("x")],
+                            [builders.char("x")],
                             [
-                                builders.glyph("2"),
-                                builders.glyph("+"),
+                                builders.char("2"),
+                                builders.char("+"),
                                 frac("3", "4"),
                             ],
                         ),

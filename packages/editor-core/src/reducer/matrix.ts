@@ -131,21 +131,21 @@ export const matrix = (state: State, action: MatrixActions): State => {
         const {left, selection} = zipper.row;
         const newNode = builders.matrix(
             [
-                [builders.glyph("1")],
-                [builders.glyph("0")],
-                [builders.glyph("0")],
-                [builders.glyph("1")],
+                [builders.char("1")],
+                [builders.char("0")],
+                [builders.char("0")],
+                [builders.char("1")],
             ],
             2,
             2,
             action.delimiters === "brackets"
                 ? {
-                      left: builders.glyph("["),
-                      right: builders.glyph("]"),
+                      left: builders.char("["),
+                      right: builders.char("]"),
                   }
                 : {
-                      left: builders.glyph("("),
-                      right: builders.glyph(")"),
+                      left: builders.char("("),
+                      right: builders.char(")"),
                   },
         );
 
@@ -207,7 +207,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         row: cursorRow,
                         col: col,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             } else if (action.side === "below") {
@@ -220,7 +220,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         row: cursorRow + 1,
                         col: col,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             }
@@ -270,7 +270,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         col: cursorCol,
                         row: row,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             } else if (action.side === "right") {
@@ -283,7 +283,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         col: cursorCol + 1,
                         row: row,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             }

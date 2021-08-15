@@ -133,7 +133,7 @@ export const backspace = (state: State): State => {
     if (
         row.left.length === 1 &&
         row.right.length === 0 &&
-        row.left[0].type === "atom" &&
+        row.left[0].type === "char" &&
         prevCell &&
         nextCell &&
         nextNextCell

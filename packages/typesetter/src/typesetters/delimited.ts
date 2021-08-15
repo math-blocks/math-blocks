@@ -22,21 +22,21 @@ export const typesetDelimited = (
     }
 
     const open = makeDelimiter(
-        node.leftDelim.value.char,
+        node.leftDelim.char,
         row,
         thresholdOptions,
         context,
     ) as Mutable<Layout.Glyph>;
 
     const close = makeDelimiter(
-        node.rightDelim.value.char,
+        node.rightDelim.char,
         row,
         thresholdOptions,
         context,
     ) as Mutable<Layout.Glyph>;
 
-    open.pending = node.leftDelim.value.pending;
-    close.pending = node.rightDelim.value.pending;
+    open.pending = node.leftDelim.pending;
+    close.pending = node.rightDelim.pending;
 
     const delimited = Layout.makeStaticHBox(
         [open, row, close],

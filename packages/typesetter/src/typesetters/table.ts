@@ -112,8 +112,8 @@ export const typesetTable = (
             const child = children[j * node.colCount + i];
             const padFirstOperator =
                 child?.children?.length === 1 &&
-                child.children[0].type === "atom" &&
-                ["+", "\u2212"].includes(child.children[0].value.char);
+                child.children[0].type === "char" &&
+                ["+", "\u2212"].includes(child.children[0].char);
 
             let cell = typesetChild(
                 j * node.colCount + i,
@@ -329,13 +329,13 @@ export const typesetTable = (
     }
 
     const open = makeDelimiter(
-        node.delimiters.left.value.char,
+        node.delimiters.left.char,
         inner,
         thresholdOptions,
         context,
     );
     const close = makeDelimiter(
-        node.delimiters.right.value.char,
+        node.delimiters.right.char,
         inner,
         thresholdOptions,
         context,

@@ -10,7 +10,15 @@ import {getFontData, parse} from "@math-blocks/opentype";
 
 import type {FontData} from "@math-blocks/opentype";
 
-const {row, glyph, frac, root, subsup, delimited, limits} = Editor.builders;
+const {
+    row,
+    char: glyph,
+    frac,
+    root,
+    subsup,
+    delimited,
+    limits,
+} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 

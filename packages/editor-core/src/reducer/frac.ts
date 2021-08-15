@@ -54,17 +54,17 @@ export const frac = (state: State): State => {
     let parenCount = 0;
     while (index >= 0) {
         const child = left[index];
-        if (child.type === "atom" && child.value.char === ")") {
+        if (child.type === "char" && child.char === ")") {
             parenCount++;
         }
-        if (child.type === "atom" && child.value.char === "(") {
+        if (child.type === "char" && child.char === "(") {
             parenCount--;
         }
         if (parenCount < 0) {
             break;
         }
 
-        if (child.type === "atom" && parenCount === 0 && isOperator(child)) {
+        if (child.type === "char" && parenCount === 0 && isOperator(child)) {
             break;
         }
 

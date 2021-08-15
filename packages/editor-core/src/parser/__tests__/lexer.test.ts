@@ -1,4 +1,4 @@
-import {row, glyph, frac, subsup, limits} from "../../ast/builders";
+import {row, char, frac, subsup, limits} from "../../ast/builders";
 import * as util from "../../ast/util";
 
 import * as Lexer from "../lexer";
@@ -9,7 +9,7 @@ expect.addSnapshotSerializer(serializer);
 describe("Lexer", () => {
     describe("lex", () => {
         it("should coalesce integers", () => {
-            const glyphTree = row([glyph("1"), glyph("2"), glyph("3")]);
+            const glyphTree = row([char("1"), char("2"), char("3")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -19,7 +19,7 @@ describe("Lexer", () => {
         });
 
         it("should coalesce reals", () => {
-            const glyphTree = row([glyph("1"), glyph("."), glyph("3")]);
+            const glyphTree = row([char("1"), char("."), char("3")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -29,7 +29,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `1 + a`", () => {
-            const glyphTree = row([glyph("1"), glyph("+"), glyph("a")]);
+            const glyphTree = row([char("1"), char("+"), char("a")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -41,7 +41,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `1 \u00B7 a`", () => {
-            const glyphTree = row([glyph("1"), glyph("\u00B7"), glyph("a")]);
+            const glyphTree = row([char("1"), char("\u00B7"), char("a")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -53,7 +53,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `1 * a`", () => {
-            const glyphTree = row([glyph("1"), glyph("*"), glyph("a")]);
+            const glyphTree = row([char("1"), char("*"), char("a")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -66,9 +66,9 @@ describe("Lexer", () => {
 
         it("should lex `1 + 1/x`", () => {
             const glyphTree = row([
-                glyph("1"),
-                glyph("+"),
-                frac([glyph("1")], [glyph("x")]),
+                char("1"),
+                char("+"),
+                frac([char("1")], [char("x")]),
             ]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
@@ -83,10 +83,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `e^x`", () => {
-            const glyphTree = row([
-                glyph("e"),
-                subsup(undefined, [glyph("x")]),
-            ]);
+            const glyphTree = row([char("e"), subsup(undefined, [char("x")])]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -98,10 +95,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `a_n`", () => {
-            const glyphTree = row([
-                glyph("a"),
-                subsup([glyph("n")], undefined),
-            ]);
+            const glyphTree = row([char("a"), subsup([char("n")], undefined)]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -113,7 +107,7 @@ describe("Lexer", () => {
         });
 
         it("should lex `a_n^2`", () => {
-            const glyphTree = row([glyph("a"), util.subsup("n", "2")]);
+            const glyphTree = row([char("a"), util.subsup("n", "2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -163,7 +157,7 @@ describe("Lexer", () => {
         });
 
         it("should lex multi character identifiers", () => {
-            const glyphTree = row([glyph("s"), glyph("i"), glyph("n")]);
+            const glyphTree = row([char("s"), char("i"), char("n")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -173,7 +167,7 @@ describe("Lexer", () => {
         });
 
         it("should lex a minus sign", () => {
-            const glyphTree = row([glyph("1"), glyph("\u2212"), glyph("2")]);
+            const glyphTree = row([char("1"), char("\u2212"), char("2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -185,7 +179,7 @@ describe("Lexer", () => {
         });
 
         it("should lex an equal sign", () => {
-            const glyphTree = row([glyph("1"), glyph("="), glyph("2")]);
+            const glyphTree = row([char("1"), char("="), char("2")]);
             const tokenTree = Lexer.lexRow(glyphTree);
 
             expect(tokenTree).toMatchInlineSnapshot(`
@@ -213,9 +207,9 @@ describe("Lexer", () => {
         it("should lex summation with limits", () => {
             const glyphTree = row([
                 limits(
-                    glyph("\u03a3"),
-                    [glyph("i"), glyph("="), glyph("0")],
-                    [glyph("\u221e")],
+                    char("\u03a3"),
+                    [char("i"), char("="), char("0")],
+                    [char("\u221e")],
                 ),
             ]);
             const tokenTree = Lexer.lexRow(glyphTree);
@@ -232,9 +226,9 @@ describe("Lexer", () => {
         it("should lex products with limits", () => {
             const glyphTree = row([
                 limits(
-                    glyph("\u03a0"),
-                    [glyph("i"), glyph("="), glyph("0")],
-                    [glyph("\u221e")],
+                    char("\u03a0"),
+                    [char("i"), char("="), char("0")],
+                    [char("\u221e")],
                 ),
             ]);
             const tokenTree = Lexer.lexRow(glyphTree);
@@ -253,10 +247,10 @@ describe("Lexer", () => {
             // arrow.
             const glyphTree = row([
                 limits(util.row("lim"), [
-                    glyph("i"),
-                    glyph("-"),
-                    glyph(">"),
-                    glyph("0"),
+                    char("i"),
+                    char("-"),
+                    char(">"),
+                    char("0"),
                 ]),
             ]);
             const tokenTree = Lexer.lexRow(glyphTree);

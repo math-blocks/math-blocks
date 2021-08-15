@@ -1,6 +1,6 @@
 import {toEqualMath} from "../../test-util";
 
-import {glyph, row} from "../builders";
+import {char, row} from "../builders";
 import * as util from "../util";
 
 expect.extend({toEqualMath});
@@ -40,24 +40,24 @@ describe("isEqual", () => {
 
         it("a_n", () => {
             const result = util.isEqual(
-                row([glyph("a"), util.sub("n")]),
-                row([glyph("a"), util.sub("n")]),
+                row([char("a"), util.sub("n")]),
+                row([char("a"), util.sub("n")]),
             );
             expect(result).toBe(true);
         });
 
         it("e^x", () => {
             const result = util.isEqual(
-                row([glyph("e"), util.sup("x")]),
-                row([glyph("e"), util.sup("x")]),
+                row([char("e"), util.sup("x")]),
+                row([char("e"), util.sup("x")]),
             );
             expect(result).toBe(true);
         });
 
         it("e_n^x", () => {
             const result = util.isEqual(
-                row([glyph("e"), util.subsup("n", "x")]),
-                row([glyph("e"), util.subsup("n", "x")]),
+                row([char("e"), util.subsup("n", "x")]),
+                row([char("e"), util.subsup("n", "x")]),
             );
             expect(result).toBe(true);
         });
@@ -120,32 +120,32 @@ describe("isEqual", () => {
 
         it("a_n != a_m", () => {
             const result = util.isEqual(
-                row([glyph("a"), util.sub("n")]),
-                row([glyph("a"), util.sub("m")]),
+                row([char("a"), util.sub("n")]),
+                row([char("a"), util.sub("m")]),
             );
             expect(result).toBe(false);
         });
 
         it("a_n != a^n", () => {
             const result = util.isEqual(
-                row([glyph("a"), util.sub("n")]),
-                row([glyph("a"), util.sup("n")]),
+                row([char("a"), util.sub("n")]),
+                row([char("a"), util.sup("n")]),
             );
             expect(result).toBe(false);
         });
 
         it("e^x != e^y", () => {
             const result = util.isEqual(
-                row([glyph("e"), util.sup("x")]),
-                row([glyph("e"), util.sup("y")]),
+                row([char("e"), util.sup("x")]),
+                row([char("e"), util.sup("y")]),
             );
             expect(result).toBe(false);
         });
 
         it("e_n^x != e^y", () => {
             const result = util.isEqual(
-                row([glyph("e"), util.subsup("n", "x")]),
-                row([glyph("e"), util.sup("y")]),
+                row([char("e"), util.subsup("n", "x")]),
+                row([char("e"), util.sup("y")]),
             );
             expect(result).toBe(false);
         });

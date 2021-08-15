@@ -7,7 +7,7 @@ import type {Font} from "@math-blocks/opentype";
 
 import AccessibleMath from "./accessible-math";
 
-const {row, glyph, frac, root} = Editor.builders;
+const {row, char: glyph, frac, root} = Editor.builders;
 
 const MathmlPage: React.FunctionComponent = () => {
     const linearEquation = Editor.util.row("2x+5=10");
@@ -45,16 +45,16 @@ const MathmlPage: React.FunctionComponent = () => {
     const factoring = Editor.builders.row([
         Editor.builders.delimited(
             Editor.util.row("x-1").children,
-            Editor.builders.glyph("("),
-            Editor.builders.glyph(")"),
+            Editor.builders.char("("),
+            Editor.builders.char(")"),
         ),
         Editor.builders.delimited(
             Editor.util.row("x+1").children,
-            Editor.builders.glyph("("),
-            Editor.builders.glyph(")"),
+            Editor.builders.char("("),
+            Editor.builders.char(")"),
         ),
-        Editor.builders.glyph("="),
-        Editor.builders.glyph("0"),
+        Editor.builders.char("="),
+        Editor.builders.char("0"),
     ]);
 
     const [font, setFont] = React.useState<Font | null>(null);

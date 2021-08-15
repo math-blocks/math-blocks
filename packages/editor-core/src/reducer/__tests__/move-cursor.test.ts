@@ -63,7 +63,7 @@ describe("moveRight", () => {
         test("moves into the numerator of a frac", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [f, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -91,7 +91,7 @@ describe("moveRight", () => {
         test("moves from the numerator to the denominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [f, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -121,7 +121,7 @@ describe("moveRight", () => {
         test("moves out of the denominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [f, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [f, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -146,7 +146,7 @@ describe("moveRight", () => {
         test("moves into the subscript of a subsup", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -173,7 +173,7 @@ describe("moveRight", () => {
         test("moves from the subscript to the superscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -203,7 +203,7 @@ describe("moveRight", () => {
         test("moves out of the superscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -228,7 +228,7 @@ describe("moveRight", () => {
         test("moves into the subscript of a sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -256,7 +256,7 @@ describe("moveRight", () => {
         test("moves out of the sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -281,7 +281,7 @@ describe("moveRight", () => {
         test("moves into the superscript of a sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -309,7 +309,7 @@ describe("moveRight", () => {
         test("moves out of the sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [ss, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [ss, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -334,7 +334,7 @@ describe("moveRight", () => {
         test("moves into the index of an nth root", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [r, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -362,7 +362,7 @@ describe("moveRight", () => {
         test("moves from the index to the radicand", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [r, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -392,7 +392,7 @@ describe("moveRight", () => {
         test("moves out of the radicand", () => {
             const r = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [r, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -417,7 +417,7 @@ describe("moveRight", () => {
         test("moves into the radicand of a root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [r, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -445,7 +445,7 @@ describe("moveRight", () => {
         test("moves out of the root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [r, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [r, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -469,10 +469,10 @@ describe("moveRight", () => {
     describe("lim", () => {
         test("moves into lower", () => {
             const lower: types.CharRow = row("b");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [lim, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -500,10 +500,10 @@ describe("moveRight", () => {
 
         test("exits the lim", () => {
             const lower: types.CharRow = row("b");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [lim, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [lim, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -528,10 +528,10 @@ describe("moveRight", () => {
         test("moves into lower", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [sum, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -560,10 +560,10 @@ describe("moveRight", () => {
         test("moves from lower into upper", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [sum, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -594,10 +594,10 @@ describe("moveRight", () => {
         test("exits the sum", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a")], [sum, builders.glyph("d")]),
+                row: zrow([builders.char("a")], [sum, builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -662,7 +662,7 @@ describe("moveLeft", () => {
         test("moves into the denominator of a frac", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), f], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -690,7 +690,7 @@ describe("moveLeft", () => {
         test("moves from the denominator to the numerator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), f], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -718,7 +718,7 @@ describe("moveLeft", () => {
         test("moves out of the numberator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), f], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -743,7 +743,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a subsup", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -771,7 +771,7 @@ describe("moveLeft", () => {
         test("moves from the superscript to the subscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -799,7 +799,7 @@ describe("moveLeft", () => {
         test("moves out of the subscript", () => {
             const ss = subsup("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -824,7 +824,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a sup", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -852,7 +852,7 @@ describe("moveLeft", () => {
         test("exits the sup to the left", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -875,7 +875,7 @@ describe("moveLeft", () => {
         test("moves into the superscript of a sub", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -903,7 +903,7 @@ describe("moveLeft", () => {
         test("exits the sub to the left", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -926,7 +926,7 @@ describe("moveLeft", () => {
         test("moves into the radicand of an nth root", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -954,7 +954,7 @@ describe("moveLeft", () => {
         test("moves from the radicand to the index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -982,7 +982,7 @@ describe("moveLeft", () => {
         test("moves out of the index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1007,7 +1007,7 @@ describe("moveLeft", () => {
         test("moves into the radicand of a root", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1035,7 +1035,7 @@ describe("moveLeft", () => {
         test("exits the sup to the left", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1057,10 +1057,10 @@ describe("moveLeft", () => {
     describe("lim", () => {
         test("moves into lower", () => {
             const lower: types.CharRow = row("b");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), lim], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1088,10 +1088,10 @@ describe("moveLeft", () => {
 
         test("exits the lim", () => {
             const lower: types.CharRow = row("b");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), lim], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1114,10 +1114,10 @@ describe("moveLeft", () => {
         test("moves into upper", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), sum], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1146,10 +1146,10 @@ describe("moveLeft", () => {
         test("moves from uper into lower", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), sum], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -1178,10 +1178,10 @@ describe("moveLeft", () => {
         test("exits the sum", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), sum], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {

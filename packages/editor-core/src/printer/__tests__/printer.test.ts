@@ -134,15 +134,15 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("a"),
+                builders.char("a"),
                 builders.delimited(
                     [
-                        builders.glyph("x"),
-                        builders.glyph("+"),
-                        builders.glyph("y"),
+                        builders.char("x"),
+                        builders.char("+"),
+                        builders.char("y"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -170,14 +170,14 @@ describe("print", () => {
                 node,
                 builders.row([
                     builders.delimited(
-                        [builders.glyph("\u2212"), builders.glyph("1")],
-                        builders.glyph("("),
-                        builders.glyph(")"),
+                        [builders.char("\u2212"), builders.char("1")],
+                        builders.char("("),
+                        builders.char(")"),
                     ),
                     builders.delimited(
-                        [builders.glyph("2"), builders.glyph("x")],
-                        builders.glyph("("),
-                        builders.glyph(")"),
+                        [builders.char("2"), builders.char("x")],
+                        builders.char("("),
+                        builders.char(")"),
                     ),
                 ]),
             ),
@@ -199,19 +199,19 @@ describe("print", () => {
         expect(node).toEqualEditorNode(
             builders.row([
                 builders.delimited(
-                    [builders.glyph("1")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("1")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
-                    [builders.glyph("2")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("2")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
-                    [builders.glyph("3")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("3")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -231,14 +231,14 @@ describe("print", () => {
         expect(node).toEqualEditorNode(
             builders.row([
                 builders.delimited(
-                    [builders.glyph("\u2212"), builders.glyph("a")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("\u2212"), builders.char("a")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
-                    [builders.glyph("\u2212"), builders.glyph("b")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("\u2212"), builders.char("b")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -265,13 +265,13 @@ describe("print", () => {
             builders.row([
                 builders.delimited(
                     [Util.frac("a", "b")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
                     [Util.frac("c", "d")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -297,7 +297,7 @@ describe("print", () => {
         expect(node).toEqualEditorNode(
             builders.row([
                 Util.frac("a", "b"),
-                builders.glyph("\u00B7"),
+                builders.char("\u00B7"),
                 Util.frac("c", "d"),
             ]),
         );
@@ -338,16 +338,16 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("a"),
-                builders.glyph("+"),
+                builders.char("a"),
+                builders.char("+"),
                 builders.delimited(
                     [
-                        builders.glyph("b"),
-                        builders.glyph("+"),
-                        builders.glyph("c"),
+                        builders.char("b"),
+                        builders.char("+"),
+                        builders.char("c"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -369,16 +369,16 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("a"),
-                builders.glyph("\u2212"),
+                builders.char("a"),
+                builders.char("\u2212"),
                 builders.delimited(
                     [
-                        builders.glyph("b"),
-                        builders.glyph("+"),
-                        builders.glyph("c"),
+                        builders.char("b"),
+                        builders.char("+"),
+                        builders.char("c"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -453,16 +453,16 @@ describe("print", () => {
 
         expect(node).toEqualEditorNode(
             builders.row([
-                builders.glyph("\u2212"),
-                builders.glyph("1"),
+                builders.char("\u2212"),
+                builders.char("1"),
                 builders.delimited(
                     [
-                        builders.glyph("a"),
-                        builders.glyph("+"),
-                        builders.glyph("b"),
+                        builders.char("a"),
+                        builders.char("+"),
+                        builders.char("b"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -501,19 +501,19 @@ describe("print", () => {
         expect(node).toEqualEditorNode(
             builders.row([
                 builders.delimited(
-                    [builders.glyph("a")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("a")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
-                    [builders.glyph("b")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("b")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 builders.delimited(
-                    [builders.glyph("1")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("1")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );
@@ -557,7 +557,7 @@ describe("print", () => {
         const node = print(ast);
 
         expect(node).toEqualEditorNode(
-            builders.row([builders.glyph("x"), Util.sup("2")]),
+            builders.row([builders.char("x"), Util.sup("2")]),
         );
     });
 
@@ -570,7 +570,7 @@ describe("print", () => {
         const node = print(ast);
 
         expect(node).toEqualEditorNode(
-            builders.row([builders.glyph("1"), Util.sup("n")]),
+            builders.row([builders.char("1"), Util.sup("n")]),
         );
     });
 
@@ -586,7 +586,7 @@ describe("print", () => {
         const node = print(ast);
 
         expect(node).toEqualEditorNode(
-            builders.row([builders.glyph("e"), Util.sup("x+y")]),
+            builders.row([builders.char("e"), Util.sup("x+y")]),
         );
     });
 
@@ -605,12 +605,12 @@ describe("print", () => {
             builders.row([
                 builders.delimited(
                     [
-                        builders.glyph("x"),
-                        builders.glyph("+"),
-                        builders.glyph("1"),
+                        builders.char("x"),
+                        builders.char("+"),
+                        builders.char("1"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
                 Util.sup("2"),
             ]),
@@ -625,9 +625,9 @@ describe("print", () => {
         expect(node).toEqualEditorNode(
             builders.row([
                 builders.delimited(
-                    [builders.glyph("x")],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    [builders.char("x")],
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]),
         );

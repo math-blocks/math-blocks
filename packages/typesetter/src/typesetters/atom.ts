@@ -21,7 +21,7 @@ const shouldHavePadding = (
     currentNode: Editor.types.CharAtom,
     context: Context,
 ): boolean => {
-    const currentChar = currentNode.value.char;
+    const currentChar = currentNode.char;
 
     // We only add padding around operators, so if we get a non-operator char
     // we can return early.
@@ -39,7 +39,7 @@ const shouldHavePadding = (
     if (canBeUnary(currentChar)) {
         if (
             !prevNode ||
-            (prevNode.type === "atom" && Editor.util.isOperator(prevNode)) ||
+            (prevNode.type === "char" && Editor.util.isOperator(prevNode)) ||
             prevNode.type === "limits" ||
             prevNode.type === "zlimits"
         ) {
@@ -88,19 +88,17 @@ export const typesetAtom = (
 ): Layout.Glyph => {
     const {font} = context.fontData;
 
-    const {value} = node;
-
-    const glyphID = font.getGlyphID(value.char);
+    const glyphID = font.getGlyphID(node.char);
     let glyph = Layout.makeGlyph(
-        value.char,
+        node.char,
         glyphID,
         context,
     ) as Mutable<Layout.Glyph>;
 
     // Convert individual glyphs to italic glyphs if they exist in the
     // current font.
-    if (/[a-z]/.test(value.char) && !context.operator) {
-        const offset = value.char.charCodeAt(0) - "a".charCodeAt(0);
+    if (/[a-z]/.test(node.char) && !context.operator) {
+        const offset = node.char.charCodeAt(0) - "a".charCodeAt(0);
         const char = String.fromCodePoint(0x1d44e + offset);
         const glyphID = font.getGlyphID(char);
         glyph = Layout.makeGlyph(char, glyphID, context);
@@ -108,6 +106,6 @@ export const typesetAtom = (
 
     glyph.id = node.id;
     glyph.style = node.style;
-    glyph.pending = node.value.pending;
+    glyph.pending = node.pending;
     return glyph;
 };

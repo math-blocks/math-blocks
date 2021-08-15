@@ -16,7 +16,7 @@ import stixPath from "../../../../assets/STIX2Math.otf";
 // @ts-expect-error: TypeScript doesn't know about this path
 import lmPath from "../../../../assets/latinmodern-math.otf";
 
-const {row, glyph, frac, limits, root, subsup} = Editor.builders;
+const {row, char: glyph, frac, limits, root, subsup} = Editor.builders;
 const {applyColorMapToEditorNode} = Editor.transforms;
 
 const stixFontLoader = async (): Promise<FontData> => {
@@ -409,13 +409,13 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
     const editNode = Editor.builders.row([
         Editor.builders.delimited(
             Editor.util.row("11+x").children,
-            Editor.builders.glyph("("),
-            Editor.builders.glyph(")"),
+            Editor.builders.char("("),
+            Editor.builders.char(")"),
         ),
         Editor.builders.delimited(
             Editor.util.row("12\u2212y").children,
-            Editor.builders.glyph("("),
-            Editor.builders.glyph(")"),
+            Editor.builders.char("("),
+            Editor.builders.char(")"),
         ),
     ]);
 
@@ -870,34 +870,34 @@ export const Cancelling: Story<EmptyProps> = (args, {loaded: fontData}) => {
 
 export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const matrix = Editor.builders.row([
-        Editor.builders.glyph("A"),
-        Editor.builders.glyph("="),
+        Editor.builders.char("A"),
+        Editor.builders.char("="),
         Editor.builders.matrix(
             [
                 // first row
-                [Editor.builders.glyph("a")],
-                [Editor.builders.glyph("b")],
-                [Editor.builders.glyph("c")],
+                [Editor.builders.char("a")],
+                [Editor.builders.char("b")],
+                [Editor.builders.char("c")],
 
                 // second row
-                [Editor.builders.glyph("d")],
+                [Editor.builders.char("d")],
                 [
-                    Editor.builders.glyph("e"),
-                    Editor.builders.glyph("+"),
-                    Editor.builders.glyph("1"),
+                    Editor.builders.char("e"),
+                    Editor.builders.char("+"),
+                    Editor.builders.char("1"),
                 ],
-                [Editor.builders.glyph("f")],
+                [Editor.builders.char("f")],
 
                 // third row
-                [Editor.builders.glyph("0")],
-                [Editor.builders.glyph("0")],
-                [Editor.builders.glyph("1")],
+                [Editor.builders.char("0")],
+                [Editor.builders.char("0")],
+                [Editor.builders.char("1")],
             ],
             3,
             3,
             {
-                left: Editor.builders.glyph("["),
-                right: Editor.builders.glyph("]"),
+                left: Editor.builders.char("["),
+                right: Editor.builders.char("]"),
             },
         ),
     ]);
@@ -921,41 +921,41 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
         [
             // first row
             [],
-            [builders.glyph("2"), builders.glyph("x")],
+            [builders.char("2"), builders.char("x")],
             [],
             [],
-            [builders.glyph("+")],
-            [builders.glyph("5")],
+            [builders.char("+")],
+            [builders.char("5")],
             [],
-            [builders.glyph("=")],
+            [builders.char("=")],
             [],
-            [builders.glyph("1"), builders.glyph("0")],
+            [builders.char("1"), builders.char("0")],
             [],
 
             // second row
             [],
             [],
-            [builders.glyph("\u2212")],
-            [builders.glyph("y")],
-            [builders.glyph("\u2212")],
-            [builders.glyph("5")],
+            [builders.char("\u2212")],
+            [builders.char("y")],
+            [builders.char("\u2212")],
+            [builders.char("5")],
             [],
             [],
-            [builders.glyph("\u2212")],
-            [builders.glyph("5")],
+            [builders.char("\u2212")],
+            [builders.char("5")],
             [],
 
             // third row
             [],
-            [builders.glyph("2"), builders.glyph("x")],
-            [builders.glyph("\u2212")],
-            [builders.glyph("y")],
-            [builders.glyph("\u2212")],
-            [builders.glyph("5")],
+            [builders.char("2"), builders.char("x")],
+            [builders.char("\u2212")],
+            [builders.char("y")],
+            [builders.char("\u2212")],
+            [builders.char("5")],
             [],
-            [builders.glyph("=")],
+            [builders.char("=")],
             [],
-            [builders.glyph("5")],
+            [builders.char("5")],
             [],
         ],
         11,

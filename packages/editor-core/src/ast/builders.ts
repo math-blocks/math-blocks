@@ -124,12 +124,11 @@ export function matrix(
 
 export function atom(value: types.Char): types.CharAtom {
     return {
+        ...value,
         id: getId(),
-        type: "atom",
-        value,
         style: {},
     };
 }
 
-export const glyph = (char: string, pending?: boolean): types.CharAtom =>
-    atom({kind: "char", char, pending});
+export const char = (char: string, pending?: boolean): types.CharAtom =>
+    atom({type: "char", char, pending});

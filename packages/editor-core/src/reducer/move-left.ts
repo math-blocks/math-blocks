@@ -26,7 +26,7 @@ export const cursorLeft = (zipper: Zipper): Zipper => {
         const prev = left[left.length - 1];
 
         // move left
-        if (prev.type === "atom") {
+        if (prev.type === "char") {
             return {
                 ...zipper,
                 row: {

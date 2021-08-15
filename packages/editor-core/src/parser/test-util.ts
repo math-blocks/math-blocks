@@ -1,8 +1,8 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {Token} from "./lexer";
 import {locFromRange} from "./util";
 import {
+    Token,
     TokenNode,
     TokenRow,
     SubSup,
@@ -65,10 +65,9 @@ export function root(
     };
 }
 
-export function atom(value: Token, loc: SourceLocation): TokenAtom {
+export function atom(token: Token, loc: SourceLocation): TokenAtom {
     return {
-        type: "atom",
-        value,
+        ...token,
         loc,
     };
 }
@@ -80,19 +79,18 @@ const print = (
 ): string => {
     const {loc} = ast;
     switch (ast.type) {
-        case "atom": {
-            const atom = ast.value;
-            switch (atom.kind) {
+        case "token": {
+            switch (ast.name) {
                 case "number":
                     return `(num@[${loc.path.map(String).join(",")}]:${
                         loc.start
-                    }:${loc.end} ${atom.value})`;
+                    }:${loc.end} ${ast.value})`;
                 case "identifier":
                     return `(ident@[${loc.path.map(String).join(",")}]:${
                         loc.start
-                    }:${loc.end} ${atom.name})`;
+                    }:${loc.end} ${ast.value})`;
                 default:
-                    return `${atom.kind}@[${loc.path.map(String).join(",")}]:${
+                    return `${ast.name}@[${loc.path.map(String).join(",")}]:${
                         loc.start
                     }:${loc.end}`;
             }

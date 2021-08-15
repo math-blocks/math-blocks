@@ -13,12 +13,12 @@ export const color = (state: State, color: string): State => {
         const selectedNodeIds = selection.map((node) => node.id);
         const callback: transforms.ZipperCallback = {
             enter: (node) => {
-                if (node.type !== "atom" && selectedNodeIds.includes(node.id)) {
+                if (node.type !== "char" && selectedNodeIds.includes(node.id)) {
                     inSelection = true;
                 }
             },
             exit: (node) => {
-                if (node.type !== "atom" && selectedNodeIds.includes(node.id)) {
+                if (node.type !== "char" && selectedNodeIds.includes(node.id)) {
                     inSelection = false;
                 }
                 if (inSelection || selectedNodeIds.includes(node.id)) {

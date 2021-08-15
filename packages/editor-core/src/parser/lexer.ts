@@ -1,7 +1,7 @@
 /**
- * Lexer - converts an editor node tree with glyph leaves to one with token leaves.
+ * Lexer - converts an editor node tree with char leaves to one with token leaves.
  *
- * Each glyph contains a single character string whereas tokens can be one of the following:
+ * Each char contains a single character string whereas tokens can be one of the following:
  * - numbers
  * - identifiers
  * - symbols
@@ -10,7 +10,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../ast/types";
 
-import {TokenNode, TokenRow, TokenAtom, SourceLocation} from "./types";
+import {Token, TokenNode, TokenRow, TokenAtom, SourceLocation} from "./types";
 
 export const location = (
     path: readonly number[],
@@ -22,95 +22,58 @@ export const location = (
     end,
 });
 
-// operations / relations: + - = < <= > >= != sqrt
-// symbols: a - z, pi, theta, etc.
-// functions: sin, cos, tan, log, lim, etc.
-
-// const funcs = ["sin", "cos", "tan", "log", "lim"];
-
-type Ident = {readonly kind: "identifier"; readonly name: string};
-type Num = {readonly kind: "number"; readonly value: string};
-type Plus = {readonly kind: "plus"};
-type Minus = {readonly kind: "minus"};
-type PlusMinus = {readonly kind: "plusminus"};
-type Times = {readonly kind: "times"};
-type Equal = {readonly kind: "eq"};
-type LParens = {readonly kind: "lparens"};
-type RParens = {readonly kind: "rparens"};
-type Ellipsis = {readonly kind: "ellipsis"};
-type Sum = {readonly kind: "sum"};
-type Prod = {readonly kind: "prod"};
-type Lim = {readonly kind: "lim"};
-type EOL = {readonly kind: "eol"};
-
 export const atom = (token: Token, loc: SourceLocation): TokenAtom => ({
-    type: "atom",
-    value: token,
+    ...token,
     loc,
 });
 
 export const identifier = (name: string, loc: SourceLocation): TokenAtom =>
-    atom({kind: "identifier", name}, loc);
+    atom({type: "token", name: "identifier", value: name}, loc);
 
 export const number = (value: string, loc: SourceLocation): TokenAtom => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
-    return atom({kind: "number", value}, loc);
+    return atom({type: "token", name: "number", value}, loc);
 };
 
 export const plus = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "plus"}, loc);
+    atom({type: "token", name: "plus"}, loc);
 
 export const minus = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "minus"}, loc);
+    atom({type: "token", name: "minus"}, loc);
 
 export const plusminus = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "plusminus"}, loc);
+    atom({type: "token", name: "plusminus"}, loc);
 
 export const times = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "times"}, loc);
+    atom({type: "token", name: "times"}, loc);
 
 export const lparens = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "lparens"}, loc);
+    atom({type: "token", name: "lparens"}, loc);
 
 export const rparens = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "rparens"}, loc);
+    atom({type: "token", name: "rparens"}, loc);
 
 export const ellipsis = (loc: SourceLocation): TokenAtom =>
-    atom({kind: "ellipsis"}, loc);
+    atom({type: "token", name: "ellipsis"}, loc);
 
-export const eq = (loc: SourceLocation): TokenAtom => atom({kind: "eq"}, loc);
-
-export type Token =
-    | Ident
-    | Num
-    | Plus
-    | Minus
-    | PlusMinus
-    | Times
-    | Equal
-    | LParens
-    | RParens
-    | Ellipsis
-    | Sum
-    | Prod
-    | Lim
-    | EOL;
+export const eq = (loc: SourceLocation): TokenAtom =>
+    atom({type: "token", name: "eq"}, loc);
 
 const TOKEN_REGEX =
     /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
-// TODO: include ids of source glyphs in parsed tokens
+// TODO: include ids of source chars in parsed tokens
 
-const processGlyphs = (
-    glyphs: readonly types.Char[],
+const tokenizeChars = (
+    chars: readonly types.Char[],
     path: readonly number[],
     offset: number,
 ): readonly TokenAtom[] => {
     const tokens: TokenAtom[] = [];
-    if (glyphs.length > 0) {
-        const str = glyphs.map((glyph) => glyph.char).join("");
+    if (chars.length > 0) {
+        const str = chars.map((char) => char.char).join("");
         const matches = str.matchAll(TOKEN_REGEX);
 
         for (const match of matches) {
@@ -175,7 +138,7 @@ const processGlyphs = (
             // TODO: check if there are leftover characters between token matches
         }
         // TODO: check if there are leftover characters after the last token match
-        glyphs = [];
+        chars = [];
     }
 
     return tokens;
@@ -189,22 +152,21 @@ const lexChildren = (
 
     const tokens: TokenNode[] = [];
 
-    let glyphs: types.Char[] = [];
+    let chars: types.Char[] = [];
 
     nodes.forEach((node, index) => {
-        if (node.type === "atom") {
-            const {value} = node;
-            glyphs.push(value);
+        if (node.type === "char") {
+            chars.push(node);
         } else {
-            const offset = index - glyphs.length;
-            tokens.push(...processGlyphs(glyphs, path, offset));
+            const offset = index - chars.length;
+            tokens.push(...tokenizeChars(chars, path, offset));
             tokens.push(lex(node, path, index));
-            glyphs = [];
+            chars = [];
         }
     });
 
-    const offset = nodes.length - glyphs.length;
-    tokens.push(...processGlyphs(glyphs, path, offset));
+    const offset = nodes.length - chars.length;
+    tokens.push(...tokenizeChars(chars, path, offset));
 
     return tokens;
 };
@@ -262,19 +224,16 @@ const lex = (
             const loc = location(path, offset, offset + 1);
 
             let inner: TokenNode;
-            if (
-                node.inner.type === "atom" &&
-                node.inner.value.char === "\u03a3"
-            ) {
-                inner = atom({kind: "sum"}, loc);
+            if (node.inner.type === "char" && node.inner.char === "\u03a3") {
+                inner = atom({type: "token", name: "sum"}, loc);
             } else if (
-                node.inner.type === "atom" &&
-                node.inner.value.char === "\u03a0"
+                node.inner.type === "char" &&
+                node.inner.char === "\u03a0"
             ) {
-                inner = atom({kind: "prod"}, loc);
+                inner = atom({type: "token", name: "prod"}, loc);
             } else if (node.inner.type === "row") {
                 // TODO: check that the row corresponds to "lim"
-                inner = atom({kind: "lim"}, loc);
+                inner = atom({type: "token", name: "lim"}, loc);
             } else {
                 throw new Error("Invalid inner for limits");
             }
@@ -332,8 +291,8 @@ const lex = (
                 loc: location(path, offset, offset + 1),
             };
         }
-        case "atom":
-            throw new Error("lexChildren coalesces glyphs, use it instead");
+        case "char":
+            throw new Error("lexChildren coalesces chars, use it instead");
         default:
             throw new UnreachableCaseError(node);
     }

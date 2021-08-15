@@ -74,11 +74,11 @@ describe("backspace", () => {
             row: {
                 id: getId(),
                 type: "zrow",
-                left: [builders.glyph("1")],
+                left: [builders.char("1")],
                 selection: [],
                 right: [
-                    builders.frac([builders.glyph("a")], [builders.glyph("b")]),
-                    builders.glyph("2"),
+                    builders.frac([builders.char("a")], [builders.char("b")]),
+                    builders.char("2"),
                 ],
                 style: {},
             },
@@ -189,7 +189,7 @@ describe("backspace", () => {
         test("deleting from the right of the fraction moves into the denonominator", () => {
             const f = frac("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), f], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), f], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -354,8 +354,8 @@ describe("backspace", () => {
 
             expect(result.row.left).toEqualEditorNodes(
                 builders.row([
-                    builders.glyph("x"),
-                    builders.subsup([builders.glyph("n")], undefined),
+                    builders.char("x"),
+                    builders.subsup([builders.char("n")], undefined),
                 ]).children,
             );
             expect(result.row.right).toEqualEditorNodes(row("2").children);
@@ -364,7 +364,7 @@ describe("backspace", () => {
         test("deleting from the right of a subscript", () => {
             const ss = subsup("b", null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -392,7 +392,7 @@ describe("backspace", () => {
         test("deleting from the right of a superscript", () => {
             const ss = subsup(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), ss], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), ss], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -527,7 +527,7 @@ describe("backspace", () => {
         test("deleting from the right of a root w/o an index", () => {
             const r = root(null, "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -555,7 +555,7 @@ describe("backspace", () => {
         test("deleting from the right of a root with an index", () => {
             const r = root("b", "c");
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), r], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), r], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -692,10 +692,10 @@ describe("backspace", () => {
 
         test("deleting from the right of a limits node w/o an upper bound", () => {
             const lower: types.CharRow = row("b");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), lim], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -724,10 +724,10 @@ describe("backspace", () => {
         test("deleting from the right of a limits node with an upper bound", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
-            const inner: types.CharAtom = builders.glyph("l");
+            const inner: types.CharAtom = builders.char("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
-                row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),
+                row: zrow([builders.char("a"), sum], [builders.char("d")]),
                 breadcrumbs: [],
             };
             const state: State = {
@@ -777,11 +777,11 @@ describe("backspace", () => {
                 expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[0].focus.leftDelim.value.pending,
+                    result.breadcrumbs[0].focus.leftDelim.pending,
                 ).toBeFalsy();
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[0].focus.rightDelim.value.pending,
+                    result.breadcrumbs[0].focus.rightDelim.pending,
                 ).toBeTruthy();
             });
 
@@ -813,18 +813,18 @@ describe("backspace", () => {
                         [
                             builders.delimited(
                                 [
-                                    builders.glyph("2"),
+                                    builders.char("2"),
                                     builders.delimited(
                                         row("x+5").children,
-                                        builders.glyph("("),
-                                        builders.glyph(")"),
+                                        builders.char("("),
+                                        builders.char(")"),
                                     ),
-                                    builders.glyph("="),
-                                    builders.glyph("1"),
-                                    builders.glyph("0"),
+                                    builders.char("="),
+                                    builders.char("1"),
+                                    builders.char("0"),
                                 ],
-                                builders.glyph("("),
-                                builders.glyph(")"),
+                                builders.char("("),
+                                builders.char(")"),
                             ),
                         ],
                         [],
@@ -845,11 +845,11 @@ describe("backspace", () => {
                 expect(result.row.left).toEqualEditorNodes(row("x+5").children);
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[1].focus.leftDelim.value.pending,
+                    result.breadcrumbs[1].focus.leftDelim.pending,
                 ).toBeFalsy();
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[1].focus.rightDelim.value.pending,
+                    result.breadcrumbs[1].focus.rightDelim.pending,
                 ).toBeTruthy();
             });
 
@@ -860,18 +860,18 @@ describe("backspace", () => {
                         [
                             builders.delimited(
                                 [
-                                    builders.glyph("2"),
+                                    builders.char("2"),
                                     builders.delimited(
                                         row("x+5").children,
-                                        builders.glyph("("),
-                                        builders.glyph(")"),
+                                        builders.char("("),
+                                        builders.char(")"),
                                     ),
-                                    builders.glyph("="),
-                                    builders.glyph("1"),
-                                    builders.glyph("0"),
+                                    builders.char("="),
+                                    builders.char("1"),
+                                    builders.char("0"),
                                 ],
-                                builders.glyph("("),
-                                builders.glyph(")"),
+                                builders.char("("),
+                                builders.char(")"),
                             ),
                         ],
                     ),
@@ -896,11 +896,11 @@ describe("backspace", () => {
                 expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[0].focus.leftDelim.value.pending,
+                    result.breadcrumbs[0].focus.leftDelim.pending,
                 ).toBeFalsy();
                 expect(
                     // @ts-expect-error: not bothering to refine this type
-                    result.breadcrumbs[0].focus.rightDelim.value.pending,
+                    result.breadcrumbs[0].focus.rightDelim.pending,
                 ).toBeFalsy();
             });
         });
@@ -912,8 +912,8 @@ describe("backspace", () => {
                         [
                             builders.delimited(
                                 row("2x+5").children,
-                                builders.glyph("(", true),
-                                builders.glyph(")"),
+                                builders.char("(", true),
+                                builders.char(")"),
                             ),
                         ],
                         [],
@@ -941,8 +941,8 @@ describe("backspace", () => {
                         [
                             builders.delimited(
                                 row("2x+5").children,
-                                builders.glyph("(", true),
-                                builders.glyph(")"),
+                                builders.char("(", true),
+                                builders.char(")"),
                             ),
                         ],
                     ),

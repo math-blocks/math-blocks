@@ -33,7 +33,7 @@ const stixFontLoader = async (): Promise<FontData> => {
 
 describe("typesetTable", () => {
     test("navigating across the bottom row should not change the content layout", async () => {
-        const {glyph} = Editor.builders;
+        const {char: glyph} = Editor.builders;
         const node: Editor.types.Table = Editor.builders.algebra(
             [
                 // first row

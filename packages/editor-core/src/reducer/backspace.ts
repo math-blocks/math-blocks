@@ -42,7 +42,7 @@ export const backspace = (state: State): State => {
         const prev = left[left.length - 1];
 
         if (prev.type === "delimited") {
-            if (prev.leftDelim.value.pending) {
+            if (prev.leftDelim.pending) {
                 const newZipper: Zipper = {
                     ...zipper,
                     row: {
@@ -73,10 +73,7 @@ export const backspace = (state: State): State => {
                         ...util.zdelimited(prev),
                         rightDelim: {
                             ...prev.rightDelim,
-                            value: {
-                                ...prev.rightDelim.value,
-                                pending: true,
-                            },
+                            pending: true,
                         },
                     },
                 };
@@ -98,7 +95,7 @@ export const backspace = (state: State): State => {
                     selecting: false,
                 };
             }
-        } else if (prev.type !== "atom") {
+        } else if (prev.type !== "char") {
             return moveLeft({
                 startZipper: zipper,
                 endZipper: zipper,
