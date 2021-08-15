@@ -772,13 +772,19 @@ describe("renderer", () => {
                     // first row
                     [glyph("x")],
                     [],
+                    [],
+                    [],
+                    [],
                     [glyph("=")],
                     [],
                     [glyph("y")],
 
                     // second row
                     [],
-                    [glyph("+"), glyph("1")],
+                    [],
+                    [glyph("+")],
+                    [glyph("1")],
+                    [],
                     [],
                     [],
                     [],
@@ -789,8 +795,11 @@ describe("renderer", () => {
                     [],
                     [],
                     [],
+                    [],
+                    [],
+                    [],
                 ],
-                5,
+                8,
                 3,
             );
 
@@ -807,8 +816,8 @@ describe("renderer", () => {
                 breadcrumbs: [
                     {
                         row: bcRow,
-                        // third row, second column
-                        focus: Editor.nodeToFocus(node, 11),
+                        // third row, third column
+                        focus: Editor.nodeToFocus(node, 18),
                     },
                 ],
             };
@@ -835,6 +844,9 @@ describe("renderer", () => {
                     // first row
                     [glyph("x")],
                     [],
+                    [],
+                    [],
+                    [],
                     [glyph("=")],
                     [],
                     [glyph("y")],
@@ -845,15 +857,21 @@ describe("renderer", () => {
                     [],
                     [],
                     [],
+                    [],
+                    [],
+                    [],
 
                     // third row
                     [],
-                    [glyph("+"), glyph("1")],
+                    [],
+                    [glyph("+")],
+                    [glyph("1")],
+                    [],
                     [],
                     [],
                     [],
                 ],
-                5,
+                8,
                 3,
             );
 
@@ -870,8 +888,8 @@ describe("renderer", () => {
                 breadcrumbs: [
                     {
                         row: bcRow,
-                        // second row, second column
-                        focus: Editor.nodeToFocus(node, 6),
+                        // second row, third column
+                        focus: Editor.nodeToFocus(node, 10),
                     },
                 ],
             };

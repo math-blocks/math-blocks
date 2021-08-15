@@ -923,6 +923,7 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
             [],
             [builders.glyph("2"), builders.glyph("x")],
             [],
+            [],
             [builders.glyph("+")],
             [builders.glyph("5")],
             [],
@@ -934,7 +935,8 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
             // second row
             [],
             [],
-            [builders.glyph("\u2212"), builders.glyph("y")],
+            [builders.glyph("\u2212")],
+            [builders.glyph("y")],
             [builders.glyph("\u2212")],
             [builders.glyph("5")],
             [],
@@ -946,7 +948,8 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
             // third row
             [],
             [builders.glyph("2"), builders.glyph("x")],
-            [builders.glyph("\u2212"), builders.glyph("y")],
+            [builders.glyph("\u2212")],
+            [builders.glyph("y")],
             [builders.glyph("\u2212")],
             [builders.glyph("5")],
             [],
@@ -955,7 +958,7 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
             [builders.glyph("5")],
             [],
         ],
-        10,
+        11,
         3,
     ) as Mutable<Editor.types.Table>;
     table.rowStyles = [null, null, {border: "top"}];

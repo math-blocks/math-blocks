@@ -2,11 +2,11 @@ import * as types from "../ast/types";
 
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";
-import {getAllowed} from "./vertical-work";
+import {getAllowed} from "./vertical-work/util";
 
 import type {Breadcrumb, Focus, Zipper, State} from "./types";
 
-const cursorRight = (zipper: Zipper): Zipper => {
+export const cursorRight = (zipper: Zipper): Zipper => {
     const {left, selection, right} = zipper.row;
 
     // Exit the selection to the right
