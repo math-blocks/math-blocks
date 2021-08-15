@@ -17,8 +17,8 @@ const canBeUnary = (char: string): boolean => {
 };
 
 const shouldHavePadding = (
-    prevNode: Editor.types.Node | Editor.Focus | undefined,
-    currentNode: Editor.types.Atom,
+    prevNode: Editor.types.CharNode | Editor.Focus | undefined,
+    currentNode: Editor.types.CharAtom,
     context: Context,
 ): boolean => {
     const currentChar = currentNode.value.char;
@@ -52,8 +52,8 @@ const shouldHavePadding = (
 };
 
 export const maybeAddOperatorPadding = (
-    prevNode: Editor.types.Node | Editor.Focus | undefined,
-    currentNode: Editor.types.Atom,
+    prevNode: Editor.types.CharNode | Editor.Focus | undefined,
+    currentNode: Editor.types.CharAtom,
     context: Context,
     padOperator?: boolean,
 ): Layout.Node => {
@@ -83,7 +83,7 @@ export const maybeAddOperatorPadding = (
 };
 
 export const typesetAtom = (
-    node: Editor.types.Atom,
+    node: Editor.types.CharAtom,
     context: Context,
 ): Layout.Glyph => {
     const {font} = context.fontData;

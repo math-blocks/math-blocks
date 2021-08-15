@@ -10,7 +10,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../ast/types";
 
-import {Node, Row, Atom, SourceLocation} from "./types";
+import {TokenNode, TokenRow, TokenAtom, SourceLocation} from "./types";
 
 export const location = (
     path: readonly number[],
@@ -43,41 +43,44 @@ type Prod = {readonly kind: "prod"};
 type Lim = {readonly kind: "lim"};
 type EOL = {readonly kind: "eol"};
 
-export const atom = (token: Token, loc: SourceLocation): Atom => ({
+export const atom = (token: Token, loc: SourceLocation): TokenAtom => ({
     type: "atom",
     value: token,
     loc,
 });
 
-export const identifier = (name: string, loc: SourceLocation): Atom =>
+export const identifier = (name: string, loc: SourceLocation): TokenAtom =>
     atom({kind: "identifier", name}, loc);
 
-export const number = (value: string, loc: SourceLocation): Atom => {
+export const number = (value: string, loc: SourceLocation): TokenAtom => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
     return atom({kind: "number", value}, loc);
 };
 
-export const plus = (loc: SourceLocation): Atom => atom({kind: "plus"}, loc);
+export const plus = (loc: SourceLocation): TokenAtom =>
+    atom({kind: "plus"}, loc);
 
-export const minus = (loc: SourceLocation): Atom => atom({kind: "minus"}, loc);
+export const minus = (loc: SourceLocation): TokenAtom =>
+    atom({kind: "minus"}, loc);
 
-export const plusminus = (loc: SourceLocation): Atom =>
+export const plusminus = (loc: SourceLocation): TokenAtom =>
     atom({kind: "plusminus"}, loc);
 
-export const times = (loc: SourceLocation): Atom => atom({kind: "times"}, loc);
+export const times = (loc: SourceLocation): TokenAtom =>
+    atom({kind: "times"}, loc);
 
-export const lparens = (loc: SourceLocation): Atom =>
+export const lparens = (loc: SourceLocation): TokenAtom =>
     atom({kind: "lparens"}, loc);
 
-export const rparens = (loc: SourceLocation): Atom =>
+export const rparens = (loc: SourceLocation): TokenAtom =>
     atom({kind: "rparens"}, loc);
 
-export const ellipsis = (loc: SourceLocation): Atom =>
+export const ellipsis = (loc: SourceLocation): TokenAtom =>
     atom({kind: "ellipsis"}, loc);
 
-export const eq = (loc: SourceLocation): Atom => atom({kind: "eq"}, loc);
+export const eq = (loc: SourceLocation): TokenAtom => atom({kind: "eq"}, loc);
 
 export type Token =
     | Ident
@@ -101,11 +104,11 @@ const TOKEN_REGEX =
 // TODO: include ids of source glyphs in parsed tokens
 
 const processGlyphs = (
-    glyphs: readonly types.Glyph[],
+    glyphs: readonly types.Char[],
     path: readonly number[],
     offset: number,
-): readonly Atom[] => {
-    const tokens: Atom[] = [];
+): readonly TokenAtom[] => {
+    const tokens: TokenAtom[] = [];
     if (glyphs.length > 0) {
         const str = glyphs.map((glyph) => glyph.char).join("");
         const matches = str.matchAll(TOKEN_REGEX);
@@ -179,14 +182,14 @@ const processGlyphs = (
 };
 
 const lexChildren = (
-    nodes: readonly types.Node[],
+    nodes: readonly types.CharNode[],
     path: readonly number[],
-): Node[] => {
+): TokenNode[] => {
     // TODO: assert that nodes.length > 0
 
-    const tokens: Node[] = [];
+    const tokens: TokenNode[] = [];
 
-    let glyphs: types.Glyph[] = [];
+    let glyphs: types.Char[] = [];
 
     nodes.forEach((node, index) => {
         if (node.type === "atom") {
@@ -215,7 +218,10 @@ function assertOneOrMore<T>(
     }
 }
 
-export const lexRow = (row: types.Row, path: readonly number[] = []): Row => {
+export const lexRow = (
+    row: types.CharRow,
+    path: readonly number[] = [],
+): TokenRow => {
     assertOneOrMore(row.children, "rows cannot be empty");
     return {
         type: "row",
@@ -225,10 +231,10 @@ export const lexRow = (row: types.Row, path: readonly number[] = []): Row => {
 };
 
 const lex = (
-    node: types.Node,
+    node: types.CharNode,
     path: readonly number[],
     offset: number,
-): Node => {
+): TokenNode => {
     switch (node.type) {
         case "row":
             // This never gets called because rows must be children of
@@ -255,7 +261,7 @@ const lex = (
             const [lower, upper] = node.children;
             const loc = location(path, offset, offset + 1);
 
-            let inner: Node;
+            let inner: TokenNode;
             if (
                 node.inner.type === "atom" &&
                 node.inner.value.char === "\u03a3"

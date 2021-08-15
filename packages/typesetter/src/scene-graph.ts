@@ -26,7 +26,7 @@ export type Group = {
 } & Common;
 
 export type Glyph = {
-    readonly type: "glyph";
+    readonly type: "char";
     readonly x: number;
     readonly y: number;
     readonly width: number;
@@ -78,7 +78,7 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
 
 const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
     return {
-        type: "glyph",
+        type: "char",
         x: loc.x,
         y: loc.y,
         width: Layout.getWidth(glyph),

@@ -5,10 +5,10 @@ import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "./util";
-import {Row} from "../ast/types";
-import {Node, SourceLocation} from "./types";
+import {CharRow} from "../ast/types";
+import {TokenNode, SourceLocation} from "./types";
 
-type Token = Node;
+type Token = TokenNode;
 
 // TODO: fill out this list
 type Operator =
@@ -456,7 +456,7 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
     });
 };
 
-export const parse = (input: Row): Semantic.types.Node => {
+export const parse = (input: CharRow): Semantic.types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
 

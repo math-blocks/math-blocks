@@ -26,21 +26,21 @@ export type Token =
 
 type Common = {readonly loc: SourceLocation};
 
-export type Row = sharedTypes.Row<Token, Common>;
+export type TokenRow = sharedTypes.Row<Token, Common>;
 export type Delimited = sharedTypes.Delimited<Token, Common>;
 export type Table = sharedTypes.Table<Token, Common>;
 export type SubSup = sharedTypes.SubSup<Token, Common>;
 export type Limits = sharedTypes.Limits<Token, Common>;
 export type Frac = sharedTypes.Frac<Token, Common>;
 export type Root = sharedTypes.Root<Token, Common>;
-export type Atom = sharedTypes.Atom<Token, Common>;
+export type TokenAtom = sharedTypes.Atom<Token, Common>;
 
-export type Node =
-    | Row
+export type TokenNode =
+    | TokenRow
     | Delimited
     | Table
     | SubSup
     | Limits
     | Frac
     | Root
-    | Atom;
+    | TokenAtom;

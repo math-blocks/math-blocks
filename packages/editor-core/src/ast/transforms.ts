@@ -8,30 +8,30 @@ import type {
 import * as types from "./types";
 
 export const traverseNodes = (
-    nodes: readonly types.Node[],
+    nodes: readonly types.CharNode[],
     callback: {
-        readonly enter?: <U extends types.Node>(
+        readonly enter?: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => void;
-        readonly exit: <U extends types.Node>(
+        readonly exit: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => U | void;
     },
     path: readonly number[],
     offset: number,
-): readonly types.Node[] =>
+): readonly types.CharNode[] =>
     nodes.map((node, index) =>
         traverseNode(node, callback, [...path, offset + index]),
     );
 
 export type ZipperCallback = {
-    readonly enter?: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+    readonly enter?: <T extends Focus | types.CharNode | ZRow | BreadcrumbRow>(
         node: T,
         path: readonly number[],
     ) => void;
-    readonly exit: <T extends Focus | types.Node | ZRow | BreadcrumbRow>(
+    readonly exit: <T extends Focus | types.CharNode | ZRow | BreadcrumbRow>(
         node: T,
         path: readonly number[],
     ) => T | void;
@@ -146,19 +146,19 @@ export const traverseZipper = (
 };
 
 const traverseRow = (
-    row: types.Row,
+    row: types.CharRow,
     callback: {
-        readonly enter?: <U extends types.Node>(
+        readonly enter?: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => void;
-        readonly exit: <U extends types.Node>(
+        readonly exit: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => U | void;
     },
     path: readonly number[],
-): types.Row => {
+): types.CharRow => {
     callback.enter?.(row, path);
 
     const newChildren = traverseNodes(row.children, callback, path, 0);
@@ -177,14 +177,14 @@ const traverseRow = (
     return callback.exit(row, path) || row;
 };
 
-export const traverseNode = <T extends types.Node>(
+export const traverseNode = <T extends types.CharNode>(
     node: T,
     callback: {
-        readonly enter?: <U extends types.Node>(
+        readonly enter?: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => void;
-        readonly exit: <U extends types.Node>(
+        readonly exit: <U extends types.CharNode>(
             node: U,
             path: readonly number[],
         ) => U | void;
@@ -226,9 +226,9 @@ export const traverseNode = <T extends types.Node>(
 type ColorMap = ReadonlyMap<number, string>;
 
 export const applyColorMapToEditorNode = (
-    node: types.Node,
+    node: types.CharNode,
     colorMap: ColorMap,
-): types.Node => {
+): types.CharNode => {
     return traverseNode(
         node,
         {

@@ -19,8 +19,8 @@ export const toEqualMath = (
 };
 
 export const toEqualEditorNode = (
-    received: types.Node,
-    actual: types.Node,
+    received: types.CharNode,
+    actual: types.CharNode,
 ): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Semantic trees did not match";
     if (Semantic.util.deepEquals(received, actual)) {

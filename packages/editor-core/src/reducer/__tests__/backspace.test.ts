@@ -19,9 +19,9 @@ import {getId} from "@math-blocks/core";
 expect.extend({toEqualEditorNodes});
 
 const limits = (
-    inner: types.Node,
-    lower: types.Row,
-    upper: types.Row | null,
+    inner: types.CharNode,
+    lower: types.CharRow,
+    upper: types.CharRow | null,
 ): types.Limits => {
     return {
         id: 0,
@@ -691,8 +691,8 @@ describe("backspace", () => {
         });
 
         test("deleting from the right of a limits node w/o an upper bound", () => {
-            const lower: types.Row = row("b");
-            const inner: types.Atom = builders.glyph("l");
+            const lower: types.CharRow = row("b");
+            const inner: types.CharAtom = builders.glyph("l");
             const lim: types.Limits = limits(inner, lower, null);
             const zipper: Zipper = {
                 row: zrow([builders.glyph("a"), lim], [builders.glyph("d")]),
@@ -722,9 +722,9 @@ describe("backspace", () => {
         });
 
         test("deleting from the right of a limits node with an upper bound", () => {
-            const lower: types.Row = row("b");
-            const upper: types.Row = row("c");
-            const inner: types.Atom = builders.glyph("l");
+            const lower: types.CharRow = row("b");
+            const upper: types.CharRow = row("c");
+            const inner: types.CharAtom = builders.glyph("l");
             const sum: types.Limits = limits(inner, lower, upper);
             const zipper: Zipper = {
                 row: zrow([builders.glyph("a"), sum], [builders.glyph("d")]),

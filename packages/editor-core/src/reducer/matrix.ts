@@ -29,7 +29,7 @@ export type MatrixActions =
 export type Cell = {
     readonly row: number;
     readonly col: number;
-    readonly content: types.Row | ZRow | null;
+    readonly content: types.CharRow | ZRow | null;
 };
 
 export const getCellsFromCrumb = (
@@ -74,7 +74,7 @@ const getCrumbFromCells = (
     crumb: Breadcrumb<ZTable>,
     orientation: "row" | "col",
 ): Breadcrumb => {
-    const orderedContent: (types.Row | ZRow | null)[] = [];
+    const orderedContent: (types.CharRow | ZRow | null)[] = [];
     for (const cell of cells) {
         const {row, col, content} = cell;
         const index =
@@ -95,10 +95,10 @@ const getCrumbFromCells = (
     const newLeft = orderedContent.slice(
         0,
         indexOfZRow,
-    ) as (types.Row | null)[];
+    ) as (types.CharRow | null)[];
     const newRight = orderedContent.slice(
         indexOfZRow + 1,
-    ) as (types.Row | null)[];
+    ) as (types.CharRow | null)[];
 
     if (orientation === "row") {
         return {
@@ -352,7 +352,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const indexOfZRow =
                 cursorRow < rowCount - 1 ? cursorIndex : cursorIndex - colCount;
 
-            const orderedContent: (types.Row | ZRow | null)[] = [];
+            const orderedContent: (types.CharRow | ZRow | null)[] = [];
             for (const cell of cells) {
                 const {row, col, content} = cell;
                 const index = row * crumb.focus.colCount + col;
@@ -378,10 +378,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const newLeft = orderedContent.slice(
                 0,
                 indexOfZRow,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
             const newRight = orderedContent.slice(
                 indexOfZRow + 1,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
 
             const newCrumb: Breadcrumb = {
                 ...crumb,
@@ -450,7 +450,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             }
 
             const newColCount = colCount - 1;
-            const orderedContent: (types.Row | ZRow | null)[] = [];
+            const orderedContent: (types.CharRow | ZRow | null)[] = [];
             for (const cell of cells) {
                 const {row, col, content} = cell;
                 const index = row * newColCount + col;
@@ -481,10 +481,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const newLeft = orderedContent.slice(
                 0,
                 indexOfZRow,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
             const newRight = orderedContent.slice(
                 indexOfZRow + 1,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
 
             const newCrumb: Breadcrumb = {
                 ...crumb,

@@ -29,7 +29,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
     return verticalWorkToZTable(adjustedWork);
 };
 
-const isPlusMinus = (cell: types.Row | null): cell is types.Row =>
+const isPlusMinus = (cell: types.CharRow | null): cell is types.CharRow =>
     cell?.children.length === 1 &&
     isAtom(cell.children[0], ["+", "\u2212", "="]);
 

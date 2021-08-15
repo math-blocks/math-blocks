@@ -30,7 +30,7 @@ export const typesetLimits = (
     typesetChild: (index: number, context: Context) => Layout.HBox | null,
     node: Editor.types.Limits | Editor.ZLimits,
     context: Context,
-    typesetNode: (node: Editor.types.Node, context: Context) => Layout.Node,
+    typesetNode: (node: Editor.types.CharNode, context: Context) => Layout.Node,
 ): Layout.VBox => {
     const childContext = childContextForLimits(context);
     const lowerBox = typesetChild(

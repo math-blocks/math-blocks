@@ -108,7 +108,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "(",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -117,7 +117,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": ")",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": true,
                 }
             `);
@@ -169,7 +169,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "(",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -178,7 +178,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": ")",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": true,
                 }
             `);
@@ -231,7 +231,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "(",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -240,7 +240,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": ")",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": true,
                 }
             `);
@@ -309,7 +309,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "(",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -318,7 +318,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": ")",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": true,
                 }
             `);
@@ -429,7 +429,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "(",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": false,
                 }
             `);
@@ -438,7 +438,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": ")",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -466,7 +466,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "|",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": undefined,
                 }
             `);
@@ -475,7 +475,7 @@ describe("parens", () => {
                 .toMatchInlineSnapshot(`
                 Object {
                   "char": "|",
-                  "kind": "glyph",
+                  "kind": "char",
                   "pending": true,
                 }
             `);

@@ -1,7 +1,7 @@
 import * as sharedTypes from "../shared-types";
 
-export type Glyph = {
-    readonly kind: "glyph";
+export type Char = {
+    readonly kind: "char";
     readonly char: string;
     readonly pending?: boolean; // TODO: move this into Style
 };
@@ -13,31 +13,31 @@ export type Style = {
 
 type Common = {readonly id: number; readonly style: Readonly<Style>};
 
-export type Row = sharedTypes.Row<Glyph, Common>;
-export type Delimited = sharedTypes.Delimited<Glyph, Common>;
-export type Table = sharedTypes.Table<Glyph, Common>;
-export type SubSup = sharedTypes.SubSup<Glyph, Common>;
-export type Limits = sharedTypes.Limits<Glyph, Common>;
-export type Frac = sharedTypes.Frac<Glyph, Common>;
-export type Root = sharedTypes.Root<Glyph, Common>;
-export type Atom = sharedTypes.Atom<Glyph, Common>;
+export type CharRow = sharedTypes.Row<Char, Common>;
+export type Delimited = sharedTypes.Delimited<Char, Common>;
+export type Table = sharedTypes.Table<Char, Common>;
+export type SubSup = sharedTypes.SubSup<Char, Common>;
+export type Limits = sharedTypes.Limits<Char, Common>;
+export type Frac = sharedTypes.Frac<Char, Common>;
+export type Root = sharedTypes.Root<Char, Common>;
+export type CharAtom = sharedTypes.Atom<Char, Common>;
 
 // TODO: split the concept of Node and Children where Children doesn't include
 // Row.
-export type Node =
-    | Row
+export type CharNode =
+    | CharRow
     | Delimited
     | Table
     | SubSup
     | Limits
     | Frac
     | Root
-    | Atom;
+    | CharAtom;
 
 // The editor nodes need IDs so we can position the cursor relative to
 // layout nodes which get their ID from the editor nodes.
 
-export type HasChildren = Row;
+export type HasChildren = CharRow;
 
 export type Cursor = {
     readonly path: readonly number[];

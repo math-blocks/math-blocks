@@ -9,7 +9,7 @@ import type {Context} from "../types";
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
-const isOperator = (cell: Editor.types.Row | null): boolean =>
+const isOperator = (cell: Editor.types.CharRow | null): boolean =>
     cell?.children.length === 1 &&
     Editor.util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
@@ -154,14 +154,14 @@ export const typesetTable = (
         const col = cursorIndex % node.colCount;
         const zrow = zipper?.row;
 
-        type Column = readonly Editor.types.Row[];
+        type Column = readonly Editor.types.CharRow[];
         const cellColumns: Column[] = [];
         for (let i = 0; i < node.colCount; i++) {
-            const col: Editor.types.Row[] = [];
+            const col: Editor.types.CharRow[] = [];
             for (let j = 0; j < node.rowCount; j++) {
                 const index = j * node.colCount + i;
                 // TODO: check that children[index] isn't null
-                col.push(children[index] as Editor.types.Row);
+                col.push(children[index] as Editor.types.CharRow);
             }
             cellColumns.push(col); // this is unsafe
         }

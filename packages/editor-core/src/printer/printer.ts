@@ -13,8 +13,8 @@ import * as builders from "../ast/builders";
 const getChildren = (
     expr: Semantic.types.Node,
     oneToOne: boolean,
-): types.Node[] => {
-    const children: types.Node[] = [];
+): types.CharNode[] => {
+    const children: types.CharNode[] = [];
 
     const node = _print(expr, oneToOne);
     if (node.type === "row") {
@@ -27,7 +27,10 @@ const getChildren = (
 };
 
 // TODO: write more tests for this
-const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
+const _print = (
+    expr: Semantic.types.Node,
+    oneToOne: boolean,
+): types.CharNode => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
@@ -44,7 +47,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             );
         }
         case "add": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             for (let i = 0; i < expr.args.length; i++) {
                 const arg = expr.args[i];
@@ -92,7 +95,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             return builders.row(children);
         }
         case "mul": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             const wrapAll = expr.args.some((arg, index) => {
                 if (arg.type === "number" && index > 0) {
@@ -172,7 +175,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             );
         }
         case "eq": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             for (const arg of expr.args) {
                 children.push(...getChildren(arg, oneToOne));
@@ -203,7 +206,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             }
         }
         case "parens": {
-            const children: types.Node[] = [
+            const children: types.CharNode[] = [
                 builders.delimited(
                     getChildren(expr.arg, oneToOne),
                     builders.glyph("("),
@@ -222,7 +225,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
 export const print = (
     expr: Semantic.types.Node,
     oneToOne = false,
-): types.Row => {
+): types.CharRow => {
     const node = _print(expr, oneToOne);
     if (node.type === "row") {
         return node;

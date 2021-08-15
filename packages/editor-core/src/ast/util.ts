@@ -1,7 +1,7 @@
 import * as builders from "./builders";
 import * as types from "./types";
 
-export const isEqual = (a: types.Node, b: types.Node): boolean => {
+export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     if (a.type !== b.type) {
         return false;
     } else if (a.type === "atom" && b.type === "atom") {
@@ -62,7 +62,7 @@ export type ID = {
     readonly id: number;
 };
 
-export const row = (str: string): types.Row =>
+export const row = (str: string): types.CharRow =>
     builders.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
@@ -110,9 +110,9 @@ export const subsup = (sub: string, sup: string): types.SubSup =>
 
 // Maybe we should return undefined if there isn't a node at the given path.
 export function nodeAtPath(
-    root: types.Node,
+    root: types.CharNode,
     path: readonly number[],
-): types.Node {
+): types.CharNode {
     if (path.length === 0) {
         return root;
     } else {
@@ -172,8 +172,8 @@ export function nodeAtPath(
 }
 
 export function pathForNode(
-    root: types.Node,
-    node: types.Node,
+    root: types.CharNode,
+    node: types.CharNode,
     path: readonly number[] = [],
 ): readonly number[] | null {
     if (node === root) {
@@ -198,13 +198,13 @@ export function pathForNode(
     }
 }
 
-export type HasChildren = types.Row;
+export type HasChildren = types.CharRow;
 
-export const hasChildren = (node: types.Node): node is HasChildren => {
+export const hasChildren = (node: types.CharNode): node is HasChildren => {
     return node.type === "row";
 };
 
-export const isOperator = (atom: types.Atom): boolean => {
+export const isOperator = (atom: types.CharAtom): boolean => {
     const char = atom.value.char;
 
     // We don't include unary +/- in the numerator.  This mimic's mathquill's
@@ -237,7 +237,7 @@ export const isOperator = (atom: types.Atom): boolean => {
 };
 
 export const isAtom = (
-    node: types.Node,
+    node: types.CharNode,
     charOrChars: string | readonly string[],
 ): boolean => {
     if (node.type === "atom") {

@@ -15,7 +15,7 @@ import type {
     State,
 } from "./types";
 
-export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
+export const frac = (focus: ZFrac, replacement: types.CharRow): types.Frac => {
     return {
         id: focus.id,
         type: "frac",
@@ -23,7 +23,10 @@ export const frac = (focus: ZFrac, replacement: types.Row): types.Frac => {
             ...focus.left,
             replacement,
             ...focus.right,
-        ] as readonly (types.Row | null)[] as readonly [types.Row, types.Row],
+        ] as readonly (types.CharRow | null)[] as readonly [
+            types.CharRow,
+            types.CharRow,
+        ],
         style: focus.style,
     };
 };
@@ -48,7 +51,7 @@ export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
 
 export const subsup = (
     focus: ZSubSup,
-    replacement: types.Row,
+    replacement: types.CharRow,
 ): types.SubSup => {
     return {
         id: focus.id,
@@ -57,9 +60,9 @@ export const subsup = (
             ...focus.left,
             replacement,
             ...focus.right,
-        ] as readonly (types.Row | null)[] as readonly [
-            types.Row | null,
-            types.Row | null,
+        ] as readonly (types.CharRow | null)[] as readonly [
+            types.CharRow | null,
+            types.CharRow | null,
         ],
         style: focus.style,
     };
@@ -83,7 +86,7 @@ export const zsubsup = (node: types.SubSup, index: 0 | 1): ZSubSup => {
           };
 };
 
-export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
+export const root = (focus: ZRoot, replacement: types.CharRow): types.Root => {
     return {
         id: focus.id,
         type: "root",
@@ -91,9 +94,9 @@ export const root = (focus: ZRoot, replacement: types.Row): types.Root => {
             ...focus.left,
             replacement,
             ...focus.right,
-        ] as readonly (types.Row | null)[] as readonly [
-            types.Row | null,
-            types.Row,
+        ] as readonly (types.CharRow | null)[] as readonly [
+            types.CharRow | null,
+            types.CharRow,
         ],
         style: focus.style,
     };
@@ -119,7 +122,7 @@ export const zroot = (node: types.Root, index: 0 | 1): ZRoot => {
 
 export const limits = (
     focus: ZLimits,
-    replacement: types.Row,
+    replacement: types.CharRow,
 ): types.Limits => {
     return {
         id: focus.id,
@@ -129,9 +132,9 @@ export const limits = (
             ...focus.left,
             replacement,
             ...focus.right,
-        ] as readonly (types.Row | null)[] as readonly [
-            types.Row,
-            types.Row | null,
+        ] as readonly (types.CharRow | null)[] as readonly [
+            types.CharRow,
+            types.CharRow | null,
         ],
         style: focus.style,
     };
@@ -157,7 +160,10 @@ export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
           };
 };
 
-export const table = (focus: ZTable, replacement: types.Row): types.Table => {
+export const table = (
+    focus: ZTable,
+    replacement: types.CharRow,
+): types.Table => {
     return {
         id: focus.id,
         type: "table",
@@ -190,7 +196,7 @@ export const ztable = (node: types.Table, index: number): ZTable => {
 
 export const delimited = (
     focus: ZDelimited,
-    replacement: types.Row,
+    replacement: types.CharRow,
 ): types.Delimited => {
     return {
         id: focus.id,
@@ -216,8 +222,8 @@ export const zdelimited = (node: types.Delimited): ZDelimited => {
 
 export const focusToNode = (
     focus: Focus,
-    replacement: types.Row,
-): types.Node => {
+    replacement: types.CharRow,
+): types.CharNode => {
     switch (focus.type) {
         case "zfrac":
             return frac(focus, replacement);
@@ -279,12 +285,12 @@ export const nodeToFocus = (
 
 export const insertRight = <
     T extends {
-        readonly left: readonly types.Node[];
-        readonly right: readonly types.Node[];
+        readonly left: readonly types.CharNode[];
+        readonly right: readonly types.CharNode[];
     },
 >(
     zrow: T,
-    node: types.Node,
+    node: types.CharNode,
 ): T => {
     return {
         ...zrow,
@@ -292,7 +298,7 @@ export const insertRight = <
     };
 };
 
-export const zrowToRow = (zrow: ZRow): types.Row => {
+export const zrowToRow = (zrow: ZRow): types.CharRow => {
     return {
         id: zrow.id,
         type: "row",
@@ -303,8 +309,8 @@ export const zrowToRow = (zrow: ZRow): types.Row => {
 
 export const zrow = (
     id: number,
-    left: readonly types.Node[],
-    right: readonly types.Node[],
+    left: readonly types.CharNode[],
+    right: readonly types.CharNode[],
     style?: types.Style,
 ): ZRow => ({
     id: id,

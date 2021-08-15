@@ -13,7 +13,7 @@ declare global {
     /* eslint-disable */
     namespace jest {
         interface Matchers<R, T> {
-            toEqualEditorNode(actual: types.Node): R;
+            toEqualEditorNode(actual: types.CharNode): R;
         }
     }
     /* eslint-enable */

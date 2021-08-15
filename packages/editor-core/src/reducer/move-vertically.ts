@@ -21,7 +21,7 @@ export const moveVertically = (state: State, action: Action): State => {
         const {colCount, rowCount, left, right} = crumb.focus;
 
         const oldRow: ZRow = state.zipper.row;
-        const orderedChildren: (types.Row | null)[] = [
+        const orderedChildren: (types.CharRow | null)[] = [
             ...left,
             util.zrowToRow(oldRow),
             ...right,
@@ -32,7 +32,7 @@ export const moveVertically = (state: State, action: Action): State => {
         const focusCol = focusIndex % colCount;
 
         let newCursorRow = focusRow;
-        let focusedChild: types.Row | null = null;
+        let focusedChild: types.CharRow | null = null;
         if (action.type === "ArrowDown") {
             newCursorRow++;
             while (newCursorRow < rowCount) {

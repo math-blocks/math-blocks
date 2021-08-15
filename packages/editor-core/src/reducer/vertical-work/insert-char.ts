@@ -22,13 +22,13 @@ import {cursorRight} from "../move-right";
 import type {State, Zipper} from "../types";
 import type {VerticalWork, Column} from "./types";
 
-const isPlusMinus = (cell: types.Row | null): boolean =>
+const isPlusMinus = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["+", "\u2212"]);
 
-const isRelOp = (cell: types.Row | null): boolean =>
+const isRelOp = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 && isAtom(cell.children[0], ["=", ">", "<"]);
 
-const isOp = (cell: types.Row | null): boolean =>
+const isOp = (cell: types.CharRow | null): boolean =>
     isPlusMinus(cell) || isRelOp(cell);
 
 // TODO: place cursor in lower limits
@@ -40,7 +40,7 @@ const LIMIT_CHARS = [
     // TODO: handle \lim (need to make sure we exclude the upper limit)
 ];
 
-const insert = (zipper: Zipper, node: types.Node): Zipper => {
+const insert = (zipper: Zipper, node: types.CharNode): Zipper => {
     return {
         ...zipper,
         row: {
@@ -150,7 +150,7 @@ export const insertChar = (state: State, char: string): State => {
             const cursorColIndex = columns.findIndex(
                 (col) => col === cursorCol,
             );
-            const newPlusMinusCol: types.Row[] = [];
+            const newPlusMinusCol: types.CharRow[] = [];
             for (let i = 0; i < rowCount; i++) {
                 if (i === cursorLoc.row) {
                     newPlusMinusCol.push(builders.row([newNode]));
@@ -188,7 +188,7 @@ export const insertChar = (state: State, char: string): State => {
             const cursorColIndex = columns.findIndex(
                 (col) => col === cursorCol,
             );
-            const newPlusMinusCol: types.Row[] = [];
+            const newPlusMinusCol: types.CharRow[] = [];
             for (let i = 0; i < rowCount; i++) {
                 if (i === cursorLoc.row) {
                     newPlusMinusCol.push(builders.row([newNode]));

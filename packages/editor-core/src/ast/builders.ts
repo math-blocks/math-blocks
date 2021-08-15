@@ -2,7 +2,7 @@ import {getId} from "@math-blocks/core";
 
 import * as types from "./types";
 
-export function row(children: readonly types.Node[]): types.Row {
+export function row(children: readonly types.CharNode[]): types.CharRow {
     return {
         id: getId(),
         type: "row",
@@ -12,8 +12,8 @@ export function row(children: readonly types.Node[]): types.Row {
 }
 
 export function subsup(
-    sub?: readonly types.Node[],
-    sup?: readonly types.Node[],
+    sub?: readonly types.CharNode[],
+    sup?: readonly types.CharNode[],
 ): types.SubSup {
     return {
         id: getId(),
@@ -24,9 +24,9 @@ export function subsup(
 }
 
 export function limits(
-    inner: types.Node,
-    lower: readonly types.Node[],
-    upper?: readonly types.Node[],
+    inner: types.CharNode,
+    lower: readonly types.CharNode[],
+    upper?: readonly types.CharNode[],
 ): types.Limits {
     return {
         id: getId(),
@@ -38,8 +38,8 @@ export function limits(
 }
 
 export function frac(
-    numerator: readonly types.Node[],
-    denominator: readonly types.Node[],
+    numerator: readonly types.CharNode[],
+    denominator: readonly types.CharNode[],
 ): types.Frac {
     return {
         id: getId(),
@@ -52,8 +52,8 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    index: readonly types.Node[] | null,
-    radicand: readonly types.Node[],
+    index: readonly types.CharNode[] | null,
+    radicand: readonly types.CharNode[],
 ): types.Root {
     return {
         id: getId(),
@@ -64,9 +64,9 @@ export function root(
 }
 
 export function delimited(
-    inner: readonly types.Node[],
-    leftDelim: types.Atom,
-    rightDelim: types.Atom,
+    inner: readonly types.CharNode[],
+    leftDelim: types.CharAtom,
+    rightDelim: types.CharAtom,
 ): types.Delimited {
     return {
         id: getId(),
@@ -80,12 +80,12 @@ export function delimited(
 
 export function table(
     subtype: "matrix" | "algebra",
-    cells: readonly (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.CharNode[] | null)[],
     colCount: number,
     rowCount: number,
     delimiters?: {
-        readonly left: types.Atom;
-        readonly right: types.Atom;
+        readonly left: types.CharAtom;
+        readonly right: types.CharAtom;
     },
 ): types.Table {
     return {
@@ -103,7 +103,7 @@ export function table(
 }
 
 export function algebra(
-    cells: readonly (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.CharNode[] | null)[],
     colCount: number,
     rowCount: number,
 ): types.Table {
@@ -111,18 +111,18 @@ export function algebra(
 }
 
 export function matrix(
-    cells: readonly (readonly types.Node[] | null)[],
+    cells: readonly (readonly types.CharNode[] | null)[],
     colCount: number,
     rowCount: number,
     delimiters?: {
-        readonly left: types.Atom;
-        readonly right: types.Atom;
+        readonly left: types.CharAtom;
+        readonly right: types.CharAtom;
     },
 ): types.Table {
     return table("matrix", cells, colCount, rowCount, delimiters);
 }
 
-export function atom(value: types.Glyph): types.Atom {
+export function atom(value: types.Char): types.CharAtom {
     return {
         id: getId(),
         type: "atom",
@@ -131,5 +131,5 @@ export function atom(value: types.Glyph): types.Atom {
     };
 }
 
-export const glyph = (char: string, pending?: boolean): types.Atom =>
-    atom({kind: "glyph", char, pending});
+export const glyph = (char: string, pending?: boolean): types.CharAtom =>
+    atom({kind: "char", char, pending});

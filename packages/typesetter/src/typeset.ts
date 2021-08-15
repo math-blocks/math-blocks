@@ -19,7 +19,7 @@ import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
 const typesetRow = (
-    row: Editor.types.Row,
+    row: Editor.types.CharRow,
     context: Context,
     padFirstOperator?: boolean,
 ): Layout.HBox => {
@@ -106,7 +106,7 @@ const getTypesetChildFromZipper = (
 };
 
 const getTypesetChildFromNodes = <
-    T extends readonly (Editor.types.Row | null)[],
+    T extends readonly (Editor.types.CharRow | null)[],
 >(
     children: T,
 ): ((index: number, context: Context) => Layout.HBox | null) => {
@@ -124,7 +124,7 @@ const typesetFocus = (
     focus: Editor.Focus,
     zipper: Editor.Zipper,
     context: Context,
-    prevEditNode?: Editor.types.Node,
+    prevEditNode?: Editor.types.CharNode,
     prevLayoutNode?: Layout.Node,
 ): Layout.Node => {
     const typesetChild = getTypesetChildFromZipper(zipper, focus);
@@ -159,9 +159,9 @@ const typesetFocus = (
 };
 
 const typesetNode = (
-    node: Editor.types.Node,
+    node: Editor.types.CharNode,
     context: Context,
-    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevEditNode?: Editor.types.CharNode | Editor.Focus,
     prevLayoutNode?: Layout.Node,
     padFirstOperator?: boolean,
 ): Layout.Node => {
@@ -213,9 +213,9 @@ const typesetNode = (
 };
 
 const typesetNodes = (
-    nodes: readonly Editor.types.Node[],
+    nodes: readonly Editor.types.CharNode[],
     context: Context,
-    prevChild?: Editor.types.Node | Editor.Focus,
+    prevChild?: Editor.types.CharNode | Editor.Focus,
     prevLayoutNode?: Layout.Node,
     padFirstOperator?: boolean,
 ): readonly Layout.Node[] => {
@@ -345,7 +345,7 @@ export const typesetZipper = (
 };
 
 export const typeset = (
-    node: Editor.types.Node,
+    node: Editor.types.CharNode,
     context: Context,
     options: Options = {},
 ): Scene => {

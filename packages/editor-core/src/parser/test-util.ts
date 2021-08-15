@@ -2,9 +2,17 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import {Token} from "./lexer";
 import {locFromRange} from "./util";
-import {Node, Row, SubSup, Frac, Root, Atom, SourceLocation} from "./types";
+import {
+    TokenNode,
+    TokenRow,
+    SubSup,
+    Frac,
+    Root,
+    TokenAtom,
+    SourceLocation,
+} from "./types";
 
-export function row(children: readonly Node[]): Row {
+export function row(children: readonly TokenNode[]): TokenRow {
     // What should the location be for an empty row?
     const loc =
         children.length > 0
@@ -20,8 +28,8 @@ export function row(children: readonly Node[]): Row {
 }
 
 export function subsup(
-    sub: readonly Node[] | void,
-    sup: readonly Node[] | void,
+    sub: readonly TokenNode[] | void,
+    sup: readonly TokenNode[] | void,
     loc: SourceLocation,
 ): SubSup {
     return {
@@ -32,8 +40,8 @@ export function subsup(
 }
 
 export function frac(
-    numerator: readonly Node[],
-    denominator: readonly Node[],
+    numerator: readonly TokenNode[],
+    denominator: readonly TokenNode[],
     loc: SourceLocation,
 ): Frac {
     return {
@@ -46,8 +54,8 @@ export function frac(
 // It would be nice if we could provide defaults to parameterized functions
 // We'd need type-classes for that but thye don't exist in JavaScript.
 export function root(
-    radicand: readonly Node[],
-    index: readonly Node[] | null,
+    radicand: readonly TokenNode[],
+    index: readonly TokenNode[] | null,
     loc: SourceLocation,
 ): Root {
     return {
@@ -57,7 +65,7 @@ export function root(
     };
 }
 
-export function atom(value: Token, loc: SourceLocation): Atom {
+export function atom(value: Token, loc: SourceLocation): TokenAtom {
     return {
         type: "atom",
         value,
@@ -66,8 +74,8 @@ export function atom(value: Token, loc: SourceLocation): Atom {
 }
 
 const print = (
-    ast: Node,
-    serialize: (ast: Node) => string,
+    ast: TokenNode,
+    serialize: (ast: TokenNode) => string,
     indent: (str: string) => string,
 ): string => {
     const {loc} = ast;
@@ -153,5 +161,5 @@ const print = (
 
 export const serializer = {
     print: print,
-    test: (ast: Node): boolean => !!ast.type,
+    test: (ast: TokenNode): boolean => !!ast.type,
 };

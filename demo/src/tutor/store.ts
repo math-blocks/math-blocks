@@ -8,7 +8,7 @@ const clone = <T>(obj: T): T => {
     return JSON.parse(JSON.stringify(obj));
 };
 
-const question: Editor.types.Row = Editor.util.row("2x+5=10");
+const question: Editor.types.CharRow = Editor.util.row("2x+5=10");
 const zipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {

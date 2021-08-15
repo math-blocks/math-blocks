@@ -48,7 +48,10 @@ describe("transformNode", () => {
     });
 
     describe("setting the color on every node only changes .style.color", () => {
-        const setColor = <T extends types.Node>(node: T, color: string): T => {
+        const setColor = <T extends types.CharNode>(
+            node: T,
+            color: string,
+        ): T => {
             return {
                 ...node,
                 style: {

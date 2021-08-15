@@ -106,9 +106,9 @@ export const moveDown = (state: State): State => {
     // the row.
     // TODO: move this into a separate function an unit test it
     const row = util.zrowToRow(zipper.row);
-    const splitRows: (types.Row | null)[] = [];
-    let prevChildren: types.Node[] = [];
-    let prevChild: types.Node | null = null;
+    const splitRows: (types.CharRow | null)[] = [];
+    let prevChildren: types.CharNode[] = [];
+    let prevChild: types.CharNode | null = null;
     // Invariants:
     // - child is either directly to splitRows in its own cell (in the case of
     //   plus/minus operators) or it's added to prevChildren.
@@ -149,7 +149,7 @@ export const moveDown = (state: State): State => {
 
     const left = [...splitRows];
     // left.push(builders.row([])); // first cell in second table row
-    const right: (types.Row | null)[] = [];
+    const right: (types.CharRow | null)[] = [];
     // empty cells below first table row's splitRows
     for (let i = 0; i < splitRows.length; i++) {
         if (splitRows[i] == null) {

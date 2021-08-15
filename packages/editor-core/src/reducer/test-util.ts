@@ -5,7 +5,7 @@ import * as builders from "../ast/builders";
 
 import type {ZRow, Zipper, State} from "./types";
 
-export const row = (str: string): types.Row =>
+export const row = (str: string): types.CharRow =>
     builders.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
@@ -59,8 +59,8 @@ export const delimited = (children: string): types.Delimited =>
     );
 
 export const toEqualEditorNodes = (
-    received: readonly types.Node[],
-    actual: readonly types.Node[],
+    received: readonly types.CharNode[],
+    actual: readonly types.CharNode[],
 ): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
@@ -76,8 +76,8 @@ export const toEqualEditorNodes = (
 };
 
 export const zrow = (
-    left: readonly types.Node[],
-    right: readonly types.Node[],
+    left: readonly types.CharNode[],
+    right: readonly types.CharNode[],
 ): ZRow => {
     return {
         id: 0,
