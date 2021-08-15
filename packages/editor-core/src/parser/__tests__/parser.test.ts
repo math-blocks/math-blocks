@@ -1,10 +1,11 @@
 import * as Testing from "@math-blocks/testing";
 
-import {row, char, subsup} from "../../ast/builders";
-import * as builders from "../../ast/builders";
-import * as util from "../../ast/util";
+import * as builders from "../../char/builders";
+import * as util from "../../char/util";
 
 import * as parser from "../parser";
+
+const {row, char, subsup} = builders;
 
 expect.addSnapshotSerializer(Testing.serializer);
 

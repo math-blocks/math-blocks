@@ -4,9 +4,10 @@ import * as Semantic from "@math-blocks/semantic";
 import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
-import {locFromRange} from "./util";
-import {CharRow} from "../ast/types";
-import {TokenNode, SourceLocation} from "./types";
+import {locFromRange} from "../token/util";
+
+import type {CharRow} from "../char/types";
+import type {TokenNode, SourceLocation} from "../token/types";
 
 // TODO: fill out this list
 type Operator =

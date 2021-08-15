@@ -1,4 +1,4 @@
-import * as builders from "../../ast/builders";
+import * as builders from "../../char/builders";
 
 import {zipperToRow} from "../convert";
 import {row, toEqualEditorNodes, zrow} from "../test-util";

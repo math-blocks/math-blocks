@@ -1,6 +1,6 @@
 import {getId} from "@math-blocks/core";
 
-import {isOperator} from "../ast/util";
+import {isOperator} from "../char/util";
 import {zrow} from "./util";
 import type {Zipper, Focus, State} from "./types";
 

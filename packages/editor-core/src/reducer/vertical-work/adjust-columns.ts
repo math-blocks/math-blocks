@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import * as types from "../../ast/types";
+import * as types from "../../char/types";
 
 import {
     createEmptyCol,

@@ -1,8 +1,8 @@
-import {row, char, frac, subsup, limits} from "../../ast/builders";
-import * as util from "../../ast/util";
+import {row, char, frac, subsup, limits} from "../../char/builders";
+import * as util from "../../char/util";
 
 import * as Lexer from "../lexer";
-import {serializer} from "../test-util";
+import {serializer} from "../../token/serializer";
 
 expect.addSnapshotSerializer(serializer);
 
@@ -76,7 +76,7 @@ describe("Lexer", () => {
                 (row 
                   (num@[]:0:1 1) 
                   plus@[]:1:2 
-                  (frac@[]:2:3 atom (row 
+                  (frac@[]:2:3 (row 
                     (num@[2,0]:0:1 1)) (row 
                     (ident@[2,1]:0:1 x))))
             `);
@@ -89,7 +89,7 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (ident@[]:0:1 e) 
-                  (subsup@[]:1:2 atom _ (row 
+                  (subsup@[]:1:2 ^ (row 
                     (ident@[1,1]:0:1 x))))
             `);
         });
@@ -101,7 +101,7 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (ident@[]:0:1 a) 
-                  (subsup@[]:1:2 atom (row 
+                  (subsup@[]:1:2 (row 
                     (ident@[1,0]:0:1 n)) _))
             `);
         });
@@ -113,7 +113,7 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (ident@[]:0:1 a) 
-                  (subsup@[]:1:2 atom (row 
+                  (subsup@[]:1:2 (row 
                     (ident@[1,0]:0:1 n)) (row 
                     (num@[1,1]:0:1 2))))
             `);
@@ -139,7 +139,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (root@[]:0:1 atom (row 
+                  (root@[]:0:1 (row 
                     (num@[0,0]:0:3 123)) _))
             `);
         });
@@ -150,7 +150,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (root@[]:0:1 atom (row 
+                  (root@[]:0:1 (row 
                     (ident@[0,0]:0:1 n)) (row 
                     (num@[0,1]:0:3 123))))
             `);
@@ -216,7 +216,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{sum@[]:0:1}@[]:0:1 atom (row 
+                  (limits{sum@[]:0:1}@[]:0:1 (row 
                     (ident@[0,0]:0:1 i) 
                     eq@[0,0]:1:2 
                     (num@[0,0]:2:3 0)) (row )))
@@ -235,7 +235,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{prod@[]:0:1}@[]:0:1 atom (row 
+                  (limits{prod@[]:0:1}@[]:0:1 (row 
                     (ident@[0,0]:0:1 i) 
                     eq@[0,0]:1:2 
                     (num@[0,0]:2:3 0)) (row )))
@@ -257,7 +257,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{lim@[]:0:1}@[]:0:1 atom (row 
+                  (limits{lim@[]:0:1}@[]:0:1 (row 
                     (ident@[0,0]:0:1 i) 
                     (num@[0,0]:3:4 0)) _))
             `);

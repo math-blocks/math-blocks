@@ -1,4 +1,4 @@
-import * as types from "../ast/types";
+import * as types from "../char/types";
 
 import * as util from "./util";
 import {selectionZipperFromZippers} from "./convert";

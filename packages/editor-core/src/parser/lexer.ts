@@ -8,9 +8,15 @@
  */
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import * as types from "../ast/types";
+import * as types from "../char/types";
 
-import {Token, TokenNode, TokenRow, TokenAtom, SourceLocation} from "./types";
+import {
+    Token,
+    TokenNode,
+    TokenRow,
+    TokenAtom,
+    SourceLocation,
+} from "../token/types";
 
 export const location = (
     path: readonly number[],

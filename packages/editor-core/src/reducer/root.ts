@@ -1,6 +1,6 @@
 import {getId} from "@math-blocks/core";
 
-import * as builders from "../ast/builders";
+import * as builders from "../char/builders";
 
 import * as util from "./util";
 import type {Zipper, Focus, Breadcrumb, State} from "./types";

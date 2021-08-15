@@ -1,7 +1,7 @@
-import * as builders from "./ast/builders";
-import * as types from "./ast/types";
-import * as util from "./ast/util";
-import * as transforms from "./ast/transforms";
+import * as builders from "./char/builders";
+import * as types from "./char/types";
+import * as util from "./char/util";
+import * as transforms from "./char/transforms";
 
 export {builders, transforms, types, util};
 

@@ -1,7 +1,7 @@
 import {getId} from "@math-blocks/core";
 
-import * as types from "../../ast/types";
-import * as builders from "../../ast/builders";
+import * as types from "../../char/types";
+import * as builders from "../../char/builders";
 
 import * as util from "../util";
 import {adjustColumns} from "./adjust-columns";
