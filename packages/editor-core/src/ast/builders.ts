@@ -14,7 +14,7 @@ export function row(children: readonly types.CharNode[]): types.CharRow {
 export function subsup(
     sub?: readonly types.CharNode[],
     sup?: readonly types.CharNode[],
-): types.SubSup {
+): types.CharSubSup {
     return {
         id: getId(),
         type: "subsup",
@@ -27,7 +27,7 @@ export function limits(
     inner: types.CharNode,
     lower: readonly types.CharNode[],
     upper?: readonly types.CharNode[],
-): types.Limits {
+): types.CharLimits {
     return {
         id: getId(),
         type: "limits",
@@ -40,7 +40,7 @@ export function limits(
 export function frac(
     numerator: readonly types.CharNode[],
     denominator: readonly types.CharNode[],
-): types.Frac {
+): types.CharFrac {
     return {
         id: getId(),
         type: "frac",
@@ -54,7 +54,7 @@ export function frac(
 export function root(
     index: readonly types.CharNode[] | null,
     radicand: readonly types.CharNode[],
-): types.Root {
+): types.CharRoot {
     return {
         id: getId(),
         type: "root",
@@ -67,7 +67,7 @@ export function delimited(
     inner: readonly types.CharNode[],
     leftDelim: types.CharAtom,
     rightDelim: types.CharAtom,
-): types.Delimited {
+): types.CharDelimited {
     return {
         id: getId(),
         type: "delimited",
@@ -87,7 +87,7 @@ export function table(
         readonly left: types.CharAtom;
         readonly right: types.CharAtom;
     },
-): types.Table {
+): types.CharTable {
     return {
         id: getId(),
         type: "table",
@@ -106,7 +106,7 @@ export function algebra(
     cells: readonly (readonly types.CharNode[] | null)[],
     colCount: number,
     rowCount: number,
-): types.Table {
+): types.CharTable {
     return table("algebra", cells, colCount, rowCount, undefined);
 }
 
@@ -118,7 +118,7 @@ export function matrix(
         readonly left: types.CharAtom;
         readonly right: types.CharAtom;
     },
-): types.Table {
+): types.CharTable {
     return table("matrix", cells, colCount, rowCount, delimiters);
 }
 
@@ -131,4 +131,4 @@ export function atom(value: types.Char): types.CharAtom {
 }
 
 export const char = (char: string, pending?: boolean): types.CharAtom =>
-    atom({type: "char", char, pending});
+    atom({type: "char", value: char, pending});

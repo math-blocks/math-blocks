@@ -5,9 +5,9 @@ import {
     Token,
     TokenNode,
     TokenRow,
-    SubSup,
-    Frac,
-    Root,
+    TokenSubSup,
+    TokenFrac,
+    TokenRoot,
     TokenAtom,
     SourceLocation,
 } from "./types";
@@ -31,7 +31,7 @@ export function subsup(
     sub: readonly TokenNode[] | void,
     sup: readonly TokenNode[] | void,
     loc: SourceLocation,
-): SubSup {
+): TokenSubSup {
     return {
         type: "subsup",
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
@@ -43,7 +43,7 @@ export function frac(
     numerator: readonly TokenNode[],
     denominator: readonly TokenNode[],
     loc: SourceLocation,
-): Frac {
+): TokenFrac {
     return {
         type: "frac",
         children: [row(numerator), row(denominator)],
@@ -57,7 +57,7 @@ export function root(
     radicand: readonly TokenNode[],
     index: readonly TokenNode[] | null,
     loc: SourceLocation,
-): Root {
+): TokenRoot {
     return {
         type: "root",
         children: [index ? row(index) : null, row(radicand)],

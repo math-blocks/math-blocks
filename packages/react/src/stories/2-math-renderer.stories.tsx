@@ -960,7 +960,7 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
         ],
         11,
         3,
-    ) as Mutable<Editor.types.Table>;
+    ) as Mutable<Editor.types.CharTable>;
     table.rowStyles = [null, null, {border: "top"}];
     const verticalWork = builders.row([table]);
 

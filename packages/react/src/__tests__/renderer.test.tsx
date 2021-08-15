@@ -673,7 +673,7 @@ describe("renderer", () => {
 
     describe("showing work vertically", () => {
         const {char: glyph} = Editor.builders;
-        const node: Editor.types.Table = Editor.builders.algebra(
+        const node: Editor.types.CharTable = Editor.builders.algebra(
             [
                 // first row
                 [],
@@ -767,7 +767,7 @@ describe("renderer", () => {
 
         test("don't pad an empty cell in the bottom row if there is an non-empty cell above", async () => {
             const {char: glyph} = Editor.builders;
-            const node: Editor.types.Table = Editor.builders.algebra(
+            const node: Editor.types.CharTable = Editor.builders.algebra(
                 [
                     // first row
                     [glyph("x")],
@@ -839,7 +839,7 @@ describe("renderer", () => {
 
         test("don't pad an empty cell in the middle row if there is non-empty cells in below it", async () => {
             const {char: glyph} = Editor.builders;
-            const node: Editor.types.Table = Editor.builders.algebra(
+            const node: Editor.types.CharTable = Editor.builders.algebra(
                 [
                     // first row
                     [glyph("x")],

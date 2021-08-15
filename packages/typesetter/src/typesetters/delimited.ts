@@ -8,7 +8,7 @@ import type {Context} from "../types";
 
 export const typesetDelimited = (
     typesetChild: (index: number, context: Context) => Layout.HBox | null,
-    node: Editor.types.Delimited | Editor.ZDelimited,
+    node: Editor.types.CharDelimited | Editor.ZDelimited,
     context: Context,
 ): Layout.HBox => {
     const thresholdOptions = {
@@ -22,14 +22,14 @@ export const typesetDelimited = (
     }
 
     const open = makeDelimiter(
-        node.leftDelim.char,
+        node.leftDelim.value,
         row,
         thresholdOptions,
         context,
     ) as Mutable<Layout.Glyph>;
 
     const close = makeDelimiter(
-        node.rightDelim.char,
+        node.rightDelim.value,
         row,
         thresholdOptions,
         context,

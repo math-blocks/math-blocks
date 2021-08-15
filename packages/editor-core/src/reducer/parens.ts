@@ -27,7 +27,7 @@ const rightGlyphMap = {
     "|": "|",
 };
 
-const makePermanent = <T extends ZDelimited | types.Delimited>(
+const makePermanent = <T extends ZDelimited | types.CharDelimited>(
     focusOrNode: T,
     delim: "leftDelim" | "rightDelim",
 ): T => {
@@ -130,7 +130,7 @@ export const parens = (state: State, char: Delimiters): State => {
     const rightParen = builders.char(rightGlyphMap[char]);
 
     if (selection.length > 0) {
-        if (leftParen.char === char) {
+        if (leftParen.value === char) {
             const newZipper: Zipper = {
                 ...zipper,
                 row: {
@@ -163,7 +163,7 @@ export const parens = (state: State, char: Delimiters): State => {
         return stateFromZipper(newZipper);
     }
 
-    if (leftParen.char === char) {
+    if (leftParen.value === char) {
         // If we're inside a row inside of a "delimited" node, check if the
         // opening paren is pending, if it is, re-adjust the size of the
         // "delimited" node and make the opening paren non-pending

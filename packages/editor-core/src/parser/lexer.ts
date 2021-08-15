@@ -73,7 +73,7 @@ const tokenizeChars = (
 ): readonly TokenAtom[] => {
     const tokens: TokenAtom[] = [];
     if (chars.length > 0) {
-        const str = chars.map((char) => char.char).join("");
+        const str = chars.map((char) => char.value).join("");
         const matches = str.matchAll(TOKEN_REGEX);
 
         for (const match of matches) {
@@ -224,11 +224,11 @@ const lex = (
             const loc = location(path, offset, offset + 1);
 
             let inner: TokenNode;
-            if (node.inner.type === "char" && node.inner.char === "\u03a3") {
+            if (node.inner.type === "char" && node.inner.value === "\u03a3") {
                 inner = atom({type: "token", name: "sum"}, loc);
             } else if (
                 node.inner.type === "char" &&
-                node.inner.char === "\u03a0"
+                node.inner.value === "\u03a0"
             ) {
                 inner = atom({type: "token", name: "prod"}, loc);
             } else if (node.inner.type === "row") {

@@ -2,7 +2,7 @@ import * as sharedTypes from "../shared-types";
 
 export type Char = {
     readonly type: "char";
-    readonly char: string;
+    readonly value: string;
     readonly pending?: boolean; // TODO: move this into Style
 };
 
@@ -14,24 +14,24 @@ export type Style = {
 type Common = {readonly id: number; readonly style: Readonly<Style>};
 
 export type CharRow = sharedTypes.Row<Char, Common>;
-export type Delimited = sharedTypes.Delimited<Char, Common>;
-export type Table = sharedTypes.Table<Char, Common>;
-export type SubSup = sharedTypes.SubSup<Char, Common>;
-export type Limits = sharedTypes.Limits<Char, Common>;
-export type Frac = sharedTypes.Frac<Char, Common>;
-export type Root = sharedTypes.Root<Char, Common>;
+export type CharDelimited = sharedTypes.Delimited<Char, Common>;
+export type CharTable = sharedTypes.Table<Char, Common>;
+export type CharSubSup = sharedTypes.SubSup<Char, Common>;
+export type CharLimits = sharedTypes.Limits<Char, Common>;
+export type CharFrac = sharedTypes.Frac<Char, Common>;
+export type CharRoot = sharedTypes.Root<Char, Common>;
 export type CharAtom = sharedTypes.Atom<Char, Common>;
 
 // TODO: split the concept of Node and Children where Children doesn't include
 // Row.
 export type CharNode =
     | CharRow
-    | Delimited
-    | Table
-    | SubSup
-    | Limits
-    | Frac
-    | Root
+    | CharDelimited
+    | CharTable
+    | CharSubSup
+    | CharLimits
+    | CharFrac
+    | CharRoot
     | CharAtom;
 
 // The editor nodes need IDs so we can position the cursor relative to

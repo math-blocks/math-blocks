@@ -15,7 +15,10 @@ import type {
     State,
 } from "./types";
 
-export const frac = (focus: ZFrac, replacement: types.CharRow): types.Frac => {
+export const frac = (
+    focus: ZFrac,
+    replacement: types.CharRow,
+): types.CharFrac => {
     return {
         id: focus.id,
         type: "frac",
@@ -31,7 +34,7 @@ export const frac = (focus: ZFrac, replacement: types.CharRow): types.Frac => {
     };
 };
 
-export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
+export const zfrac = (node: types.CharFrac, index: 0 | 1): ZFrac => {
     return index === 0
         ? {
               id: node.id,
@@ -52,7 +55,7 @@ export const zfrac = (node: types.Frac, index: 0 | 1): ZFrac => {
 export const subsup = (
     focus: ZSubSup,
     replacement: types.CharRow,
-): types.SubSup => {
+): types.CharSubSup => {
     return {
         id: focus.id,
         type: "subsup",
@@ -68,7 +71,7 @@ export const subsup = (
     };
 };
 
-export const zsubsup = (node: types.SubSup, index: 0 | 1): ZSubSup => {
+export const zsubsup = (node: types.CharSubSup, index: 0 | 1): ZSubSup => {
     return index === 0
         ? {
               id: node.id,
@@ -86,7 +89,10 @@ export const zsubsup = (node: types.SubSup, index: 0 | 1): ZSubSup => {
           };
 };
 
-export const root = (focus: ZRoot, replacement: types.CharRow): types.Root => {
+export const root = (
+    focus: ZRoot,
+    replacement: types.CharRow,
+): types.CharRoot => {
     return {
         id: focus.id,
         type: "root",
@@ -102,7 +108,7 @@ export const root = (focus: ZRoot, replacement: types.CharRow): types.Root => {
     };
 };
 
-export const zroot = (node: types.Root, index: 0 | 1): ZRoot => {
+export const zroot = (node: types.CharRoot, index: 0 | 1): ZRoot => {
     return index === 0
         ? {
               id: node.id,
@@ -123,7 +129,7 @@ export const zroot = (node: types.Root, index: 0 | 1): ZRoot => {
 export const limits = (
     focus: ZLimits,
     replacement: types.CharRow,
-): types.Limits => {
+): types.CharLimits => {
     return {
         id: focus.id,
         type: "limits",
@@ -140,7 +146,7 @@ export const limits = (
     };
 };
 
-export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
+export const zlimits = (node: types.CharLimits, index: 0 | 1): ZLimits => {
     return index === 0
         ? {
               id: node.id,
@@ -163,7 +169,7 @@ export const zlimits = (node: types.Limits, index: 0 | 1): ZLimits => {
 export const table = (
     focus: ZTable,
     replacement: types.CharRow,
-): types.Table => {
+): types.CharTable => {
     return {
         id: focus.id,
         type: "table",
@@ -178,7 +184,7 @@ export const table = (
     };
 };
 
-export const ztable = (node: types.Table, index: number): ZTable => {
+export const ztable = (node: types.CharTable, index: number): ZTable => {
     return {
         id: node.id,
         type: "ztable",
@@ -197,7 +203,7 @@ export const ztable = (node: types.Table, index: number): ZTable => {
 export const delimited = (
     focus: ZDelimited,
     replacement: types.CharRow,
-): types.Delimited => {
+): types.CharDelimited => {
     return {
         id: focus.id,
         type: "delimited",
@@ -208,7 +214,7 @@ export const delimited = (
     };
 };
 
-export const zdelimited = (node: types.Delimited): ZDelimited => {
+export const zdelimited = (node: types.CharDelimited): ZDelimited => {
     return {
         id: node.id,
         type: "zdelimited",
@@ -245,12 +251,12 @@ export const focusToNode = (
 
 export const nodeToFocus = (
     node:
-        | types.Frac
-        | types.SubSup
-        | types.Root
-        | types.Limits
-        | types.Delimited
-        | types.Table,
+        | types.CharFrac
+        | types.CharSubSup
+        | types.CharRoot
+        | types.CharLimits
+        | types.CharDelimited
+        | types.CharTable,
     index: number,
 ): Focus => {
     switch (node.type) {

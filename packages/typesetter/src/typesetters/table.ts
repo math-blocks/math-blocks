@@ -37,7 +37,7 @@ export const typesetTable = (
         context: Context,
         padFirstOperator?: boolean,
     ) => Layout.HBox | null,
-    node: Editor.types.Table | Editor.ZTable,
+    node: Editor.types.CharTable | Editor.ZTable,
     context: Context,
     zipper?: Editor.Zipper,
 ): Layout.HBox | Layout.VBox => {
@@ -113,7 +113,7 @@ export const typesetTable = (
             const padFirstOperator =
                 child?.children?.length === 1 &&
                 child.children[0].type === "char" &&
-                ["+", "\u2212"].includes(child.children[0].char);
+                ["+", "\u2212"].includes(child.children[0].value);
 
             let cell = typesetChild(
                 j * node.colCount + i,
@@ -329,13 +329,13 @@ export const typesetTable = (
     }
 
     const open = makeDelimiter(
-        node.delimiters.left.char,
+        node.delimiters.left.value,
         inner,
         thresholdOptions,
         context,
     );
     const close = makeDelimiter(
-        node.delimiters.right.char,
+        node.delimiters.right.value,
         inner,
         thresholdOptions,
         context,

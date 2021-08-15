@@ -22,7 +22,7 @@ const limits = (
     inner: types.CharNode,
     lower: types.CharRow,
     upper: types.CharRow | null,
-): types.Limits => {
+): types.CharLimits => {
     return {
         id: 0,
         type: "limits",
@@ -693,7 +693,7 @@ describe("backspace", () => {
         test("deleting from the right of a limits node w/o an upper bound", () => {
             const lower: types.CharRow = row("b");
             const inner: types.CharAtom = builders.char("l");
-            const lim: types.Limits = limits(inner, lower, null);
+            const lim: types.CharLimits = limits(inner, lower, null);
             const zipper: Zipper = {
                 row: zrow([builders.char("a"), lim], [builders.char("d")]),
                 breadcrumbs: [],
@@ -725,7 +725,7 @@ describe("backspace", () => {
             const lower: types.CharRow = row("b");
             const upper: types.CharRow = row("c");
             const inner: types.CharAtom = builders.char("l");
-            const sum: types.Limits = limits(inner, lower, upper);
+            const sum: types.CharLimits = limits(inner, lower, upper);
             const zipper: Zipper = {
                 row: zrow([builders.char("a"), sum], [builders.char("d")]),
                 breadcrumbs: [],

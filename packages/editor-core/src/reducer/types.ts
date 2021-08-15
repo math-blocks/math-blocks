@@ -15,12 +15,12 @@ export type ZRow = ZCommon & {
     readonly right: readonly types.CharNode[];
 };
 
-export type ZFrac = Zipperize<types.Frac>;
-export type ZSubSup = Zipperize<types.SubSup>;
-export type ZLimits = Zipperize<types.Limits>;
-export type ZRoot = Zipperize<types.Root>;
-export type ZDelimited = Zipperize<types.Delimited>;
-export type ZTable = Zipperize<types.Table>;
+export type ZFrac = Zipperize<types.CharFrac>;
+export type ZSubSup = Zipperize<types.CharSubSup>;
+export type ZLimits = Zipperize<types.CharLimits>;
+export type ZRoot = Zipperize<types.CharRoot>;
+export type ZDelimited = Zipperize<types.CharDelimited>;
+export type ZTable = Zipperize<types.CharTable>;
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 

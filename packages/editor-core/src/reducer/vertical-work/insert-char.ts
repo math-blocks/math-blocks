@@ -225,7 +225,7 @@ export const insertChar = (state: State, char: string): State => {
                 // If there's a +/- operate just to the left of the cursor that
                 // would indicate that this operand has one or more unary +/-.
                 prevNode.type !== "char" ||
-                !["+", "\u2212"].includes(prevNode.char)
+                !["+", "\u2212"].includes(prevNode.value)
             ) {
                 const cursorColIndex = columns.findIndex(
                     (col) => col === cursorCol,
@@ -272,7 +272,7 @@ export const insertChar = (state: State, char: string): State => {
         if (
             cursorCell.children.length > 0 &&
             cursorCell.children[0].type === "char" &&
-            ["+", "\u2212"].includes(cursorCell.children[0].char)
+            ["+", "\u2212"].includes(cursorCell.children[0].value)
         ) {
             if (!["+", "\u2212"].includes(char)) {
                 const cursorColIndex = columns.findIndex(

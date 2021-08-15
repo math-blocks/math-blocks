@@ -109,10 +109,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -121,10 +121,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
                   "pending": true,
                   "style": Object {},
                   "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -176,10 +176,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -188,10 +188,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
                   "pending": true,
                   "style": Object {},
                   "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -244,11 +244,11 @@ describe("parens", () => {
             expect(result.breadcrumbs[1].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
                   "id": 98,
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -257,11 +257,11 @@ describe("parens", () => {
             expect(result.breadcrumbs[1].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
                   "id": 99,
                   "pending": true,
                   "style": Object {},
                   "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -330,10 +330,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -342,10 +342,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
                   "pending": true,
                   "style": Object {},
                   "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -456,10 +456,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
                   "pending": false,
                   "style": Object {},
                   "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -468,10 +468,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -499,10 +499,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "|",
                   "pending": undefined,
                   "style": Object {},
                   "type": "char",
+                  "value": "|",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
@@ -511,10 +511,10 @@ describe("parens", () => {
             expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "|",
                   "pending": true,
                   "style": Object {},
                   "type": "char",
+                  "value": "|",
                 }
             `);
         });

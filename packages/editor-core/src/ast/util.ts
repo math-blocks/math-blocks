@@ -5,7 +5,7 @@ export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     if (a.type !== b.type) {
         return false;
     } else if (a.type === "char" && b.type === "char") {
-        return a.char === b.char;
+        return a.value === b.value;
     } else if (a.type === "frac" && b.type === "frac") {
         const [aNum, aDen] = a.children;
         const [bNum, bDen] = b.children;
@@ -72,37 +72,37 @@ export const row = (str: string): types.CharRow =>
         }),
     );
 
-export const frac = (num: string, den: string): types.Frac =>
+export const frac = (num: string, den: string): types.CharFrac =>
     builders.frac(
         num.split("").map((glyph) => builders.char(glyph)),
         den.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sqrt = (radicand: string): types.Root =>
+export const sqrt = (radicand: string): types.CharRoot =>
     builders.root(
         null,
         radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const root = (radicand: string, index: string): types.Root =>
+export const root = (radicand: string, index: string): types.CharRoot =>
     builders.root(
         radicand.split("").map((glyph) => builders.char(glyph)),
         index.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sup = (sup: string): types.SubSup =>
+export const sup = (sup: string): types.CharSubSup =>
     builders.subsup(
         undefined,
         sup.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sub = (sub: string): types.SubSup =>
+export const sub = (sub: string): types.CharSubSup =>
     builders.subsup(
         sub.split("").map((glyph) => builders.char(glyph)),
         undefined,
     );
 
-export const subsup = (sub: string, sup: string): types.SubSup =>
+export const subsup = (sub: string, sup: string): types.CharSubSup =>
     builders.subsup(
         sub.split("").map((glyph) => builders.char(glyph)),
         sup.split("").map((glyph) => builders.char(glyph)),
@@ -205,7 +205,7 @@ export const hasChildren = (node: types.CharNode): node is HasChildren => {
 };
 
 export const isOperator = (atom: types.CharAtom): boolean => {
-    const char = atom.char;
+    const char = atom.value;
 
     // We don't include unary +/- in the numerator.  This mimic's mathquill's
     // behavior.
@@ -242,8 +242,8 @@ export const isAtom = (
 ): boolean => {
     if (node.type === "char") {
         return Array.isArray(charOrChars)
-            ? charOrChars.includes(node.char)
-            : charOrChars === node.char;
+            ? charOrChars.includes(node.value)
+            : charOrChars === node.value;
     }
     return false;
 };

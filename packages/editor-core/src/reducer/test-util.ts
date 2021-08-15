@@ -15,43 +15,46 @@ export const row = (str: string): types.CharRow =>
         }),
     );
 
-export const frac = (num: string, den: string): types.Frac =>
+export const frac = (num: string, den: string): types.CharFrac =>
     builders.frac(
         num.split("").map((glyph) => builders.char(glyph)),
         den.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sqrt = (radicand: string): types.Root =>
+export const sqrt = (radicand: string): types.CharRoot =>
     builders.root(
         null,
         radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const root = (index: string | null, radicand: string): types.Root =>
+export const root = (index: string | null, radicand: string): types.CharRoot =>
     builders.root(
         index ? index.split("").map((glyph) => builders.char(glyph)) : null,
         radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sup = (sup: string): types.SubSup =>
+export const sup = (sup: string): types.CharSubSup =>
     builders.subsup(
         undefined,
         sup.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sub = (sub: string): types.SubSup =>
+export const sub = (sub: string): types.CharSubSup =>
     builders.subsup(
         sub.split("").map((glyph) => builders.char(glyph)),
         undefined,
     );
 
-export const subsup = (sub: string | null, sup: string | null): types.SubSup =>
+export const subsup = (
+    sub: string | null,
+    sup: string | null,
+): types.CharSubSup =>
     builders.subsup(
         sub ? sub.split("").map((glyph) => builders.char(glyph)) : undefined,
         sup ? sup.split("").map((glyph) => builders.char(glyph)) : undefined,
     );
 
-export const delimited = (children: string): types.Delimited =>
+export const delimited = (children: string): types.CharDelimited =>
     builders.delimited(
         children.split("").map((glyph) => builders.char(glyph)),
         builders.char("("),

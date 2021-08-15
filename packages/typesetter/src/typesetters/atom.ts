@@ -21,7 +21,7 @@ const shouldHavePadding = (
     currentNode: Editor.types.CharAtom,
     context: Context,
 ): boolean => {
-    const currentChar = currentNode.char;
+    const currentChar = currentNode.value;
 
     // We only add padding around operators, so if we get a non-operator char
     // we can return early.
@@ -88,17 +88,17 @@ export const typesetAtom = (
 ): Layout.Glyph => {
     const {font} = context.fontData;
 
-    const glyphID = font.getGlyphID(node.char);
+    const glyphID = font.getGlyphID(node.value);
     let glyph = Layout.makeGlyph(
-        node.char,
+        node.value,
         glyphID,
         context,
     ) as Mutable<Layout.Glyph>;
 
     // Convert individual glyphs to italic glyphs if they exist in the
     // current font.
-    if (/[a-z]/.test(node.char) && !context.operator) {
-        const offset = node.char.charCodeAt(0) - "a".charCodeAt(0);
+    if (/[a-z]/.test(node.value) && !context.operator) {
+        const offset = node.value.charCodeAt(0) - "a".charCodeAt(0);
         const char = String.fromCodePoint(0x1d44e + offset);
         const glyphID = font.getGlyphID(char);
         glyph = Layout.makeGlyph(char, glyphID, context);
