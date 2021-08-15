@@ -4,11 +4,8 @@ import * as types from "../../ast/types";
 import * as builders from "../../ast/builders";
 
 import * as util from "../util";
-import {
-    zipperToVerticalWork,
-    verticalWorkToZTable,
-    adjustEmptyColumns,
-} from "./util";
+import {adjustColumns} from "./adjust-columns";
+import {zipperToVerticalWork, verticalWorkToZTable} from "./util";
 
 import type {State, ZTable, Zipper} from "../types";
 
@@ -18,7 +15,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
     if (!work) {
         return zipper;
     }
-    const adjustedWork = adjustEmptyColumns(work);
+    const adjustedWork = adjustColumns(work);
     return verticalWorkToZTable(adjustedWork);
 };
 
@@ -90,7 +87,7 @@ export const moveDown = (state: State): State => {
                 );
             }
             const newCell = col[row + 1];
-            const adjustedWork = adjustEmptyColumns({
+            const adjustedWork = adjustColumns({
                 ...work,
                 cursorId: newCell.id,
             });
@@ -294,7 +291,7 @@ export const moveUp = (state: State): State => {
                 );
             }
             const newCell = col[cursorRow - 1];
-            const adjustedWork = adjustEmptyColumns({
+            const adjustedWork = adjustColumns({
                 ...work,
                 cursorId: newCell.id,
             });
