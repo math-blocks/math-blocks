@@ -1,6 +1,6 @@
 import * as Testing from "@math-blocks/testing";
 
-import {row, glyph, subsup} from "../../ast/builders";
+import {row, char, subsup} from "../../ast/builders";
 import * as builders from "../../ast/builders";
 import * as util from "../../ast/util";
 
@@ -122,7 +122,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle fractions", () => {
-        const input = row([glyph("1"), glyph("+"), util.frac("1", "x")]);
+        const input = row([char("1"), char("+"), util.frac("1", "x")]);
 
         const parseTree = parser.parse(input);
 
@@ -160,7 +160,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle exponents", () => {
-        const input = row([glyph("x"), util.sup("2")]);
+        const input = row([char("x"), util.sup("2")]);
 
         const parseTree = parser.parse(input);
 
@@ -181,8 +181,8 @@ describe("EditorParser", () => {
 
     it("should handle nested exponents", () => {
         const input = row([
-            glyph("x"),
-            subsup(undefined, [glyph("y"), util.sup("2")]),
+            char("x"),
+            subsup(undefined, [char("y"), util.sup("2")]),
         ]);
 
         const parseTree = parser.parse(input);
@@ -195,7 +195,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle subscripts on identifiers", () => {
-        const input = row([glyph("a"), util.sub("n+1")]);
+        const input = row([char("a"), util.sub("n+1")]);
 
         const parseTree = parser.parse(input);
 
@@ -218,7 +218,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle subscripts and superscripts identifiers", () => {
-        const input = row([glyph("a"), util.subsup("n+1", "2")]);
+        const input = row([char("a"), util.subsup("n+1", "2")]);
 
         const parseTree = parser.parse(input);
 
@@ -228,7 +228,7 @@ describe("EditorParser", () => {
     });
 
     it("should throw when a subscript is being used on a number", () => {
-        const input = row([glyph("2"), util.sub("0")]);
+        const input = row([char("2"), util.sub("0")]);
 
         expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
             `"subscripts are only allowed on identifiers"`,
@@ -272,12 +272,12 @@ describe("EditorParser", () => {
 
     it("should handle adding with parens", () => {
         const input = builders.row([
-            glyph("a"),
-            glyph("+"),
+            char("a"),
+            char("+"),
             builders.delimited(
-                [glyph("b"), glyph("+"), glyph("c")],
-                glyph("("),
-                glyph(")"),
+                [char("b"), char("+"), char("c")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -302,9 +302,9 @@ describe("EditorParser", () => {
         // (a+b)
         const input = builders.row([
             builders.delimited(
-                [glyph("a"), glyph("+"), glyph("b")],
-                glyph("("),
-                glyph(")"),
+                [char("a"), char("+"), char("b")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -317,11 +317,11 @@ describe("EditorParser", () => {
         // (-a)(b)
         const input = builders.row([
             builders.delimited(
-                [glyph("\u2212"), glyph("a")],
-                glyph("("),
-                glyph(")"),
+                [char("\u2212"), char("a")],
+                char("("),
+                char(")"),
             ),
-            builders.delimited([glyph("b")], glyph("("), glyph(")")),
+            builders.delimited([char("b")], char("("), char(")")),
         ]);
 
         const ast = parser.parse(input);
@@ -336,9 +336,9 @@ describe("EditorParser", () => {
     it("muliplication with more than two parens", () => {
         // (-a)(b)
         const input = builders.row([
-            builders.delimited([glyph("a")], glyph("("), glyph(")")),
-            builders.delimited([glyph("b")], glyph("("), glyph(")")),
-            builders.delimited([glyph("c")], glyph("("), glyph(")")),
+            builders.delimited([char("a")], char("("), char(")")),
+            builders.delimited([char("b")], char("("), char(")")),
+            builders.delimited([char("c")], char("("), char(")")),
         ]);
 
         const ast = parser.parse(input);
@@ -348,11 +348,11 @@ describe("EditorParser", () => {
 
     it("should handle implicit multiplication with parens", () => {
         const input = builders.row([
-            glyph("a"),
+            char("a"),
             builders.delimited(
-                [glyph("b"), glyph("+"), glyph("c")],
-                glyph("("),
-                glyph(")"),
+                [char("b"), char("+"), char("c")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -367,16 +367,16 @@ describe("EditorParser", () => {
 
     it("should handle implicit multiplication with multiple parens", () => {
         const input = builders.row([
-            glyph("a"),
+            char("a"),
             builders.delimited(
-                [glyph("b"), glyph("+"), glyph("c")],
-                glyph("("),
-                glyph(")"),
+                [char("b"), char("+"), char("c")],
+                char("("),
+                char(")"),
             ),
             builders.delimited(
-                [glyph("d"), glyph("+"), glyph("e")],
-                glyph("("),
-                glyph(")"),
+                [char("d"), char("+"), char("e")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -393,14 +393,14 @@ describe("EditorParser", () => {
     it("should handle implicit multiplication with parens at the start", () => {
         const input = builders.row([
             builders.delimited(
-                [glyph("b"), glyph("+"), glyph("c")],
-                glyph("("),
-                glyph(")"),
+                [char("b"), char("+"), char("c")],
+                char("("),
+                char(")"),
             ),
             builders.delimited(
-                [glyph("d"), glyph("+"), glyph("e")],
-                glyph("("),
-                glyph(")"),
+                [char("d"), char("+"), char("e")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -415,8 +415,8 @@ describe("EditorParser", () => {
 
     it("should handle implicit multiplication by a number at the end", () => {
         const input = builders.row([
-            builders.delimited([glyph("b")], glyph("("), glyph(")")),
-            glyph("2"),
+            builders.delimited([char("b")], char("("), char(")")),
+            char("2"),
         ]);
 
         const ast = parser.parse(input);
@@ -427,9 +427,9 @@ describe("EditorParser", () => {
     it("should handle implicit multiplication by a frac at the end", () => {
         const input = builders.row([
             builders.delimited(
-                [glyph("a"), glyph("+"), glyph("b")],
-                glyph("("),
-                glyph(")"),
+                [char("a"), char("+"), char("b")],
+                char("("),
+                char(")"),
             ),
             util.frac("1", "2"),
         ]);
@@ -444,7 +444,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle implicit multiplication by a frac at the start", () => {
-        const input = row([util.frac("1", "2"), glyph("b")]);
+        const input = row([util.frac("1", "2"), char("b")]);
 
         const ast = parser.parse(input);
 
@@ -464,7 +464,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle implicit multiplication with roots", () => {
-        const input = row([glyph("a"), util.root("b", "2")]);
+        const input = row([char("a"), util.root("b", "2")]);
 
         const ast = parser.parse(input);
 
@@ -507,7 +507,7 @@ describe("EditorParser", () => {
 
     it("should handle implicit multiplication with multiple roots", () => {
         const input = row([
-            glyph("a"),
+            char("a"),
             util.root("b", "2"),
             util.root("c", "3"),
         ]);
@@ -535,7 +535,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle (√2)a", () => {
-        const input = row([util.root("2", "2"), glyph("a")]);
+        const input = row([util.root("2", "2"), char("a")]);
 
         const ast = parser.parse(input);
 
@@ -547,7 +547,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle 5√2", () => {
-        const input = row([glyph("5"), util.root("2", "2")]);
+        const input = row([char("5"), util.root("2", "2")]);
 
         const ast = parser.parse(input);
 
@@ -559,7 +559,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle √2 5", () => {
-        const input = row([util.root("2", "2"), glyph("5")]);
+        const input = row([util.root("2", "2"), char("5")]);
 
         const ast = parser.parse(input);
 
@@ -583,7 +583,7 @@ describe("EditorParser", () => {
     });
 
     it("should handle √2 a", () => {
-        const input = row([util.root("2", "2"), glyph("a")]);
+        const input = row([util.root("2", "2"), char("a")]);
 
         const ast = parser.parse(input);
 
@@ -596,12 +596,12 @@ describe("EditorParser", () => {
 
     it("-1(a + b)", () => {
         const input = builders.row([
-            glyph("\u2212"),
-            glyph("1"),
+            char("\u2212"),
+            char("1"),
             builders.delimited(
-                [glyph("a"), glyph("+"), glyph("b")],
-                glyph("("),
-                glyph(")"),
+                [char("a"), char("+"), char("b")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -617,14 +617,14 @@ describe("EditorParser", () => {
     it("(-1)(a + b)", () => {
         const input = builders.row([
             builders.delimited(
-                [glyph("\u2212"), glyph("1")],
-                glyph("("),
-                glyph(")"),
+                [char("\u2212"), char("1")],
+                char("("),
+                char(")"),
             ),
             builders.delimited(
-                [glyph("a"), glyph("+"), glyph("b")],
-                glyph("("),
-                glyph(")"),
+                [char("a"), char("+"), char("b")],
+                char("("),
+                char(")"),
             ),
         ]);
 
@@ -640,7 +640,7 @@ describe("EditorParser", () => {
     describe("excess parens", () => {
         it("(x)", () => {
             const input = builders.row([
-                builders.delimited([glyph("x")], glyph("("), glyph(")")),
+                builders.delimited([char("x")], char("("), char(")")),
             ]);
 
             const ast = parser.parse(input);
@@ -651,9 +651,9 @@ describe("EditorParser", () => {
         it("((x))", () => {
             const input = builders.row([
                 builders.delimited(
-                    [builders.delimited([glyph("x")], glyph("("), glyph(")"))],
-                    glyph("("),
-                    glyph(")"),
+                    [builders.delimited([char("x")], char("("), char(")"))],
+                    char("("),
+                    char(")"),
                 ),
             ]);
 
@@ -664,9 +664,9 @@ describe("EditorParser", () => {
 
         it("1 + (x)", () => {
             const input = builders.row([
-                glyph("1"),
-                glyph("+"),
-                builders.delimited([glyph("x")], glyph("("), glyph(")")),
+                char("1"),
+                char("+"),
+                builders.delimited([char("x")], char("("), char(")")),
             ]);
 
             const ast = parser.parse(input);
@@ -680,17 +680,17 @@ describe("EditorParser", () => {
 
         it("2((x + y))", () => {
             const input = builders.row([
-                glyph("2"),
+                char("2"),
                 builders.delimited(
                     [
                         builders.delimited(
-                            [glyph("x"), glyph("+"), glyph("y")],
-                            glyph("("),
-                            glyph(")"),
+                            [char("x"), char("+"), char("y")],
+                            char("("),
+                            char(")"),
                         ),
                     ],
-                    glyph("("),
-                    glyph(")"),
+                    char("("),
+                    char(")"),
                 ),
             ]);
 
@@ -705,12 +705,12 @@ describe("EditorParser", () => {
 
         it("1 + (xy)", () => {
             const input = builders.row([
-                glyph("1"),
-                glyph("+"),
+                char("1"),
+                char("+"),
                 builders.delimited(
-                    [glyph("x"), glyph("y")],
-                    glyph("("),
-                    glyph(")"),
+                    [char("x"), char("y")],
+                    char("("),
+                    char(")"),
                 ),
             ]);
 
@@ -725,12 +725,12 @@ describe("EditorParser", () => {
 
         it("a + (-b)", () => {
             const input = builders.row([
-                glyph("a"),
-                glyph("+"),
+                char("a"),
+                char("+"),
                 builders.delimited(
-                    [glyph("\u2212"), glyph("b")],
-                    glyph("("),
-                    glyph(")"),
+                    [char("\u2212"), char("b")],
+                    char("("),
+                    char(")"),
                 ),
             ]);
 
@@ -746,15 +746,15 @@ describe("EditorParser", () => {
         it("(-1)(a) + (-1)(b)", () => {
             const input = builders.row([
                 builders.delimited(
-                    [glyph("\u2212"), glyph("a")],
-                    glyph("("),
-                    glyph(")"),
+                    [char("\u2212"), char("a")],
+                    char("("),
+                    char(")"),
                 ),
-                glyph("+"),
+                char("+"),
                 builders.delimited(
-                    [glyph("\u2212"), glyph("b")],
-                    glyph("("),
-                    glyph(")"),
+                    [char("\u2212"), char("b")],
+                    char("("),
+                    char(")"),
                 ),
             ]);
 

@@ -27,9 +27,9 @@ const childContextForSubsup = (context: Context): Context => {
 
 export const typesetSubsup = (
     typesetChild: (index: number, context: Context) => Layout.HBox | null,
-    node: Editor.types.SubSup | Editor.ZSubSup,
+    node: Editor.types.CharSubSup | Editor.ZSubSup,
     context: Context,
-    prevEditNode?: Editor.types.Node | Editor.Focus,
+    prevEditNode?: Editor.types.CharNode | Editor.Focus,
     prevLayoutNode?: Layout.Node,
 ): Layout.VBox => {
     const childContext = childContextForSubsup(context);
@@ -51,7 +51,7 @@ export const typesetSubsup = (
     // filter them out.  Anything else that's in a box is some sort of compound
     // layout structure (frac, delimited, etc.) and should have its subscript
     // and/or superscript positioned based on the size of the box.
-    if (prevEditNode?.type !== "atom" && prevLayoutNode) {
+    if (prevEditNode?.type !== "char" && prevLayoutNode) {
         const {superscriptBaselineDropMax, subscriptBaselineDropMin} =
             font.math.constants;
 

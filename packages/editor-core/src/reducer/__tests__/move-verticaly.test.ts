@@ -13,10 +13,10 @@ expect.extend({toEqualEditorNodes});
 describe("moveVertically", () => {
     const smallTable = builders.matrix(
         [
-            [builders.glyph("a")],
-            [builders.glyph("b")],
-            [builders.glyph("c")],
-            [builders.glyph("d")],
+            [builders.char("a")],
+            [builders.char("b")],
+            [builders.char("c")],
+            [builders.char("d")],
         ],
         2,
         2,
@@ -24,12 +24,12 @@ describe("moveVertically", () => {
 
     const largeTable = builders.matrix(
         [
-            [builders.glyph("a")],
-            [builders.glyph("b")],
+            [builders.char("a")],
+            [builders.char("b")],
             null,
             null,
-            [builders.glyph("c")],
-            [builders.glyph("d")],
+            [builders.char("c")],
+            [builders.char("d")],
         ],
         2,
         3,
@@ -44,9 +44,7 @@ describe("moveVertically", () => {
         state = moveRight(state);
         state = moveVertically(state, {type: "ArrowDown"});
 
-        expect(state.zipper.row.right).toEqualEditorNodes([
-            builders.glyph("c"),
-        ]);
+        expect(state.zipper.row.right).toEqualEditorNodes([builders.char("c")]);
     });
 
     test("moving down stops at the bottom", () => {
@@ -71,9 +69,7 @@ describe("moveVertically", () => {
         state = moveRight(state);
         state = moveVertically(state, {type: "ArrowDown"});
 
-        expect(state.zipper.row.right).toEqualEditorNodes([
-            builders.glyph("c"),
-        ]);
+        expect(state.zipper.row.right).toEqualEditorNodes([builders.char("c")]);
     });
 
     test("moving down when selecting does nothing", () => {
@@ -88,9 +84,7 @@ describe("moveVertically", () => {
             {type: "ArrowDown"},
         );
 
-        expect(state.zipper.row.right).toEqualEditorNodes([
-            builders.glyph("a"),
-        ]);
+        expect(state.zipper.row.right).toEqualEditorNodes([builders.char("a")]);
     });
 
     test("moving up", () => {
@@ -102,7 +96,7 @@ describe("moveVertically", () => {
         state = moveLeft(state);
         state = moveVertically(state, {type: "ArrowUp"});
 
-        expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("b")]);
+        expect(state.zipper.row.left).toEqualEditorNodes([builders.char("b")]);
     });
 
     test("moving up stops at the top", () => {
@@ -127,7 +121,7 @@ describe("moveVertically", () => {
         state = moveLeft(state);
         state = moveVertically(state, {type: "ArrowUp"});
 
-        expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("b")]);
+        expect(state.zipper.row.left).toEqualEditorNodes([builders.char("b")]);
     });
 
     test("moving up when selecting does nothing", () => {
@@ -136,10 +130,10 @@ describe("moveVertically", () => {
                 [
                     builders.matrix(
                         [
-                            [builders.glyph("a")],
-                            [builders.glyph("b")],
-                            [builders.glyph("c")],
-                            [builders.glyph("d")],
+                            [builders.char("a")],
+                            [builders.char("b")],
+                            [builders.char("c")],
+                            [builders.char("d")],
                         ],
                         2,
                         2,
@@ -153,12 +147,12 @@ describe("moveVertically", () => {
         state = moveLeft(state);
         state = moveVertically({...state, selecting: true}, {type: "ArrowUp"});
 
-        expect(state.zipper.row.left).toEqualEditorNodes([builders.glyph("d")]);
+        expect(state.zipper.row.left).toEqualEditorNodes([builders.char("d")]);
     });
 
     test("ignores non-table nodes", () => {
         const zipper: Zipper = {
-            row: zrow([], [builders.glyph("a")]),
+            row: zrow([], [builders.char("a")]),
             breadcrumbs: [],
         };
         const state = zipperToState(zipper);

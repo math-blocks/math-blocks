@@ -13,8 +13,8 @@ import * as builders from "../ast/builders";
 const getChildren = (
     expr: Semantic.types.Node,
     oneToOne: boolean,
-): types.Node[] => {
-    const children: types.Node[] = [];
+): types.CharNode[] => {
+    const children: types.CharNode[] = [];
 
     const node = _print(expr, oneToOne);
     if (node.type === "row") {
@@ -27,39 +27,42 @@ const getChildren = (
 };
 
 // TODO: write more tests for this
-const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
+const _print = (
+    expr: Semantic.types.Node,
+    oneToOne: boolean,
+): types.CharNode => {
     switch (expr.type) {
         case "identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
             // TODO: handle subscripts
 
-            return builders.glyph(expr.name);
+            return builders.char(expr.name);
         }
         case "number": {
             // How do we avoid creating a bunch of ids that we immediately
             // throw away because this number is part of a larger expression
             // and thus contained within a larger row?
             return builders.row(
-                expr.value.split("").map((char) => builders.glyph(char)),
+                expr.value.split("").map((char) => builders.char(char)),
             );
         }
         case "add": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             for (let i = 0; i < expr.args.length; i++) {
                 const arg = expr.args[i];
                 if (i > 0) {
                     if (arg.type === "neg" && arg.subtraction) {
-                        children.push(builders.glyph("\u2212"));
+                        children.push(builders.char("\u2212"));
                     } else {
-                        children.push(builders.glyph("+"));
+                        children.push(builders.char("+"));
                     }
                 } else {
                     if (arg.type === "neg" && arg.subtraction) {
                         console.warn(
                             "leading subtraction term should be simple negation",
                         );
-                        children.push(builders.glyph("\u2212"));
+                        children.push(builders.char("\u2212"));
                     }
                 }
 
@@ -77,8 +80,8 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                         children.push(
                             builders.delimited(
                                 inner,
-                                builders.glyph("("),
-                                builders.glyph(")"),
+                                builders.char("("),
+                                builders.char(")"),
                             ),
                         );
                     } else {
@@ -92,7 +95,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             return builders.row(children);
         }
         case "mul": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             const wrapAll = expr.args.some((arg, index) => {
                 if (arg.type === "number" && index > 0) {
@@ -118,8 +121,8 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                     children.push(
                         builders.delimited(
                             getChildren(arg, oneToOne),
-                            builders.glyph("("),
-                            builders.glyph(")"),
+                            builders.char("("),
+                            builders.char(")"),
                         ),
                     );
                 } else {
@@ -127,7 +130,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 }
 
                 if (!expr.implicit) {
-                    children.push(builders.glyph("\u00B7"));
+                    children.push(builders.char("\u00B7"));
                 }
             }
 
@@ -147,16 +150,16 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 expr.arg.type === "pow" // pow has a higher precedence
             ) {
                 return builders.row([
-                    builders.glyph("\u2212"),
+                    builders.char("\u2212"),
                     ...getChildren(expr.arg, oneToOne),
                 ]);
             } else {
                 return builders.row([
-                    builders.glyph("\u2212"),
+                    builders.char("\u2212"),
                     builders.delimited(
                         getChildren(expr.arg, oneToOne),
-                        builders.glyph("("),
-                        builders.glyph(")"),
+                        builders.char("("),
+                        builders.char(")"),
                     ),
                 ]);
             }
@@ -172,11 +175,11 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
             );
         }
         case "eq": {
-            const children: types.Node[] = [];
+            const children: types.CharNode[] = [];
 
             for (const arg of expr.args) {
                 children.push(...getChildren(arg, oneToOne));
-                children.push(builders.glyph("="));
+                children.push(builders.char("="));
             }
 
             children.pop(); // remove extra "="
@@ -195,19 +198,19 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
                 return builders.row([
                     builders.delimited(
                         getChildren(base, oneToOne),
-                        builders.glyph("("),
-                        builders.glyph(")"),
+                        builders.char("("),
+                        builders.char(")"),
                     ),
                     builders.subsup(undefined, getChildren(exp, oneToOne)),
                 ]);
             }
         }
         case "parens": {
-            const children: types.Node[] = [
+            const children: types.CharNode[] = [
                 builders.delimited(
                     getChildren(expr.arg, oneToOne),
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ];
 
@@ -222,7 +225,7 @@ const _print = (expr: Semantic.types.Node, oneToOne: boolean): types.Node => {
 export const print = (
     expr: Semantic.types.Node,
     oneToOne = false,
-): types.Row => {
+): types.CharRow => {
     const node = _print(expr, oneToOne);
     if (node.type === "row") {
         return node;

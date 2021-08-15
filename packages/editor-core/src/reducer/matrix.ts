@@ -29,7 +29,7 @@ export type MatrixActions =
 export type Cell = {
     readonly row: number;
     readonly col: number;
-    readonly content: types.Row | ZRow | null;
+    readonly content: types.CharRow | ZRow | null;
 };
 
 export const getCellsFromCrumb = (
@@ -74,7 +74,7 @@ const getCrumbFromCells = (
     crumb: Breadcrumb<ZTable>,
     orientation: "row" | "col",
 ): Breadcrumb => {
-    const orderedContent: (types.Row | ZRow | null)[] = [];
+    const orderedContent: (types.CharRow | ZRow | null)[] = [];
     for (const cell of cells) {
         const {row, col, content} = cell;
         const index =
@@ -95,10 +95,10 @@ const getCrumbFromCells = (
     const newLeft = orderedContent.slice(
         0,
         indexOfZRow,
-    ) as (types.Row | null)[];
+    ) as (types.CharRow | null)[];
     const newRight = orderedContent.slice(
         indexOfZRow + 1,
-    ) as (types.Row | null)[];
+    ) as (types.CharRow | null)[];
 
     if (orientation === "row") {
         return {
@@ -131,21 +131,21 @@ export const matrix = (state: State, action: MatrixActions): State => {
         const {left, selection} = zipper.row;
         const newNode = builders.matrix(
             [
-                [builders.glyph("1")],
-                [builders.glyph("0")],
-                [builders.glyph("0")],
-                [builders.glyph("1")],
+                [builders.char("1")],
+                [builders.char("0")],
+                [builders.char("0")],
+                [builders.char("1")],
             ],
             2,
             2,
             action.delimiters === "brackets"
                 ? {
-                      left: builders.glyph("["),
-                      right: builders.glyph("]"),
+                      left: builders.char("["),
+                      right: builders.char("]"),
                   }
                 : {
-                      left: builders.glyph("("),
-                      right: builders.glyph(")"),
+                      left: builders.char("("),
+                      right: builders.char(")"),
                   },
         );
 
@@ -207,7 +207,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         row: cursorRow,
                         col: col,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             } else if (action.side === "below") {
@@ -220,7 +220,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         row: cursorRow + 1,
                         col: col,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             }
@@ -270,7 +270,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         col: cursorCol,
                         row: row,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             } else if (action.side === "right") {
@@ -283,7 +283,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
                     cells.push({
                         col: cursorCol + 1,
                         row: row,
-                        content: builders.row([builders.glyph("0")]),
+                        content: builders.row([builders.char("0")]),
                     });
                 }
             }
@@ -352,7 +352,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const indexOfZRow =
                 cursorRow < rowCount - 1 ? cursorIndex : cursorIndex - colCount;
 
-            const orderedContent: (types.Row | ZRow | null)[] = [];
+            const orderedContent: (types.CharRow | ZRow | null)[] = [];
             for (const cell of cells) {
                 const {row, col, content} = cell;
                 const index = row * crumb.focus.colCount + col;
@@ -378,10 +378,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const newLeft = orderedContent.slice(
                 0,
                 indexOfZRow,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
             const newRight = orderedContent.slice(
                 indexOfZRow + 1,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
 
             const newCrumb: Breadcrumb = {
                 ...crumb,
@@ -450,7 +450,7 @@ export const matrix = (state: State, action: MatrixActions): State => {
             }
 
             const newColCount = colCount - 1;
-            const orderedContent: (types.Row | ZRow | null)[] = [];
+            const orderedContent: (types.CharRow | ZRow | null)[] = [];
             for (const cell of cells) {
                 const {row, col, content} = cell;
                 const index = row * newColCount + col;
@@ -481,10 +481,10 @@ export const matrix = (state: State, action: MatrixActions): State => {
             const newLeft = orderedContent.slice(
                 0,
                 indexOfZRow,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
             const newRight = orderedContent.slice(
                 indexOfZRow + 1,
-            ) as (types.Row | null)[];
+            ) as (types.CharRow | null)[];
 
             const newCrumb: Breadcrumb = {
                 ...crumb,

@@ -9,7 +9,7 @@ import * as Editor from "@math-blocks/editor-core";
 import * as Typesetter from "@math-blocks/typesetter";
 
 type Props = {
-    math: Editor.types.Row;
+    readonly math: Editor.types.CharRow;
 };
 
 const AccessibleMath: React.FC<Props> = (props) => {

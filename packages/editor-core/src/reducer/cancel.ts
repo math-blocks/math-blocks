@@ -13,12 +13,12 @@ export const cancel = (state: State, cancelId?: number): State => {
         const selectedNodeIds = selection.map((node) => node.id);
         const callback: transforms.ZipperCallback = {
             enter: (node) => {
-                if (node.type !== "atom" && selectedNodeIds.includes(node.id)) {
+                if (node.type !== "char" && selectedNodeIds.includes(node.id)) {
                     inSelection = true;
                 }
             },
             exit: (node) => {
-                if (node.type !== "atom" && selectedNodeIds.includes(node.id)) {
+                if (node.type !== "char" && selectedNodeIds.includes(node.id)) {
                     inSelection = false;
                 }
                 // Clear cancel ids on ancestor nodes so that we don't end up

@@ -34,16 +34,16 @@ describe("matrix", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("1")],
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
-                        [builders.glyph("1")],
+                        [builders.char("1")],
+                        [builders.char("0")],
+                        [builders.char("0")],
+                        [builders.char("1")],
                     ],
                     2,
                     2,
                     {
-                        left: builders.glyph("["),
-                        right: builders.glyph("]"),
+                        left: builders.char("["),
+                        right: builders.char("]"),
                     },
                 ),
             ]);
@@ -69,16 +69,16 @@ describe("matrix", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("1")],
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
-                        [builders.glyph("1")],
+                        [builders.char("1")],
+                        [builders.char("0")],
+                        [builders.char("0")],
+                        [builders.char("1")],
                     ],
                     2,
                     2,
                     {
-                        left: builders.glyph("("),
-                        right: builders.glyph(")"),
+                        left: builders.char("("),
+                        right: builders.char(")"),
                     },
                 ),
             ]);
@@ -89,9 +89,9 @@ describe("matrix", () => {
                 row: {
                     type: "zrow",
                     id: getId(),
-                    left: [builders.glyph("1")],
+                    left: [builders.char("1")],
                     selection: [],
-                    right: [builders.glyph("+"), builders.glyph("2")],
+                    right: [builders.char("+"), builders.char("2")],
                     style: {},
                 },
                 breadcrumbs: [],
@@ -110,24 +110,24 @@ describe("matrix", () => {
             });
             expect(result.breadcrumbs).toHaveLength(0);
             expect(result.row.left).toEqualEditorNodes([
-                builders.glyph("1"),
+                builders.char("1"),
                 builders.matrix(
                     [
-                        [builders.glyph("1")],
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
-                        [builders.glyph("1")],
+                        [builders.char("1")],
+                        [builders.char("0")],
+                        [builders.char("0")],
+                        [builders.char("1")],
                     ],
                     2,
                     2,
                     {
-                        left: builders.glyph("["),
-                        right: builders.glyph("]"),
+                        left: builders.char("["),
+                        right: builders.char("]"),
                     },
                 ),
             ]);
             expect(result.row.selection).toEqual([]);
-            expect(result.row.right).toEqualEditorNodes([builders.glyph("2")]);
+            expect(result.row.right).toEqualEditorNodes([builders.char("2")]);
         });
     });
 
@@ -139,10 +139,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -164,12 +164,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
+                        [builders.char("0")],
+                        [builders.char("0")],
+                        [builders.char("a")],
+                        [builders.char("b")],
+                        [builders.char("c")],
+                        [builders.char("d")],
                     ],
                     2,
                     3,
@@ -184,10 +184,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -209,12 +209,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
+                        [builders.char("a")],
+                        [builders.char("b")],
+                        [builders.char("0")],
+                        [builders.char("0")],
+                        [builders.char("c")],
+                        [builders.char("d")],
                     ],
                     2,
                     3,
@@ -228,10 +228,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -254,12 +254,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
-                        [builders.glyph("0")],
-                        [builders.glyph("0")],
+                        [builders.char("a")],
+                        [builders.char("b")],
+                        [builders.char("c")],
+                        [builders.char("d")],
+                        [builders.char("0")],
+                        [builders.char("0")],
                     ],
                     2,
                     3,
@@ -276,10 +276,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -301,12 +301,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("0")],
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("0")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
+                        [builders.char("0")],
+                        [builders.char("a")],
+                        [builders.char("b")],
+                        [builders.char("0")],
+                        [builders.char("c")],
+                        [builders.char("d")],
                     ],
                     3,
                     2,
@@ -321,10 +321,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -346,12 +346,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("a")],
-                        [builders.glyph("0")],
-                        [builders.glyph("b")],
-                        [builders.glyph("c")],
-                        [builders.glyph("0")],
-                        [builders.glyph("d")],
+                        [builders.char("a")],
+                        [builders.char("0")],
+                        [builders.char("b")],
+                        [builders.char("c")],
+                        [builders.char("0")],
+                        [builders.char("d")],
                     ],
                     3,
                     2,
@@ -365,10 +365,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -391,12 +391,12 @@ describe("matrix", () => {
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
                     [
-                        [builders.glyph("a")],
-                        [builders.glyph("b")],
-                        [builders.glyph("0")],
-                        [builders.glyph("c")],
-                        [builders.glyph("d")],
-                        [builders.glyph("0")],
+                        [builders.char("a")],
+                        [builders.char("b")],
+                        [builders.char("0")],
+                        [builders.char("c")],
+                        [builders.char("d")],
+                        [builders.char("0")],
                     ],
                     3,
                     2,
@@ -413,10 +413,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -437,7 +437,7 @@ describe("matrix", () => {
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
-                    [[builders.glyph("c")], [builders.glyph("d")]],
+                    [[builders.char("c")], [builders.char("d")]],
                     2,
                     1,
                 ),
@@ -450,10 +450,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -475,7 +475,7 @@ describe("matrix", () => {
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
-                    [[builders.glyph("a")], [builders.glyph("b")]],
+                    [[builders.char("a")], [builders.char("b")]],
                     2,
                     1,
                 ),
@@ -489,10 +489,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -524,10 +524,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -548,7 +548,7 @@ describe("matrix", () => {
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
-                    [[builders.glyph("b")], [builders.glyph("d")]],
+                    [[builders.char("b")], [builders.char("d")]],
                     1,
                     2,
                 ),
@@ -560,10 +560,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,
@@ -585,7 +585,7 @@ describe("matrix", () => {
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqualEditorNodes([
                 builders.matrix(
-                    [[builders.glyph("a")], [builders.glyph("c")]],
+                    [[builders.char("a")], [builders.char("c")]],
                     1,
                     2,
                 ),
@@ -598,10 +598,10 @@ describe("matrix", () => {
                     [
                         builders.matrix(
                             [
-                                [builders.glyph("a")],
-                                [builders.glyph("b")],
-                                [builders.glyph("c")],
-                                [builders.glyph("d")],
+                                [builders.char("a")],
+                                [builders.char("b")],
+                                [builders.char("c")],
+                                [builders.char("d")],
                             ],
                             2,
                             2,

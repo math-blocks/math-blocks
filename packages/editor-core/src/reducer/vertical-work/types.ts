@@ -1,7 +1,7 @@
 import * as types from "../../ast/types";
 import type {ZTable, Breadcrumb} from "../types";
 
-export type Column = readonly types.Row[];
+export type Column = readonly types.CharRow[];
 
 export type VerticalWork = {
     readonly columns: readonly Column[];

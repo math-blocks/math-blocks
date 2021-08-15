@@ -125,7 +125,7 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
 
 const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
     switch (props.type) {
-        case "glyph":
+        case "char":
             return <Glyph {...props} />;
         case "group":
             return <Group {...props} />;

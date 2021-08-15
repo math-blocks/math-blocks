@@ -140,10 +140,10 @@ describe("root", () => {
                 const startZipper: Zipper = {
                     row: zrow(
                         [
-                            builders.glyph("1"),
-                            builders.glyph("+"),
-                            builders.glyph("x"),
-                            builders.subsup(undefined, [builders.glyph("2")]),
+                            builders.char("1"),
+                            builders.char("+"),
+                            builders.char("x"),
+                            builders.subsup(undefined, [builders.char("2")]),
                         ],
                         [],
                     ),
@@ -187,8 +187,8 @@ describe("root", () => {
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(
                     builders.row([
-                        builders.glyph("x"),
-                        builders.subsup(undefined, [builders.glyph("2")]),
+                        builders.char("x"),
+                        builders.subsup(undefined, [builders.char("2")]),
                     ]).children,
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -257,10 +257,10 @@ describe("root", () => {
                 const startZipper: Zipper = {
                     row: zrow(
                         [
-                            builders.glyph("1"),
-                            builders.glyph("+"),
-                            builders.glyph("x"),
-                            builders.subsup(undefined, [builders.glyph("2")]),
+                            builders.char("1"),
+                            builders.char("+"),
+                            builders.char("x"),
+                            builders.subsup(undefined, [builders.char("2")]),
                         ],
                         [],
                     ),
@@ -304,8 +304,8 @@ describe("root", () => {
                 // The selection is now the randicand and the cursor is at the end of it
                 expect(result.row.left).toEqualEditorNodes(
                     builders.row([
-                        builders.glyph("x"),
-                        builders.subsup(undefined, [builders.glyph("2")]),
+                        builders.char("x"),
+                        builders.subsup(undefined, [builders.char("2")]),
                     ]).children,
                 );
                 expect(result.row.right).toEqualEditorNodes(row("").children);

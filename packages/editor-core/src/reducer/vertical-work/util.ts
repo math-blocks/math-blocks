@@ -17,11 +17,15 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
         focus.subtype === "algebra"
     ) {
         const {rowCount, colCount, left, right} = focus;
-        const cells = [...left, zrowToRow(cursorRow), ...right] as types.Row[]; // ZTables can contain null cells, ignore for now
+        const cells = [
+            ...left,
+            zrowToRow(cursorRow),
+            ...right,
+        ] as types.CharRow[]; // ZTables can contain null cells, ignore for now
 
         const columns: Column[] = [];
         for (let i = 0; i < colCount; i++) {
-            const col: types.Row[] = [];
+            const col: types.CharRow[] = [];
             for (let j = 0; j < rowCount; j++) {
                 const index = j * colCount + i;
                 col.push(cells[index]);
@@ -46,7 +50,7 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
 export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
     const {columns, colCount, rowCount, cursorId, cursorIndex, crumb} = work;
 
-    const cells: types.Row[] = [];
+    const cells: types.CharRow[] = [];
     for (let i = 0; i < rowCount; i++) {
         for (const col of columns) {
             cells.push(col[i]);
@@ -85,34 +89,34 @@ export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
     return newZipper;
 };
 
-export const isCellEmpty = (cell: types.Row | null): boolean =>
+export const isCellEmpty = (cell: types.CharRow | null): boolean =>
     !cell || cell.children.length === 0;
 export const isColumnEmpty = (col: Column | null): boolean =>
     !col || col.every(isCellEmpty);
 
-export const isCellPlusMinus = (cell: types.Row | null): boolean =>
+export const isCellPlusMinus = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 &&
     util.isAtom(cell.children[0], ["+", "\u2212"]);
 
-export const isCellEqualSign = (cell: types.Row | null): boolean =>
+export const isCellEqualSign = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 && util.isAtom(cell.children[0], "=");
 
-export const isOperator = (cell: types.Row | null): boolean =>
+export const isOperator = (cell: types.CharRow | null): boolean =>
     isCellPlusMinus(cell) || isCellEqualSign(cell);
 
-export const createEmptyCol = (rowCount: number): types.Row[] => {
-    const emptyColumn: types.Row[] = [];
+export const createEmptyCol = (rowCount: number): types.CharRow[] => {
+    const emptyColumn: types.CharRow[] = [];
     for (let j = 0; j < rowCount; j++) {
         emptyColumn.push(builders.row([]));
     }
     return emptyColumn;
 };
 
-export const isCellSkippable = (cell: types.Row | null): boolean =>
+export const isCellSkippable = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 &&
     util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
-export const isEmpty = (cell: types.Row | null): boolean =>
+export const isEmpty = (cell: types.CharRow | null): boolean =>
     (cell?.children?.length ?? 0) === 0;
 
 export const getAllowed = (zipper: Zipper, focus: Focus): boolean[] => {
@@ -168,7 +172,7 @@ export const getCursorLoc = (work: VerticalWork): CursorLoc => {
     throw new Error(`Couldn't find cell with id: ${cursorId}`);
 };
 
-export const getCursorCell = (work: VerticalWork): types.Row => {
+export const getCursorCell = (work: VerticalWork): types.CharRow => {
     const {columns, cursorId, colCount, rowCount} = work;
 
     for (let col = 0; col < colCount; col++) {
@@ -185,8 +189,8 @@ export const getCursorCell = (work: VerticalWork): types.Row => {
 
 export const getPrevCell = (
     work: VerticalWork,
-    cell: types.Row,
-): types.Row | null => {
+    cell: types.CharRow,
+): types.CharRow | null => {
     const {columns, colCount, rowCount} = work;
 
     for (let col = 0; col < colCount; col++) {
@@ -201,8 +205,8 @@ export const getPrevCell = (
 
 export const getNextCell = (
     work: VerticalWork,
-    cell: types.Row,
-): types.Row | null => {
+    cell: types.CharRow,
+): types.CharRow | null => {
     const {columns, colCount, rowCount} = work;
 
     for (let col = 0; col < colCount; col++) {
@@ -217,13 +221,13 @@ export const getNextCell = (
 
 export const getOtherCells = (
     col: Column,
-    keepCell: types.Row,
-): types.Row[] => {
-    return col.filter((cell: types.Row) => cell !== keepCell);
+    keepCell: types.CharRow,
+): types.CharRow[] => {
+    return col.filter((cell: types.CharRow) => cell !== keepCell);
 };
 
 export const createEmptyColumn = (rowCount: number): Column => {
-    const emptyCol: types.Row[] = [];
+    const emptyCol: types.CharRow[] = [];
     for (let i = 0; i < rowCount; i++) {
         emptyCol.push(builders.row([]));
     }
@@ -233,9 +237,9 @@ export const createEmptyColumn = (rowCount: number): Column => {
 export const createEmptyColumnWithCell = (
     rowCount: number,
     cursorRow: number,
-    cell: types.Row,
+    cell: types.CharRow,
 ): Column => {
-    const col: types.Row[] = [];
+    const col: types.CharRow[] = [];
     for (let i = 0; i < rowCount; i++) {
         if (i === cursorRow) {
             col.push(cell);

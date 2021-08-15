@@ -11,7 +11,7 @@ import type {Font} from "@math-blocks/opentype";
 
 import Substeps from "./substeps";
 
-const question: Editor.types.Row = Editor.util.row("2x+5=10");
+const question: Editor.types.CharRow = Editor.util.row("2x+5=10");
 const questionZipper: Editor.Zipper = {
     breadcrumbs: [],
     row: {
@@ -33,7 +33,7 @@ const questionZipper: Editor.Zipper = {
 
 const SolverPage: React.FunctionComponent = () => {
     const [input, setInput] = React.useState<Editor.Zipper>(questionZipper);
-    const [solution, setSolution] = React.useState<Editor.types.Row | null>(
+    const [solution, setSolution] = React.useState<Editor.types.CharRow | null>(
         null,
     );
     const [step, setStep] = React.useState<Step | null>(null);

@@ -27,7 +27,7 @@ const rightGlyphMap = {
     "|": "|",
 };
 
-const makePermanent = <T extends ZDelimited | types.Delimited>(
+const makePermanent = <T extends ZDelimited | types.CharDelimited>(
     focusOrNode: T,
     delim: "leftDelim" | "rightDelim",
 ): T => {
@@ -36,10 +36,7 @@ const makePermanent = <T extends ZDelimited | types.Delimited>(
         ...focusOrNode,
         [delim]: {
             ...atom,
-            value: {
-                ...atom.value,
-                pending: false,
-            },
+            pending: false,
         },
     };
 };
@@ -51,7 +48,7 @@ const maybeFinishLeft = (zipper: Zipper): Zipper | null => {
     if (
         !last ||
         last.focus.type !== "zdelimited" ||
-        !last.focus.leftDelim.value.pending
+        !last.focus.leftDelim.pending
     ) {
         return null;
     }
@@ -96,7 +93,7 @@ const maybeFinishRight = (zipper: Zipper): Zipper | null => {
     if (
         !last ||
         last.focus.type !== "zdelimited" ||
-        !last.focus.rightDelim.value.pending
+        !last.focus.rightDelim.pending
     ) {
         return null;
     }
@@ -129,11 +126,11 @@ export const parens = (state: State, char: Delimiters): State => {
     const zipper = state.zipper;
     const {left, selection, right} = zipper.row;
 
-    const leftParen = builders.glyph(leftGlyphMap[char]);
-    const rightParen = builders.glyph(rightGlyphMap[char]);
+    const leftParen = builders.char(leftGlyphMap[char]);
+    const rightParen = builders.char(rightGlyphMap[char]);
 
     if (selection.length > 0) {
-        if (leftParen.value.char === char) {
+        if (leftParen.value === char) {
             const newZipper: Zipper = {
                 ...zipper,
                 row: {
@@ -166,7 +163,7 @@ export const parens = (state: State, char: Delimiters): State => {
         return stateFromZipper(newZipper);
     }
 
-    if (leftParen.value.char === char) {
+    if (leftParen.value === char) {
         // If we're inside a row inside of a "delimited" node, check if the
         // opening paren is pending, if it is, re-adjust the size of the
         // "delimited" node and make the opening paren non-pending
@@ -189,7 +186,7 @@ export const parens = (state: State, char: Delimiters): State => {
         // leftDelim is pending.  Make the delim non-pending and move into
         // the "delimited" node.
         const next = right[0];
-        if (next?.type === "delimited" && next.leftDelim.value.pending) {
+        if (next?.type === "delimited" && next.leftDelim.pending) {
             const nonPending: Zipper = {
                 ...zipper,
                 row: {
@@ -212,10 +209,7 @@ export const parens = (state: State, char: Delimiters): State => {
                 right: [
                     builders.delimited(right, leftParen, {
                         ...rightParen,
-                        value: {
-                            ...rightParen.value,
-                            pending: true,
-                        },
+                        pending: true,
                     }),
                 ],
             },
@@ -239,7 +233,7 @@ export const parens = (state: State, char: Delimiters): State => {
         // rightDelim is pending.  Make the delim non-pending and move into
         // the "delimited" node.
         const prev = left[left.length - 1];
-        if (prev?.type === "delimited" && prev.rightDelim.value.pending) {
+        if (prev?.type === "delimited" && prev.rightDelim.pending) {
             const nonPending: Zipper = {
                 ...zipper,
                 row: {
@@ -266,10 +260,7 @@ export const parens = (state: State, char: Delimiters): State => {
                         left,
                         {
                             ...leftParen,
-                            value: {
-                                ...leftParen.value,
-                                pending: true,
-                            },
+                            pending: true,
                         },
                         rightParen,
                     ),

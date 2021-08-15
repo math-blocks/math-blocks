@@ -26,7 +26,7 @@ export const cursorRight = (zipper: Zipper): Zipper => {
         const next = right[0]; // right.head
 
         // move right
-        if (next.type === "atom") {
+        if (next.type === "char") {
             return {
                 ...zipper,
                 row: {
@@ -90,7 +90,7 @@ export const cursorRight = (zipper: Zipper): Zipper => {
             }
         }
 
-        const exitedRow: types.Row = util.zrowToRow(zipper.row);
+        const exitedRow: types.CharRow = util.zrowToRow(zipper.row);
 
         const allowed = getAllowed(zipper, focus);
         const cursorIndex = focus.left.length;
@@ -160,7 +160,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
             const {focus, row: parentRow} =
                 endZipper.breadcrumbs[endZipper.breadcrumbs.length - 1];
 
-            const exitNode = (updatedNode: types.Node): Zipper => ({
+            const exitNode = (updatedNode: types.CharNode): Zipper => ({
                 breadcrumbs: endZipper.breadcrumbs.slice(0, -1),
                 // place the subsup we exited on our left
                 row: {
@@ -173,7 +173,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
                 },
             });
 
-            const exitedRow: types.Row = util.zrowToRow(endZipper.row);
+            const exitedRow: types.CharRow = util.zrowToRow(endZipper.row);
 
             return exitNode(util.focusToNode(focus, exitedRow));
         }
@@ -208,7 +208,7 @@ const selectionRight = (startZipper: Zipper, endZipper: Zipper): Zipper => {
             // ...and the focus of the next crumb in startZipper matches the node
             // we're trying to enter...
             if (nextCrumb.focus.id === nextNode.id) {
-                const child: types.Row =
+                const child: types.CharRow =
                     // @ts-expect-error: TODO - type check this
                     nextNode.children[nextCrumb.focus.left.length];
 

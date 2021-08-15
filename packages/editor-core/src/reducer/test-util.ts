@@ -5,62 +5,65 @@ import * as builders from "../ast/builders";
 
 import type {ZRow, Zipper, State} from "./types";
 
-export const row = (str: string): types.Row =>
+export const row = (str: string): types.CharRow =>
     builders.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
-                return builders.glyph("\u2212");
+                return builders.char("\u2212");
             }
-            return builders.glyph(glyph);
+            return builders.char(glyph);
         }),
     );
 
-export const frac = (num: string, den: string): types.Frac =>
+export const frac = (num: string, den: string): types.CharFrac =>
     builders.frac(
-        num.split("").map((glyph) => builders.glyph(glyph)),
-        den.split("").map((glyph) => builders.glyph(glyph)),
+        num.split("").map((glyph) => builders.char(glyph)),
+        den.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sqrt = (radicand: string): types.Root =>
+export const sqrt = (radicand: string): types.CharRoot =>
     builders.root(
         null,
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
+        radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const root = (index: string | null, radicand: string): types.Root =>
+export const root = (index: string | null, radicand: string): types.CharRoot =>
     builders.root(
-        index ? index.split("").map((glyph) => builders.glyph(glyph)) : null,
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
+        index ? index.split("").map((glyph) => builders.char(glyph)) : null,
+        radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sup = (sup: string): types.SubSup =>
+export const sup = (sup: string): types.CharSubSup =>
     builders.subsup(
         undefined,
-        sup.split("").map((glyph) => builders.glyph(glyph)),
+        sup.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sub = (sub: string): types.SubSup =>
+export const sub = (sub: string): types.CharSubSup =>
     builders.subsup(
-        sub.split("").map((glyph) => builders.glyph(glyph)),
+        sub.split("").map((glyph) => builders.char(glyph)),
         undefined,
     );
 
-export const subsup = (sub: string | null, sup: string | null): types.SubSup =>
+export const subsup = (
+    sub: string | null,
+    sup: string | null,
+): types.CharSubSup =>
     builders.subsup(
-        sub ? sub.split("").map((glyph) => builders.glyph(glyph)) : undefined,
-        sup ? sup.split("").map((glyph) => builders.glyph(glyph)) : undefined,
+        sub ? sub.split("").map((glyph) => builders.char(glyph)) : undefined,
+        sup ? sup.split("").map((glyph) => builders.char(glyph)) : undefined,
     );
 
-export const delimited = (children: string): types.Delimited =>
+export const delimited = (children: string): types.CharDelimited =>
     builders.delimited(
-        children.split("").map((glyph) => builders.glyph(glyph)),
-        builders.glyph("("),
-        builders.glyph(")"),
+        children.split("").map((glyph) => builders.char(glyph)),
+        builders.char("("),
+        builders.char(")"),
     );
 
 export const toEqualEditorNodes = (
-    received: readonly types.Node[],
-    actual: readonly types.Node[],
+    received: readonly types.CharNode[],
+    actual: readonly types.CharNode[],
 ): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
@@ -76,8 +79,8 @@ export const toEqualEditorNodes = (
 };
 
 export const zrow = (
-    left: readonly types.Node[],
-    right: readonly types.Node[],
+    left: readonly types.CharNode[],
+    right: readonly types.CharNode[],
 ): ZRow => {
     return {
         id: 0,

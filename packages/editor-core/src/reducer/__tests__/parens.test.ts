@@ -36,12 +36,12 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes(row("x+5").children);
             expect(result.breadcrumbs[0].row.left).toEqualEditorNodes([
-                builders.glyph("2"),
+                builders.char("2"),
             ]);
             expect(result.breadcrumbs[0].row.right).toEqualEditorNodes([
-                builders.glyph("="),
-                builders.glyph("1"),
-                builders.glyph("0"),
+                builders.char("="),
+                builders.char("1"),
+                builders.char("0"),
             ]);
         });
 
@@ -69,15 +69,15 @@ describe("parens", () => {
             const {startZipper: result} = parens(state, ")");
 
             expect(result.row.left).toEqualEditorNodes([
-                builders.glyph("2"),
+                builders.char("2"),
                 builders.delimited(
                     [
-                        builders.glyph("x"),
-                        builders.glyph("+"),
-                        builders.glyph("5"),
+                        builders.char("x"),
+                        builders.char("+"),
+                        builders.char("5"),
                     ],
-                    builders.glyph("("),
-                    builders.glyph(")"),
+                    builders.char("("),
+                    builders.char(")"),
                 ),
             ]);
             expect(result.row.right).toEqualEditorNodes(row("=10").children);
@@ -104,21 +104,27 @@ describe("parens", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
-                  "kind": "glyph",
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
-                  "kind": "glyph",
                   "pending": true,
+                  "style": Object {},
+                  "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -140,8 +146,8 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
                     [],
-                    builders.glyph("(", true),
-                    builders.glyph(")"),
+                    builders.char("(", true),
+                    builders.char(")"),
                 ),
             ]);
         });
@@ -165,21 +171,27 @@ describe("parens", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
-                  "kind": "glyph",
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
-                  "kind": "glyph",
                   "pending": true,
+                  "style": Object {},
+                  "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -201,8 +213,8 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
                     row("2x+5").children,
-                    builders.glyph("(", true),
-                    builders.glyph(")"),
+                    builders.char("(", true),
+                    builders.char(")"),
                 ),
             ]);
             expect(result.row.right).toEqualEditorNodes([]);
@@ -227,21 +239,29 @@ describe("parens", () => {
             expect(result.breadcrumbs).toHaveLength(2);
             expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[1].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[1].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
-                  "kind": "glyph",
+                  "id": 98,
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[1].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[1].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
-                  "kind": "glyph",
+                  "id": 99,
                   "pending": true,
+                  "style": Object {},
+                  "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -263,8 +283,8 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
                     row("2x+5").children,
-                    builders.glyph("(", true),
-                    builders.glyph(")"),
+                    builders.char("(", true),
+                    builders.char(")"),
                 ),
             ]);
             expect(result.breadcrumbs).toHaveLength(1);
@@ -276,11 +296,11 @@ describe("parens", () => {
                 row: zrow(
                     [],
                     [
-                        builders.glyph("2"),
+                        builders.char("2"),
                         delimited("x+5"),
-                        builders.glyph("="),
-                        builders.glyph("1"),
-                        builders.glyph("0"),
+                        builders.char("="),
+                        builders.char("1"),
+                        builders.char("0"),
                     ],
                 ),
                 breadcrumbs: [],
@@ -296,30 +316,36 @@ describe("parens", () => {
 
             expect(result.row.left).toEqualEditorNodes([]);
             expect(result.row.right).toEqualEditorNodes([
-                builders.glyph("2"),
+                builders.char("2"),
                 delimited("x+5"),
-                builders.glyph("="),
-                builders.glyph("1"),
-                builders.glyph("0"),
+                builders.char("="),
+                builders.char("1"),
+                builders.char("0"),
             ]);
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
-                  "kind": "glyph",
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
-                  "kind": "glyph",
                   "pending": true,
+                  "style": Object {},
+                  "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -328,11 +354,11 @@ describe("parens", () => {
             const zipper: Zipper = {
                 row: zrow(
                     [
-                        builders.glyph("2"),
+                        builders.char("2"),
                         delimited("x+5"),
-                        builders.glyph("="),
-                        builders.glyph("1"),
-                        builders.glyph("0"),
+                        builders.char("="),
+                        builders.char("1"),
+                        builders.char("0"),
                     ],
                     [],
                 ),
@@ -350,14 +376,14 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
                     [
-                        builders.glyph("2"),
+                        builders.char("2"),
                         delimited("x+5"),
-                        builders.glyph("="),
-                        builders.glyph("1"),
-                        builders.glyph("0"),
+                        builders.char("="),
+                        builders.char("1"),
+                        builders.char("0"),
                     ],
-                    builders.glyph("(", true),
-                    builders.glyph(")"),
+                    builders.char("(", true),
+                    builders.char(")"),
                 ),
             ]);
             expect(result.row.right).toEqualEditorNodes([]);
@@ -370,8 +396,8 @@ describe("parens", () => {
                     [
                         builders.delimited(
                             row("2x+5").children,
-                            builders.glyph("("),
-                            builders.glyph(")", true),
+                            builders.char("("),
+                            builders.char(")", true),
                         ),
                     ],
                     [],
@@ -390,8 +416,8 @@ describe("parens", () => {
             expect(result.row.left).toEqualEditorNodes([
                 builders.delimited(
                     row("2x+5").children,
-                    builders.glyph("("),
-                    builders.glyph(")", false),
+                    builders.char("("),
+                    builders.char(")", false),
                 ),
             ]);
             expect(result.breadcrumbs).toHaveLength(0);
@@ -404,8 +430,8 @@ describe("parens", () => {
                     [
                         builders.delimited(
                             row("2x+5").children,
-                            builders.glyph("(", true),
-                            builders.glyph(")"),
+                            builders.char("(", true),
+                            builders.char(")"),
                         ),
                     ],
                 ),
@@ -425,21 +451,27 @@ describe("parens", () => {
             expect(result.breadcrumbs).toHaveLength(1);
             expect(result.breadcrumbs[0].focus.type).toEqual("zdelimited");
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "(",
-                  "kind": "glyph",
                   "pending": false,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "(",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": ")",
-                  "kind": "glyph",
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": ")",
                 }
             `);
         });
@@ -462,21 +494,27 @@ describe("parens", () => {
             expect(result.row.right).toEqualEditorNodes(row("x+5").children);
             expect(result.breadcrumbs).toHaveLength(1);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.leftDelim.value)
+            delete result.breadcrumbs[0].focus.leftDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.leftDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "|",
-                  "kind": "glyph",
                   "pending": undefined,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "|",
                 }
             `);
             // @ts-expect-error: we're not bothering to refine focus
-            expect(result.breadcrumbs[0].focus.rightDelim.value)
+            delete result.breadcrumbs[0].focus.rightDelim.id;
+            // @ts-expect-error: we're not bothering to refine focus
+            expect(result.breadcrumbs[0].focus.rightDelim)
                 .toMatchInlineSnapshot(`
                 Object {
-                  "char": "|",
-                  "kind": "glyph",
                   "pending": true,
+                  "style": Object {},
+                  "type": "char",
+                  "value": "|",
                 }
             `);
         });
@@ -499,11 +537,11 @@ describe("parens", () => {
             );
 
             expect(result.row.left).toEqualEditorNodes([
-                builders.glyph("2"),
+                builders.char("2"),
                 builders.delimited(
-                    [builders.glyph("x")],
-                    builders.glyph("|"),
-                    builders.glyph("|", false),
+                    [builders.char("x")],
+                    builders.char("|"),
+                    builders.char("|", false),
                 ),
             ]);
             expect(result.row.right).toEqualEditorNodes(row("+5").children);

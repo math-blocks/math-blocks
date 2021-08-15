@@ -201,14 +201,14 @@ describe("frac", () => {
             const zipper: Zipper = {
                 row: zrow(
                     builders.row([
-                        builders.glyph("1"),
-                        builders.glyph("+"),
+                        builders.char("1"),
+                        builders.char("+"),
                         builders.limits(
-                            builders.glyph("\u03a3"), // \sum
+                            builders.char("\u03a3"), // \sum
                             [],
                             [],
                         ),
-                        builders.glyph("2"),
+                        builders.char("2"),
                     ]).children,
                     [],
                 ),
@@ -237,10 +237,10 @@ describe("frac", () => {
             );
             expect(result.breadcrumbs[0].row.left).toEqualEditorNodes(
                 builders.row([
-                    builders.glyph("1"),
-                    builders.glyph("+"),
+                    builders.char("1"),
+                    builders.char("+"),
                     builders.limits(
-                        builders.glyph("\u03a3"), // \sum
+                        builders.char("\u03a3"), // \sum
                         [],
                         [],
                     ),
@@ -291,10 +291,10 @@ describe("frac", () => {
             const startZipper: Zipper = {
                 row: zrow(
                     [
-                        builders.glyph("1"),
-                        builders.glyph("+"),
-                        builders.glyph("x"),
-                        builders.subsup(undefined, [builders.glyph("2")]),
+                        builders.char("1"),
+                        builders.char("+"),
+                        builders.char("x"),
+                        builders.subsup(undefined, [builders.char("2")]),
                     ],
                     [],
                 ),
@@ -341,8 +341,8 @@ describe("frac", () => {
                 result.breadcrumbs[0].focus.left[0]?.children,
             ).toEqualEditorNodes(
                 builders.row([
-                    builders.glyph("x"),
-                    builders.subsup(undefined, [builders.glyph("2")]),
+                    builders.char("x"),
+                    builders.subsup(undefined, [builders.char("2")]),
                 ]).children,
             );
 

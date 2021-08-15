@@ -16,7 +16,7 @@ import type {FontData} from "@math-blocks/opentype";
 import MathRenderer from "../math-renderer";
 import * as stories from "../stories/2-math-renderer.stories";
 
-const {glyph, row, subsup} = Editor.builders;
+const {char: glyph, row, subsup} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 let lmFontData: FontData | null = null;
@@ -672,8 +672,8 @@ describe("renderer", () => {
     });
 
     describe("showing work vertically", () => {
-        const {glyph} = Editor.builders;
-        const node: Editor.types.Table = Editor.builders.algebra(
+        const {char: glyph} = Editor.builders;
+        const node: Editor.types.CharTable = Editor.builders.algebra(
             [
                 // first row
                 [],
@@ -766,8 +766,8 @@ describe("renderer", () => {
         });
 
         test("don't pad an empty cell in the bottom row if there is an non-empty cell above", async () => {
-            const {glyph} = Editor.builders;
-            const node: Editor.types.Table = Editor.builders.algebra(
+            const {char: glyph} = Editor.builders;
+            const node: Editor.types.CharTable = Editor.builders.algebra(
                 [
                     // first row
                     [glyph("x")],
@@ -838,8 +838,8 @@ describe("renderer", () => {
         });
 
         test("don't pad an empty cell in the middle row if there is non-empty cells in below it", async () => {
-            const {glyph} = Editor.builders;
-            const node: Editor.types.Table = Editor.builders.algebra(
+            const {char: glyph} = Editor.builders;
+            const node: Editor.types.CharTable = Editor.builders.algebra(
                 [
                     // first row
                     [glyph("x")],

@@ -13,21 +13,21 @@ import {
 } from "./util";
 import type {Column, VerticalWork} from "./types";
 
-const isCellOperator = (cell: types.Row): boolean =>
+const isCellOperator = (cell: types.CharRow): boolean =>
     isCellEqualSign(cell) || isCellPlusMinus(cell);
 
-const isCellOperand = (cell: types.Row): boolean =>
+const isCellOperand = (cell: types.CharRow): boolean =>
     !isCellEmpty(cell) && !isCellOperator(cell);
 
-const hasOperator = (cells: readonly types.Row[]): boolean => {
+const hasOperator = (cells: readonly types.CharRow[]): boolean => {
     return cells.some(isCellOperator);
 };
 
-const hasRelOperator = (cells: readonly types.Row[]): boolean => {
+const hasRelOperator = (cells: readonly types.CharRow[]): boolean => {
     return cells.some(isCellEqualSign);
 };
 
-const hasOperand = (cells: readonly types.Row[]): boolean => {
+const hasOperand = (cells: readonly types.CharRow[]): boolean => {
     return cells.some(isCellOperand);
 };
 

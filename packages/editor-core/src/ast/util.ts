@@ -1,11 +1,11 @@
 import * as builders from "./builders";
 import * as types from "./types";
 
-export const isEqual = (a: types.Node, b: types.Node): boolean => {
+export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     if (a.type !== b.type) {
         return false;
-    } else if (a.type === "atom" && b.type === "atom") {
-        return a.value.char === b.value.char;
+    } else if (a.type === "char" && b.type === "char") {
+        return a.value === b.value;
     } else if (a.type === "frac" && b.type === "frac") {
         const [aNum, aDen] = a.children;
         const [bNum, bDen] = b.children;
@@ -62,62 +62,62 @@ export type ID = {
     readonly id: number;
 };
 
-export const row = (str: string): types.Row =>
+export const row = (str: string): types.CharRow =>
     builders.row(
         str.split("").map((glyph) => {
             if (glyph === "-") {
-                return builders.glyph("\u2212");
+                return builders.char("\u2212");
             }
-            return builders.glyph(glyph);
+            return builders.char(glyph);
         }),
     );
 
-export const frac = (num: string, den: string): types.Frac =>
+export const frac = (num: string, den: string): types.CharFrac =>
     builders.frac(
-        num.split("").map((glyph) => builders.glyph(glyph)),
-        den.split("").map((glyph) => builders.glyph(glyph)),
+        num.split("").map((glyph) => builders.char(glyph)),
+        den.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sqrt = (radicand: string): types.Root =>
+export const sqrt = (radicand: string): types.CharRoot =>
     builders.root(
         null,
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
+        radicand.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const root = (radicand: string, index: string): types.Root =>
+export const root = (radicand: string, index: string): types.CharRoot =>
     builders.root(
-        radicand.split("").map((glyph) => builders.glyph(glyph)),
-        index.split("").map((glyph) => builders.glyph(glyph)),
+        radicand.split("").map((glyph) => builders.char(glyph)),
+        index.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sup = (sup: string): types.SubSup =>
+export const sup = (sup: string): types.CharSubSup =>
     builders.subsup(
         undefined,
-        sup.split("").map((glyph) => builders.glyph(glyph)),
+        sup.split("").map((glyph) => builders.char(glyph)),
     );
 
-export const sub = (sub: string): types.SubSup =>
+export const sub = (sub: string): types.CharSubSup =>
     builders.subsup(
-        sub.split("").map((glyph) => builders.glyph(glyph)),
+        sub.split("").map((glyph) => builders.char(glyph)),
         undefined,
     );
 
-export const subsup = (sub: string, sup: string): types.SubSup =>
+export const subsup = (sub: string, sup: string): types.CharSubSup =>
     builders.subsup(
-        sub.split("").map((glyph) => builders.glyph(glyph)),
-        sup.split("").map((glyph) => builders.glyph(glyph)),
+        sub.split("").map((glyph) => builders.char(glyph)),
+        sup.split("").map((glyph) => builders.char(glyph)),
     );
 
 // Maybe we should return undefined if there isn't a node at the given path.
 export function nodeAtPath(
-    root: types.Node,
+    root: types.CharNode,
     path: readonly number[],
-): types.Node {
+): types.CharNode {
     if (path.length === 0) {
         return root;
     } else {
         switch (root.type) {
-            case "atom":
+            case "char":
                 throw new Error("invalid path");
             case "subsup": {
                 const [head, ...tail] = path;
@@ -172,15 +172,15 @@ export function nodeAtPath(
 }
 
 export function pathForNode(
-    root: types.Node,
-    node: types.Node,
+    root: types.CharNode,
+    node: types.CharNode,
     path: readonly number[] = [],
 ): readonly number[] | null {
     if (node === root) {
         return path;
     } else {
         switch (root.type) {
-            case "atom":
+            case "char":
                 return null;
             default: {
                 for (let i = 0; i < root.children.length; i++) {
@@ -198,14 +198,14 @@ export function pathForNode(
     }
 }
 
-export type HasChildren = types.Row;
+export type HasChildren = types.CharRow;
 
-export const hasChildren = (node: types.Node): node is HasChildren => {
+export const hasChildren = (node: types.CharNode): node is HasChildren => {
     return node.type === "row";
 };
 
-export const isOperator = (atom: types.Atom): boolean => {
-    const char = atom.value.char;
+export const isOperator = (atom: types.CharAtom): boolean => {
+    const char = atom.value;
 
     // We don't include unary +/- in the numerator.  This mimic's mathquill's
     // behavior.
@@ -237,13 +237,13 @@ export const isOperator = (atom: types.Atom): boolean => {
 };
 
 export const isAtom = (
-    node: types.Node,
+    node: types.CharNode,
     charOrChars: string | readonly string[],
 ): boolean => {
-    if (node.type === "atom") {
+    if (node.type === "char") {
         return Array.isArray(charOrChars)
-            ? charOrChars.includes(node.value.char)
-            : charOrChars === node.value.char;
+            ? charOrChars.includes(node.value)
+            : charOrChars === node.value;
     }
     return false;
 };

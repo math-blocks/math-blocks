@@ -32,7 +32,7 @@ const childContextForFrac = (context: Context): Context => {
 
 export const typesetFrac = (
     typesetChild: (index: number, context: Context) => Layout.HBox | null,
-    node: Editor.types.Frac | Editor.ZFrac,
+    node: Editor.types.CharFrac | Editor.ZFrac,
     context: Context,
 ): Layout.VBox => {
     const childContext = childContextForFrac(context);

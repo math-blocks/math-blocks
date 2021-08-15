@@ -13,9 +13,9 @@ describe("transformNode", () => {
     describe("returns the same node if the callback is a passthrough", () => {
         test("simple row", () => {
             const node = builders.row([
-                builders.glyph("x"),
-                builders.glyph("+"),
-                builders.glyph("y"),
+                builders.char("x"),
+                builders.char("+"),
+                builders.char("y"),
             ]);
 
             const result = traverseNode(
@@ -31,8 +31,8 @@ describe("transformNode", () => {
 
         test("fraction", () => {
             const node = builders.frac(
-                [builders.glyph("x")],
-                [builders.glyph("y")],
+                [builders.char("x")],
+                [builders.char("y")],
             );
 
             const result = traverseNode(
@@ -48,7 +48,10 @@ describe("transformNode", () => {
     });
 
     describe("setting the color on every node only changes .style.color", () => {
-        const setColor = <T extends types.Node>(node: T, color: string): T => {
+        const setColor = <T extends types.CharNode>(
+            node: T,
+            color: string,
+        ): T => {
             return {
                 ...node,
                 style: {
@@ -60,9 +63,9 @@ describe("transformNode", () => {
 
         test("simple row", () => {
             const node = builders.row([
-                builders.glyph("x"),
-                builders.glyph("+"),
-                builders.glyph("y"),
+                builders.char("x"),
+                builders.char("+"),
+                builders.char("y"),
             ]);
 
             const result = traverseNode(
@@ -87,8 +90,8 @@ describe("transformNode", () => {
 
         test("fraction", () => {
             const node = builders.frac(
-                [builders.glyph("x")],
-                [builders.glyph("y")],
+                [builders.char("x")],
+                [builders.char("y")],
             );
 
             const result = traverseNode(
@@ -123,9 +126,9 @@ describe("transformZipper", () => {
                 row: {
                     id: getId(),
                     type: "zrow",
-                    left: [builders.glyph("x")],
-                    selection: [builders.glyph("+")],
-                    right: [builders.glyph("y")],
+                    left: [builders.char("x")],
+                    selection: [builders.char("+")],
+                    right: [builders.char("y")],
                     style: {},
                 },
             };
@@ -150,13 +153,13 @@ describe("transformZipper", () => {
                             type: "zfrac",
                             id: getId(),
                             left: [],
-                            right: [builders.row([builders.glyph("y")])],
+                            right: [builders.row([builders.char("y")])],
                             style: {},
                         },
                         row: {
                             type: "bcrow",
                             id: getId(),
-                            left: [builders.glyph("1"), builders.glyph("+")],
+                            left: [builders.char("1"), builders.char("+")],
                             right: [],
                             style: {},
                         },
@@ -167,7 +170,7 @@ describe("transformZipper", () => {
                     id: getId(),
                     left: [],
                     selection: [],
-                    right: [builders.glyph("x")],
+                    right: [builders.char("x")],
                     style: {},
                 },
             };
@@ -194,13 +197,13 @@ describe("transformZipper", () => {
                             type: "zfrac",
                             id: getId(),
                             left: [],
-                            right: [builders.row([builders.glyph("y")])],
+                            right: [builders.row([builders.char("y")])],
                             style: {},
                         },
                         row: {
                             type: "bcrow",
                             id: getId(),
-                            left: [builders.glyph("1"), builders.glyph("+")],
+                            left: [builders.char("1"), builders.char("+")],
                             right: [],
                             style: {},
                         },
@@ -211,7 +214,7 @@ describe("transformZipper", () => {
                     id: getId(),
                     left: [],
                     selection: [],
-                    right: [builders.glyph("x")],
+                    right: [builders.char("x")],
                     style: {},
                 },
             };
@@ -223,12 +226,12 @@ describe("transformZipper", () => {
                 zipper,
                 {
                     enter: (node) => {
-                        if (node.type !== "atom" && node.id === fracId) {
+                        if (node.type !== "char" && node.id === fracId) {
                             inSelection = true;
                         }
                     },
                     exit: (node) => {
-                        if (node.type !== "atom" && node.id === fracId) {
+                        if (node.type !== "char" && node.id === fracId) {
                             inSelection = false;
                         }
                         if (inSelection || node.id === fracId) {
@@ -271,9 +274,9 @@ describe("transformZipper", () => {
 describe("applyColorMapToEditorNode", () => {
     test("simple row", () => {
         const node = builders.row([
-            builders.glyph("x"),
-            builders.glyph("+"),
-            builders.glyph("y"),
+            builders.char("x"),
+            builders.char("+"),
+            builders.char("y"),
         ]);
 
         const colorMap = new Map();
@@ -288,10 +291,7 @@ describe("applyColorMapToEditorNode", () => {
     });
 
     test("fraction", () => {
-        const node = builders.frac(
-            [builders.glyph("x")],
-            [builders.glyph("y")],
-        );
+        const node = builders.frac([builders.char("x")], [builders.char("y")]);
 
         const colorMap = new Map();
         colorMap.set(node.children[1].children[0].id, "blue");

@@ -41,7 +41,10 @@ export const checkMistake = (
 };
 
 const myParse = (text: string): Semantic.types.Node => {
-    const node = Editor.print(Testing.parse(text), true) as Editor.types.Row;
+    const node = Editor.print(
+        Testing.parse(text),
+        true,
+    ) as Editor.types.CharRow;
     return Editor.parse(node);
 };
 

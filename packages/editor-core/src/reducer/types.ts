@@ -1,26 +1,26 @@
 import * as types from "../ast/types";
 
-type Zipperize<T extends types.Node> = {
+type Zipperize<T extends types.CharNode> = {
     readonly type: `z${T["type"]}`;
-    readonly left: readonly (types.Row | null)[];
-    readonly right: readonly (types.Row | null)[];
+    readonly left: readonly (types.CharRow | null)[];
+    readonly right: readonly (types.CharRow | null)[];
 } & Omit<T, "children" | "type">;
 
 type ZCommon = {readonly id: number; readonly style: types.Style};
 
 export type ZRow = ZCommon & {
     readonly type: "zrow";
-    readonly left: readonly types.Node[];
-    readonly selection: readonly types.Node[];
-    readonly right: readonly types.Node[];
+    readonly left: readonly types.CharNode[];
+    readonly selection: readonly types.CharNode[];
+    readonly right: readonly types.CharNode[];
 };
 
-export type ZFrac = Zipperize<types.Frac>;
-export type ZSubSup = Zipperize<types.SubSup>;
-export type ZLimits = Zipperize<types.Limits>;
-export type ZRoot = Zipperize<types.Root>;
-export type ZDelimited = Zipperize<types.Delimited>;
-export type ZTable = Zipperize<types.Table>;
+export type ZFrac = Zipperize<types.CharFrac>;
+export type ZSubSup = Zipperize<types.CharSubSup>;
+export type ZLimits = Zipperize<types.CharLimits>;
+export type ZRoot = Zipperize<types.CharRoot>;
+export type ZDelimited = Zipperize<types.CharDelimited>;
+export type ZTable = Zipperize<types.CharTable>;
 
 export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 
@@ -30,8 +30,8 @@ export type Focus = ZFrac | ZSubSup | ZLimits | ZRoot | ZDelimited | ZTable;
 
 export type BreadcrumbRow = ZCommon & {
     readonly type: "bcrow";
-    readonly left: readonly types.Node[];
-    readonly right: readonly types.Node[];
+    readonly left: readonly types.CharNode[];
+    readonly right: readonly types.CharNode[];
 };
 
 export type Breadcrumb<F extends Focus = Focus> = {

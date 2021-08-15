@@ -10,13 +10,21 @@ import {getFontData, parse} from "@math-blocks/opentype";
 
 import type {FontData} from "@math-blocks/opentype";
 
-const {row, glyph, frac, root, subsup, delimited, limits} = Editor.builders;
+const {
+    row,
+    char: glyph,
+    frac,
+    root,
+    subsup,
+    delimited,
+    limits,
+} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 
 const toEqualEditorNodes = (
-    received: readonly Editor.types.Node[],
-    actual: readonly Editor.types.Node[],
+    received: readonly Editor.types.CharNode[],
+    actual: readonly Editor.types.CharNode[],
 ): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
@@ -50,7 +58,7 @@ const stixFontLoader = async (): Promise<FontData> => {
 
 describe("moving cursor with mouse", () => {
     describe("simple row", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {
@@ -131,7 +139,7 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("fraction", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {
@@ -241,7 +249,7 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("subsup", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {
@@ -342,7 +350,7 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("root", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {
@@ -405,7 +413,7 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("delimited", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {
@@ -453,7 +461,7 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("limits", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
         let scene: Typesetter.SceneGraph.Scene;
 
         beforeEach(async () => {

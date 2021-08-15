@@ -1,7 +1,7 @@
 import type {Mutable} from "utility-types";
 
 import type {Breadcrumb, Zipper, Focus, ZRow} from "./types";
-import type {Row, Node} from "../ast/types";
+import type {CharRow, CharNode} from "../ast/types";
 
 import {
     focusToNode,
@@ -15,7 +15,7 @@ import {
     ztable,
 } from "./util";
 
-export const zipperToRow = (zipper: Zipper): Row => {
+export const zipperToRow = (zipper: Zipper): CharRow => {
     if (zipper.breadcrumbs.length === 0) {
         return zrowToRow(zipper.row);
     }
@@ -42,7 +42,7 @@ type Intersection =
     | {readonly type: "padding"; readonly flag: "start" | "end"};
 
 export const rowToZipper = (
-    row: Row,
+    row: CharRow,
     intersections: readonly Intersection[],
 ): Zipper | void => {
     if (intersections.length === 0) {
@@ -114,7 +114,7 @@ export const rowToZipper = (
     }
 
     let focus: Focus;
-    let focusRow: Row;
+    let focusRow: CharRow;
     switch (child.type) {
         case "frac": {
             if (focusIndex !== 0 && focusIndex !== 1) {
@@ -203,13 +203,19 @@ export const rowToZipper = (
 };
 
 const getLeftSelectionRight = (
-    row1: {readonly left: readonly Node[]; readonly right: readonly Node[]},
-    row2: {readonly left: readonly Node[]; readonly right: readonly Node[]},
-    children: readonly Node[],
+    row1: {
+        readonly left: readonly CharNode[];
+        readonly right: readonly CharNode[];
+    },
+    row2: {
+        readonly left: readonly CharNode[];
+        readonly right: readonly CharNode[];
+    },
+    children: readonly CharNode[],
 ): {
-    readonly left: readonly Node[];
-    readonly selection: readonly Node[];
-    readonly right: readonly Node[];
+    readonly left: readonly CharNode[];
+    readonly selection: readonly CharNode[];
+    readonly right: readonly CharNode[];
 } => {
     const firstIndex = Math.min(row1.left.length, row2.left.length);
     const lastIndex =

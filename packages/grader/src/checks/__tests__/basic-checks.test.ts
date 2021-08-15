@@ -9,7 +9,7 @@ import {checkArgs} from "../basic-checks";
 const parseEditorNodes = Editor.parse;
 
 const myParse = (text: string): Semantic.types.Node => {
-    const node = Editor.print(Testing.parse(text)) as Editor.types.Row;
+    const node = Editor.print(Testing.parse(text)) as Editor.types.CharRow;
     return parseEditorNodes(node);
 };
 

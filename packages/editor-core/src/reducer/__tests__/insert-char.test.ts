@@ -46,7 +46,7 @@ describe("insertChar", () => {
 
     test("it inserts characters in the middle", () => {
         const zipper: Zipper = {
-            row: zrow([builders.glyph("1")], [builders.glyph("2")]),
+            row: zrow([builders.char("1")], [builders.char("2")]),
             breadcrumbs: [],
         };
         const state: State = {
@@ -78,9 +78,9 @@ describe("insertChar", () => {
 
         expect(result.row.left).toEqualEditorNodes(
             builders.row([
-                builders.glyph("1"),
-                builders.glyph("+"),
-                builders.limits(builders.glyph("\u03a3"), [], []),
+                builders.char("1"),
+                builders.char("+"),
+                builders.limits(builders.char("\u03a3"), [], []),
             ]).children,
         );
         expect(result.row.right).toEqualEditorNodes(row("").children);
@@ -92,9 +92,9 @@ describe("insertChar", () => {
                 row: {
                     id: 0,
                     type: "zrow",
-                    left: [builders.glyph("1")],
+                    left: [builders.char("1")],
                     selection: [],
-                    right: [builders.glyph("+"), builders.glyph("2")],
+                    right: [builders.char("+"), builders.char("2")],
                     style: {},
                 },
                 breadcrumbs: [],
@@ -118,9 +118,9 @@ describe("insertChar", () => {
                 row: {
                     id: 0,
                     type: "zrow",
-                    left: [builders.glyph("1")],
+                    left: [builders.char("1")],
                     selection: [],
-                    right: [builders.glyph("+"), builders.glyph("2")],
+                    right: [builders.char("+"), builders.char("2")],
                     style: {},
                 },
                 breadcrumbs: [],
@@ -138,9 +138,9 @@ describe("insertChar", () => {
 
             expect(result.row.left).toEqualEditorNodes(
                 builders.row([
-                    builders.glyph("1"),
-                    builders.limits(builders.glyph("\u03a3"), [], []),
-                    builders.glyph("+"),
+                    builders.char("1"),
+                    builders.limits(builders.char("\u03a3"), [], []),
+                    builders.char("+"),
                 ]).children,
             );
             expect(result.row.right).toEqualEditorNodes(row("2").children);

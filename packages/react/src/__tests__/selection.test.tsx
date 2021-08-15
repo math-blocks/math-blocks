@@ -10,13 +10,13 @@ import {getFontData, parse} from "@math-blocks/opentype";
 
 import type {FontData} from "@math-blocks/opentype";
 
-const {row, glyph} = Editor.builders;
+const {row, char: glyph} = Editor.builders;
 
 let stixFontData: FontData | null = null;
 
 const toEqualEditorNodes = (
-    received: readonly Editor.types.Node[],
-    actual: readonly Editor.types.Node[],
+    received: readonly Editor.types.CharNode[],
+    actual: readonly Editor.types.CharNode[],
 ): {readonly message: () => string; readonly pass: boolean} => {
     const message = "Editor nodes didn't match";
     if (Semantic.util.deepEquals(received, actual)) {
@@ -51,7 +51,7 @@ const stixFontLoader = async (): Promise<FontData> => {
 type Point = {readonly x: number; readonly y: number};
 
 const getSelectionZipper = async (
-    math: Editor.types.Row,
+    math: Editor.types.CharRow,
     p1: Point,
     p2: Point,
 ): Promise<Editor.Zipper> => {
@@ -95,7 +95,7 @@ const getSelectionZipper = async (
 
 describe("moving cursor with mouse", () => {
     describe("simple row", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
 
         beforeEach(async () => {
             math = row([
@@ -182,40 +182,40 @@ describe("moving cursor with mouse", () => {
     });
 
     describe("adding fractions", () => {
-        let math: Editor.types.Row;
+        let math: Editor.types.CharRow;
 
         beforeEach(() => {
             math = Editor.builders.row([
-                Editor.builders.glyph("2"),
-                Editor.builders.glyph("+"),
+                Editor.builders.char("2"),
+                Editor.builders.char("+"),
                 Editor.builders.frac(
                     [
                         Editor.builders.frac(
-                            [Editor.builders.glyph("a")],
-                            [Editor.builders.glyph("b")],
+                            [Editor.builders.char("a")],
+                            [Editor.builders.char("b")],
                         ),
-                        Editor.builders.glyph("+"),
+                        Editor.builders.char("+"),
                         Editor.builders.frac(
-                            [Editor.builders.glyph("c")],
-                            [Editor.builders.glyph("d")],
+                            [Editor.builders.char("c")],
+                            [Editor.builders.char("d")],
                         ),
                     ],
-                    [Editor.builders.glyph("1")],
+                    [Editor.builders.char("1")],
                 ),
-                Editor.builders.glyph("+"),
+                Editor.builders.char("+"),
                 Editor.builders.frac(
                     [
                         Editor.builders.frac(
-                            [Editor.builders.glyph("x")],
-                            [Editor.builders.glyph("y")],
+                            [Editor.builders.char("x")],
+                            [Editor.builders.char("y")],
                         ),
-                        Editor.builders.glyph("+"),
-                        Editor.builders.glyph("1"),
+                        Editor.builders.char("+"),
+                        Editor.builders.char("1"),
                     ],
-                    [Editor.builders.glyph("1")],
+                    [Editor.builders.char("1")],
                 ),
-                Editor.builders.glyph("\u2212"),
-                Editor.builders.glyph("y"),
+                Editor.builders.char("\u2212"),
+                Editor.builders.char("y"),
             ]);
         });
 

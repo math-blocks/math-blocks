@@ -9,7 +9,7 @@ import type {Context} from "../types";
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
-const isOperator = (cell: Editor.types.Row | null): boolean =>
+const isOperator = (cell: Editor.types.CharRow | null): boolean =>
     cell?.children.length === 1 &&
     Editor.util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);
 
@@ -37,7 +37,7 @@ export const typesetTable = (
         context: Context,
         padFirstOperator?: boolean,
     ) => Layout.HBox | null,
-    node: Editor.types.Table | Editor.ZTable,
+    node: Editor.types.CharTable | Editor.ZTable,
     context: Context,
     zipper?: Editor.Zipper,
 ): Layout.HBox | Layout.VBox => {
@@ -112,8 +112,8 @@ export const typesetTable = (
             const child = children[j * node.colCount + i];
             const padFirstOperator =
                 child?.children?.length === 1 &&
-                child.children[0].type === "atom" &&
-                ["+", "\u2212"].includes(child.children[0].value.char);
+                child.children[0].type === "char" &&
+                ["+", "\u2212"].includes(child.children[0].value);
 
             let cell = typesetChild(
                 j * node.colCount + i,
@@ -154,14 +154,14 @@ export const typesetTable = (
         const col = cursorIndex % node.colCount;
         const zrow = zipper?.row;
 
-        type Column = readonly Editor.types.Row[];
+        type Column = readonly Editor.types.CharRow[];
         const cellColumns: Column[] = [];
         for (let i = 0; i < node.colCount; i++) {
-            const col: Editor.types.Row[] = [];
+            const col: Editor.types.CharRow[] = [];
             for (let j = 0; j < node.rowCount; j++) {
                 const index = j * node.colCount + i;
                 // TODO: check that children[index] isn't null
-                col.push(children[index] as Editor.types.Row);
+                col.push(children[index] as Editor.types.CharRow);
             }
             cellColumns.push(col); // this is unsafe
         }
@@ -329,13 +329,13 @@ export const typesetTable = (
     }
 
     const open = makeDelimiter(
-        node.delimiters.left.value.char,
+        node.delimiters.left.value,
         inner,
         thresholdOptions,
         context,
     );
     const close = makeDelimiter(
-        node.delimiters.right.value.char,
+        node.delimiters.right.value,
         inner,
         thresholdOptions,
         context,

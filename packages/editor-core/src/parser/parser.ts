@@ -5,10 +5,8 @@ import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "./util";
-import {Row} from "../ast/types";
-import {Node, SourceLocation} from "./types";
-
-type Token = Node;
+import {CharRow} from "../ast/types";
+import {TokenNode, SourceLocation} from "./types";
 
 // TODO: fill out this list
 type Operator =
@@ -25,33 +23,32 @@ type Operator =
 
 type NAryOperator = "add" | "sub" | "plusminus" | "mul.exp" | "mul.imp" | "eq";
 
-type EditorParser = Parser.IParser<Token, Parser.types.Node, Operator>;
+type EditorParser = Parser.IParser<TokenNode, Parser.types.Node, Operator>;
 
-const isIdentifier = (node: Token): boolean =>
-    node.type === "atom" && node.value.kind === "identifier";
+const isIdentifier = (node: TokenNode): boolean =>
+    node.type === "token" && node.name === "identifier";
 
 const getPrefixParselet = (
-    token: Token,
-): Parser.PrefixParselet<Token, Parser.types.Node, Operator> => {
-    switch (token.type) {
-        case "atom": {
-            const atom = token.value;
-            switch (atom.kind) {
+    node: TokenNode,
+): Parser.PrefixParselet<TokenNode, Parser.types.Node, Operator> => {
+    switch (node.type) {
+        case "token": {
+            switch (node.name) {
                 case "identifier":
                     return {
                         parse: () =>
-                            Parser.builders.identifier(atom.name, token.loc),
+                            Parser.builders.identifier(node.value, node.loc),
                     };
                 case "number":
                     return {
                         parse: () =>
-                            Parser.builders.number(atom.value, token.loc),
+                            Parser.builders.number(node.value, node.loc),
                     };
                 case "minus":
                     return {
                         parse: (parser) => {
                             const neg = parser.parseWithOperator("neg");
-                            const loc = locFromRange(token.loc, neg.loc);
+                            const loc = locFromRange(node.loc, neg.loc);
                             return Parser.builders.neg(neg, false, loc);
                         },
                     };
@@ -59,49 +56,49 @@ const getPrefixParselet = (
                     return {
                         parse: (parser) => {
                             const neg = parser.parseWithOperator("plusminus");
-                            const loc = locFromRange(token.loc, neg.loc);
+                            const loc = locFromRange(node.loc, neg.loc);
                             return Parser.builders.plusminus(neg, "unary", loc);
                         },
                     };
                 case "ellipsis":
                     return {
-                        parse: () => Parser.builders.ellipsis(token.loc),
+                        parse: () => Parser.builders.ellipsis(node.loc),
                     };
                 default:
-                    throw new Error(`Unexpected '${atom.kind}' atom`);
+                    throw new Error(`Unexpected '${node.name}' atom`);
             }
         }
         case "frac":
             return {
                 parse: () => {
-                    const [numerator, denominator] = token.children;
+                    const [numerator, denominator] = node.children;
                     return Parser.builders.div(
                         editorParser.parse(numerator.children),
                         editorParser.parse(denominator.children),
-                        token.loc,
+                        node.loc,
                     );
                 },
             };
         case "root":
             return {
                 parse: () => {
-                    const [index, radicand] = token.children;
+                    const [index, radicand] = node.children;
                     return index === null
                         ? Parser.builders.sqrt(
                               editorParser.parse(radicand.children),
-                              token.loc,
+                              node.loc,
                           )
                         : Parser.builders.root(
                               editorParser.parse(radicand.children),
                               editorParser.parse(index.children),
-                              token.loc,
+                              node.loc,
                           );
                 },
             };
         case "delimited":
             return {
                 parse: () => {
-                    const [inner] = token.children;
+                    const [inner] = node.children;
                     const result = editorParser.parse(inner.children);
                     // TODO: what should `loc` be here?
                     return Parser.builders.parens(result);
@@ -118,7 +115,7 @@ const getPrefixParselet = (
         case "row":
             throw new Error("Unexpected 'row' token");
         default:
-            throw new UnreachableCaseError(token);
+            throw new UnreachableCaseError(node);
     }
 };
 
@@ -168,10 +165,9 @@ const parseNaryArgs = (
     op: NAryOperator,
 ): OneOrMore<Parser.types.Node> => {
     // TODO: handle implicit multiplication
-    const token = parser.peek();
-    if (token.type === "atom") {
-        const atom = token.value;
-        if (atom.kind === "identifier" || atom.kind === "number") {
+    const node = parser.peek();
+    if (node.type === "token") {
+        if (node.name === "identifier" || node.name === "number") {
             // implicit multiplication
         } else {
             // an explicit operation, e.g. plus, times, etc.
@@ -179,60 +175,56 @@ const parseNaryArgs = (
         }
         let expr = parser.parseWithOperator(op);
         if (op === "sub") {
-            const loc = locFromRange(token.loc, expr.loc);
+            const loc = locFromRange(node.loc, expr.loc);
             expr = Parser.builders.neg(expr, true, loc);
         }
         if (op === "plusminus") {
-            const loc = locFromRange(token.loc, expr.loc);
+            const loc = locFromRange(node.loc, expr.loc);
             expr = Parser.builders.plusminus(expr, "binary", loc);
         }
         const nextToken = parser.peek();
-        if (nextToken.type !== "atom") {
-            op; // ?
-            token; // ?
-            nextToken.type; // ?
+        if (nextToken.type !== "token") {
             throw new Error("atom expected");
         }
-        const nextAtom = nextToken.value;
         if (
             (op === "add" || op === "sub" || op === "plusminus") &&
-            (nextAtom.kind === "plus" ||
-                nextAtom.kind === "minus" ||
-                nextAtom.kind === "plusminus")
+            (nextToken.name === "plus" ||
+                nextToken.name === "minus" ||
+                nextToken.name === "plusminus")
         ) {
-            if (nextAtom.kind === "plus") {
+            if (nextToken.name === "plus") {
                 op = "add";
-            } else if (nextAtom.kind === "minus") {
+            } else if (nextToken.name === "minus") {
                 op = "sub";
-            } else if (nextAtom.kind === "plusminus") {
+            } else if (nextToken.name === "plusminus") {
                 op = "plusminus";
             } else {
                 throw new Error("unexpected value for nextAtom.kind");
             }
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "mul.exp" && nextAtom.kind === "times") {
+        } else if (op === "mul.exp" && nextToken.name === "times") {
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "mul.imp" && nextAtom.kind === "identifier") {
+        } else if (op === "mul.imp" && nextToken.name === "identifier") {
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "eq" && nextAtom.kind === "eq") {
+        } else if (op === "eq" && nextToken.name === "eq") {
             return [expr, ...parseNaryArgs(parser, op)];
         } else {
             return [expr];
             // TODO: deal with frac, subsup, etc.
         }
-    } else if (token.type === "root") {
+    } else if (node.type === "root") {
         parser.consume();
-        const [index, radicand] = token.children;
+        const [index, radicand] = node.children;
         const expr =
             index === null
                 ? Parser.builders.sqrt(
                       editorParser.parse(radicand.children),
-                      token.loc,
+                      node.loc,
                   )
                 : Parser.builders.root(
                       editorParser.parse(radicand.children),
                       editorParser.parse(index.children),
-                      token.loc,
+                      node.loc,
                   );
         const nextToken = parser.peek();
         if (nextToken.type === "root" || isIdentifier(nextToken)) {
@@ -240,18 +232,18 @@ const parseNaryArgs = (
         } else {
             return [expr];
         }
-    } else if (token.type === "frac") {
+    } else if (node.type === "frac") {
         parser.consume();
-        const [num, den] = token.children;
+        const [num, den] = node.children;
         const expr = Parser.builders.div(
             editorParser.parse(num.children),
             editorParser.parse(den.children),
-            token.loc,
+            node.loc,
         );
         return [expr];
-    } else if (token.type === "delimited") {
+    } else if (node.type === "delimited") {
         parser.consume();
-        const [inner] = token.children;
+        const [inner] = node.children;
         // TODO: make 'eol' its own token type instead of a co-opting 'atom'
         const nextToken = parser.peek();
         const expr = Parser.builders.parens(editorParser.parse(inner.children));
@@ -260,18 +252,17 @@ const parseNaryArgs = (
             ? [expr, ...parseNaryArgs(parser, op)]
             : [expr];
     } else {
-        throw new Error(`we don't handle ${token.type} tokens yet`);
+        throw new Error(`we don't handle ${node.type} tokens yet`);
         // TODO: deal with frac, subsup, etc.
     }
 };
 
 const getInfixParselet = (
-    token: Token,
-): Parser.InfixParselet<Token, Parser.types.Node, Operator> | null => {
-    switch (token.type) {
-        case "atom": {
-            const atom = token.value;
-            switch (atom.kind) {
+    node: TokenNode,
+): Parser.InfixParselet<TokenNode, Parser.types.Node, Operator> | null => {
+    switch (node.type) {
+        case "token": {
+            switch (node.name) {
                 case "plus":
                     return {op: "add", parse: parseNaryInfix("add")};
                 case "minus":
@@ -303,7 +294,7 @@ const getInfixParselet = (
                 op: "supsub",
                 parse: (parser: EditorParser, left: Parser.types.Node) => {
                     parser.consume(); // consume the subsup
-                    const [sub, sup] = token.children;
+                    const [sub, sup] = node.children;
 
                     if (left.type === "identifier") {
                         if (sub) {
@@ -380,7 +371,7 @@ const getInfixParselet = (
         case "row":
             throw new Error(`Unexpected 'row' token`);
         default:
-            throw new UnreachableCaseError(token);
+            throw new UnreachableCaseError(node);
     }
 };
 
@@ -407,14 +398,16 @@ const getOpPrecedence = (op: Operator): number => {
     }
 };
 
-const EOL: Token = Lexer.atom({kind: "eol"}, Lexer.location([], -1, -1));
-
-const editorParser = Parser.parserFactory<Token, Parser.types.Node, Operator>(
-    getPrefixParselet,
-    getInfixParselet,
-    getOpPrecedence,
-    EOL,
+const EOL: TokenNode = Lexer.atom(
+    {type: "token", name: "eol"},
+    Lexer.location([], -1, -1),
 );
+
+const editorParser = Parser.parserFactory<
+    TokenNode,
+    Parser.types.Node,
+    Operator
+>(getPrefixParselet, getInfixParselet, getOpPrecedence, EOL);
 
 // WARNING: This function mutates `node`.
 const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
@@ -456,7 +449,7 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
     });
 };
 
-export const parse = (input: Row): Semantic.types.Node => {
+export const parse = (input: CharRow): Semantic.types.Node => {
     const tokenRow = Lexer.lexRow(input);
     const result = editorParser.parse(tokenRow.children);
 
