@@ -44,7 +44,7 @@ const print = (
             const [sub, sup] = ast.children;
             return `(subsup@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
-            } ${sub ? print(sub, serialize, indent) : "_"} ${
+            } ${sub ? print(sub, serialize, indent) : "^"} ${
                 sup ? print(sup, serialize, indent) : "_"
             })`;
         }
