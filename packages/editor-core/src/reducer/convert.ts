@@ -1,7 +1,7 @@
 import type {Mutable} from "utility-types";
 
 import type {Breadcrumb, Zipper, Focus, ZRow} from "./types";
-import type {CharRow, CharNode} from "../ast/types";
+import type {CharRow, CharNode} from "../char/types";
 
 import {
     focusToNode,

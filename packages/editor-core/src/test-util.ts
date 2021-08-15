@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import * as types from "./ast/types";
+import * as types from "./char/types";
 
 export const toEqualMath = (
     received: Semantic.types.Node,

@@ -1,4 +1,4 @@
-import * as builders from "../ast/builders";
+import * as builders from "../char/builders";
 
 import * as util from "./util";
 import {verticalWork} from "./vertical-work/reducer";

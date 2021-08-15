@@ -1,4 +1,4 @@
-import * as types from "../ast/types";
+import * as types from "../char/types";
 
 type Zipperize<T extends types.CharNode> = {
     readonly type: `z${T["type"]}`;

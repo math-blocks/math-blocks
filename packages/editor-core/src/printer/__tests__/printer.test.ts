@@ -1,8 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import * as builders from "../../ast/builders";
-import * as types from "../../ast/types";
-import * as Util from "../../ast/util";
+import * as builders from "../../char/builders";
+import * as types from "../../char/types";
+import * as Util from "../../char/util";
 import {toEqualEditorNode} from "../../test-util";
 
 import {print} from "../printer";

@@ -1,6 +1,6 @@
 import {getId} from "@math-blocks/core";
 
-import * as builders from "../../ast/builders";
+import * as builders from "../../char/builders";
 
 import {matrix} from "../matrix";
 import {moveLeft} from "../move-left";

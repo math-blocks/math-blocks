@@ -1,4 +1,4 @@
-import * as builders from "../../ast/builders";
+import * as builders from "../../char/builders";
 
 import {frac} from "../frac";
 import {moveLeft} from "../move-left";

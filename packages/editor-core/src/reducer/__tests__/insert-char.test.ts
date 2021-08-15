@@ -1,4 +1,4 @@
-import * as builders from "../../ast/builders";
+import * as builders from "../../char/builders";
 
 import {insertChar} from "../insert-char";
 import {moveRight} from "../move-right";

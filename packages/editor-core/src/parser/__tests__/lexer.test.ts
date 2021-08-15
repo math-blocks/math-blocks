@@ -1,8 +1,8 @@
-import {row, char, frac, subsup, limits} from "../../ast/builders";
-import * as util from "../../ast/util";
+import {row, char, frac, subsup, limits} from "../../char/builders";
+import * as util from "../../char/util";
 
 import * as Lexer from "../lexer";
-import {serializer} from "../test-util";
+import {serializer} from "../../token/serializer";
 
 expect.addSnapshotSerializer(serializer);
 

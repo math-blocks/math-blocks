@@ -1,4 +1,4 @@
-import * as types from "../../ast/types";
+import * as types from "../../char/types";
 import type {ZTable, Breadcrumb} from "../types";
 
 export type Column = readonly types.CharRow[];
