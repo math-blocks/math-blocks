@@ -4,10 +4,10 @@ import {isAtom} from "../../ast/util";
 
 import * as util from "../util";
 import {cursorLeft} from "../move-left";
+import {adjustColumns} from "./adjust-columns";
 import {
     zipperToVerticalWork,
     verticalWorkToZTable,
-    adjustEmptyColumns,
     isCellEmpty,
     getCursorLoc,
     getCursorCell,
@@ -16,7 +16,7 @@ import {
     isColumnEmpty,
 } from "./util";
 
-import type {VerticalWork} from "./util";
+import type {VerticalWork} from "./types";
 import type {Breadcrumb, Zipper, State} from "../types";
 
 // TODO: rename this and move into utils
@@ -25,7 +25,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
     if (!work) {
         return zipper;
     }
-    const adjustedWork = adjustEmptyColumns(work);
+    const adjustedWork = adjustColumns(work);
     return verticalWorkToZTable(adjustedWork);
 };
 
@@ -98,9 +98,7 @@ export const backspace = (state: State): State => {
                     rowStyles: rowStyles,
                 };
 
-                const newZipper = verticalWorkToZTable(
-                    adjustEmptyColumns(newWork),
-                );
+                const newZipper = verticalWorkToZTable(adjustColumns(newWork));
                 return util.zipperToState(newZipper);
             }
         }
@@ -195,7 +193,7 @@ export const backspace = (state: State): State => {
                     };
 
                     const newZipper = verticalWorkToZTable(
-                        adjustEmptyColumns(newWork),
+                        adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);
                 }
@@ -248,7 +246,7 @@ export const backspace = (state: State): State => {
                     };
 
                     const newZipper = verticalWorkToZTable(
-                        adjustEmptyColumns(newWork),
+                        adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);
                 }
@@ -279,7 +277,7 @@ export const backspace = (state: State): State => {
                     };
 
                     const newZipper = verticalWorkToZTable(
-                        adjustEmptyColumns(newWork),
+                        adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);
                 }

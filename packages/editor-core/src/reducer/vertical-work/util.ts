@@ -2,24 +2,9 @@ import {getId} from "@math-blocks/core";
 import * as types from "../../ast/types";
 import * as builders from "../../ast/builders";
 import * as util from "../../ast/util";
-import type {ZTable, Zipper, Breadcrumb, Focus} from "../types";
+import type {ZTable, Zipper, Focus} from "../types";
 import {zrowToRow, zrow} from "../util";
-
-export type Column = readonly types.Row[];
-
-export type VerticalWork = {
-    readonly columns: readonly Column[];
-    readonly colCount: number;
-    readonly rowCount: number;
-    // The id of the cell in which the cursor resides.
-    // We use an id for the cursor so that we can move it to the appropriate
-    // cell after adding/removing columns.
-    readonly cursorId: number;
-    // Location of the cursor within a cell.
-    readonly cursorIndex: number;
-    readonly crumb: Breadcrumb;
-    readonly rowStyles?: ZTable["rowStyles"];
-};
+import type {Column, VerticalWork} from "./types";
 
 export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
     const {breadcrumbs, row: cursorRow} = zipper;
@@ -105,184 +90,22 @@ export const isCellEmpty = (cell: types.Row | null): boolean =>
 export const isColumnEmpty = (col: Column | null): boolean =>
     !col || col.every(isCellEmpty);
 
-const isCellPlusMinus = (cell: types.Row | null): boolean =>
+export const isCellPlusMinus = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 &&
     util.isAtom(cell.children[0], ["+", "\u2212"]);
 
-const isCellEqualSign = (cell: types.Row | null): boolean =>
+export const isCellEqualSign = (cell: types.Row | null): boolean =>
     cell?.children.length === 1 && util.isAtom(cell.children[0], "=");
 
-const isOperator = (cell: types.Row | null): boolean =>
+export const isOperator = (cell: types.Row | null): boolean =>
     isCellPlusMinus(cell) || isCellEqualSign(cell);
 
-const createEmptyCol = (rowCount: number): types.Row[] => {
+export const createEmptyCol = (rowCount: number): types.Row[] => {
     const emptyColumn: types.Row[] = [];
     for (let j = 0; j < rowCount; j++) {
         emptyColumn.push(builders.row([]));
     }
     return emptyColumn;
-};
-
-export const adjustEmptyColumns = (work: VerticalWork): VerticalWork => {
-    const {columns, rowCount, colCount} = work;
-
-    const cursorLoc = getCursorLoc(work);
-
-    const colsToRemove = new Set<number>();
-    for (let i = 0; i < colCount; i++) {
-        const prevColumn = columns[i - 1];
-        const nextColumn = columns[i + 1];
-        const isPrevCellEmpty = isCellEmpty(columns[i - 1]?.[cursorLoc.row]);
-        const isNextCellEmpty = isCellEmpty(columns[i + 1]?.[cursorLoc.row]);
-
-        // If the previous and next cells are not empty but the current column
-        // is empty and all other cells in the previous nad next columns are
-        // empty remove the current column.
-        if (!isPrevCellEmpty && !isNextCellEmpty && isColumnEmpty(columns[i])) {
-            if (prevColumn && nextColumn) {
-                const otherPrevCells = prevColumn.filter(
-                    (cell, index) => index !== cursorLoc.row,
-                );
-                const otherNextCells = nextColumn.filter(
-                    (cell, index) => index !== cursorLoc.row,
-                );
-                if (
-                    otherPrevCells.every(isCellEmpty) &&
-                    otherNextCells.every(isCellEmpty)
-                ) {
-                    colsToRemove.add(i);
-                }
-            }
-        }
-
-        if (i > 0) {
-            // If there are two empty columns in a row, delete them while not
-            // deleting the column containing the cursor.
-            if (isColumnEmpty(columns[i - 1]) && isColumnEmpty(columns[i])) {
-                if (cursorLoc.col !== i - 1) {
-                    colsToRemove.add(i - 1);
-                }
-                if (cursorLoc.col !== i) {
-                    colsToRemove.add(i);
-                }
-            }
-        }
-    }
-
-    // If we're in the last row, remove all empty columns
-    if (cursorLoc.row === 2) {
-        for (let i = 0; i < colCount; i++) {
-            if (isColumnEmpty(columns[i])) {
-                colsToRemove.add(i);
-            }
-        }
-    }
-
-    // If the cursor is in a column that's getting removed, move it into the
-    // cell to the left.
-    const cursorId = colsToRemove.has(cursorLoc.col)
-        ? columns[cursorLoc.col - 1][cursorLoc.row].id
-        : columns[cursorLoc.col][cursorLoc.row].id;
-
-    // Position the cursor on the right side of the cell if we have to move it
-    // into the cell to the left
-    const cursorIndex = colsToRemove.has(cursorLoc.col)
-        ? columns[cursorLoc.col - 1][cursorLoc.row].children.length
-        : work.cursorIndex;
-
-    const filteredColumns = columns.filter(
-        (col, index) => !colsToRemove.has(index),
-    );
-
-    // If we're in the last row, don't re-add any empty columns
-    if (cursorLoc.row === 2) {
-        return {
-            ...work,
-            cursorId,
-            cursorIndex,
-            columns: filteredColumns,
-            colCount: filteredColumns.length,
-        };
-    }
-
-    const finalColumns: Column[] = [];
-    for (let i = 0; i < filteredColumns.length; i++) {
-        const isPrevCellEmpty = isCellEmpty(
-            i > 0 ? filteredColumns[i - 1][cursorLoc.row] : null,
-        );
-
-        const isFirstColumn = i === 0;
-        const isLastColumn = i === filteredColumns.length - 1;
-
-        const isCurrentCellEmpty = isCellEmpty(
-            filteredColumns[i][cursorLoc.row],
-        );
-        const isCurrentColumnEmpty = isColumnEmpty(filteredColumns[i]);
-        const isPrevColumnEmpty = isColumnEmpty(filteredColumns[i - 1]);
-
-        // First column, current cell is empty, but not the column isn't empty
-        if (isFirstColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            finalColumns.push(createEmptyCol(rowCount));
-        } else if (
-            // Not the first column
-            !isFirstColumn &&
-            // current and previous cells are empty
-            isCurrentCellEmpty &&
-            isPrevCellEmpty &&
-            // but the columns themselves are not
-            !isCurrentColumnEmpty &&
-            !isPrevColumnEmpty
-        ) {
-            const prevColHasPlusMinus = filteredColumns[i - 1].some((cell) => {
-                if (isCellEmpty(cell)) {
-                    return false;
-                }
-                if (
-                    cell.children.length === 1 &&
-                    cell.children[0].type === "atom" &&
-                    ["+", "\u2212"].includes(cell.children[0].value.char)
-                ) {
-                    return true;
-                }
-                return false;
-            });
-
-            // If the previous column doesn't have any +/- operators than it's
-            // safe to insert an empty column here.
-            if (!prevColHasPlusMinus) {
-                finalColumns.push(createEmptyCol(rowCount));
-            }
-        } else if (
-            !isFirstColumn &&
-            !isPrevColumnEmpty &&
-            filteredColumns[i].some(isOperator)
-        ) {
-            if (
-                isOperator(filteredColumns[i][cursorLoc.row]) &&
-                !isCellEmpty(filteredColumns[i - 1][cursorLoc.row])
-            ) {
-                // Don't add an empty column if there's an operand to the left
-                // of the operator in the cursor row.
-            } else {
-                finalColumns.push(createEmptyCol(rowCount));
-            }
-        }
-
-        finalColumns.push(filteredColumns[i]);
-
-        // Last column, current cell is empty, and the current cell is not
-        if (isLastColumn && isCurrentCellEmpty && !isCurrentColumnEmpty) {
-            finalColumns.push(createEmptyCol(rowCount));
-        }
-    }
-
-    return {
-        ...work,
-        cursorId,
-        cursorIndex,
-        columns: finalColumns,
-        colCount: finalColumns.length,
-    };
 };
 
 export const isCellSkippable = (cell: types.Row | null): boolean =>
