@@ -7,38 +7,38 @@ import type {Font} from "@math-blocks/opentype";
 
 import AccessibleMath from "./accessible-math";
 
-const {row, char: glyph, frac, root} = Editor.builders;
+const {row, char, frac, root} = Editor.builders;
 
 const MathmlPage: React.FunctionComponent = () => {
     const linearEquation = Editor.util.row("2x+5=10");
     const pythagoras = row([
-        glyph("a"),
+        char("a"),
         Editor.util.sup("2"),
-        glyph("+"),
-        glyph("b"),
+        char("+"),
+        char("b"),
         Editor.util.sup("2"),
-        glyph("="),
-        glyph("c"),
+        char("="),
+        char("c"),
         Editor.util.sup("2"),
     ]);
     const quadraticEquation = row([
-        glyph("x"),
-        glyph("="),
+        char("x"),
+        char("="),
         frac(
             [
-                glyph("\u2212"),
-                glyph("b"),
-                glyph("\u00B1"),
+                char("\u2212"),
+                char("b"),
+                char("\u00B1"),
                 root(null, [
-                    glyph("b"),
+                    char("b"),
                     Editor.util.sup("2"),
-                    glyph("\u2212"),
-                    glyph("4"),
-                    glyph("a"),
-                    glyph("c"),
+                    char("\u2212"),
+                    char("4"),
+                    char("a"),
+                    char("c"),
                 ]),
             ],
-            [glyph("2"), glyph("a")],
+            [char("2"), char("a")],
         ),
     ]);
 
