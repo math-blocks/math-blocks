@@ -3,7 +3,7 @@ import type {ZTable, Breadcrumb} from "../types";
 
 export type Column = readonly types.CharRow[];
 
-export type VerticalWork = {
+export type ZVerticalWork = {
     readonly columns: readonly Column[];
     readonly colCount: number;
     readonly rowCount: number;
@@ -15,4 +15,16 @@ export type VerticalWork = {
     readonly cursorIndex: number;
     readonly crumb: Breadcrumb;
     readonly rowStyles?: ZTable["rowStyles"];
+};
+
+export type VerticalWork = {
+    readonly columns: readonly Column[];
+    readonly colCount: number;
+    readonly rowCount: number;
+
+    readonly delimiters?: types.CharTable["delimiters"];
+    readonly rowStyles?: types.CharTable["rowStyles"];
+    readonly colStyles?: types.CharTable["colStyles"];
+
+    readonly table: types.CharTable;
 };

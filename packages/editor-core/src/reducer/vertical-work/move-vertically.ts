@@ -5,7 +5,7 @@ import * as builders from "../../char/builders";
 
 import * as util from "../util";
 import {adjustColumns} from "./adjust-columns";
-import {zipperToVerticalWork, verticalWorkToZTable} from "./util";
+import {zipperToVerticalWork, verticalWorkToZipper} from "./util";
 
 import type {State, ZTable, Zipper} from "../types";
 
@@ -16,7 +16,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
         return zipper;
     }
     const adjustedWork = adjustColumns(work);
-    return verticalWorkToZTable(adjustedWork);
+    return verticalWorkToZipper(adjustedWork);
 };
 
 export const moveDown = (state: State): State => {
@@ -91,7 +91,7 @@ export const moveDown = (state: State): State => {
                 ...work,
                 cursorId: newCell.id,
             });
-            const newZipper: Zipper = verticalWorkToZTable(adjustedWork);
+            const newZipper: Zipper = verticalWorkToZipper(adjustedWork);
             return util.zipperToState(newZipper);
         }
 
@@ -292,7 +292,7 @@ export const moveUp = (state: State): State => {
                 ...work,
                 cursorId: newCell.id,
             });
-            const newZipper: Zipper = verticalWorkToZTable(adjustedWork);
+            const newZipper: Zipper = verticalWorkToZipper(adjustedWork);
             return util.zipperToState(newZipper);
         }
     }

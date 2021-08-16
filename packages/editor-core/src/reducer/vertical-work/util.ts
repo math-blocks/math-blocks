@@ -4,9 +4,9 @@ import * as builders from "../../char/builders";
 import * as util from "../../char/util";
 import type {ZTable, Zipper, Focus} from "../types";
 import {zrowToRow, zrow} from "../util";
-import type {Column, VerticalWork} from "./types";
+import type {Column, VerticalWork, ZVerticalWork} from "./types";
 
-export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
+export const zipperToVerticalWork = (zipper: Zipper): ZVerticalWork | null => {
     const {breadcrumbs, row: cursorRow} = zipper;
     const crumb = breadcrumbs[0];
     const {focus} = crumb;
@@ -17,11 +17,13 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
         focus.subtype === "algebra"
     ) {
         const {rowCount, colCount, left, right} = focus;
+        // The ZTable type says it can contain null cells, but right now this
+        // never happens so we ignore this.
         const cells = [
             ...left,
             zrowToRow(cursorRow),
             ...right,
-        ] as types.CharRow[]; // ZTables can contain null cells, ignore for now
+        ] as types.CharRow[];
 
         const columns: Column[] = [];
         for (let i = 0; i < colCount; i++) {
@@ -47,7 +49,7 @@ export const zipperToVerticalWork = (zipper: Zipper): VerticalWork | null => {
     return null;
 };
 
-export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
+export const verticalWorkToZipper = (work: ZVerticalWork): Zipper => {
     const {columns, colCount, rowCount, cursorId, cursorIndex, crumb} = work;
 
     const cells: types.CharRow[] = [];
@@ -87,6 +89,58 @@ export const verticalWorkToZTable = (work: VerticalWork): Zipper => {
     };
 
     return newZipper;
+};
+
+export const tableToVerticalWork = (
+    table: types.CharTable,
+): VerticalWork | null => {
+    if (table.subtype !== "algebra") {
+        return null;
+    }
+
+    const {rowCount, colCount, id, type, subtype, ...rest} = table;
+    // The Table type says it can contain null cells, but right now this
+    // never happens so we ignore this.
+    const cells = table.children as types.CharRow[];
+
+    const columns: Column[] = [];
+    for (let i = 0; i < colCount; i++) {
+        const col: types.CharRow[] = [];
+        for (let j = 0; j < rowCount; j++) {
+            const index = j * colCount + i;
+            col.push(cells[index]);
+        }
+        columns.push(col); // this is unsafe
+    }
+
+    return {
+        columns,
+        colCount,
+        rowCount,
+        table,
+        ...rest,
+    };
+};
+
+export const verticalWorkToTable = (work: VerticalWork): types.CharTable => {
+    const {table, columns, rowCount, ...rest} = work;
+
+    const cells: types.CharRow[] = [];
+    for (let i = 0; i < rowCount; i++) {
+        for (const col of columns) {
+            cells.push(col[i]);
+        }
+    }
+
+    return {
+        id: table.id,
+        type: table.type,
+        subtype: table.subtype,
+        style: table.style,
+        children: cells,
+        rowCount,
+        ...rest,
+    };
 };
 
 export const isCellEmpty = (cell: types.CharRow | null): boolean =>
@@ -157,7 +211,7 @@ export type CursorLoc = {
     readonly row: number;
 };
 
-export const getCursorLoc = (work: VerticalWork): CursorLoc => {
+export const getCursorLoc = (work: ZVerticalWork): CursorLoc => {
     const {columns, cursorId, colCount, rowCount} = work;
 
     for (let col = 0; col < colCount; col++) {
@@ -172,7 +226,7 @@ export const getCursorLoc = (work: VerticalWork): CursorLoc => {
     throw new Error(`Couldn't find cell with id: ${cursorId}`);
 };
 
-export const getCursorCell = (work: VerticalWork): types.CharRow => {
+export const getCursorCell = (work: ZVerticalWork): types.CharRow => {
     const {columns, cursorId, colCount, rowCount} = work;
 
     for (let col = 0; col < colCount; col++) {
@@ -188,7 +242,7 @@ export const getCursorCell = (work: VerticalWork): types.CharRow => {
 };
 
 export const getPrevCell = (
-    work: VerticalWork,
+    work: ZVerticalWork,
     cell: types.CharRow,
 ): types.CharRow | null => {
     const {columns, colCount, rowCount} = work;
@@ -204,7 +258,7 @@ export const getPrevCell = (
 };
 
 export const getNextCell = (
-    work: VerticalWork,
+    work: ZVerticalWork,
     cell: types.CharRow,
 ): types.CharRow | null => {
     const {columns, colCount, rowCount} = work;

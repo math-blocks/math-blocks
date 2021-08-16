@@ -5,6 +5,7 @@ import {row} from "../test-util";
 import * as util from "../util";
 
 import type {ZTable, Zipper, BreadcrumbRow} from "../types";
+import type {CharTable} from "../../char/types";
 
 export const toEqualZTable = (
     expected: ZTable,
@@ -148,4 +149,29 @@ export const textRepsToZipper = (...textReps: readonly string[]): Zipper => {
     };
 
     return zipper;
+};
+
+export const textRepsToTable = (...textReps: readonly string[]): CharTable => {
+    const lines = textReps.map((line) =>
+        line.split("|").map((cell) => cell.trim()),
+    );
+
+    assert.equal(lines[0].length, lines[1].length);
+
+    const cells: string[] = [];
+    for (const line of lines) {
+        cells.push(...line);
+    }
+
+    const table: CharTable = {
+        id: getId(),
+        type: "table",
+        subtype: "algebra",
+        rowCount: lines.length,
+        colCount: lines[0].length,
+        children: cells.map(row),
+        style: {},
+    };
+
+    return table;
 };

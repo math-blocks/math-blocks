@@ -1,10 +1,10 @@
 import {toEqualEditorNodes} from "../../test-util";
 import {adjustColumns} from "../adjust-columns";
 import {toEqualZTable, toEqualZipper, textRepsToZipper} from "../test-util";
-import {zipperToVerticalWork, verticalWorkToZTable} from "../util";
+import {zipperToVerticalWork, verticalWorkToZipper} from "../util";
 
 import type {Zipper, ZTable} from "../../types";
-import {VerticalWork} from "../types";
+import {ZVerticalWork} from "../types";
 
 declare global {
     /* eslint-disable */
@@ -23,7 +23,7 @@ expect.extend({toEqualEditorNodes});
 
 const textRepsToVerticalWork = (
     ...textReps: readonly string[]
-): VerticalWork => {
+): ZVerticalWork => {
     const zipper = textRepsToZipper(...textReps);
     const work = zipperToVerticalWork(zipper);
     if (!work) {
@@ -47,7 +47,7 @@ describe("adjustColumns", () => {
             " |2x| | |@| | ",
         );
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x| |+|5| ", " |2x| |@| | ");
 
@@ -60,7 +60,7 @@ describe("adjustColumns", () => {
             " |2x| | | |@| | ",
         );
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x| |+|5| ", " |2x| |@| | ");
 
@@ -70,7 +70,7 @@ describe("adjustColumns", () => {
     it("should add an empty column to the left of a column with an operator", () => {
         const original = textRepsToVerticalWork(" |2x|+|5| ", " |2x|@| | ");
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x| |+|5| ", " |2x| |@| | ");
 
@@ -80,7 +80,7 @@ describe("adjustColumns", () => {
     it("should add empty columns at the beginning and end", () => {
         const original = textRepsToVerticalWork("2x| |+|5", "2x| |@| ");
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x| |+|5| ", " |2x| |@| | ");
 
@@ -93,7 +93,7 @@ describe("adjustColumns", () => {
             " |  | |  | | ",
         );
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x|+@|5| ", " |  |  | | ");
 
@@ -103,7 +103,7 @@ describe("adjustColumns", () => {
     it("should move the cursor to the left if it was in a column is removed", () => {
         const original = textRepsToVerticalWork(" |2x|@|+|5| ", " |  | | | | ");
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x@|+|5| ", " |   | | | ");
 
@@ -113,7 +113,7 @@ describe("adjustColumns", () => {
     it("should move the cursor to the right if the first column was removed while it was in it", () => {
         const original = textRepsToVerticalWork("@| |2x| ", " | |2x| ");
 
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper("@|2x| ", " |2x| ");
 
@@ -128,7 +128,7 @@ describe("adjustColumns", () => {
                 " |2x|@| | | ",
             );
 
-            const result = verticalWorkToZTable(adjustColumns(original));
+            const result = verticalWorkToZipper(adjustColumns(original));
 
             const expected = textRepsToZipper("2x |+|5", "   | | ", "2x@| | ");
 
@@ -142,7 +142,7 @@ describe("adjustColumns", () => {
                 "@|2x| | | | ",
             );
 
-            const result = verticalWorkToZTable(adjustColumns(original));
+            const result = verticalWorkToZipper(adjustColumns(original));
 
             const expected = textRepsToZipper(" 2x|+|5", "   | | ", "@2x| | ");
 
@@ -154,7 +154,7 @@ describe("adjustColumns", () => {
         const original = textRepsToVerticalWork("2x|=|5", "2x|@| ");
 
         // TODO: create a matcher that encapsulates this
-        const result = verticalWorkToZTable(adjustColumns(original));
+        const result = verticalWorkToZipper(adjustColumns(original));
 
         const expected = textRepsToZipper(" |2x| |=| |5| ", " |2x| |@| | | ");
 

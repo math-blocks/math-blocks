@@ -11,7 +11,7 @@ import {
     isCellEqualSign,
     isCellEmpty,
 } from "./util";
-import type {Column, VerticalWork} from "./types";
+import type {Column, ZVerticalWork} from "./types";
 
 const isCellOperator = (cell: types.CharRow): boolean =>
     isCellEqualSign(cell) || isCellPlusMinus(cell);
@@ -31,7 +31,7 @@ const hasOperand = (cells: readonly types.CharRow[]): boolean => {
     return cells.some(isCellOperand);
 };
 
-export const adjustColumns = (work: VerticalWork): VerticalWork => {
+export const adjustColumns = (work: ZVerticalWork): ZVerticalWork => {
     const {columns, colCount, rowCount} = work;
     const {cursorId, cursorIndex} = work;
     const cursorLoc = getCursorLoc(work);
@@ -281,7 +281,7 @@ export const adjustColumns = (work: VerticalWork): VerticalWork => {
         return work;
     }
 
-    const result: VerticalWork = {
+    const result: ZVerticalWork = {
         ...work,
         columns: resultColumns,
         colCount: resultColumns.length,
