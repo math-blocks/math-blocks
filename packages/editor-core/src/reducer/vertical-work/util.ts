@@ -49,7 +49,7 @@ export const zipperToVerticalWork = (zipper: Zipper): ZVerticalWork | null => {
     return null;
 };
 
-export const verticalWorkToZTable = (work: ZVerticalWork): Zipper => {
+export const verticalWorkToZipper = (work: ZVerticalWork): Zipper => {
     const {columns, colCount, rowCount, cursorId, cursorIndex, crumb} = work;
 
     const cells: types.CharRow[] = [];
@@ -98,7 +98,7 @@ export const tableToVerticalWork = (
         return null;
     }
 
-    const {rowCount, colCount, delimiters, colStyles, rowStyles} = table;
+    const {rowCount, colCount, id, type, subtype, ...rest} = table;
     // The Table type says it can contain null cells, but right now this
     // never happens so we ignore this.
     const cells = table.children as types.CharRow[];
@@ -117,23 +117,13 @@ export const tableToVerticalWork = (
         columns,
         colCount,
         rowCount,
-        delimiters,
-        colStyles,
-        rowStyles,
         table,
+        ...rest,
     };
 };
 
 export const verticalWorkToTable = (work: VerticalWork): types.CharTable => {
-    const {
-        columns,
-        rowCount,
-        colCount,
-        delimiters,
-        colStyles,
-        rowStyles,
-        table,
-    } = work;
+    const {table, columns, rowCount, ...rest} = work;
 
     const cells: types.CharRow[] = [];
     for (let i = 0; i < rowCount; i++) {
@@ -149,10 +139,7 @@ export const verticalWorkToTable = (work: VerticalWork): types.CharTable => {
         style: table.style,
         children: cells,
         rowCount,
-        colCount,
-        delimiters,
-        colStyles,
-        rowStyles,
+        ...rest,
     };
 };
 

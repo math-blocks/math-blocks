@@ -7,7 +7,7 @@ import {cursorLeft} from "../move-left";
 import {adjustColumns} from "./adjust-columns";
 import {
     zipperToVerticalWork,
-    verticalWorkToZTable,
+    verticalWorkToZipper,
     isCellEmpty,
     getCursorLoc,
     getCursorCell,
@@ -26,7 +26,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
         return zipper;
     }
     const adjustedWork = adjustColumns(work);
-    return verticalWorkToZTable(adjustedWork);
+    return verticalWorkToZipper(adjustedWork);
 };
 
 const isPlusMinus = (cell: types.CharRow | null): cell is types.CharRow =>
@@ -98,7 +98,7 @@ export const backspace = (state: State): State => {
                     rowStyles: rowStyles,
                 };
 
-                const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+                const newZipper = verticalWorkToZipper(adjustColumns(newWork));
                 return util.zipperToState(newZipper);
             }
         }
@@ -192,7 +192,7 @@ export const backspace = (state: State): State => {
                         rowStyles: rowStyles,
                     };
 
-                    const newZipper = verticalWorkToZTable(
+                    const newZipper = verticalWorkToZipper(
                         adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);
@@ -245,7 +245,7 @@ export const backspace = (state: State): State => {
                         rowStyles: rowStyles,
                     };
 
-                    const newZipper = verticalWorkToZTable(
+                    const newZipper = verticalWorkToZipper(
                         adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);
@@ -276,7 +276,7 @@ export const backspace = (state: State): State => {
                         rowStyles: rowStyles,
                     };
 
-                    const newZipper = verticalWorkToZTable(
+                    const newZipper = verticalWorkToZipper(
                         adjustColumns(newWork),
                     );
                     return util.zipperToState(newZipper);

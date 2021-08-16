@@ -6,7 +6,7 @@ import * as util from "../util";
 import {adjustColumns} from "./adjust-columns";
 import {
     zipperToVerticalWork,
-    verticalWorkToZTable,
+    verticalWorkToZipper,
     isColumnEmpty,
     isCellEmpty,
     getCursorLoc,
@@ -57,7 +57,7 @@ const removeEmptyColumns = (zipper: Zipper): Zipper => {
         return zipper;
     }
     const adjustedWork = adjustColumns(work);
-    return verticalWorkToZTable(adjustedWork);
+    return verticalWorkToZipper(adjustedWork);
 };
 
 export const insertChar = (state: State, char: string): State => {
@@ -133,7 +133,7 @@ export const insertChar = (state: State, char: string): State => {
             crumb: crumb,
             rowStyles: rowStyles,
         };
-        const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+        const newZipper = verticalWorkToZipper(adjustColumns(newWork));
         return util.zipperToState(newZipper);
     }
 
@@ -174,7 +174,7 @@ export const insertChar = (state: State, char: string): State => {
                 crumb: crumb,
                 rowStyles: rowStyles,
             };
-            const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+            const newZipper = verticalWorkToZipper(adjustColumns(newWork));
             return util.zipperToState(newZipper);
         }
 
@@ -210,7 +210,7 @@ export const insertChar = (state: State, char: string): State => {
                 crumb: crumb,
                 rowStyles: rowStyles,
             };
-            const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+            const newZipper = verticalWorkToZipper(adjustColumns(newWork));
             return util.zipperToState(newZipper);
         }
 
@@ -261,7 +261,7 @@ export const insertChar = (state: State, char: string): State => {
                     crumb: crumb,
                     rowStyles: rowStyles,
                 };
-                const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+                const newZipper = verticalWorkToZipper(adjustColumns(newWork));
                 return util.zipperToState(newZipper);
             }
         }
@@ -309,7 +309,7 @@ export const insertChar = (state: State, char: string): State => {
                     crumb: crumb,
                     rowStyles: rowStyles,
                 };
-                const newZipper = verticalWorkToZTable(adjustColumns(newWork));
+                const newZipper = verticalWorkToZipper(adjustColumns(newWork));
                 return util.zipperToState(newZipper);
             }
         }
