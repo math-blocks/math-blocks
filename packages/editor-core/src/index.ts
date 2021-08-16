@@ -16,7 +16,7 @@ export {
 export {stateFromZipper} from "./reducer/test-util";
 export {zrowToRow, zrow, nodeToFocus} from "./reducer/util";
 export {
-    zipperToVerticalWork,
+    zipperToVerticalWork as zipperToVerticalWork,
     isColumnEmpty,
     isCellEmpty,
 } from "./reducer/vertical-work/util";

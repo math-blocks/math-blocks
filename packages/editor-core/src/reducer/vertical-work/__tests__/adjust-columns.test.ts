@@ -4,7 +4,7 @@ import {toEqualZTable, toEqualZipper, textRepsToZipper} from "../test-util";
 import {zipperToVerticalWork, verticalWorkToZTable} from "../util";
 
 import type {Zipper, ZTable} from "../../types";
-import {VerticalWork} from "../types";
+import {ZVerticalWork} from "../types";
 
 declare global {
     /* eslint-disable */
@@ -23,7 +23,7 @@ expect.extend({toEqualEditorNodes});
 
 const textRepsToVerticalWork = (
     ...textReps: readonly string[]
-): VerticalWork => {
+): ZVerticalWork => {
     const zipper = textRepsToZipper(...textReps);
     const work = zipperToVerticalWork(zipper);
     if (!work) {

@@ -16,7 +16,7 @@ import {
     isColumnEmpty,
 } from "./util";
 
-import type {VerticalWork} from "./types";
+import type {ZVerticalWork} from "./types";
 import type {Breadcrumb, Zipper, State} from "../types";
 
 // TODO: rename this and move into utils
@@ -88,7 +88,7 @@ export const backspace = (state: State): State => {
 
                 // TODO: create a helper function for updating a VerticalWork
                 // object with new columns and changing the cursor location.
-                const newWork: VerticalWork = {
+                const newWork: ZVerticalWork = {
                     columns: newColumns,
                     colCount: newColumns.length,
                     rowCount: rowCount,
@@ -182,7 +182,7 @@ export const backspace = (state: State): State => {
 
                     // TODO: create a helper function for updating a VerticalWork
                     // object with new columns and changing the cursor location.
-                    const newWork: VerticalWork = {
+                    const newWork: ZVerticalWork = {
                         columns: newColumns,
                         colCount: newColumns.length,
                         rowCount: rowCount,
@@ -235,7 +235,7 @@ export const backspace = (state: State): State => {
 
                     // TODO: create a helper function for updating a VerticalWork
                     // object with new columns and changing the cursor location.
-                    const newWork: VerticalWork = {
+                    const newWork: ZVerticalWork = {
                         columns: newColumns,
                         colCount: newColumns.length,
                         rowCount: rowCount,
@@ -266,7 +266,7 @@ export const backspace = (state: State): State => {
                         updateCursorCol,
                         ...columns.slice(cursorLoc.col + 2),
                     ];
-                    const newWork: VerticalWork = {
+                    const newWork: ZVerticalWork = {
                         columns: newColumns,
                         colCount: newColumns.length,
                         rowCount: rowCount,
