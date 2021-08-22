@@ -5,6 +5,7 @@ import * as builders from "../../char/builders";
 import {matrix} from "../matrix";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
+import {moveVertically} from "../move-vertically";
 import {toEqualEditorNodes, zrow} from "../test-util";
 import {zipperToRow} from "../convert";
 
@@ -256,10 +257,10 @@ describe("matrix", () => {
                     [
                         [builders.char("a")],
                         [builders.char("b")],
+                        [builders.char("0")],
+                        [builders.char("0")],
                         [builders.char("c")],
                         [builders.char("d")],
-                        [builders.char("0")],
-                        [builders.char("0")],
                     ],
                     2,
                     3,
@@ -470,6 +471,7 @@ describe("matrix", () => {
                 selecting: false,
             };
             state = moveLeft(state);
+            state = moveVertically(state, {type: "ArrowDown"});
             state = matrix(state, {type: "DeleteRow"});
 
             const row = zipperToRow(state.zipper);
@@ -622,6 +624,95 @@ describe("matrix", () => {
 
             const row = zipperToRow(state.zipper);
             expect(row.children).toEqual([]);
+        });
+    });
+
+    describe("Moving horizontally", () => {
+        const matrix = builders.matrix(
+            [
+                [builders.char("a")],
+                [builders.char("b")],
+                [builders.char("c")],
+                [builders.char("d")],
+                [builders.char("e")],
+                [builders.char("f")],
+            ],
+            2,
+            3,
+        );
+
+        it("should enter the middle row from the left", () => {
+            const zipper: Zipper = {
+                row: zrow([], [matrix]),
+                breadcrumbs: [],
+            };
+            let state: State = {
+                startZipper: zipper,
+                endZipper: zipper,
+                zipper: zipper,
+                selecting: false,
+            };
+            state = moveRight(state);
+
+            const {zipper: result} = state;
+
+            expect(result.row.right).toEqualEditorNodes([builders.char("c")]);
+        });
+
+        it("should exit the middle row to the left", () => {
+            const zipper: Zipper = {
+                row: zrow([], [matrix]),
+                breadcrumbs: [],
+            };
+            let state: State = {
+                startZipper: zipper,
+                endZipper: zipper,
+                zipper: zipper,
+                selecting: false,
+            };
+            state = moveRight(state);
+            state = moveLeft(state);
+
+            const {zipper: result} = state;
+
+            expect(result.row.right).toEqualEditorNodes([matrix]);
+        });
+
+        it("should enter the middle row from the right", () => {
+            const zipper: Zipper = {
+                row: zrow([matrix], []),
+                breadcrumbs: [],
+            };
+            let state: State = {
+                startZipper: zipper,
+                endZipper: zipper,
+                zipper: zipper,
+                selecting: false,
+            };
+            state = moveLeft(state);
+
+            const {zipper: result} = state;
+
+            expect(result.row.left).toEqualEditorNodes([builders.char("d")]);
+        });
+
+        it("should exit the middle row to the right", () => {
+            const zipper: Zipper = {
+                row: zrow([matrix], []),
+                breadcrumbs: [],
+            };
+            let state: State = {
+                startZipper: zipper,
+                endZipper: zipper,
+                zipper: zipper,
+                selecting: false,
+            };
+            state = moveLeft(state);
+            state = moveRight(state);
+
+            const {zipper: result} = state;
+
+            expect(result.row.left).toEqualEditorNodes([matrix]);
         });
     });
 });
