@@ -5,6 +5,7 @@ import * as builders from "../../char/builders";
 import {matrix} from "../matrix";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
+import {moveVertically} from "../move-vertically";
 import {toEqualEditorNodes, zrow} from "../test-util";
 import {zipperToRow} from "../convert";
 
@@ -256,10 +257,10 @@ describe("matrix", () => {
                     [
                         [builders.char("a")],
                         [builders.char("b")],
+                        [builders.char("0")],
+                        [builders.char("0")],
                         [builders.char("c")],
                         [builders.char("d")],
-                        [builders.char("0")],
-                        [builders.char("0")],
                     ],
                     2,
                     3,
@@ -470,6 +471,7 @@ describe("matrix", () => {
                 selecting: false,
             };
             state = moveLeft(state);
+            state = moveVertically(state, {type: "ArrowDown"});
             state = matrix(state, {type: "DeleteRow"});
 
             const row = zipperToRow(state.zipper);

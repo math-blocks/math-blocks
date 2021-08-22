@@ -47,6 +47,9 @@ export const cursorLeft = (zipper: Zipper): Zipper => {
                     break;
                 }
             }
+            if (prev.type === "table" && prev.subtype === "matrix") {
+                index = prev.colCount * Math.ceil(prev.rowCount / 2) - 1;
+            }
             const focus: Focus = util.nodeToFocus(prev, index);
 
             const breadcrumb: Breadcrumb = {
@@ -101,29 +104,7 @@ export const cursorLeft = (zipper: Zipper): Zipper => {
         const cursorIndex = focus.left.length;
         const allowedLeft = allowed.slice(0, cursorIndex);
 
-        // const prevIndex = focus.left.findLastIndex((item) => item != null);
-        let prevIndex = focus.left.length - 1;
-        for (; prevIndex > -1; prevIndex--) {
-            if (allowedLeft[prevIndex]) {
-                break;
-            }
-        }
-        const prev = focus.left[prevIndex];
-
-        if (focus.type === "ztable" && focus.subtype === "algebra") {
-            // Don't allow people to wrap around from one row to the previous
-            // when showing work vertically.
-            if (
-                Math.floor(cursorIndex / focus.colCount) !==
-                Math.floor(prevIndex / focus.colCount)
-            ) {
-                return zipper;
-            }
-        }
-
-        if (prev == null) {
-            // Exit the current focus since there are now rows within the node
-            // to the left.
+        const exitFocus = (): Zipper => {
             return {
                 breadcrumbs: zipper.breadcrumbs.slice(0, -1),
                 // place the fraction we exited on our right
@@ -141,6 +122,41 @@ export const cursorLeft = (zipper: Zipper): Zipper => {
                     style: parentRow.style,
                 },
             };
+        };
+
+        // const prevIndex = focus.left.findLastIndex((item) => item != null);
+        let prevIndex = focus.left.length - 1;
+        for (; prevIndex > -1; prevIndex--) {
+            if (allowedLeft[prevIndex]) {
+                break;
+            }
+        }
+        const prev = focus.left[prevIndex];
+
+        if (focus.type === "ztable" && focus.subtype === "algebra") {
+            // Don't allow people to wrap around from one row to the previous
+            // when showing work vertically.
+            const index = focus.left.length;
+            const col = index % focus.colCount;
+            if (col === 0) {
+                return zipper;
+            }
+        }
+
+        if (focus.type === "ztable" && focus.subtype === "matrix") {
+            const index = focus.left.length;
+            const col = index % focus.colCount;
+            if (col === 0) {
+                // Exit the current focus since there aren't any rows within the node
+                // to the left.
+                return exitFocus();
+            }
+        }
+
+        if (prev == null) {
+            // Exit the current focus since there aren't any rows within the node
+            // to the left.
+            return exitFocus();
         }
 
         // Navigate to the prev row within the node.

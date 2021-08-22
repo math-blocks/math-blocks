@@ -40,7 +40,10 @@ export const cursorRight = (zipper: Zipper): Zipper => {
         // Rows should only be used as children of non-rows
         // move into row to the right
         else if (next.type !== "row") {
-            const index = next.children.findIndex((item) => item != null);
+            let index = next.children.findIndex((item) => item != null);
+            if (next.type === "table" && next.subtype === "matrix") {
+                index = next.colCount * Math.floor((next.rowCount - 1) / 2);
+            }
             const focus: Focus = util.nodeToFocus(next, index);
 
             const breadcrumb: Breadcrumb = {
@@ -92,22 +95,7 @@ export const cursorRight = (zipper: Zipper): Zipper => {
 
         const exitedRow: types.CharRow = util.zrowToRow(zipper.row);
 
-        const allowed = getAllowed(zipper, focus);
-        const cursorIndex = focus.left.length;
-        const allowedRight = allowed.slice(cursorIndex + 1);
-        const nextIndex = focus.right.findIndex(
-            (_, index) => allowedRight[index],
-        );
-        const next = focus.right[nextIndex];
-
-        if (next == null) {
-            // Don't allow people to exit the table when showing work vertically
-            if (focus.type === "ztable" && focus.subtype === "algebra") {
-                return zipper;
-            }
-
-            // Exit the current focus since there are now rows within the node
-            // to the right.
+        const exitFocus = (): Zipper => {
             return {
                 breadcrumbs: zipper.breadcrumbs.slice(0, -1),
                 row: {
@@ -124,6 +112,35 @@ export const cursorRight = (zipper: Zipper): Zipper => {
                     style: parentRow.style,
                 },
             };
+        };
+
+        if (focus.type === "ztable" && focus.subtype === "matrix") {
+            const index = focus.left.length;
+            const col = index % focus.colCount;
+            if (col === focus.colCount - 1) {
+                // Exit the current focus since there aren't any rows within the node
+                // to the right.
+                return exitFocus();
+            }
+        }
+
+        const allowed = getAllowed(zipper, focus);
+        const cursorIndex = focus.left.length;
+        const allowedRight = allowed.slice(cursorIndex + 1);
+        const nextIndex = focus.right.findIndex(
+            (_, index) => allowedRight[index],
+        );
+        const next = focus.right[nextIndex];
+
+        if (next == null) {
+            // Don't allow people to exit the table when showing work vertically
+            if (focus.type === "ztable" && focus.subtype === "algebra") {
+                return zipper;
+            }
+
+            // Exit the current focus since there aren't any rows within the node
+            // to the right.
+            return exitFocus();
         }
 
         // Navigate to the next row within the node.
