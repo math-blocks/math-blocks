@@ -42,10 +42,11 @@ const symbols = {
 // Schema nodes can include additional metadata like which symbol to use for a
 // node.
 const print = (
-    ast: Semantic.types.Node,
+    val: unknown,
     serialize: (ast: Semantic.types.Node) => string,
     indent: (str: string) => string,
 ): string => {
+    const ast = val as Semantic.types.Node;
     switch (ast.type) {
         case "number": {
             return `${ast.value}`;

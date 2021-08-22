@@ -3,10 +3,11 @@ import {UnreachableCaseError} from "@math-blocks/core";
 import {TokenNode} from "./types";
 
 const print = (
-    ast: TokenNode,
+    val: unknown,
     serialize: (ast: TokenNode) => string,
     indent: (str: string) => string,
 ): string => {
+    const ast = val as TokenNode;
     const {loc} = ast;
     switch (ast.type) {
         case "token": {
