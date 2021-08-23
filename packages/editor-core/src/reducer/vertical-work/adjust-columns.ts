@@ -3,7 +3,7 @@ import assert from "assert";
 import * as types from "../../char/types";
 
 import {
-    createEmptyCol,
+    createEmptyColumn,
     getCursorLoc,
     getOtherCells,
     isColumnEmpty,
@@ -217,7 +217,7 @@ export const adjustColumns = (work: ZVerticalWork): ZVerticalWork => {
             if (emptyCol) {
                 resultColumns.push(emptyCol);
             } else {
-                resultColumns.push(createEmptyCol(rowCount));
+                resultColumns.push(createEmptyColumn(rowCount));
                 columnsAdded = true;
             }
         } else if (emptyCol) {
