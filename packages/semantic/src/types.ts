@@ -266,15 +266,16 @@ export type Int = Common & {
 export type VertWork = Common & {
     readonly type: "vert-work";
     readonly before: {
-        readonly left: readonly NumericNode[];
-        readonly right: readonly NumericNode[];
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
     };
-    readonly action: {
-        readonly left: readonly NumericNode[];
+    readonly actions: {
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
     };
     readonly after?: {
-        readonly left: readonly NumericNode[];
-        readonly right: readonly NumericNode[];
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
     };
 };
 

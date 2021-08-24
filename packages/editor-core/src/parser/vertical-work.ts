@@ -113,6 +113,7 @@ export const coalesceColumns = (
             if (
                 i === 1 &&
                 isValue(firstCol[1]) && // 'actions' row
+                nonEmptyColumns[i] &&
                 isPlusMinusOp(nonEmptyColumns[i][1])
             ) {
                 i++;
@@ -135,13 +136,13 @@ export const parseVerticalWork = (
 ): Parser.types.VertWork => {
     const work = algebraTableToVerticalWork(table);
 
-    // Steps:
-    // 1. split columns into left/right groups
-    // 2. within each group, coalesce columns containing operators with
-    //    adjacent operand columns
-    // 3. parse the cells within each column and reorganize the results
-    //    as `before`, `action`, and `after` properties on VertWork
     const {columns} = work;
+
+    const parse = (
+        tokens: readonly types.TokenNode[],
+    ): Parser.types.Node | null => {
+        return tokens.length > 0 ? parser.parse(tokens) : null;
+    };
 
     const indexOfEquals = columns.findIndex((col) => {
         const cell = col[0];
@@ -157,19 +158,19 @@ export const parseVerticalWork = (
     const rightColumns = coalesceColumns(columns.slice(indexOfEquals + 1));
 
     const before = {
-        left: leftColumns.map((col) => parser.parse(col[0].children)),
-        right: rightColumns.map((col) => parser.parse(col[0].children)),
+        left: leftColumns.map((col) => parse(col[0].children)),
+        right: rightColumns.map((col) => parse(col[0].children)),
     };
 
     const actions = {
-        left: leftColumns.map((col) => parser.parse(col[1].children)),
-        right: rightColumns.map((col) => parser.parse(col[1].children)),
+        left: leftColumns.map((col) => parse(col[1].children)),
+        right: rightColumns.map((col) => parse(col[1].children)),
     };
 
     // TODO: handle the case where the columns only have two rows
     const after = {
-        left: leftColumns.map((col) => parser.parse(col[2].children)),
-        right: rightColumns.map((col) => parser.parse(col[2].children)),
+        left: leftColumns.map((col) => parse(col[2].children)),
+        right: rightColumns.map((col) => parse(col[2].children)),
     };
 
     return {

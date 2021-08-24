@@ -5,6 +5,7 @@ import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "../token/util";
+import {parseVerticalWork} from "./vertical-work";
 
 import type {CharRow} from "../char/types";
 import type {TokenNode, SourceLocation} from "../token/types";
@@ -106,6 +107,13 @@ const getPrefixParselet = (
                 },
             };
         case "table":
+            if (node.subtype === "algebra") {
+                return {
+                    parse: () => {
+                        return parseVerticalWork(node, editorParser);
+                    },
+                };
+            }
             throw new Error("We don't handle 'table' tokens yet");
         // TODO: Handle subsup at the start of a row, useful in Chemistry
         case "subsup":
@@ -404,7 +412,7 @@ const EOL: TokenNode = Lexer.atom(
     Lexer.location([], -1, -1),
 );
 
-const editorParser = Parser.parserFactory<
+export const editorParser = Parser.parserFactory<
     TokenNode,
     Parser.types.Node,
     Operator

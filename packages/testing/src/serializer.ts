@@ -41,12 +41,17 @@ const symbols = {
 // TODO: figure out how to generate a serializer directly from the schema.
 // Schema nodes can include additional metadata like which symbol to use for a
 // node.
+// TODO: capture serialize and indent in a closure so that we don't have
+// pass them down to each call to `print`.
 const print = (
     val: unknown,
     serialize: (ast: Semantic.types.Node) => string,
     indent: (str: string) => string,
 ): string => {
-    const ast = val as Semantic.types.Node;
+    const ast = val as Semantic.types.Node | undefined;
+    if (ast === undefined) {
+        return "null";
+    }
     switch (ast.type) {
         case "number": {
             return `${ast.value}`;
@@ -127,6 +132,26 @@ const print = (
         case "reals":
         case "complexes":
             return symbols[ast.type];
+        case "vert-work": {
+            const before = `(eq ${ast.before.left.map((term) =>
+                print(term, serialize, indent),
+            )} ${ast.before.right.map((term) =>
+                print(term, serialize, indent),
+            )})`;
+            const actions = `(eq ${ast.actions.left.map((term) =>
+                term ? print(term, serialize, indent) : "null",
+            )} ${ast.actions.right.map((term) =>
+                term ? print(term, serialize, indent) : "null",
+            )})`;
+            const after = `(eq ${ast.after.left.map((term) =>
+                term ? print(term, serialize, indent) : "null",
+            )} ${ast.after.right.map((term) =>
+                term ? print(term, serialize, indent) : "null",
+            )})`;
+            return `(${ast.type}\n${indent(`:before ${before}`)}\n${indent(
+                `:actions ${actions}`,
+            )}\n${indent(`:after ${after}`)})`;
+        }
         default: {
             // TODO: finish handle cases and the uncomment this line
             // throw new UnreachableCaseError(ast);

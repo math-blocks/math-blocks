@@ -271,18 +271,16 @@ export type Int = Common & {
 export type VertWork = Common & {
     readonly type: "vert-work";
     readonly before: {
-        readonly left: readonly Node[];
-        readonly right: readonly Node[];
+        readonly left: readonly (Node | null)[];
+        readonly right: readonly (Node | null)[];
     };
     readonly actions: {
-        // TODO: change Node to Action so we can keep track of whether we're
-        // adding or subtracting in a particular column.
-        readonly left: readonly Node[];
-        readonly right: readonly Node[];
+        readonly left: readonly (Node | null)[];
+        readonly right: readonly (Node | null)[];
     };
     readonly after?: {
-        readonly left: readonly Node[];
-        readonly right: readonly Node[];
+        readonly left: readonly (Node | null)[];
+        readonly right: readonly (Node | null)[];
     };
 };
 
