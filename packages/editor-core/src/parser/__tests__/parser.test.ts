@@ -769,39 +769,153 @@ describe("EditorParser", () => {
         });
     });
 
-    it("should parse 'algebra' tables", () => {
-        const input = builders.row([
-            builders.algebra(
-                [
-                    // first row
-                    [char("2"), char("x")],
-                    [char("=")],
-                    [char("5")],
+    describe("'algebra' tables", () => {
+        it("should parse three rows", () => {
+            const input = builders.row([
+                builders.algebra(
+                    [
+                        // first row
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [char("5")],
 
-                    // second row
-                    [],
-                    [],
-                    [char("\u2212"), char("5")],
+                        // second row
+                        [],
+                        [],
+                        [char("\u2212"), char("5")],
 
-                    // third row
-                    [char("2"), char("x")],
-                    [char("=")],
-                    [char("0")],
-                ],
-                3,
-                3,
-            ),
-        ]);
+                        // third row
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [char("0")],
+                    ],
+                    3,
+                    3,
+                ),
+            ]);
 
-        const ast = parser.parse(input);
+            const ast = parser.parse(input);
 
-        expect(ast.type).toEqual("vert-work");
+            expect(ast.type).toEqual("vert-work");
 
-        expect(ast).toMatchInlineSnapshot(`
-            (vert-work
-              :before (eq (mul.imp 2 x) 5)
-              :actions (eq null (neg 5))
-              :after (eq (mul.imp 2 x) 0))
-        `);
+            expect(ast).toMatchInlineSnapshot(`
+                (vert-work
+                  :before (eq (mul.imp 2 x) 5)
+                  :actions (eq null (neg 5))
+                  :after (eq (mul.imp 2 x) 0))
+            `);
+        });
+
+        it("should coalesce operators and associated operands", () => {
+            const input = builders.row([
+                builders.algebra(
+                    [
+                        // first row
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [],
+                        [char("5")],
+
+                        // second row
+                        [],
+                        [],
+                        [char("\u2212")],
+                        [char("5")],
+
+                        // third row
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [],
+                        [char("0")],
+                    ],
+                    4,
+                    3,
+                ),
+            ]);
+
+            const ast = parser.parse(input);
+
+            expect(ast.type).toEqual("vert-work");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert-work
+                  :before (eq (mul.imp 2 x) 5)
+                  :actions (eq null (neg 5))
+                  :after (eq (mul.imp 2 x) 0))
+            `);
+        });
+
+        it("should handle operators after the first operand", () => {
+            const input = builders.row([
+                builders.algebra(
+                    [
+                        // first row
+                        [],
+                        [],
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [char("5")],
+
+                        // second row
+                        [char("5")],
+                        [char("+")],
+                        [],
+                        [],
+                        [],
+
+                        // third row
+                        [char("5")],
+                        [char("+")],
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [char("0")],
+                    ],
+                    5,
+                    3,
+                ),
+            ]);
+
+            const ast = parser.parse(input);
+
+            expect(ast.type).toEqual("vert-work");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert-work
+                  :before (eq (add null (mul.imp 2 x)) 5)
+                  :actions (eq (add 5 null) null)
+                  :after (eq (add 5 (mul.imp 2 x)) 0))
+                `);
+        });
+
+        it("should parse two rows", () => {
+            const input = builders.row([
+                builders.algebra(
+                    [
+                        // first row
+                        [char("2"), char("x")],
+                        [char("=")],
+                        [char("5")],
+
+                        // second row
+                        [],
+                        [],
+                        [char("\u2212"), char("5")],
+                    ],
+                    3,
+                    2,
+                ),
+            ]);
+
+            const ast = parser.parse(input);
+
+            expect(ast.type).toEqual("vert-work");
+
+            expect(ast).toMatchInlineSnapshot(`
+                (vert-work
+                  :before (eq (mul.imp 2 x) 5)
+                  :actions (eq null (neg 5))
+                  :after null)
+            `);
+        });
     });
 });

@@ -136,7 +136,7 @@ export const parseVerticalWork = (
 ): Parser.types.VertWork => {
     const work = algebraTableToVerticalWork(table);
 
-    const {columns} = work;
+    const {columns, rowCount} = work;
 
     const parse = (
         tokens: readonly types.TokenNode[],
@@ -168,10 +168,13 @@ export const parseVerticalWork = (
     };
 
     // TODO: handle the case where the columns only have two rows
-    const after = {
-        left: leftColumns.map((col) => parse(col[2].children)),
-        right: rightColumns.map((col) => parse(col[2].children)),
-    };
+    const after =
+        rowCount === 3
+            ? {
+                  left: leftColumns.map((col) => parse(col[2].children)),
+                  right: rightColumns.map((col) => parse(col[2].children)),
+              }
+            : undefined;
 
     return {
         type: "vert-work",

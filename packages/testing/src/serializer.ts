@@ -38,6 +38,29 @@ const symbols = {
     complexes: "\u2102",
 };
 
+type WorkRow = {
+    readonly left: readonly (Semantic.types.NumericNode | null)[];
+    readonly right: readonly (Semantic.types.NumericNode | null)[];
+};
+
+const printWorkRow = (
+    workRow: WorkRow,
+    serialize: (ast: Semantic.types.Node) => string,
+    indent: (str: string) => string,
+): string => {
+    const leftArray = workRow.left.map((term) =>
+        print(term, serialize, indent),
+    );
+    const rightArray = workRow.right.map((term) =>
+        print(term, serialize, indent),
+    );
+    const leftStr =
+        leftArray.length > 1 ? `(add ${leftArray.join(" ")})` : leftArray[0];
+    const rightStr =
+        rightArray.length > 1 ? `(add ${rightArray.join(" ")})` : rightArray[0];
+    return `(eq ${leftStr} ${rightStr})`;
+};
+
 // TODO: figure out how to generate a serializer directly from the schema.
 // Schema nodes can include additional metadata like which symbol to use for a
 // node.
@@ -49,7 +72,7 @@ const print = (
     indent: (str: string) => string,
 ): string => {
     const ast = val as Semantic.types.Node | undefined;
-    if (ast === undefined) {
+    if (ast == undefined) {
         return "null";
     }
     switch (ast.type) {
@@ -133,22 +156,10 @@ const print = (
         case "complexes":
             return symbols[ast.type];
         case "vert-work": {
-            const before = `(eq ${ast.before.left.map((term) =>
-                print(term, serialize, indent),
-            )} ${ast.before.right.map((term) =>
-                print(term, serialize, indent),
-            )})`;
-            const actions = `(eq ${ast.actions.left.map((term) =>
-                term ? print(term, serialize, indent) : "null",
-            )} ${ast.actions.right.map((term) =>
-                term ? print(term, serialize, indent) : "null",
-            )})`;
+            const before = printWorkRow(ast.before, serialize, indent);
+            const actions = printWorkRow(ast.actions, serialize, indent);
             const after = ast.after
-                ? `(eq ${ast.after.left.map((term) =>
-                      term ? print(term, serialize, indent) : "null",
-                  )} ${ast.after.right.map((term) =>
-                      term ? print(term, serialize, indent) : "null",
-                  )})`
+                ? printWorkRow(ast.after, serialize, indent)
                 : "null";
             return `(${ast.type}\n${indent(`:before ${before}`)}\n${indent(
                 `:actions ${actions}`,
