@@ -71,7 +71,6 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
         }
         case "mul": {
             let result = "";
-            expr.implicit; // ?
 
             const wrapAll = expr.args.some((arg, index) => {
                 if (arg.type === "number" && index > 0) {

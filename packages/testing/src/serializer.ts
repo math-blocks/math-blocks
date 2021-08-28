@@ -143,11 +143,13 @@ const print = (
             )} ${ast.actions.right.map((term) =>
                 term ? print(term, serialize, indent) : "null",
             )})`;
-            const after = `(eq ${ast.after.left.map((term) =>
-                term ? print(term, serialize, indent) : "null",
-            )} ${ast.after.right.map((term) =>
-                term ? print(term, serialize, indent) : "null",
-            )})`;
+            const after = ast.after
+                ? `(eq ${ast.after.left.map((term) =>
+                      term ? print(term, serialize, indent) : "null",
+                  )} ${ast.after.right.map((term) =>
+                      term ? print(term, serialize, indent) : "null",
+                  )})`
+                : "null";
             return `(${ast.type}\n${indent(`:before ${before}`)}\n${indent(
                 `:actions ${actions}`,
             )}\n${indent(`:after ${after}`)})`;
