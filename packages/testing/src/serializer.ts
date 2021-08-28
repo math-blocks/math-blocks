@@ -38,15 +38,43 @@ const symbols = {
     complexes: "\u2102",
 };
 
+type WorkRow = {
+    readonly left: readonly (Semantic.types.NumericNode | null)[];
+    readonly right: readonly (Semantic.types.NumericNode | null)[];
+};
+
+const printWorkRow = (
+    workRow: WorkRow,
+    serialize: (ast: Semantic.types.Node) => string,
+    indent: (str: string) => string,
+): string => {
+    const leftArray = workRow.left.map((term) =>
+        print(term, serialize, indent),
+    );
+    const rightArray = workRow.right.map((term) =>
+        print(term, serialize, indent),
+    );
+    const leftStr =
+        leftArray.length > 1 ? `(add ${leftArray.join(" ")})` : leftArray[0];
+    const rightStr =
+        rightArray.length > 1 ? `(add ${rightArray.join(" ")})` : rightArray[0];
+    return `(eq ${leftStr} ${rightStr})`;
+};
+
 // TODO: figure out how to generate a serializer directly from the schema.
 // Schema nodes can include additional metadata like which symbol to use for a
 // node.
+// TODO: capture serialize and indent in a closure so that we don't have
+// pass them down to each call to `print`.
 const print = (
     val: unknown,
     serialize: (ast: Semantic.types.Node) => string,
     indent: (str: string) => string,
 ): string => {
-    const ast = val as Semantic.types.Node;
+    const ast = val as Semantic.types.Node | undefined;
+    if (ast == undefined) {
+        return "null";
+    }
     switch (ast.type) {
         case "number": {
             return `${ast.value}`;
@@ -127,6 +155,16 @@ const print = (
         case "reals":
         case "complexes":
             return symbols[ast.type];
+        case "vert-work": {
+            const before = printWorkRow(ast.before, serialize, indent);
+            const actions = printWorkRow(ast.actions, serialize, indent);
+            const after = ast.after
+                ? printWorkRow(ast.after, serialize, indent)
+                : "null";
+            return `(${ast.type}\n${indent(`:before ${before}`)}\n${indent(
+                `:actions ${actions}`,
+            )}\n${indent(`:after ${after}`)})`;
+        }
         default: {
             // TODO: finish handle cases and the uncomment this line
             // throw new UnreachableCaseError(ast);

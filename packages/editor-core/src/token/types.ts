@@ -28,6 +28,8 @@ type Minus = {readonly type: "token"; readonly name: "minus"};
 type PlusMinus = {readonly type: "token"; readonly name: "plusminus"};
 type Times = {readonly type: "token"; readonly name: "times"};
 type Equal = {readonly type: "token"; readonly name: "eq"};
+type LT = {readonly type: "token"; readonly name: "lt"};
+type GT = {readonly type: "token"; readonly name: "lt"};
 type LParens = {readonly type: "token"; readonly name: "lparens"};
 type RParens = {readonly type: "token"; readonly name: "rparens"};
 type Ellipsis = {readonly type: "token"; readonly name: "ellipsis"};
@@ -44,6 +46,8 @@ export type Token =
     | PlusMinus
     | Times
     | Equal
+    | LT
+    | GT
     | LParens
     | RParens
     | Ellipsis

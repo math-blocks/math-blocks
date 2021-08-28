@@ -158,14 +158,6 @@ export const isCellEqualSign = (cell: types.CharRow | null): boolean =>
 export const isOperator = (cell: types.CharRow | null): boolean =>
     isCellPlusMinus(cell) || isCellEqualSign(cell);
 
-export const createEmptyCol = (rowCount: number): types.CharRow[] => {
-    const emptyColumn: types.CharRow[] = [];
-    for (let j = 0; j < rowCount; j++) {
-        emptyColumn.push(builders.row([]));
-    }
-    return emptyColumn;
-};
-
 export const isCellSkippable = (cell: types.CharRow | null): boolean =>
     cell?.children.length === 1 &&
     util.isAtom(cell.children[0], ["+", "\u2212", "=", "<", ">"]);

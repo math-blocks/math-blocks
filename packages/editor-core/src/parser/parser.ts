@@ -5,6 +5,7 @@ import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "../token/util";
+import {parseVerticalWork} from "./vertical-work";
 
 import type {CharRow} from "../char/types";
 import type {TokenNode, SourceLocation} from "../token/types";
@@ -106,6 +107,13 @@ const getPrefixParselet = (
                 },
             };
         case "table":
+            if (node.subtype === "algebra") {
+                return {
+                    parse: () => {
+                        return parseVerticalWork(node, editorParser);
+                    },
+                };
+            }
             throw new Error("We don't handle 'table' tokens yet");
         // TODO: Handle subsup at the start of a row, useful in Chemistry
         case "subsup":
@@ -404,7 +412,7 @@ const EOL: TokenNode = Lexer.atom(
     Lexer.location([], -1, -1),
 );
 
-const editorParser = Parser.parserFactory<
+export const editorParser = Parser.parserFactory<
     TokenNode,
     Parser.types.Node,
     Operator
@@ -452,7 +460,10 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
 export const parse = (input: CharRow): Semantic.types.Node => {
     const tokenRow = Lexer.lexRow(input);
-    const result = editorParser.parse(tokenRow.children);
+    // The Semantic types have more restrictions on where certain node types can appear.
+    // We cast for now, but really we should have function that checks that the result of
+    // editorParser.parse() follows those restrictions.
+    const result = editorParser.parse(tokenRow.children) as Semantic.types.Node;
 
-    return removeExcessParens(result as Semantic.types.Node);
+    return removeExcessParens(result);
 };

@@ -190,7 +190,7 @@ export const lexRow = (
     row: types.CharRow,
     path: readonly number[] = [],
 ): TokenRow => {
-    assertOneOrMore(row.children, "rows cannot be empty");
+    // assertOneOrMore(row.children, "rows cannot be empty");
     return {
         type: "row",
         children: lexChildren(row.children, path),

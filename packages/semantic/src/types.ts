@@ -27,7 +27,8 @@ export type NumericNode =
     | Limit
     | Diff
     | PDiff
-    | Int;
+    | Int
+    | VertWork;
 
 /**
  * Number
@@ -257,6 +258,25 @@ export type Int = Common & {
     readonly arg: NumericNode;
     readonly bvar: Ident;
     readonly limits: Limits; // TODO: support `domainofapplication`, see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
+};
+
+/**
+ * Vertical work
+ */
+export type VertWork = Common & {
+    readonly type: "vert-work";
+    readonly before: {
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
+    };
+    readonly actions: {
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
+    };
+    readonly after?: {
+        readonly left: readonly (NumericNode | null)[];
+        readonly right: readonly (NumericNode | null)[];
+    };
 };
 
 /**
