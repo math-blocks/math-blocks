@@ -796,14 +796,15 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast.type).toEqual("vert-work");
+            expect(ast.type).toEqual("VerticalAdditionToRelation");
 
             expect(ast).toMatchInlineSnapshot(`
-                (vert-work
-                  :before (eq (mul.imp 2 x) 5)
+                (VerticalAdditionToRelation
+                  :relOp eq
+                  :originalRelation (eq (mul.imp 2 x) 5)
                   :actions (eq null (neg 5))
-                  :after (eq (mul.imp 2 x) 0))
-            `);
+                  :resultingRelation (eq (mul.imp 2 x) 0))
+                `);
         });
 
         it("should coalesce operators and associated operands", () => {
@@ -835,13 +836,14 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast.type).toEqual("vert-work");
+            expect(ast.type).toEqual("VerticalAdditionToRelation");
 
             expect(ast).toMatchInlineSnapshot(`
-                (vert-work
-                  :before (eq (mul.imp 2 x) 5)
+                (VerticalAdditionToRelation
+                  :relOp eq
+                  :originalRelation (eq (mul.imp 2 x) 5)
                   :actions (eq null (neg 5))
-                  :after (eq (mul.imp 2 x) 0))
+                  :resultingRelation (eq (mul.imp 2 x) 0))
             `);
         });
 
@@ -877,13 +879,14 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast.type).toEqual("vert-work");
+            expect(ast.type).toEqual("VerticalAdditionToRelation");
 
             expect(ast).toMatchInlineSnapshot(`
-                (vert-work
-                  :before (eq (add null (mul.imp 2 x)) 5)
+                (VerticalAdditionToRelation
+                  :relOp eq
+                  :originalRelation (eq (add null (mul.imp 2 x)) 5)
                   :actions (eq (add 5 null) null)
-                  :after (eq (add 5 (mul.imp 2 x)) 0))
+                  :resultingRelation (eq (add 5 (mul.imp 2 x)) 0))
                 `);
         });
 
@@ -908,13 +911,14 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast.type).toEqual("vert-work");
+            expect(ast.type).toEqual("VerticalAdditionToRelation");
 
             expect(ast).toMatchInlineSnapshot(`
-                (vert-work
-                  :before (eq (mul.imp 2 x) 5)
+                (VerticalAdditionToRelation
+                  :relOp eq
+                  :originalRelation (eq (mul.imp 2 x) 5)
                   :actions (eq null (neg 5))
-                  :after null)
+                  :resultingRelation null)
             `);
         });
     });

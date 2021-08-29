@@ -155,15 +155,22 @@ const print = (
         case "reals":
         case "complexes":
             return symbols[ast.type];
-        case "vert-work": {
-            const before = printWorkRow(ast.before, serialize, indent);
+        case "VerticalAdditionToRelation": {
+            const relOp = ast.relOp;
+            const originalRelation = printWorkRow(
+                ast.originalRelation,
+                serialize,
+                indent,
+            );
             const actions = printWorkRow(ast.actions, serialize, indent);
-            const after = ast.after
-                ? printWorkRow(ast.after, serialize, indent)
+            const resultingRelation = ast.resultingRelation
+                ? printWorkRow(ast.resultingRelation, serialize, indent)
                 : "null";
-            return `(${ast.type}\n${indent(`:before ${before}`)}\n${indent(
-                `:actions ${actions}`,
-            )}\n${indent(`:after ${after}`)})`;
+            return `(${ast.type}\n${indent(`:relOp ${relOp}`)}\n${indent(
+                `:originalRelation ${originalRelation}`,
+            )}\n${indent(`:actions ${actions}`)}\n${indent(
+                `:resultingRelation ${resultingRelation}`,
+            )})`;
         }
         default: {
             // TODO: finish handle cases and the uncomment this line

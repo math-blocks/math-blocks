@@ -46,15 +46,18 @@ const _cellToCharRow = (
 
 const _vertAddToColumns = (
     oneToOne: boolean,
-    beforeSide: readonly (Semantic.types.NumericNode | null)[],
-    actionsSide: readonly (Semantic.types.NumericNode | null)[],
-    afterSide?: readonly (Semantic.types.NumericNode | null)[],
+    originalTerms: readonly (Semantic.types.NumericNode | null)[],
+    actionTerms: readonly (Semantic.types.NumericNode | null)[],
+    resultTerms?: readonly (Semantic.types.NumericNode | null)[],
 ): Column[] => {
     const columns: Column[] = [];
 
-    const firstBeforeIndex = beforeSide.findIndex((cell) => cell != null);
-    const firstActionsIndex = actionsSide.findIndex((cell) => cell != null);
-    const firstAfterIndex = afterSide?.findIndex((cell) => cell != null) ?? -1;
+    const firstOriginalTermIndex = originalTerms.findIndex(
+        (cell) => cell != null,
+    );
+    const firstActionTermIndex = actionTerms.findIndex((cell) => cell != null);
+    const firstResultTermIndex =
+        resultTerms?.findIndex((cell) => cell != null) ?? -1;
 
     const getOperator = (node: Semantic.types.NumericNode): types.CharAtom => {
         return node.type === "neg" && node.subtraction
@@ -70,38 +73,40 @@ const _vertAddToColumns = (
     };
 
     const createColumn = (
-        beforeCell: types.CharRow,
-        actionCell: types.CharRow,
-        afterCell?: types.CharRow,
+        originalTermCell: types.CharRow,
+        actionTermCell: types.CharRow,
+        resultTermCell?: types.CharRow,
     ): Column => {
-        return typeof afterCell === "object"
-            ? [beforeCell, actionCell, afterCell]
-            : [beforeCell, actionCell];
+        return typeof resultTermCell === "object"
+            ? [originalTermCell, actionTermCell, resultTermCell]
+            : [originalTermCell, actionTermCell];
     };
 
-    for (let i = 0; i < beforeSide.length; i++) {
-        const before = beforeSide[i];
-        const action = actionsSide[i];
-        const after = afterSide?.[i];
+    for (let i = 0; i < originalTerms.length; i++) {
+        const originalTerm = originalTerms[i];
+        const actionTerm = actionTerms[i];
+        const resultTerm = resultTerms?.[i];
 
         if (
-            // Operators can appear before the first action
-            action ||
-            // But can only after the first values in the before and after rows
-            (before && i > firstBeforeIndex) ||
-            (after && i > firstAfterIndex)
+            // Operators can appear before the first action term
+            actionTerm ||
+            // But can only after the first terms in original and result rows
+            (originalTerm && i > firstOriginalTermIndex) ||
+            (resultTerm && i > firstResultTermIndex)
         ) {
             columns.push(
                 createColumn(
                     builders.row(
-                        before && i > firstBeforeIndex
-                            ? [getOperator(before)]
+                        originalTerm && i > firstOriginalTermIndex
+                            ? [getOperator(originalTerm)]
                             : [],
                     ),
-                    builders.row(action ? [getOperator(action)] : []),
-                    typeof after === "object"
+                    builders.row(actionTerm ? [getOperator(actionTerm)] : []),
+                    typeof resultTerm === "object"
                         ? builders.row(
-                              after && i > 0 ? [getOperator(after)] : [],
+                              resultTerm && i > 0
+                                  ? [getOperator(resultTerm)]
+                                  : [],
                           )
                         : undefined,
                 ),
@@ -110,23 +115,27 @@ const _vertAddToColumns = (
 
         columns.push(
             createColumn(
-                getValue(before),
-                getValue(action),
-                typeof after === "object" ? getValue(after) : undefined,
+                getValue(originalTerm),
+                getValue(actionTerm),
+                typeof resultTerm === "object"
+                    ? getValue(resultTerm)
+                    : undefined,
             ),
         );
 
         if (
-            i == firstActionsIndex &&
-            action &&
-            firstActionsIndex < firstBeforeIndex
+            i == firstActionTermIndex &&
+            actionTerm &&
+            firstActionTermIndex < firstOriginalTermIndex
         ) {
             // Let's post-process the table instead
             columns.push(
                 createColumn(
                     builders.row([]),
                     builders.row([builders.char("+")]),
-                    typeof after === "object" ? builders.row([]) : undefined,
+                    typeof resultTerm === "object"
+                        ? builders.row([])
+                        : undefined,
                 ),
             );
         }
@@ -146,8 +155,8 @@ const _vertAddToColumns = (
         if (i === 0 && isCellPlusMinus(currentCol[1])) {
             const nextCol = columns[i + 1];
             // If the first action in the actions row is adding/subtracting from
-            // the first value in the 'before' row then we allow the leading operator
-            // to remain.
+            // the first term in the 'original' row then we allow the leading
+            // operator to remain.
             if (isCellEmpty(nextCol[0])) {
                 i += 1;
                 continue;
@@ -366,7 +375,7 @@ const _print = (
 
             return builders.row(children);
         }
-        case "vert-work": {
+        case "VerticalAdditionToRelation": {
             const columns: Column[] = [];
 
             // TODO: insert operators
@@ -377,13 +386,13 @@ const _print = (
             columns.push(
                 ..._vertAddToColumns(
                     oneToOne,
-                    expr.before.left,
+                    expr.originalRelation.left,
                     expr.actions.left,
-                    expr.after?.left,
+                    expr.resultingRelation?.left,
                 ),
             );
 
-            if (expr.after) {
+            if (expr.resultingRelation) {
                 columns.push([
                     builders.row([builders.char("=")]),
                     builders.row([]),
@@ -399,9 +408,9 @@ const _print = (
             columns.push(
                 ..._vertAddToColumns(
                     oneToOne,
-                    expr.before.right,
+                    expr.originalRelation.right,
                     expr.actions.right,
-                    expr.after?.right,
+                    expr.resultingRelation?.right,
                 ),
             );
 
@@ -414,7 +423,7 @@ const _print = (
                 style: {},
                 columns,
                 colCount: columns.length,
-                rowCount: expr.after ? 3 : 2,
+                rowCount: expr.resultingRelation ? 3 : 2,
             };
 
             return verticalWorkToTable(work);

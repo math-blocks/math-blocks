@@ -130,7 +130,7 @@ type Parser = {
 export const parseVerticalWork = (
     table: types.TokenTable,
     parser: Parser,
-): Parser.types.VertWork => {
+): Parser.types.VerticalAdditionToRelation => {
     const work = algebraTableToVerticalWork(table);
 
     const {columns, rowCount} = work;
@@ -174,11 +174,12 @@ export const parseVerticalWork = (
             : undefined;
 
     return {
-        type: "vert-work",
+        type: "VerticalAdditionToRelation",
         id: getId(),
         loc: table.loc,
-        before,
+        originalRelation: before,
         actions,
-        after,
+        resultingRelation: after,
+        relOp: "eq",
     };
 };

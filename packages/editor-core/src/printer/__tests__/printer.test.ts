@@ -639,10 +639,11 @@ describe("print", () => {
     describe("VerticalWork", () => {
         // TODO: create Semantic.builders.vertAdd() to help with writing tests
         test("actions and before values at the start", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         Semantic.builders.identifier("x"),
                         Semantic.builders.number("2"),
@@ -670,10 +671,11 @@ describe("print", () => {
         });
 
         test("negative numbers at the start of a row", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         Semantic.builders.neg(
                             Semantic.builders.identifier("x"),
@@ -699,10 +701,11 @@ describe("print", () => {
         });
 
         test("actions before and after start row", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [null, Semantic.builders.number("1")],
                     right: [Semantic.builders.number("5"), null],
                 },
@@ -719,10 +722,11 @@ describe("print", () => {
         });
 
         test("actions before start row and aligned with items in start row", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         null,
                         Semantic.builders.number("1"),
@@ -750,10 +754,11 @@ describe("print", () => {
         });
 
         test("actions before start row and cells in next column aligned", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [null, Semantic.builders.number("1")],
                     right: [null, Semantic.builders.number("1")],
                 },
@@ -782,10 +787,11 @@ describe("print", () => {
         });
 
         test("more terms", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         null,
                         Semantic.builders.number("1"),
@@ -813,10 +819,11 @@ describe("print", () => {
         });
 
         test("more interleaving", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         null,
                         Semantic.builders.number("1"),
@@ -846,10 +853,11 @@ describe("print", () => {
         });
 
         test("three rows", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         Semantic.builders.mul(
                             [
@@ -870,7 +878,7 @@ describe("print", () => {
                         ),
                     ],
                 },
-                after: {
+                resultingRelation: {
                     left: [
                         Semantic.builders.mul(
                             [
@@ -896,10 +904,11 @@ describe("print", () => {
         });
 
         test("three rows with leading action term", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         null,
                         Semantic.builders.mul(
@@ -922,7 +931,7 @@ describe("print", () => {
                         ),
                     ],
                 },
-                after: {
+                resultingRelation: {
                     left: [
                         Semantic.builders.identifier("y"),
                         Semantic.builders.mul(
@@ -956,10 +965,11 @@ describe("print", () => {
         });
 
         test("two rows with leading action term", () => {
-            const vertAdd: Semantic.types.VertWork = {
-                type: "vert-work",
+            const vertAdd: Semantic.types.VerticalAdditionToRelation = {
+                type: "VerticalAdditionToRelation",
                 id: getId(),
-                before: {
+                relOp: "eq",
+                originalRelation: {
                     left: [
                         null,
                         Semantic.builders.mul(
