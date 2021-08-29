@@ -5,6 +5,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import * as types from "../char/types";
 import * as builders from "../char/builders";
+import {Column, VerticalWork} from "../reducer/vertical-work/types";
+import {verticalWorkToTable} from "../reducer/vertical-work/util";
 
 // TODO: when parsing editor nodes provide some way to link to the IDs of
 // the original nodes, even if they don't appear in the semantic tree as
@@ -24,6 +26,105 @@ const getChildren = (
     }
 
     return children;
+};
+
+const _cellToCharRow = (
+    cell: Semantic.types.Node | null,
+    oneToOne: boolean,
+): types.CharRow => {
+    const charNode: types.CharNode = cell
+        ? _print(cell, oneToOne)
+        : builders.row([]);
+
+    return charNode.type === "row" ? charNode : builders.row([charNode]);
+};
+
+const _vertAddToColumns = (
+    oneToOne: boolean,
+    beforeSide: readonly (Semantic.types.NumericNode | null)[],
+    actionsSide: readonly (Semantic.types.NumericNode | null)[],
+    afterSide?: readonly (Semantic.types.NumericNode | null)[],
+): Column[] => {
+    const columns: Column[] = [];
+
+    const firstBeforeIndex = beforeSide.findIndex((cell) => cell != null);
+    const firstActionsIndex = actionsSide.findIndex((cell) => cell != null);
+
+    for (let i = 0; i < beforeSide.length; i++) {
+        if (afterSide) {
+            // TODO: update 3-rows to match 2-rows
+            columns.push([
+                _cellToCharRow(beforeSide[i], oneToOne),
+                _cellToCharRow(actionsSide[i], oneToOne),
+                _cellToCharRow(afterSide[i], oneToOne),
+            ]);
+        } else {
+            const before = beforeSide[i];
+            const action = actionsSide[i];
+
+            const getOperator = (
+                node: Semantic.types.NumericNode,
+            ): types.CharAtom => {
+                return node.type === "neg" && node.subtraction
+                    ? builders.char("\u2212")
+                    : builders.char("+");
+            };
+            const getValue = (
+                node: Semantic.types.NumericNode | null,
+            ): types.CharRow => {
+                return node?.type === "neg" && node.subtraction
+                    ? _cellToCharRow(node.arg, oneToOne)
+                    : _cellToCharRow(node, oneToOne);
+            };
+
+            if (
+                (before && i > firstBeforeIndex) ||
+                (action && i > firstActionsIndex)
+            ) {
+                columns.push([
+                    builders.row(
+                        before && i > firstBeforeIndex
+                            ? [getOperator(before)]
+                            : [],
+                    ),
+                    builders.row(
+                        action && i > firstActionsIndex
+                            ? [getOperator(action)]
+                            : [],
+                    ),
+                ]);
+            } else if (firstActionsIndex > firstBeforeIndex && action) {
+                columns.push([
+                    builders.row(before ? [getOperator(before)] : []),
+                    builders.row([getOperator(action)]),
+                ]);
+            } else if (
+                firstActionsIndex === firstBeforeIndex &&
+                i === firstBeforeIndex &&
+                action
+            ) {
+                columns.push([
+                    builders.row([]),
+                    builders.row([getOperator(action)]),
+                ]);
+            }
+            columns.push([getValue(before), getValue(action)]);
+            if (
+                firstActionsIndex < firstBeforeIndex &&
+                action &&
+                i == firstActionsIndex
+            ) {
+                if (!actionsSide[i + 1]) {
+                    columns.push([
+                        builders.row([]),
+                        builders.row([builders.char("+")]),
+                    ]);
+                }
+            }
+        }
+    }
+
+    return columns;
 };
 
 // TODO: write more tests for this
@@ -215,6 +316,59 @@ const _print = (
             ];
 
             return builders.row(children);
+        }
+        case "vert-work": {
+            const columns: Column[] = [];
+
+            // TODO: insert operators
+            // - operators between terms
+            // - operators in front of actions
+            // - operators after an initial action if the action is alone in the first column
+
+            columns.push(
+                ..._vertAddToColumns(
+                    oneToOne,
+                    expr.before.left,
+                    expr.actions.left,
+                    expr.after?.left,
+                ),
+            );
+
+            if (expr.after) {
+                columns.push([
+                    builders.row([builders.char("=")]),
+                    builders.row([]),
+                    builders.row([builders.char("=")]),
+                ]);
+            } else {
+                columns.push([
+                    builders.row([builders.char("=")]),
+                    builders.row([]),
+                ]);
+            }
+
+            columns.push(
+                ..._vertAddToColumns(
+                    oneToOne,
+                    expr.before.right,
+                    expr.actions.right,
+                    expr.after?.right,
+                ),
+            );
+
+            // TODO: assert that expr.before.length === expr.actions.length === expr.after.length
+
+            const work: VerticalWork = {
+                type: "table",
+                subtype: "algebra",
+                id: expr.id,
+                style: {},
+                columns,
+                colCount: columns.length,
+                rowCount: expr.after ? 3 : 2,
+            };
+
+            return verticalWorkToTable(work);
         }
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);

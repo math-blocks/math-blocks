@@ -1,9 +1,11 @@
+import {getId} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import * as builders from "../../char/builders";
 import * as types from "../../char/types";
 import * as Util from "../../char/util";
 import {toEqualEditorNode} from "../../test-util";
+import {textRepsToTable} from "../../reducer/vertical-work/test-util";
 
 import {print} from "../printer";
 
@@ -631,5 +633,265 @@ describe("print", () => {
                 ),
             ]),
         );
+    });
+
+    // TODO: add some roundtrip tests as well where we parse and the print and compare
+    describe("VerticalWork", () => {
+        // TODO: create Semantic.builders.vertAdd() to help with writing tests
+        test("actions and before values at the start", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        Semantic.builders.identifier("x"),
+                        Semantic.builders.number("2"),
+                    ],
+                    right: [Semantic.builders.number("5")],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("x"), null],
+                    right: [
+                        Semantic.builders.neg(
+                            Semantic.builders.number("5"),
+                            true,
+                        ),
+                    ],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " |x|+|2|=|      |5",
+                "+|x| | | |\u2212|5",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("negative numbers at the start of a row", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        Semantic.builders.neg(
+                            Semantic.builders.identifier("x"),
+                            false,
+                        ),
+                        Semantic.builders.number("2"),
+                    ],
+                    right: [Semantic.builders.number("5")],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("x"), null],
+                    right: [null],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " |\u2212x|+|2|=|5",
+                "+|      x| | | | ",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("actions before and after start row", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [null, Semantic.builders.number("1")],
+                    right: [Semantic.builders.number("5"), null],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("x"), null],
+                    right: [null, Semantic.builders.identifier("y")],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(" | |1|=|5| | ", "x|+| | | |+|y");
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("actions before start row and aligned with items in start row", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        null,
+                        Semantic.builders.number("1"),
+                        Semantic.builders.identifier("y"),
+                    ],
+                    right: [Semantic.builders.number("5"), null],
+                },
+                actions: {
+                    left: [
+                        Semantic.builders.identifier("x"),
+                        null,
+                        Semantic.builders.identifier("y"),
+                    ],
+                    right: [null, Semantic.builders.identifier("y")],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " | |1|+|y|=|5| | ",
+                "x|+| |+|y| | |+|y",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("actions before start row and cells in next column aligned", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [null, Semantic.builders.number("1")],
+                    right: [null, Semantic.builders.number("1")],
+                },
+                actions: {
+                    left: [
+                        Semantic.builders.identifier("x"),
+                        Semantic.builders.number("2"),
+                    ],
+                    right: [
+                        Semantic.builders.identifier("x"),
+                        Semantic.builders.neg(
+                            Semantic.builders.number("2"),
+                            true,
+                        ),
+                    ],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " | |1|=| |      |1",
+                "x|+|2| |x|\u2212|2",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("more terms", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        null,
+                        Semantic.builders.number("1"),
+                        Semantic.builders.number("2"),
+                    ],
+                    right: [Semantic.builders.number("5"), null, null],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("x"), null, null],
+                    right: [
+                        null,
+                        Semantic.builders.identifier("y"),
+                        Semantic.builders.identifier("z"),
+                    ],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " | |1|+|2|=|5| | | | ",
+                "x|+| | | | | |+|y|+|z",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("more interleaving", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        null,
+                        Semantic.builders.number("1"),
+                        null,
+                        Semantic.builders.number("2"),
+                    ],
+                    right: [Semantic.builders.number("5")],
+                },
+                actions: {
+                    left: [
+                        Semantic.builders.identifier("x"),
+                        null,
+                        Semantic.builders.number("3"),
+                        null,
+                    ],
+                    right: [null],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " | |1| | |+|2|=|5",
+                "x|+| |+|3| | | | ",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("three rows", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        Semantic.builders.mul(
+                            [
+                                Semantic.builders.number("2"),
+                                Semantic.builders.identifier("x"),
+                            ],
+                            true,
+                        ),
+                    ],
+                    right: [Semantic.builders.number("5")],
+                },
+                actions: {
+                    left: [null],
+                    right: [
+                        Semantic.builders.neg(
+                            Semantic.builders.number("5"),
+                            true,
+                        ),
+                    ],
+                },
+                after: {
+                    left: [
+                        Semantic.builders.mul(
+                            [
+                                Semantic.builders.number("2"),
+                                Semantic.builders.identifier("x"),
+                            ],
+                            true,
+                        ),
+                    ],
+                    right: [Semantic.builders.number("0")],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                "2x|=|      5",
+                "  | |\u22125",
+                "2x|=|      0",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
     });
 });

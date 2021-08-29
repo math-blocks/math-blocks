@@ -16,8 +16,6 @@ export type VerticalWork = {
     readonly delimiters?: types.TokenTable["delimiters"];
     readonly rowStyles?: types.TokenTable["rowStyles"];
     readonly colStyles?: types.TokenTable["colStyles"];
-
-    readonly table: types.TokenTable;
 };
 
 const algebraTableToVerticalWork = (table: types.TokenTable): VerticalWork => {
@@ -37,7 +35,6 @@ const algebraTableToVerticalWork = (table: types.TokenTable): VerticalWork => {
         delimiters: table.delimiters,
         rowStyles: table.rowStyles,
         colStyles: table.colStyles,
-        table: table,
     };
 };
 
