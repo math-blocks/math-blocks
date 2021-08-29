@@ -9,8 +9,8 @@ import * as types from "./types";
 export const identifier = (
     name: string,
     loc?: types.SourceLocation,
-): types.Ident => ({
-    type: "identifier",
+): types.Identifier => ({
+    type: "Identifier",
     id: getId(),
     name,
     loc,

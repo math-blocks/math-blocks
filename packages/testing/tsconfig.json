@@ -6,6 +6,7 @@
     "tsBuildInfoFile": "../../.buildcache/testing.tsbuildinfo"
   },
   "references": [
+    {"path": "../core"},
     {"path": "../parser-factory"},
     {"path": "../semantic"}
   ]

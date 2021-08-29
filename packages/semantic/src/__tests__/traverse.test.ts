@@ -52,7 +52,7 @@ describe("traverse", () => {
             type: "pow",
             base: {
                 id: 1,
-                type: "identifier",
+                type: "Identifier",
                 name: "x",
             },
             exp: {
@@ -96,7 +96,7 @@ describe("traverse", () => {
             type: "pow",
             base: {
                 id: 1,
-                type: "identifier",
+                type: "Identifier",
                 name: "x",
             },
             exp: {
@@ -108,7 +108,7 @@ describe("traverse", () => {
 
         traverse(power, {
             exit: (node) => {
-                if (node.type === "identifier" && node.name === "x") {
+                if (node.type === "Identifier" && node.name === "x") {
                     return {
                         ...node,
                         name: "y",
@@ -122,7 +122,7 @@ describe("traverse", () => {
             type: "pow",
             base: {
                 id: 1,
-                type: "identifier",
+                type: "Identifier",
                 name: "y",
             },
             exp: {
@@ -140,7 +140,7 @@ describe("traverse", () => {
             args: [
                 {
                     id: 1,
-                    type: "identifier",
+                    type: "Identifier",
                     name: "x",
                 },
                 {
@@ -153,7 +153,7 @@ describe("traverse", () => {
 
         traverse(sum, {
             exit: (node) => {
-                if (node.type === "identifier" && node.name === "x") {
+                if (node.type === "Identifier" && node.name === "x") {
                     return {
                         ...node,
                         name: "y",
@@ -168,7 +168,7 @@ describe("traverse", () => {
             args: [
                 {
                     id: 1,
-                    type: "identifier",
+                    type: "Identifier",
                     name: "y",
                 },
                 {

@@ -207,7 +207,7 @@ describe("EditorParser", () => {
             end: 1,
             path: [],
         });
-        if (parseTree.type === "identifier") {
+        if (parseTree.type === "Identifier") {
             if (parseTree.subscript) {
                 expect(parseTree.subscript.loc).toEqual({
                     start: 0,

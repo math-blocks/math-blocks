@@ -38,7 +38,7 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Parser.types.Ident =>
+                parse: (): Parser.types.Identifier =>
                     Parser.builders.identifier(token.name),
             };
         case "number":
@@ -278,7 +278,7 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
                 if (parent.type === "mul" && parent.implicit) {
                     return arg;
                 }
-                if (arg.type === "identifier" || arg.type === "number") {
+                if (arg.type === "Identifier" || arg.type === "number") {
                     return;
                 }
                 if (arg.type === "mul" && parent.type === "add") {

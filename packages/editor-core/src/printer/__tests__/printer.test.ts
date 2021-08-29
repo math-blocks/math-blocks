@@ -471,7 +471,7 @@ describe("print", () => {
     });
 
     test("leading subtraction", () => {
-        const ast = {
+        const ast: Semantic.types.NumericNode = {
             type: "add",
             id: 0,
             args: [
@@ -479,9 +479,9 @@ describe("print", () => {
                     type: "neg",
                     id: 1,
                     subtraction: true,
-                    arg: {type: "identifier", name: "a", id: 2},
+                    arg: {type: "Identifier", name: "a", id: 2},
                 },
-                {type: "identifier", name: "b", id: 3},
+                {type: "Identifier", name: "b", id: 3},
             ],
         } as const;
 

@@ -53,7 +53,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
         case "number": {
             return <mn>{math.value}</mn>;
         }
-        case "identifier": {
+        case "Identifier": {
             if (math.subscript) {
                 return (
                     <msub>

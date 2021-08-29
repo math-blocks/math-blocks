@@ -9,7 +9,7 @@ const printArgs = (
 ): string => {
     const hasGrandchildren = args.some(
         (arg: Semantic.types.Node) =>
-            arg.type !== "identifier" && arg.type !== "number",
+            arg.type !== "Identifier" && arg.type !== "number",
     );
 
     if (hasGrandchildren) {
@@ -79,7 +79,7 @@ const print = (
         case "number": {
             return `${ast.value}`;
         }
-        case "identifier": {
+        case "Identifier": {
             if (ast.subscript) {
                 return `(ident ${ast.name} ${print(
                     ast.subscript,
@@ -133,9 +133,9 @@ const print = (
         }
         case "pow": {
             const hasGrandchildren =
-                (ast.base.type !== "identifier" &&
+                (ast.base.type !== "Identifier" &&
                     ast.base.type !== "number") ||
-                (ast.exp.type !== "identifier" && ast.exp.type !== "number");
+                (ast.exp.type !== "Identifier" && ast.exp.type !== "number");
             const base = print(ast.base, serialize, indent);
             const exp = print(ast.exp, serialize, indent);
             return hasGrandchildren

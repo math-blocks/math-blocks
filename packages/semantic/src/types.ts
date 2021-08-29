@@ -7,7 +7,7 @@ export type NumericNode =
     | Num
     | Infinity
     | Pi
-    | Ident
+    | Identifier
     | Ellipsis
     | Add
     | Mul
@@ -49,8 +49,8 @@ export type Num = Common & {
 /**
  * Identifier
  */
-export type Ident = Common & {
-    readonly type: "identifier";
+export type Identifier = Common & {
+    readonly type: "Identifier";
     readonly name: string;
     readonly subscript?: NumericNode;
 };
@@ -206,7 +206,7 @@ type Limits = {
 export type Sum = Common & {
     readonly type: "Sum";
     readonly arg: NumericNode;
-    readonly bvar: Ident; // bound variable, i.e. the variable being summed over
+    readonly bvar: Identifier; // bound variable, i.e. the variable being summed over
     // TODO: support `condition` and `domainofapplication` as well,
     // see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
     readonly limits: Limits;
@@ -218,7 +218,7 @@ export type Sum = Common & {
 export type Product = Common & {
     readonly type: "Product";
     readonly arg: NumericNode;
-    readonly bvar: Ident; // bound variable, i.e. the variable being multiplied over
+    readonly bvar: Identifier; // bound variable, i.e. the variable being multiplied over
     readonly limits: Limits;
 };
 
@@ -233,7 +233,7 @@ type TendsTo = {
 export type Limit = Common & {
     readonly type: "Limit";
     readonly arg: NumericNode;
-    readonly bvar: Ident;
+    readonly bvar: Identifier;
     readonly tendsTo: TendsTo;
 };
 
@@ -262,7 +262,7 @@ export type PartialDerivative = Common & {
 export type Integral = Common & {
     readonly type: "Integral";
     readonly arg: NumericNode;
-    readonly bvar: Ident;
+    readonly bvar: Identifier;
     // TODO: support `domainofapplication`,
     // see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
     readonly limits: Limits;
@@ -344,7 +344,7 @@ export type LongDivision = Common & {
  * When a logic node is evaluated the resulting value is either True or False.
  */
 export type LogicNode =
-    | Ident
+    | Identifier
     | True
     | False
     | And
@@ -531,7 +531,7 @@ export type NotProperSubset = Common & {
  * When evaluated the result is a set.
  */
 export type SetNode =
-    | Ident
+    | Identifier
     | Set // eslint-disable-line functional/prefer-readonly-type
     | EmptySet
     | Union
