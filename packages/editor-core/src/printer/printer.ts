@@ -5,6 +5,13 @@ import * as Semantic from "@math-blocks/semantic";
 
 import * as types from "../char/types";
 import * as builders from "../char/builders";
+import {Column, VerticalWork} from "../reducer/vertical-work/types";
+import {
+    isCellPlusMinus,
+    isCellEmpty,
+    verticalWorkToTable,
+} from "../reducer/vertical-work/util";
+import {zip} from "../parser/util";
 
 // TODO: when parsing editor nodes provide some way to link to the IDs of
 // the original nodes, even if they don't appear in the semantic tree as
@@ -24,6 +31,149 @@ const getChildren = (
     }
 
     return children;
+};
+
+const _cellToCharRow = (
+    cell: Semantic.types.Node | null,
+    oneToOne: boolean,
+): types.CharRow => {
+    const charNode: types.CharNode = cell
+        ? _print(cell, oneToOne)
+        : builders.row([]);
+
+    return charNode.type === "row" ? charNode : builders.row([charNode]);
+};
+
+const _vertAddToColumns = (
+    oneToOne: boolean,
+    beforeSide: readonly (Semantic.types.NumericNode | null)[],
+    actionsSide: readonly (Semantic.types.NumericNode | null)[],
+    afterSide?: readonly (Semantic.types.NumericNode | null)[],
+): Column[] => {
+    const columns: Column[] = [];
+
+    const firstBeforeIndex = beforeSide.findIndex((cell) => cell != null);
+    const firstActionsIndex = actionsSide.findIndex((cell) => cell != null);
+    const firstAfterIndex = afterSide?.findIndex((cell) => cell != null) ?? -1;
+
+    const getOperator = (node: Semantic.types.NumericNode): types.CharAtom => {
+        return node.type === "neg" && node.subtraction
+            ? builders.char("\u2212")
+            : builders.char("+");
+    };
+    const getValue = (
+        node: Semantic.types.NumericNode | null,
+    ): types.CharRow => {
+        return node?.type === "neg" && node.subtraction
+            ? _cellToCharRow(node.arg, oneToOne)
+            : _cellToCharRow(node, oneToOne);
+    };
+
+    const createColumn = (
+        beforeCell: types.CharRow,
+        actionCell: types.CharRow,
+        afterCell?: types.CharRow,
+    ): Column => {
+        return typeof afterCell === "object"
+            ? [beforeCell, actionCell, afterCell]
+            : [beforeCell, actionCell];
+    };
+
+    for (let i = 0; i < beforeSide.length; i++) {
+        const before = beforeSide[i];
+        const action = actionsSide[i];
+        const after = afterSide?.[i];
+
+        if (
+            // Operators can appear before the first action
+            action ||
+            // But can only after the first values in the before and after rows
+            (before && i > firstBeforeIndex) ||
+            (after && i > firstAfterIndex)
+        ) {
+            columns.push(
+                createColumn(
+                    builders.row(
+                        before && i > firstBeforeIndex
+                            ? [getOperator(before)]
+                            : [],
+                    ),
+                    builders.row(action ? [getOperator(action)] : []),
+                    typeof after === "object"
+                        ? builders.row(
+                              after && i > 0 ? [getOperator(after)] : [],
+                          )
+                        : undefined,
+                ),
+            );
+        }
+
+        columns.push(
+            createColumn(
+                getValue(before),
+                getValue(action),
+                typeof after === "object" ? getValue(after) : undefined,
+            ),
+        );
+
+        if (
+            i == firstActionsIndex &&
+            action &&
+            firstActionsIndex < firstBeforeIndex
+        ) {
+            // Let's post-process the table instead
+            columns.push(
+                createColumn(
+                    builders.row([]),
+                    builders.row([builders.char("+")]),
+                    typeof after === "object" ? builders.row([]) : undefined,
+                ),
+            );
+        }
+    }
+
+    const hasOperatorOrEmptyCells = (col: Column): boolean => {
+        return col.every((cell) => isCellEmpty(cell) || isCellPlusMinus(cell));
+    };
+
+    // Post-process columns to enforce additional constraints that are difficult
+    // to enforce during the initial pass.
+    const processedColumns: Column[] = [];
+    let i = 0;
+    while (i < columns.length) {
+        const currentCol = columns[i];
+        // See if we can remove the leading operator from the actions row.
+        if (i === 0 && isCellPlusMinus(currentCol[1])) {
+            const nextCol = columns[i + 1];
+            // If the first action in the actions row is adding/subtracting from
+            // the first value in the 'before' row then we allow the leading operator
+            // to remain.
+            if (isCellEmpty(nextCol[0])) {
+                i += 1;
+                continue;
+            }
+        }
+        if (hasOperatorOrEmptyCells(currentCol)) {
+            const nextCol = columns[i + 1];
+            if (hasOperatorOrEmptyCells(nextCol)) {
+                const mergedCol = zip(currentCol, nextCol).map(
+                    ([currentCell, nextCell]) => {
+                        // Prefer the operator from the next cell if there is one.
+                        return isCellPlusMinus(nextCell)
+                            ? nextCell
+                            : currentCell;
+                    },
+                );
+                processedColumns.push(mergedCol);
+                i += 2;
+                continue;
+            }
+        }
+        processedColumns.push(currentCol);
+        i += 1;
+    }
+
+    return processedColumns;
 };
 
 // TODO: write more tests for this
@@ -215,6 +365,59 @@ const _print = (
             ];
 
             return builders.row(children);
+        }
+        case "vert-work": {
+            const columns: Column[] = [];
+
+            // TODO: insert operators
+            // - operators between terms
+            // - operators in front of actions
+            // - operators after an initial action if the action is alone in the first column
+
+            columns.push(
+                ..._vertAddToColumns(
+                    oneToOne,
+                    expr.before.left,
+                    expr.actions.left,
+                    expr.after?.left,
+                ),
+            );
+
+            if (expr.after) {
+                columns.push([
+                    builders.row([builders.char("=")]),
+                    builders.row([]),
+                    builders.row([builders.char("=")]),
+                ]);
+            } else {
+                columns.push([
+                    builders.row([builders.char("=")]),
+                    builders.row([]),
+                ]);
+            }
+
+            columns.push(
+                ..._vertAddToColumns(
+                    oneToOne,
+                    expr.before.right,
+                    expr.actions.right,
+                    expr.after?.right,
+                ),
+            );
+
+            // TODO: assert that expr.before.length === expr.actions.length === expr.after.length
+
+            const work: VerticalWork = {
+                type: "table",
+                subtype: "algebra",
+                id: expr.id,
+                style: {},
+                columns,
+                colCount: columns.length,
+                rowCount: expr.after ? 3 : 2,
+            };
+
+            return verticalWorkToTable(work);
         }
         default: {
             throw new Error(`print doesn't handle ${expr.type} nodes yet`);

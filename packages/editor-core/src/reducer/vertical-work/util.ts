@@ -117,13 +117,15 @@ export const tableToVerticalWork = (
         columns,
         colCount,
         rowCount,
-        table,
+        id,
+        type,
+        subtype,
         ...rest,
     };
 };
 
 export const verticalWorkToTable = (work: VerticalWork): types.CharTable => {
-    const {table, columns, rowCount, ...rest} = work;
+    const {columns, rowCount, ...rest} = work;
 
     const cells: types.CharRow[] = [];
     for (let i = 0; i < rowCount; i++) {
@@ -133,10 +135,6 @@ export const verticalWorkToTable = (work: VerticalWork): types.CharTable => {
     }
 
     return {
-        id: table.id,
-        type: table.type,
-        subtype: table.subtype,
-        style: table.style,
         children: cells,
         rowCount,
         ...rest,

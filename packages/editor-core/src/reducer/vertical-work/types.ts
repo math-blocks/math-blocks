@@ -26,5 +26,8 @@ export type VerticalWork = {
     readonly rowStyles?: types.CharTable["rowStyles"];
     readonly colStyles?: types.CharTable["colStyles"];
 
-    readonly table: types.CharTable;
+    readonly id: types.CharTable["id"];
+    readonly type: types.CharTable["type"];
+    readonly subtype: types.CharTable["subtype"];
+    readonly style: types.CharTable["style"];
 };
