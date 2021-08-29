@@ -887,9 +887,108 @@ describe("print", () => {
             const result = print(vertAdd);
 
             const table = textRepsToTable(
-                "2x|=|      5",
-                "  | |\u22125",
-                "2x|=|      0",
+                "2x|=|      |5",
+                "  | |\u2212|5",
+                "2x|=|      |0",
+            );
+            // expect(result.children[0]).toEqual(table);
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("three rows with leading action term", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        null,
+                        Semantic.builders.mul(
+                            [
+                                Semantic.builders.number("2"),
+                                Semantic.builders.identifier("x"),
+                            ],
+                            true,
+                        ),
+                    ],
+                    right: [Semantic.builders.number("5"), null],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("y"), null],
+                    right: [
+                        null,
+                        Semantic.builders.neg(
+                            Semantic.builders.identifier("x"),
+                            true,
+                        ),
+                    ],
+                },
+                after: {
+                    left: [
+                        Semantic.builders.identifier("y"),
+                        Semantic.builders.mul(
+                            [
+                                Semantic.builders.number("2"),
+                                Semantic.builders.identifier("x"),
+                            ],
+                            true,
+                        ),
+                    ],
+                    right: [
+                        Semantic.builders.number("5"),
+                        Semantic.builders.neg(
+                            Semantic.builders.identifier("x"),
+                            true,
+                        ),
+                    ],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            // TODO: fix this test case, we should have two '\u2212' in the
+            // second last column.
+            const table = textRepsToTable(
+                " | |2x|=|5|      | ",
+                "y|+|  | | |\u2212|x",
+                "y|+|2x|=|5|\u2212|x",
+            );
+            expect(result.children[0]).toEqualEditorNode(table);
+        });
+
+        test("two rows with leading action term", () => {
+            const vertAdd: Semantic.types.VertWork = {
+                type: "vert-work",
+                id: getId(),
+                before: {
+                    left: [
+                        null,
+                        Semantic.builders.mul(
+                            [
+                                Semantic.builders.number("2"),
+                                Semantic.builders.identifier("x"),
+                            ],
+                            true,
+                        ),
+                    ],
+                    right: [Semantic.builders.number("5"), null],
+                },
+                actions: {
+                    left: [Semantic.builders.identifier("y"), null],
+                    right: [
+                        null,
+                        Semantic.builders.neg(
+                            Semantic.builders.identifier("x"),
+                            true,
+                        ),
+                    ],
+                },
+            };
+
+            const result = print(vertAdd);
+
+            const table = textRepsToTable(
+                " | |2x|=|5|      | ",
+                "y|+|  | | |\u2212|x",
             );
             expect(result.children[0]).toEqualEditorNode(table);
         });
