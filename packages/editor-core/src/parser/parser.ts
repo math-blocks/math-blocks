@@ -435,9 +435,9 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
             // TODO: use the precedence of the operators to determine whether
             // the parens are necessary or not.
-            if (node.type === "parens") {
+            if (node.type === "Parens") {
                 const {arg} = node;
-                if (parent.type === "parens") {
+                if (parent.type === "Parens") {
                     return;
                 }
                 if (parent.type === "mul" && parent.implicit) {

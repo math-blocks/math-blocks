@@ -33,8 +33,8 @@ type GT = {readonly type: "token"; readonly name: "lt"};
 type LParens = {readonly type: "token"; readonly name: "lparens"};
 type RParens = {readonly type: "token"; readonly name: "rparens"};
 type Ellipsis = {readonly type: "token"; readonly name: "ellipsis"};
-type Sum = {readonly type: "token"; readonly name: "sum"};
-type Prod = {readonly type: "token"; readonly name: "prod"};
+type Sum = {readonly type: "token"; readonly name: "sum"}; // TODO: change this to SummationOperator
+type Prod = {readonly type: "token"; readonly name: "prod"}; // TODO: change this ProductOperator
 type Lim = {readonly type: "token"; readonly name: "lim"};
 type EOL = {readonly type: "token"; readonly name: "eol"};
 

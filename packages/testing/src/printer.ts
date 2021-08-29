@@ -164,7 +164,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
                 }
             }
         }
-        case "parens": {
+        case "Parens": {
             return `(${print(expr.arg)})`;
         }
         default: {

@@ -364,7 +364,7 @@ const _print = (
                 ]);
             }
         }
-        case "parens": {
+        case "Parens": {
             const children: types.CharNode[] = [
                 builders.delimited(
                     getChildren(expr.arg, oneToOne),

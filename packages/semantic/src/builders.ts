@@ -151,7 +151,7 @@ export const parens = (
     arg: types.Node,
     loc?: types.SourceLocation,
 ): types.Parens => ({
-    type: "parens",
+    type: "Parens",
     id: getId(),
     arg,
     loc,
