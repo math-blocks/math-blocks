@@ -28,7 +28,11 @@ export type NumericNode =
     | Diff
     | PDiff
     | Int
-    | VertWork;
+    | VerticalAdditionToRelation
+    | LongAddition
+    | LongSubtraction
+    | LongMultiplication
+    | LongDivision;
 
 /**
  * Number
@@ -203,7 +207,9 @@ export type Sum = Common & {
     readonly type: "sum";
     readonly arg: NumericNode;
     readonly bvar: Ident; // bound variable, i.e. the variable being summed over
-    readonly limits: Limits; // TODO: support `condition` and `domainofapplication` as well, see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
+    // TODO: support `condition` and `domainofapplication` as well,
+    // see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
+    readonly limits: Limits;
 };
 
 /**
@@ -257,15 +263,17 @@ export type Int = Common & {
     readonly type: "int";
     readonly arg: NumericNode;
     readonly bvar: Ident;
-    readonly limits: Limits; // TODO: support `domainofapplication`, see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
+    // TODO: support `domainofapplication`,
+    // see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
+    readonly limits: Limits;
 };
 
-/**
- * Vertical work
- */
-export type VertWork = Common & {
-    readonly type: "vert-work";
-    readonly before: {
+type RelationOperator = "eq" | "neq" | "lt" | "lte" | "gt" | "gte";
+
+export type VerticalAdditionToRelation = Common & {
+    readonly type: "VerticalAdditionToRelation";
+    readonly relOp: RelationOperator;
+    readonly originalRelation: {
         readonly left: readonly (NumericNode | null)[];
         readonly right: readonly (NumericNode | null)[];
     };
@@ -273,10 +281,63 @@ export type VertWork = Common & {
         readonly left: readonly (NumericNode | null)[];
         readonly right: readonly (NumericNode | null)[];
     };
-    readonly after?: {
+    readonly resultingRelation?: {
         readonly left: readonly (NumericNode | null)[];
         readonly right: readonly (NumericNode | null)[];
     };
+};
+
+// When complete, the result of this is a logic value
+export type SystemOfRelationsElimination = Common & {
+    readonly type: "SystemOfRelationsElimination";
+    readonly relOp: RelationOperator;
+    // TODO: fill this out
+    // two or three rows
+};
+
+// Basic Arithmetic Algorithms
+
+// Numbers that are Digits should only have a single digit
+type Digit = Num;
+
+// TODO: extend these types to support decimals
+
+// When complete, the result of this is a numeric value
+export type LongAddition = Common & {
+    readonly type: "LongAddition";
+    readonly terms: readonly (readonly Digit[])[];
+    readonly sum: readonly (Digit | null)[];
+    readonly carries: readonly (Digit | null)[];
+};
+
+// When complete, the result of this is a numeric value
+export type LongSubtraction = Common & {
+    readonly type: "LongSubtraction";
+    readonly minuend: readonly Digit[];
+    readonly subtrahend: readonly (Digit | null)[];
+    readonly difference: readonly (Digit | null)[];
+    readonly borrows: readonly (Digit | null)[];
+};
+
+// When complete, the result of this is a numeric value
+export type LongMultiplication = Common & {
+    readonly type: "LongMultiplication";
+    readonly factors: readonly (readonly Digit[])[];
+    readonly partialProducts: readonly (readonly Digit[])[];
+    readonly product: readonly (Digit | null)[];
+    readonly carries: readonly (Digit | null)[]; // Used when adding the partial products
+};
+
+// When complete, the result of this is a numeric value
+export type LongDivision = Common & {
+    readonly type: "LongDivision";
+    readonly dividend: readonly Digit[];
+    readonly divisor: readonly (Digit | null)[];
+    readonly quotient: readonly (Digit | null)[];
+    readonly remainder?: Num;
+
+    // TODO: figure out how to model partial remainders and
+    // the other parts of long division work
 };
 
 /**
@@ -489,7 +550,8 @@ export type SetNode =
  */
 export type Set = Common & {
     readonly type: "set";
-    readonly args: readonly Node[]; // TODO: expand this to include other things like words, shapes, images, etc.
+    // TODO: expand this to include other things like words, shapes, images, etc.
+    readonly args: readonly Node[];
 };
 
 /**
