@@ -10,7 +10,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     switch (expr.type) {
-        case "identifier": {
+        case "Identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
             // TODO: handle subscripts
 
@@ -42,7 +42,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
 
                 if (
                     arg.type === "number" ||
-                    arg.type === "identifier" ||
+                    arg.type === "Identifier" ||
                     arg.type === "mul" ||
                     arg.type === "div" ||
                     arg.type === "pow" ||
@@ -52,7 +52,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
                 } else if (Semantic.util.isSubtraction(arg)) {
                     if (
                         arg.arg.type === "number" ||
-                        arg.arg.type === "identifier" ||
+                        arg.arg.type === "Identifier" ||
                         arg.arg.type === "mul" ||
                         arg.arg.type === "div" ||
                         arg.arg.type === "pow" ||
@@ -111,7 +111,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
             const node = print(expr.arg, oneToOne);
             if (
                 expr.arg.type === "number" ||
-                expr.arg.type === "identifier" ||
+                expr.arg.type === "Identifier" ||
                 (expr.arg.type === "neg" && !expr.arg.subtraction) ||
                 (expr.arg.type === "mul" && expr.arg.implicit) ||
                 expr.arg.type === "pow" // pow has a higher precedence
@@ -147,14 +147,14 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
             const {base, exp} = expr;
 
             // 'number' nodes are never negative so this is okay
-            if (base.type === "identifier" || base.type === "number") {
-                if (exp.type === "identifier" || exp.type === "number") {
+            if (base.type === "Identifier" || base.type === "number") {
+                if (exp.type === "Identifier" || exp.type === "number") {
                     return `${print(base, oneToOne)}^${print(exp, oneToOne)}`;
                 } else {
                     return `${print(base, oneToOne)}^(${print(exp, oneToOne)})`;
                 }
             } else {
-                if (exp.type === "identifier" || exp.type === "number") {
+                if (exp.type === "Identifier" || exp.type === "number") {
                     return `(${print(base, oneToOne)})^${print(exp, oneToOne)}`;
                 } else {
                     return `(${print(base, oneToOne)})^(${print(
@@ -164,7 +164,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
                 }
             }
         }
-        case "parens": {
+        case "Parens": {
             return `(${print(expr.arg)})`;
         }
         default: {

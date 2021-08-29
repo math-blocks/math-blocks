@@ -22,8 +22,8 @@ export const identifierCheck: Check = (
     context,
 ): Result | undefined => {
     if (
-        prev.type === "identifier" &&
-        next.type === "identifier" &&
+        prev.type === "Identifier" &&
+        next.type === "Identifier" &&
         prev.name === next.name
     ) {
         return {

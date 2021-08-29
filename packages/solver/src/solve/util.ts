@@ -19,7 +19,7 @@ export const getCoeff = (
 // TODO: handle non-canonicalized terms
 export const isTermOfIdent = (
     term: Semantic.types.Node,
-    ident: Semantic.types.Ident,
+    ident: Semantic.types.Identifier,
 ): boolean => {
     if (Semantic.util.deepEquals(ident, term)) {
         return true;

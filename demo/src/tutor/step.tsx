@@ -155,7 +155,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
             if (
                 parsedNext.type === "eq" &&
-                parsedNext.args[0].type === "identifier" &&
+                parsedNext.args[0].type === "Identifier" &&
                 Semantic.util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right", hint});

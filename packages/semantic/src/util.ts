@@ -46,7 +46,7 @@ export const isNumber = (node: types.Node): boolean => {
 export const isNumeric = (node: types.Node): node is types.NumericNode => {
     return [
         "number",
-        "identifier",
+        "Identifier",
         "pi",
         "infinity",
         "ellipsis",
@@ -60,12 +60,12 @@ export const isNumeric = (node: types.Node): node is types.NumericNode => {
         "log",
         "neg",
         "abs",
-        "sum",
-        "prod",
+        "Sum",
+        "Product",
         "limit",
-        "diff",
-        "pdiff",
-        "int",
+        "Derivative",
+        "PartialDerivative",
+        "Integral",
     ].includes(node.type);
 };
 

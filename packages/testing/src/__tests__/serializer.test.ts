@@ -1,3 +1,4 @@
+import {getId} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {serializer} from "../serializer";
@@ -16,11 +17,13 @@ describe("serializer", () => {
     });
 
     test("identifier with subscript", () => {
-        const ast = {
-            type: "identifier",
+        const ast: Semantic.types.NumericNode = {
+            id: getId(),
+            type: "Identifier",
             name: "a",
             subscript: {
-                type: "identifier",
+                id: getId(),
+                type: "Identifier",
                 name: "n",
             },
         };

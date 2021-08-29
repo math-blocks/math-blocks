@@ -191,7 +191,7 @@ const _print = (
     oneToOne: boolean,
 ): types.CharNode => {
     switch (expr.type) {
-        case "identifier": {
+        case "Identifier": {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
             // TODO: handle subscripts
 
@@ -302,7 +302,7 @@ const _print = (
         case "neg": {
             if (
                 expr.arg.type === "number" ||
-                expr.arg.type === "identifier" ||
+                expr.arg.type === "Identifier" ||
                 expr.arg.type === "div" ||
                 (expr.arg.type === "neg" && !expr.arg.subtraction) ||
                 (expr.arg.type === "mul" && expr.arg.implicit) ||
@@ -348,7 +348,7 @@ const _print = (
         case "pow": {
             const {base, exp} = expr;
 
-            if (base.type === "identifier" || base.type === "number") {
+            if (base.type === "Identifier" || base.type === "number") {
                 return builders.row([
                     ...getChildren(base, oneToOne),
                     builders.subsup(undefined, getChildren(exp, oneToOne)),
@@ -364,7 +364,7 @@ const _print = (
                 ]);
             }
         }
-        case "parens": {
+        case "Parens": {
             const children: types.CharNode[] = [
                 builders.delimited(
                     getChildren(expr.arg, oneToOne),

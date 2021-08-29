@@ -10,7 +10,7 @@ const parseEq = (input: string): Semantic.types.Eq => {
 
 const simplify = (
     node: Semantic.types.Eq,
-    ident: Semantic.types.Ident,
+    ident: Semantic.types.Identifier,
 ): Step => {
     const result = simplifyBothSides(node, ident);
     if (!result) {

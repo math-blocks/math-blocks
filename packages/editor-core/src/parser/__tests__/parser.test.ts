@@ -207,7 +207,7 @@ describe("EditorParser", () => {
             end: 1,
             path: [],
         });
-        if (parseTree.type === "identifier") {
+        if (parseTree.type === "Identifier") {
             if (parseTree.subscript) {
                 expect(parseTree.subscript.loc).toEqual({
                     start: 0,
@@ -311,7 +311,7 @@ describe("EditorParser", () => {
 
         const ast = parser.parse(input);
 
-        expect(ast).toMatchInlineSnapshot(`(parens (add a b))`);
+        expect(ast).toMatchInlineSnapshot(`(Parens (add a b))`);
     });
 
     it("negation can be on individual factors when wrapped in parens", () => {
@@ -646,7 +646,7 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast).toMatchInlineSnapshot(`(parens x)`);
+            expect(ast).toMatchInlineSnapshot(`(Parens x)`);
         });
 
         it("((x))", () => {
@@ -660,7 +660,7 @@ describe("EditorParser", () => {
 
             const ast = parser.parse(input);
 
-            expect(ast).toMatchInlineSnapshot(`(parens (parens x))`);
+            expect(ast).toMatchInlineSnapshot(`(Parens (Parens x))`);
         });
 
         it("1 + (x)", () => {
@@ -675,7 +675,7 @@ describe("EditorParser", () => {
             expect(ast).toMatchInlineSnapshot(`
                 (add
                   1
-                  (parens x))
+                  (Parens x))
             `);
         });
 
@@ -700,7 +700,7 @@ describe("EditorParser", () => {
             expect(ast).toMatchInlineSnapshot(`
                 (mul.imp
                   2
-                  (parens (add x y)))
+                  (Parens (add x y)))
             `);
         });
 
@@ -720,7 +720,7 @@ describe("EditorParser", () => {
             expect(ast).toMatchInlineSnapshot(`
                 (add
                   1
-                  (parens (mul.imp x y)))
+                  (Parens (mul.imp x y)))
             `);
         });
 
@@ -740,7 +740,7 @@ describe("EditorParser", () => {
             expect(ast).toMatchInlineSnapshot(`
                 (add
                   a
-                  (parens (neg b)))
+                  (Parens (neg b)))
             `);
         });
 
@@ -763,8 +763,8 @@ describe("EditorParser", () => {
 
             expect(ast).toMatchInlineSnapshot(`
                 (add
-                  (parens (neg a))
-                  (parens (neg b)))
+                  (Parens (neg a))
+                  (Parens (neg b)))
             `);
         });
     });

@@ -38,7 +38,7 @@ const getPrefixParselet = (
     switch (token.type) {
         case "identifier":
             return {
-                parse: (): Parser.types.Ident =>
+                parse: (): Parser.types.Identifier =>
                     Parser.builders.identifier(token.name),
             };
         case "number":
@@ -143,23 +143,22 @@ const getInfixParselet = (
     }
 };
 
-const parseNaryInfix = (op: NAryOperator) => (
-    parser: TextParser,
-    left: Node,
-): Node => {
-    const [right, ...rest] = parseNaryArgs(parser, op);
-    switch (op) {
-        case "add":
-        case "sub":
-            return Parser.builders.add([left, right, ...rest]);
-        case "mul.imp":
-            return Parser.builders.mul([left, right, ...rest], true);
-        case "mul.exp":
-            return Parser.builders.mul([left, right, ...rest], false);
-        case "eq":
-            return Parser.builders.eq([left, right, ...rest]);
-    }
-};
+const parseNaryInfix =
+    (op: NAryOperator) =>
+    (parser: TextParser, left: Node): Node => {
+        const [right, ...rest] = parseNaryArgs(parser, op);
+        switch (op) {
+            case "add":
+            case "sub":
+                return Parser.builders.add([left, right, ...rest]);
+            case "mul.imp":
+                return Parser.builders.mul([left, right, ...rest], true);
+            case "mul.exp":
+                return Parser.builders.mul([left, right, ...rest], false);
+            case "eq":
+                return Parser.builders.eq([left, right, ...rest]);
+        }
+    };
 
 const parseNaryArgs = (
     parser: TextParser,
@@ -196,7 +195,7 @@ const parseNaryArgs = (
         return [expr];
     }
 
-    // if (token.type === "parens") {
+    // if (token.type === "Parens") {
     //     parser.consume();
     //     const expr = parser.parse(token.children);
     //     const nextToken = parser.peek();
@@ -271,15 +270,15 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
             // TODO: use the precedence of the operators to determine whether
             // the parens are necessary or not.
-            if (node.type === "parens") {
+            if (node.type === "Parens") {
                 const {arg} = node;
-                if (parent.type === "parens") {
+                if (parent.type === "Parens") {
                     return;
                 }
                 if (parent.type === "mul" && parent.implicit) {
                     return arg;
                 }
-                if (arg.type === "identifier" || arg.type === "number") {
+                if (arg.type === "Identifier" || arg.type === "number") {
                     return;
                 }
                 if (arg.type === "mul" && parent.type === "add") {

@@ -7,7 +7,7 @@ export type NumericNode =
     | Num
     | Infinity
     | Pi
-    | Ident
+    | Identifier
     | Ellipsis
     | Add
     | Mul
@@ -23,11 +23,11 @@ export type NumericNode =
     | Abs
     | Parens
     | Sum
-    | Prod
+    | Product
     | Limit
-    | Diff
-    | PDiff
-    | Int
+    | Derivative
+    | PartialDerivative
+    | Integral
     | VerticalAdditionToRelation
     | LongAddition
     | LongSubtraction
@@ -49,8 +49,8 @@ export type Num = Common & {
 /**
  * Identifier
  */
-export type Ident = Common & {
-    readonly type: "identifier";
+export type Identifier = Common & {
+    readonly type: "Identifier";
     readonly name: string;
     readonly subscript?: NumericNode;
 };
@@ -182,7 +182,7 @@ export type Abs = Common & {
 };
 
 export type Parens = Common & {
-    readonly type: "parens";
+    readonly type: "Parens";
     readonly arg: Node;
 };
 
@@ -204,9 +204,9 @@ type Limits = {
  * Summation
  */
 export type Sum = Common & {
-    readonly type: "sum";
+    readonly type: "Sum";
     readonly arg: NumericNode;
-    readonly bvar: Ident; // bound variable, i.e. the variable being summed over
+    readonly bvar: Identifier; // bound variable, i.e. the variable being summed over
     // TODO: support `condition` and `domainofapplication` as well,
     // see https://www.w3.org/TR/MathML3/chapter4.html#contm.sum
     readonly limits: Limits;
@@ -215,10 +215,10 @@ export type Sum = Common & {
 /**
  * Product
  */
-export type Prod = Common & {
-    readonly type: "prod";
+export type Product = Common & {
+    readonly type: "Product";
     readonly arg: NumericNode;
-    readonly bvar: Ident; // bound variable, i.e. the variable being multiplied over
+    readonly bvar: Identifier; // bound variable, i.e. the variable being multiplied over
     readonly limits: Limits;
 };
 
@@ -231,17 +231,17 @@ type TendsTo = {
  * Limit
  */
 export type Limit = Common & {
-    readonly type: "lim";
+    readonly type: "Limit";
     readonly arg: NumericNode;
-    readonly bvar: Ident;
+    readonly bvar: Identifier;
     readonly tendsTo: TendsTo;
 };
 
 /**
  * Derivative
  */
-export type Diff = Common & {
-    readonly type: "diff";
+export type Derivative = Common & {
+    readonly type: "Derivative";
     readonly arg: NumericNode;
     readonly degree?: number; // if no degree is provided this is treated as the first derivative
 };
@@ -249,8 +249,8 @@ export type Diff = Common & {
 /**
  * Partial derivative
  */
-export type PDiff = Common & {
-    readonly type: "pdiff";
+export type PartialDerivative = Common & {
+    readonly type: "PartialDerivative";
     // TODO: This is insufficient to model high degree partial derivatives
     // https://www.w3.org/TR/MathML3/chapter4.html#contm.partialdiff
     readonly args: readonly [NumericNode, NumericNode];
@@ -259,10 +259,10 @@ export type PDiff = Common & {
 /**
  * Integral
  */
-export type Int = Common & {
-    readonly type: "int";
+export type Integral = Common & {
+    readonly type: "Integral";
     readonly arg: NumericNode;
-    readonly bvar: Ident;
+    readonly bvar: Identifier;
     // TODO: support `domainofapplication`,
     // see https://www.w3.org/TR/MathML3/chapter4.html#contm.int
     readonly limits: Limits;
@@ -344,7 +344,7 @@ export type LongDivision = Common & {
  * When a logic node is evaluated the resulting value is either True or False.
  */
 export type LogicNode =
-    | Ident
+    | Identifier
     | True
     | False
     | And
@@ -531,7 +531,7 @@ export type NotProperSubset = Common & {
  * When evaluated the result is a set.
  */
 export type SetNode =
-    | Ident
+    | Identifier
     | Set // eslint-disable-line functional/prefer-readonly-type
     | EmptySet
     | Union

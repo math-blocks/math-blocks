@@ -7,7 +7,10 @@ import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../test-util";
 
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
-const solve = (node: Semantic.types.Eq, ident: Semantic.types.Ident): Step => {
+const solve = (
+    node: Semantic.types.Eq,
+    ident: Semantic.types.Identifier,
+): Step => {
     const result = _solve(node, ident);
     if (!result) {
         throw new Error("no step returned");

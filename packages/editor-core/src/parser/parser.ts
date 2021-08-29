@@ -305,7 +305,7 @@ const getInfixParselet = (
                     parser.consume(); // consume the subsup
                     const [sub, sup] = node.children;
 
-                    if (left.type === "identifier") {
+                    if (left.type === "Identifier") {
                         if (sub) {
                             left = {
                                 ...left,
@@ -435,15 +435,15 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
             // TODO: use the precedence of the operators to determine whether
             // the parens are necessary or not.
-            if (node.type === "parens") {
+            if (node.type === "Parens") {
                 const {arg} = node;
-                if (parent.type === "parens") {
+                if (parent.type === "Parens") {
                     return;
                 }
                 if (parent.type === "mul" && parent.implicit) {
                     return arg;
                 }
-                if (arg.type === "identifier" || arg.type === "number") {
+                if (arg.type === "Identifier" || arg.type === "number") {
                     return;
                 }
                 if (arg.type === "mul" && parent.type === "add") {
