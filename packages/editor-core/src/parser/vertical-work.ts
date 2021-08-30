@@ -1,5 +1,6 @@
 import {getId} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
+import {NodeType} from "@math-blocks/semantic";
 
 import * as types from "../token/types";
 import {range, zip} from "./util";
@@ -174,7 +175,7 @@ export const parseVerticalWork = (
             : undefined;
 
     return {
-        type: "VerticalAdditionToRelation",
+        type: NodeType.VerticalAdditionToRelation,
         id: getId(),
         loc: table.loc,
         originalRelation: before,

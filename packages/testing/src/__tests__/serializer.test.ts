@@ -3,6 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {serializer} from "../serializer";
 
+const {NodeType} = Semantic;
+
 expect.addSnapshotSerializer(serializer);
 
 describe("serializer", () => {
@@ -19,11 +21,11 @@ describe("serializer", () => {
     test("identifier with subscript", () => {
         const ast: Semantic.types.NumericNode = {
             id: getId(),
-            type: "Identifier",
+            type: NodeType.Identifier,
             name: "a",
             subscript: {
                 id: getId(),
-                type: "Identifier",
+                type: NodeType.Identifier,
                 name: "n",
             },
         };
@@ -116,7 +118,7 @@ describe("serializer", () => {
         expect(() => {
             const ast: Semantic.types.Node = {
                 id: 0,
-                type: "log",
+                type: NodeType.Log,
                 base: Semantic.builders.number("2"),
                 arg: Semantic.builders.identifier("x"),
             };

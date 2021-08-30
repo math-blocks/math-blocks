@@ -3,6 +3,16 @@
  * packages/semantic/src/types.ts and then run tools/build-types.js.
  */
 
+import {NodeType} from "@math-blocks/semantic";
+
+export interface Common<T extends NodeType> {
+    readonly type: T;
+    readonly id: number;
+    readonly loc?: SourceLocation;
+    // TODO: rename this to something less ambiguous
+    source?: string; // eslint-disable-line functional/prefer-readonly-type
+}
+
 export type Node = NumericNode | LogicNode | SetNode;
 
 /**
@@ -46,16 +56,14 @@ export type NumericNode =
  * - handle units, e.g. m/s, kg, etc.
  * - add ComplexNumber type
  */
-export type Num = Common & {
-    readonly type: "number";
+export type Num = Common<NodeType.Number> & {
     readonly value: string;
 };
 
 /**
  * Identifier
  */
-export type Identifier = Common & {
-    readonly type: "Identifier";
+export type Identifier = Common<NodeType.Identifier> & {
     readonly name: string;
     readonly subscript?: Node;
 };
@@ -63,16 +71,14 @@ export type Identifier = Common & {
 /**
  * Addition
  */
-export type Add = Common & {
-    readonly type: "add";
+export type Add = Common<NodeType.Add> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Multiplication
  */
-export type Mul = Common & {
-    readonly type: "mul";
+export type Mul = Common<NodeType.Mul> & {
     readonly args: TwoOrMore<Node>;
     readonly implicit: boolean;
 };
@@ -81,20 +87,17 @@ export type Mul = Common & {
  * Negation
  * Can be used to represent negative values as well as subtraction
  */
-export type Neg = Common & {
-    readonly type: "neg";
+export type Neg = Common<NodeType.Neg> & {
     readonly arg: Node;
     readonly subtraction: boolean; // TODO: change this to `arity: "unary" | "binary";`
 };
 
-export type PlusMinus = Common & {
-    readonly type: "plusminus";
+export type PlusMinus = Common<NodeType.PlusMinus> & {
     readonly arg: Node;
     readonly arity: "unary" | "binary";
 };
 
-export type MinusPlus = Common & {
-    readonly type: "minusplus";
+export type MinusPlus = Common<NodeType.MinusPlus> & {
     readonly arg: Node;
     readonly arity: "unary" | "binary";
 };
@@ -102,16 +105,14 @@ export type MinusPlus = Common & {
 /**
  * Division
  */
-export type Div = Common & {
-    readonly type: "div";
+export type Div = Common<NodeType.Div> & {
     readonly args: readonly [Node, Node];
 };
 
 /**
  * Modulus
  */
-export type Mod = Common & {
-    readonly type: "mod";
+export type Mod = Common<NodeType.Mod> & {
     readonly args: readonly [Node, Node];
 };
 
@@ -119,8 +120,7 @@ export type Mod = Common & {
  * Root
  * Can be used for square roots as well nth-degree roots
  */
-export type Root = Common & {
-    readonly type: "root";
+export type Root = Common<NodeType.Root> & {
     readonly radicand: Node;
     readonly index: Node;
     readonly sqrt: boolean; // implies index = 2 and that the index should not be rendered
@@ -129,8 +129,7 @@ export type Root = Common & {
 /**
  * Power
  */
-export type Pow = Common & {
-    readonly type: "pow";
+export type Pow = Common<NodeType.Pow> & {
     readonly base: Node;
     readonly exp: Node;
 };
@@ -138,8 +137,7 @@ export type Pow = Common & {
 /**
  * Logarithm
  */
-export type Log = Common & {
-    readonly type: "log";
+export type Log = Common<NodeType.Log> & {
     readonly base: Node;
     readonly arg: Node;
 };
@@ -148,8 +146,7 @@ export type Log = Common & {
  * Function
  * Can be used to represent function declaration as well as application.
  */
-export type Func = Common & {
-    readonly type: "func";
+export type Func = Common<NodeType.Func> & {
     readonly func: Node;
     readonly args: OneOrMore<Node>;
 };
@@ -157,37 +154,29 @@ export type Func = Common & {
 /**
  * Infinity
  */
-export type Infinity = Common & {
-    readonly type: "infinity";
-};
+export type Infinity = Common<NodeType.Infinity>;
 
 /**
  * pi
  * TODO: Why is pi special?  Maybe we should just use Ident for pi.  What about e?
  */
-export type Pi = Common & {
-    readonly type: "pi";
-};
+export type Pi = Common<NodeType.Pi>;
 
 /**
  * Ellipsis
  */
-export type Ellipsis = Common & {
-    readonly type: "ellipsis";
-};
+export type Ellipsis = Common<NodeType.Ellipsis>;
 
 /**
  * Absolute value
  *
  * e.g. 5! = 1 * 2 * 3 * 4 * 5
  */
-export type Abs = Common & {
-    readonly type: "abs";
+export type Abs = Common<NodeType.Abs> & {
     readonly arg: Node;
 };
 
-export type Parens = Common & {
-    readonly type: "Parens";
+export type Parens = Common<NodeType.Parens> & {
     readonly arg: Node;
 };
 
@@ -208,8 +197,7 @@ type Limits = {
 /**
  * Summation
  */
-export type Sum = Common & {
-    readonly type: "Sum";
+export type Sum = Common<NodeType.Sum> & {
     readonly arg: Node;
     readonly bvar: Identifier; // bound variable, i.e. the variable being summed over
     // TODO: support `condition` and `domainofapplication` as well,
@@ -220,8 +208,7 @@ export type Sum = Common & {
 /**
  * Product
  */
-export type Product = Common & {
-    readonly type: "Product";
+export type Product = Common<NodeType.Product> & {
     readonly arg: Node;
     readonly bvar: Identifier; // bound variable, i.e. the variable being multiplied over
     readonly limits: Limits;
@@ -235,8 +222,7 @@ type TendsTo = {
 /**
  * Limit
  */
-export type Limit = Common & {
-    readonly type: "Limit";
+export type Limit = Common<NodeType.Limit> & {
     readonly arg: Node;
     readonly bvar: Identifier;
     readonly tendsTo: TendsTo;
@@ -245,8 +231,7 @@ export type Limit = Common & {
 /**
  * Derivative
  */
-export type Derivative = Common & {
-    readonly type: "Derivative";
+export type Derivative = Common<NodeType.Derivative> & {
     readonly arg: Node;
     readonly degree?: number; // if no degree is provided this is treated as the first derivative
 };
@@ -254,8 +239,7 @@ export type Derivative = Common & {
 /**
  * Partial derivative
  */
-export type PartialDerivative = Common & {
-    readonly type: "PartialDerivative";
+export type PartialDerivative = Common<NodeType.PartialDerivative> & {
     // TODO: This is insufficient to model high degree partial derivatives
     // https://www.w3.org/TR/MathML3/chapter4.html#contm.partialdiff
     readonly args: readonly [Node, Node];
@@ -264,8 +248,7 @@ export type PartialDerivative = Common & {
 /**
  * Integral
  */
-export type Integral = Common & {
-    readonly type: "Integral";
+export type Integral = Common<NodeType.Integral> & {
     readonly arg: Node;
     readonly bvar: Identifier;
     // TODO: support `domainofapplication`,
@@ -275,30 +258,30 @@ export type Integral = Common & {
 
 type RelationOperator = "eq" | "neq" | "lt" | "lte" | "gt" | "gte";
 
-export type VerticalAdditionToRelation = Common & {
-    readonly type: "VerticalAdditionToRelation";
-    readonly relOp: RelationOperator;
-    readonly originalRelation: {
-        readonly left: readonly (Node | null)[];
-        readonly right: readonly (Node | null)[];
+export type VerticalAdditionToRelation =
+    Common<NodeType.VerticalAdditionToRelation> & {
+        readonly relOp: RelationOperator;
+        readonly originalRelation: {
+            readonly left: readonly (Node | null)[];
+            readonly right: readonly (Node | null)[];
+        };
+        readonly actions: {
+            readonly left: readonly (Node | null)[];
+            readonly right: readonly (Node | null)[];
+        };
+        readonly resultingRelation?: {
+            readonly left: readonly (Node | null)[];
+            readonly right: readonly (Node | null)[];
+        };
     };
-    readonly actions: {
-        readonly left: readonly (Node | null)[];
-        readonly right: readonly (Node | null)[];
-    };
-    readonly resultingRelation?: {
-        readonly left: readonly (Node | null)[];
-        readonly right: readonly (Node | null)[];
-    };
-};
 
 // When complete, the result of this is a logic value
-export type SystemOfRelationsElimination = Common & {
-    readonly type: "SystemOfRelationsElimination";
-    readonly relOp: RelationOperator;
-    // TODO: fill this out
-    // two or three rows
-};
+export type SystemOfRelationsElimination =
+    Common<NodeType.SystemOfRelationsElimination> & {
+        readonly relOp: RelationOperator;
+        // TODO: fill this out
+        // two or three rows
+    };
 
 // Basic Arithmetic Algorithms
 
@@ -308,16 +291,14 @@ type Digit = Num;
 // TODO: extend these types to support decimals
 
 // When complete, the result of this is a numeric value
-export type LongAddition = Common & {
-    readonly type: "LongAddition";
+export type LongAddition = Common<NodeType.LongAddition> & {
     readonly terms: readonly (readonly Digit[])[];
     readonly sum: readonly (Digit | null)[];
     readonly carries: readonly (Digit | null)[];
 };
 
 // When complete, the result of this is a numeric value
-export type LongSubtraction = Common & {
-    readonly type: "LongSubtraction";
+export type LongSubtraction = Common<NodeType.LongSubtraction> & {
     readonly minuend: readonly Digit[];
     readonly subtrahend: readonly (Digit | null)[];
     readonly difference: readonly (Digit | null)[];
@@ -325,8 +306,7 @@ export type LongSubtraction = Common & {
 };
 
 // When complete, the result of this is a numeric value
-export type LongMultiplication = Common & {
-    readonly type: "LongMultiplication";
+export type LongMultiplication = Common<NodeType.LongMultiplication> & {
     readonly factors: readonly (readonly Digit[])[];
     readonly partialProducts: readonly (readonly Digit[])[];
     readonly product: readonly (Digit | null)[];
@@ -334,8 +314,7 @@ export type LongMultiplication = Common & {
 };
 
 // When complete, the result of this is a numeric value
-export type LongDivision = Common & {
-    readonly type: "LongDivision";
+export type LongDivision = Common<NodeType.LongDivision> & {
     readonly dividend: readonly Digit[];
     readonly divisor: readonly (Digit | null)[];
     readonly quotient: readonly (Digit | null)[];
@@ -375,112 +354,95 @@ export type LogicNode =
 /**
  * True
  */
-export type True = Common & {
-    readonly type: "true";
-};
+export type True = Common<NodeType.True>;
 
 /**
  * False
  */
-export type False = Common & {
-    readonly type: "false";
-};
+export type False = Common<NodeType.False>;
 
 /**
  * Logical And (Conjunction)
  */
-export type And = Common & {
-    readonly type: "and";
+export type And = Common<NodeType.And> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Logical Or (Disjunction)
  */
-export type Or = Common & {
-    readonly type: "or";
+export type Or = Common<NodeType.Or> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Logical Not (Inverse)
  */
-export type Not = Common & {
-    readonly type: "not";
+export type Not = Common<NodeType.Not> & {
     readonly arg: Node;
 };
 
 /**
  * Exclusive Or
  */
-export type Xor = Common & {
-    readonly type: "xor";
+export type Xor = Common<NodeType.Xor> & {
     readonly args: TwoOrMore<Node>;
 };
 
-export type Implies = Common & {
-    readonly type: "implies";
+export type Implies = Common<NodeType.Implies> & {
     readonly args: readonly [Node, Node];
 };
 
-export type Iff = Common & {
-    readonly type: "iff";
+export type Iff = Common<NodeType.Iff> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Equals
  */
-export type Eq = Common & {
-    readonly type: "eq";
+export type Eq = Common<NodeType.Eq> & {
     readonly args: TwoOrMore<Node> | TwoOrMore<Node> | TwoOrMore<Node>;
 };
 
 /**
  * Not Equals
  */
-export type Neq = Common & {
-    readonly type: "neq";
+export type Neq = Common<NodeType.Neq> & {
     readonly args: TwoOrMore<Node> | TwoOrMore<Node> | TwoOrMore<Node>;
 };
 
 /**
  * Less Than
  */
-export type Lt = Common & {
-    readonly type: "lt";
+export type Lt = Common<NodeType.Lt> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Less Than or Equal to
  */
-export type Lte = Common & {
-    readonly type: "lte";
+export type Lte = Common<NodeType.Lte> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Greater Than
  */
-export type Gt = Common & {
-    readonly type: "gt";
+export type Gt = Common<NodeType.Gt> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Greater Than or Equal to
  */
-export type Gte = Common & {
-    readonly type: "gte";
+export type Gte = Common<NodeType.Gte> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Element in set
  */
-export type In = Common & {
-    readonly type: "in";
+export type In = Common<NodeType.In> & {
     readonly element: Node;
     readonly set: Node;
 };
@@ -488,8 +450,7 @@ export type In = Common & {
 /**
  * Element is not a set
  */
-export type NotIn = Common & {
-    readonly type: "notin";
+export type NotIn = Common<NodeType.NotIn> & {
     readonly element: Node;
     readonly set: Node;
 };
@@ -497,32 +458,28 @@ export type NotIn = Common & {
 /**
  * Subset
  */
-export type Subset = Common & {
-    readonly type: "subset";
+export type Subset = Common<NodeType.Subset> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Proper Subset
  */
-export type ProperSubset = Common & {
-    readonly type: "prsubset";
+export type ProperSubset = Common<NodeType.ProperSubset> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Not a Subset
  */
-export type NotSubset = Common & {
-    readonly type: "notsubset";
+export type NotSubset = Common<NodeType.NotSubset> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Propert Not a Subset
  */
-export type NotProperSubset = Common & {
-    readonly type: "notprsubset";
+export type NotProperSubset = Common<NodeType.NotProperSubset> & {
     readonly args: TwoOrMore<Node>;
 };
 
@@ -547,8 +504,7 @@ export type SetNode =
 /**
  * Set containing zero or more elements
  */
-export type Set = Common & {
-    readonly type: "set";
+export type Set = Common<NodeType.Set> & {
     // TODO: expand this to include other things like words, shapes, images, etc.
     readonly args: readonly Node[];
 };
@@ -557,39 +513,33 @@ export type Set = Common & {
  * Empty Set
  * A set containing no elements.
  */
-export type EmptySet = Common & {
-    readonly type: "empty";
-};
+export type EmptySet = Common<NodeType.EmptySet>;
 
 /**
  * Union
  */
-export type Union = Common & {
-    readonly type: "union";
+export type Union = Common<NodeType.Union> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Intersection
  */
-export type Intersection = Common & {
-    readonly type: "intersection";
+export type Intersection = Common<NodeType.Intersection> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Set Difference
  */
-export type SetDiff = Common & {
-    readonly type: "setdiff";
+export type SetDiff = Common<NodeType.SetDiff> & {
     readonly args: readonly [Node, Node];
 };
 
 /**
  * Cartesian Product
  */
-export type CartesianProduct = Common & {
-    readonly type: "cartesian_product";
+export type CartesianProduct = Common<NodeType.CartesianProduct> & {
     readonly args: TwoOrMore<Node>;
 };
 
@@ -597,46 +547,29 @@ export type CartesianProduct = Common & {
  * Natural Numbers (counting numbers)
  * e.g. 1, 2, 3, ...
  */
-export type Naturals = Common & {
-    readonly type: "naturals";
-};
+export type Naturals = Common<NodeType.Naturals>;
 
 /**
  * Integers
  * e.g. ..., -2, -1, 0, 1, 2, ...
  */
-export type Integers = Common & {
-    readonly type: "integers";
-};
+export type Integers = Common<NodeType.Integers>;
 
 /**
  * Rationals
  * p / q, where p and q are integers
  */
-export type Rationals = Common & {
-    readonly type: "rationals";
-};
+export type Rationals = Common<NodeType.Rationals>;
 
 /**
  * Real Numbers
  */
-export type Reals = Common & {
-    readonly type: "reals";
-};
+export type Reals = Common<NodeType.Reals>;
 
 /**
  * Complex Numbers
  */
-export type Complexes = Common & {
-    readonly type: "complexes";
-};
-
-export interface Common {
-    readonly id: number;
-    readonly loc?: SourceLocation;
-    // TODO: rename this to something less ambiguous
-    source?: string; // eslint-disable-line functional/prefer-readonly-type
-}
+export type Complexes = Common<NodeType.Complexes>;
 
 // TODO: dedupe with editor-core and parser-factory
 export interface SourceLocation {
