@@ -3,6 +3,7 @@
  * with semantic nodes.
  */
 import {getId} from "@math-blocks/core";
+import {NodeType} from "@math-blocks/semantic";
 
 import * as types from "./types";
 
@@ -10,7 +11,7 @@ export const identifier = (
     name: string,
     loc?: types.SourceLocation,
 ): types.Identifier => ({
-    type: "Identifier",
+    type: NodeType.Identifier,
     id: getId(),
     name,
     loc,
@@ -20,14 +21,14 @@ export const number = <T extends string>(
     value: T,
     loc?: types.SourceLocation,
 ): types.Num => ({
-    type: "number",
+    type: NodeType.Number,
     id: getId(),
     value: value.replace(/-/g, "\u2212"),
     loc,
 });
 
 export const ellipsis = (loc?: types.SourceLocation): types.Ellipsis => ({
-    type: "ellipsis",
+    type: NodeType.Ellipsis,
     id: getId(),
     loc,
 });
@@ -36,7 +37,7 @@ export const add = (
     args: TwoOrMore<types.Node>,
     loc?: types.SourceLocation,
 ): types.Add => ({
-    type: "add",
+    type: NodeType.Add,
     id: getId(),
     args,
     loc,
@@ -47,7 +48,7 @@ export const mul = (
     implicit = false,
     loc?: types.SourceLocation,
 ): types.Mul => ({
-    type: "mul",
+    type: NodeType.Mul,
     id: getId(),
     implicit,
     args,
@@ -58,7 +59,7 @@ export const eq = (
     args: TwoOrMore<types.Node>,
     loc?: types.SourceLocation,
 ): types.Eq => ({
-    type: "eq",
+    type: NodeType.Eq,
     id: getId(),
     args,
     loc,
@@ -69,7 +70,7 @@ export const neg = (
     subtraction = false,
     loc?: types.SourceLocation,
 ): types.Neg => ({
-    type: "neg",
+    type: NodeType.Neg,
     id: getId(),
     arg,
     subtraction,
@@ -81,7 +82,7 @@ export const plusminus = (
     arity: "unary" | "binary",
     loc?: types.SourceLocation,
 ): types.PlusMinus => ({
-    type: "plusminus",
+    type: NodeType.PlusMinus,
     id: getId(),
     arg,
     arity,
@@ -93,7 +94,7 @@ export const div = (
     den: types.Node,
     loc?: types.SourceLocation,
 ): types.Div => ({
-    type: "div",
+    type: NodeType.Div,
     id: getId(),
     args: [num, den],
     loc,
@@ -104,7 +105,7 @@ export const pow = (
     exp: types.Node,
     loc?: types.SourceLocation,
 ): types.Pow => ({
-    type: "pow",
+    type: NodeType.Pow,
     id: getId(),
     base,
     exp,
@@ -116,7 +117,7 @@ export const root = (
     index: types.Node,
     loc?: types.SourceLocation,
 ): types.Root => ({
-    type: "root",
+    type: NodeType.Root,
     id: getId(),
     radicand,
     index,
@@ -128,7 +129,7 @@ export const sqrt = (
     radicand: types.Node,
     loc?: types.SourceLocation,
 ): types.Root => ({
-    type: "root",
+    type: NodeType.Root,
     id: getId(),
     radicand,
     index: number("2"),
@@ -140,7 +141,7 @@ export const parens = (
     arg: types.Node,
     loc?: types.SourceLocation,
 ): types.Parens => ({
-    type: "Parens",
+    type: NodeType.Parens,
     id: getId(),
     arg,
     loc,

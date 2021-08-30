@@ -2,6 +2,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {print} from "../printer";
 import {parse} from "../text-parser";
 
+const {NodeType} = Semantic;
+
 describe("printer", () => {
     describe("add/sub", () => {
         test("1 - x", () => {
@@ -86,16 +88,16 @@ describe("printer", () => {
 
         test("leading subtraction", () => {
             const ast: Semantic.types.NumericNode = {
-                type: "add",
+                type: NodeType.Add,
                 id: 0,
                 args: [
                     {
-                        type: "neg",
+                        type: NodeType.Neg,
                         id: 1,
                         subtraction: true,
-                        arg: {type: "Identifier", name: "a", id: 2},
+                        arg: {type: NodeType.Identifier, name: "a", id: 2},
                     },
-                    {type: "Identifier", name: "b", id: 3},
+                    {type: NodeType.Identifier, name: "b", id: 3},
                 ],
             } as const;
 

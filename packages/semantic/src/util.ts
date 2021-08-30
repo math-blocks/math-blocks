@@ -5,6 +5,7 @@
 import Fraction from "fraction.js";
 
 import * as types from "./types";
+import {NodeType} from "./enums";
 
 export const isSubtraction = (node: types.NumericNode): node is types.Neg =>
     node.type === "neg" && node.subtraction;
@@ -44,29 +45,30 @@ export const isNumber = (node: types.Node): boolean => {
 
 // TODO: autogenerate this from the validation schema
 export const isNumeric = (node: types.Node): node is types.NumericNode => {
-    return [
-        "number",
-        "Identifier",
-        "pi",
-        "infinity",
-        "ellipsis",
-        "add",
-        "mul",
-        "func",
-        "div",
-        "mod",
-        "root",
-        "pow",
-        "log",
-        "neg",
-        "abs",
-        "Sum",
-        "Product",
-        "limit",
-        "Derivative",
-        "PartialDerivative",
-        "Integral",
-    ].includes(node.type);
+    const NumericNodeTypes: NodeType[] = [
+        NodeType.Number,
+        NodeType.Identifier,
+        NodeType.Pi,
+        NodeType.Infinity,
+        NodeType.Ellipsis,
+        NodeType.Add,
+        NodeType.Mul,
+        NodeType.Func,
+        NodeType.Div,
+        NodeType.Mod,
+        NodeType.Root,
+        NodeType.Pow,
+        NodeType.Log,
+        NodeType.Neg,
+        NodeType.Abs,
+        NodeType.Sum,
+        NodeType.Product,
+        NodeType.Limit,
+        NodeType.Derivative,
+        NodeType.PartialDerivative,
+        NodeType.Integral,
+    ];
+    return NumericNodeTypes.includes(node.type);
 };
 
 const isObject = (val: unknown): val is Record<string, unknown> => {

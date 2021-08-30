@@ -1,11 +1,12 @@
 import {traverse} from "../util";
 import * as types from "../types";
+import {NodeType} from "../enums";
 
 describe("traverse", () => {
     it("call enter and exit once for a single node", () => {
         const num: types.Num = {
             id: 0,
-            type: "number",
+            type: NodeType.Number,
             value: "123",
         };
         const enter = jest.fn();
@@ -22,16 +23,16 @@ describe("traverse", () => {
     it("should traverse arrays", () => {
         const add: types.Add = {
             id: 0,
-            type: "add",
+            type: NodeType.Add,
             args: [
                 {
                     id: 1,
-                    type: "number",
+                    type: NodeType.Number,
                     value: "123",
                 },
                 {
                     id: 2,
-                    type: "number",
+                    type: NodeType.Number,
                     value: "456",
                 },
             ],
@@ -49,15 +50,15 @@ describe("traverse", () => {
     it("call traverse properties", () => {
         const power: types.Pow = {
             id: 0,
-            type: "pow",
+            type: NodeType.Pow,
             base: {
                 id: 1,
-                type: "Identifier",
+                type: NodeType.Identifier,
                 name: "x",
             },
             exp: {
                 id: 2,
-                type: "number",
+                type: NodeType.Number,
                 value: "3",
             },
         };
@@ -74,7 +75,7 @@ describe("traverse", () => {
     it("should not call cb on location", () => {
         const num: types.Num = {
             id: 0,
-            type: "number",
+            type: NodeType.Number,
             value: "123",
             loc: {
                 path: [],
@@ -93,15 +94,15 @@ describe("traverse", () => {
     it("supports making changes to a node on exit", () => {
         const power: types.Pow = {
             id: 0,
-            type: "pow",
+            type: NodeType.Pow,
             base: {
                 id: 1,
-                type: "Identifier",
+                type: NodeType.Identifier,
                 name: "x",
             },
             exp: {
                 id: 2,
-                type: "number",
+                type: NodeType.Number,
                 value: "3",
             },
         };
@@ -136,16 +137,16 @@ describe("traverse", () => {
     it("supports making changes to an element in an array on exit", () => {
         const sum: types.Add = {
             id: 0,
-            type: "add",
+            type: NodeType.Add,
             args: [
                 {
                     id: 1,
-                    type: "Identifier",
+                    type: NodeType.Identifier,
                     name: "x",
                 },
                 {
                     id: 2,
-                    type: "number",
+                    type: NodeType.Number,
                     value: "3",
                 },
             ],

@@ -9,6 +9,8 @@ import {textRepsToTable} from "../../reducer/vertical-work/test-util";
 
 import {print} from "../printer";
 
+const {NodeType} = Semantic;
+
 expect.extend({toEqualEditorNode});
 
 declare global {
@@ -472,16 +474,16 @@ describe("print", () => {
 
     test("leading subtraction", () => {
         const ast: Semantic.types.NumericNode = {
-            type: "add",
+            type: NodeType.Add,
             id: 0,
             args: [
                 {
-                    type: "neg",
+                    type: NodeType.Neg,
                     id: 1,
                     subtraction: true,
-                    arg: {type: "Identifier", name: "a", id: 2},
+                    arg: {type: NodeType.Identifier, name: "a", id: 2},
                 },
-                {type: "Identifier", name: "b", id: 3},
+                {type: NodeType.Identifier, name: "b", id: 3},
             ],
         } as const;
 
@@ -640,7 +642,7 @@ describe("print", () => {
         // TODO: create Semantic.builders.vertAdd() to help with writing tests
         test("actions and before values at the start", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -672,7 +674,7 @@ describe("print", () => {
 
         test("negative numbers at the start of a row", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -702,7 +704,7 @@ describe("print", () => {
 
         test("actions before and after start row", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -723,7 +725,7 @@ describe("print", () => {
 
         test("actions before start row and aligned with items in start row", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -755,7 +757,7 @@ describe("print", () => {
 
         test("actions before start row and cells in next column aligned", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -788,7 +790,7 @@ describe("print", () => {
 
         test("more terms", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -820,7 +822,7 @@ describe("print", () => {
 
         test("more interleaving", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -854,7 +856,7 @@ describe("print", () => {
 
         test("three rows", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -905,7 +907,7 @@ describe("print", () => {
 
         test("three rows with leading action term", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
@@ -966,7 +968,7 @@ describe("print", () => {
 
         test("two rows with leading action term", () => {
             const vertAdd: Semantic.types.VerticalAdditionToRelation = {
-                type: "VerticalAdditionToRelation",
+                type: NodeType.VerticalAdditionToRelation,
                 id: getId(),
                 relOp: "eq",
                 originalRelation: {
