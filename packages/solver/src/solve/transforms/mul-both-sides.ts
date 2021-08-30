@@ -3,6 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {isTermOfIdent} from "../util";
 
+const {NodeType} = Semantic;
+
 export const mulBothSides: Transform = (before, ident) => {
     const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
@@ -12,7 +14,7 @@ export const mulBothSides: Transform = (before, ident) => {
 
     const leftTerms = Semantic.util.getTerms(left);
 
-    if (leftTerms.length === 1 && leftTerms[0].type === "div") {
+    if (leftTerms.length === 1 && leftTerms[0].type === NodeType.Div) {
         const [num, den] = leftTerms[0].args;
         if (isTermOfIdent(num, ident) && Semantic.util.isNumber(den)) {
             const newLeft = Semantic.builders.mul([leftTerms[0], den]);
@@ -34,7 +36,7 @@ export const mulBothSides: Transform = (before, ident) => {
 
     const rightTerms = Semantic.util.getTerms(right);
 
-    if (rightTerms.length === 1 && rightTerms[0].type === "div") {
+    if (rightTerms.length === 1 && rightTerms[0].type === NodeType.Div) {
         const [num, den] = rightTerms[0].args;
         if (isTermOfIdent(num, ident) && Semantic.util.isNumber(den)) {
             const newLeft = Semantic.builders.mul([left, den]);

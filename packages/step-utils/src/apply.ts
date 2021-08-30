@@ -2,6 +2,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Step} from "./types";
 
+const {NodeType} = Semantic;
+
 export const applyStep = (
     node: Semantic.types.Node,
     step: Step,
@@ -22,9 +24,9 @@ export const applyStep = (
             const newNode = step.after;
 
             if (
-                newNode.type === "add" &&
-                node.type !== "add" &&
-                parent?.type === "add"
+                newNode.type === NodeType.Add &&
+                node.type !== NodeType.Add &&
+                parent?.type === NodeType.Add
             ) {
                 // let the parent handle the application
                 return;
@@ -32,7 +34,7 @@ export const applyStep = (
             if (node.id === oldNode.id) {
                 return newNode;
             }
-            if (newNode.type === "add" && node.type === "add") {
+            if (newNode.type === NodeType.Add && node.type === NodeType.Add) {
                 const index = node.args.findIndex(
                     (arg: Semantic.types.NumericNode) => arg.id === oldNode.id,
                 );

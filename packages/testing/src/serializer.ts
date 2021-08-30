@@ -1,6 +1,8 @@
 // import {UnreachableCaseError} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
+const {NodeType} = Semantic;
+
 const printArgs = (
     type: string,
     args: readonly Semantic.types.Node[],
@@ -9,7 +11,7 @@ const printArgs = (
 ): string => {
     const hasGrandchildren = args.some(
         (arg: Semantic.types.Node) =>
-            arg.type !== "Identifier" && arg.type !== "number",
+            arg.type !== NodeType.Identifier && arg.type !== NodeType.Number,
     );
 
     if (hasGrandchildren) {
@@ -26,16 +28,16 @@ const printArgs = (
 };
 
 const symbols = {
-    infinity: "\u221e",
-    pi: "\u03c0",
-    ellipsis: "...", // TODO: replace with \u2026 or \u22ef
-    true: "T",
-    false: "F",
-    naturals: "\u2115",
-    integers: "\u2124",
-    rationals: "\u221a",
-    reals: "\u221d",
-    complexes: "\u2102",
+    [NodeType.Infinity]: "\u221e",
+    [NodeType.Pi]: "\u03c0",
+    [NodeType.Ellipsis]: "...", // TODO: replace with \u2026 or \u22ef
+    [NodeType.True]: "T",
+    [NodeType.False]: "F",
+    [NodeType.Naturals]: "\u2115",
+    [NodeType.Integers]: "\u2124",
+    [NodeType.Rationals]: "\u221a",
+    [NodeType.Reals]: "\u221d",
+    [NodeType.Complexes]: "\u2102",
 };
 
 type WorkRow = {
@@ -76,10 +78,10 @@ const print = (
         return "null";
     }
     switch (ast.type) {
-        case "number": {
+        case NodeType.Number: {
             return `${ast.value}`;
         }
-        case "Identifier": {
+        case NodeType.Identifier: {
             if (ast.subscript) {
                 return `(ident ${ast.name} ${print(
                     ast.subscript,
@@ -90,52 +92,53 @@ const print = (
                 return `${ast.name}`;
             }
         }
-        case "neg": {
+        case NodeType.Neg: {
             const type = ast.subtraction ? "neg.sub" : "neg";
             return `(${type} ${print(ast.arg, serialize, indent)})`;
         }
-        case "not":
-        case "abs":
-        case "Parens":
+        case NodeType.LogicalNot:
+        case NodeType.AbsoluteValue:
+        case NodeType.Parens:
             return `(${ast.type} ${print(ast.arg, serialize, indent)})`;
-        case "mul": {
+        case NodeType.Mul: {
             const type = ast.implicit ? "mul.imp" : "mul.exp";
             return printArgs(type, ast.args, serialize, indent);
         }
-        case "add":
-        case "div":
-        case "mod":
-        case "and":
-        case "or":
-        case "xor":
-        case "implies":
-        case "iff":
-        case "eq":
-        case "neq":
-        case "lt":
-        case "lte":
-        case "gt":
-        case "gte":
-        case "set":
-        case "union":
-        case "intersection":
-        case "setdiff":
-        case "cartesian_product":
-        case "subset":
-        case "prsubset":
-        case "notsubset":
-        case "notprsubset":
+        case NodeType.Add:
+        case NodeType.Div:
+        case NodeType.Modulo:
+        case NodeType.LogicalAnd:
+        case NodeType.LogicalOr:
+        case NodeType.ExclusiveOr:
+        case NodeType.Conditional:
+        case NodeType.Biconditional:
+        case NodeType.Equals:
+        case NodeType.NotEquals:
+        case NodeType.LessThan:
+        case NodeType.LessThanOrEquals:
+        case NodeType.GreaterThan:
+        case NodeType.GreaterThanOrEquals:
+        case NodeType.Set:
+        case NodeType.Union:
+        case NodeType.SetIntersection:
+        case NodeType.SetDifference:
+        case NodeType.CartesianProduct:
+        case NodeType.Subset:
+        case NodeType.ProperSubset:
+        case NodeType.NotSubset:
+        case NodeType.NotProperSubset:
             return printArgs(ast.type, ast.args, serialize, indent);
-        case "root": {
+        case NodeType.Root: {
             const radicand = print(ast.radicand, serialize, indent);
             const index = print(ast.index, serialize, indent);
             return `(${ast.type} :radicand ${radicand} :index ${index})`;
         }
-        case "pow": {
+        case NodeType.Power: {
             const hasGrandchildren =
-                (ast.base.type !== "Identifier" &&
-                    ast.base.type !== "number") ||
-                (ast.exp.type !== "Identifier" && ast.exp.type !== "number");
+                (ast.base.type !== NodeType.Identifier &&
+                    ast.base.type !== NodeType.Number) ||
+                (ast.exp.type !== NodeType.Identifier &&
+                    ast.exp.type !== NodeType.Number);
             const base = print(ast.base, serialize, indent);
             const exp = print(ast.exp, serialize, indent);
             return hasGrandchildren
@@ -144,18 +147,18 @@ const print = (
                   )})`
                 : `(${ast.type} :base ${base} :exp ${exp})`;
         }
-        case "infinity":
-        case "pi":
-        case "ellipsis":
-        case "true":
-        case "false":
-        case "naturals":
-        case "integers":
-        case "rationals":
-        case "reals":
-        case "complexes":
+        case NodeType.Infinity:
+        case NodeType.Pi:
+        case NodeType.Ellipsis:
+        case NodeType.True:
+        case NodeType.False:
+        case NodeType.Naturals:
+        case NodeType.Integers:
+        case NodeType.Rationals:
+        case NodeType.Reals:
+        case NodeType.Complexes:
             return symbols[ast.type];
-        case "VerticalAdditionToRelation": {
+        case NodeType.VerticalAdditionToRelation: {
             const relOp = ast.relOp;
             const originalRelation = printWorkRow(
                 ast.originalRelation,

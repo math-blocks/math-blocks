@@ -2,16 +2,18 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+const {NodeType} = Semantic;
+
 export const mulFraction: Transform = (before) => {
     if (
-        before.type === "mul" &&
-        before.args.some((arg) => arg.type === "div")
+        before.type === NodeType.Mul &&
+        before.args.some((arg) => arg.type === NodeType.Div)
     ) {
         const numFactors: Semantic.types.NumericNode[] = [];
         const denFactors: Semantic.types.NumericNode[] = [];
 
         for (const factor of before.args) {
-            if (factor.type === "div") {
+            if (factor.type === NodeType.Div) {
                 const [num, den] = factor.args;
                 numFactors.push(...Semantic.util.getFactors(num));
                 denFactors.push(...Semantic.util.getFactors(den));

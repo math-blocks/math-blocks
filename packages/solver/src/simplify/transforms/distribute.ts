@@ -5,6 +5,8 @@ import type {Mutable} from "utility-types";
 import {Transform} from "../types";
 import {simplifyMul} from "../util";
 
+const {NodeType} = Semantic;
+
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
     node: Semantic.types.Neg,
@@ -50,7 +52,7 @@ const negToSub = (
     index: number,
     substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
-    if (before.type === "neg" && !before.subtraction && index > 0) {
+    if (before.type === NodeType.Neg && !before.subtraction && index > 0) {
         const after = Semantic.builders.neg(before.arg, true);
         // TODO: return new steps instead of mutating
         substeps.push({
@@ -71,7 +73,7 @@ const distMul = (
 ): readonly Semantic.types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
-        if (node.args[1].type === "add") {
+        if (node.args[1].type === NodeType.Add) {
             const add = node.args[1];
 
             // Convert subtraction to negative within the `add` node
@@ -125,7 +127,7 @@ const distMul = (
                 );
                 return newTerm;
             });
-        } else if (node.args[0].type === "add") {
+        } else if (node.args[0].type === NodeType.Add) {
             const add = node.args[0];
 
             // Convert subtraction to negative within the `add` node
@@ -205,14 +207,14 @@ export const distribute: Transform = (node, path): Step | undefined => {
     }
 
     const parent = path[path.length - 1];
-    if (node.type === "mul" && parent && parent.type === "add") {
+    if (node.type === NodeType.Mul && parent && parent.type === NodeType.Add) {
         // The parent handles the distribution in this cases to ensure that
         // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
         // would eliminate the parentheses but it's not normally how a human
         // would show their work.
         return undefined;
     }
-    if (node.type === "neg" && parent && parent.type === "add") {
+    if (node.type === NodeType.Neg && parent && parent.type === NodeType.Add) {
         // The parent handles the distribution in this cases to ensure that
         // 1 + 2(x + 1) -> 1 + 2x + 2 instead of 1 + (2x + 2).  Drop parens
         // would eliminate the parentheses but it's not normally how a human
@@ -230,9 +232,9 @@ export const distribute: Transform = (node, path): Step | undefined => {
         }
 
         let newTerms: readonly Semantic.types.NumericNode[] | undefined;
-        if (node.type === "neg") {
+        if (node.type === NodeType.Neg) {
             newTerms = distSub(node, substeps);
-        } else if (node.type === "mul") {
+        } else if (node.type === NodeType.Mul) {
             newTerms = distMul(node, substeps);
         }
 

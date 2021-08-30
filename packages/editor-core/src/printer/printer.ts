@@ -13,6 +13,8 @@ import {
 } from "../reducer/vertical-work/util";
 import {zip} from "../parser/util";
 
+const {NodeType} = Semantic;
+
 // TODO: when parsing editor nodes provide some way to link to the IDs of
 // the original nodes, even if they don't appear in the semantic tree as
 // is the case with most operators
@@ -60,14 +62,14 @@ const _vertAddToColumns = (
         resultTerms?.findIndex((cell) => cell != null) ?? -1;
 
     const getOperator = (node: Semantic.types.NumericNode): types.CharAtom => {
-        return node.type === "neg" && node.subtraction
+        return node.type === NodeType.Neg && node.subtraction
             ? builders.char("\u2212")
             : builders.char("+");
     };
     const getValue = (
         node: Semantic.types.NumericNode | null,
     ): types.CharRow => {
-        return node?.type === "neg" && node.subtraction
+        return node?.type === NodeType.Neg && node.subtraction
             ? _cellToCharRow(node.arg, oneToOne)
             : _cellToCharRow(node, oneToOne);
     };
@@ -191,13 +193,13 @@ const _print = (
     oneToOne: boolean,
 ): types.CharNode => {
     switch (expr.type) {
-        case "Identifier": {
+        case NodeType.Identifier: {
             // TODO: handle multi-character identifiers, e.g. sin, cos, etc.
             // TODO: handle subscripts
 
             return builders.char(expr.name);
         }
-        case "number": {
+        case NodeType.Number: {
             // How do we avoid creating a bunch of ids that we immediately
             // throw away because this number is part of a larger expression
             // and thus contained within a larger row?
@@ -205,19 +207,19 @@ const _print = (
                 expr.value.split("").map((char) => builders.char(char)),
             );
         }
-        case "add": {
+        case NodeType.Add: {
             const children: types.CharNode[] = [];
 
             for (let i = 0; i < expr.args.length; i++) {
                 const arg = expr.args[i];
                 if (i > 0) {
-                    if (arg.type === "neg" && arg.subtraction) {
+                    if (arg.type === NodeType.Neg && arg.subtraction) {
                         children.push(builders.char("\u2212"));
                     } else {
                         children.push(builders.char("+"));
                     }
                 } else {
-                    if (arg.type === "neg" && arg.subtraction) {
+                    if (arg.type === NodeType.Neg && arg.subtraction) {
                         console.warn(
                             "leading subtraction term should be simple negation",
                         );
@@ -230,12 +232,12 @@ const _print = (
                 const node = _print(arg, oneToOne);
                 if (node.type === "row") {
                     const inner =
-                        arg.type === "neg" && arg.subtraction
+                        arg.type === NodeType.Neg && arg.subtraction
                             ? // strip off the leading "-"
                               node.children.slice(1)
                             : node.children;
 
-                    if (arg.type === "add") {
+                    if (arg.type === NodeType.Add) {
                         children.push(
                             builders.delimited(
                                 inner,
@@ -253,20 +255,20 @@ const _print = (
 
             return builders.row(children);
         }
-        case "mul": {
+        case NodeType.Mul: {
             const children: types.CharNode[] = [];
 
             const wrapAll = expr.args.some((arg, index) => {
-                if (arg.type === "number" && index > 0) {
+                if (arg.type === NodeType.Number && index > 0) {
                     return true;
                 }
-                if (arg.type === "neg" && (index > 0 || oneToOne)) {
+                if (arg.type === NodeType.Neg && (index > 0 || oneToOne)) {
                     return true;
                 }
-                if (arg.type === "div" && expr.implicit && index > 0) {
+                if (arg.type === NodeType.Div && expr.implicit && index > 0) {
                     return true;
                 }
-                if (arg.type === "mul" && expr.implicit) {
+                if (arg.type === NodeType.Mul && expr.implicit) {
                     return true;
                 }
                 return false;
@@ -274,7 +276,8 @@ const _print = (
 
             for (const arg of expr.args) {
                 // TODO: we probably also want to wrap things like (a * b)(x * y)
-                const wrap = (wrapAll && expr.implicit) || arg.type === "add";
+                const wrap =
+                    (wrapAll && expr.implicit) || arg.type === NodeType.Add;
 
                 if (wrap) {
                     children.push(
@@ -299,14 +302,14 @@ const _print = (
 
             return builders.row(children);
         }
-        case "neg": {
+        case NodeType.Neg: {
             if (
-                expr.arg.type === "number" ||
-                expr.arg.type === "Identifier" ||
-                expr.arg.type === "div" ||
-                (expr.arg.type === "neg" && !expr.arg.subtraction) ||
-                (expr.arg.type === "mul" && expr.arg.implicit) ||
-                expr.arg.type === "pow" // pow has a higher precedence
+                expr.arg.type === NodeType.Number ||
+                expr.arg.type === NodeType.Identifier ||
+                expr.arg.type === NodeType.Div ||
+                (expr.arg.type === NodeType.Neg && !expr.arg.subtraction) ||
+                (expr.arg.type === NodeType.Mul && expr.arg.implicit) ||
+                expr.arg.type === NodeType.Power // pow has a higher precedence
             ) {
                 return builders.row([
                     builders.char("\u2212"),
@@ -323,7 +326,7 @@ const _print = (
                 ]);
             }
         }
-        case "div": {
+        case NodeType.Div: {
             const numerator = _print(expr.args[0], oneToOne);
             const denominator = _print(expr.args[1], oneToOne);
             return builders.frac(
@@ -333,7 +336,7 @@ const _print = (
                     : [denominator],
             );
         }
-        case "eq": {
+        case NodeType.Equals: {
             const children: types.CharNode[] = [];
 
             for (const arg of expr.args) {
@@ -345,10 +348,13 @@ const _print = (
 
             return builders.row(children);
         }
-        case "pow": {
+        case NodeType.Power: {
             const {base, exp} = expr;
 
-            if (base.type === "Identifier" || base.type === "number") {
+            if (
+                base.type === NodeType.Identifier ||
+                base.type === NodeType.Number
+            ) {
                 return builders.row([
                     ...getChildren(base, oneToOne),
                     builders.subsup(undefined, getChildren(exp, oneToOne)),
@@ -364,7 +370,7 @@ const _print = (
                 ]);
             }
         }
-        case "Parens": {
+        case NodeType.Parens: {
             const children: types.CharNode[] = [
                 builders.delimited(
                     getChildren(expr.arg, oneToOne),
@@ -375,7 +381,7 @@ const _print = (
 
             return builders.row(children);
         }
-        case "VerticalAdditionToRelation": {
+        case NodeType.VerticalAdditionToRelation: {
             const columns: Column[] = [];
 
             // TODO: insert operators

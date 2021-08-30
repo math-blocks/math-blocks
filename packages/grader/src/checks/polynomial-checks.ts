@@ -6,13 +6,15 @@ import type {Check, Result} from "../types";
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 
+const {NodeType} = Semantic;
+
 // 2x + 3x -> 5x
 export const collectLikeTerms: Check = (
     prev,
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "add") {
+    if (prev.type !== NodeType.Add) {
         return;
     }
 
@@ -52,7 +54,10 @@ export const collectLikeTerms: Check = (
             // If there's a single number factor then it's the coefficient
             if (numericFactors.length === 1) {
                 coeff = numericFactors[0];
-                if (coeff.type === "add" || coeff.type === "mul") {
+                if (
+                    coeff.type === NodeType.Add ||
+                    coeff.type === NodeType.Mul
+                ) {
                     const originalCoeff = coeff;
                     coeff = Semantic.builders.number(
                         Semantic.util

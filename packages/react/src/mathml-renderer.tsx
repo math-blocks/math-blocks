@@ -2,20 +2,25 @@ import * as React from "react";
 
 import * as Semantic from "@math-blocks/semantic";
 
+const {NodeType} = Semantic;
+
 // pipelines:
 // Semantic -> HAST(MathML) -> React/Vue/etc.
 // Editor -> HAST(SVG) -> React/Vue/etc.
 
 const print = (math: Semantic.types.Node): React.ReactElement | null => {
     switch (math.type) {
-        case "add": {
+        case NodeType.Add: {
             // TODO: handle adding parens when necessary (this is kind of link printers we have)
             const children: React.ReactNode[] = [];
             // TODO: give each child a key
             for (const arg of math.args) {
-                if (arg.type === "neg" && arg.subtraction) {
+                if (arg.type === NodeType.Neg && arg.subtraction) {
                     children.push(<mo>-</mo>);
-                } else if (arg.type === "plusminus" && arg.arity === "binary") {
+                } else if (
+                    arg.type === NodeType.PlusMinus &&
+                    arg.arity === "binary"
+                ) {
                     children.push(<mo>±</mo>);
                 } else {
                     children.push(<mo>+</mo>);
@@ -25,12 +30,12 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
             children.shift(); // removes the leading operator
             return <mrow>{children}</mrow>;
         }
-        case "mul": {
+        case NodeType.Mul: {
             const children: React.ReactNode[] = [];
             // TODO: give each child a key
             for (const arg of math.args) {
                 const child = print(arg);
-                if (arg.type === "add") {
+                if (arg.type === NodeType.Add) {
                     children.push(
                         <mrow>
                             <mo>(</mo>
@@ -50,10 +55,10 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
             children.pop(); // removes the trailing operator
             return <mrow>{children}</mrow>;
         }
-        case "number": {
+        case NodeType.Number: {
             return <mn>{math.value}</mn>;
         }
-        case "Identifier": {
+        case NodeType.Identifier: {
             if (math.subscript) {
                 return (
                     <msub>
@@ -65,7 +70,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
                 return <mi>{math.name}</mi>;
             }
         }
-        case "neg": {
+        case NodeType.Neg: {
             const arg = print(math.arg);
             return math.subtraction ? (
                 arg
@@ -76,7 +81,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
                 </mrow>
             );
         }
-        case "plusminus": {
+        case NodeType.PlusMinus: {
             const arg = print(math.arg);
             return math.arity === "binary" ? (
                 arg
@@ -87,7 +92,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
                 </mrow>
             );
         }
-        case "eq": {
+        case NodeType.Equals: {
             const children: React.ReactNode[] = [];
             // TODO: give each child a key
             for (const arg of math.args) {
@@ -97,7 +102,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
             children.pop(); // removes the trailing &equals;
             return <mrow>{children}</mrow>;
         }
-        case "div": {
+        case NodeType.Div: {
             // TODO: fraction from division using the division operator
             // TODO: remove <mrow> wrapper on children
             return (
@@ -107,7 +112,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
                 </mfrac>
             );
         }
-        case "pow": {
+        case NodeType.Power: {
             // TODO: check if math.base is an identifier with a subscript and
             // use msubsup in that situation
             return (
@@ -117,7 +122,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
                 </msup>
             );
         }
-        case "root": {
+        case NodeType.Root: {
             if (math.sqrt) {
                 // TODO: remove extra <mrow>
                 return <msqrt>{print(math.radicand)}</msqrt>;

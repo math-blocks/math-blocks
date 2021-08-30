@@ -78,7 +78,7 @@ describe("replaceNode", () => {
 
         replaceNodeWithId(root, two.id, three);
 
-        expect(root).toMatchInlineSnapshot(`(add 1 3)`);
+        expect(root).toMatchInlineSnapshot(`(Add 1 3)`);
     });
 
     test("finds a node in named property", () => {
@@ -89,7 +89,7 @@ describe("replaceNode", () => {
 
         replaceNodeWithId(root, two.id, three);
 
-        expect(root).toMatchInlineSnapshot(`(pow :base x :exp 3)`);
+        expect(root).toMatchInlineSnapshot(`(Power :base x :exp 3)`);
     });
 });
 

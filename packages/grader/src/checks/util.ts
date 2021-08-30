@@ -3,6 +3,8 @@ import {Step, applySteps} from "@math-blocks/step-utils";
 
 import type {Context, Result} from "../types";
 
+const {NodeType} = Semantic;
+
 // TODO: handle negative numbers
 export const primeDecomp = (n: number): readonly number[] => {
     if (!Number.isInteger(n)) {
@@ -40,7 +42,7 @@ export const decomposeFactors = (
 ): readonly Semantic.types.NumericNode[] => {
     return factors.reduce((result: Semantic.types.NumericNode[], factor) => {
         // TODO: add decomposition of powers
-        if (factor.type === "number") {
+        if (factor.type === NodeType.Number) {
             return [
                 ...result,
                 ...primeDecomp(parseInt(factor.value)).map((value) =>

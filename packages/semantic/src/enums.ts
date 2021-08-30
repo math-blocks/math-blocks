@@ -1,65 +1,89 @@
 export enum NodeType {
     // Numeric Node Types
-    Number = "number",
+    Number = "Number",
     Identifier = "Identifier",
-    Add = "add",
-    Mul = "mul",
-    Neg = "neg",
+
+    // Basic Operators
+    Add = "Add",
+    Mul = "Mul",
+    Neg = "Neg",
+    Div = "Div",
+    Modulo = "Modulo",
+    Root = "Root",
+    Power = "Power",
+    Log = "Log",
+
     PlusMinus = "plusminus",
     MinusPlus = "minusplus",
-    Div = "div",
-    Mod = "mod",
-    Root = "root",
-    Pow = "pow",
-    Log = "log",
-    Func = "func",
-    Infinity = "infinity",
-    Pi = "pi",
-    Ellipsis = "ellipsis",
-    Abs = "abs",
+
+    Func = "Func", // TODO: split into FunctionDefinition and FunctionEvaluation
+    Ellipsis = "Ellipsis",
     Parens = "Parens",
-    Sum = "Sum",
+
+    // Important Numeric Values
+    Pi = "Pi",
+    Infinity = "Infinity",
+
+    // Pre-calculus
+    AbsoluteValue = "AbsoluteValue",
+    Summation = "Summation",
     Product = "Product",
+
+    // Calculus
     Limit = "Limit",
     Derivative = "Derivative",
     PartialDerivative = "PartialDerivative",
     Integral = "Integral",
+
+    // Equations
     VerticalAdditionToRelation = "VerticalAdditionToRelation",
     SystemOfRelationsElimination = "SystemOfRelationsElimination",
+
+    // Elementary Arithmetic Algorithms
     LongAddition = "LongAddition",
     LongSubtraction = "LongSubtraction",
     LongMultiplication = "LongMultiplication",
     LongDivision = "LongDivision",
 
-    // Logic Node Types
-    True = "true",
-    False = "false",
-    And = "and", // rename to Conjunction
-    Or = "or", // rename to Disjunction
-    Not = "not", // rename to LogicalInverse
-    Xor = "xor",
-    Implies = "implies",
-    Iff = "iff",
-    Eq = "eq", // Equals
-    Neq = "neq", // NotEquals
-    Lt = "lt", // LessThan
-    Lte = "lte", // LessThanOrEquals
-    Gt = "gt", // GreaterThan
-    Gte = "gte", // GreaterThanOrEquals
+    // Logic Values
+    True = "True",
+    False = "False",
 
-    // Set Node Types
-    In = "in",
-    NotIn = "notin",
-    Subset = "subset",
-    ProperSubset = "prsubset",
-    NotSubset = "notsubset",
-    NotProperSubset = "notprsubset",
-    Set = "set",
-    EmptySet = "empty",
-    Union = "union",
-    Intersection = "intersection", // rename to SetIntersection
-    SetDiff = "setdiff", // rename to SetDifference
-    CartesianProduct = "cartesian_product",
+    // Logic Operators
+    LogicalAnd = "LogicalAnd",
+    LogicalOr = "LogicalOr",
+    LogicalNot = "LogicalNot",
+    ExclusiveOr = "ExclusiveOr",
+    Conditional = "Conditional",
+    Biconditional = "Biconditional",
+
+    // Relation Operators (Logic Result)
+    Equals = "Equals",
+    NotEquals = "NotEquals",
+    LessThan = "LessThan",
+    LessThanOrEquals = "LessThanOrEquals",
+    GreaterThan = "GreaterThan",
+    GreaterThanOrEquals = "GreaterThanOrEquals",
+
+    // Set Operations
+    ElementOf = "ElementOf",
+    NotElementOf = "NotElementOf",
+    Union = "Union",
+    SetIntersection = "SetIntersection",
+    SetDifference = "SetDifference",
+    CartesianProduct = "CartesianProduct",
+
+    // Set Relations
+    Subset = "Subset",
+    ProperSubset = "ProperSubset",
+    NotSubset = "NotSubset",
+    NotProperSubset = "NotProperSubset",
+
+    // Set Values
+    Set = "Set",
+    EmptySet = "EmptySet",
+
+    // Well-Kwown Number Theory Sets
     Naturals = "naturals",
     Integers = "integers",
     Rationals = "rationals",

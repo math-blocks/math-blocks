@@ -2,6 +2,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+const {NodeType} = Semantic;
+
 // TODO: backport this to @math-blocks/semantic
 const evalNode = (
     node: Semantic.types.NumericNode,
@@ -85,7 +87,7 @@ export const evalAdd: Transform = (node) => {
 // TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
 // process it.
 export const evalDiv: Transform = (node) => {
-    if (node.type !== "div") {
+    if (node.type !== NodeType.Div) {
         return;
     }
 

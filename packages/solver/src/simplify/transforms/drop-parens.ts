@@ -2,6 +2,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+const {NodeType} = Semantic;
+
 export const dropParens: Transform = (node) => {
     if (!Semantic.util.isNumeric(node)) {
         return;
@@ -9,7 +11,7 @@ export const dropParens: Transform = (node) => {
     const terms = Semantic.util.getTerms(node);
     let changed = false;
     const newTerms = terms.flatMap((term) => {
-        if (term.type === "add") {
+        if (term.type === NodeType.Add) {
             changed = true;
             return term.args;
         } else {

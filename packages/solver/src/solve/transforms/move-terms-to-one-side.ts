@@ -3,6 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
 
+const {NodeType} = Semantic;
+
 /**
  * Moves all terms matching `ident` to one side and those that don't to the
  * other side.
@@ -47,7 +49,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         // TODO: create two sub-steps for each of these moves
         // Move identifiers to the left
         const left =
-            leftIdentTerms[0].type === "neg"
+            leftIdentTerms[0].type === NodeType.Neg
                 ? Semantic.builders.add([
                       convertSubTermToNeg(leftIdentTerms[0]),
                       ...leftIdentTerms.slice(1),
@@ -85,7 +87,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         ]);
 
         // TODO: run this check on leftIdentTerms[0]
-        if (left.type === "neg") {
+        if (left.type === NodeType.Neg) {
             left = convertSubTermToNeg(left);
         }
 
@@ -116,7 +118,7 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
         ]);
 
         let right = rightIdentTerms[0];
-        if (right.type === "neg") {
+        if (right.type === NodeType.Neg) {
             right = convertSubTermToNeg(right);
         }
 

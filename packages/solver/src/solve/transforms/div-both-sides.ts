@@ -3,6 +3,8 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {getCoeff, isTermOfIdent} from "../util";
 
+const {NodeType} = Semantic;
+
 export const divBothSides: Transform = (before, ident) => {
     const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
@@ -29,7 +31,7 @@ export const divBothSides: Transform = (before, ident) => {
 
     if (leftIdentTerms.length === 1 && leftNonIdentTerms.length === 0) {
         const coeff = getCoeff(leftIdentTerms[0]);
-        if (coeff.type === "div") {
+        if (coeff.type === NodeType.Div) {
             return undefined;
         }
 
@@ -41,14 +43,14 @@ export const divBothSides: Transform = (before, ident) => {
         const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
         const after = Semantic.builders.eq(
-            (args.map((arg) => {
+            args.map((arg) => {
                 const result = Semantic.builders.div(
                     arg as Semantic.types.NumericNode,
                     coeff,
                 );
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<Semantic.types.NumericNode>,
+            }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
         );
 
         return {
@@ -61,7 +63,7 @@ export const divBothSides: Transform = (before, ident) => {
 
     if (rightIdentTerms.length === 1 && rightNonIdentTerms.length === 0) {
         const coeff = getCoeff(rightIdentTerms[0]);
-        if (coeff.type === "div") {
+        if (coeff.type === NodeType.Div) {
             return undefined;
         }
 
@@ -73,14 +75,14 @@ export const divBothSides: Transform = (before, ident) => {
         const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
         const after = Semantic.builders.eq(
-            (args.map((arg) => {
+            args.map((arg) => {
                 const result = Semantic.builders.div(
                     arg as Semantic.types.NumericNode,
                     coeff,
                 );
                 result.source = "divBothSides";
                 return result;
-            }) as unknown) as TwoOrMore<Semantic.types.NumericNode>,
+            }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
         );
 
         return {

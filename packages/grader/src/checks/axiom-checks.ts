@@ -7,8 +7,10 @@ import {MistakeId} from "../enums";
 import {exactMatch, checkArgs} from "./basic-checks";
 import {zip, correctResult} from "./util";
 
+const {NodeType} = Semantic;
+
 export const addZero: Check = (prev, next, context) => {
-    if (next.type !== "add") {
+    if (next.type !== NodeType.Add) {
         return;
     }
 
@@ -118,7 +120,7 @@ export const mulOne: Check = (prev, next, context) => {
     // This is going in the direction of (a)(1) -> a
     // so if we have -a we can go from (-a)(1) -> a
     // TODO: figure out how we can drop this without running into recursion limits
-    if (next.type !== "mul") {
+    if (next.type !== NodeType.Mul) {
         return;
     }
 
@@ -231,7 +233,7 @@ mulOne.symmetric = true;
 export const mulByZero: Check = (prev, next, context) => {
     const {checker} = context;
 
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return;
     }
 
@@ -271,8 +273,8 @@ export const commuteAddition: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (
-        prev.type === "add" &&
-        next.type === "add" &&
+        prev.type === NodeType.Add &&
+        next.type === NodeType.Add &&
         prev.args.length === next.args.length
     ) {
         const pairs = zip(prev.args, next.args);
@@ -332,8 +334,8 @@ export const commuteMultiplication: Check = (prev, next, context) => {
     const {checker} = context;
 
     if (
-        prev.type === "mul" &&
-        next.type === "mul" &&
+        prev.type === NodeType.Mul &&
+        next.type === NodeType.Mul &&
         prev.args.length === next.args.length
     ) {
         const pairs = zip(prev.args, next.args);
@@ -392,8 +394,8 @@ export const symmetricProperty: Check = (
     }
 
     if (
-        prev.type === "eq" &&
-        next.type === "eq" &&
+        prev.type === NodeType.Equals &&
+        next.type === NodeType.Equals &&
         prev.args.length === next.args.length
     ) {
         // TODO: actually check that this is the case
@@ -467,13 +469,13 @@ symmetricProperty.symmetric = true;
 // multiplication, but rather can "mul" nodes that are args of a parent "mul"
 // node be removed (or added).
 export const associativeMul: Check = (prev, next, context) => {
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return;
     }
 
     const {checker} = context;
 
-    if (prev.args.some((arg) => arg.type === "mul")) {
+    if (prev.args.some((arg) => arg.type === NodeType.Mul)) {
         // for (const arg of prev.args) {
         //     console.log(arg);
         // }
@@ -506,13 +508,13 @@ associativeMul.symmetric = true;
 // but rather can parens be removed (or added) for "add" nodes that are args of
 // a parent "add" node.
 export const associativeAdd: Check = (prev, next, context) => {
-    if (prev.type !== "add") {
+    if (prev.type !== NodeType.Add) {
         return;
     }
 
     const {checker} = context;
 
-    if (prev.args.some((arg) => arg.type === "add")) {
+    if (prev.args.some((arg) => arg.type === NodeType.Add)) {
         const terms: Semantic.types.NumericNode[] = [];
         for (const arg of prev.args) {
             terms.push(...Semantic.util.getTerms(arg));

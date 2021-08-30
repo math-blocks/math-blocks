@@ -82,7 +82,7 @@ export const eq = (
         | TwoOrMore<types.SetNode>,
     loc?: types.SourceLocation,
 ): types.Eq => ({
-    type: NodeType.Eq,
+    type: NodeType.Equals,
     id: getId(),
     args,
     loc,
@@ -116,7 +116,7 @@ export const pow = (
     exp: types.NumericNode,
     loc?: types.SourceLocation,
 ): types.Pow => ({
-    type: NodeType.Pow,
+    type: NodeType.Power,
     id: getId(),
     base,
     exp,

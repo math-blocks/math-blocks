@@ -1,13 +1,15 @@
 import * as Semantic from "@math-blocks/semantic";
 
+const {NodeType} = Semantic;
+
 // TODO: handle non-canonicalized terms
 export const getCoeff = (
     node: Semantic.types.NumericNode,
 ): Semantic.types.NumericNode => {
-    if (node.type === "neg") {
+    if (node.type === NodeType.Neg) {
         return Semantic.builders.neg(getCoeff(node.arg));
     }
-    if (node.type === "div") {
+    if (node.type === NodeType.Div) {
         return Semantic.builders.div(getCoeff(node.args[0]), node.args[1]);
     }
     const factors = Semantic.util.getFactors(node);
@@ -23,7 +25,7 @@ export const isTermOfIdent = (
 ): boolean => {
     if (Semantic.util.deepEquals(ident, term)) {
         return true;
-    } else if (term.type === "mul" && term.args.length === 2) {
+    } else if (term.type === NodeType.Mul && term.args.length === 2) {
         const [coeff, varFact] = term.args;
         if (
             Semantic.util.isNumber(coeff) &&
@@ -31,9 +33,9 @@ export const isTermOfIdent = (
         ) {
             return true;
         }
-    } else if (term.type === "neg") {
+    } else if (term.type === NodeType.Neg) {
         return isTermOfIdent(term.arg, ident);
-    } else if (term.type === "div") {
+    } else if (term.type === NodeType.Div) {
         const [num, den] = term.args;
         if (Semantic.util.isNumber(den)) {
             return isTermOfIdent(num, ident);
@@ -45,7 +47,7 @@ export const isTermOfIdent = (
 export const flipSign = (
     node: Semantic.types.NumericNode,
 ): Semantic.types.NumericNode => {
-    if (node.type === "neg") {
+    if (node.type === NodeType.Neg) {
         return node.arg;
     } else {
         return Semantic.builders.neg(node, true);
@@ -55,7 +57,7 @@ export const flipSign = (
 export const convertSubTermToNeg = (
     node: Semantic.types.NumericNode,
 ): Semantic.types.NumericNode => {
-    if (node.type === "neg" && node.subtraction) {
+    if (node.type === NodeType.Neg && node.subtraction) {
         const factors = Semantic.util.getFactors(node.arg);
         const numericFactors = factors.filter(Semantic.util.isNumber);
         const nonNumericFactors = factors.filter(

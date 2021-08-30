@@ -112,7 +112,7 @@ export type Div = Common<NodeType.Div> & {
 /**
  * Modulus
  */
-export type Mod = Common<NodeType.Mod> & {
+export type Mod = Common<NodeType.Modulo> & {
     readonly args: readonly [Node, Node];
 };
 
@@ -129,7 +129,7 @@ export type Root = Common<NodeType.Root> & {
 /**
  * Power
  */
-export type Pow = Common<NodeType.Pow> & {
+export type Pow = Common<NodeType.Power> & {
     readonly base: Node;
     readonly exp: Node;
 };
@@ -172,7 +172,7 @@ export type Ellipsis = Common<NodeType.Ellipsis>;
  *
  * e.g. 5! = 1 * 2 * 3 * 4 * 5
  */
-export type Abs = Common<NodeType.Abs> & {
+export type Abs = Common<NodeType.AbsoluteValue> & {
     readonly arg: Node;
 };
 
@@ -197,7 +197,7 @@ type Limits = {
 /**
  * Summation
  */
-export type Sum = Common<NodeType.Sum> & {
+export type Sum = Common<NodeType.Summation> & {
     readonly arg: Node;
     readonly bvar: Identifier; // bound variable, i.e. the variable being summed over
     // TODO: support `condition` and `domainofapplication` as well,
@@ -364,85 +364,85 @@ export type False = Common<NodeType.False>;
 /**
  * Logical And (Conjunction)
  */
-export type And = Common<NodeType.And> & {
+export type And = Common<NodeType.LogicalAnd> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Logical Or (Disjunction)
  */
-export type Or = Common<NodeType.Or> & {
+export type Or = Common<NodeType.LogicalOr> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Logical Not (Inverse)
  */
-export type Not = Common<NodeType.Not> & {
+export type Not = Common<NodeType.LogicalNot> & {
     readonly arg: Node;
 };
 
 /**
  * Exclusive Or
  */
-export type Xor = Common<NodeType.Xor> & {
+export type Xor = Common<NodeType.ExclusiveOr> & {
     readonly args: TwoOrMore<Node>;
 };
 
-export type Implies = Common<NodeType.Implies> & {
+export type Implies = Common<NodeType.Conditional> & {
     readonly args: readonly [Node, Node];
 };
 
-export type Iff = Common<NodeType.Iff> & {
+export type Iff = Common<NodeType.Biconditional> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Equals
  */
-export type Eq = Common<NodeType.Eq> & {
+export type Eq = Common<NodeType.Equals> & {
     readonly args: TwoOrMore<Node> | TwoOrMore<Node> | TwoOrMore<Node>;
 };
 
 /**
  * Not Equals
  */
-export type Neq = Common<NodeType.Neq> & {
+export type Neq = Common<NodeType.NotEquals> & {
     readonly args: TwoOrMore<Node> | TwoOrMore<Node> | TwoOrMore<Node>;
 };
 
 /**
  * Less Than
  */
-export type Lt = Common<NodeType.Lt> & {
+export type Lt = Common<NodeType.LessThan> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Less Than or Equal to
  */
-export type Lte = Common<NodeType.Lte> & {
+export type Lte = Common<NodeType.LessThanOrEquals> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Greater Than
  */
-export type Gt = Common<NodeType.Gt> & {
+export type Gt = Common<NodeType.GreaterThan> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Greater Than or Equal to
  */
-export type Gte = Common<NodeType.Gte> & {
+export type Gte = Common<NodeType.GreaterThanOrEquals> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Element in set
  */
-export type In = Common<NodeType.In> & {
+export type In = Common<NodeType.ElementOf> & {
     readonly element: Node;
     readonly set: Node;
 };
@@ -450,7 +450,7 @@ export type In = Common<NodeType.In> & {
 /**
  * Element is not a set
  */
-export type NotIn = Common<NodeType.NotIn> & {
+export type NotIn = Common<NodeType.NotElementOf> & {
     readonly element: Node;
     readonly set: Node;
 };
@@ -525,14 +525,14 @@ export type Union = Common<NodeType.Union> & {
 /**
  * Intersection
  */
-export type Intersection = Common<NodeType.Intersection> & {
+export type Intersection = Common<NodeType.SetIntersection> & {
     readonly args: TwoOrMore<Node>;
 };
 
 /**
  * Set Difference
  */
-export type SetDiff = Common<NodeType.SetDiff> & {
+export type SetDiff = Common<NodeType.SetDifference> & {
     readonly args: readonly [Node, Node];
 };
 

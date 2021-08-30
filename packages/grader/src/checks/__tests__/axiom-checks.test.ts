@@ -734,50 +734,50 @@ describe("Axiom checks", () => {
 
             expect(result.steps[0].before).toMatchInlineSnapshot(`
                 (mul.exp
-                  (add a b)
-                  (add x y))
+                  (Add a b)
+                  (Add x y))
             `);
 
             expect(result.steps[0].after).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (mul.exp
                     a
-                    (add x y))
+                    (Add x y))
                   (mul.exp
                     b
-                    (add x y)))
+                    (Add x y)))
             `);
 
             expect(result.steps[1].before).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (mul.exp
                     a
-                    (add x y))
+                    (Add x y))
                   (mul.exp
                     b
-                    (add x y)))
+                    (Add x y)))
             `);
 
             expect(result.steps[1].after).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (mul.exp a x)
                   (mul.exp a y)
                   (mul.exp
                     b
-                    (add x y)))
+                    (Add x y)))
             `);
 
             expect(result.steps[2].before).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (mul.exp a x)
                   (mul.exp a y)
                   (mul.exp
                     b
-                    (add x y)))
+                    (Add x y)))
             `);
 
             expect(result.steps[2].after).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (mul.exp a x)
                   (mul.exp a y)
                   (mul.exp b x)

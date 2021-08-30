@@ -5,6 +5,8 @@ import type {Check, Result} from "../types";
 
 import {correctResult} from "./util";
 
+const {NodeType} = Semantic;
+
 // TODO: create sub-steps that includes the opposite operation when reversed is true
 // TODO: include which nodes were added/removed in each reason
 // TODO: handle square rooting both sides
@@ -14,7 +16,7 @@ const NUMERATOR = 0;
 const DENOMINATOR = 1;
 
 export const checkAddSub: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "eq" || next.type !== "eq") {
+    if (prev.type !== NodeType.Equals || next.type !== NodeType.Equals) {
         return;
     }
 
@@ -34,7 +36,7 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
 
     // TODO: take into account LHS and RHS being swapped
     // e.g. y = x -> x + 10 = y + 10
-    if (nextLHS.type === "add" || nextRHS.type === "add") {
+    if (nextLHS.type === NodeType.Add || nextRHS.type === NodeType.Add) {
         const prevTermsLHS = Semantic.util.getTerms(prevLHS);
         const prevTermsRHS = Semantic.util.getTerms(prevRHS);
         const nextTermsLHS = Semantic.util.getTerms(nextLHS);
@@ -132,7 +134,7 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
 checkAddSub.symmetric = true;
 
 export const checkMul: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "eq" || next.type !== "eq") {
+    if (prev.type !== NodeType.Equals || next.type !== NodeType.Equals) {
         return;
     }
 
@@ -143,7 +145,7 @@ export const checkMul: Check = (prev, next, context): Result | undefined => {
 
     // TODO: take into account LHS and RHS being swapped
     // e.g. y = x -> x * 10 = y * 10
-    if (nextLHS.type === "mul" || nextRHS.type === "mul") {
+    if (nextLHS.type === NodeType.Mul || nextRHS.type === NodeType.Mul) {
         if (
             !Semantic.util.isNumeric(prevLHS) ||
             !Semantic.util.isNumeric(prevRHS) ||
@@ -246,7 +248,7 @@ export const checkMul: Check = (prev, next, context): Result | undefined => {
 checkMul.symmetric = true;
 
 export const checkDiv: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "eq" || next.type !== "eq") {
+    if (prev.type !== NodeType.Equals || next.type !== NodeType.Equals) {
         return;
     }
 
@@ -262,7 +264,7 @@ export const checkDiv: Check = (prev, next, context): Result | undefined => {
         return;
     }
 
-    if (nextLHS.type === "div" && nextRHS.type === "div") {
+    if (nextLHS.type === NodeType.Div && nextRHS.type === NodeType.Div) {
         if (
             checker.checkStep(prevLHS, nextLHS.args[NUMERATOR], context) &&
             checker.checkStep(prevRHS, nextRHS.args[NUMERATOR], context)

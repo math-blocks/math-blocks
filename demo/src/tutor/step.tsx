@@ -18,6 +18,8 @@ import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
 
+const {NodeType} = Semantic;
+
 type Props = {
     readonly readonly: boolean;
 
@@ -154,8 +156,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
             }
 
             if (
-                parsedNext.type === "eq" &&
-                parsedNext.args[0].type === "Identifier" &&
+                parsedNext.type === NodeType.Equals &&
+                parsedNext.args[0].type === NodeType.Identifier &&
                 Semantic.util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right", hint});

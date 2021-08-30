@@ -2,6 +2,8 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+const {NodeType} = Semantic;
+
 export const addNegToSub: Transform = (node) => {
     if (!Semantic.util.isNumeric(node)) {
         return;
@@ -9,7 +11,7 @@ export const addNegToSub: Transform = (node) => {
     const terms = Semantic.util.getTerms(node);
     let changed = false;
     const newTerms = terms.map((term, index) => {
-        if (index > 0 && term.type === "neg" && !term.subtraction) {
+        if (index > 0 && term.type === NodeType.Neg && !term.subtraction) {
             changed = true;
             return Semantic.builders.neg(term.arg, true);
         } else {
