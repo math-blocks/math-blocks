@@ -7,20 +7,20 @@ describe("TextParser", () => {
     it("parse addition", () => {
         const ast = parse("1 + 2");
 
-        expect(ast).toMatchInlineSnapshot(`(add 1 2)`);
+        expect(ast).toMatchInlineSnapshot(`(Add 1 2)`);
     });
 
     it("parse n-ary addition", () => {
         const ast = parse("1 + 2 + a");
 
-        expect(ast).toMatchInlineSnapshot(`(add 1 2 a)`);
+        expect(ast).toMatchInlineSnapshot(`(Add 1 2 a)`);
     });
 
     it("parses minus", () => {
         const ast = parse("a - b");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
               (neg.sub b))
         `);
@@ -30,7 +30,7 @@ describe("TextParser", () => {
         const ast = parse("a + b - c + d");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
               b
               (neg.sub c)
@@ -42,7 +42,7 @@ describe("TextParser", () => {
         const ast = parse("1 + 2 * 3 - 4");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               (mul.exp 2 3)
               (neg.sub 4))
@@ -59,7 +59,7 @@ describe("TextParser", () => {
         const ast = parse("a + -a");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
               (neg a))
         `);
@@ -75,7 +75,7 @@ describe("TextParser", () => {
         const ast = parse("a - -b");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
               (neg.sub (neg b)))
         `);
@@ -97,7 +97,7 @@ describe("TextParser", () => {
         const ast = parse("-a / b");
 
         expect(ast).toMatchInlineSnapshot(`
-            (div
+            (Div
               (neg a)
               b)
         `);
@@ -106,7 +106,7 @@ describe("TextParser", () => {
     it("negation is higher precedence than division (w/ parens)", () => {
         const ast = parse("-(a / b)");
 
-        expect(ast).toMatchInlineSnapshot(`(neg (div a b))`);
+        expect(ast).toMatchInlineSnapshot(`(neg (Div a b))`);
     });
 
     // TODO: document this in the semantic README.md
@@ -114,7 +114,7 @@ describe("TextParser", () => {
         const ast = parse("7x - 5x");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               (mul.imp 7 x)
               (neg.sub (mul.imp 5 x)))
         `);
@@ -125,7 +125,7 @@ describe("TextParser", () => {
         const ast = parse("7x + -5x");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               (mul.imp 7 x)
               (neg (mul.imp 5 x)))
         `);
@@ -155,7 +155,7 @@ describe("TextParser", () => {
         const ast = parse("ab + cd");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               (mul.imp a b)
               (mul.imp c d))
         `);
@@ -188,8 +188,8 @@ describe("TextParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.exp
-              (div a b)
-              (div c d))
+              (Div a b)
+              (Div c d))
         `);
     });
 
@@ -198,10 +198,10 @@ describe("TextParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.exp
-              (div
+              (Div
                 (mul.imp a b)
                 (mul.imp c d))
-              (div
+              (Div
                 (mul.imp u v)
                 (mul.imp x y)))
         `);
@@ -210,7 +210,7 @@ describe("TextParser", () => {
     it("parses parenthesis", () => {
         const ast = parse("(x + y)");
 
-        expect(ast).toMatchInlineSnapshot(`(Parens (add x y))`);
+        expect(ast).toMatchInlineSnapshot(`(Parens (Add x y))`);
     });
 
     it("throws if lparen is missing", () => {
@@ -237,7 +237,7 @@ describe("TextParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (add x y))
+              (Add x y))
         `);
     });
 
@@ -245,9 +245,9 @@ describe("TextParser", () => {
         const ast = parse("(a + b) + (x + y)");
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
-              (add a b)
-              (add x y))
+            (Add
+              (Add a b)
+              (Add x y))
         `);
     });
 
@@ -256,8 +256,8 @@ describe("TextParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (add a b)
-              (add x y))
+              (Add a b)
+              (Add x y))
         `);
     });
 
@@ -270,15 +270,15 @@ describe("TextParser", () => {
     it("parses division", () => {
         const ast = parse("x / y");
 
-        expect(ast).toMatchInlineSnapshot(`(div x y)`);
+        expect(ast).toMatchInlineSnapshot(`(Div x y)`);
     });
 
     it("parses nested division", () => {
         const ast = parse("x / y / z");
 
         expect(ast).toMatchInlineSnapshot(`
-            (div
-              (div x y)
+            (Div
+              (Div x y)
               z)
         `);
     });
@@ -286,16 +286,16 @@ describe("TextParser", () => {
     it("parses exponents", () => {
         const ast = parse("x^2");
 
-        expect(ast).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
+        expect(ast).toMatchInlineSnapshot(`(Power :base x :exp 2)`);
     });
 
     it("parses nested exponents", () => {
         const ast = parse("2^3^4");
 
         expect(ast).toMatchInlineSnapshot(`
-            (pow
+            (Power
               :base 2
-              :exp (pow :base 3 :exp 4))
+              :exp (Power :base 3 :exp 4))
         `);
     });
 
@@ -303,16 +303,16 @@ describe("TextParser", () => {
         const ast = parse("y = x + 1");
 
         expect(ast).toMatchInlineSnapshot(`
-            (eq
+            (Equals
               y
-              (add x 1))
+              (Add x 1))
         `);
     });
 
     it("parses n-ary equations", () => {
         const ast = parse("x = y = z");
 
-        expect(ast).toMatchInlineSnapshot(`(eq x y z)`);
+        expect(ast).toMatchInlineSnapshot(`(Equals x y z)`);
     });
 
     it("parses (5)2 as (mul 5 2)", () => {
@@ -325,14 +325,14 @@ describe("TextParser", () => {
         it("excess parens 1", () => {
             const ast = parse("(x + y)");
 
-            expect(ast).toMatchInlineSnapshot(`(Parens (add x y))`);
+            expect(ast).toMatchInlineSnapshot(`(Parens (Add x y))`);
         });
 
         it("excess parens 2", () => {
             const ast = parse("(x) + (y)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (Parens x)
                   (Parens y))
             `);
@@ -342,7 +342,7 @@ describe("TextParser", () => {
             const ast = parse("(a * b) + (c * d)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (Parens (mul.exp a b))
                   (Parens (mul.exp c d)))
             `);
@@ -353,7 +353,7 @@ describe("TextParser", () => {
 
             expect(ast).toMatchInlineSnapshot(`
                 (mul.imp
-                  (Parens (add a b))
+                  (Parens (Add a b))
                   (Parens c))
             `);
         });
@@ -364,7 +364,7 @@ describe("TextParser", () => {
             const ast = parse("a + (-b)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   a
                   (Parens (neg b)))
             `);
@@ -374,7 +374,7 @@ describe("TextParser", () => {
             const ast = parse("(a) / (b)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (div
+                (Div
                   (Parens a)
                   (Parens b))
             `);
@@ -383,7 +383,7 @@ describe("TextParser", () => {
         it("fractions 2", () => {
             const ast = parse("(a/b)");
 
-            expect(ast).toMatchInlineSnapshot(`(Parens (div a b))`);
+            expect(ast).toMatchInlineSnapshot(`(Parens (Div a b))`);
         });
 
         it("fractions 3", () => {
@@ -391,8 +391,8 @@ describe("TextParser", () => {
 
             expect(ast).toMatchInlineSnapshot(`
                 (mul.imp
-                  (div 1 a)
-                  (div 1 b))
+                  (Div 1 a)
+                  (Div 1 b))
             `);
         });
 
@@ -400,7 +400,7 @@ describe("TextParser", () => {
             const ast = parse("a^(2)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (pow
+                (Power
                   :base a
                   :exp (Parens 2))
             `);
@@ -410,9 +410,9 @@ describe("TextParser", () => {
             const ast = parse("e^(x + y)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (pow
+                (Power
                   :base e
-                  :exp (add x y))
+                  :exp (Add x y))
             `);
         });
 
@@ -432,9 +432,9 @@ describe("TextParser", () => {
             const ast = parse("1 + (x + y)");
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   1
-                  (add x y))
+                  (Add x y))
             `);
         });
     });

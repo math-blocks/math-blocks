@@ -8,35 +8,37 @@ import * as types from "./types";
 import {NodeType} from "./enums";
 
 export const isSubtraction = (node: types.NumericNode): node is types.Neg =>
-    node.type === "neg" && node.subtraction;
+    node.type === NodeType.Neg && node.subtraction;
 
 export const isNegative = (node: types.NumericNode): node is types.Neg =>
-    node.type === "neg" && !node.subtraction;
+    node.type === NodeType.Neg && !node.subtraction;
 
 export const getFactors = (
     node: types.NumericNode,
-): OneOrMore<types.NumericNode> => (node.type === "mul" ? node.args : [node]);
+): OneOrMore<types.NumericNode> =>
+    node.type === NodeType.Mul ? node.args : [node];
 
 export const getTerms = (
     node: types.NumericNode,
-): OneOrMore<types.NumericNode> => (node.type === "add" ? node.args : [node]);
+): OneOrMore<types.NumericNode> =>
+    node.type === NodeType.Add ? node.args : [node];
 
 // TODO: create a function to check if an answer is simplified or not
 // TODO: rename this to canBeEvaluated()
 export const isNumber = (node: types.Node): boolean => {
-    if (node.type === "number") {
+    if (node.type === NodeType.Number) {
         return true;
-    } else if (node.type === "neg") {
+    } else if (node.type === NodeType.Neg) {
         return isNumber(node.arg);
-    } else if (node.type === "div") {
+    } else if (node.type === NodeType.Div) {
         return node.args.every(isNumber);
-    } else if (node.type === "mul") {
+    } else if (node.type === NodeType.Mul) {
         return node.args.every(isNumber);
-    } else if (node.type === "add") {
+    } else if (node.type === NodeType.Add) {
         return node.args.every(isNumber);
-    } else if (node.type === "root") {
+    } else if (node.type === NodeType.Root) {
         return isNumber(node.radicand) && isNumber(node.index);
-    } else if (node.type === "pow") {
+    } else if (node.type === NodeType.Power) {
         return isNumber(node.base) && isNumber(node.exp);
     } else {
         return false;
@@ -55,13 +57,13 @@ export const isNumeric = (node: types.Node): node is types.NumericNode => {
         NodeType.Mul,
         NodeType.Func,
         NodeType.Div,
-        NodeType.Mod,
+        NodeType.Modulo,
         NodeType.Root,
-        NodeType.Pow,
+        NodeType.Power,
         NodeType.Log,
         NodeType.Neg,
-        NodeType.Abs,
-        NodeType.Sum,
+        NodeType.AbsoluteValue,
+        NodeType.Summation,
         NodeType.Product,
         NodeType.Limit,
         NodeType.Derivative,
@@ -156,15 +158,15 @@ export type HasArgs =
     | types.Div;
 
 export const hasArgs = (a: types.Node): a is HasArgs =>
-    a.type === "add" ||
-    a.type === "mul" ||
-    a.type === "eq" ||
-    a.type === "neq" ||
-    a.type === "lt" ||
-    a.type === "lte" ||
-    a.type === "gt" ||
-    a.type === "gte" ||
-    a.type === "div";
+    a.type === NodeType.Add ||
+    a.type === NodeType.Mul ||
+    a.type === NodeType.Equals ||
+    a.type === NodeType.NotEquals ||
+    a.type === NodeType.LessThan ||
+    a.type === NodeType.LessThanOrEquals ||
+    a.type === NodeType.GreaterThan ||
+    a.type === NodeType.GreaterThanOrEquals ||
+    a.type === NodeType.Div;
 
 // TODO: dedupe with grader package
 type Options = {
@@ -180,21 +182,21 @@ export const evalNode = (
         evalFractions: true,
     },
 ): Fraction => {
-    if (node.type === "number") {
+    if (node.type === NodeType.Number) {
         return new Fraction(node.value);
-    } else if (node.type === "neg") {
+    } else if (node.type === NodeType.Neg) {
         return evalNode(node.arg, options).mul(new Fraction("-1"));
-    } else if (node.type === "div" && options.evalFractions) {
+    } else if (node.type === NodeType.Div && options.evalFractions) {
         // TODO: add a recursive option as well
         return evalNode(node.args[0], options).div(
             evalNode(node.args[1], options),
         );
-    } else if (node.type === "add") {
+    } else if (node.type === NodeType.Add) {
         return node.args.reduce(
             (sum, term) => sum.add(evalNode(term, options)),
             new Fraction("0"),
         );
-    } else if (node.type === "mul") {
+    } else if (node.type === NodeType.Mul) {
         return node.args.reduce(
             (sum, factor) => sum.mul(evalNode(factor, options)),
             new Fraction("1"),

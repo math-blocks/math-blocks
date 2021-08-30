@@ -7,6 +7,8 @@ import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
 import type {Transform} from "./types";
 
+const {NodeType} = Semantic;
+
 /**
  * Solve an equation for a given variable.
  *
@@ -21,7 +23,7 @@ import type {Transform} from "./types";
  * @param ident the variable being solved for
  */
 export const solve: Transform = (node, ident) => {
-    if (node.type !== "eq") {
+    if (node.type !== NodeType.Equals) {
         return undefined;
     }
 
@@ -59,7 +61,7 @@ export const solve: Transform = (node, ident) => {
 
     const after = current;
 
-    if (after.type === "eq") {
+    if (after.type === NodeType.Equals) {
         const [left, right] = after.args;
         if (
             Semantic.util.deepEquals(left, ident) ||

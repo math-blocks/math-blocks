@@ -1,16 +1,18 @@
 import * as Semantic from "@math-blocks/semantic";
 import {Step} from "@math-blocks/step-utils";
 
+const {NodeType} = Semantic;
+
 // TODO: backport the change to @math-blocks/semantic
 // We want three checks:
 // - is it negative
 // - is it subtraction
 // - is it negative and not subtraction
 export const isNegative = (node: Semantic.types.NumericNode): boolean => {
-    if (node.type === "neg") {
+    if (node.type === NodeType.Neg) {
         return !isNegative(node.arg);
     }
-    if (node.type === "mul") {
+    if (node.type === NodeType.Mul) {
         let count = 0;
         for (const factor of node.args) {
             if (isNegative(factor)) {
@@ -30,15 +32,15 @@ export const simplifyMul = (
 
     // if a and b are monomials
     const aFactors =
-        a.type === "neg"
+        a.type === NodeType.Neg
             ? Semantic.util.getFactors(a.arg)
             : Semantic.util.getFactors(a);
     const bFactors =
-        b.type === "neg"
+        b.type === NodeType.Neg
             ? Semantic.util.getFactors(b.arg)
             : Semantic.util.getFactors(b);
 
-    const resultIsNeg = (a.type === "neg") !== (b.type === "neg");
+    const resultIsNeg = (a.type === NodeType.Neg) !== (b.type === NodeType.Neg);
 
     let after: Semantic.types.NumericNode;
 
@@ -80,7 +82,7 @@ export const simplifyMul = (
     }
 
     const factors =
-        after.type === "neg"
+        after.type === NodeType.Neg
             ? Semantic.util.getFactors(after.arg)
             : Semantic.util.getFactors(after);
 
@@ -98,7 +100,7 @@ export const simplifyMul = (
     }
 
     let message: string;
-    if (a.type === "neg" && b.type === "neg") {
+    if (a.type === NodeType.Neg && b.type === NodeType.Neg) {
         message = "multiplying two negatives is a positive";
     } else if (resultIsNeg) {
         message = "multiplying a negative by a positive is negative";

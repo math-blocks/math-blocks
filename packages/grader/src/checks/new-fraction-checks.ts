@@ -7,6 +7,8 @@ import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 import {convertPowNegExpToDiv} from "./power-checks";
 
+const {NodeType} = Semantic;
+
 // TODOs:
 // - Many of these checks use exactMatch (aka deepEquals) which may exclude
 //   certain valid paths.  Try to come up with some test cases where we'd need
@@ -26,13 +28,13 @@ export const mulFrac: Check = (prev, next, context) => {
         return;
     }
 
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return;
     }
 
     // If none of the args are 'div' nodes then there are no fractions to
     // multiply by.
-    if (!prev.args.find((arg) => arg.type === "div")) {
+    if (!prev.args.find((arg) => arg.type === NodeType.Div)) {
         return;
     }
 
@@ -45,7 +47,7 @@ export const mulFrac: Check = (prev, next, context) => {
     const denominators: Semantic.types.NumericNode[] = [];
 
     for (const arg of prev.args) {
-        if (arg.type === "div") {
+        if (arg.type === NodeType.Div) {
             numerators.push(arg.args[0]);
             denominators.push(arg.args[1]);
         } else {
@@ -89,7 +91,7 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
         return;
     }
 
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return;
     }
 
@@ -124,13 +126,13 @@ export const divIsMulByOneOver: Check = (prev, next, context) => {
 export const divByFrac: Check = (prev, next, context): Result | undefined => {
     const {checker} = context;
 
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return;
     }
 
     const [numerator, denominator] = prev.args;
 
-    if (denominator.type === "div") {
+    if (denominator.type === NodeType.Div) {
         // If the numerator and denominator of the fraction we're dividing by
         // are the same then flipping them won't do anything.
         if (exactMatch(denominator.args[0], denominator.args[1], context)) {
@@ -212,7 +214,7 @@ divByFrac.symmetric = true;
 // ab / b -> a
 // ab / abc -> 1 / c
 export const cancelFrac: Check = (prev, next, context) => {
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return;
     }
 
@@ -281,7 +283,7 @@ cancelFrac.symmetric = true;
 
 export const divByOne: Check = (prev, next, context) => {
     const {checker} = context;
-    if (prev.type === "div") {
+    if (prev.type === NodeType.Div) {
         const result1 = checker.checkStep(
             prev.args[1],
             Semantic.builders.number("1"),
@@ -313,16 +315,14 @@ export const divByOne: Check = (prev, next, context) => {
 divByOne.symmetric = true;
 
 export const mulInverse: Check = (prev, next, context) => {
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return undefined;
     }
 
     const {checker} = context;
 
-    const pairs: [
-        Semantic.types.NumericNode,
-        Semantic.types.NumericNode,
-    ][] = [];
+    const pairs: [Semantic.types.NumericNode, Semantic.types.NumericNode][] =
+        [];
     for (let i = 0; i < prev.args.length - 1; i++) {
         pairs.push([prev.args[i], prev.args[i + 1]]);
     }
@@ -330,7 +330,7 @@ export const mulInverse: Check = (prev, next, context) => {
     for (let i = 0; i < prev.args.length - 1; i++) {
         const pair = pairs[i];
         // a * 1/a -> 1
-        if (pair[0].type !== "div" && pair[1].type === "div") {
+        if (pair[0].type !== NodeType.Div && pair[1].type === NodeType.Div) {
             if (exactMatch(pair[0], pair[1].args[1], context)) {
                 const newPrev = Semantic.builders.mul(
                     [
@@ -357,7 +357,7 @@ export const mulInverse: Check = (prev, next, context) => {
         }
 
         // 1/a * a -> 1
-        if (pair[0].type === "div" && pair[1].type !== "div") {
+        if (pair[0].type === NodeType.Div && pair[1].type !== NodeType.Div) {
             if (exactMatch(pair[1], pair[0].args[1], context)) {
                 const newPrev = Semantic.builders.mul(
                     [

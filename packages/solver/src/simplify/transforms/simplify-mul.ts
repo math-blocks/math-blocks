@@ -4,6 +4,8 @@ import {Step} from "@math-blocks/step-utils";
 import {Transform} from "../types";
 import {isNegative} from "../util";
 
+const {NodeType} = Semantic;
+
 // This transform should go at the top of the simplify stack so that other
 // transforms that work with `mul` nodes don't have to handle as many cases.
 //
@@ -18,26 +20,26 @@ import {isNegative} from "../util";
 // 1x -> x
 // -1x -> -x
 export const simplifyMul: Transform = (before, path): Step | undefined => {
-    if (before.type !== "mul") {
+    if (before.type !== NodeType.Mul) {
         return undefined;
     }
 
     let changed = false;
     for (const arg of before.args) {
-        if (arg.type === "neg") {
+        if (arg.type === NodeType.Neg) {
             changed = true;
             break;
         }
     }
 
     // This seems like a weird exception to have on this function
-    if (before.args.some((f) => f.type === "add")) {
+    if (before.args.some((f) => f.type === NodeType.Add)) {
         return undefined;
     }
 
     const factors = Semantic.util
         .getFactors(before)
-        .map((f) => (f.type === "neg" ? f.arg : f));
+        .map((f) => (f.type === NodeType.Neg ? f.arg : f));
 
     const one = Semantic.builders.number("1");
     const newFactors = factors.filter((f) => !Semantic.util.deepEquals(one, f));

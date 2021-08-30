@@ -2,7 +2,7 @@ import * as React from "react";
 
 import * as Editor from "@math-blocks/editor-core";
 import {MathEditor, MathRenderer, FontDataContext} from "@math-blocks/react";
-import {builders} from "@math-blocks/semantic";
+import {builders, NodeType} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";
 import {Step} from "@math-blocks/step-utils";
 import * as Typesetter from "@math-blocks/typesetter";
@@ -56,7 +56,7 @@ const SolverPage: React.FunctionComponent = () => {
     const handleSolve = (): void => {
         console.log("SOLVE");
         const ast = Editor.parse(Editor.zipperToRow(input));
-        if (ast.type === "eq") {
+        if (ast.type === NodeType.Equals) {
             const result = solve(ast, builders.identifier("x"));
             if (result) {
                 console.log(result);

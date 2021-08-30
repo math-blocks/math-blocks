@@ -5,6 +5,8 @@ import type {Check, Correction, Result} from "../types";
 
 import {correctResult} from "./util";
 
+const {NodeType} = Semantic;
+
 // TODO: when evaluating 5 - 5 or 5 + -5 then we may want to include substeps,
 // e.g. "adding inverse" and "addition with identity"
 export const evalAdd: Check = (prev, next, context): Result | undefined => {
@@ -13,7 +15,7 @@ export const evalAdd: Check = (prev, next, context): Result | undefined => {
     }
 
     // If neither are sums then we can stop early
-    if (prev.type !== "add" && next.type !== "add") {
+    if (prev.type !== NodeType.Add && next.type !== NodeType.Add) {
         return;
     }
 
@@ -153,7 +155,7 @@ export const evalMul: Check = (prev, next, context): Result | undefined => {
     }
 
     // If neither are products then we can stop early
-    if (prev.type !== "mul" && next.type !== "mul") {
+    if (prev.type !== NodeType.Mul && next.type !== NodeType.Mul) {
         return;
     }
 

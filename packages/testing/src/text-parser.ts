@@ -5,6 +5,8 @@ import {lex} from "./text-lexer";
 
 import type {Token} from "./text-lexer";
 
+const {NodeType} = Semantic;
+
 // TODO: fill out this list
 type Operator =
     | "add"
@@ -270,21 +272,27 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
             // TODO: use the precedence of the operators to determine whether
             // the parens are necessary or not.
-            if (node.type === "Parens") {
+            if (node.type === NodeType.Parens) {
                 const {arg} = node;
-                if (parent.type === "Parens") {
+                if (parent.type === NodeType.Parens) {
                     return;
                 }
-                if (parent.type === "mul" && parent.implicit) {
+                if (parent.type === NodeType.Mul && parent.implicit) {
                     return arg;
                 }
-                if (arg.type === "Identifier" || arg.type === "number") {
+                if (
+                    arg.type === NodeType.Identifier ||
+                    arg.type === NodeType.Number
+                ) {
                     return;
                 }
-                if (arg.type === "mul" && parent.type === "add") {
+                if (arg.type === NodeType.Mul && parent.type === NodeType.Add) {
                     return;
                 }
-                if (arg.type === "neg" && parent.type !== "pow") {
+                if (
+                    arg.type === NodeType.Neg &&
+                    parent.type !== NodeType.Power
+                ) {
                     return;
                 }
                 return arg;

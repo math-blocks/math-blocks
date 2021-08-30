@@ -1,4 +1,5 @@
 import * as Testing from "@math-blocks/testing";
+import {NodeType} from "@math-blocks/semantic";
 
 import * as builders from "../../char/builders";
 import * as util from "../../char/util";
@@ -16,7 +17,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (eq
+            (Equals
               (mul.imp 2 x)
               10)
         `);
@@ -26,7 +27,7 @@ describe("EditorParser", () => {
             end: 5,
             path: [],
         });
-        if (ast.type === "eq") {
+        if (ast.type === NodeType.Equals) {
             expect(ast.args[0].loc).toEqual({
                 start: 0,
                 end: 2,
@@ -45,7 +46,7 @@ describe("EditorParser", () => {
 
         const ast = parser.parse(input);
 
-        expect(ast).toMatchInlineSnapshot(`(eq x y z)`);
+        expect(ast).toMatchInlineSnapshot(`(Equals x y z)`);
     });
 
     it("should parse binary expressions containing subtraction", () => {
@@ -54,7 +55,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               (neg.sub 2))
         `);
@@ -66,7 +67,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               (neg.sub 2)
               (neg.sub 3))
@@ -79,7 +80,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               (neg.sub (neg 2)))
         `);
@@ -91,7 +92,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               (neg 2)
               3)
@@ -128,22 +129,22 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(input);
 
         expect(parseTree).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
-              (div 1 x))
+              (Div 1 x))
         `);
         expect(parseTree.loc).toEqual({
             start: 0,
             end: 3,
             path: [],
         });
-        if (parseTree.type === "add") {
+        if (parseTree.type === NodeType.Add) {
             expect(parseTree.args[1].loc).toEqual({
                 start: 2,
                 end: 3,
                 path: [],
             });
-            if (parseTree.args[1].type === "div") {
+            if (parseTree.args[1].type === NodeType.Div) {
                 // numerator
                 expect(parseTree.args[1].args[0].loc).toEqual({
                     start: 0,
@@ -165,13 +166,13 @@ describe("EditorParser", () => {
 
         const parseTree = parser.parse(input);
 
-        expect(parseTree).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
+        expect(parseTree).toMatchInlineSnapshot(`(Power :base x :exp 2)`);
         expect(parseTree.loc).toEqual({
             start: 0,
             end: 2,
             path: [],
         });
-        if (parseTree.type === "pow") {
+        if (parseTree.type === NodeType.Power) {
             expect(parseTree.exp.loc).toEqual({
                 start: 0,
                 end: 1,
@@ -189,9 +190,9 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(input);
 
         expect(parseTree).toMatchInlineSnapshot(`
-            (pow
+            (Power
               :base x
-              :exp (pow :base y :exp 2))
+              :exp (Power :base y :exp 2))
         `);
     });
 
@@ -200,14 +201,14 @@ describe("EditorParser", () => {
 
         const parseTree = parser.parse(input);
 
-        expect(parseTree).toMatchInlineSnapshot(`(ident a (add n 1))`);
+        expect(parseTree).toMatchInlineSnapshot(`(ident a (Add n 1))`);
 
         expect(parseTree.loc).toEqual({
             start: 0,
             end: 1,
             path: [],
         });
-        if (parseTree.type === "Identifier") {
+        if (parseTree.type === NodeType.Identifier) {
             if (parseTree.subscript) {
                 expect(parseTree.subscript.loc).toEqual({
                     start: 0,
@@ -224,7 +225,7 @@ describe("EditorParser", () => {
         const parseTree = parser.parse(input);
 
         expect(parseTree).toMatchInlineSnapshot(
-            `(pow :base (ident a (add n 1)) :exp 2)`,
+            `(Power :base (ident a (Add n 1)) :exp 2)`,
         );
     });
 
@@ -258,7 +259,7 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               1
               ...
               n)
@@ -285,9 +286,9 @@ describe("EditorParser", () => {
         const ast = parser.parse(input);
 
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
-              (add b c))
+              (Add b c))
         `);
     });
 
@@ -311,7 +312,7 @@ describe("EditorParser", () => {
 
         const ast = parser.parse(input);
 
-        expect(ast).toMatchInlineSnapshot(`(Parens (add a b))`);
+        expect(ast).toMatchInlineSnapshot(`(Parens (Add a b))`);
     });
 
     it("negation can be on individual factors when wrapped in parens", () => {
@@ -362,7 +363,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (add b c))
+              (Add b c))
         `);
     });
 
@@ -386,8 +387,8 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (add b c)
-              (add d e))
+              (Add b c)
+              (Add d e))
         `);
     });
 
@@ -409,8 +410,8 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (add b c)
-              (add d e))
+              (Add b c)
+              (Add d e))
         `);
     });
 
@@ -439,8 +440,8 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (add a b)
-              (div 1 2))
+              (Add a b)
+              (Div 1 2))
         `);
     });
 
@@ -451,7 +452,7 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (div 1 2)
+              (Div 1 2)
               b)
         `);
     });
@@ -472,7 +473,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root :radicand 2 :index b))
+              (Root :radicand 2 :index b))
         `);
 
         expect(ast.loc).toEqual({
@@ -480,7 +481,7 @@ describe("EditorParser", () => {
             end: 2,
             path: [],
         });
-        if (ast.type === "mul") {
+        if (ast.type === NodeType.Mul) {
             expect(ast.args[0].loc).toEqual({
                 start: 0,
                 end: 1,
@@ -491,7 +492,7 @@ describe("EditorParser", () => {
                 end: 2,
                 path: [],
             });
-            if (ast.args[1].type === "root") {
+            if (ast.args[1].type === NodeType.Root) {
                 expect(ast.args[1].radicand.loc).toEqual({
                     start: 0,
                     end: 1,
@@ -518,8 +519,8 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               a
-              (root :radicand 2 :index b)
-              (root :radicand 3 :index c))
+              (Root :radicand 2 :index b)
+              (Root :radicand 3 :index c))
         `);
     });
 
@@ -530,8 +531,8 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand 2 :index b)
-              (root :radicand 3 :index c))
+              (Root :radicand 2 :index b)
+              (Root :radicand 3 :index c))
         `);
     });
 
@@ -542,7 +543,7 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand 2 :index 2)
+              (Root :radicand 2 :index 2)
               a)
         `);
     });
@@ -555,7 +556,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               5
-              (root :radicand 2 :index 2))
+              (Root :radicand 2 :index 2))
         `);
     });
 
@@ -566,7 +567,7 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand 2 :index 2)
+              (Root :radicand 2 :index 2)
               5)
         `);
     });
@@ -578,8 +579,8 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand 2 :index 2)
-              (root :radicand 2 :index 3))
+              (Root :radicand 2 :index 2)
+              (Root :radicand 2 :index 3))
         `);
     });
 
@@ -590,7 +591,7 @@ describe("EditorParser", () => {
 
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
-              (root :radicand 2 :index 2)
+              (Root :radicand 2 :index 2)
               a)
         `);
     });
@@ -611,7 +612,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (neg (mul.imp
               1
-              (add a b)))
+              (Add a b)))
         `);
     });
 
@@ -634,7 +635,7 @@ describe("EditorParser", () => {
         expect(ast).toMatchInlineSnapshot(`
             (mul.imp
               (neg 1)
-              (add a b))
+              (Add a b))
         `);
     });
 
@@ -673,7 +674,7 @@ describe("EditorParser", () => {
             const ast = parser.parse(input);
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   1
                   (Parens x))
             `);
@@ -700,7 +701,7 @@ describe("EditorParser", () => {
             expect(ast).toMatchInlineSnapshot(`
                 (mul.imp
                   2
-                  (Parens (add x y)))
+                  (Parens (Add x y)))
             `);
         });
 
@@ -718,7 +719,7 @@ describe("EditorParser", () => {
             const ast = parser.parse(input);
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   1
                   (Parens (mul.imp x y)))
             `);
@@ -738,7 +739,7 @@ describe("EditorParser", () => {
             const ast = parser.parse(input);
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   a
                   (Parens (neg b)))
             `);
@@ -762,7 +763,7 @@ describe("EditorParser", () => {
             const ast = parser.parse(input);
 
             expect(ast).toMatchInlineSnapshot(`
-                (add
+                (Add
                   (Parens (neg a))
                   (Parens (neg b)))
             `);

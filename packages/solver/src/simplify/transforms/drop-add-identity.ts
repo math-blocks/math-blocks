@@ -2,10 +2,12 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {Transform} from "../types";
 
+const {NodeType} = Semantic;
+
 const isZero = (node: Semantic.types.Node): boolean => {
-    if (node.type === "number" && node.value === "0") {
+    if (node.type === NodeType.Number && node.value === "0") {
         return true;
-    } else if (node.type === "neg") {
+    } else if (node.type === NodeType.Neg) {
         return isZero(node.arg);
     } else {
         return false;
@@ -13,7 +15,7 @@ const isZero = (node: Semantic.types.Node): boolean => {
 };
 
 export const dropAddIdentity: Transform = (node) => {
-    if (node.type !== "add") {
+    if (node.type !== NodeType.Add) {
         return;
     }
     const terms = Semantic.util.getTerms(node);

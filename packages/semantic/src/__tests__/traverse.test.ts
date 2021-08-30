@@ -50,7 +50,7 @@ describe("traverse", () => {
     it("call traverse properties", () => {
         const power: types.Pow = {
             id: 0,
-            type: NodeType.Pow,
+            type: NodeType.Power,
             base: {
                 id: 1,
                 type: NodeType.Identifier,
@@ -94,7 +94,7 @@ describe("traverse", () => {
     it("supports making changes to a node on exit", () => {
         const power: types.Pow = {
             id: 0,
-            type: NodeType.Pow,
+            type: NodeType.Power,
             base: {
                 id: 1,
                 type: NodeType.Identifier,
@@ -109,7 +109,7 @@ describe("traverse", () => {
 
         traverse(power, {
             exit: (node) => {
-                if (node.type === "Identifier" && node.name === "x") {
+                if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
                         ...node,
                         name: "y",
@@ -120,15 +120,15 @@ describe("traverse", () => {
 
         expect(power).toEqual({
             id: 0,
-            type: "pow",
+            type: NodeType.Power,
             base: {
                 id: 1,
-                type: "Identifier",
+                type: NodeType.Identifier,
                 name: "y",
             },
             exp: {
                 id: 2,
-                type: "number",
+                type: NodeType.Number,
                 value: "3",
             },
         });
@@ -154,7 +154,7 @@ describe("traverse", () => {
 
         traverse(sum, {
             exit: (node) => {
-                if (node.type === "Identifier" && node.name === "x") {
+                if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
                         ...node,
                         name: "y",
@@ -165,16 +165,16 @@ describe("traverse", () => {
 
         expect(sum).toEqual({
             id: 0,
-            type: "add",
+            type: NodeType.Add,
             args: [
                 {
                     id: 1,
-                    type: "Identifier",
+                    type: NodeType.Identifier,
                     name: "y",
                 },
                 {
                     id: 2,
-                    type: "number",
+                    type: NodeType.Number,
                     value: "3",
                 },
             ],

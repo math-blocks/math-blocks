@@ -3,10 +3,12 @@ import type {Step} from "@math-blocks/step-utils";
 
 import type {Check, Result, Mistake, Context} from "../types";
 
+const {NodeType} = Semantic;
+
 export const numberCheck: Check = (prev, next, context): Result | undefined => {
     if (
-        prev.type === "number" &&
-        next.type === "number" &&
+        prev.type === NodeType.Number &&
+        next.type === NodeType.Number &&
         prev.value === next.value
     ) {
         return {
@@ -22,8 +24,8 @@ export const identifierCheck: Check = (
     context,
 ): Result | undefined => {
     if (
-        prev.type === "Identifier" &&
-        next.type === "Identifier" &&
+        prev.type === NodeType.Identifier &&
+        next.type === NodeType.Identifier &&
         prev.name === next.name
     ) {
         return {
@@ -110,12 +112,12 @@ export const checkArgs: Check = (prev, next, context): Result | undefined => {
         return {
             steps: steps,
         };
-    } else if (prev.type === "neg" && next.type === "neg") {
+    } else if (prev.type === NodeType.Neg && next.type === NodeType.Neg) {
         const result = checker.checkStep(prev.arg, next.arg, context);
         if (result && prev.subtraction === next.subtraction) {
             return result;
         }
-    } else if (prev.type === "pow" && next.type === "pow") {
+    } else if (prev.type === NodeType.Power && next.type === NodeType.Power) {
         const baseResult = checker.checkStep(prev.base, next.base, context);
         const expResult = checker.checkStep(prev.exp, next.exp, context);
 

@@ -3,11 +3,13 @@ import * as Semantic from "@math-blocks/semantic";
 import {Transform} from "../types";
 import {isNegative} from "../util";
 
+const {NodeType} = Semantic;
+
 // TODO:
 // - powers
 // - negative factors
 export const reduceFraction: Transform = (node) => {
-    if (node.type !== "div") {
+    if (node.type !== NodeType.Div) {
         return undefined;
     }
 
@@ -16,11 +18,11 @@ export const reduceFraction: Transform = (node) => {
     }
 
     const numFactors =
-        node.args[0].type === "neg"
+        node.args[0].type === NodeType.Neg
             ? Semantic.util.getFactors(node.args[0].arg)
             : Semantic.util.getFactors(node.args[0]);
     const denFactors =
-        node.args[1].type === "neg"
+        node.args[1].type === NodeType.Neg
             ? Semantic.util.getFactors(node.args[1].arg)
             : Semantic.util.getFactors(node.args[1]);
 
@@ -60,7 +62,7 @@ export const reduceFraction: Transform = (node) => {
         }
     }
 
-    if (resultIsNegative && after.type !== "div") {
+    if (resultIsNegative && after.type !== NodeType.Div) {
         after = Semantic.builders.neg(after);
     }
 

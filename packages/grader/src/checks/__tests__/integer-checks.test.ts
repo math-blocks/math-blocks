@@ -70,7 +70,7 @@ describe("Integer checks", () => {
 
         expect(result.steps[0].before).toMatchInlineSnapshot(`0`);
         expect(result.steps[0].after).toMatchInlineSnapshot(`
-            (add
+            (Add
               a
               (neg a))
         `);

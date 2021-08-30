@@ -7,8 +7,10 @@ import {simplifyMul} from "../util";
 
 import {getCoeff} from "../../solve/util";
 
+const {NodeType} = Semantic;
+
 export const collectLikeTerms: Transform = (node): Step | undefined => {
-    if (node.type !== "add") {
+    if (node.type !== NodeType.Add) {
         return;
     }
 
@@ -221,10 +223,10 @@ const evaluteCoeffs = (
         // Ideally we'd deal with it first, but we should try to be defensive and
         // make sure that we're only processing nodes created by the previous step.
         // Passthrough nodes should be ignored.
-        if (term.type === "add") {
+        if (term.type === NodeType.Add) {
             // number group
             return evalNode(term);
-        } else if (term.type === "mul" && term.args.length === 2) {
+        } else if (term.type === NodeType.Mul && term.args.length === 2) {
             const [coeff, variable] = term.args;
             const newCoeff = evalNode(coeff);
             // use simplifyMul here to handle situations where variable has more
@@ -258,7 +260,7 @@ const simplifyTerms = (
 ): Semantic.types.NumericNode => {
     let changed = false;
     const newTerms = Semantic.util.getTerms(node).map((term) => {
-        if (term.type === "mul") {
+        if (term.type === NodeType.Mul) {
             // simplifyMul returns the same term if nothing changed
             // TODO: collect sub-steps here
             const newTerm = simplifyMul(term);
@@ -295,7 +297,7 @@ const addNegToSub = (
 ): Semantic.types.NumericNode => {
     let changed = false;
     const newTerms = Semantic.util.getTerms(node).map((term, index) => {
-        if (term.type === "neg" && index > 0) {
+        if (term.type === NodeType.Neg && index > 0) {
             changed = true;
             return Semantic.builders.neg(term.arg, true);
         }
@@ -323,10 +325,10 @@ const addNegToSub = (
 const getFactors = (
     node: Semantic.types.NumericNode,
 ): OneOrMore<Semantic.types.NumericNode> => {
-    if (node.type === "neg") {
+    if (node.type === NodeType.Neg) {
         return [Semantic.builders.number("-1"), ...getFactors(node.arg)];
     } else {
-        return node.type === "mul" ? node.args : [node];
+        return node.type === NodeType.Mul ? node.args : [node];
     }
 };
 
@@ -337,7 +339,7 @@ const fancyGetFactors = (
     let factors: readonly Semantic.types.NumericNode[];
 
     // TODO: move this logic into `getFactors`.
-    if (arg.type === "div" && Semantic.util.isNumber(arg.args[1])) {
+    if (arg.type === NodeType.Div && Semantic.util.isNumber(arg.args[1])) {
         const [num, den] = arg.args;
         factors = [
             ...getFactors(num),
@@ -345,8 +347,11 @@ const fancyGetFactors = (
             // TODO: make this a substep
             Semantic.builders.div(Semantic.builders.number("1"), den),
         ];
-    } else if (arg.type === "neg") {
-        if (arg.arg.type === "div" && Semantic.util.isNumber(arg.arg.args[1])) {
+    } else if (arg.type === NodeType.Neg) {
+        if (
+            arg.arg.type === NodeType.Div &&
+            Semantic.util.isNumber(arg.arg.args[1])
+        ) {
             const [num, den] = arg.arg.args;
             factors = [
                 ...getFactors(num),

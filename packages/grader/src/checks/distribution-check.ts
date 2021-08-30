@@ -4,6 +4,8 @@ import type {Result, Check} from "../types";
 
 import {correctResult} from "./util";
 
+const {NodeType} = Semantic;
+
 const replaceItem = <T>(
     items: readonly T[] | TwoOrMore<T>,
     newItem: T,
@@ -18,7 +20,10 @@ export const checkDistribution: Check = (prev, next, context) => {
     // not look at the `next` node.  In this case we make an exception to avoid
     // infinite loops.  We might be able to lift this restriction in the future
     // by setting `.source` on new nodes created by this check.
-    if ((prev.type === "add" || prev.type === "mul") && next.type === "add") {
+    if (
+        (prev.type === NodeType.Add || prev.type === NodeType.Mul) &&
+        next.type === NodeType.Add
+    ) {
         const results: Result[] = [];
 
         const terms = Semantic.util.getTerms(prev);
@@ -31,10 +36,10 @@ export const checkDistribution: Check = (prev, next, context) => {
             const potentialResults: Result[] = [];
             const potentialNewPrevs = [];
 
-            if (mul.type === "mul") {
+            if (mul.type === NodeType.Mul) {
                 for (let j = 0; j < mul.args.length; j++) {
                     const factor = mul.args[j];
-                    if (factor.type !== "add") {
+                    if (factor.type !== NodeType.Add) {
                         continue;
                     }
 

@@ -59,7 +59,7 @@ export const eq = (
     args: TwoOrMore<types.Node>,
     loc?: types.SourceLocation,
 ): types.Eq => ({
-    type: NodeType.Eq,
+    type: NodeType.Equals,
     id: getId(),
     args,
     loc,
@@ -105,7 +105,7 @@ export const pow = (
     exp: types.Node,
     loc?: types.SourceLocation,
 ): types.Pow => ({
-    type: NodeType.Pow,
+    type: NodeType.Power,
     id: getId(),
     base,
     exp,

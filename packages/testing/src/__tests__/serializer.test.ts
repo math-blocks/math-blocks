@@ -43,18 +43,19 @@ describe("serializer", () => {
             Semantic.builders.neg(Semantic.builders.number("5"), true),
         ]);
         expect(ast).toMatchInlineSnapshot(`
-            (add
+            (Add
               x
               (neg.sub 5))
         `);
     });
 
     test("not", () => {
-        const ast = {
-            type: "not",
+        const ast: Semantic.types.LogicNode = {
+            id: getId(),
+            type: NodeType.LogicalNot,
             arg: Semantic.builders.identifier("A"),
         };
-        expect(ast).toMatchInlineSnapshot(`(not A)`);
+        expect(ast).toMatchInlineSnapshot(`(LogicalNot A)`);
     });
 
     test("mul (explicit)", () => {
@@ -78,12 +79,12 @@ describe("serializer", () => {
             Semantic.builders.identifier("x"),
             Semantic.builders.number("5"),
         ]);
-        expect(ast).toMatchInlineSnapshot(`(add x 5)`);
+        expect(ast).toMatchInlineSnapshot(`(Add x 5)`);
     });
 
     test("root", () => {
         const ast = Semantic.builders.sqrt(Semantic.builders.identifier("x"));
-        expect(ast).toMatchInlineSnapshot(`(root :radicand x :index 2)`);
+        expect(ast).toMatchInlineSnapshot(`(Root :radicand x :index 2)`);
     });
 
     test("pow", () => {
@@ -91,7 +92,7 @@ describe("serializer", () => {
             Semantic.builders.identifier("x"),
             Semantic.builders.number("2"),
         );
-        expect(ast).toMatchInlineSnapshot(`(pow :base x :exp 2)`);
+        expect(ast).toMatchInlineSnapshot(`(Power :base x :exp 2)`);
     });
 
     test("pow (with grandchildren)", () => {
@@ -103,14 +104,17 @@ describe("serializer", () => {
             Semantic.builders.number("2"),
         );
         expect(ast).toMatchInlineSnapshot(`
-            (pow
-              :base (add x 1)
+            (Power
+              :base (Add x 1)
               :exp 2)
         `);
     });
 
     test("infinity", () => {
-        const ast = {type: "infinity"};
+        const ast: Semantic.types.NumericNode = {
+            type: NodeType.Infinity,
+            id: getId(),
+        };
         expect(ast).toMatchInlineSnapshot(`\u221e`);
     });
 
@@ -128,7 +132,7 @@ describe("serializer", () => {
                 () => "",
             );
         }).toThrowErrorMatchingInlineSnapshot(
-            `"we don't handle serializing 'log' nodes yet"`,
+            `"we don't handle serializing 'Log' nodes yet"`,
         );
     });
 });

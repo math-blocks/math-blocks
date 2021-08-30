@@ -6,8 +6,10 @@ import type {Check, Result} from "../types";
 import {correctResult} from "./util";
 import {exactMatch} from "./basic-checks";
 
+const {NodeType} = Semantic;
+
 const isPower = (node: Semantic.types.Node): node is Semantic.types.Pow => {
-    return node.type === "pow";
+    return node.type === NodeType.Power;
 };
 
 // a*a*...*a -> a^n
@@ -24,7 +26,7 @@ export const powDef: Check = (prev, next, context): Result | undefined => {
         return;
     }
 
-    if (prev.type === "mul") {
+    if (prev.type === NodeType.Mul) {
         // TODO: memoize helpers like getFactors, getTerms, difference, intersection, etc.
         const prevFactors = Semantic.util.getFactors(prev);
         const nextFactors = Semantic.util.getFactors(next);
@@ -48,7 +50,7 @@ export const powDef: Check = (prev, next, context): Result | undefined => {
         const exps = uniqueNextFactors.filter(isPower);
 
         const expsWithNumberExp = exps.filter(
-            (exp) => exp.exp.type === "number",
+            (exp) => exp.exp.type === NodeType.Number,
         );
 
         if (expsWithNumberExp.length === 0) {
@@ -118,7 +120,7 @@ export const powDefReverse: Check = (
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "pow") {
+    if (prev.type !== NodeType.Power) {
         return undefined;
     }
 
@@ -136,7 +138,7 @@ export const powDefReverse: Check = (
     const {checker} = context;
 
     // TODO: evaluate the exponent if necessary
-    if (exp.type === "number") {
+    if (exp.type === NodeType.Number) {
         const factors: Semantic.types.NumericNode[] = [];
         const count = Number.parseInt(exp.value);
         if (count <= 1) {
@@ -174,7 +176,7 @@ export const mulPowsSameBase: Check = (
 ): Result | undefined => {
     const {checker} = context;
 
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return;
     }
 
@@ -197,7 +199,7 @@ export const mulPowsSameBase: Check = (
     for (const factor of factors) {
         // TODO: should we clone base and exp?
         const {base, exp} =
-            factor.type === "pow"
+            factor.type === NodeType.Power
                 ? factor
                 : // TODO: track when we add "1" as an exponent so that we don't add
                   // it below when it wasn't par of the original expression.
@@ -362,7 +364,7 @@ export const divPowsSameBase: Check = (
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return;
     }
 
@@ -512,7 +514,7 @@ export const oneOverPowToNegPow: Check = (
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return undefined;
     }
 
@@ -596,7 +598,7 @@ powOfPow.symmetric = true;
 
 // (xy)^n -> (x^n)(y^n)
 export const powOfMul: Check = (prev, next, context): Result | undefined => {
-    if (!(prev.type === "pow" && prev.base.type === "mul")) {
+    if (!(prev.type === NodeType.Power && prev.base.type === NodeType.Mul)) {
         return;
     }
 
@@ -637,11 +639,11 @@ export const mulPowsSameExp: Check = (
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "mul") {
+    if (prev.type !== NodeType.Mul) {
         return undefined;
     }
 
-    if (!prev.args.every((arg) => arg.type === "pow")) {
+    if (!prev.args.every((arg) => arg.type === NodeType.Power)) {
         return undefined;
     }
 
@@ -685,7 +687,7 @@ mulPowsSameExp.symmetric = true;
 
 // (x/y)^n -> x^n / y^n
 export const powOfDiv: Check = (prev, next, context): Result | undefined => {
-    if (!(prev.type === "pow" && prev.base.type === "div")) {
+    if (!(prev.type === NodeType.Power && prev.base.type === NodeType.Div)) {
         return;
     }
 
@@ -729,11 +731,11 @@ export const divOfPowsSameExp: Check = (
     next,
     context,
 ): Result | undefined => {
-    if (prev.type !== "div") {
+    if (prev.type !== NodeType.Div) {
         return undefined;
     }
 
-    if (!prev.args.every((arg) => arg.type === "pow")) {
+    if (!prev.args.every((arg) => arg.type === NodeType.Power)) {
         return undefined;
     }
 
@@ -774,7 +776,7 @@ divOfPowsSameExp.symmetric = true;
 // x^0 -> 1
 // NOTE: 0^0 is defined as 1 for convenience
 export const powToZero: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "pow") {
+    if (prev.type !== NodeType.Power) {
         return;
     }
 
@@ -804,7 +806,7 @@ powToZero.symmetric = true;
 
 // x^1 -> x
 export const powToOne: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "pow") {
+    if (prev.type !== NodeType.Power) {
         return;
     }
 
@@ -836,7 +838,7 @@ powToOne.symmetric = true;
 
 // 1^x -> 1
 export const powOfOne: Check = (prev, next, context) => {
-    if (prev.type !== "pow") {
+    if (prev.type !== NodeType.Power) {
         return;
     }
 
@@ -866,7 +868,7 @@ powOfOne.symmetric = true;
 
 // 0^x -> 0
 export const powOfZero: Check = (prev, next, context): Result | undefined => {
-    if (prev.type !== "pow") {
+    if (prev.type !== NodeType.Power) {
         return;
     }
 
