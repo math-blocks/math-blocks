@@ -1,4 +1,4 @@
-import * as core from "@math-blocks/core";
+import {__private} from "@math-blocks/core";
 
 import * as builders from "../../char/builders";
 
@@ -13,10 +13,7 @@ expect.extend({toEqualEditorNodes});
 
 describe("root", () => {
     beforeEach(() => {
-        let i = 0;
-        jest.spyOn(core, "getId").mockImplementation(() => {
-            return i++;
-        });
+        __private.id = 0;
     });
 
     describe("without selection", () => {

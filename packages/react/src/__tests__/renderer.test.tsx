@@ -7,7 +7,7 @@ import format from "xml-formatter";
 import {Blob} from "buffer";
 import type {Story, StoryContext} from "@storybook/react";
 
-import * as Core from "@math-blocks/core";
+import * as core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
 import * as Editor from "@math-blocks/editor-core";
 import {getFontData, parse} from "@math-blocks/opentype";
@@ -166,11 +166,7 @@ expect.extend({
 
 describe("renderer", () => {
     beforeEach(() => {
-        // Mock getId() so that we can have stable ids between tests.
-        let i = 0;
-        jest.spyOn(Core, "getId").mockImplementation(() => {
-            return i++;
-        });
+        core.__private.id = 0;
     });
 
     test("equation", async () => {
@@ -617,7 +613,7 @@ describe("renderer", () => {
             const zipper: Editor.Zipper = {
                 breadcrumbs: [],
                 row: {
-                    id: Core.getId(),
+                    id: core.getId(),
                     type: "zrow",
                     left: [glyph("2")],
                     selection: [],
@@ -704,7 +700,7 @@ describe("renderer", () => {
         );
 
         const bcRow: Editor.BreadcrumbRow = {
-            id: Core.getId(),
+            id: core.getId(),
             type: "bcrow",
             left: [],
             right: [],
@@ -712,7 +708,7 @@ describe("renderer", () => {
         };
 
         const zipper: Editor.Zipper = {
-            row: Editor.zrow(Core.getId(), [], []),
+            row: Editor.zrow(core.getId(), [], []),
             breadcrumbs: [
                 {
                     row: bcRow,
@@ -804,7 +800,7 @@ describe("renderer", () => {
             );
 
             const bcRow: Editor.BreadcrumbRow = {
-                id: Core.getId(),
+                id: core.getId(),
                 type: "bcrow",
                 left: [],
                 right: [],
@@ -812,7 +808,7 @@ describe("renderer", () => {
             };
 
             const zipper: Editor.Zipper = {
-                row: Editor.zrow(Core.getId(), [], []),
+                row: Editor.zrow(core.getId(), [], []),
                 breadcrumbs: [
                     {
                         row: bcRow,
@@ -876,7 +872,7 @@ describe("renderer", () => {
             );
 
             const bcRow: Editor.BreadcrumbRow = {
-                id: Core.getId(),
+                id: core.getId(),
                 type: "bcrow",
                 left: [],
                 right: [],
@@ -884,7 +880,7 @@ describe("renderer", () => {
             };
 
             const zipper: Editor.Zipper = {
-                row: Editor.zrow(Core.getId(), [], []),
+                row: Editor.zrow(core.getId(), [], []),
                 breadcrumbs: [
                     {
                         row: bcRow,
