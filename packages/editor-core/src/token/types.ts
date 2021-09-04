@@ -13,6 +13,25 @@ import * as sharedTypes from "../shared-types";
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
+export enum TokenKind {
+    Identifier = "identifier",
+    Number = "number",
+    Plus = "plus",
+    Minus = "minus",
+    PlusMinus = "plusmins",
+    Times = "times",
+    Equal = "equal",
+    LessThan = "lt",
+    GreaterThan = "gt",
+    LeftParens = "lparens", // TODO: rename to OpenParens
+    RightParens = "rparens", // TODO: rename to ClosedParens
+    Ellipsis = "ellipsis",
+    Sum = "sum", // TODO: rename to Summation or Sigma
+    Prod = "prod", // TODO: rename to Product
+    Lim = "lim",
+    EOL = "eol",
+}
+
 type Ident = {
     readonly type: "token";
     readonly name: "identifier";
@@ -29,7 +48,7 @@ type PlusMinus = {readonly type: "token"; readonly name: "plusminus"};
 type Times = {readonly type: "token"; readonly name: "times"};
 type Equal = {readonly type: "token"; readonly name: "eq"};
 type LT = {readonly type: "token"; readonly name: "lt"};
-type GT = {readonly type: "token"; readonly name: "lt"};
+type GT = {readonly type: "token"; readonly name: "gt"};
 type LParens = {readonly type: "token"; readonly name: "lparens"};
 type RParens = {readonly type: "token"; readonly name: "rparens"};
 type Ellipsis = {readonly type: "token"; readonly name: "ellipsis"};
