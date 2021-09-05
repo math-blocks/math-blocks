@@ -9,6 +9,7 @@ import {
     TokenAtom,
     SourceLocation,
 } from "./types";
+import {NodeType} from "../shared-types";
 
 export function row(children: readonly TokenNode[]): TokenRow {
     // What should the location be for an empty row?
@@ -18,7 +19,7 @@ export function row(children: readonly TokenNode[]): TokenRow {
             : undefined;
 
     return {
-        type: "row",
+        type: NodeType.Row,
         children,
         // TODO: fix the path
         loc: loc || {path: [], start: -1, end: -1},
@@ -31,7 +32,7 @@ export function subsup(
     loc: SourceLocation,
 ): TokenSubSup {
     return {
-        type: "subsup",
+        type: NodeType.SubSup,
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
         loc,
     };
@@ -43,7 +44,7 @@ export function frac(
     loc: SourceLocation,
 ): TokenFrac {
     return {
-        type: "frac",
+        type: NodeType.Frac,
         children: [row(numerator), row(denominator)],
         loc,
     };
@@ -57,7 +58,7 @@ export function root(
     loc: SourceLocation,
 ): TokenRoot {
     return {
-        type: "root",
+        type: NodeType.Root,
         children: [index ? row(index) : null, row(radicand)],
         loc,
     };

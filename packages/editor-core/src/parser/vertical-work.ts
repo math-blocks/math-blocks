@@ -1,8 +1,9 @@
 import {getId} from "@math-blocks/core";
 import * as Parser from "@math-blocks/parser-factory";
-import {NodeType} from "@math-blocks/semantic";
+import * as Semantic from "@math-blocks/semantic";
 
 import * as types from "../token/types";
+import {NodeType} from "../shared-types";
 import {range, zip} from "./util";
 
 const {TokenKind} = types;
@@ -95,7 +96,7 @@ const mergeColumns = (first: Column, second: Column): Column => {
         };
 
         return {
-            type: "row",
+            type: NodeType.Row,
             children: [...a.children, ...b.children],
             loc: loc,
         };
@@ -186,7 +187,7 @@ export const parseVerticalWork = (
             : undefined;
 
     return {
-        type: NodeType.VerticalAdditionToRelation,
+        type: Semantic.NodeType.VerticalAdditionToRelation,
         id: getId(),
         loc: table.loc,
         originalRelation: before,

@@ -11,6 +11,7 @@ import {UnreachableCaseError} from "@math-blocks/core";
 import * as types from "../char/types";
 
 import {TokenKind} from "../token/types";
+import {NodeType} from "../shared-types";
 
 import {
     Token,
@@ -194,7 +195,7 @@ export const lexRow = (
 ): TokenRow => {
     // assertOneOrMore(row.children, "rows cannot be empty");
     return {
-        type: "row",
+        type: NodeType.Row,
         children: lexChildren(row.children, path),
         loc: location(path, 0, row.children.length),
     };
@@ -206,19 +207,19 @@ const lex = (
     offset: number,
 ): TokenNode => {
     switch (node.type) {
-        case "row":
+        case NodeType.Row:
             // This never gets called because rows must be children of
             // either: subsup, frac, or root.
             assertOneOrMore(node.children, "rows cannot be empty");
             return {
-                type: "row",
+                type: node.type,
                 children: lexChildren(node.children, path),
                 loc: location(path, offset, offset + 1),
             };
-        case "subsup": {
+        case NodeType.SubSup: {
             const [sub, sup] = node.children;
             return {
-                type: "subsup",
+                type: node.type,
                 // TODO: use null-coalescing
                 children: [
                     sub ? lexRow(sub, [...path, offset, 0]) : null,
@@ -227,7 +228,7 @@ const lex = (
                 loc: location(path, offset, offset + 1),
             };
         }
-        case "limits": {
+        case NodeType.Limits: {
             const [lower, upper] = node.children;
             const loc = location(path, offset, offset + 1);
 
@@ -253,7 +254,7 @@ const lex = (
             }
 
             return {
-                type: "limits",
+                type: node.type,
                 children: [
                     lexRow(lower, [...path, offset, 0]),
                     upper ? lexRow(upper, [...path, offset, 1]) : null,
@@ -262,10 +263,10 @@ const lex = (
                 loc,
             };
         }
-        case "frac": {
+        case NodeType.Frac: {
             const [numerator, denominator] = node.children;
             return {
-                type: "frac",
+                type: node.type,
                 children: [
                     lexRow(numerator, [...path, offset, 0]),
                     lexRow(denominator, [...path, offset, 1]),
@@ -273,10 +274,10 @@ const lex = (
                 loc: location(path, offset, offset + 1),
             };
         }
-        case "root": {
+        case NodeType.Root: {
             const [index, radicand] = node.children;
             return {
-                type: "root",
+                type: node.type,
                 children: [
                     index ? lexRow(index, [...path, offset, 1]) : null,
                     lexRow(radicand, [...path, offset, 0]),
@@ -284,20 +285,20 @@ const lex = (
                 loc: location(path, offset, offset + 1),
             };
         }
-        case "delimited": {
+        case NodeType.Delimited: {
             const leftDelim = lparens(location(path, offset, offset));
             const rightDelim = rparens(location(path, offset, offset));
             return {
-                type: "delimited",
+                type: node.type,
                 children: [lexRow(node.children[0])],
                 leftDelim: leftDelim,
                 rightDelim: rightDelim,
                 loc: location(path, offset, offset + 1),
             };
         }
-        case "table": {
+        case NodeType.Table: {
             return {
-                type: "table",
+                type: node.type,
                 subtype: node.subtype,
                 colCount: node.colCount,
                 rowCount: node.rowCount,

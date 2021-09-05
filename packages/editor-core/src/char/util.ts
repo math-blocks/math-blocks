@@ -1,6 +1,8 @@
 import * as builders from "./builders";
 import * as types from "./types";
 
+import {NodeType} from "../shared-types";
+
 export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     if (a.type !== b.type) {
         return false;
@@ -119,7 +121,7 @@ export function nodeAtPath(
         switch (root.type) {
             case "char":
                 throw new Error("invalid path");
-            case "subsup": {
+            case NodeType.SubSup: {
                 const [head, ...tail] = path;
                 if (head > 1) {
                     throw new Error("invalid path");
@@ -130,7 +132,7 @@ export function nodeAtPath(
                 }
                 return nodeAtPath(headChild, tail);
             }
-            case "limits": {
+            case NodeType.Limits: {
                 const [head, ...tail] = path;
                 if (head > 1) {
                     throw new Error("invalid path");
@@ -141,7 +143,7 @@ export function nodeAtPath(
                 }
                 return nodeAtPath(headChild, tail);
             }
-            case "root": {
+            case NodeType.Root: {
                 const [head, ...tail] = path;
                 if (head > 1) {
                     throw new Error("invalid path");
@@ -152,7 +154,7 @@ export function nodeAtPath(
                 }
                 return nodeAtPath(headChild, tail);
             }
-            case "table": {
+            case NodeType.Table: {
                 const [head, ...tail] = path;
                 if (head > root.children.length - 1) {
                     throw new Error("invalid path");

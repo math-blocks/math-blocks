@@ -1,11 +1,12 @@
 import {getId} from "@math-blocks/core";
 
 import * as types from "./types";
+import {NodeType} from "../shared-types";
 
 export function row(children: readonly types.CharNode[]): types.CharRow {
     return {
         id: getId(),
-        type: "row",
+        type: NodeType.Row,
         children,
         style: {},
     };
@@ -17,7 +18,7 @@ export function subsup(
 ): types.CharSubSup {
     return {
         id: getId(),
-        type: "subsup",
+        type: NodeType.SubSup,
         children: [sub ? row(sub) : null, sup ? row(sup) : null],
         style: {},
     };
@@ -30,7 +31,7 @@ export function limits(
 ): types.CharLimits {
     return {
         id: getId(),
-        type: "limits",
+        type: NodeType.Limits,
         inner,
         children: [row(lower), upper ? row(upper) : null],
         style: {},
@@ -43,7 +44,7 @@ export function frac(
 ): types.CharFrac {
     return {
         id: getId(),
-        type: "frac",
+        type: NodeType.Frac,
         children: [row(numerator), row(denominator)],
         style: {},
     };
@@ -57,7 +58,7 @@ export function root(
 ): types.CharRoot {
     return {
         id: getId(),
-        type: "root",
+        type: NodeType.Root,
         children: [index ? row(index) : null, row(radicand)],
         style: {},
     };
@@ -70,7 +71,7 @@ export function delimited(
 ): types.CharDelimited {
     return {
         id: getId(),
-        type: "delimited",
+        type: NodeType.Delimited,
         children: [row(inner)],
         leftDelim: leftDelim,
         rightDelim: rightDelim,
@@ -90,7 +91,7 @@ export function table(
 ): types.CharTable {
     return {
         id: getId(),
-        type: "table",
+        type: NodeType.Table,
         subtype,
         children: cells.map((cell) => cell && row(cell)),
         colCount,

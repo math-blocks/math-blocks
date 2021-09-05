@@ -1,7 +1,8 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import type {TokenNode} from "./types";
+import {NodeType} from "../shared-types";
 import {TokenKind} from "./types";
+import type {TokenNode} from "./types";
 
 const print = (
     val: unknown,
@@ -27,7 +28,7 @@ const print = (
                     }:${loc.end}`;
             }
         }
-        case "frac": {
+        case NodeType.Frac: {
             const [numerator, denominator] = ast.children;
             return `(frac@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
@@ -37,12 +38,12 @@ const print = (
                 indent,
             )})`;
         }
-        case "row": {
+        case NodeType.Row: {
             return `(row ${ast.children
                 .map((child) => "\n" + indent(print(child, serialize, indent)))
                 .join(" ")})`;
         }
-        case "subsup": {
+        case NodeType.SubSup: {
             const [sub, sup] = ast.children;
             return `(subsup@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
@@ -50,7 +51,7 @@ const print = (
                 sup ? print(sup, serialize, indent) : "_"
             })`;
         }
-        case "limits": {
+        case NodeType.Limits: {
             const inner = print(ast.inner, serialize, indent);
             const [lower, upper] = ast.children;
             return `(limits{${inner}}@[${loc.path.map(String).join(",")}]:${
@@ -59,7 +60,7 @@ const print = (
                 upper ? print(upper, serialize, indent) : "_"
             })`;
         }
-        case "root": {
+        case NodeType.Root: {
             const [index, radicand] = ast.children;
             return `(root@[${loc.path.map(String).join(",")}]:${loc.start}:${
                 loc.end
@@ -67,7 +68,7 @@ const print = (
                 index ? print(index, serialize, indent) : "_"
             })`;
         }
-        case "delimited": {
+        case NodeType.Delimited: {
             const inner = print(ast.children[0], serialize, indent);
             const open = print(ast.leftDelim, serialize, indent);
             const close = print(ast.rightDelim, serialize, indent);
@@ -76,7 +77,7 @@ const print = (
                 loc.start
             }:${loc.end} ${open} ${inner} ${close})`;
         }
-        case "table": {
+        case NodeType.Table: {
             const children = ast.children.map(
                 (child) => child && print(child, serialize, indent),
             );
