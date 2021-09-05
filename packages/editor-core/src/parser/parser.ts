@@ -5,6 +5,7 @@ import type {Mutable} from "utility-types";
 
 import * as Lexer from "./lexer";
 import {locFromRange} from "../token/util";
+import {TokenKind} from "../token/types";
 import {parseVerticalWork} from "./vertical-work";
 
 import type {CharRow} from "../char/types";
@@ -30,7 +31,7 @@ type NAryOperator = "add" | "sub" | "plusminus" | "mul.exp" | "mul.imp" | "eq";
 type EditorParser = Parser.IParser<TokenNode, Parser.types.Node, Operator>;
 
 const isIdentifier = (node: TokenNode): boolean =>
-    node.type === "token" && node.name === "identifier";
+    node.type === "token" && node.name === TokenKind.Identifier;
 
 const getPrefixParselet = (
     node: TokenNode,
@@ -38,17 +39,17 @@ const getPrefixParselet = (
     switch (node.type) {
         case "token": {
             switch (node.name) {
-                case "identifier":
+                case TokenKind.Identifier:
                     return {
                         parse: () =>
                             Parser.builders.identifier(node.value, node.loc),
                     };
-                case "number":
+                case TokenKind.Number:
                     return {
                         parse: () =>
                             Parser.builders.number(node.value, node.loc),
                     };
-                case "minus":
+                case TokenKind.Minus:
                     return {
                         parse: (parser) => {
                             const neg = parser.parseWithOperator("neg");
@@ -56,7 +57,7 @@ const getPrefixParselet = (
                             return Parser.builders.neg(neg, false, loc);
                         },
                     };
-                case "plusminus":
+                case TokenKind.PlusMinus:
                     return {
                         parse: (parser) => {
                             const neg = parser.parseWithOperator("plusminus");
@@ -64,7 +65,7 @@ const getPrefixParselet = (
                             return Parser.builders.plusminus(neg, "unary", loc);
                         },
                     };
-                case "ellipsis":
+                case TokenKind.Ellipsis:
                     return {
                         parse: () => Parser.builders.ellipsis(node.loc),
                     };
@@ -178,7 +179,10 @@ const parseNaryArgs = (
     // TODO: handle implicit multiplication
     const node = parser.peek();
     if (node.type === "token") {
-        if (node.name === "identifier" || node.name === "number") {
+        if (
+            node.name === TokenKind.Identifier ||
+            node.name === TokenKind.Number
+        ) {
             // implicit multiplication
         } else {
             // an explicit operation, e.g. plus, times, etc.
@@ -199,25 +203,28 @@ const parseNaryArgs = (
         }
         if (
             (op === "add" || op === "sub" || op === "plusminus") &&
-            (nextToken.name === "plus" ||
-                nextToken.name === "minus" ||
-                nextToken.name === "plusminus")
+            (nextToken.name === TokenKind.Plus ||
+                nextToken.name === TokenKind.Minus ||
+                nextToken.name === TokenKind.PlusMinus)
         ) {
-            if (nextToken.name === "plus") {
+            if (nextToken.name === TokenKind.Plus) {
                 op = "add";
-            } else if (nextToken.name === "minus") {
+            } else if (nextToken.name === TokenKind.Minus) {
                 op = "sub";
-            } else if (nextToken.name === "plusminus") {
+            } else if (nextToken.name === TokenKind.PlusMinus) {
                 op = "plusminus";
             } else {
                 throw new Error("unexpected value for nextAtom.kind");
             }
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "mul.exp" && nextToken.name === "times") {
+        } else if (op === "mul.exp" && nextToken.name === TokenKind.Times) {
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "mul.imp" && nextToken.name === "identifier") {
+        } else if (
+            op === "mul.imp" &&
+            nextToken.name === TokenKind.Identifier
+        ) {
             return [expr, ...parseNaryArgs(parser, op)];
-        } else if (op === "eq" && nextToken.name === "eq") {
+        } else if (op === "eq" && nextToken.name === TokenKind.Equal) {
             return [expr, ...parseNaryArgs(parser, op)];
         } else {
             return [expr];
@@ -274,22 +281,22 @@ const getInfixParselet = (
     switch (node.type) {
         case "token": {
             switch (node.name) {
-                case "plus":
+                case TokenKind.Plus:
                     return {op: "add", parse: parseNaryInfix("add")};
-                case "minus":
+                case TokenKind.Minus:
                     return {op: "add", parse: parseNaryInfix("sub")};
-                case "plusminus":
+                case TokenKind.PlusMinus:
                     return {
                         op: "plusminus",
                         parse: parseNaryInfix("plusminus"),
                     };
-                case "times":
+                case TokenKind.Times:
                     return {op: "mul.exp", parse: parseNaryInfix("mul.exp")};
-                case "eq":
+                case TokenKind.Equal:
                     return {op: "eq", parse: parseNaryInfix("eq")};
-                case "identifier":
+                case TokenKind.Identifier:
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
-                case "number":
+                case TokenKind.Number:
                     return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
                 default:
                     return null;
@@ -410,7 +417,7 @@ const getOpPrecedence = (op: Operator): number => {
 };
 
 const EOL: TokenNode = Lexer.atom(
-    {type: "token", name: "eol"},
+    {type: "token", name: TokenKind.EOL},
     Lexer.location([], -1, -1),
 );
 

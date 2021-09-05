@@ -1,6 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
-import {TokenNode} from "./types";
+import type {TokenNode} from "./types";
+import {TokenKind} from "./types";
 
 const print = (
     val: unknown,
@@ -12,12 +13,12 @@ const print = (
     switch (ast.type) {
         case "token": {
             switch (ast.name) {
-                case "number":
-                    return `(num@[${loc.path.map(String).join(",")}]:${
+                case TokenKind.Number:
+                    return `(${ast.name}@[${loc.path.map(String).join(",")}]:${
                         loc.start
                     }:${loc.end} ${ast.value})`;
-                case "identifier":
-                    return `(ident@[${loc.path.map(String).join(",")}]:${
+                case TokenKind.Identifier:
+                    return `(${ast.name}@[${loc.path.map(String).join(",")}]:${
                         loc.start
                     }:${loc.end} ${ast.value})`;
                 default:

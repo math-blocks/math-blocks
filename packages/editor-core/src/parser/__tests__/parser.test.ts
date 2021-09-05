@@ -241,7 +241,7 @@ describe("EditorParser", () => {
         const input = util.row("2-");
 
         expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-            `"Unexpected 'eol' atom"`,
+            `"Unexpected 'EOL' atom"`,
         );
     });
 
@@ -249,7 +249,7 @@ describe("EditorParser", () => {
         const input = util.row("2+2+");
 
         expect(() => parser.parse(input)).toThrowErrorMatchingInlineSnapshot(
-            `"Unexpected 'eol' atom"`,
+            `"Unexpected 'EOL' atom"`,
         );
     });
 

@@ -14,8 +14,8 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:3 123))
-            `);
+                  (Number@[]:0:3 123))
+                `);
         });
 
         it("should coalesce reals", () => {
@@ -24,8 +24,8 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:3 1.3))
-            `);
+                  (Number@[]:0:3 1.3))
+                `);
         });
 
         it("should lex `1 + a`", () => {
@@ -34,10 +34,10 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  plus@[]:1:2 
-                  (ident@[]:2:3 a))
-            `);
+                  (Number@[]:0:1 1) 
+                  Plus@[]:1:2 
+                  (Identifier@[]:2:3 a))
+                `);
         });
 
         it("should lex `1 \u00B7 a`", () => {
@@ -46,10 +46,10 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  times@[]:1:2 
-                  (ident@[]:2:3 a))
-            `);
+                  (Number@[]:0:1 1) 
+                  Times@[]:1:2 
+                  (Identifier@[]:2:3 a))
+                `);
         });
 
         it("should lex `1 * a`", () => {
@@ -58,10 +58,10 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  times@[]:1:2 
-                  (ident@[]:2:3 a))
-            `);
+                  (Number@[]:0:1 1) 
+                  Times@[]:1:2 
+                  (Identifier@[]:2:3 a))
+                `);
         });
 
         it("should lex `1 + 1/x`", () => {
@@ -74,11 +74,11 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  plus@[]:1:2 
+                  (Number@[]:0:1 1) 
+                  Plus@[]:1:2 
                   (frac@[]:2:3 (row 
-                    (num@[2,0]:0:1 1)) (row 
-                    (ident@[2,1]:0:1 x))))
+                    (Number@[2,0]:0:1 1)) (row 
+                    (Identifier@[2,1]:0:1 x))))
             `);
         });
 
@@ -88,9 +88,9 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (ident@[]:0:1 e) 
+                  (Identifier@[]:0:1 e) 
                   (subsup@[]:1:2 ^ (row 
-                    (ident@[1,1]:0:1 x))))
+                    (Identifier@[1,1]:0:1 x))))
             `);
         });
 
@@ -100,9 +100,9 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (ident@[]:0:1 a) 
+                  (Identifier@[]:0:1 a) 
                   (subsup@[]:1:2 (row 
-                    (ident@[1,0]:0:1 n)) _))
+                    (Identifier@[1,0]:0:1 n)) _))
             `);
         });
 
@@ -112,10 +112,10 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (ident@[]:0:1 a) 
+                  (Identifier@[]:0:1 a) 
                   (subsup@[]:1:2 (row 
-                    (ident@[1,0]:0:1 n)) (row 
-                    (num@[1,1]:0:1 2))))
+                    (Identifier@[1,0]:0:1 n)) (row 
+                    (Number@[1,1]:0:1 2))))
             `);
         });
 
@@ -125,12 +125,12 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  lparens@[]:0:1 
-                  (num@[]:1:2 1) 
-                  plus@[]:3:4 
-                  (num@[]:5:6 2) 
-                  rparens@[]:6:7)
-            `);
+                  LeftParens@[]:0:1 
+                  (Number@[]:1:2 1) 
+                  Plus@[]:3:4 
+                  (Number@[]:5:6 2) 
+                  RightParens@[]:6:7)
+                `);
         });
 
         it("should lex a square root", () => {
@@ -140,7 +140,7 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (root@[]:0:1 (row 
-                    (num@[0,0]:0:3 123)) _))
+                    (Number@[0,0]:0:3 123)) _))
             `);
         });
 
@@ -151,8 +151,8 @@ describe("Lexer", () => {
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
                   (root@[]:0:1 (row 
-                    (ident@[0,0]:0:1 n)) (row 
-                    (num@[0,1]:0:3 123))))
+                    (Identifier@[0,0]:0:1 n)) (row 
+                    (Number@[0,1]:0:3 123))))
             `);
         });
 
@@ -162,7 +162,7 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (ident@[]:0:3 sin))
+                  (Identifier@[]:0:3 sin))
             `);
         });
 
@@ -172,9 +172,9 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  minus@[]:1:2 
-                  (num@[]:2:3 2))
+                  (Number@[]:0:1 1) 
+                  Minus@[]:1:2 
+                  (Number@[]:2:3 2))
             `);
         });
 
@@ -184,9 +184,9 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  eq@[]:1:2 
-                  (num@[]:2:3 2))
+                  (Number@[]:0:1 1) 
+                  Equal@[]:1:2 
+                  (Number@[]:2:3 2))
             `);
         });
 
@@ -196,12 +196,12 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (num@[]:0:1 1) 
-                  plus@[]:1:2 
-                  ellipsis@[]:2:5 
-                  plus@[]:5:6 
-                  (ident@[]:6:7 n))
-            `);
+                  (Number@[]:0:1 1) 
+                  Plus@[]:1:2 
+                  Ellipsis@[]:2:5 
+                  Plus@[]:5:6 
+                  (Identifier@[]:6:7 n))
+                `);
         });
 
         it("should lex summation with limits", () => {
@@ -216,11 +216,11 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{sum@[]:0:1}@[]:0:1 (row 
-                    (ident@[0,0]:0:1 i) 
-                    eq@[0,0]:1:2 
-                    (num@[0,0]:2:3 0)) (row )))
-            `);
+                  (limits{SummationOperator@[]:0:1}@[]:0:1 (row 
+                    (Identifier@[0,0]:0:1 i) 
+                    Equal@[0,0]:1:2 
+                    (Number@[0,0]:2:3 0)) (row )))
+                `);
         });
 
         it("should lex products with limits", () => {
@@ -235,11 +235,11 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{prod@[]:0:1}@[]:0:1 (row 
-                    (ident@[0,0]:0:1 i) 
-                    eq@[0,0]:1:2 
-                    (num@[0,0]:2:3 0)) (row )))
-            `);
+                  (limits{ProductOperator@[]:0:1}@[]:0:1 (row 
+                    (Identifier@[0,0]:0:1 i) 
+                    Equal@[0,0]:1:2 
+                    (Number@[0,0]:2:3 0)) (row )))
+                `);
         });
 
         it("should lex lim", () => {
@@ -257,10 +257,10 @@ describe("Lexer", () => {
 
             expect(tokenTree).toMatchInlineSnapshot(`
                 (row 
-                  (limits{lim@[]:0:1}@[]:0:1 (row 
-                    (ident@[0,0]:0:1 i) 
-                    (num@[0,0]:3:4 0)) _))
-            `);
+                  (limits{Lim@[]:0:1}@[]:0:1 (row 
+                    (Identifier@[0,0]:0:1 i) 
+                    (Number@[0,0]:3:4 0)) _))
+                `);
         });
 
         // TODO: revisit how we handle empty cells within vertical layouts
