@@ -1,5 +1,6 @@
 import * as types from "../../char/types";
 import * as builders from "../../char/builders";
+import {NodeType} from "../../shared-types";
 
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
@@ -13,7 +14,7 @@ const limits = (
 ): types.CharLimits => {
     return {
         id: 0,
-        type: "limits",
+        type: NodeType.Limits,
         children: [lower, upper],
         inner: inner,
         style: {},

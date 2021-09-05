@@ -10,8 +10,7 @@ import {parseVerticalWork} from "./vertical-work";
 
 import type {CharRow} from "../char/types";
 import type {TokenNode, SourceLocation} from "../token/types";
-
-const {NodeType} = Semantic;
+import {NodeType} from "../shared-types";
 
 // TODO: fill out this list
 type Operator =
@@ -73,7 +72,7 @@ const getPrefixParselet = (
                     throw new Error(`Unexpected '${node.name}' atom`);
             }
         }
-        case "frac":
+        case NodeType.Frac:
             return {
                 parse: () => {
                     const [numerator, denominator] = node.children;
@@ -84,7 +83,7 @@ const getPrefixParselet = (
                     );
                 },
             };
-        case "root":
+        case NodeType.Root:
             return {
                 parse: () => {
                     const [index, radicand] = node.children;
@@ -100,7 +99,7 @@ const getPrefixParselet = (
                           );
                 },
             };
-        case "delimited":
+        case NodeType.Delimited:
             return {
                 parse: () => {
                     const [inner] = node.children;
@@ -109,7 +108,7 @@ const getPrefixParselet = (
                     return Parser.builders.parens(result);
                 },
             };
-        case "table":
+        case NodeType.Table:
             if (node.subtype === "algebra") {
                 return {
                     parse: () => {
@@ -119,12 +118,12 @@ const getPrefixParselet = (
             }
             throw new Error("We don't handle 'table' tokens yet");
         // TODO: Handle subsup at the start of a row, useful in Chemistry
-        case "subsup":
+        case NodeType.SubSup:
             throw new Error("Unexpected 'subsup' token");
         // TODO: Handle limits at the start of a row
-        case "limits":
+        case NodeType.Limits:
             throw new Error("Unexpected 'limits' token");
-        case "row":
+        case NodeType.Row:
             throw new Error("Unexpected 'row' token");
         default:
             throw new UnreachableCaseError(node);
@@ -302,7 +301,7 @@ const getInfixParselet = (
                     return null;
             }
         }
-        case "subsup": {
+        case NodeType.SubSup: {
             // TODO: we need to look the previous node so we know if we should
             // be generating a sum or product node or an exponent node.  It also
             // means we have to replace the current last.  It's essentially a
@@ -351,15 +350,15 @@ const getInfixParselet = (
                 },
             };
         }
-        case "root": {
+        case NodeType.Root: {
             return {op: "mul.imp", parse: parseNaryInfix("mul.imp")};
         }
-        case "frac": {
+        case NodeType.Frac: {
             return {
                 op: "mul.imp",
                 parse: (parser, left): Parser.types.Node => {
                     const parselet = parseNaryInfix("mul.imp");
-                    if (left.type === NodeType.Div) {
+                    if (left.type === Semantic.NodeType.Div) {
                         throw new Error(
                             "An operator is required between fractions",
                         );
@@ -368,7 +367,7 @@ const getInfixParselet = (
                 },
             };
         }
-        case "delimited": {
+        case NodeType.Delimited: {
             return {
                 // TODO: figure out how to return a different value for 'op' if
                 // the delimited node stands for something else like function
@@ -382,11 +381,11 @@ const getInfixParselet = (
                 },
             };
         }
-        case "table":
+        case NodeType.Table:
             throw new Error("We don't handle 'table' tokens yet");
-        case "limits":
+        case NodeType.Limits:
             throw new Error(`Unexpected 'limits' token`);
-        case "row":
+        case NodeType.Row:
             throw new Error(`Unexpected 'row' token`);
         default:
             throw new UnreachableCaseError(node);
@@ -446,24 +445,27 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
             // the parens are necessary or not.
             if (node.type === "Parens") {
                 const {arg} = node;
-                if (parent.type === NodeType.Parens) {
+                if (parent.type === Semantic.NodeType.Parens) {
                     return;
                 }
-                if (parent.type === NodeType.Mul && parent.implicit) {
+                if (parent.type === Semantic.NodeType.Mul && parent.implicit) {
                     return arg;
                 }
                 if (
-                    arg.type === NodeType.Identifier ||
-                    arg.type === NodeType.Number
+                    arg.type === Semantic.NodeType.Identifier ||
+                    arg.type === Semantic.NodeType.Number
                 ) {
                     return;
                 }
-                if (arg.type === NodeType.Mul && parent.type === NodeType.Add) {
+                if (
+                    arg.type === Semantic.NodeType.Mul &&
+                    parent.type === Semantic.NodeType.Add
+                ) {
                     return;
                 }
                 if (
-                    arg.type === NodeType.Neg &&
-                    parent.type !== NodeType.Power
+                    arg.type === Semantic.NodeType.Neg &&
+                    parent.type !== Semantic.NodeType.Power
                 ) {
                     return;
                 }

@@ -1,14 +1,24 @@
 // TODO: make all of these object types readonly
 
+export enum NodeType {
+    Row = "row",
+    Delimited = "delimited",
+    Table = "table",
+    SubSup = "subsup",
+    Limits = "limits",
+    Frac = "frac",
+    Root = "root",
+}
+
 // A = Atom type
 // C = Common type
 export type Row<A, C> = C & {
-    readonly type: "row";
+    readonly type: NodeType.Row;
     readonly children: readonly Node<A, C>[];
 };
 
 export type Delimited<A, C> = C & {
-    readonly type: "delimited";
+    readonly type: NodeType.Delimited;
     readonly children: readonly [Row<A, C>];
     // How do we limit what can be used as a delimiter?s
     readonly leftDelim: Atom<A, C>;
@@ -26,7 +36,7 @@ type ColStyle = {
 };
 
 export type Table<A, C> = C & {
-    readonly type: "table";
+    readonly type: NodeType.Table;
     readonly subtype: "matrix" | "algebra";
     readonly children: readonly (Row<A, C> | null)[];
     readonly rowCount: number;
@@ -41,23 +51,23 @@ export type Table<A, C> = C & {
 };
 
 export type SubSup<A, C> = C & {
-    readonly type: "subsup";
+    readonly type: NodeType.SubSup;
     readonly children: readonly [Row<A, C> | null, Row<A, C> | null]; // subscript, superscript
 };
 
 export type Limits<A, C> = C & {
-    readonly type: "limits";
+    readonly type: NodeType.Limits;
     readonly inner: Node<A, C>;
     readonly children: readonly [Row<A, C>, Row<A, C> | null]; // lower, upper
 };
 
 export type Frac<A, C> = C & {
-    readonly type: "frac";
+    readonly type: NodeType.Frac;
     readonly children: readonly [Row<A, C>, Row<A, C>]; // numerator, denominator
 };
 
 export type Root<A, C> = C & {
-    readonly type: "root";
+    readonly type: NodeType.Root;
     readonly children: readonly [Row<A, C> | null, Row<A, C>]; // index, radicand
 };
 
