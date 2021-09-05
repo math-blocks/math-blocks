@@ -1,6 +1,7 @@
 import * as util from "./util";
 import {moveLeft} from "./move-left";
 import {verticalWork} from "./vertical-work/reducer";
+import {NodeType} from "../shared-types";
 
 import type {Breadcrumb, Zipper, State} from "./types";
 
@@ -149,7 +150,7 @@ export const backspace = (state: State): State => {
                     ...row.left,
                     {
                         id: focus.id,
-                        type: "subsup",
+                        type: NodeType.SubSup,
                         children: [focus.left[0], null],
                         style: focus.style,
                     },

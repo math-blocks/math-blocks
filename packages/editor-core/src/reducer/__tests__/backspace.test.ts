@@ -1,3 +1,5 @@
+import {getId} from "@math-blocks/core";
+
 import {backspace} from "../backspace";
 import {moveLeft} from "../move-left";
 import {moveRight} from "../move-right";
@@ -12,9 +14,9 @@ import {
 } from "../test-util";
 import * as builders from "../../char/builders";
 import * as types from "../../char/types";
+import {NodeType} from "../../shared-types";
 
 import type {Zipper, State} from "../types";
-import {getId} from "@math-blocks/core";
 
 expect.extend({toEqualEditorNodes});
 
@@ -25,7 +27,7 @@ const limits = (
 ): types.CharLimits => {
     return {
         id: 0,
-        type: "limits",
+        type: NodeType.Limits,
         children: [lower, upper],
         inner: inner,
         style: {},

@@ -1,6 +1,8 @@
 import {getId} from "@math-blocks/core";
 
 import {isOperator} from "../char/util";
+import {NodeType} from "../shared-types";
+
 import {zrow} from "./util";
 import type {Zipper, Focus, State} from "./types";
 
@@ -15,7 +17,7 @@ export const frac = (state: State): State => {
             left: [
                 {
                     id: getId(),
-                    type: "row",
+                    type: NodeType.Row,
                     children: selection,
                     style: {},
                 },
@@ -81,7 +83,7 @@ export const frac = (state: State): State => {
         left: [
             {
                 id: getId(),
-                type: "row",
+                type: NodeType.Row,
                 children: left.slice(index + 1),
                 style: {},
             },

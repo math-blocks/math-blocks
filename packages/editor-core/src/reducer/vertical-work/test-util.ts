@@ -6,6 +6,7 @@ import * as util from "../util";
 
 import type {ZTable, Zipper, BreadcrumbRow} from "../types";
 import type {CharTable} from "../../char/types";
+import {NodeType} from "../../shared-types";
 
 export const toEqualZTable = (
     expected: ZTable,
@@ -165,7 +166,7 @@ export const textRepsToTable = (...textReps: readonly string[]): CharTable => {
 
     const table: CharTable = {
         id: getId(),
-        type: "table",
+        type: NodeType.Table,
         subtype: "algebra",
         rowCount: lines.length,
         colCount: lines[0].length,

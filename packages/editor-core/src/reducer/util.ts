@@ -1,6 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../char/types";
+import {NodeType} from "../shared-types";
 
 import type {
     ZRow,
@@ -21,7 +22,7 @@ export const frac = (
 ): types.CharFrac => {
     return {
         id: focus.id,
-        type: "frac",
+        type: NodeType.Frac,
         children: [
             ...focus.left,
             replacement,
@@ -58,7 +59,7 @@ export const subsup = (
 ): types.CharSubSup => {
     return {
         id: focus.id,
-        type: "subsup",
+        type: NodeType.SubSup,
         children: [
             ...focus.left,
             replacement,
@@ -95,7 +96,7 @@ export const root = (
 ): types.CharRoot => {
     return {
         id: focus.id,
-        type: "root",
+        type: NodeType.Root,
         children: [
             ...focus.left,
             replacement,
@@ -132,7 +133,7 @@ export const limits = (
 ): types.CharLimits => {
     return {
         id: focus.id,
-        type: "limits",
+        type: NodeType.Limits,
         inner: focus.inner,
         children: [
             ...focus.left,
@@ -172,7 +173,7 @@ export const table = (
 ): types.CharTable => {
     return {
         id: focus.id,
-        type: "table",
+        type: NodeType.Table,
         subtype: focus.subtype,
         rowCount: focus.rowCount,
         colCount: focus.colCount,
@@ -206,7 +207,7 @@ export const delimited = (
 ): types.CharDelimited => {
     return {
         id: focus.id,
-        type: "delimited",
+        type: NodeType.Delimited,
         children: [replacement], // focus.left and focus.right are always empty arrays
         leftDelim: focus.leftDelim,
         rightDelim: focus.rightDelim,
@@ -260,29 +261,29 @@ export const nodeToFocus = (
     index: number,
 ): Focus => {
     switch (node.type) {
-        case "frac":
+        case NodeType.Frac:
             if (index !== 0 && index !== 1) {
                 throw new Error("index outside of range [0, 1]");
             }
             return zfrac(node, index);
-        case "subsup":
+        case NodeType.SubSup:
             if (index !== 0 && index !== 1) {
                 throw new Error("index outside of range [0, 1]");
             }
             return zsubsup(node, index);
-        case "root":
+        case NodeType.Root:
             if (index !== 0 && index !== 1) {
                 throw new Error("index outside of range [0, 1]");
             }
             return zroot(node, index);
-        case "limits":
+        case NodeType.Limits:
             if (index !== 0 && index !== 1) {
                 throw new Error("index outside of range [0, 1]");
             }
             return zlimits(node, index);
-        case "delimited":
+        case NodeType.Delimited:
             return zdelimited(node);
-        case "table":
+        case NodeType.Table:
             return ztable(node, index);
         default:
             throw new UnreachableCaseError(node);
@@ -307,7 +308,7 @@ export const insertRight = <
 export const zrowToRow = (zrow: ZRow): types.CharRow => {
     return {
         id: zrow.id,
-        type: "row",
+        type: NodeType.Row,
         children: [...zrow.left, ...zrow.selection, ...zrow.right],
         style: zrow.style,
     };

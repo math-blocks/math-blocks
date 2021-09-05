@@ -18,6 +18,8 @@ import {maybeAddOperatorPadding} from "./typesetters/atom";
 import type {Context} from "./types";
 import type {Scene} from "./scene-graph";
 
+const {NodeType} = Editor;
+
 const typesetRow = (
     row: Editor.types.CharRow,
     context: Context,
@@ -166,15 +168,15 @@ const typesetNode = (
     padFirstOperator?: boolean,
 ): Layout.Node => {
     switch (node.type) {
-        case "row": {
+        case NodeType.Row: {
             // The only time this can happen is if limits.inner is a row
             return typesetRow(node, context);
         }
-        case "frac": {
+        case NodeType.Frac: {
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetFrac(typesetChild, node, context);
         }
-        case "subsup": {
+        case NodeType.SubSup: {
             return typesetSubsup(
                 getTypesetChildFromNodes(node.children),
                 node,
@@ -183,19 +185,19 @@ const typesetNode = (
                 prevLayoutNode,
             );
         }
-        case "root": {
+        case NodeType.Root: {
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetRoot(typesetChild, node, context);
         }
-        case "limits": {
+        case NodeType.Limits: {
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetLimits(typesetChild, node, context, typesetNode);
         }
-        case "delimited": {
+        case NodeType.Delimited: {
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetDelimited(typesetChild, node, context);
         }
-        case "table": {
+        case NodeType.Table: {
             const typesetChild = getTypesetChildFromNodes(node.children);
             return typesetTable(typesetChild, node, context);
         }
