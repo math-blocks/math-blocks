@@ -1,6 +1,9 @@
+export const __private = {
+    id: 0,
+};
+
 export const getId = (() => {
-    let id = 0;
-    return () => id++;
+    return () => __private.id++;
 })();
 
 export class UnreachableCaseError extends Error {

@@ -1,6 +1,11 @@
 module.exports = {
     transform: {
-        "^.+\\.[t|j]sx?$": "babel-jest",
+        "^.+\\.[t|j]sx?$": [
+            "esbuild-jest",
+            {
+                "sourcemap": true,
+            },  
+        ],
         ".+\\.(css|styl|less|sass|scss)$": "jest-css-modules-transform",
     },
     modulePathIgnorePatterns: ["/out/"],
