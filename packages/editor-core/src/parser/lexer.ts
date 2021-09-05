@@ -10,6 +10,8 @@ import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as types from "../char/types";
 
+import {TokenKind} from "../token/types";
+
 import {
     Token,
     TokenNode,
@@ -34,38 +36,38 @@ export const atom = (token: Token, loc: SourceLocation): TokenAtom => ({
 });
 
 export const identifier = (name: string, loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "identifier", value: name}, loc);
+    atom({type: "token", name: TokenKind.Identifier, value: name}, loc);
 
 export const number = (value: string, loc: SourceLocation): TokenAtom => {
     if (isNaN(parseFloat(value))) {
         throw new Error(`${value} is not a number`);
     }
-    return atom({type: "token", name: "number", value}, loc);
+    return atom({type: "token", name: TokenKind.Number, value}, loc);
 };
 
 export const plus = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "plus"}, loc);
+    atom({type: "token", name: TokenKind.Plus}, loc);
 
 export const minus = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "minus"}, loc);
+    atom({type: "token", name: TokenKind.Minus}, loc);
 
 export const plusminus = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "plusminus"}, loc);
+    atom({type: "token", name: TokenKind.PlusMinus}, loc);
 
 export const times = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "times"}, loc);
+    atom({type: "token", name: TokenKind.Times}, loc);
 
 export const lparens = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "lparens"}, loc);
+    atom({type: "token", name: TokenKind.LeftParens}, loc);
 
 export const rparens = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "rparens"}, loc);
+    atom({type: "token", name: TokenKind.RightParens}, loc);
 
 export const ellipsis = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "ellipsis"}, loc);
+    atom({type: "token", name: TokenKind.Ellipsis}, loc);
 
 export const eq = (loc: SourceLocation): TokenAtom =>
-    atom({type: "token", name: "eq"}, loc);
+    atom({type: "token", name: TokenKind.Equal}, loc);
 
 const TOKEN_REGEX =
     /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
@@ -231,15 +233,21 @@ const lex = (
 
             let inner: TokenNode;
             if (node.inner.type === "char" && node.inner.value === "\u03a3") {
-                inner = atom({type: "token", name: "sum"}, loc);
+                inner = atom(
+                    {type: "token", name: TokenKind.SummationOperator},
+                    loc,
+                );
             } else if (
                 node.inner.type === "char" &&
                 node.inner.value === "\u03a0"
             ) {
-                inner = atom({type: "token", name: "prod"}, loc);
+                inner = atom(
+                    {type: "token", name: TokenKind.ProductOperator},
+                    loc,
+                );
             } else if (node.inner.type === "row") {
                 // TODO: check that the row corresponds to "lim"
-                inner = atom({type: "token", name: "lim"}, loc);
+                inner = atom({type: "token", name: TokenKind.Lim}, loc);
             } else {
                 throw new Error("Invalid inner for limits");
             }

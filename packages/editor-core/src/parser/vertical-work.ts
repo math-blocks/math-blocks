@@ -5,6 +5,8 @@ import {NodeType} from "@math-blocks/semantic";
 import * as types from "../token/types";
 import {range, zip} from "./util";
 
+const {TokenKind} = types;
+
 // TODO: dedupe with reducer/vertical-work/types.ts by making it generic
 export type Column = readonly types.TokenRow[];
 
@@ -39,11 +41,20 @@ const algebraTableToVerticalWork = (table: types.TokenTable): VerticalWork => {
     };
 };
 
+const relTokens = [
+    TokenKind.Equal,
+    TokenKind.LessThan,
+    TokenKind.LessThanOrEqual,
+    TokenKind.GreaterThan,
+    TokenKind.GreaterThanOrEqual,
+];
+const plusMinusTokens = [TokenKind.Plus, TokenKind.Minus];
+
 const isRelOp = (cell: types.TokenRow): boolean => {
     return (
         cell.children.length === 1 &&
         cell.children[0].type === "token" &&
-        ["eq", "lt", "gt"].includes(cell.children[0].name)
+        relTokens.includes(cell.children[0].name)
     );
 };
 
@@ -51,7 +62,7 @@ const isPlusMinusOp = (cell: types.TokenRow): boolean => {
     return (
         cell.children.length === 1 &&
         cell.children[0].type === "token" &&
-        ["plus", "minus"].includes(cell.children[0].name)
+        plusMinusTokens.includes(cell.children[0].name)
     );
 };
 

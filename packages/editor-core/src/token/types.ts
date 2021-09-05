@@ -13,46 +13,71 @@ import * as sharedTypes from "../shared-types";
 
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
-type Ident = {
+export enum TokenKind {
+    Identifier = "Identifier",
+    Number = "Number",
+    Plus = "Plus",
+    Minus = "Minus",
+    PlusMinus = "PlusMinus",
+    Times = "Times",
+    Equal = "Equal",
+    LessThan = "LessThan",
+    LessThanOrEqual = "LessThanOrEqual",
+    GreaterThan = "GreaterThan",
+    GreaterThanOrEqual = "GreaterThanOrEqual",
+    LeftParens = "LeftParens",
+    RightParens = "RightParens",
+    Ellipsis = "Ellipsis",
+    SummationOperator = "SummationOperator",
+    ProductOperator = "ProductOperator",
+    Lim = "Lim",
+    EOL = "EOL",
+}
+
+type ValueToken<kind extends TokenKind> = {
     readonly type: "token";
-    readonly name: "identifier";
+    readonly name: kind;
     readonly value: string;
 };
-type Num = {
+
+type Identifier = ValueToken<TokenKind.Identifier>;
+type Number = ValueToken<TokenKind.Number>;
+
+type SimpleToken<kind extends TokenKind> = {
     readonly type: "token";
-    readonly name: "number";
-    readonly value: string;
+    readonly name: kind;
 };
-type Plus = {readonly type: "token"; readonly name: "plus"};
-type Minus = {readonly type: "token"; readonly name: "minus"};
-type PlusMinus = {readonly type: "token"; readonly name: "plusminus"};
-type Times = {readonly type: "token"; readonly name: "times"};
-type Equal = {readonly type: "token"; readonly name: "eq"};
-type LT = {readonly type: "token"; readonly name: "lt"};
-type GT = {readonly type: "token"; readonly name: "lt"};
-type LParens = {readonly type: "token"; readonly name: "lparens"};
-type RParens = {readonly type: "token"; readonly name: "rparens"};
-type Ellipsis = {readonly type: "token"; readonly name: "ellipsis"};
-type Sum = {readonly type: "token"; readonly name: "sum"}; // TODO: change this to SummationOperator
-type Prod = {readonly type: "token"; readonly name: "prod"}; // TODO: change this ProductOperator
-type Lim = {readonly type: "token"; readonly name: "lim"};
-type EOL = {readonly type: "token"; readonly name: "eol"};
+
+type Plus = SimpleToken<TokenKind.Plus>;
+type Minus = SimpleToken<TokenKind.Minus>;
+type PlusMinus = SimpleToken<TokenKind.PlusMinus>;
+type Times = SimpleToken<TokenKind.Times>;
+type Equal = SimpleToken<TokenKind.Equal>;
+type LessThan = SimpleToken<TokenKind.LessThan>;
+type GreaterThan = SimpleToken<TokenKind.GreaterThan>;
+type LeftParens = SimpleToken<TokenKind.LeftParens>;
+type RightParens = SimpleToken<TokenKind.RightParens>;
+type Ellipsis = SimpleToken<TokenKind.Ellipsis>;
+type SummationOperator = SimpleToken<TokenKind.SummationOperator>;
+type ProductOperator = SimpleToken<TokenKind.ProductOperator>;
+type Lim = SimpleToken<TokenKind.Lim>;
+type EOL = SimpleToken<TokenKind.EOL>;
 
 export type Token =
-    | Ident
-    | Num
+    | Identifier
+    | Number // eslint-disable-line @typescript-eslint/ban-types
     | Plus
     | Minus
     | PlusMinus
     | Times
     | Equal
-    | LT
-    | GT
-    | LParens
-    | RParens
+    | LessThan
+    | GreaterThan
+    | LeftParens
+    | RightParens
     | Ellipsis
-    | Sum
-    | Prod
+    | SummationOperator
+    | ProductOperator
     | Lim
     | EOL;
 
