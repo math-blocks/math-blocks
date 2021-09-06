@@ -821,8 +821,8 @@ describe("EditorParser", () => {
                         // second row
                         [],
                         [],
-                        [char("\u2212")],
-                        [char("5")],
+                        [char("+")],
+                        [char("\u2212"), char("5")],
 
                         // third row
                         [char("2"), char("x")],
@@ -843,7 +843,7 @@ describe("EditorParser", () => {
                 (VerticalAdditionToRelation
                   :relOp eq
                   :originalRelation (eq (mul.imp 2 x) 5)
-                  :actions (eq null (neg.sub 5))
+                  :actions (eq null (neg 5))
                   :resultingRelation (eq (mul.imp 2 x) 0))
             `);
         });

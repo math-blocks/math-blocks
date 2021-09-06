@@ -154,6 +154,7 @@ const parseAction = (
         return Parser.builders.neg(
             parser.parse(rest),
             true, // subtraction
+            // We include the `-` as well as the value in the SourceLocation
             {
                 path: first.loc.path.slice(0, -1),
                 start: first.loc.path[first.loc.path.length - 1],
@@ -162,10 +163,10 @@ const parseAction = (
             },
         );
     } else if (first.type === "token" && first.name === TokenKind.Plus) {
-        // TODO: include the `+` in the SourceLocation for the returned node
         const result = parser.parse(rest);
         return {
             ...result,
+            // We include the `+` as well as the value in the SourceLocation
             loc: {
                 path: first.loc.path.slice(0, -1),
                 start: first.loc.path[first.loc.path.length - 1],

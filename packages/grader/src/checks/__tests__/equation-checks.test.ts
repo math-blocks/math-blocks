@@ -1,4 +1,5 @@
 import * as Testing from "@math-blocks/testing";
+import * as Editor from "@math-blocks/editor-core";
 
 import {MistakeId} from "../../enums";
 
@@ -9,6 +10,7 @@ import {
     toHaveMessages,
     toHaveStepsLike,
 } from "../test-util";
+import {checkStep as _checkStep} from "../../step-checker";
 
 expect.addSnapshotSerializer(Testing.serializer);
 expect.extend({toParseLike, toHaveMessages, toHaveStepsLike});
@@ -287,6 +289,197 @@ describe("Equation checks", () => {
             expect(result).toBeTruthy();
             expect(result).toHaveMessages(["evaluation of addition"]);
         });
+    });
+
+    describe("subtracting the same value from both sides (vertically)", () => {
+        test("correct three row work", () => {
+            const {char} = Editor.builders;
+
+            const prev = Testing.parse("2x + 5 = 10");
+            const next = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+
+                            // third row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("0")],
+                            [char("=")],
+                            [],
+                            [char("5")],
+                        ],
+                        7,
+                        3,
+                    ),
+                ]),
+            );
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(0);
+            expect(result.result?.steps).toHaveLength(1);
+            expect(result.result?.steps[0].message).toEqual(
+                "adding the same value to both sides",
+            );
+        });
+
+        test("result of subtraction is incorrect", () => {
+            const {char} = Editor.builders;
+
+            const prev = Testing.parse("2x + 5 = 10");
+            const next = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+
+                            // third row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("0")],
+                            [char("=")],
+                            [],
+                            [char("3")],
+                        ],
+                        7,
+                        3,
+                    ),
+                ]),
+            );
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(1);
+            expect(result.mistakes[0].id).toEqual(MistakeId.EVAL_ADD);
+            expect(result.mistakes[0].prevNodes).toHaveLength(0);
+            expect(result.mistakes[0].nextNodes[0]).toMatchInlineSnapshot(`10`);
+            expect(result.mistakes[0].nextNodes[1]).toMatchInlineSnapshot(
+                `(neg.sub 5)`,
+            );
+            expect(result.mistakes[0].nextNodes[2]).toMatchInlineSnapshot(`3`); // should be 5
+        });
+
+        test("correct two row work", () => {
+            const {char} = Editor.builders;
+
+            const prev = Testing.parse("2x + 5 = 10");
+            const next = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                        ],
+                        7,
+                        2,
+                    ),
+                ]),
+            );
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(0);
+            expect(result.result?.steps).toHaveLength(1);
+            expect(result.result?.steps[0].message).toEqual(
+                "adding the same value to both sides",
+            );
+        });
+
+        test("subtracting different values from each side", () => {
+            const {char} = Editor.builders;
+
+            const prev = Testing.parse("2x + 5 = 10");
+            const next = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("1"), char("0")],
+                        ],
+                        7,
+                        2,
+                    ),
+                ]),
+            );
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(1);
+            expect(result.mistakes[0].id).toEqual(MistakeId.EQN_ADD_DIFF);
+            expect(result.mistakes[0].prevNodes).toHaveLength(0);
+            expect(result.mistakes[0].nextNodes[0]).toMatchInlineSnapshot(
+                `(neg.sub 5)`,
+            );
+            expect(result.mistakes[0].nextNodes[1]).toMatchInlineSnapshot(
+                `(neg.sub 10)`,
+            );
+        });
+
+        test.todo("subtracting variables from both sides");
+        test.todo("subtracting multiple things from both sides");
+        test.todo("only subtracting from one side");
     });
 
     describe("multiplying both sides by the same value", () => {
