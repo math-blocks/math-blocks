@@ -75,13 +75,10 @@ export const mul = (
     }
 };
 
-export const eq = (
-    args:
-        | TwoOrMore<types.NumericNode>
-        | TwoOrMore<types.LogicNode>
-        | TwoOrMore<types.SetNode>,
+export const eq = <T extends types.Node>(
+    args: TwoOrMore<T>,
     loc?: types.SourceLocation,
-): types.Eq => ({
+): types.Eq<T> => ({
     type: NodeType.Equals,
     id: getId(),
     args,

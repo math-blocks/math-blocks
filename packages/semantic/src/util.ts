@@ -242,20 +242,38 @@ export const traverse = (
         }
     }
     if (node.type === "VerticalAdditionToRelation") {
+        // @ts-expect-error: this function is known to mutate
         node.originalRelation.left = node.originalRelation.left.map((child) => {
             return child && traverse(child as types.Node, callbacks);
         });
+        // @ts-expect-error: this function is known to mutate
         node.originalRelation.right = node.originalRelation.right.map(
             (child) => {
                 return child && traverse(child as types.Node, callbacks);
             },
         );
+        // @ts-expect-error: this function is known to mutate
         node.actions.left = node.actions.left.map((child) => {
             return child && traverse(child as types.Node, callbacks);
         });
+        // @ts-expect-error: this function is known to mutate
         node.actions.right = node.actions.right.map((child) => {
             return child && traverse(child as types.Node, callbacks);
         });
+        if (node.resultingRelation) {
+            // @ts-expect-error: this function is known to mutate
+            node.resultingRelation.left = node.resultingRelation.left.map(
+                (child) => {
+                    return child && traverse(child as types.Node, callbacks);
+                },
+            );
+            // @ts-expect-error: this function is known to mutate
+            node.resultingRelation.right = node.resultingRelation.right.map(
+                (child) => {
+                    return child && traverse(child as types.Node, callbacks);
+                },
+            );
+        }
     }
     if (callbacks.exit) {
         const result = callbacks.exit(node);

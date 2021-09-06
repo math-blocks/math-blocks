@@ -133,6 +133,7 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
 };
 checkAddSub.symmetric = true;
 
+// TODO: dedupe with step.tsx
 function notEmpty<T>(value: T | null | undefined): value is T {
     return value !== null && value !== undefined;
 }
@@ -155,9 +156,7 @@ export const checkAddSubVert: Check = (
 
     const {checker} = context;
 
-    console.log(next);
-
-    const origEq = Semantic.builders.eq([
+    const origEq = Semantic.builders.eq<Semantic.types.NumericNode>([
         Semantic.builders.add(next.originalRelation.left.filter(notEmpty)),
         Semantic.builders.add(next.originalRelation.right.filter(notEmpty)),
     ]);
@@ -205,15 +204,99 @@ export const checkAddSubVert: Check = (
         newContext,
     );
     if (actionResult) {
-        // The actions match, report success
-        return correctResult(
-            prev,
-            next,
-            context.reversed,
-            [],
-            result.steps,
-            "adding the same value to both sides",
-        );
+        const {resultingRelation} = next;
+        if (!resultingRelation) {
+            // The actions match, report success
+            return correctResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                result.steps,
+                "adding the same value to both sides",
+            );
+        } else {
+            // Create an equation where the actions have been applied to the original
+            // equation.
+            // TODO: consider handling each of the equation separately.
+            const appliedActionsEq: Semantic.types.Eq<Semantic.types.NumericNode> =
+                {
+                    ...origEq,
+                    args: [
+                        Semantic.builders.add([
+                            ...Semantic.util.getTerms(origEq.args[0]),
+                            ...leftActions,
+                        ]),
+                        Semantic.builders.add([
+                            ...Semantic.util.getTerms(origEq.args[1]),
+                            ...rightActions,
+                        ]),
+                    ],
+                };
+            const resultingEq =
+                Semantic.builders.eq<Semantic.types.NumericNode>([
+                    Semantic.builders.add(
+                        resultingRelation.left.filter(notEmpty),
+                    ),
+                    Semantic.builders.add(
+                        resultingRelation.right.filter(notEmpty),
+                    ),
+                ]);
+
+            const resultingResult = checker.__checkStep(
+                appliedActionsEq,
+                resultingEq,
+            );
+
+            if (resultingResult.result) {
+                // The actions match, report success
+                return correctResult(
+                    prev,
+                    next,
+                    context.reversed,
+                    [],
+                    result.steps,
+                    "adding the same value to both sides",
+                );
+            } else {
+                if (!context.mistakes) {
+                    return;
+                }
+
+                // TODO: extract the args from resultingResult.mistakes since their
+                // parents have different ids from what's in the `next` node that was
+                // passed to checkAddSubVert.
+                const {mistakes} = resultingResult;
+                if (mistakes.length > 0) {
+                    const mistake = mistakes[0];
+                    if (mistake.id === MistakeId.EVAL_ADD) {
+                        const nodeIds = [
+                            ...mistake.prevNodes.map((node) => node.id),
+                            ...mistake.nextNodes.map((node) => node.id),
+                        ];
+                        const mistakeNodes: Semantic.types.Node[] = [];
+
+                        // Get IDs from prevNodes and nextNodes and then find
+                        // the nodes with the same IDs within `next`.
+                        Semantic.util.traverse(next, {
+                            exit: (node) => {
+                                if (nodeIds.includes(node.id)) {
+                                    mistakeNodes.push(node);
+                                }
+                            },
+                        });
+
+                        const realMistake: Mistake = {
+                            id: MistakeId.EVAL_ADD,
+                            prevNodes: [],
+                            nextNodes: mistakeNodes,
+                            corrections: [],
+                        };
+                        context.mistakes.push(realMistake);
+                    }
+                }
+            }
+        }
     } else {
         if (!context.mistakes) {
             return;

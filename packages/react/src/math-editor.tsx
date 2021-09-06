@@ -108,10 +108,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 const action = keydownToAction(e.key);
 
                 if (e.key === "Enter" && props.onSubmit) {
-                    const success = props.onSubmit(state.zipper);
-                    if (success) {
-                        setActive(false);
-                    }
+                    props.onSubmit(state.zipper);
                 }
 
                 if (action) {

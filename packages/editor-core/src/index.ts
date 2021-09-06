@@ -9,6 +9,7 @@ export {builders, transforms, types, util, NodeType};
 export {print} from "./printer/printer";
 export {parse} from "./parser/parser";
 export {reducer} from "./reducer/reducer";
+export {zipperToState} from "./reducer/util";
 export {
     zipperToRow,
     rowToZipper,

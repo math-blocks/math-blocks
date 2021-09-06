@@ -50,8 +50,10 @@ const highlightMistakes = (
     mistakes: readonly Mistake[],
     color: string,
 ): Editor.Zipper => {
+    console.log("highlightMistakes");
     for (const mistake of mistakes) {
         let insideMistake = false;
+        console.log(mistake);
 
         zipper = Editor.transforms.traverseZipper(
             zipper,
@@ -69,6 +71,7 @@ const highlightMistakes = (
                         for (let i = loc.start; i < loc.end; i++) {
                             const nextNodePath = [...loc.path, i];
                             if (arrayEq(nextNodePath, path)) {
+                                console.log("entering mistake");
                                 insideMistake = true;
                                 break;
                             }
@@ -86,6 +89,7 @@ const highlightMistakes = (
                         for (let i = loc.start; i < loc.end; i++) {
                             const nextNodePath = [...loc.path, i];
                             if (arrayEq(nextNodePath, path)) {
+                                console.log("leaving mistake");
                                 insideMistake = false;
                                 break;
                             }
@@ -131,6 +135,10 @@ function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
     return a.length === b.length && a.every((e, i) => e === b[i]);
 }
 
+function notEmpty<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined;
+}
+
 const Step: React.FunctionComponent<Props> = (props) => {
     const {readonly, prevStep, step, onChange} = props;
 
@@ -151,6 +159,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
         const zipper = removeAllColor(step.value);
 
         if (result) {
+            // Clear any color highlights from a previously incorrect step
             if (zipper !== step.value) {
                 dispatch({type: "update", value: zipper});
             }
@@ -161,10 +170,43 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 Semantic.util.isNumber(parsedNext.args[1])
             ) {
                 dispatch({type: "right", hint});
-                dispatch({type: "complete"});
+                dispatch({type: "complete"}); // the problem is completely finished
+            } else if (
+                parsedNext.type === NodeType.VerticalAdditionToRelation
+            ) {
+                if (parsedNext.resultingRelation) {
+                    const resultingEquation = Semantic.builders.eq([
+                        Semantic.builders.add(
+                            parsedNext.resultingRelation.left.filter(notEmpty),
+                        ),
+                        Semantic.builders.add(
+                            parsedNext.resultingRelation.right.filter(notEmpty),
+                        ),
+                    ]);
+                    const charRow = Editor.print(resultingEquation, true);
+                    const zipper: Editor.Zipper = {
+                        breadcrumbs: [],
+                        row: {
+                            type: "zrow",
+                            id: resultingEquation.id,
+                            left: [],
+                            selection: [],
+                            right: charRow.children,
+                            style: {},
+                        },
+                    };
+                    dispatch({type: "new_step", value: zipper});
+                } else {
+                    const editorState = Editor.zipperToState(zipper);
+                    const newEditorState = Editor.reducer(editorState, {
+                        type: "ArrowDown",
+                    });
+                    const newZipper = newEditorState.zipper;
+                    dispatch({type: "update", value: newZipper});
+                }
             } else {
                 dispatch({type: "right", hint});
-                dispatch({type: "duplicate"});
+                dispatch({type: "duplicate"}); // copy the last step
             }
 
             // Manually focus the last input which will trigger the last

@@ -8,7 +8,7 @@ import type {Result, Mistake} from "../types";
 export const checkStep = (
     prev: string,
     next: string,
-): Result & {readonly successfulChecks: Set<string>} => {
+): Result & {readonly successfulChecks: ReadonlySet<string>} => {
     const {result, successfulChecks} = _checkStep(
         Testing.parse(prev),
         Testing.parse(next),

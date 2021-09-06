@@ -449,6 +449,12 @@ const _print = (
     }
 };
 
+/**
+ * Convert Semantic tree to CharNode tree.
+ * @param {Semantic.types.Node} expr
+ * @param {boolean} oneToOne TODO: document this
+ * @returns {Editor.types.CharRow}
+ */
 export const print = (
     expr: Semantic.types.Node,
     oneToOne = false,

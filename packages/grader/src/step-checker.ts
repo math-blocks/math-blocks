@@ -21,6 +21,14 @@ const defaultOptions: Options = {
 class StepChecker implements IStepChecker {
     readonly options: Options;
     readonly checks: readonly Check[];
+    readonly __checkStep: (
+        prev: Semantic.types.Node,
+        next: Semantic.types.Node,
+    ) => {
+        readonly result?: Result;
+        readonly successfulChecks: ReadonlySet<string>;
+        readonly mistakes: readonly Mistake[];
+    };
 
     constructor(options?: Options, checks: readonly Check[] = ALL_CHECKS) {
         this.options = {
@@ -28,6 +36,7 @@ class StepChecker implements IStepChecker {
             ...options,
         };
         this.checks = checks;
+        this.__checkStep = checkStep;
     }
 
     readonly checkStep: Check = (prev, next, context) => {
@@ -113,14 +122,14 @@ const filterMistakes = (
     return [];
 };
 
-export const checkStep = (
+export function checkStep(
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
 ): {
     readonly result?: Result;
-    readonly successfulChecks: Set<string>;
+    readonly successfulChecks: ReadonlySet<string>;
     readonly mistakes: readonly Mistake[];
-} => {
+} {
     const successfulChecks = new Set<string>();
     const context: Context = {
         checker,
@@ -138,4 +147,4 @@ export const checkStep = (
         successfulChecks: context.successfulChecks,
         mistakes: mistakes,
     };
-};
+}

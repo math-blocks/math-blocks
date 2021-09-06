@@ -11,22 +11,22 @@ export enum StepStatus {
 
 export type Step =
     | {
-          status: StepStatus.Correct;
-          value: Editor.Zipper;
-          hint: "none" | "text" | "showme";
+          readonly status: StepStatus.Correct;
+          readonly value: Editor.Zipper;
+          readonly hint: "none" | "text" | "showme";
       }
     | {
-          status: StepStatus.Duplicate;
-          value: Editor.Zipper;
+          readonly status: StepStatus.Duplicate;
+          readonly value: Editor.Zipper;
       }
     | {
-          status: StepStatus.Pending;
-          value: Editor.Zipper;
+          readonly status: StepStatus.Pending;
+          readonly value: Editor.Zipper;
       }
     | {
-          status: StepStatus.Incorrect;
-          value: Editor.Zipper;
-          mistakes: readonly Mistake[];
+          readonly status: StepStatus.Incorrect;
+          readonly value: Editor.Zipper;
+          readonly mistakes: readonly Mistake[];
       };
 
 export enum ProblemStatus {
@@ -35,32 +35,36 @@ export enum ProblemStatus {
 }
 
 export type State = {
-    steps: readonly Step[];
-    status: ProblemStatus;
+    readonly steps: readonly Step[];
+    readonly status: ProblemStatus;
 };
 
 export type Action =
     | {
-          type: "right";
-          hint: "none" | "text" | "showme";
+          readonly type: "right";
+          readonly hint: "none" | "text" | "showme";
       }
     | {
-          type: "wrong";
-          mistakes: readonly Mistake[];
+          readonly type: "wrong";
+          readonly mistakes: readonly Mistake[];
       }
     | {
-          type: "duplicate";
+          readonly type: "duplicate";
       }
     | {
-          type: "update";
-          value: Editor.Zipper;
+          readonly type: "update";
+          readonly value: Editor.Zipper;
       }
     | {
-          type: "set";
-          steps: readonly Step[];
+          readonly type: "new_step";
+          readonly value: Editor.Zipper;
       }
     | {
-          type: "complete";
+          readonly type: "set";
+          readonly steps: readonly Step[];
+      }
+    | {
+          readonly type: "complete";
       };
 
 const initialState: State = {
@@ -103,8 +107,21 @@ export const reducer = (state: State = initialState, action: Action): State => {
                 steps: [
                     ...state.steps,
                     {
+                        // TODO: make this a deep copy
                         ...state.steps[state.steps.length - 1],
                         status: StepStatus.Duplicate,
+                    },
+                ],
+            };
+        }
+        case "new_step": {
+            return {
+                ...state,
+                steps: [
+                    ...state.steps,
+                    {
+                        status: StepStatus.Pending,
+                        value: action.value,
                     },
                 ],
             };

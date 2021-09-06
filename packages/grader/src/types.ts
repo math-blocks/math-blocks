@@ -12,7 +12,12 @@ export type Correction = {
     readonly replacement: Semantic.types.Node;
 };
 
+// TODO: make this a disjoint union of tagged objects
+// instead of having prevNodes and nextNodes, we have
+// can have structured nodes and search in both prev/next
+// for them depending on the mistake type
 export type Mistake = {
+    // TODO: rename this to `type` and use string enums instead of integer enums
     readonly id: MistakeId;
     readonly prevNodes: readonly Semantic.types.Node[];
     readonly nextNodes: readonly Semantic.types.Node[];
@@ -39,6 +44,14 @@ export type Context = {
 export interface IStepChecker {
     readonly checkStep: Check;
     readonly options: Options;
+    readonly __checkStep: (
+        prev: Semantic.types.Node,
+        next: Semantic.types.Node,
+    ) => {
+        readonly result?: Result;
+        readonly successfulChecks: ReadonlySet<string>;
+        readonly mistakes: readonly Mistake[];
+    };
 }
 
 export type Options = {
