@@ -133,7 +133,7 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
 };
 checkAddSub.symmetric = true;
 
-// TODO: dedupe with step.tsx
+// TODO: dedupe with step.tsx and step-checker.ts
 function notEmpty<T>(value: T | null | undefined): value is T {
     return value !== null && value !== undefined;
 }
@@ -176,17 +176,10 @@ export const checkAddSubVert: Check = (
     const leftActions = next.actions.left.filter(notEmpty);
     const rightActions = next.actions.right.filter(notEmpty);
 
-    // TODO: start simple
-    // - check if there's one action on each side
-    // - check if those actions are equal
-    // - if they are return undefined
-    // - if not, report a mistake
-    // Later, we can add handling for multiple actions at the same time
-    // We can use `groupTerms` from collect-like-term.ts in the `solver` package
-    // to help with this
-
     if (leftActions.length !== 1 || rightActions.length !== 1) {
         // TODO: handle multiple actions later
+        // We can add handling for multiple actions at the same time using `groupTerms`
+        // from collect-like-term.ts in the `solver` package to help with this.
         return;
     }
 

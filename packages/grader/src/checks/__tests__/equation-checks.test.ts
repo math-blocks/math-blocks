@@ -393,6 +393,104 @@ describe("Equation checks", () => {
             expect(result.mistakes[0].nextNodes[2]).toMatchInlineSnapshot(`3`); // should be 5
         });
 
+        test("simplify after three row work", () => {
+            const {char} = Editor.builders;
+
+            const prev = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+
+                            // third row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("0")],
+                            [char("=")],
+                            [],
+                            [char("5")],
+                        ],
+                        7,
+                        3,
+                    ),
+                ]),
+            );
+            const next = Testing.parse("2x = 5");
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(0);
+            expect(result.result?.steps).toHaveLength(1);
+            expect(result.result?.steps[0].message).toEqual(
+                "addition with identity",
+            );
+        });
+
+        test("incorrect step after three row work", () => {
+            const {char} = Editor.builders;
+
+            const prev = Editor.parse(
+                Editor.builders.row([
+                    Editor.builders.algebra(
+                        [
+                            // first row
+                            [char("2"), char("x")],
+                            [],
+                            [char("+")],
+                            [char("5")],
+                            [char("=")],
+                            [],
+                            [char("1"), char("0")],
+
+                            // second row
+                            [],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+                            [],
+                            [char("\u2212")],
+                            [char("5")],
+
+                            // third row
+                            [char("2"), char("x")],
+                            [],
+                            [],
+                            [],
+                            [char("=")],
+                            [],
+                            [char("5")],
+                        ],
+                        7,
+                        3,
+                    ),
+                ]),
+            );
+            const next = Testing.parse("x = 5");
+
+            const result = _checkStep(prev, next);
+            expect(result.mistakes).toHaveLength(1);
+            expect(result.mistakes[0].id).toEqual(MistakeId.EQN_MUL_DIFF);
+            expect(result.mistakes[0].prevNodes).toHaveLength(1);
+            expect(result.mistakes[0].prevNodes[0]).toMatchInlineSnapshot(`2`);
+            expect(result.mistakes[0].nextNodes).toHaveLength(0);
+        });
+
         test("correct two row work", () => {
             const {char} = Editor.builders;
 

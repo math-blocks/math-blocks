@@ -195,6 +195,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                             style: {},
                         },
                     };
+                    dispatch({type: "right", hint});
                     dispatch({type: "new_step", value: zipper});
                 } else {
                     const editorState = Editor.zipperToState(zipper);
@@ -221,6 +222,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
             return true;
         } else {
             dispatch({type: "wrong", mistakes});
+            // TODO: highlight nodes in the previous step as well if they're listed in
+            // mistakes[*].prevNodes.
             dispatch({
                 type: "update",
                 value: highlightMistakes(zipper, mistakes, "darkCyan"),

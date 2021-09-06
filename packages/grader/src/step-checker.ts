@@ -122,6 +122,11 @@ const filterMistakes = (
     return [];
 };
 
+// TODO: dedupe with step.tsx and eqatuion-checks.ts
+function notEmpty<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined;
+}
+
 export function checkStep(
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
@@ -139,8 +144,49 @@ export function checkStep(
         mistakes: [],
     };
 
-    const result = checker.checkStep(prev, next, context);
-    const mistakes = filterMistakes(context.mistakes ?? [], prev, next);
+    let newPrev = prev;
+
+    if (prev.type === Semantic.NodeType.VerticalAdditionToRelation) {
+        const {resultingRelation} = prev;
+        if (!resultingRelation) {
+            throw new Error("resultingRelation should be defined");
+        }
+        newPrev = Semantic.builders.eq<Semantic.types.NumericNode>([
+            Semantic.builders.add(resultingRelation.left.filter(notEmpty)),
+            Semantic.builders.add(resultingRelation.right.filter(notEmpty)),
+        ]);
+    }
+
+    const result = checker.checkStep(newPrev, next, context);
+    let mistakes: readonly Mistake[] = filterMistakes(
+        context.mistakes ?? [],
+        newPrev,
+        next,
+    );
+
+    if (prev.type === Semantic.NodeType.VerticalAdditionToRelation) {
+        mistakes = mistakes.map((mistake) => {
+            const nodeIds = mistake.prevNodes.map((node) => node.id);
+            const mistakeNodes: Semantic.types.Node[] = [];
+
+            // Get IDs from prevNodes and nextNodes and then find
+            // the nodes with the same IDs within `next`.
+            Semantic.util.traverse(prev, {
+                exit: (node) => {
+                    if (nodeIds.includes(node.id)) {
+                        mistakeNodes.push(node);
+                    }
+                },
+            });
+
+            return {
+                ...mistake,
+                prevNodes: mistakeNodes,
+            };
+        });
+
+        // TODO: determine if we should be modifying `result` as well.
+    }
 
     return {
         result,
