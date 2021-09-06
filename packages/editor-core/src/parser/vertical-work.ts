@@ -139,6 +139,49 @@ type Parser = {
     readonly parse: (arg0: readonly types.TokenNode[]) => Parser.types.Node;
 };
 
+/**
+ * Actions always include a operator either at the start or end of the tokens
+ * array.  This function handle parsing these correctly since the base parser
+ * doesn't expect plus/minus operators in these locations.
+ */
+const parseAction = (
+    tokens: readonly types.TokenNode[],
+    parser: Parser,
+): Parser.types.Node => {
+    const [first, ...rest] = tokens;
+    const last = rest[rest.length - 1];
+    if (first.type === "token" && first.name === TokenKind.Minus) {
+        return Parser.builders.neg(
+            parser.parse(rest),
+            true, // subtraction
+            // We include the `-` as well as the value in the SourceLocation
+            {
+                path: first.loc.path.slice(0, -1),
+                start: first.loc.path[first.loc.path.length - 1],
+                // SourecLocation's `end` property is non-inclusive
+                end: last.loc.path[last.loc.path.length - 1] + 1,
+            },
+        );
+    } else if (first.type === "token" && first.name === TokenKind.Plus) {
+        const result = parser.parse(rest);
+        return {
+            ...result,
+            // We include the `+` as well as the value in the SourceLocation
+            loc: {
+                path: first.loc.path.slice(0, -1),
+                start: first.loc.path[first.loc.path.length - 1],
+                // SourecLocation's `end` property is non-inclusive
+                end: last.loc.path[last.loc.path.length - 1] + 1,
+            },
+        };
+    } else {
+        return parser.parse(tokens);
+    }
+    // TODO: differentiate between cells in originalRelation vs actions
+    // TODO: handle trailing operators for actions at the start of a row
+    // throw new Error("Action doesn't have an operator");
+};
+
 // TODO: unit test this
 export const parseVerticalWork = (
     table: types.TokenTable,
@@ -147,12 +190,6 @@ export const parseVerticalWork = (
     const work = algebraTableToVerticalWork(table);
 
     const {columns, rowCount} = work;
-
-    const parse = (
-        tokens: readonly types.TokenNode[],
-    ): Parser.types.Node | null => {
-        return tokens.length > 0 ? parser.parse(tokens) : null;
-    };
 
     const indexOfEquals = columns.findIndex((col) => {
         const cell = col[0];
@@ -167,22 +204,46 @@ export const parseVerticalWork = (
     const leftColumns = coalesceColumns(columns.slice(0, indexOfEquals));
     const rightColumns = coalesceColumns(columns.slice(indexOfEquals + 1));
 
-    const before = {
-        left: leftColumns.map((col) => parse(col[0].children)),
-        right: rightColumns.map((col) => parse(col[0].children)),
+    const originalRelation = {
+        left: leftColumns.map((col) => {
+            return col[0].children.length > 0
+                ? parseAction(col[0].children, parser)
+                : null;
+        }),
+        right: rightColumns.map((col) => {
+            return col[0].children.length > 0
+                ? parseAction(col[0].children, parser)
+                : null;
+        }),
     };
 
     const actions = {
-        left: leftColumns.map((col) => parse(col[1].children)),
-        right: rightColumns.map((col) => parse(col[1].children)),
+        left: leftColumns.map((col) => {
+            return col[1].children.length > 0
+                ? parseAction(col[1].children, parser)
+                : null;
+        }),
+        right: rightColumns.map((col) => {
+            return col[1].children.length > 0
+                ? parseAction(col[1].children, parser)
+                : null;
+        }),
     };
 
     // TODO: handle the case where the columns only have two rows
-    const after =
+    const resultingRelation =
         rowCount === 3
             ? {
-                  left: leftColumns.map((col) => parse(col[2].children)),
-                  right: rightColumns.map((col) => parse(col[2].children)),
+                  left: leftColumns.map((col) => {
+                      return col[2].children.length > 0
+                          ? parseAction(col[2].children, parser)
+                          : null;
+                  }),
+                  right: rightColumns.map((col) => {
+                      return col[2].children.length > 0
+                          ? parseAction(col[2].children, parser)
+                          : null;
+                  }),
               }
             : undefined;
 
@@ -190,9 +251,9 @@ export const parseVerticalWork = (
         type: Semantic.NodeType.VerticalAdditionToRelation,
         id: getId(),
         loc: table.loc,
-        originalRelation: before,
+        originalRelation,
         actions,
-        resultingRelation: after,
+        resultingRelation,
         relOp: "eq",
     };
 };

@@ -1,3 +1,4 @@
+import {notEmpty} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {MISTAKE_PRIORITIES} from "./constants";
@@ -21,6 +22,14 @@ const defaultOptions: Options = {
 class StepChecker implements IStepChecker {
     readonly options: Options;
     readonly checks: readonly Check[];
+    readonly __checkStep: (
+        prev: Semantic.types.Node,
+        next: Semantic.types.Node,
+    ) => {
+        readonly result?: Result;
+        readonly successfulChecks: ReadonlySet<string>;
+        readonly mistakes: readonly Mistake[];
+    };
 
     constructor(options?: Options, checks: readonly Check[] = ALL_CHECKS) {
         this.options = {
@@ -28,6 +37,7 @@ class StepChecker implements IStepChecker {
             ...options,
         };
         this.checks = checks;
+        this.__checkStep = checkStep;
     }
 
     readonly checkStep: Check = (prev, next, context) => {
@@ -113,14 +123,14 @@ const filterMistakes = (
     return [];
 };
 
-export const checkStep = (
+export function checkStep(
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
 ): {
     readonly result?: Result;
-    readonly successfulChecks: Set<string>;
+    readonly successfulChecks: ReadonlySet<string>;
     readonly mistakes: readonly Mistake[];
-} => {
+} {
     const successfulChecks = new Set<string>();
     const context: Context = {
         checker,
@@ -130,11 +140,53 @@ export const checkStep = (
         mistakes: [],
     };
 
-    const result = checker.checkStep(prev, next, context);
+    let newPrev = prev;
+
+    if (prev.type === Semantic.NodeType.VerticalAdditionToRelation) {
+        const {resultingRelation} = prev;
+        if (!resultingRelation) {
+            throw new Error("resultingRelation should be defined");
+        }
+        newPrev = Semantic.builders.eq<Semantic.types.NumericNode>([
+            Semantic.builders.add(resultingRelation.left.filter(notEmpty)),
+            Semantic.builders.add(resultingRelation.right.filter(notEmpty)),
+        ]);
+    }
+
+    const result = checker.checkStep(newPrev, next, context);
+    let mistakes: readonly Mistake[] = filterMistakes(
+        context.mistakes ?? [],
+        newPrev,
+        next,
+    );
+
+    if (prev.type === Semantic.NodeType.VerticalAdditionToRelation) {
+        mistakes = mistakes.map((mistake) => {
+            const nodeIds = mistake.prevNodes.map((node) => node.id);
+            const mistakeNodes: Semantic.types.Node[] = [];
+
+            // Get IDs from prevNodes and nextNodes and then find
+            // the nodes with the same IDs within `next`.
+            Semantic.util.traverse(prev, {
+                exit: (node) => {
+                    if (nodeIds.includes(node.id)) {
+                        mistakeNodes.push(node);
+                    }
+                },
+            });
+
+            return {
+                ...mistake,
+                prevNodes: mistakeNodes,
+            };
+        });
+
+        // TODO: determine if we should be modifying `result` as well.
+    }
 
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes ?? [], prev, next),
+        mistakes: mistakes,
     };
-};
+}

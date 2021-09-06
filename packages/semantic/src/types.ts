@@ -334,7 +334,10 @@ export type LogicNode =
     | Implies
     | Iff
     | Parens
-    | Eq
+    // This avoids having a circular reference
+    | (Common<NodeType.Equals> & {
+          readonly args: TwoOrMore<Node>;
+      })
     | Neq
     | Lt
     | Lte
@@ -396,11 +399,8 @@ export type Iff = Common<NodeType.Biconditional> & {
 /**
  * Equals
  */
-export type Eq = Common<NodeType.Equals> & {
-    readonly args:
-        | TwoOrMore<NumericNode>
-        | TwoOrMore<LogicNode>
-        | TwoOrMore<SetNode>;
+export type Eq<T extends Node = Node> = Common<NodeType.Equals> & {
+    readonly args: TwoOrMore<T>;
 };
 
 /**

@@ -1,7 +1,8 @@
+import {notEmpty} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {MistakeId} from "../enums";
-import type {Check, Result} from "../types";
+import type {Check, Result, Mistake, Context} from "../types";
 
 import {correctResult} from "./util";
 
@@ -132,6 +133,174 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
     }
 };
 checkAddSub.symmetric = true;
+
+export const checkAddSubVert: Check = (
+    prev,
+    next,
+    context,
+): Result | undefined => {
+    if (
+        prev.type !== NodeType.Equals ||
+        next.type !== NodeType.VerticalAdditionToRelation
+    ) {
+        return;
+    }
+
+    if (next.relOp !== "eq") {
+        return;
+    }
+
+    const {checker} = context;
+
+    const origEq = Semantic.builders.eq<Semantic.types.NumericNode>([
+        Semantic.builders.add(next.originalRelation.left.filter(notEmpty)),
+        Semantic.builders.add(next.originalRelation.right.filter(notEmpty)),
+    ]);
+
+    let result: Result | undefined = undefined;
+
+    result = checker.checkStep(prev, origEq, context);
+
+    // TODO: come up with a way to short-circuit continued to checking since we
+    // know if this fails then something is wrong.
+    if (!result) {
+        return;
+    }
+
+    // TODO: add a style check to see whether actions line up with the right columns
+    // in originalRelation and resultingRelation.
+    const leftActions = next.actions.left.filter(notEmpty);
+    const rightActions = next.actions.right.filter(notEmpty);
+
+    if (leftActions.length !== 1 || rightActions.length !== 1) {
+        // TODO: handle multiple actions later
+        // We can add handling for multiple actions at the same time using `groupTerms`
+        // from collect-like-term.ts in the `solver` package to help with this.
+        return;
+    }
+
+    const mistakes: Mistake[] = [];
+    const newContext: Context = {
+        ...context,
+        // Continue not reporting mistakes if that's what the caller
+        // of checkArgs wanted us to do.
+        mistakes: context.mistakes ? mistakes : undefined,
+    };
+
+    const actionResult = checker.checkStep(
+        leftActions[0],
+        rightActions[0],
+        newContext,
+    );
+    if (actionResult) {
+        const {resultingRelation} = next;
+        if (!resultingRelation) {
+            // The actions match, report success
+            return correctResult(
+                prev,
+                next,
+                context.reversed,
+                [],
+                result.steps,
+                "adding the same value to both sides",
+            );
+        } else {
+            // Create an equation where the actions have been applied to the original
+            // equation.
+            // TODO: consider handling each of the equation separately.
+            const appliedActionsEq: Semantic.types.Eq<Semantic.types.NumericNode> =
+                {
+                    ...origEq,
+                    args: [
+                        Semantic.builders.add([
+                            ...Semantic.util.getTerms(origEq.args[0]),
+                            ...leftActions,
+                        ]),
+                        Semantic.builders.add([
+                            ...Semantic.util.getTerms(origEq.args[1]),
+                            ...rightActions,
+                        ]),
+                    ],
+                };
+            const resultingEq =
+                Semantic.builders.eq<Semantic.types.NumericNode>([
+                    Semantic.builders.add(
+                        resultingRelation.left.filter(notEmpty),
+                    ),
+                    Semantic.builders.add(
+                        resultingRelation.right.filter(notEmpty),
+                    ),
+                ]);
+
+            const resultingResult = checker.__checkStep(
+                appliedActionsEq,
+                resultingEq,
+            );
+
+            if (resultingResult.result) {
+                // The actions match, report success
+                return correctResult(
+                    prev,
+                    next,
+                    context.reversed,
+                    [],
+                    result.steps,
+                    "adding the same value to both sides",
+                );
+            } else {
+                if (!context.mistakes) {
+                    return;
+                }
+
+                // TODO: extract the args from resultingResult.mistakes since their
+                // parents have different ids from what's in the `next` node that was
+                // passed to checkAddSubVert.
+                const {mistakes} = resultingResult;
+                if (mistakes.length > 0) {
+                    const mistake = mistakes[0];
+                    if (mistake.id === MistakeId.EVAL_ADD) {
+                        const nodeIds = [
+                            ...mistake.prevNodes.map((node) => node.id),
+                            ...mistake.nextNodes.map((node) => node.id),
+                        ];
+                        const mistakeNodes: Semantic.types.Node[] = [];
+
+                        // Get IDs from prevNodes and nextNodes and then find
+                        // the nodes with the same IDs within `next`.
+                        Semantic.util.traverse(next, {
+                            exit: (node) => {
+                                if (nodeIds.includes(node.id)) {
+                                    mistakeNodes.push(node);
+                                }
+                            },
+                        });
+
+                        const realMistake: Mistake = {
+                            id: MistakeId.EVAL_ADD,
+                            prevNodes: [],
+                            nextNodes: mistakeNodes,
+                            corrections: [],
+                        };
+                        context.mistakes.push(realMistake);
+                    }
+                }
+            }
+        }
+    } else {
+        if (!context.mistakes) {
+            return;
+        }
+        const mistake: Mistake = {
+            id: MistakeId.EQN_ADD_DIFF,
+            prevNodes: [],
+            nextNodes: [leftActions[0], rightActions[0]],
+            corrections: [],
+        };
+        context.mistakes.push(mistake);
+    }
+
+    return;
+};
 
 export const checkMul: Check = (prev, next, context): Result | undefined => {
     if (prev.type !== NodeType.Equals || next.type !== NodeType.Equals) {

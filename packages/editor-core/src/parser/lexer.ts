@@ -302,7 +302,10 @@ const lex = (
                 subtype: node.subtype,
                 colCount: node.colCount,
                 rowCount: node.rowCount,
-                children: node.children.map((child) => child && lexRow(child)),
+                children: node.children.map(
+                    (child, index) =>
+                        child && lexRow(child, [...path, offset, index]),
+                ),
                 loc: location(path, offset, offset + 1),
             };
         }
