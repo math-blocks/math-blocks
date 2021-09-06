@@ -1,3 +1,4 @@
+import {notEmpty} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {MISTAKE_PRIORITIES} from "./constants";
@@ -121,11 +122,6 @@ const filterMistakes = (
 
     return [];
 };
-
-// TODO: dedupe with step.tsx and eqatuion-checks.ts
-function notEmpty<T>(value: T | null | undefined): value is T {
-    return value !== null && value !== undefined;
-}
 
 export function checkStep(
     prev: Semantic.types.Node,

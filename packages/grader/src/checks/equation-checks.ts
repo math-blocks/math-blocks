@@ -1,3 +1,4 @@
+import {notEmpty} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {MistakeId} from "../enums";
@@ -132,11 +133,6 @@ export const checkAddSub: Check = (prev, next, context): Result | undefined => {
     }
 };
 checkAddSub.symmetric = true;
-
-// TODO: dedupe with step.tsx and step-checker.ts
-function notEmpty<T>(value: T | null | undefined): value is T {
-    return value !== null && value !== undefined;
-}
 
 export const checkAddSubVert: Check = (
     prev,

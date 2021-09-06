@@ -8,3 +8,7 @@ export class UnreachableCaseError extends Error {
         super(`Unreachable case: ${val}`);
     }
 }
+
+export function notEmpty<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined;
+}

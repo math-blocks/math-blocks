@@ -1,6 +1,7 @@
 import * as React from "react";
 import {useDispatch} from "react-redux";
 
+import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor-core";
 import {MathEditor} from "@math-blocks/react";
 import {
@@ -133,10 +134,6 @@ const removeAllColor = (zipper: Editor.Zipper): Editor.Zipper => {
 
 function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
     return a.length === b.length && a.every((e, i) => e === b[i]);
-}
-
-function notEmpty<T>(value: T | null | undefined): value is T {
-    return value !== null && value !== undefined;
 }
 
 const Step: React.FunctionComponent<Props> = (props) => {
