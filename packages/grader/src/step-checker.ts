@@ -131,10 +131,11 @@ export const checkStep = (
     };
 
     const result = checker.checkStep(prev, next, context);
+    const mistakes = filterMistakes(context.mistakes ?? [], prev, next);
 
     return {
         result,
         successfulChecks: context.successfulChecks,
-        mistakes: filterMistakes(context.mistakes ?? [], prev, next),
+        mistakes: mistakes,
     };
 };

@@ -15,7 +15,12 @@ import {
     mulByZero,
 } from "./checks/axiom-checks";
 import {checkDistribution} from "./checks/distribution-check";
-import {checkAddSub, checkMul, checkDiv} from "./checks/equation-checks";
+import {
+    checkAddSubVert,
+    checkAddSub,
+    checkMul,
+    checkDiv,
+} from "./checks/equation-checks";
 import {evalMul, evalAdd} from "./checks/eval-checks";
 import {
     addInverse,
@@ -72,6 +77,7 @@ export const ALL_CHECKS = [
     mulByZero,
 
     // equation checks
+    checkAddSubVert,
     checkAddSub,
     checkMul,
     checkDiv,

@@ -803,7 +803,7 @@ describe("EditorParser", () => {
                 (VerticalAdditionToRelation
                   :relOp eq
                   :originalRelation (eq (mul.imp 2 x) 5)
-                  :actions (eq null (neg 5))
+                  :actions (eq null (neg.sub 5))
                   :resultingRelation (eq (mul.imp 2 x) 0))
                 `);
         });
@@ -843,7 +843,7 @@ describe("EditorParser", () => {
                 (VerticalAdditionToRelation
                   :relOp eq
                   :originalRelation (eq (mul.imp 2 x) 5)
-                  :actions (eq null (neg 5))
+                  :actions (eq null (neg.sub 5))
                   :resultingRelation (eq (mul.imp 2 x) 0))
             `);
         });
@@ -918,7 +918,7 @@ describe("EditorParser", () => {
                 (VerticalAdditionToRelation
                   :relOp eq
                   :originalRelation (eq (mul.imp 2 x) 5)
-                  :actions (eq null (neg 5))
+                  :actions (eq null (neg.sub 5))
                   :resultingRelation null)
             `);
         });
