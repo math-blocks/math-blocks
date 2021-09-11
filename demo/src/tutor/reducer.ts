@@ -136,7 +136,6 @@ export const reducer = (state: State = initialState, action: Action): State => {
                     ...state.steps.slice(0, -1),
                     {
                         ...state.steps[state.steps.length - 1],
-                        status: StepStatus.Pending,
                         value: action.value,
                     },
                 ],
