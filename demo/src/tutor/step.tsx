@@ -145,15 +145,19 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const [hintText, setHintText] = React.useState<string | null>(null);
     const [showed, setShowed] = React.useState<boolean>(false);
 
-    const handleCheckStep = (): boolean => {
+    // This is only used when clicking the "Check" button since that button's click
+    // handler doesn't have direct access to the current value of MathEditor's
+    // zipper like "handleCheckStep" does.
+    const [zipper, setZipper] = React.useState<Editor.Zipper>(step.value);
+
+    const handleCheckStep = (zipperForMathEditor: Editor.Zipper): boolean => {
+        const zipper = removeAllColor(zipperForMathEditor);
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
-        const parsedNext = Editor.parse(Editor.zipperToRow(step.value));
+        const parsedNext = Editor.parse(Editor.zipperToRow(zipper));
 
         parsedNextRef.current = parsedNext;
 
         const {result, mistakes} = checkStep(parsedPrev, parsedNext);
-
-        const zipper = removeAllColor(step.value);
 
         if (result) {
             // Clear any color highlights from a previously incorrect step
@@ -294,11 +298,16 @@ const Step: React.FunctionComponent<Props> = (props) => {
         }
     };
 
+    const handleChange = (zipper: Editor.Zipper): void => {
+        setZipper(zipper);
+        onChange(zipper);
+    };
+
     let buttonsOrIcon = (
         <HStack>
             <button
                 style={{fontSize: 30}}
-                onClick={handleCheckStep}
+                onClick={() => handleCheckStep(zipper)}
                 onMouseDown={(e) => {
                     // Prevent clicking the button from blurring the MathEditor
                     e.preventDefault();
@@ -387,7 +396,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     zipper={step.value}
                     stepChecker={true}
                     onSubmit={handleCheckStep}
-                    onChange={onChange}
+                    onChange={handleChange}
                     style={{flexGrow: 1}}
                 />
                 <VStack

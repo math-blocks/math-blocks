@@ -68,7 +68,7 @@ const Tutor: React.FunctionComponent = () => {
                             prevStep={prevStep}
                             step={step}
                             onChange={(zipper: Editor.Zipper) => {
-                                dispatch({type: "update", value: zipper});
+                                dispatch({type: "set_pending"});
                             }}
                         />
                     );

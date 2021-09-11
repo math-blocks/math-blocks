@@ -64,6 +64,9 @@ export type Action =
           readonly steps: readonly Step[];
       }
     | {
+          readonly type: "set_pending";
+      }
+    | {
           readonly type: "complete";
       };
 
@@ -143,6 +146,18 @@ export const reducer = (state: State = initialState, action: Action): State => {
             return {
                 ...state,
                 steps: action.steps,
+            };
+        }
+        case "set_pending": {
+            return {
+                ...state,
+                steps: [
+                    ...state.steps.slice(0, -1),
+                    {
+                        ...state.steps[state.steps.length - 1],
+                        status: StepStatus.Pending,
+                    },
+                ],
             };
         }
         case "complete": {
