@@ -379,6 +379,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     type: "update",
                     value: zipper,
                 });
+                dispatch({type: "set_pending"});
+                setZipper(zipper); // update this value so that we can submit the new answer
             }
         }
     };
