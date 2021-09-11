@@ -29,8 +29,59 @@ const Tutor: React.FunctionComponent = () => {
     const zipper: Editor.Zipper = state.steps[0].value;
 
     return (
-        <div style={{margin: "auto"}}>
-            <VStack style={{marginLeft: 242}}>
+        <HStack style={{margin: "auto"}}>
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    width: 300,
+                    marginRight: 32,
+                }}
+            >
+                {mode === "solve" && (
+                    <button
+                        style={{height: 48, fontSize: 24}}
+                        onClick={() => {
+                            setMode("edit");
+                            dispatch({
+                                type: "set",
+                                steps: [state.steps[0]],
+                            });
+                        }}
+                    >
+                        Edit Question
+                    </button>
+                )}
+                {mode === "edit" && (
+                    <button
+                        style={{height: 48, fontSize: 24}}
+                        onClick={() => {
+                            setMode("solve");
+                            // get the ball rolling
+                            dispatch({type: "duplicate"});
+                        }}
+                    >
+                        Solve Question
+                    </button>
+                )}
+                <MathKeypad />
+                <div style={{position: "fixed", bottom: 0, left: 0, margin: 4}}>
+                    <div>
+                        Icons made by{" "}
+                        <a
+                            href="https://www.flaticon.com/authors/pixel-perfect"
+                            title="Pixel perfect"
+                        >
+                            Pixel perfect
+                        </a>{" "}
+                        from{" "}
+                        <a href="https://www.flaticon.com/" title="Flaticon">
+                            www.flaticon.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <VStack style={{flexGrow: 1, height: "100vh", overflowY: "scroll"}}>
                 <HStack>
                     <MathEditor
                         key={`question`}
@@ -69,63 +120,11 @@ const Tutor: React.FunctionComponent = () => {
                         />
                     );
                 })}
+                {isComplete && (
+                    <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
+                )}
             </VStack>
-            {isComplete && (
-                <h1 style={{fontFamily: "sans-serif"}}>Good work!</h1>
-            )}
-            <div
-                style={{
-                    position: "fixed",
-                    bottom: 0,
-                    left: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                }}
-            >
-                {mode === "solve" && (
-                    <button
-                        style={{height: 48, fontSize: 24}}
-                        onClick={() => {
-                            setMode("edit");
-                            dispatch({
-                                type: "set",
-                                steps: [state.steps[0]],
-                            });
-                        }}
-                    >
-                        Edit Question
-                    </button>
-                )}
-                {mode === "edit" && (
-                    <button
-                        style={{height: 48, fontSize: 24}}
-                        onClick={() => {
-                            setMode("solve");
-                            // get the ball rolling
-                            dispatch({type: "duplicate"});
-                        }}
-                    >
-                        Solve Question
-                    </button>
-                )}
-                <MathKeypad />
-            </div>
-            <div style={{position: "fixed", bottom: 0, right: 0, margin: 4}}>
-                <div>
-                    Icons made by{" "}
-                    <a
-                        href="https://www.flaticon.com/authors/pixel-perfect"
-                        title="Pixel perfect"
-                    >
-                        Pixel perfect
-                    </a>{" "}
-                    from{" "}
-                    <a href="https://www.flaticon.com/" title="Flaticon">
-                        www.flaticon.com
-                    </a>
-                </div>
-            </div>
-        </div>
+        </HStack>
     );
 };
 
