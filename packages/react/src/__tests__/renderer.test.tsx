@@ -9,7 +9,7 @@ import type {Story, StoryContext} from "@storybook/react";
 
 import * as Core from "@math-blocks/core";
 import * as Typesetter from "@math-blocks/typesetter";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 

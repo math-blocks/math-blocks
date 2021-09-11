@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {MathRenderer, FontDataContext} from "@math-blocks/react";
 import {types} from "@math-blocks/semantic";
 import {Step, applyStep} from "@math-blocks/step-utils";
@@ -8,12 +8,12 @@ import * as Typesetter from "@math-blocks/typesetter";
 
 type Props = {
     // Prefix to start numbering from, e.g. 1.2.3
-    prefix?: string;
+    readonly prefix?: string;
 
     // The starting expression to render the substeps from `step` with.
-    start: types.Node;
+    readonly start: types.Node;
 
-    step: Step;
+    readonly step: Step;
 };
 
 const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {

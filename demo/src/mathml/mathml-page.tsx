@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {FontDataContext} from "@math-blocks/react";
 import {getFontData, parse} from "@math-blocks/opentype";
 import type {Font} from "@math-blocks/opentype";

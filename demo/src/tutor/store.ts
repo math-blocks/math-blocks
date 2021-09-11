@@ -1,6 +1,6 @@
 import {createStore} from "redux";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 
 import {reducer, State, StepStatus, ProblemStatus} from "./reducer";
 

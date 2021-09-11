@@ -11,7 +11,7 @@ import {
     toEqualZipper,
     toEqualZTable,
 } from "../test-util";
-import {CharTable} from "packages/editor-core/src/char/types";
+import {CharTable} from "../../../char/types";
 import {Zipper} from "../../types";
 
 // NOTE: toEqualZTable is used by toEqualZipper

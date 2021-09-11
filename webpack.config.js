@@ -60,9 +60,9 @@ module.exports = {
             "react-dom": "@hot-loader/react-dom",
             // TODO: replace these aliases with NormalModuleReplacementPlugin
             "@math-blocks/core": path.join(__dirname, "./packages/core/src"),
-            "@math-blocks/editor-core": path.join(
+            "@math-blocks/editor": path.join(
                 __dirname,
-                "./packages/editor-core/src",
+                "./packages/editor/src",
             ),
             "@math-blocks/grader": path.join(
                 __dirname,

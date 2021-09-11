@@ -2,7 +2,7 @@ import * as React from "react";
 import type {Story} from "@storybook/react";
 import type {Mutable} from "utility-types";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
 import * as Typesetter from "@math-blocks/typesetter";
 import {getFontData, parse} from "@math-blocks/opentype";

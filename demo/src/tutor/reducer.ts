@@ -1,4 +1,4 @@
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {Mistake} from "@math-blocks/grader";
 
 // TODO: add an 'Error' status

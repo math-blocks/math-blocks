@@ -1,4 +1,4 @@
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";

@@ -7,7 +7,7 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../editor-core"},
+    {"path": "../editor"},
     {"path": "../opentype"},
     {"path": "../semantic"},
     {"path": "../typesetter"}

@@ -4,7 +4,7 @@
     "main": "./out/index.js",
     "dependencies": {
         "@math-blocks/core": "0.0.1",
-        "@math-blocks/editor-core": "0.0.1",
+        "@math-blocks/editor": "0.0.1",
         "@math-blocks/opentype": "0.0.1"
     }
 }

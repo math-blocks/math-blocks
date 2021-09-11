@@ -7,7 +7,7 @@
   },
   "references": [
     {"path": "../packages/core"},
-    {"path": "../packages/editor-core"},
+    {"path": "../packages/editor"},
     {"path": "../packages/grader"},
     {"path": "../packages/opentype"},
     {"path": "../packages/react"},

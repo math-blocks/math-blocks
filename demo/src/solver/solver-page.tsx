@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {MathEditor, MathRenderer, FontDataContext} from "@math-blocks/react";
 import {builders, NodeType} from "@math-blocks/semantic";
 import {simplify, solve} from "@math-blocks/solver";

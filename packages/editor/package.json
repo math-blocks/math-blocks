@@ -1,5 +1,5 @@
 {
-    "name": "@math-blocks/editor-core",
+    "name": "@math-blocks/editor",
     "version": "0.0.1",
     "main": "./out/index.js",
     "dependencies": {

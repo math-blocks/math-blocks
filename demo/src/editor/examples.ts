@@ -1,4 +1,4 @@
-import {builders} from "@math-blocks/editor-core";
+import {builders} from "@math-blocks/editor";
 
 const simpleRow = builders.row([
     builders.char("2"),

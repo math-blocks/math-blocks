@@ -3,7 +3,7 @@ import path from "path";
 // @ts-expect-error: Blob is only available in node 15.7.0 onward
 import {Blob} from "buffer";
 import * as Core from "@math-blocks/core";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 

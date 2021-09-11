@@ -1,4 +1,4 @@
-# @math-blocks/editor-core
+# @math-blocks/editor
 
 A set of framework independent tools that can be used to construct an input
 component for entering/editing math expressions.

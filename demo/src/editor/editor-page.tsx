@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {MathEditor, MathKeypad, FontDataContext} from "@math-blocks/react";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {parse, getFontData} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 import {RadicalDegreeAlgorithm} from "@math-blocks/typesetter";

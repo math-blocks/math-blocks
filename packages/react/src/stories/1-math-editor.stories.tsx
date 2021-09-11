@@ -2,7 +2,7 @@ import React from "react";
 import {action} from "@storybook/addon-actions";
 import type {Story} from "@storybook/react";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 
