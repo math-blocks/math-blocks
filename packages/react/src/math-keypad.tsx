@@ -73,7 +73,7 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
     };
 
     return (
-        <div style={{display: "flex", flexDirection: "row"}}>
+        <div style={{display: "flex", flexDirection: "column"}}>
             <div className={styles.container}>
                 {buttons.map((button) => (
                     <div
@@ -111,7 +111,6 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
                 >
                     + pmatrix
                 </div>
-                <div></div>
                 <div
                     className={styles.item2}
                     onMouseDown={(e) => e.preventDefault()}
@@ -125,10 +124,28 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
                     className={styles.item2}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() =>
+                        handleMatrixClick({type: "AddColumn", side: "left"})
+                    }
+                >
+                    + col left
+                </div>
+                <div
+                    className={styles.item2}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
                         handleMatrixClick({type: "AddRow", side: "below"})
                     }
                 >
                     + row below
+                </div>
+                <div
+                    className={styles.item2}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                        handleMatrixClick({type: "AddColumn", side: "right"})
+                    }
+                >
+                    + col right
                 </div>
                 <div
                     className={styles.item2}
@@ -140,27 +157,9 @@ const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
                 <div
                     className={styles.item2}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                        handleMatrixClick({type: "AddColumn", side: "left"})
-                    }
-                >
-                    + column left
-                </div>
-                <div
-                    className={styles.item2}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                        handleMatrixClick({type: "AddColumn", side: "right"})
-                    }
-                >
-                    + column right
-                </div>
-                <div
-                    className={styles.item2}
-                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleMatrixClick({type: "DeleteColumn"})}
                 >
-                    - column
+                    - col
                 </div>
             </div>
         </div>
