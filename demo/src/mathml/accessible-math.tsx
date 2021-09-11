@@ -5,7 +5,7 @@ import {
     MathRenderer,
     FontDataContext,
 } from "@math-blocks/react";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import * as Typesetter from "@math-blocks/typesetter";
 
 type Props = {

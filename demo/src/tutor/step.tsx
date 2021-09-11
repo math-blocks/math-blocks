@@ -2,7 +2,7 @@ import * as React from "react";
 import {useDispatch} from "react-redux";
 
 import {notEmpty} from "@math-blocks/core";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import {MathEditor} from "@math-blocks/react";
 import {
     MistakeId,

@@ -1,4 +1,4 @@
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
 

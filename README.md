@@ -42,7 +42,7 @@ A collection of utility functions and types used in most of the other packages.
 - `getId`: function that returns unique, ascending, integer identifiers
 - `UnreachableCaseError`: used for exhaustiveness checks in `switch` statements.
 
-### [@math-blocks/editor-core](packages/editor-core/README.md)
+### [@math-blocks/editor](packages/editor/README.md)
 
 Provides a bunch of related parts for building interactive math editors.
 

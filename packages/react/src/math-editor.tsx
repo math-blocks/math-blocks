@@ -1,7 +1,7 @@
 import * as React from "react";
 import cx from "classnames";
 
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import * as Typesetter from "@math-blocks/typesetter";
 
 import {FontDataContext} from "./font-data-context";

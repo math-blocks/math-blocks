@@ -4,7 +4,7 @@ import path from "path";
 import {Blob} from "buffer";
 
 import * as Typesetter from "@math-blocks/typesetter";
-import * as Editor from "@math-blocks/editor-core";
+import * as Editor from "@math-blocks/editor";
 import * as Semantic from "@math-blocks/semantic";
 import {getFontData, parse} from "@math-blocks/opentype";
 
