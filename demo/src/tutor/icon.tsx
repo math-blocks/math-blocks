@@ -1,8 +1,8 @@
 import * as React from "react";
 
 type Props = {
-    name: "incorrect" | "correct" | "hint";
-    size: number;
+    readonly name: "incorrect" | "correct" | "hint";
+    readonly size: number;
 };
 
 const Icon: React.FunctionComponent<Props> = (props) => {
