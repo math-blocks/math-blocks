@@ -1,15 +1,14 @@
 import {hot} from "react-hot-loader/root";
 import * as React from "react";
-import {useSelector, useDispatch} from "react-redux";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
-import {State, ProblemStatus, StepStatus} from "@math-blocks/tutor";
+import {reducer, ProblemStatus, StepStatus} from "@math-blocks/tutor";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
 import {getPairs} from "./util";
-import {Dispatch} from "./store";
+import {initialState} from "./store";
 import {HStack, VStack} from "./layout";
 
 const {useState} = React;
@@ -22,9 +21,7 @@ const {useState} = React;
 //   until the user submits their answer.
 const Tutor: React.FunctionComponent = () => {
     const [mode, setMode] = useState<"edit" | "solve">("solve");
-
-    const state = useSelector<State, State>((state) => state);
-    const dispatch: Dispatch = useDispatch();
+    const [state, dispatch] = React.useReducer(reducer, initialState);
 
     const isComplete = state.status === ProblemStatus.Complete;
     const pairs = getPairs(state.steps);
@@ -64,12 +61,11 @@ const Tutor: React.FunctionComponent = () => {
                         <Step
                             key={`step-${index}`}
                             // focus={isLast && mode === "solve"}
+                            dispatch={dispatch}
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}
-                            onChange={(zipper: Editor.Zipper) => {
-                                dispatch({type: "set_pending"});
-                            }}
+                            onChange={() => dispatch({type: "set_pending"})}
                         />
                     );
                 })}

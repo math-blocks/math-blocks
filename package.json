@@ -25,7 +25,6 @@
     "@types/jest": "^27.0.1",
     "@types/react": "^16.9.16",
     "@types/react-dom": "^16.9.4",
-    "@types/react-redux": "^7.1.11",
     "@types/react-router-dom": "^5.1.3",
     "@types/testing-library__jest-dom": "^5.14.0",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
@@ -100,9 +99,7 @@
     "fraction.js": "^4.0.12",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "react-redux": "^7.2.2",
-    "react-router-dom": "^5.1.2",
-    "redux": "^4.0.5"
+    "react-router-dom": "^5.1.2"
   },
   "husky": {
     "hooks": {

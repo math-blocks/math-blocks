@@ -168,7 +168,6 @@ export const reducer = (state: State = initialState, action: Action): State => {
                 status: ProblemStatus.Complete,
             };
         }
-        // Handle internal redux actions like init
         default:
             return state;
     }
