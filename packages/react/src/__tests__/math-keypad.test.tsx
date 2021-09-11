@@ -134,14 +134,14 @@ describe("MathKeypad", () => {
         expect(editMock).toHaveBeenCalledWith({type: "AddRow", side: "below"});
     });
 
-    test("'+ column left' should trigger 'AddColumn' editing event", () => {
+    test("'+ col left' should trigger 'AddColumn' editing event", () => {
         // Arrange
         const editMock = jest.fn();
         render(<TestComp editMock={editMock} />);
 
         // Act
         screen.getByRole("textbox").focus();
-        userEvent.click(screen.getByText("+ column left"));
+        userEvent.click(screen.getByText("+ col left"));
 
         // Assert
         expect(editMock).toHaveBeenCalledWith({
@@ -150,14 +150,14 @@ describe("MathKeypad", () => {
         });
     });
 
-    test("'+ column right' should trigger 'AddColumn' editing event", () => {
+    test("'+ col right' should trigger 'AddColumn' editing event", () => {
         // Arrange
         const editMock = jest.fn();
         render(<TestComp editMock={editMock} />);
 
         // Act
         screen.getByRole("textbox").focus();
-        userEvent.click(screen.getByText("+ column right"));
+        userEvent.click(screen.getByText("+ col right"));
 
         // Assert
         expect(editMock).toHaveBeenCalledWith({
@@ -181,14 +181,14 @@ describe("MathKeypad", () => {
         });
     });
 
-    test("'- column' should trigger 'DeleteColumn' editing event", () => {
+    test("'- col' should trigger 'DeleteColumn' editing event", () => {
         // Arrange
         const editMock = jest.fn();
         render(<TestComp editMock={editMock} />);
 
         // Act
         screen.getByRole("textbox").focus();
-        userEvent.click(screen.getByText("- column"));
+        userEvent.click(screen.getByText("- col"));
 
         // Assert
         expect(editMock).toHaveBeenCalledWith({
