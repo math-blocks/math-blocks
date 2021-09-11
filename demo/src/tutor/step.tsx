@@ -1,5 +1,4 @@
 import * as React from "react";
-import {useDispatch} from "react-redux";
 
 import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor";
@@ -13,13 +12,14 @@ import {
 import * as Semantic from "@math-blocks/semantic";
 import {applyStep} from "@math-blocks/step-utils";
 import {solve} from "@math-blocks/solver";
-import {Step as _Step, StepStatus} from "@math-blocks/tutor";
+import {Step as _Step, StepStatus, Action} from "@math-blocks/tutor";
 
 import Icon from "./icon";
 import {HStack, VStack} from "./layout";
-import {Dispatch} from "./store";
 
 const {NodeType} = Semantic;
+
+type Dispatch = (action: Action) => void;
 
 type Props = {
     readonly readonly: boolean;
@@ -28,6 +28,8 @@ type Props = {
     readonly step: _Step;
 
     readonly onChange: (value: Editor.Zipper) => unknown;
+
+    readonly dispatch: Dispatch;
 };
 
 const MistakeMessages: Record<MistakeId, string> = {
@@ -137,9 +139,8 @@ function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
 }
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {readonly, prevStep, step, onChange} = props;
+    const {readonly, prevStep, step, onChange, dispatch} = props;
 
-    const dispatch: Dispatch = useDispatch();
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
     const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
     const [hintText, setHintText] = React.useState<string | null>(null);
@@ -150,89 +151,96 @@ const Step: React.FunctionComponent<Props> = (props) => {
     // zipper like "handleCheckStep" does.
     const [zipper, setZipper] = React.useState<Editor.Zipper>(step.value);
 
-    const handleCheckStep = (zipperForMathEditor: Editor.Zipper): boolean => {
-        const zipper = removeAllColor(zipperForMathEditor);
-        const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
-        const parsedNext = Editor.parse(Editor.zipperToRow(zipper));
+    const handleCheckStep = React.useCallback(
+        (zipperForMathEditor: Editor.Zipper): boolean => {
+            const zipper = removeAllColor(zipperForMathEditor);
+            const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+            const parsedNext = Editor.parse(Editor.zipperToRow(zipper));
 
-        parsedNextRef.current = parsedNext;
+            parsedNextRef.current = parsedNext;
 
-        const {result, mistakes} = checkStep(parsedPrev, parsedNext);
+            const {result, mistakes} = checkStep(parsedPrev, parsedNext);
 
-        if (result) {
-            // Clear any color highlights from a previously incorrect step
-            if (zipper !== step.value) {
-                dispatch({type: "update", value: zipper});
-            }
-
-            if (
-                parsedNext.type === NodeType.Equals &&
-                parsedNext.args[0].type === NodeType.Identifier &&
-                Semantic.util.isNumber(parsedNext.args[1])
-            ) {
-                dispatch({type: "right", hint});
-                dispatch({type: "complete"}); // the problem is completely finished
-            } else if (
-                parsedNext.type === NodeType.VerticalAdditionToRelation
-            ) {
-                if (parsedNext.resultingRelation) {
-                    const resultingEquation = Semantic.builders.eq([
-                        Semantic.builders.add(
-                            parsedNext.resultingRelation.left.filter(notEmpty),
-                        ),
-                        Semantic.builders.add(
-                            parsedNext.resultingRelation.right.filter(notEmpty),
-                        ),
-                    ]);
-                    const charRow = Editor.print(resultingEquation, true);
-                    const zipper: Editor.Zipper = {
-                        breadcrumbs: [],
-                        row: {
-                            type: "zrow",
-                            id: resultingEquation.id,
-                            left: [],
-                            selection: [],
-                            right: charRow.children,
-                            style: {},
-                        },
-                    };
-                    dispatch({type: "right", hint});
-                    dispatch({type: "new_step", value: zipper});
-                } else {
-                    const editorState = Editor.zipperToState(zipper);
-                    const newEditorState = Editor.reducer(editorState, {
-                        type: "ArrowDown",
-                    });
-                    const newZipper = newEditorState.zipper;
-                    dispatch({type: "update", value: newZipper});
+            if (result) {
+                // Clear any color highlights from a previously incorrect step
+                if (zipper !== step.value) {
+                    dispatch({type: "update", value: zipper});
                 }
+
+                if (
+                    parsedNext.type === NodeType.Equals &&
+                    parsedNext.args[0].type === NodeType.Identifier &&
+                    Semantic.util.isNumber(parsedNext.args[1])
+                ) {
+                    dispatch({type: "right", hint});
+                    dispatch({type: "complete"}); // the problem is completely finished
+                } else if (
+                    parsedNext.type === NodeType.VerticalAdditionToRelation
+                ) {
+                    if (parsedNext.resultingRelation) {
+                        const resultingEquation = Semantic.builders.eq([
+                            Semantic.builders.add(
+                                parsedNext.resultingRelation.left.filter(
+                                    notEmpty,
+                                ),
+                            ),
+                            Semantic.builders.add(
+                                parsedNext.resultingRelation.right.filter(
+                                    notEmpty,
+                                ),
+                            ),
+                        ]);
+                        const charRow = Editor.print(resultingEquation, true);
+                        const zipper: Editor.Zipper = {
+                            breadcrumbs: [],
+                            row: {
+                                type: "zrow",
+                                id: resultingEquation.id,
+                                left: [],
+                                selection: [],
+                                right: charRow.children,
+                                style: {},
+                            },
+                        };
+                        dispatch({type: "right", hint});
+                        dispatch({type: "new_step", value: zipper});
+                    } else {
+                        const editorState = Editor.zipperToState(zipper);
+                        const newEditorState = Editor.reducer(editorState, {
+                            type: "ArrowDown",
+                        });
+                        const newZipper = newEditorState.zipper;
+                        dispatch({type: "update", value: newZipper});
+                    }
+                } else {
+                    dispatch({type: "right", hint});
+                    dispatch({type: "duplicate"}); // copy the last step
+                }
+
+                // Manually focus the last input which will trigger the last
+                // MathEditor to become active.  We do this in a setTimeout to
+                // allow the DOM to update.
+                setTimeout(() => {
+                    const inputs = document.querySelectorAll("input");
+                    const lastInput = inputs[inputs.length - 1];
+                    lastInput.focus();
+                }, 0);
+
+                return true;
             } else {
-                dispatch({type: "right", hint});
-                dispatch({type: "duplicate"}); // copy the last step
+                dispatch({type: "wrong", mistakes});
+                // TODO: highlight nodes in the previous step as well if they're listed in
+                // mistakes[*].prevNodes.
+                dispatch({
+                    type: "update",
+                    value: highlightMistakes(zipper, mistakes, "darkCyan"),
+                });
             }
 
-            // Manually focus the last input which will trigger the last
-            // MathEditor to become active.  We do this in a setTimeout to
-            // allow the DOM to update.
-            setTimeout(() => {
-                const inputs = document.querySelectorAll("input");
-                const lastInput = inputs[inputs.length - 1];
-                lastInput.focus();
-            }, 0);
-
-            return true;
-        } else {
-            dispatch({type: "wrong", mistakes});
-            // TODO: highlight nodes in the previous step as well if they're listed in
-            // mistakes[*].prevNodes.
-            dispatch({
-                type: "update",
-                value: highlightMistakes(zipper, mistakes, "darkCyan"),
-            });
-        }
-
-        return false;
-    };
+            return false;
+        },
+        [dispatch, hint, prevStep.value, step.value],
+    );
 
     const handleGetHint = (): void => {
         // TODO: check that we're solving an equations

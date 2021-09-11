@@ -1,7 +1,5 @@
-import {createStore} from "redux";
-
 import * as Editor from "@math-blocks/editor";
-import {reducer, State, StepStatus, ProblemStatus} from "@math-blocks/tutor";
+import {State, StepStatus, ProblemStatus} from "@math-blocks/tutor";
 
 const clone = <T>(obj: T): T => {
     return JSON.parse(JSON.stringify(obj));
@@ -17,7 +15,7 @@ if (!zipper) {
     throw new Error("Can't create a zipper from the given question");
 }
 
-const initialState: State = {
+export const initialState: State = {
     steps: [
         {
             status: StepStatus.Correct,
@@ -31,7 +29,3 @@ const initialState: State = {
     ],
     status: ProblemStatus.Incomplete,
 };
-
-export const store = createStore(reducer, initialState);
-
-export type Dispatch = typeof store.dispatch;
