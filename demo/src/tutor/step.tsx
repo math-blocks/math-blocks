@@ -13,9 +13,9 @@ import {
 import * as Semantic from "@math-blocks/semantic";
 import {applyStep} from "@math-blocks/step-utils";
 import {solve} from "@math-blocks/solver";
+import {Step as _Step, StepStatus} from "@math-blocks/tutor";
 
 import Icon from "./icon";
-import {Step as _Step, StepStatus} from "./reducer";
 import {HStack, VStack} from "./layout";
 import {Dispatch} from "./store";
 

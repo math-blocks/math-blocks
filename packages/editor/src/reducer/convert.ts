@@ -45,8 +45,15 @@ export const rowToZipper = (
     row: CharRow,
     intersections: readonly Intersection[],
 ): Zipper | void => {
+    // The intersections are used when clicking to position the cursor.  If we
+    // didn't get any we place the cursor at the start of the row.
     if (intersections.length === 0) {
-        return;
+        const zipper: Zipper = {
+            row: zrow(row.id, [], row.children, row.style),
+            breadcrumbs: [],
+        };
+
+        return zipper;
     }
 
     let int: Intersection;

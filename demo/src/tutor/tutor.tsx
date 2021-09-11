@@ -4,11 +4,11 @@ import {useSelector, useDispatch} from "react-redux";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
+import {State, ProblemStatus, StepStatus} from "@math-blocks/tutor";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
 import {getPairs} from "./util";
-import {State, ProblemStatus, StepStatus} from "./reducer";
 import {Dispatch} from "./store";
 import {HStack, VStack} from "./layout";
 

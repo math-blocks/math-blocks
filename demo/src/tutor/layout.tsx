@@ -1,8 +1,8 @@
 import * as React from "react";
 
 type Props = {
-    style?: React.CSSProperties;
-    children: React.ReactNode;
+    readonly style?: React.CSSProperties;
+    readonly children: React.ReactNode;
 };
 
 export const HStack: React.FunctionComponent<Props> = (props) => {

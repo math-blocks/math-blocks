@@ -79,12 +79,13 @@ const initialState: State = {
 export const reducer = (state: State = initialState, action: Action): State => {
     switch (action.type) {
         case "right": {
+            const {value} = state.steps[state.steps.length - 1];
             return {
                 ...state,
                 steps: [
                     ...state.steps.slice(0, -1),
                     {
-                        ...state.steps[state.steps.length - 1],
+                        value,
                         status: StepStatus.Correct,
                         hint: action.hint,
                     },
@@ -92,12 +93,13 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "wrong": {
+            const {value} = state.steps[state.steps.length - 1];
             return {
                 ...state,
                 steps: [
                     ...state.steps.slice(0, -1),
                     {
-                        ...state.steps[state.steps.length - 1],
+                        value,
                         status: StepStatus.Incorrect,
                         mistakes: action.mistakes,
                     },
@@ -148,12 +150,13 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "set_pending": {
+            const {value} = state.steps[state.steps.length - 1];
             return {
                 ...state,
                 steps: [
                     ...state.steps.slice(0, -1),
                     {
-                        ...state.steps[state.steps.length - 1],
+                        value,
                         status: StepStatus.Pending,
                     },
                 ],
