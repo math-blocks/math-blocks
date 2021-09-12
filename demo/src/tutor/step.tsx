@@ -10,8 +10,7 @@ import {
     replaceNodeWithId,
 } from "@math-blocks/grader";
 import * as Semantic from "@math-blocks/semantic";
-import {applyStep} from "@math-blocks/step-utils";
-import {solve} from "@math-blocks/solver";
+import {getHint, showMeHow} from "@math-blocks/solver";
 import {Step as _Step, StepStatus, Action} from "@math-blocks/tutor";
 
 import Icon from "./icon";
@@ -26,8 +25,6 @@ type Props = {
 
     readonly prevStep: _Step;
     readonly step: _Step;
-
-    readonly onChange: (value: Editor.Zipper) => unknown;
 
     readonly dispatch: Dispatch;
 };
@@ -139,7 +136,7 @@ function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
 }
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {readonly, prevStep, step, onChange, dispatch} = props;
+    const {readonly, prevStep, step, dispatch} = props;
 
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
     const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
@@ -242,74 +239,56 @@ const Step: React.FunctionComponent<Props> = (props) => {
         [dispatch, hint, prevStep.value, step.value],
     );
 
-    const handleGetHint = (): void => {
+    const handleGetHint = React.useCallback((): void => {
+        const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+        const hint = getHint(parsedPrev, Semantic.builders.identifier("x"));
+
+        // NOTE: Some steps will have their own sub-steps which we may want
+        // to apply to help students better understand what the hint is doing.
+        setHint("text");
+        setHintText(hint.message);
+    }, [prevStep.value]);
+
+    const handleChange = React.useCallback(
+        (zipper: Editor.Zipper): void => {
+            dispatch({type: "set_pending"});
+            setZipper(zipper);
+        },
+        [dispatch],
+    );
+
+    const handleShowMe = React.useCallback((): void => {
         // TODO: check that we're solving an equations
         const parsedPrev = Editor.parse(
             Editor.zipperToRow(prevStep.value),
         ) as Semantic.types.Eq;
 
-        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+        const next = showMeHow(parsedPrev, Semantic.builders.identifier("x"));
 
-        if (solution && solution.substeps.length > 0) {
-            // Grab the first step of the solution and apply it to the previous
-            // math statement that the user has entered.
-            const step = solution.substeps[0];
+        setHint("showme");
+        setShowed(true);
 
-            // NOTE: Some steps will have their own sub-steps which we may want
-            // to apply to help students better understand what the hint is doing.
+        const row = Editor.print(next);
+        const zipper: Editor.Zipper = {
+            breadcrumbs: [],
+            row: {
+                id: row.id,
+                type: "zrow",
+                left: [],
+                selection: [],
+                right: row.children,
+                style: {},
+            },
+        };
 
-            setHint("text");
-            setHintText(step.message);
-        } else {
-            throw new Error("no solution");
-        }
-    };
-
-    const handleShowMe = (): void => {
-        // TODO: check that we're solving an equations
-        const parsedPrev = Editor.parse(
-            Editor.zipperToRow(prevStep.value),
-        ) as Semantic.types.Eq;
-
-        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
-
-        if (solution && solution.substeps.length > 0) {
-            // Grab the first step of the solution and apply it to the previous
-            // math statement that the user has entered.
-            const step = solution.substeps[0];
-            const next = applyStep(parsedPrev, step);
-
-            setHint("showme");
-            setShowed(true);
-
-            const row = Editor.print(next);
-            const zipper: Editor.Zipper = {
-                breadcrumbs: [],
-                row: {
-                    id: row.id,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row.children,
-                    style: {},
-                },
-            };
-
-            // NOTE: Some steps will have their own sub-steps which we may want
-            // to apply to help students better understand what the hint is doing.
-            dispatch({
-                type: "update",
-                value: zipper,
-            });
-        } else {
-            throw new Error("no solution");
-        }
-    };
-
-    const handleChange = (zipper: Editor.Zipper): void => {
-        setZipper(zipper);
-        onChange(zipper);
-    };
+        // NOTE: Some steps will have their own sub-steps which we may want
+        // to apply to help students better understand what the hint is doing.
+        dispatch({
+            type: "update",
+            value: zipper,
+        });
+        handleChange(zipper);
+    }, [dispatch, handleChange, prevStep.value]);
 
     let buttonsOrIcon = (
         <HStack>
@@ -327,6 +306,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             </button>
             <button
                 style={{fontSize: 30}}
+                // TODO: determine if we have a hint, before showing the "Hint" button
                 onClick={handleGetHint}
                 onMouseDown={(e) => {
                     // Prevent clicking the button from blurring the MathEditor
@@ -431,7 +411,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     <button
                         disabled={showed}
                         style={{fontSize: 20}}
-                        onClick={() => handleShowMe()}
+                        onClick={handleShowMe}
                     >
                         Show me how!
                     </button>
