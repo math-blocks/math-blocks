@@ -79,7 +79,10 @@ const initialState: State = {
 export const reducer = (state: State = initialState, action: Action): State => {
     switch (action.type) {
         case "right": {
-            const {value} = state.steps[state.steps.length - 1];
+            const {value, status} = state.steps[state.steps.length - 1];
+            if (status === StepStatus.Correct) {
+                return state;
+            }
             return {
                 ...state,
                 steps: [
@@ -93,7 +96,10 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "wrong": {
-            const {value} = state.steps[state.steps.length - 1];
+            const {value, status} = state.steps[state.steps.length - 1];
+            if (status === StepStatus.Incorrect) {
+                return state;
+            }
             return {
                 ...state,
                 steps: [
@@ -132,6 +138,10 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "update": {
+            const {value} = state.steps[state.steps.length - 1];
+            if (action.value === value) {
+                return state;
+            }
             return {
                 ...state,
                 steps: [
@@ -150,7 +160,12 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "set_pending": {
-            const {value} = state.steps[state.steps.length - 1];
+            // It's important that the reducer only returns a new object when
+            // there's a change in the state object.
+            const {value, status} = state.steps[state.steps.length - 1];
+            if (status === StepStatus.Pending) {
+                return state;
+            }
             return {
                 ...state,
                 steps: [
@@ -163,6 +178,9 @@ export const reducer = (state: State = initialState, action: Action): State => {
             };
         }
         case "complete": {
+            if (state.status === ProblemStatus.Complete) {
+                return state;
+            }
             return {
                 ...state,
                 status: ProblemStatus.Complete,

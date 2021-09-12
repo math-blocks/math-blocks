@@ -9,7 +9,7 @@
     background-color: #e0e0e0;
     border: solid 1px #e0e0e0;
     width: 240px;
-    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 .container2 {
@@ -22,7 +22,7 @@
     grid-row-gap: 1px;
     background-color: #e0e0e0;
     border: solid 1px #e0e0e0;
-    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 .item {
