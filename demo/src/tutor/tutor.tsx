@@ -5,11 +5,11 @@ import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
 import {reducer, ProblemStatus, StepStatus} from "@math-blocks/tutor";
 
-// TODO: rename Step to StepChecker and StepCheckerPage to Grader
+import {HStack, VStack} from "../layout";
+
 import Step from "./step";
 import {getPairs} from "./util";
 import {initialState} from "./store";
-import {HStack, VStack} from "./layout";
 
 const {useState} = React;
 

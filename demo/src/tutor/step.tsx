@@ -13,8 +13,9 @@ import * as Semantic from "@math-blocks/semantic";
 import {getHint, showMeHow} from "@math-blocks/solver";
 import {Step as _Step, StepStatus, Action} from "@math-blocks/tutor";
 
+import {HStack, VStack} from "../layout";
+
 import Icon from "./icon";
-import {HStack, VStack} from "./layout";
 
 const {NodeType} = Semantic;
 
