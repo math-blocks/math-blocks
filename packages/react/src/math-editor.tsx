@@ -102,6 +102,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
+    // Call onChange whenever state changes
     const {onChange} = props;
     useEffect(() => {
         if (onChange) {
@@ -121,22 +122,6 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
 
                 if (action) {
                     dispatch(action);
-
-                    // We always call on change even when the user is moving the
-                    // cursor.  The underlying content doesn't change, but how
-                    // it's represented in memory is.  If we don't do this, when
-                    // the tutor tries to highlight mistakes it will be doing so
-                    // with a stale value.
-                    // This isn't accurate since we only highlight mistakes when
-                    // the user submits so it isn't necessary to update on each
-                    // keystroke.
-                    if (props.onChange) {
-                        // dispatch({type: "OnChange", callback: props.onChange});
-                    }
-                    // TODO: figure out how to implement this with useReducer
-                    // if (props.onChange) {
-                    //     props.onChange(newState.zipper);
-                    // }
                 }
 
                 // Prevent StoryBook from capturing '/' and shifting focus to
