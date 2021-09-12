@@ -10,8 +10,7 @@ import {
     replaceNodeWithId,
 } from "@math-blocks/grader";
 import * as Semantic from "@math-blocks/semantic";
-import {applyStep} from "@math-blocks/step-utils";
-import {solve} from "@math-blocks/solver";
+import {getHint, showMeHow} from "@math-blocks/solver";
 import {Step as _Step, StepStatus, Action} from "@math-blocks/tutor";
 
 import Icon from "./icon";
@@ -243,26 +242,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
     );
 
     const handleGetHint = (): void => {
-        // TODO: check that we're solving an equations
-        const parsedPrev = Editor.parse(
-            Editor.zipperToRow(prevStep.value),
-        ) as Semantic.types.Eq;
+        const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+        const hint = getHint(parsedPrev, Semantic.builders.identifier("x"));
 
-        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
-
-        if (solution && solution.substeps.length > 0) {
-            // Grab the first step of the solution and apply it to the previous
-            // math statement that the user has entered.
-            const step = solution.substeps[0];
-
-            // NOTE: Some steps will have their own sub-steps which we may want
-            // to apply to help students better understand what the hint is doing.
-
-            setHint("text");
-            setHintText(step.message);
-        } else {
-            throw new Error("no solution");
-        }
+        // NOTE: Some steps will have their own sub-steps which we may want
+        // to apply to help students better understand what the hint is doing.
+        setHint("text");
+        setHintText(hint.message);
     };
 
     const handleShowMe = (): void => {
@@ -271,39 +257,30 @@ const Step: React.FunctionComponent<Props> = (props) => {
             Editor.zipperToRow(prevStep.value),
         ) as Semantic.types.Eq;
 
-        const solution = solve(parsedPrev, Semantic.builders.identifier("x"));
+        const next = showMeHow(parsedPrev, Semantic.builders.identifier("x"));
 
-        if (solution && solution.substeps.length > 0) {
-            // Grab the first step of the solution and apply it to the previous
-            // math statement that the user has entered.
-            const step = solution.substeps[0];
-            const next = applyStep(parsedPrev, step);
+        setHint("showme");
+        setShowed(true);
 
-            setHint("showme");
-            setShowed(true);
+        const row = Editor.print(next);
+        const zipper: Editor.Zipper = {
+            breadcrumbs: [],
+            row: {
+                id: row.id,
+                type: "zrow",
+                left: [],
+                selection: [],
+                right: row.children,
+                style: {},
+            },
+        };
 
-            const row = Editor.print(next);
-            const zipper: Editor.Zipper = {
-                breadcrumbs: [],
-                row: {
-                    id: row.id,
-                    type: "zrow",
-                    left: [],
-                    selection: [],
-                    right: row.children,
-                    style: {},
-                },
-            };
-
-            // NOTE: Some steps will have their own sub-steps which we may want
-            // to apply to help students better understand what the hint is doing.
-            dispatch({
-                type: "update",
-                value: zipper,
-            });
-        } else {
-            throw new Error("no solution");
-        }
+        // NOTE: Some steps will have their own sub-steps which we may want
+        // to apply to help students better understand what the hint is doing.
+        dispatch({
+            type: "update",
+            value: zipper,
+        });
     };
 
     const handleChange = React.useCallback(
@@ -329,6 +306,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             </button>
             <button
                 style={{fontSize: 30}}
+                // TODO: determine if we have a hint, before showing the "Hint" button
                 onClick={handleGetHint}
                 onMouseDown={(e) => {
                     // Prevent clicking the button from blurring the MathEditor
