@@ -86,13 +86,6 @@ export const reducer = (state: State = initialState, action: Action): State => {
         case "DeleteRow":
         case "DeleteColumn":
             return matrix(state, action);
-        case "Update":
-            return {
-                startZipper: action.value,
-                endZipper: action.value,
-                zipper: action.value,
-                selecting: false,
-            };
         default:
             throw new UnreachableCaseError(action);
     }
