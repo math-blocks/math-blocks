@@ -306,10 +306,12 @@ const Step: React.FunctionComponent<Props> = (props) => {
         }
     };
 
-    const handleChange = (zipper: Editor.Zipper): void => {
-        setZipper(zipper);
-        onChange(zipper);
-    };
+    const handleChange = React.useCallback(
+        (zipper: Editor.Zipper): void => {
+            onChange(zipper);
+        },
+        [onChange],
+    );
 
     let buttonsOrIcon = (
         <HStack>

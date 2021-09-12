@@ -92,7 +92,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         [props.zipper],
     );
 
-    const [state, setState] = useState<Editor.State>(memoizedState);
+    const [state, dispatch] = React.useReducer(Editor.reducer, memoizedState);
     const [active, setActive] = useState<boolean>(false);
     const [mouseDown, setMouseDown] = useState<boolean>(false);
 
@@ -101,6 +101,15 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
+
+    // Call onChange whenever state changes
+    const {onChange} = props;
+    useEffect(() => {
+        if (onChange) {
+            console.log(state.zipper);
+            onChange(state.zipper);
+        }
+    }, [onChange, state]);
 
     const handleKeydown = useCallback(
         (e: KeyboardEvent): void => {
@@ -112,17 +121,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 }
 
                 if (action) {
-                    const newState = Editor.reducer(state, action);
-                    setState(newState);
-
-                    // We always call on change even when the user is moving the
-                    // cursor.  The underlying content doesn't change, but how
-                    // it's represented in memory is.  If we don't do this, when
-                    // the tutor tries to highlight mistakes it will be doing so
-                    // with a stale value.
-                    if (props.onChange) {
-                        props.onChange(newState.zipper);
-                    }
+                    dispatch(action);
                 }
 
                 // Prevent StoryBook from capturing '/' and shifting focus to
@@ -138,11 +137,11 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             if (active && !props.readonly) {
                 const action = keyupToAction(e.key);
                 if (action) {
-                    setState(Editor.reducer(state, action));
+                    dispatch(action);
                 }
             }
         },
-        [props, state, active],
+        [props, dispatch, active],
     );
 
     useEventListener("keydown", handleKeydown);
@@ -167,20 +166,17 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             }
             const {detail} = e;
             if (detail.type === "color") {
-                const newState = Editor.reducer(state, {
+                dispatch({
                     type: "Color",
                     color: detail.value,
                 });
-                setState(newState);
             } else if (detail.type === "cancel") {
-                const newState = Editor.reducer(state, {type: "Cancel"});
-                setState(newState);
+                dispatch({type: "Cancel"});
             } else if (detail.type === "uncancel") {
-                const newState = Editor.reducer(state, {type: "Uncancel"});
-                setState(newState);
+                dispatch({type: "Uncancel"});
             }
         },
-        [state, active, props.readonly],
+        [dispatch, active, props.readonly],
     ) as EventListener;
 
     // TODO: don't add event listener to window otherwise this event will
@@ -199,16 +195,13 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     );
 
     const handleEditing = useCallback(
-        (e: CustomEvent<EditingEvent>): void => {
+        ({detail}: CustomEvent<EditingEvent>): void => {
             if (!active || props.readonly) {
                 return;
             }
-            const {detail} = e;
-            console.log(detail);
-            const newState = Editor.reducer(state, detail);
-            setState(newState);
+            dispatch(detail);
         },
-        [state, active, props.readonly],
+        [dispatch, active, props.readonly],
     ) as EventListener;
 
     // TODO: don't add event listener to window otherwise this event will
@@ -242,22 +235,20 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         const cursorZipper = Editor.rowToZipper(row, intersections);
 
         if (cursorZipper) {
-            const newState = select
-                ? Editor.reducer(state, {type: "StartSelecting"})
-                : Editor.reducer(state, {type: "StopSelecting"});
-            setState(
-                Editor.reducer(newState, {
-                    type: "PositionCursor",
-                    cursor: cursorZipper,
-                }),
+            dispatch(
+                select ? {type: "StartSelecting"} : {type: "StopSelecting"},
             );
+            dispatch({
+                type: "PositionCursor",
+                cursor: cursorZipper,
+            });
         }
     };
 
     // We need to update the state.zipper when props.zipper changes otherwise
     // it looks like fast-refresh is broken.
     React.useEffect(() => {
-        setState(Editor.stateFromZipper(props.zipper));
+        dispatch({type: "Update", value: props.zipper});
     }, [props.zipper]);
 
     const {style, fontSize, showHitboxes} = props;
@@ -295,7 +286,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
             }}
             onMouseUp={(e) => {
                 setMouseDown(false);
-                setState(Editor.reducer(state, {type: "StopSelecting"}));
+                dispatch({type: "StopSelecting"});
             }}
             className={cx({[styles.container]: true, [styles.focus]: active})}
             style={style}

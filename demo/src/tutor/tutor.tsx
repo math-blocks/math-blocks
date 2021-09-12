@@ -3,15 +3,13 @@ import * as React from "react";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
-import {reducer, ProblemStatus, StepStatus} from "@math-blocks/tutor";
+import {reducer, ProblemStatus} from "@math-blocks/tutor";
 
 // TODO: rename Step to StepChecker and StepCheckerPage to Grader
 import Step from "./step";
 import {getPairs} from "./util";
 import {initialState} from "./store";
 import {HStack, VStack} from "./layout";
-
-const {useState} = React;
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -20,7 +18,7 @@ const {useState} = React;
 // - Delayed feedback will conceal the correctness of each step
 //   until the user submits their answer.
 const Tutor: React.FunctionComponent = () => {
-    const [mode, setMode] = useState<"edit" | "solve">("solve");
+    // const [mode, setMode] = React.useState<"edit" | "solve">("solve");
     const [state, dispatch] = React.useReducer(reducer, initialState);
 
     const isComplete = state.status === ProblemStatus.Complete;
@@ -34,11 +32,11 @@ const Tutor: React.FunctionComponent = () => {
                 style={{
                     display: "flex",
                     flexDirection: "column",
-                    width: 300,
+                    width: 320,
                     marginRight: 32,
                 }}
             >
-                {mode === "solve" && (
+                {/* {mode === "solve" && (
                     <button
                         style={{height: 48, fontSize: 24}}
                         onClick={() => {
@@ -63,7 +61,7 @@ const Tutor: React.FunctionComponent = () => {
                     >
                         Solve Question
                     </button>
-                )}
+                )} */}
                 <MathKeypad />
                 <div style={{position: "fixed", bottom: 0, left: 0, margin: 4}}>
                     <div>
@@ -88,20 +86,7 @@ const Tutor: React.FunctionComponent = () => {
                         readonly={false}
                         zipper={zipper}
                         stepChecker={true}
-                        // focus={mode === "edit"}
                         style={{marginTop: 8, flexGrow: 1}}
-                        onChange={(zipper: Editor.Zipper) => {
-                            dispatch({
-                                type: "set",
-                                steps: [
-                                    {
-                                        status: StepStatus.Correct,
-                                        value: zipper,
-                                        hint: "none",
-                                    },
-                                ],
-                            });
-                        }}
                     />
                     <div style={{width: 200, marginLeft: 8}} />
                 </HStack>

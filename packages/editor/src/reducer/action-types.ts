@@ -59,4 +59,8 @@ export type Action =
     | {
           readonly type: "Uncancel";
       }
-    | MatrixActions;
+    | MatrixActions
+    | {
+          readonly type: "Update";
+          readonly value: Zipper;
+      };
