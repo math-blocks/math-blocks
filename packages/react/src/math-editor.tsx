@@ -199,12 +199,10 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     );
 
     const handleEditing = useCallback(
-        (e: CustomEvent<EditingEvent>): void => {
+        ({detail}: CustomEvent<EditingEvent>): void => {
             if (!active || props.readonly) {
                 return;
             }
-            const {detail} = e;
-            console.log(detail);
             const newState = Editor.reducer(state, detail);
             setState(newState);
         },

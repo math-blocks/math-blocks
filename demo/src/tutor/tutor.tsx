@@ -116,7 +116,6 @@ const Tutor: React.FunctionComponent = () => {
                             readonly={!isLast || isComplete}
                             prevStep={prevStep}
                             step={step}
-                            onChange={() => dispatch({type: "set_pending"})}
                         />
                     );
                 })}

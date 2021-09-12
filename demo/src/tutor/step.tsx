@@ -26,8 +26,6 @@ type Props = {
     readonly prevStep: _Step;
     readonly step: _Step;
 
-    readonly onChange: (value: Editor.Zipper) => unknown;
-
     readonly dispatch: Dispatch;
 };
 
@@ -138,7 +136,7 @@ function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
 }
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {readonly, prevStep, step, onChange, dispatch} = props;
+    const {readonly, prevStep, step, dispatch} = props;
 
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
     const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
@@ -241,7 +239,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
         [dispatch, hint, prevStep.value, step.value],
     );
 
-    const handleGetHint = (): void => {
+    const handleGetHint = React.useCallback((): void => {
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
         const hint = getHint(parsedPrev, Semantic.builders.identifier("x"));
 
@@ -249,9 +247,17 @@ const Step: React.FunctionComponent<Props> = (props) => {
         // to apply to help students better understand what the hint is doing.
         setHint("text");
         setHintText(hint.message);
-    };
+    }, [prevStep.value]);
 
-    const handleShowMe = (): void => {
+    const handleChange = React.useCallback(
+        (zipper: Editor.Zipper): void => {
+            dispatch({type: "set_pending"});
+            setZipper(zipper);
+        },
+        [dispatch],
+    );
+
+    const handleShowMe = React.useCallback((): void => {
         // TODO: check that we're solving an equations
         const parsedPrev = Editor.parse(
             Editor.zipperToRow(prevStep.value),
@@ -281,12 +287,8 @@ const Step: React.FunctionComponent<Props> = (props) => {
             type: "update",
             value: zipper,
         });
-    };
-
-    const handleChange = (zipper: Editor.Zipper): void => {
-        setZipper(zipper);
-        onChange(zipper);
-    };
+        handleChange(zipper);
+    }, [dispatch, handleChange, prevStep.value]);
 
     let buttonsOrIcon = (
         <HStack>
@@ -409,7 +411,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     <button
                         disabled={showed}
                         style={{fontSize: 20}}
-                        onClick={() => handleShowMe()}
+                        onClick={handleShowMe}
                     >
                         Show me how!
                     </button>
