@@ -6,6 +6,8 @@ import {parse, getFontData} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 import {RadicalDegreeAlgorithm} from "@math-blocks/typesetter";
 
+import {HStack, VStack} from "../layout";
+
 import FormattingPalette from "./formatting-palette";
 import {examples} from "./examples";
 
@@ -140,108 +142,120 @@ const EditorPage: React.FunctionComponent = () => {
 
     return (
         <FontDataContext.Provider value={fontData}>
-            <MathEditor
-                fontSize={fontSize}
-                readonly={false}
-                zipper={zipper}
-                radicalDegreeAlgorithm={radicalDegreeAlgorithm}
-                showHitboxes={showHitboxes}
-            />
-            <br />
-            <br />
-            <div style={{fontFamily: "Bonum-Math", fontSize: fontSize}}></div>
-            <div style={{display: "flex", alignItems: "center"}}>
-                <span style={{fontFamily: "sans-serif", paddingRight: 8}}>
-                    Example:{" "}
-                </span>
-                <select
-                    onChange={(e) => {
-                        const index = parseInt(e.target.value);
-                        const example = examples[index];
-                        const zipper: Editor.Zipper = {
-                            breadcrumbs: [],
-                            row: {
-                                id: example.id,
-                                type: "zrow",
-                                left: [],
-                                selection: [],
-                                right: example.children,
-                                style: {},
-                            },
-                        };
-                        setZipper(zipper);
-                    }}
-                    defaultValue={initialExample}
-                >
-                    <option value={0}>Simple Equation</option>
-                    <option value={1}>Adding Fractions</option>
-                    <option value={2}>All Node Types</option>
-                    <option value={3}>Tall Delimiters</option>
-                    <option value={4}>Nested Fractions</option>
-                    <option value={5}>Matrix</option>
-                </select>
-                <span
-                    style={{
-                        fontFamily: "sans-serif",
-                        paddingRight: 8,
-                        marginLeft: 32,
-                    }}
-                >
-                    Font:{" "}
-                </span>
-                <select
-                    onChange={(e) => setFontIndex(parseInt(e.target.value))}
-                    defaultValue={fontIndex}
-                >
-                    <option value={0}>STIX2</option>
-                    <option value={1}>Latin Modern</option>
-                    <option value={2}>Gyre Bonum</option>
-                    <option value={3}>Gyre Pagella</option>
-                    <option value={4}>Gyre Schola</option>
-                    <option value={5}>Gyre Termes</option>
-                </select>
-                <span
-                    style={{
-                        fontFamily: "sans-serif",
-                        paddingRight: 8,
-                        marginLeft: 32,
-                    }}
-                >
-                    Radical Degree Algorithm:{" "}
-                </span>
-                <select
-                    onChange={(e) =>
-                        setRadicalDegreeAlgorithm(parseInt(e.target.value))
-                    }
-                    defaultValue={RadicalDegreeAlgorithm.OpenType}
-                >
-                    <option value={RadicalDegreeAlgorithm.OpenType}>
-                        OpenType
-                    </option>
-                    <option value={RadicalDegreeAlgorithm.MathML}>
-                        MathML/Word
-                    </option>
-                </select>
-                <span
-                    style={{
-                        fontFamily: "sans-serif",
-                        paddingRight: 8,
-                        marginLeft: 32,
-                    }}
-                >
-                    Show Hitboxes
-                </span>
-                <input
-                    type="checkbox"
-                    onChange={(e) => setShowHitboxes(e.target.checked)}
-                ></input>
-            </div>
-            <div style={{position: "fixed", bottom: 0, left: 0}}>
-                <FormattingPalette />
-                {/* <EditingPanel /> */}
-                <div style={{height: 8}} />
-                <MathKeypad />
-            </div>
+            <HStack>
+                <VStack>
+                    <FormattingPalette />
+                    {/* <EditingPanel /> */}
+                    <div style={{height: 8}} />
+                    <MathKeypad />
+                </VStack>
+                <VStack>
+                    <MathEditor
+                        fontSize={fontSize}
+                        readonly={false}
+                        zipper={zipper}
+                        radicalDegreeAlgorithm={radicalDegreeAlgorithm}
+                        showHitboxes={showHitboxes}
+                    />
+                    <br />
+                    <br />
+                    <div
+                        style={{fontFamily: "Bonum-Math", fontSize: fontSize}}
+                    ></div>
+                    <div style={{display: "flex", alignItems: "center"}}>
+                        <span
+                            style={{fontFamily: "sans-serif", paddingRight: 8}}
+                        >
+                            Example:{" "}
+                        </span>
+                        <select
+                            onChange={(e) => {
+                                const index = parseInt(e.target.value);
+                                const example = examples[index];
+                                const zipper: Editor.Zipper = {
+                                    breadcrumbs: [],
+                                    row: {
+                                        id: example.id,
+                                        type: "zrow",
+                                        left: [],
+                                        selection: [],
+                                        right: example.children,
+                                        style: {},
+                                    },
+                                };
+                                setZipper(zipper);
+                            }}
+                            defaultValue={initialExample}
+                        >
+                            <option value={0}>Simple Equation</option>
+                            <option value={1}>Adding Fractions</option>
+                            <option value={2}>All Node Types</option>
+                            <option value={3}>Tall Delimiters</option>
+                            <option value={4}>Nested Fractions</option>
+                            <option value={5}>Matrix</option>
+                        </select>
+                        <span
+                            style={{
+                                fontFamily: "sans-serif",
+                                paddingRight: 8,
+                                marginLeft: 32,
+                            }}
+                        >
+                            Font:{" "}
+                        </span>
+                        <select
+                            onChange={(e) =>
+                                setFontIndex(parseInt(e.target.value))
+                            }
+                            defaultValue={fontIndex}
+                        >
+                            <option value={0}>STIX2</option>
+                            <option value={1}>Latin Modern</option>
+                            <option value={2}>Gyre Bonum</option>
+                            <option value={3}>Gyre Pagella</option>
+                            <option value={4}>Gyre Schola</option>
+                            <option value={5}>Gyre Termes</option>
+                        </select>
+                        <span
+                            style={{
+                                fontFamily: "sans-serif",
+                                paddingRight: 8,
+                                marginLeft: 32,
+                            }}
+                        >
+                            Radical Degree Algorithm:{" "}
+                        </span>
+                        <select
+                            onChange={(e) =>
+                                setRadicalDegreeAlgorithm(
+                                    parseInt(e.target.value),
+                                )
+                            }
+                            defaultValue={RadicalDegreeAlgorithm.OpenType}
+                        >
+                            <option value={RadicalDegreeAlgorithm.OpenType}>
+                                OpenType
+                            </option>
+                            <option value={RadicalDegreeAlgorithm.MathML}>
+                                MathML/Word
+                            </option>
+                        </select>
+                        <span
+                            style={{
+                                fontFamily: "sans-serif",
+                                paddingRight: 8,
+                                marginLeft: 32,
+                            }}
+                        >
+                            Show Hitboxes
+                        </span>
+                        <input
+                            type="checkbox"
+                            onChange={(e) => setShowHitboxes(e.target.checked)}
+                        ></input>
+                    </div>
+                </VStack>
+            </HStack>
         </FontDataContext.Provider>
     );
 };
