@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "main": "./out/index.js",
     "dependencies": {
+        "@math-blocks/core": "0.0.1",
         "@math-blocks/editor": "0.0.1",
         "@math-blocks/grader": "0.0.1",
         "@math-blocks/semantic": "0.0.1",

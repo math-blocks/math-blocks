@@ -3,15 +3,21 @@ import * as React from "react";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
-import {reducer, ProblemStatus, StepStatus} from "@math-blocks/tutor";
+import {
+    createInitialState,
+    reducer,
+    ProblemStatus,
+    StepStatus,
+} from "@math-blocks/tutor";
 
 import {HStack, VStack} from "../layout";
 
 import Step from "./step";
-import {getPairs} from "./util";
-import {initialState} from "./store";
 
 const {useState} = React;
+
+const question: Editor.types.CharRow = Editor.util.row("2x+5=10");
+const initialState = createInitialState(question);
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -128,3 +134,16 @@ const Tutor: React.FunctionComponent = () => {
 };
 
 export default hot(Tutor);
+
+function getPairs<T>(array: readonly T[]): readonly [T, T][] {
+    if (array.length < 2) {
+        return [];
+    }
+
+    const result: [T, T][] = [];
+    for (let i = 0; i < array.length - 1; i++) {
+        result.push([array[i], array[i + 1]]);
+    }
+
+    return result;
+}

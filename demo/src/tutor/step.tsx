@@ -24,6 +24,8 @@ type Dispatch = (action: Action) => void;
 type Props = {
     readonly readonly: boolean;
 
+    // TODO: change this to be just the value of the previous step since
+    // that's all we ever use.
     readonly prevStep: _Step;
     readonly step: _Step;
 
