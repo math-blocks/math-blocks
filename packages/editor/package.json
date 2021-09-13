@@ -11,7 +11,9 @@
     "dependencies": {
         "@math-blocks/core": "^0.0.2",
         "@math-blocks/parser": "^0.0.2",
-        "@math-blocks/semantic": "^0.0.2",
+        "@math-blocks/semantic": "^0.0.2"
+    },
+    "devDependencies": {
         "@math-blocks/testing": "^0.0.2"
     }
 }

@@ -9,6 +9,7 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.2"
+        "@math-blocks/core": "^0.0.2",
+        "fraction.js": "^4.0.12"
     }
 }
