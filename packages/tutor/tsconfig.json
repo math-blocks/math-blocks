@@ -1,15 +1,16 @@
 {
-    "extends": "../tsconfig-base.json",
-    "compilerOptions": {
-      "outDir": "./out",
-      "rootDir": "./src",
-      "tsBuildInfoFile": "../../.buildcache/tutor.tsbuildinfo"
-    },
-    "references": [
-      {"path": "../editor"},
-      {"path": "../grader"},
-      {"path": "../semantic"},
-      {"path": "../step-utils"},
-      {"path": "../testing"}
-    ]
-  }
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./out",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.buildcache/tutor.tsbuildinfo"
+  },
+  "references": [
+    {"path": "../core"},
+    {"path": "../editor"},
+    {"path": "../grader"},
+    {"path": "../semantic"},
+    {"path": "../step-utils"},
+    {"path": "../testing"}
+  ]
+}
