@@ -120,7 +120,7 @@ const Tutor: React.FunctionComponent = () => {
                             // focus={isLast && mode === "solve"}
                             dispatch={dispatch}
                             readonly={!isLast || isComplete}
-                            prevStep={prevStep}
+                            prevValue={prevStep.value}
                             step={step}
                         />
                     );

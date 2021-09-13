@@ -24,9 +24,9 @@ type Dispatch = (action: Action) => void;
 type Props = {
     readonly readonly: boolean;
 
-    // TODO: change this to be just the value of the previous step since
-    // that's all we ever use.
-    readonly prevStep: _Step;
+    // TODO: make this a semantic node instead of a zipper since we're parsing
+    // prevalue in multiple places in this file
+    readonly prevValue: Editor.Zipper;
     readonly step: _Step;
 
     readonly dispatch: Dispatch;
@@ -48,6 +48,7 @@ const MistakeMessages: Record<MistakeId, string> = {
     [MistakeId.DECOMP_MUL]: "decomposition of multiplication is incorrect",
 };
 
+// TODO: move to tutor package
 const highlightMistakes = (
     zipper: Editor.Zipper,
     mistakes: readonly Mistake[],
@@ -116,6 +117,7 @@ const highlightMistakes = (
     return zipper;
 };
 
+// TODO: move to tutor package
 const removeAllColor = (zipper: Editor.Zipper): Editor.Zipper => {
     return Editor.transforms.traverseZipper(
         zipper,
@@ -139,7 +141,7 @@ function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
 }
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {readonly, prevStep, step, dispatch} = props;
+    const {readonly, prevValue, step, dispatch} = props;
 
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
     const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
@@ -154,7 +156,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const handleCheckStep = React.useCallback(
         (zipperForMathEditor: Editor.Zipper): boolean => {
             const zipper = removeAllColor(zipperForMathEditor);
-            const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+            const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
             const parsedNext = Editor.parse(Editor.zipperToRow(zipper));
 
             parsedNextRef.current = parsedNext;
@@ -239,18 +241,18 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
             return false;
         },
-        [dispatch, hint, prevStep.value, step.value],
+        [dispatch, hint, prevValue, step.value],
     );
 
     const handleGetHint = React.useCallback((): void => {
-        const parsedPrev = Editor.parse(Editor.zipperToRow(prevStep.value));
+        const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
         const hint = getHint(parsedPrev, Semantic.builders.identifier("x"));
 
         // NOTE: Some steps will have their own sub-steps which we may want
         // to apply to help students better understand what the hint is doing.
         setHint("text");
         setHintText(hint.message);
-    }, [prevStep.value]);
+    }, [prevValue]);
 
     const handleChange = React.useCallback(
         (zipper: Editor.Zipper): void => {
@@ -263,7 +265,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     const handleShowMe = React.useCallback((): void => {
         // TODO: check that we're solving an equations
         const parsedPrev = Editor.parse(
-            Editor.zipperToRow(prevStep.value),
+            Editor.zipperToRow(prevValue),
         ) as Semantic.types.Eq;
 
         const next = showMeHow(parsedPrev, Semantic.builders.identifier("x"));
@@ -291,7 +293,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             value: zipper,
         });
         handleChange(zipper);
-    }, [dispatch, handleChange, prevStep.value]);
+    }, [dispatch, handleChange, prevValue]);
 
     let buttonsOrIcon = (
         <HStack>
