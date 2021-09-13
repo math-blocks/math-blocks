@@ -1,10 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
 
 import {divBothSides} from "./transforms/div-both-sides";
 import {mulBothSides} from "./transforms/mul-both-sides";
 import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
+
+import type {Step} from "../types";
 import type {Transform} from "./types";
 
 const {NodeType} = Semantic;

@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Transform} from "../types";
+import type {Transform} from "../types";
 
 const {NodeType} = Semantic;
 

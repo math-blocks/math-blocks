@@ -2,10 +2,8 @@ import * as React from "react";
 
 import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor";
-import * as Grader from "@math-blocks/grader";
 import {MathEditor} from "@math-blocks/react";
 import * as Semantic from "@math-blocks/semantic";
-import * as Solver from "@math-blocks/solver";
 import * as Tutor from "@math-blocks/tutor";
 
 import {HStack, VStack} from "../layout";
@@ -49,7 +47,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
             parsedNextRef.current = parsedNext;
 
-            const {result, mistakes} = Grader.checkStep(parsedPrev, parsedNext);
+            const {result, mistakes} = Tutor.checkStep(parsedPrev, parsedNext);
 
             if (result) {
                 // Clear any color highlights from a previously incorrect step
@@ -138,7 +136,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleGetHint = React.useCallback((): void => {
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
-        const hint = Solver.getHint(
+        const hint = Tutor.getHint(
             parsedPrev,
             Semantic.builders.identifier("x"),
         );
@@ -163,7 +161,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             Editor.zipperToRow(prevValue),
         ) as Semantic.types.Eq;
 
-        const next = Solver.showMeHow(
+        const next = Tutor.showMeHow(
             parsedPrev,
             Semantic.builders.identifier("x"),
         );
@@ -241,7 +239,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    const correctMistake = (mistake: Grader.Mistake): void => {
+    const correctMistake = (mistake: Tutor.Mistake): void => {
         if (parsedNextRef.current) {
             for (const correction of mistake.corrections) {
                 // TODO: return a new tree instead of mutating in place.
@@ -249,7 +247,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 // will be replaced with a newly parsed object next time we
                 // press submit.
                 // TODO: refactor this to be applyCorrection(node, correction);
-                Grader.replaceNodeWithId(
+                Tutor.replaceNodeWithId(
                     parsedNextRef.current,
                     correction.id,
                     correction.replacement,

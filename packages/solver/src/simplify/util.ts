@@ -1,5 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+
+import type {Step} from "../types";
 
 const {NodeType} = Semantic;
 

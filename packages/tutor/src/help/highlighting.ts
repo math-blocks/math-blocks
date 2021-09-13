@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import type {Mistake} from "@math-blocks/grader";
+import type {Mistake} from "../grader/index";
 
 export const highlightMistakes = (
     zipper: Editor.Zipper,

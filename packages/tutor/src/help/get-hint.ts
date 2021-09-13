@@ -1,8 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import type {Step} from "@math-blocks/step-utils";
-
-import {simplify} from "./simplify/simplify";
-import {solve} from "./solve/solve";
+import * as Solver from "@math-blocks/solver";
 
 // NOTE: Some steps will have their own sub-steps which we may want
 // to apply to help students better understand what the hint is doing.
@@ -10,9 +7,9 @@ import {solve} from "./solve/solve";
 export const getHint = (
     ast: Semantic.types.Node,
     identifier: Semantic.types.Identifier,
-): Step => {
+): Solver.Step => {
     if (ast.type === Semantic.NodeType.Equals) {
-        const solution = solve(ast, identifier);
+        const solution = Solver.solve(ast, identifier);
 
         if (solution && solution.substeps.length > 0) {
             // Grab the first step of the solution and apply it to the previous
@@ -20,7 +17,7 @@ export const getHint = (
             return solution.substeps[0];
         }
     } else {
-        const solution = simplify(ast, []);
+        const solution = Solver.simplify(ast, []);
 
         if (solution && solution.substeps.length > 0) {
             // Grab the first step of the solution and apply it to the previous

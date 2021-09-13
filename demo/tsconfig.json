@@ -8,12 +8,10 @@
   "references": [
     {"path": "../packages/core"},
     {"path": "../packages/editor"},
-    {"path": "../packages/grader"},
     {"path": "../packages/opentype"},
     {"path": "../packages/react"},
     {"path": "../packages/semantic"},
     {"path": "../packages/solver"},
-    {"path": "../packages/step-utils"},
     {"path": "../packages/tutor"}
   ]
 }

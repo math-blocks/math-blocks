@@ -1,19 +1,19 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor";
-import {MathRenderer, FontDataContext} from "@math-blocks/react";
-import {types} from "@math-blocks/semantic";
-import {Step, applyStep} from "@math-blocks/step-utils";
+import * as Semantic from "@math-blocks/semantic";
+import * as Solver from "@math-blocks/solver";
 import * as Typesetter from "@math-blocks/typesetter";
+import {MathRenderer, FontDataContext} from "@math-blocks/react";
 
 type Props = {
     // Prefix to start numbering from, e.g. 1.2.3
     readonly prefix?: string;
 
     // The starting expression to render the substeps from `step` with.
-    readonly start: types.Node;
+    readonly start: Semantic.types.Node;
 
-    readonly step: Step;
+    readonly step: Solver.Step;
 };
 
 const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
@@ -36,7 +36,7 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
             {step.substeps.map((substep, index) => {
                 const before = current;
 
-                const after = applyStep(before, substep);
+                const after = Solver.applyStep(before, substep);
                 const afterRow = Editor.print(after);
                 const afterScene = Typesetter.typeset(afterRow, context);
 

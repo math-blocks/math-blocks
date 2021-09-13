@@ -5,9 +5,8 @@
     "dependencies": {
         "@math-blocks/core": "0.0.1",
         "@math-blocks/editor": "0.0.1",
-        "@math-blocks/grader": "0.0.1",
         "@math-blocks/semantic": "0.0.1",
-        "@math-blocks/step-utils": "0.0.1",
+        "@math-blocks/solver": "0.0.1",
         "@math-blocks/testing": "0.0.1"
     }
 }

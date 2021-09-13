@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import {ProblemStatus, StepStatus} from "..";
+import {ProblemStatus, StepStatus} from "../..";
 
 import {createInitialState} from "../create-initial-state";
 

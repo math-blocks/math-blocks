@@ -1,6 +1,8 @@
-import {MistakeId} from "@math-blocks/grader";
+import * as Tutor from "@math-blocks/tutor";
 
-export const MistakeMessages: Record<MistakeId, string> = {
+const {MistakeId} = Tutor;
+
+export const MistakeMessages: Record<Tutor.MistakeId, string> = {
     [MistakeId.EQN_ADD_DIFF]: "different values were added to both sides",
     [MistakeId.EQN_MUL_DIFF]: "different values were multiplied on both sides",
     [MistakeId.EXPR_ADD_NON_IDENTITY]:

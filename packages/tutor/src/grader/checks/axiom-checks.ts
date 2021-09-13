@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step, applySteps} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Result, Check} from "../types";
 import {MistakeId} from "../enums";
@@ -23,7 +23,7 @@ export const addZero: Check = (prev, next, context) => {
     // Check that each new term is equivalent to zero
     const identity = Semantic.builders.number("0");
 
-    const identitySteps: Step[] = [];
+    const identitySteps: Solver.Step[] = [];
     const nonIdentityArgs: Semantic.types.NumericNode[] = [];
 
     const newNextArgs = next.args.map((arg) => {
@@ -132,7 +132,7 @@ export const mulOne: Check = (prev, next, context) => {
 
     const identity = Semantic.builders.number("1");
 
-    const identitySteps: Step[] = [];
+    const identitySteps: Solver.Step[] = [];
     const nonIdentityArgs: Semantic.types.NumericNode[] = [];
 
     const newNextArgs = next.args.map((arg) => {
@@ -237,7 +237,7 @@ export const mulByZero: Check = (prev, next, context) => {
         return;
     }
 
-    const identitySteps: Step[] = [];
+    const identitySteps: Solver.Step[] = [];
 
     // It's sufficient to find only one zero since mutliplying one zero is
     // enough to turn the whole product to zero.
@@ -300,7 +300,7 @@ export const commuteAddition: Check = (prev, next, context) => {
             return !result;
         });
 
-        const newPrev = applySteps(prev, result1.steps);
+        const newPrev = Solver.applySteps(prev, result1.steps);
 
         if (reordered && result1) {
             // No need to run checkStep(newPrev, next) since we already know
@@ -359,7 +359,7 @@ export const commuteMultiplication: Check = (prev, next, context) => {
                 }),
         );
 
-        const newPrev = applySteps(prev, result1.steps);
+        const newPrev = Solver.applySteps(prev, result1.steps);
 
         if (reordered && result1) {
             // No need to run checkStep(newPrev, next) since we already know
@@ -446,7 +446,7 @@ export const symmetricProperty: Check = (
             const result = checkArgs(prev, next, context);
 
             if (result) {
-                const newNext = applySteps(next, result.steps);
+                const newNext = Solver.applySteps(next, result.steps);
                 return {
                     steps: [
                         ...result.steps,

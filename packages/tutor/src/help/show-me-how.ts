@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {applyStep} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import {getHint} from "./get-hint";
 
@@ -9,5 +9,5 @@ export const showMeHow = (
 ): Semantic.types.Node => {
     const hint = getHint(ast, identifier);
 
-    return applyStep(ast, hint);
+    return Solver.applyStep(ast, hint);
 };

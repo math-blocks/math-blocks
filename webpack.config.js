@@ -64,10 +64,6 @@ module.exports = {
                 __dirname,
                 "./packages/editor/src",
             ),
-            "@math-blocks/grader": path.join(
-                __dirname,
-                "./packages/grader/src",
-            ),
             "@math-blocks/opentype": path.join(
                 __dirname,
                 "./packages/opentype/src",
@@ -85,14 +81,11 @@ module.exports = {
                 __dirname,
                 "./packages/solver/src",
             ),
-            "@math-blocks/step-utils": path.join(
-                __dirname,
-                "./packages/step-utils/src",
-            ),
             "@math-blocks/testing": path.join(
                 __dirname,
                 "./packages/testing/src",
             ),
+            "@math-blocks/tutor": path.join(__dirname, "./packages/tutor/src"),
             "@math-blocks/typesetter": path.join(
                 __dirname,
                 "./packages/typesetter/src",

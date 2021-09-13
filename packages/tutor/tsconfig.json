@@ -8,9 +8,8 @@
   "references": [
     {"path": "../core"},
     {"path": "../editor"},
-    {"path": "../grader"},
     {"path": "../semantic"},
-    {"path": "../step-utils"},
+    {"path": "../solver"},
     {"path": "../testing"}
   ]
 }

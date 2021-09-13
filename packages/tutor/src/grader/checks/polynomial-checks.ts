@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Check, Result} from "../types";
 
@@ -32,7 +32,7 @@ export const collectLikeTerms: Check = (
     const newTerms: Semantic.types.NumericNode[] = [];
     const numberTerms: Semantic.types.NumericNode[] = [];
 
-    const beforeSteps: Step[] = [];
+    const beforeSteps: Solver.Step[] = [];
 
     for (const arg of prev.args) {
         const factors = Semantic.util.getFactors(arg);

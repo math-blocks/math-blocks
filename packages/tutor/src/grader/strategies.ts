@@ -8,20 +8,18 @@ import type {Check, Result, Context} from "./types";
  * @param {readonly Check[]} checks
  * @returns {Check}
  */
-export const first = (checks: readonly Check[]): Check => (
-    prev,
-    next,
-    context,
-) => {
-    for (const check of checks) {
-        const result = runCheck(check, prev, next, context);
-        if (result) {
-            return result;
+export const first =
+    (checks: readonly Check[]): Check =>
+    (prev, next, context) => {
+        for (const check of checks) {
+            const result = runCheck(check, prev, next, context);
+            if (result) {
+                return result;
+            }
         }
-    }
 
-    return;
-};
+        return;
+    };
 
 /**
  * Returns a Check that runs all checks and returns the shortest result.
@@ -29,29 +27,27 @@ export const first = (checks: readonly Check[]): Check => (
  * @param {readonly Check[]} checks
  * @returns {Check}
  */
-export const shortest = (checks: readonly Check[]): Check => (
-    prev,
-    next,
-    context,
-) => {
-    const results: readonly Result[] = checks
-        .map((check) => runCheck(check, prev, next, context))
-        .filter(notUndefined);
+export const shortest =
+    (checks: readonly Check[]): Check =>
+    (prev, next, context) => {
+        const results: readonly Result[] = checks
+            .map((check) => runCheck(check, prev, next, context))
+            .filter(notUndefined);
 
-    if (results.length === 0) {
-        return;
-    }
-
-    let shortestResult = results[0];
-    for (let i = 1; i < results.length; i++) {
-        const result = results[i];
-        if (result.steps.length < shortestResult.steps.length) {
-            shortestResult = result;
+        if (results.length === 0) {
+            return;
         }
-    }
 
-    return shortestResult;
-};
+        let shortestResult = results[0];
+        for (let i = 1; i < results.length; i++) {
+            const result = results[i];
+            if (result.steps.length < shortestResult.steps.length) {
+                shortestResult = result;
+            }
+        }
+
+        return shortestResult;
+    };
 
 function notUndefined<T>(x: T | undefined): x is T {
     return x !== undefined;
