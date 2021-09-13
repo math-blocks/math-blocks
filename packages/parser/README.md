@@ -1,4 +1,4 @@
-# @math-blocks/parser-factory
+# @math-blocks/parser
 
 `parserFactory` can be used to generate TDOP/Pratt parsers.  The reason for using
 this style of parsing is that it's much easier to change the precedence and add

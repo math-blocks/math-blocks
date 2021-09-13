@@ -31,4 +31,4 @@ const output =
         })
         .join("\n");
 
-fs.writeFileSync("packages/parser-factory/src/types.ts", output);
+fs.writeFileSync("packages/parser/src/types.ts", output);

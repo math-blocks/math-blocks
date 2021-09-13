@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./out",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.buildcache/parser-factory.tsbuildinfo"
+    "tsBuildInfoFile": "../../.buildcache/parser.tsbuildinfo"
   },
   "references": [
     {"path": "../core"},
