@@ -68,9 +68,9 @@ module.exports = {
                 __dirname,
                 "./packages/opentype/src",
             ),
-            "@math-blocks/parser-factory": path.join(
+            "@math-blocks/parser": path.join(
                 __dirname,
-                "./packages/parser-factory/src",
+                "./packages/parser/src",
             ),
             "@math-blocks/react": path.join(__dirname, "./packages/react/src"),
             "@math-blocks/semantic": path.join(

@@ -573,7 +573,7 @@ export type Reals = Common<NodeType.Reals>;
  */
 export type Complexes = Common<NodeType.Complexes>;
 
-// TODO: dedupe with editor and parser-factory
+// TODO: dedupe with editor and parser
 export interface SourceLocation {
     readonly path: readonly number[];
     readonly start: number;

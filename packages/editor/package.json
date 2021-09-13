@@ -4,7 +4,7 @@
     "main": "./out/index.js",
     "dependencies": {
         "@math-blocks/core": "0.0.1",
-        "@math-blocks/parser-factory": "0.0.1",
+        "@math-blocks/parser": "0.0.1",
         "@math-blocks/semantic": "0.0.1",
         "@math-blocks/testing": "0.0.1"
     }

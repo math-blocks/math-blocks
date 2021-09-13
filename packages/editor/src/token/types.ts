@@ -1,4 +1,4 @@
-// TODO: dedupe with parser-factory and semantic
+// TODO: dedupe with parser and semantic
 export type SourceLocation = {
     readonly path: readonly number[];
     readonly start: number;

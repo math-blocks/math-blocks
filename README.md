@@ -56,7 +56,7 @@ Provides a bunch of related parts for building interactive math editors.
 
 Library for parsing OpenType font files that contain a MATH table.
 
-### [@math-blocks/parser-factory](packages/parser-factory/README.md)
+### [@math-blocks/parser](packages/parser/README.md)
 
 Defines a `parserFactory` function is used by `@math-blocks/testing` and
 `@math-blocks/editor-parser` to define Pratt (top-down precedence) parsers.  It
@@ -66,7 +66,7 @@ constructing nodes in the output of each parser.
 ### [@math-blocks/semantic](packages/semantic/README.md)
 
 Provides `types`, `builders`, and `utils` for working with semantic nodes.  The
-`types` are almost the same as those from `@math-block/parser-factory`, but are
+`types` are almost the same as those from `@math-block/parser`, but are
 more constrained to avoid invalid semantic trees.
 
 ### [@math-blocks/testing](packages/typesetter/README.md)

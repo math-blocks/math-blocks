@@ -7,7 +7,7 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../parser-factory"},
+    {"path": "../parser"},
     {"path": "../semantic"}
   ]
 }

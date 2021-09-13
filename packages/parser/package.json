@@ -1,5 +1,5 @@
 {
-    "name": "@math-blocks/parser-factory",
+    "name": "@math-blocks/parser",
     "version": "0.0.1",
     "main": "./out/index.js",
     "dependencies": {
