@@ -1,7 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-import {Step, applySteps} from "@math-blocks/step-utils";
 
+import {applySteps} from "../../../apply";
+import type {Step} from "../../../types";
 import {distribute as _distribute} from "../distribute";
 
 import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";

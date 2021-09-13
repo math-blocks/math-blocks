@@ -1,10 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import {MistakeId} from "./enums";
 
 export type Result = {
-    readonly steps: readonly Step[];
+    readonly steps: readonly Solver.Step[];
 };
 
 export type Correction = {
@@ -25,7 +25,7 @@ export type Mistake = {
 };
 
 export type Context = {
-    readonly steps: readonly Step[];
+    readonly steps: readonly Solver.Step[];
     readonly checker: IStepChecker;
 
     // Tracks whether we're currently reversed or not, see `runChecks` in

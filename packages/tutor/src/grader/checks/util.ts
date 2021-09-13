@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step, applySteps} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Context, Result} from "../types";
 
@@ -140,14 +140,14 @@ export const correctResult = (
     prev: Semantic.types.Node,
     next: Semantic.types.Node,
     reversed: boolean,
-    beforeSteps: readonly Step[],
-    afterSteps: readonly Step[],
+    beforeSteps: readonly Solver.Step[],
+    afterSteps: readonly Solver.Step[],
     forwardMessage: string,
     reverseMessage: string = forwardMessage,
 ): Result => {
     const newPrev = beforeSteps
         ? reversed
-            ? applySteps(
+            ? Solver.applySteps(
                   prev,
                   beforeSteps.map((step) => {
                       return {
@@ -159,7 +159,7 @@ export const correctResult = (
                       };
                   }),
               )
-            : applySteps(prev, beforeSteps)
+            : Solver.applySteps(prev, beforeSteps)
         : prev;
 
     // TODO: figure out why afterSteps.reverse() and beforeSteps.reverse()

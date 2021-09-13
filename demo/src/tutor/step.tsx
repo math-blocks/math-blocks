@@ -2,10 +2,8 @@ import * as React from "react";
 
 import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor";
-import * as Grader from "@math-blocks/grader";
 import {MathEditor} from "@math-blocks/react";
 import * as Semantic from "@math-blocks/semantic";
-import * as Solver from "@math-blocks/solver";
 import * as Tutor from "@math-blocks/tutor";
 
 import {HStack, VStack} from "../layout";
@@ -14,6 +12,7 @@ import Icon from "./icon";
 import {MistakeMessages} from "./mistake-messages";
 
 const {NodeType} = Semantic;
+const {Grader} = Tutor;
 
 type Dispatch = (action: Tutor.Action) => void;
 
@@ -138,7 +137,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleGetHint = React.useCallback((): void => {
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
-        const hint = Solver.getHint(
+        const hint = Tutor.getHint(
             parsedPrev,
             Semantic.builders.identifier("x"),
         );
@@ -163,7 +162,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
             Editor.zipperToRow(prevValue),
         ) as Semantic.types.Eq;
 
-        const next = Solver.showMeHow(
+        const next = Tutor.showMeHow(
             parsedPrev,
             Semantic.builders.identifier("x"),
         );
@@ -241,7 +240,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    const correctMistake = (mistake: Grader.Mistake): void => {
+    const correctMistake = (mistake: Tutor.Grader.Mistake): void => {
         if (parsedNextRef.current) {
             for (const correction of mistake.corrections) {
                 // TODO: return a new tree instead of mutating in place.

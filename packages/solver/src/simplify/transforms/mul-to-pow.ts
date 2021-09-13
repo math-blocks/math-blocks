@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Transform} from "../types";
+import type {Transform} from "../types";
 
 export const mulToPow: Transform = (node) => {
     if (!Semantic.util.isNumeric(node)) {

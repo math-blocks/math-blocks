@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import {Step} from "../types";
 
 export type Transform = (
     node: Semantic.types.Eq,

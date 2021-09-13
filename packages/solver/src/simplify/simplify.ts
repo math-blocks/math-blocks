@@ -1,7 +1,7 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
 
-import {Transform} from "./types";
+import type {Step} from "../types";
+import type {Transform} from "./types";
 
 import {addNegToSub} from "./transforms/add-neg-to-sub";
 import {dropParens} from "./transforms/drop-parens";

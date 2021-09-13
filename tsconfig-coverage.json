@@ -3,7 +3,6 @@
     {"path": "./demo"},
     {"path": "./packages/core"},
     {"path": "./packages/editor"},
-    {"path": "./packages/grader"},
     {"path": "./packages/opentype"},
     {"path": "./packages/parser-factory"},
     {"path": "./packages/react"},

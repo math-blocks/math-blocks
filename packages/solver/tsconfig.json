@@ -6,8 +6,8 @@
       "tsBuildInfoFile": "../../.buildcache/solver.tsbuildinfo"
     },
     "references": [
+      {"path": "../core"},
       {"path": "../semantic"},
-      {"path": "../step-utils"},
       {"path": "../testing"}
     ]
   }

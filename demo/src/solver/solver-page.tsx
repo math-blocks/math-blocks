@@ -1,11 +1,10 @@
 import * as React from "react";
 
 import * as Editor from "@math-blocks/editor";
-import {MathEditor, MathRenderer, FontDataContext} from "@math-blocks/react";
-import {builders, NodeType} from "@math-blocks/semantic";
-import {simplify, solve} from "@math-blocks/solver";
-import {Step} from "@math-blocks/step-utils";
+import * as Semantic from "@math-blocks/semantic";
+import * as Solver from "@math-blocks/solver";
 import * as Typesetter from "@math-blocks/typesetter";
+import {MathEditor, MathRenderer, FontDataContext} from "@math-blocks/react";
 import {getFontData, parse} from "@math-blocks/opentype";
 import type {Font} from "@math-blocks/opentype";
 
@@ -36,12 +35,12 @@ const SolverPage: React.FunctionComponent = () => {
     const [solution, setSolution] = React.useState<Editor.types.CharRow | null>(
         null,
     );
-    const [step, setStep] = React.useState<Step | null>(null);
+    const [step, setStep] = React.useState<Solver.Step | null>(null);
 
     const handleSimplify = (): void => {
         console.log("SIMPLIFY");
         const ast = Editor.parse(Editor.zipperToRow(input));
-        const result = simplify(ast, []);
+        const result = Solver.simplify(ast, []);
         if (result) {
             console.log(result);
             const solution = Editor.print(result.after);
@@ -56,8 +55,8 @@ const SolverPage: React.FunctionComponent = () => {
     const handleSolve = (): void => {
         console.log("SOLVE");
         const ast = Editor.parse(Editor.zipperToRow(input));
-        if (ast.type === NodeType.Equals) {
-            const result = solve(ast, builders.identifier("x"));
+        if (ast.type === Semantic.NodeType.Equals) {
+            const result = Solver.solve(ast, Semantic.builders.identifier("x"));
             if (result) {
                 console.log(result);
                 const solution = Editor.print(result.after);

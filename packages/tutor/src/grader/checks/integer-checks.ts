@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Result, Check} from "../types";
 
@@ -21,7 +21,7 @@ export const addInverse: Check = (prev, next, context): Result | undefined => {
 
     const indicesToRemove: number[] = [];
     const terms = Semantic.util.getTerms(prev);
-    const beforeSteps: Step[] = [];
+    const beforeSteps: Solver.Step[] = [];
 
     // TODO: extract this code into a helper so that we can test it better
     for (let i = 0; i < terms.length; i++) {

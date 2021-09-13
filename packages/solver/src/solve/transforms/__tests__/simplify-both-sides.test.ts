@@ -1,8 +1,9 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-import {Step} from "@math-blocks/step-utils";
 
 import {simplifyBothSides} from "../simplify-both-sides";
+
+import type {Step} from "../../../types";
 
 const parseEq = (input: string): Semantic.types.Eq => {
     return Testing.parse(input) as Semantic.types.Eq;

@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import {Step} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Check, Result} from "../types";
 
@@ -319,10 +319,10 @@ export const mulPowsSameBase: Check = (
 
     if (result2) {
         // TODO: dedupe with logic in correctResult
-        const steps: Step[] = context.reversed
+        const steps: Solver.Step[] = context.reversed
             ? [
                   ...result2.steps,
-                  ...evaluatedNodes.map<Step>((nodes) => ({
+                  ...evaluatedNodes.map<Solver.Step>((nodes) => ({
                       message: "decompose sum",
                       before: nodes[0],
                       after: nodes[1],
@@ -330,7 +330,7 @@ export const mulPowsSameBase: Check = (
                   })),
               ]
             : [
-                  ...evaluatedNodes.map<Step>((nodes) => ({
+                  ...evaluatedNodes.map<Solver.Step>((nodes) => ({
                       message: "evaluate sum",
                       before: nodes[0],
                       after: nodes[1],
@@ -410,7 +410,7 @@ export const divPowsSameBase: Check = (
 
             if (result2) {
                 // TODO: dedupe with logic in correctResult
-                const steps: Step[] = context.reversed
+                const steps: Solver.Step[] = context.reversed
                     ? [
                           ...result2.steps,
                           {

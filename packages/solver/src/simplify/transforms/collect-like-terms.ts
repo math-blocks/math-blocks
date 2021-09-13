@@ -1,11 +1,11 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-import {Step} from "@math-blocks/step-utils";
 
 import {Transform} from "../types";
 import {simplifyMul} from "../util";
-
 import {getCoeff} from "../../solve/util";
+
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 

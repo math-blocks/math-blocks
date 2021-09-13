@@ -1,9 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
-import {applySteps, applyStep, Step} from "@math-blocks/step-utils";
 
 import {simplify as _simplify} from "../simplify";
 
+import {applyStep, applySteps} from "../../apply";
+import type {Step} from "../../types";
 import {toHaveFullStepsLike} from "../../test-util";
 
 expect.extend({toHaveFullStepsLike});

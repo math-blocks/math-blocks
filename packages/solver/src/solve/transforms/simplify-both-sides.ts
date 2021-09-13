@@ -1,7 +1,8 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {Transform} from "../types";
 import {simplify} from "../../simplify/simplify";
+
+import type {Transform} from "../types";
 
 export const simplifyBothSides: Transform = (before, ident) => {
     const args = before.args as TwoOrMore<Semantic.types.NumericNode>;

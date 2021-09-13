@@ -1,5 +1,5 @@
 import * as Editor from "@math-blocks/editor";
-import {Mistake} from "@math-blocks/grader";
+import {Mistake} from "../grader/index";
 
 // TODO: add an 'Error' status
 export enum StepStatus {

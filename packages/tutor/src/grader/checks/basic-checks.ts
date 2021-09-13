@@ -1,5 +1,5 @@
 import * as Semantic from "@math-blocks/semantic";
-import type {Step} from "@math-blocks/step-utils";
+import * as Solver from "@math-blocks/solver";
 
 import type {Check, Result, Mistake, Context} from "../types";
 
@@ -55,7 +55,7 @@ export const checkArgs: Check = (prev, next, context): Result | undefined => {
         Semantic.util.hasArgs(prev) &&
         Semantic.util.hasArgs(next)
     ) {
-        const steps: Step[] = [];
+        const steps: Solver.Step[] = [];
         if (prev.args.length !== next.args.length) {
             return;
         }
