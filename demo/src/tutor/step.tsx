@@ -12,7 +12,6 @@ import Icon from "./icon";
 import {MistakeMessages} from "./mistake-messages";
 
 const {NodeType} = Semantic;
-const {Grader} = Tutor;
 
 type Dispatch = (action: Tutor.Action) => void;
 
@@ -48,7 +47,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
             parsedNextRef.current = parsedNext;
 
-            const {result, mistakes} = Grader.checkStep(parsedPrev, parsedNext);
+            const {result, mistakes} = Tutor.checkStep(parsedPrev, parsedNext);
 
             if (result) {
                 // Clear any color highlights from a previously incorrect step
@@ -240,7 +239,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    const correctMistake = (mistake: Tutor.Grader.Mistake): void => {
+    const correctMistake = (mistake: Tutor.Mistake): void => {
         if (parsedNextRef.current) {
             for (const correction of mistake.corrections) {
                 // TODO: return a new tree instead of mutating in place.
@@ -248,7 +247,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 // will be replaced with a newly parsed object next time we
                 // press submit.
                 // TODO: refactor this to be applyCorrection(node, correction);
-                Grader.replaceNodeWithId(
+                Tutor.replaceNodeWithId(
                     parsedNextRef.current,
                     correction.id,
                     correction.replacement,

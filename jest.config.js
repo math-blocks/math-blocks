@@ -14,7 +14,7 @@ module.exports = {
         "/node_modules/",
         "/stories/",
         "\\.d\\.ts",
-        "**/test-util.ts",
+        "\\/test-util\\.ts$",
     ],
     setupFilesAfterEnv: ["./jest.setup.js"],
 };

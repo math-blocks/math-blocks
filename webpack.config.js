@@ -85,10 +85,7 @@ module.exports = {
                 __dirname,
                 "./packages/testing/src",
             ),
-            "@math-blocks/tutor": path.join(
-                __dirname,
-                "./packages/tutor/src",
-            ),
+            "@math-blocks/tutor": path.join(__dirname, "./packages/tutor/src"),
             "@math-blocks/typesetter": path.join(
                 __dirname,
                 "./packages/typesetter/src",

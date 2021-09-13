@@ -1,5 +1,4 @@
-export * as Grader from "./grader/index";
-
+export * from "./grader/index";
 export * from "./help/highlighting";
 export {getHint} from "./help/get-hint";
 export {showMeHow} from "./help/show-me-how";
