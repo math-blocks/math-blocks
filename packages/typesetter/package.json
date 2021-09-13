@@ -2,6 +2,7 @@
     "name": "@math-blocks/typesetter",
     "version": "0.0.1",
     "main": "./out/index.js",
+    "files": ["out"],
     "dependencies": {
         "@math-blocks/core": "0.0.1",
         "@math-blocks/editor": "0.0.1",
