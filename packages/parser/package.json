@@ -2,9 +2,11 @@
     "name": "@math-blocks/parser",
     "version": "0.0.1",
     "main": "./out/index.js",
-    "files": ["out"],
+    "files": [
+        "out"
+    ],
     "dependencies": {
-        "@math-blocks/core": "0.0.1",
-        "@math-blocks/semantic": "0.0.1"
+        "@math-blocks/core": "^0.0.1",
+        "@math-blocks/semantic": "^0.0.1"
     }
 }
