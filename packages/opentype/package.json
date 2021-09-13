@@ -4,5 +4,8 @@
     "main": "./out/index.js",
     "files": [
         "out"
-    ]
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
 }
