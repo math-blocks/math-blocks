@@ -76,7 +76,7 @@
   },
   "scripts": {
     "codechecks": "codechecks",
-    "typecheck": "tsc -b -v tsconfig.json",
+    "build-modules": "tsc -b -v tsconfig.json",
     "type-coverage": "type-coverage",
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
@@ -97,6 +97,7 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "fraction.js": "^4.0.12",
+    "lerna": "^4.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.1.2"
