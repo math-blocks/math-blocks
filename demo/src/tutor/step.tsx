@@ -2,24 +2,20 @@ import * as React from "react";
 
 import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor";
+import * as Grader from "@math-blocks/grader";
 import {MathEditor} from "@math-blocks/react";
-import {
-    MistakeId,
-    Mistake,
-    checkStep,
-    replaceNodeWithId,
-} from "@math-blocks/grader";
 import * as Semantic from "@math-blocks/semantic";
-import {getHint, showMeHow} from "@math-blocks/solver";
-import {Step as _Step, StepStatus, Action} from "@math-blocks/tutor";
+import * as Solver from "@math-blocks/solver";
+import * as Tutor from "@math-blocks/tutor";
 
 import {HStack, VStack} from "../layout";
 
 import Icon from "./icon";
+import {MistakeMessages} from "./mistake-messages";
 
 const {NodeType} = Semantic;
 
-type Dispatch = (action: Action) => void;
+type Dispatch = (action: Tutor.Action) => void;
 
 type Props = {
     readonly readonly: boolean;
@@ -27,118 +23,10 @@ type Props = {
     // TODO: make this a semantic node instead of a zipper since we're parsing
     // prevalue in multiple places in this file
     readonly prevValue: Editor.Zipper;
-    readonly step: _Step;
+    readonly step: Tutor.Step;
 
     readonly dispatch: Dispatch;
 };
-
-const MistakeMessages: Record<MistakeId, string> = {
-    [MistakeId.EQN_ADD_DIFF]: "different values were added to both sides",
-    [MistakeId.EQN_MUL_DIFF]: "different values were multiplied on both sides",
-    [MistakeId.EXPR_ADD_NON_IDENTITY]:
-        "adding a non-identity valid is not allowed",
-    [MistakeId.EXPR_MUL_NON_IDENTITY]:
-        "multiplying a non-identity value is not allowed",
-
-    // TODO: handle subtraction
-    [MistakeId.EVAL_ADD]: "addition is incorrect",
-    // TODO: handle division
-    [MistakeId.EVAL_MUL]: "multiplication is incorrect",
-    [MistakeId.DECOMP_ADD]: "decomposition of addition is incorrect",
-    [MistakeId.DECOMP_MUL]: "decomposition of multiplication is incorrect",
-};
-
-// TODO: move to tutor package
-const highlightMistakes = (
-    zipper: Editor.Zipper,
-    mistakes: readonly Mistake[],
-    color: string,
-): Editor.Zipper => {
-    console.log("highlightMistakes");
-    for (const mistake of mistakes) {
-        let insideMistake = false;
-        console.log(mistake);
-
-        zipper = Editor.transforms.traverseZipper(
-            zipper,
-            {
-                enter(node, path) {
-                    if (path.length === 0) {
-                        return;
-                    }
-
-                    for (const nextNode of mistake.nextNodes) {
-                        const loc = nextNode.loc;
-                        if (!loc) {
-                            continue;
-                        }
-                        for (let i = loc.start; i < loc.end; i++) {
-                            const nextNodePath = [...loc.path, i];
-                            if (arrayEq(nextNodePath, path)) {
-                                console.log("entering mistake");
-                                insideMistake = true;
-                                break;
-                            }
-                        }
-                    }
-                },
-                exit(node, path) {
-                    const highlight = insideMistake;
-
-                    for (const nextNode of mistake.nextNodes) {
-                        const loc = nextNode.loc;
-                        if (!loc) {
-                            continue;
-                        }
-                        for (let i = loc.start; i < loc.end; i++) {
-                            const nextNodePath = [...loc.path, i];
-                            if (arrayEq(nextNodePath, path)) {
-                                console.log("leaving mistake");
-                                insideMistake = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (highlight) {
-                        return {
-                            ...node,
-                            style: {
-                                ...node.style,
-                                color: color,
-                            },
-                        };
-                    }
-                },
-            },
-            [],
-        );
-    }
-    return zipper;
-};
-
-// TODO: move to tutor package
-const removeAllColor = (zipper: Editor.Zipper): Editor.Zipper => {
-    return Editor.transforms.traverseZipper(
-        zipper,
-        {
-            exit(node) {
-                if (node.style.color) {
-                    const {color, ...restStyle} = node.style;
-                    return {
-                        ...node,
-                        style: restStyle,
-                    };
-                }
-            },
-        },
-        [],
-    );
-};
-
-function arrayEq<T>(a: readonly T[], b: readonly T[]): boolean {
-    return a.length === b.length && a.every((e, i) => e === b[i]);
-}
 
 const Step: React.FunctionComponent<Props> = (props) => {
     const {readonly, prevValue, step, dispatch} = props;
@@ -155,13 +43,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleCheckStep = React.useCallback(
         (zipperForMathEditor: Editor.Zipper): boolean => {
-            const zipper = removeAllColor(zipperForMathEditor);
+            const zipper = Tutor.removeAllColor(zipperForMathEditor);
             const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
             const parsedNext = Editor.parse(Editor.zipperToRow(zipper));
 
             parsedNextRef.current = parsedNext;
 
-            const {result, mistakes} = checkStep(parsedPrev, parsedNext);
+            const {result, mistakes} = Grader.checkStep(parsedPrev, parsedNext);
 
             if (result) {
                 // Clear any color highlights from a previously incorrect step
@@ -235,7 +123,11 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 // mistakes[*].prevNodes.
                 dispatch({
                     type: "update",
-                    value: highlightMistakes(zipper, mistakes, "darkCyan"),
+                    value: Tutor.highlightMistakes(
+                        zipper,
+                        mistakes,
+                        "darkCyan",
+                    ),
                 });
             }
 
@@ -246,7 +138,10 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleGetHint = React.useCallback((): void => {
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
-        const hint = getHint(parsedPrev, Semantic.builders.identifier("x"));
+        const hint = Solver.getHint(
+            parsedPrev,
+            Semantic.builders.identifier("x"),
+        );
 
         // NOTE: Some steps will have their own sub-steps which we may want
         // to apply to help students better understand what the hint is doing.
@@ -268,7 +163,10 @@ const Step: React.FunctionComponent<Props> = (props) => {
             Editor.zipperToRow(prevValue),
         ) as Semantic.types.Eq;
 
-        const next = showMeHow(parsedPrev, Semantic.builders.identifier("x"));
+        const next = Solver.showMeHow(
+            parsedPrev,
+            Semantic.builders.identifier("x"),
+        );
 
         setHint("showme");
         setShowed(true);
@@ -305,7 +203,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     e.preventDefault();
                     e.stopPropagation();
                 }}
-                disabled={step.status !== StepStatus.Pending}
+                disabled={step.status !== Tutor.StepStatus.Pending}
             >
                 Check
             </button>
@@ -324,13 +222,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
         </HStack>
     );
 
-    if (step.status === StepStatus.Incorrect) {
+    if (step.status === Tutor.StepStatus.Incorrect) {
         buttonsOrIcon = (
             <HStack>
                 <Icon name="incorrect" size={48} />
             </HStack>
         );
-    } else if (step.status === StepStatus.Correct) {
+    } else if (step.status === Tutor.StepStatus.Correct) {
         const {hint} = step;
 
         buttonsOrIcon = (
@@ -343,14 +241,15 @@ const Step: React.FunctionComponent<Props> = (props) => {
         );
     }
 
-    const correctMistake = (mistake: Mistake): void => {
+    const correctMistake = (mistake: Grader.Mistake): void => {
         if (parsedNextRef.current) {
             for (const correction of mistake.corrections) {
                 // TODO: return a new tree instead of mutating in place.
                 // This currently isn't an issue since parsedNextRef.current
                 // will be replaced with a newly parsed object next time we
                 // press submit.
-                replaceNodeWithId(
+                // TODO: refactor this to be applyCorrection(node, correction);
+                Grader.replaceNodeWithId(
                     parsedNextRef.current,
                     correction.id,
                     correction.replacement,
@@ -422,7 +321,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     </button>
                 </HStack>
             )}
-            {step.status === StepStatus.Incorrect &&
+            {step.status === Tutor.StepStatus.Incorrect &&
                 step.mistakes.map((mistake, index) => {
                     return (
                         <HStack
