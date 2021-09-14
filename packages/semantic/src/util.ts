@@ -212,8 +212,6 @@ export const evalNode = (
  * Traverse supports in place mutation of nodes within the tree.  If an `exit`
  * callback is provided that returns a value, the return value will replace
  * the node that was passed to it.
- *
- * TODO: make this non-mutating
  */
 export const traverse = (
     node: types.Node,
@@ -225,61 +223,66 @@ export const traverse = (
     if (callbacks.enter) {
         callbacks.enter(node);
     }
+
+    const newValues: Record<string, types.Node | types.Node[]> = {};
     for (const [key, value] of Object.entries(node)) {
         if (Array.isArray(value)) {
             // All arrays in the tree except for Location.path contain nodes.
             // Since we never pass a Location as an arg to traverse we should
             // be okey without doing additional checks.
-            // @ts-expect-error: key is typed as string so using it as a key is unsafe
-            node[key] = value.map((child) => traverse(child, callbacks));
+            newValues[key] = value.map((child) => traverse(child, callbacks));
         } else if (
             typeof value === "object" &&
             value != null &&
             value.hasOwnProperty("type")
         ) {
-            // @ts-expect-error: key is typed as string so using it as a key is unsafe
-            node[key] = traverse(value as types.Node, callbacks);
+            newValues[key] = traverse(value as types.Node, callbacks);
         }
     }
-    if (node.type === "VerticalAdditionToRelation") {
-        // @ts-expect-error: this function is known to mutate
-        node.originalRelation.left = node.originalRelation.left.map((child) => {
-            return child && traverse(child as types.Node, callbacks);
-        });
-        // @ts-expect-error: this function is known to mutate
-        node.originalRelation.right = node.originalRelation.right.map(
-            (child) => {
-                return child && traverse(child as types.Node, callbacks);
-            },
-        );
-        // @ts-expect-error: this function is known to mutate
-        node.actions.left = node.actions.left.map((child) => {
-            return child && traverse(child as types.Node, callbacks);
-        });
-        // @ts-expect-error: this function is known to mutate
-        node.actions.right = node.actions.right.map((child) => {
-            return child && traverse(child as types.Node, callbacks);
-        });
-        if (node.resultingRelation) {
-            // @ts-expect-error: this function is known to mutate
-            node.resultingRelation.left = node.resultingRelation.left.map(
-                (child) => {
-                    return child && traverse(child as types.Node, callbacks);
-                },
-            );
-            // @ts-expect-error: this function is known to mutate
-            node.resultingRelation.right = node.resultingRelation.right.map(
-                (child) => {
-                    return child && traverse(child as types.Node, callbacks);
-                },
-            );
-        }
-    }
+
+    const newNode =
+        node.type === "VerticalAdditionToRelation"
+            ? ({
+                  ...node,
+                  ...newValues,
+                  originalRelation: {
+                      left: node.originalRelation.left.map(
+                          (child) => child && traverse(child, callbacks),
+                      ),
+                      right: node.originalRelation.right.map(
+                          (child) => child && traverse(child, callbacks),
+                      ),
+                  },
+                  actions: {
+                      left: node.actions.left.map(
+                          (child) => child && traverse(child, callbacks),
+                      ),
+                      right: node.actions.right.map(
+                          (child) => child && traverse(child, callbacks),
+                      ),
+                  },
+                  resultingRelation: node.resultingRelation
+                      ? {
+                            left: node.resultingRelation.left.map(
+                                (child) => child && traverse(child, callbacks),
+                            ),
+                            right: node.resultingRelation.right.map(
+                                (child) => child && traverse(child, callbacks),
+                            ),
+                        }
+                      : undefined,
+              } as types.Node)
+            : {
+                  ...node,
+                  ...newValues,
+              };
+
     if (callbacks.exit) {
-        const result = callbacks.exit(node);
+        const result = callbacks.exit(newNode);
         if (result) {
             return result;
         }
     }
-    return node;
+
+    return newNode;
 };

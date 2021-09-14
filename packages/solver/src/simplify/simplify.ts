@@ -86,9 +86,7 @@ export const simplify: Transform = (node) => {
         if (next === current) {
             break;
         }
-
-        // Cloning is important since `Semantic.util.traverse` mutates `current`.
-        current = JSON.parse(JSON.stringify(next));
+        current = next;
     }
 
     if (substeps.length > 0) {

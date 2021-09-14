@@ -1,4 +1,3 @@
-import {clone} from "@math-blocks/core";
 import * as Semantic from "@math-blocks/semantic";
 
 import {Step} from "./types";
@@ -11,8 +10,7 @@ export const applyStep = (
 ): Semantic.types.Node => {
     const path: Semantic.types.Node[] = [];
 
-    // Cloning is important since `Semantic.util.traverse` mutates `current`.
-    return Semantic.util.traverse(clone(node), {
+    return Semantic.util.traverse(node, {
         enter: (node) => {
             path.push(node);
         },

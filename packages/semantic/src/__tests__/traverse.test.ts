@@ -107,7 +107,7 @@ describe("traverse", () => {
             },
         };
 
-        traverse(power, {
+        const result = traverse(power, {
             exit: (node) => {
                 if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
@@ -118,7 +118,7 @@ describe("traverse", () => {
             },
         });
 
-        expect(power).toEqual({
+        expect(result).toEqual({
             id: 0,
             type: NodeType.Power,
             base: {
@@ -152,7 +152,7 @@ describe("traverse", () => {
             ],
         };
 
-        traverse(sum, {
+        const result = traverse(sum, {
             exit: (node) => {
                 if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
@@ -163,7 +163,7 @@ describe("traverse", () => {
             },
         });
 
-        expect(sum).toEqual({
+        expect(result).toEqual({
             id: 0,
             type: NodeType.Add,
             args: [
