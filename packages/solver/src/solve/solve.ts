@@ -6,7 +6,6 @@ import {moveTermsToOneSide} from "./transforms/move-terms-to-one-side";
 import {simplifyBothSides} from "./transforms/simplify-both-sides";
 
 import type {Step} from "../types";
-import type {Transform} from "./types";
 
 const {NodeType} = Semantic;
 
@@ -23,18 +22,15 @@ const {NodeType} = Semantic;
  * @param node the equation (or system of equations) being solved
  * @param ident the variable being solved for
  */
-export const solve: Transform = (node, ident) => {
-    if (node.type !== NodeType.Equals) {
-        return undefined;
-    }
-
+export function solve(
+    node: Semantic.types.Eq,
+    ident: Semantic.types.Identifier,
+): Step | void {
     // NOTE: We simplify both sides before and after every other transform.
     // This is so that we don't jump from something like 2x = 10 - 5 to 2x / 2 = 5 / 2.
-    const transforms: Transform[] = [
-        moveTermsToOneSide,
-        divBothSides,
-        mulBothSides,
-    ].flatMap((transform) => [simplifyBothSides, transform]);
+    const transforms = [moveTermsToOneSide, divBothSides, mulBothSides].flatMap(
+        (transform) => [simplifyBothSides, transform],
+    );
     transforms.push(simplifyBothSides);
 
     const substeps: Step[] = [];
@@ -57,7 +53,7 @@ export const solve: Transform = (node, ident) => {
     // If there are no steps, `solve` doesn't know how to solve this particular
     // equation yet.
     if (substeps.length === 0) {
-        return undefined;
+        return;
     }
 
     const after = current;
@@ -76,6 +72,4 @@ export const solve: Transform = (node, ident) => {
             };
         }
     }
-
-    return undefined;
-};
+}

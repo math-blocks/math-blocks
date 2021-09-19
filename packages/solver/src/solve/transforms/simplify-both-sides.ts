@@ -1,13 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import {simplify} from "../../simplify/simplify";
+import type {Step} from "../../types";
 
-import type {Transform} from "../types";
-
-export const simplifyBothSides: Transform = (before, ident) => {
+export function simplifyBothSides(before: Semantic.types.Eq): Step | void {
     const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
-    const left = simplify(args[0], []);
-    const right = simplify(args[1], []);
+    const left = simplify(args[0]);
+    const right = simplify(args[1]);
 
     if (left && right) {
         // TODO: parameterize Step based on the return type of that step
@@ -49,5 +48,5 @@ export const simplifyBothSides: Transform = (before, ident) => {
         };
     }
 
-    return undefined;
-};
+    return;
+}

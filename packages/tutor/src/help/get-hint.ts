@@ -16,8 +16,8 @@ export const getHint = (
             // math statement that the user has entered.
             return solution.substeps[0];
         }
-    } else {
-        const solution = Solver.simplify(ast, []);
+    } else if (Semantic.util.isNumeric(ast)) {
+        const solution = Solver.simplify(ast);
 
         if (solution && solution.substeps.length > 0) {
             // Grab the first step of the solution and apply it to the previous

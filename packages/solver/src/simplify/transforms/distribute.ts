@@ -4,14 +4,13 @@ import type {Mutable} from "utility-types";
 import {simplifyMul} from "../util";
 
 import type {Step} from "../../types";
-import type {Transform} from "../types";
 
 const {NodeType} = Semantic;
 
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
     node: Semantic.types.Neg,
-    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
+    substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.NumericNode[] | undefined => {
     const add = node.arg;
     const mulNegOne = Semantic.builders.mul(
@@ -31,7 +30,7 @@ const distSub = (
 // a - b -> a + -b
 const subToNeg = (
     before: Semantic.types.NumericNode,
-    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
+    substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     if (Semantic.util.isSubtraction(before)) {
         const after = Semantic.builders.neg(before.arg, false);
@@ -70,7 +69,7 @@ const negToSub = (
 // a(b + c) -> ab + bc
 const distMul = (
     node: Semantic.types.Mul,
-    substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
+    substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
 ): readonly Semantic.types.NumericNode[] | undefined => {
     // TODO: handle distribution of more than two polynomials
     if (node.args.length === 2) {
@@ -202,7 +201,10 @@ const distMul = (
  * @param path An array of nodes that were traversed to get to `node`.
  * @return {Step | undefined}
  */
-export const distribute: Transform = (node, path): Step | undefined => {
+export function distribute(
+    node: Semantic.types.NumericNode,
+    path: readonly Semantic.types.NumericNode[],
+): Step<Semantic.types.NumericNode> | void {
     if (!Semantic.util.isNumeric(node)) {
         return;
     }
@@ -223,7 +225,7 @@ export const distribute: Transform = (node, path): Step | undefined => {
         return undefined;
     }
 
-    const substeps: Step[] = [];
+    const substeps: Step<Semantic.types.NumericNode>[] = [];
     const nodes = Semantic.util.getTerms(node);
     let changed = false;
     const newNodes = nodes.flatMap((node, outerIndex) => {
@@ -262,4 +264,4 @@ export const distribute: Transform = (node, path): Step | undefined => {
         after,
         substeps,
     };
-};
+}

@@ -1,8 +1,10 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
-export const mulToPow: Transform = (node) => {
+export function mulToPow(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (!Semantic.util.isNumeric(node)) {
         return;
     }
@@ -58,4 +60,4 @@ export const mulToPow: Transform = (node) => {
         after: Semantic.builders.mul(newFactors, true),
         substeps: [],
     };
-};
+}

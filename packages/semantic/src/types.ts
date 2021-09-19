@@ -37,12 +37,7 @@ export type NumericNode =
     | Limit
     | Derivative
     | PartialDerivative
-    | Integral
-    | VerticalAdditionToRelation
-    | LongAddition
-    | LongSubtraction
-    | LongMultiplication
-    | LongDivision;
+    | Integral;
 
 /**
  * Number
@@ -338,6 +333,11 @@ export type LogicNode =
     | (Common<NodeType.Equals> & {
           readonly args: TwoOrMore<Node>;
       })
+    | VerticalAdditionToRelation
+    | LongAddition
+    | LongSubtraction
+    | LongMultiplication
+    | LongDivision
     | Neq
     | Lt
     | Lte

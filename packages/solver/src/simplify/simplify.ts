@@ -1,7 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
 import type {Step} from "../types";
-import type {Transform} from "./types";
 
 import {addNegToSub} from "./transforms/add-neg-to-sub";
 import {dropParens} from "./transforms/drop-parens";
@@ -15,8 +14,10 @@ import {mulFraction} from "./transforms/mul-fraction";
 import {mulToPow} from "./transforms/mul-to-pow";
 import {simplifyMul} from "./transforms/simplify-mul";
 
-export const simplify: Transform = (node) => {
-    const tranforms: Transform[] = [
+export function simplify(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
+    const tranforms = [
         dropAddIdentity,
 
         simplifyMul, // We do this first so that we don't repeat what it does in other transforms
@@ -38,25 +39,25 @@ export const simplify: Transform = (node) => {
         addNegToSub,
     ];
 
-    const substeps: Step[] = [];
+    const substeps: Step<Semantic.types.NumericNode>[] = [];
 
-    const path: Semantic.types.Node[] = [];
-    const enter = (node: Semantic.types.Node): void => {
+    const path: Semantic.types.NumericNode[] = [];
+    const enter = (node: Semantic.types.NumericNode): void => {
         path.push(node);
     };
 
     // The inner loop attempts to apply one or more transforms to nodes in the
     // AST from the inside out.
     const exit = (
-        node: Semantic.types.Node,
-    ): Semantic.types.Node | undefined => {
+        node: Semantic.types.NumericNode,
+    ): Semantic.types.NumericNode | void => {
         path.pop();
         // TODO: get rid of this check so that we can simplify other types of
         // expressions, e.g. logic expressions.
         if (Semantic.util.isNumeric(node)) {
-            let current: Semantic.types.Node = node;
+            let current: Semantic.types.NumericNode = node;
             for (let i = 0; i < 10; i++) {
-                let step: Step | undefined;
+                let step: Step<Semantic.types.NumericNode> | void;
                 for (const transform of tranforms) {
                     step = transform(current, path);
                     // Multiple transforms can be applied to the current node.
@@ -82,7 +83,7 @@ export const simplify: Transform = (node) => {
     // is no longer making any changes to the AST.
     let current = node;
     for (let i = 0; i < 10; i++) {
-        const next = Semantic.util.traverse(current, {enter, exit});
+        const next = Semantic.util.traverseNumeric(current, {enter, exit});
         if (next === current) {
             break;
         }
@@ -99,4 +100,4 @@ export const simplify: Transform = (node) => {
     }
 
     return undefined;
-};
+}

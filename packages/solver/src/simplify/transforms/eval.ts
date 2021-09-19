@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
@@ -38,7 +38,9 @@ const evalNode = (
 // but won't touch any non-number terms, e.g.
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
-export const evalMul: Transform = (node) => {
+export function evalMul(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (!Semantic.util.isNumeric(node)) {
         return;
     }
@@ -59,9 +61,11 @@ export const evalMul: Transform = (node) => {
     }
 
     return undefined;
-};
+}
 
-export const evalAdd: Transform = (node) => {
+export function evalAdd(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (!Semantic.util.isNumeric(node)) {
         return;
     }
@@ -82,11 +86,13 @@ export const evalAdd: Transform = (node) => {
     }
 
     return undefined;
-};
+}
 
 // TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
 // process it.
-export const evalDiv: Transform = (node) => {
+export function evalDiv(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (node.type !== NodeType.Div) {
         return;
     }
@@ -147,4 +153,4 @@ export const evalDiv: Transform = (node) => {
         after,
         substeps: [],
     };
-};
+}

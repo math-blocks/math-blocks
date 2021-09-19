@@ -2,15 +2,18 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {isTermOfIdent} from "../util";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
-export const mulBothSides: Transform = (before, ident) => {
+export function mulBothSides(
+    before: Semantic.types.Eq,
+    ident: Semantic.types.Identifier,
+): Step<Semantic.types.Eq> | void {
     const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
     if (left.source === "divBothSides" || right.source === "divBothSides") {
-        return undefined;
+        return;
     }
 
     const leftTerms = Semantic.util.getTerms(left);
@@ -57,5 +60,5 @@ export const mulBothSides: Transform = (before, ident) => {
         }
     }
 
-    return undefined;
-};
+    return;
+}

@@ -1,7 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 import * as Testing from "@math-blocks/testing";
 
-import {Transform} from "../types";
 import {simplifyMul} from "../util";
 import {getCoeff} from "../../solve/util";
 
@@ -9,12 +8,14 @@ import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
-export const collectLikeTerms: Transform = (node): Step | undefined => {
+export function collectLikeTerms(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (node.type !== NodeType.Add) {
         return;
     }
 
-    const substeps: Step[] = [];
+    const substeps: Step<Semantic.types.NumericNode>[] = [];
 
     const newSum = subToAddNeg(node, substeps);
     const groups = getGroups(newSum.args);
@@ -35,7 +36,7 @@ export const collectLikeTerms: Transform = (node): Step | undefined => {
         after: newNode,
         substeps,
     };
-};
+}
 
 type Groups = ReadonlyMap<
     Semantic.types.NumericNode | null,

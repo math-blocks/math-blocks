@@ -3,7 +3,6 @@ import * as Semantic from "@math-blocks/semantic";
 import {isNegative} from "../util";
 
 import type {Step} from "../../types";
-import type {Transform} from "../types";
 
 const {NodeType} = Semantic;
 
@@ -20,13 +19,16 @@ const {NodeType} = Semantic;
 // (-a)(-b)(-c) -> -abc
 // 1x -> x
 // -1x -> -x
-export const simplifyMul: Transform = (before, path): Step | undefined => {
-    if (before.type !== NodeType.Mul) {
+export function simplifyMul(
+    node: Semantic.types.NumericNode,
+    path: readonly Semantic.types.NumericNode[],
+): Step<Semantic.types.NumericNode> | void {
+    if (node.type !== NodeType.Mul) {
         return undefined;
     }
 
     let changed = false;
-    for (const arg of before.args) {
+    for (const arg of node.args) {
         if (arg.type === NodeType.Neg) {
             changed = true;
             break;
@@ -34,12 +36,12 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
     }
 
     // This seems like a weird exception to have on this function
-    if (before.args.some((f) => f.type === NodeType.Add)) {
+    if (node.args.some((f) => f.type === NodeType.Add)) {
         return undefined;
     }
 
     const factors = Semantic.util
-        .getFactors(before)
+        .getFactors(node)
         .map((f) => (f.type === NodeType.Neg ? f.arg : f));
 
     const one = Semantic.builders.number("1");
@@ -51,16 +53,16 @@ export const simplifyMul: Transform = (before, path): Step | undefined => {
         return undefined;
     }
 
-    const newProd = Semantic.builders.mul(newFactors, before.implicit);
+    const newProd = Semantic.builders.mul(newFactors, node.implicit);
 
-    const after = isNegative(before)
+    const after = isNegative(node)
         ? Semantic.builders.neg(newProd, false)
         : newProd;
 
     return {
         message: "simplify multiplication",
-        before,
+        before: node,
         after,
         substeps: [],
     };
-};
+}
