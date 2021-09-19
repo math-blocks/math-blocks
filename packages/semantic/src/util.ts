@@ -240,42 +240,100 @@ export const traverse = (
         }
     }
 
-    const newNode =
-        node.type === "VerticalAdditionToRelation"
-            ? ({
-                  ...node,
-                  ...newValues,
-                  originalRelation: {
-                      left: node.originalRelation.left.map(
+    if (node.type === "VerticalAdditionToRelation") {
+        const newNode = {
+            ...node,
+            ...newValues,
+            originalRelation: {
+                left: node.originalRelation.left.map(
+                    (child) => child && traverse(child, callbacks),
+                ),
+                right: node.originalRelation.right.map(
+                    (child) => child && traverse(child, callbacks),
+                ),
+            },
+            actions: {
+                left: node.actions.left.map(
+                    (child) => child && traverse(child, callbacks),
+                ),
+                right: node.actions.right.map(
+                    (child) => child && traverse(child, callbacks),
+                ),
+            },
+            resultingRelation: node.resultingRelation
+                ? {
+                      left: node.resultingRelation.left.map(
                           (child) => child && traverse(child, callbacks),
                       ),
-                      right: node.originalRelation.right.map(
+                      right: node.resultingRelation.right.map(
                           (child) => child && traverse(child, callbacks),
                       ),
-                  },
-                  actions: {
-                      left: node.actions.left.map(
-                          (child) => child && traverse(child, callbacks),
-                      ),
-                      right: node.actions.right.map(
-                          (child) => child && traverse(child, callbacks),
-                      ),
-                  },
-                  resultingRelation: node.resultingRelation
-                      ? {
-                            left: node.resultingRelation.left.map(
-                                (child) => child && traverse(child, callbacks),
-                            ),
-                            right: node.resultingRelation.right.map(
-                                (child) => child && traverse(child, callbacks),
-                            ),
-                        }
-                      : undefined,
-              } as types.Node)
-            : {
-                  ...node,
-                  ...newValues,
-              };
+                  }
+                : undefined,
+        } as types.Node;
+
+        if (callbacks.exit) {
+            const result = callbacks.exit(newNode);
+            if (result) {
+                return result;
+            }
+        }
+
+        return newNode;
+    } else {
+        const newNode = {
+            ...node,
+            ...newValues,
+        };
+
+        if (callbacks.exit) {
+            const result = callbacks.exit(newNode);
+            if (result) {
+                return result;
+            }
+        }
+
+        return newNode;
+    }
+};
+
+export const traverseNumeric = (
+    node: types.NumericNode,
+    callbacks: {
+        readonly enter?: (node: types.NumericNode) => void;
+        readonly exit?: (node: types.NumericNode) => types.NumericNode | void;
+    },
+): types.NumericNode => {
+    if (callbacks.enter) {
+        callbacks.enter(node);
+    }
+
+    const newValues: Record<string, types.NumericNode | types.NumericNode[]> =
+        {};
+    for (const [key, value] of Object.entries(node)) {
+        if (Array.isArray(value)) {
+            // All arrays in the tree except for Location.path contain nodes.
+            // Since we never pass a Location as an arg to traverse we should
+            // be okey without doing additional checks.
+            newValues[key] = value.map((child) =>
+                traverseNumeric(child, callbacks),
+            );
+        } else if (
+            typeof value === "object" &&
+            value != null &&
+            value.hasOwnProperty("type")
+        ) {
+            newValues[key] = traverseNumeric(
+                value as types.NumericNode,
+                callbacks,
+            );
+        }
+    }
+
+    const newNode = {
+        ...node,
+        ...newValues,
+    };
 
     if (callbacks.exit) {
         const result = callbacks.exit(newNode);

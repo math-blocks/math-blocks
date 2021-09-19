@@ -2,7 +2,7 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
@@ -19,7 +19,10 @@ const {NodeType} = Semantic;
  *   - the case where we're moving both matching and non-matching terms in
  *     opposite directions
  */
-export const moveTermsToOneSide: Transform = (before, ident) => {
+export function moveTermsToOneSide(
+    before: Semantic.types.Eq,
+    ident: Semantic.types.Identifier,
+): Step<Semantic.types.Eq> | void {
     const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
     const leftTerms = Semantic.util.getTerms(left);
@@ -133,4 +136,4 @@ export const moveTermsToOneSide: Transform = (before, ident) => {
     }
 
     return undefined;
-};
+}

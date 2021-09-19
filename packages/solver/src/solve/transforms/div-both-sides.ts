@@ -2,13 +2,17 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {getCoeff, isTermOfIdent} from "../util";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
-export const divBothSides: Transform = (before, ident) => {
+export function divBothSides(
+    before: Semantic.types.Eq,
+    ident: Semantic.types.Identifier,
+): Step<Semantic.types.Eq> | void {
     const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
+    // Prevent an infinite loop between these two transforms
     if (left.source === "mulBothSides" || right.source === "mulBothSides") {
         return undefined;
     }
@@ -33,11 +37,11 @@ export const divBothSides: Transform = (before, ident) => {
     if (leftIdentTerms.length === 1 && leftNonIdentTerms.length === 0) {
         const coeff = getCoeff(leftIdentTerms[0]);
         if (coeff.type === NodeType.Div) {
-            return undefined;
+            return;
         }
 
         if (Semantic.util.deepEquals(coeff, Semantic.builders.number("1"))) {
-            return undefined;
+            return;
         }
 
         // TODO: add a check to make sure this is true
@@ -93,6 +97,4 @@ export const divBothSides: Transform = (before, ident) => {
             substeps: [],
         };
     }
-
-    return undefined;
-};
+}

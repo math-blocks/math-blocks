@@ -1,12 +1,13 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import type {Transform} from "../types";
 import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
 // (a + b) / c -> a/c + b/c
-export const distributeDiv: Transform = (node, path): Step | undefined => {
+export function distributeDiv(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (node.type !== NodeType.Div) {
         return undefined;
     }
@@ -56,4 +57,4 @@ export const distributeDiv: Transform = (node, path): Step | undefined => {
         after,
         substeps: [],
     };
-};
+}

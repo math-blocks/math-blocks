@@ -40,7 +40,10 @@ const SolverPage: React.FunctionComponent = () => {
     const handleSimplify = (): void => {
         console.log("SIMPLIFY");
         const ast = Editor.parse(Editor.zipperToRow(input));
-        const result = Solver.simplify(ast, []);
+        if (!Semantic.util.isNumeric(ast)) {
+            throw new Error("ast is not a NumericNode");
+        }
+        const result = Solver.simplify(ast);
         if (result) {
             console.log(result);
             const solution = Editor.print(result.after);

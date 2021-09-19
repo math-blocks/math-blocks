@@ -10,6 +10,9 @@ import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
 const distribute = (node: Semantic.types.Node): Step => {
+    if (!Semantic.util.isNumeric(node)) {
+        throw new Error("node is not a NumericNode");
+    }
     const result = _distribute(node, []);
     if (!result) {
         throw new Error("no step returned");

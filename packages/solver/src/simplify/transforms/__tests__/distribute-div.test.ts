@@ -5,7 +5,10 @@ import type {Step} from "../../../types";
 import {distributeDiv as _distributeDiv} from "../distribute-div";
 
 const distributeDiv = (node: Semantic.types.Node): Step => {
-    const result = _distributeDiv(node, []);
+    if (!Semantic.util.isNumeric(node)) {
+        throw new Error("node is not a NumericNode");
+    }
+    const result = _distributeDiv(node);
     if (!result) {
         throw new Error("no step returned");
     }

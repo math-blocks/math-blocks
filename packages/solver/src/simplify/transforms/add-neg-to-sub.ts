@@ -1,13 +1,12 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
-export const addNegToSub: Transform = (node) => {
-    if (!Semantic.util.isNumeric(node)) {
-        return;
-    }
+export function addNegToSub(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     const terms = Semantic.util.getTerms(node);
     let changed = false;
     const newTerms = terms.map((term, index) => {
@@ -27,4 +26,4 @@ export const addNegToSub: Transform = (node) => {
         after: Semantic.builders.add(newTerms),
         substeps: [],
     };
-};
+}

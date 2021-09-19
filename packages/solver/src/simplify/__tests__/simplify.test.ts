@@ -10,7 +10,10 @@ import {toHaveFullStepsLike} from "../../test-util";
 expect.extend({toHaveFullStepsLike});
 
 const simplify = (node: Semantic.types.Node): Step => {
-    const result = _simplify(node, []);
+    if (!Semantic.util.isNumeric(node)) {
+        throw new Error("node is not a NumericNode");
+    }
+    const result = _simplify(node);
     if (!result) {
         throw new Error("no step returned");
     }

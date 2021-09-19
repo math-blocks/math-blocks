@@ -2,14 +2,16 @@ import * as Semantic from "@math-blocks/semantic";
 
 import {isNegative} from "../util";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
 // TODO:
 // - powers
 // - negative factors
-export const reduceFraction: Transform = (node) => {
+export function reduceFraction(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (node.type !== NodeType.Div) {
         return undefined;
     }
@@ -73,4 +75,4 @@ export const reduceFraction: Transform = (node) => {
         after,
         substeps: [],
     };
-};
+}

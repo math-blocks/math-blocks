@@ -1,6 +1,6 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import type {Transform} from "../types";
+import type {Step} from "../../types";
 
 const {NodeType} = Semantic;
 
@@ -14,7 +14,9 @@ const isZero = (node: Semantic.types.Node): boolean => {
     }
 };
 
-export const dropAddIdentity: Transform = (node) => {
+export function dropAddIdentity(
+    node: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericNode> | void {
     if (node.type !== NodeType.Add) {
         return;
     }
@@ -36,4 +38,4 @@ export const dropAddIdentity: Transform = (node) => {
         after: Semantic.builders.add(newTerms),
         substeps: [],
     };
-};
+}

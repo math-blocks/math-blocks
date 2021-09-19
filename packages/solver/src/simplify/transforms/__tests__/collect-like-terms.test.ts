@@ -10,7 +10,10 @@ import {toHaveSubstepsLike, toHaveFullStepsLike} from "../../../test-util";
 expect.extend({toHaveSubstepsLike, toHaveFullStepsLike});
 
 const collectLikeTerms = (node: Semantic.types.Node): Step => {
-    const result = _collectLikeTerms(node, []);
+    if (!Semantic.util.isNumeric(node)) {
+        throw new Error("node is not a NumericNode");
+    }
+    const result = _collectLikeTerms(node);
     if (!result) {
         throw new Error("no step returned");
     }
