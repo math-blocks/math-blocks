@@ -107,7 +107,7 @@ describe("traverse", () => {
             },
         };
 
-        traverse(power, {
+        const result = traverse(power, {
             exit: (node) => {
                 if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
@@ -118,7 +118,7 @@ describe("traverse", () => {
             },
         });
 
-        expect(power).toEqual({
+        expect(result).toEqual({
             id: 0,
             type: NodeType.Power,
             base: {
@@ -152,7 +152,7 @@ describe("traverse", () => {
             ],
         };
 
-        traverse(sum, {
+        const result = traverse(sum, {
             exit: (node) => {
                 if (node.type === NodeType.Identifier && node.name === "x") {
                     return {
@@ -163,7 +163,7 @@ describe("traverse", () => {
             },
         });
 
-        expect(sum).toEqual({
+        expect(result).toEqual({
             id: 0,
             type: NodeType.Add,
             args: [
@@ -179,5 +179,38 @@ describe("traverse", () => {
                 },
             ],
         });
+    });
+
+    it("should not mutate the original node", () => {
+        const sum: types.Add = {
+            id: 0,
+            type: NodeType.Add,
+            args: [
+                {
+                    id: 1,
+                    type: NodeType.Identifier,
+                    name: "x",
+                },
+                {
+                    id: 2,
+                    type: NodeType.Number,
+                    value: "3",
+                },
+            ],
+        };
+
+        traverse(sum, {
+            exit: (node) => {
+                if (node.type === NodeType.Identifier && node.name === "x") {
+                    return {
+                        ...node,
+                        name: "y",
+                    };
+                }
+            },
+        });
+
+        // @ts-expect-error: we know sum.args[0] is an Identifier
+        expect(sum.args[0].name).toEqual("x");
     });
 });

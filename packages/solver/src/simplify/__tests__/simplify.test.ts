@@ -217,13 +217,18 @@ describe("simplify", () => {
             expect(step.substeps.map((substep) => substep.message)).toEqual([
                 "collect like terms",
                 "multiply fraction(s)",
-                // "simplify multiplication", // TODO: figure out why this step isn't happening
+                "simplify multiplication",
             ]);
-            expect(Testing.print(step.after)).toEqual("-(1x / 6)"); // TODO: this should be -(x / 6)
+            expect(Testing.print(step.after)).toEqual("-(x / 6)");
 
             expect(ast).toHaveFullStepsLike({
                 steps: step.substeps,
-                expressions: ["x / -2 + x / 3", "-(1 / 6)(x)", "-(1x / 6)"],
+                expressions: [
+                    "x / -2 + x / 3",
+                    "-(1 / 6)(x)",
+                    "-(1x / 6)",
+                    "-(x / 6)",
+                ],
             });
         });
 
