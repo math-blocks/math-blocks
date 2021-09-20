@@ -4,6 +4,7 @@ import {notEmpty} from "@math-blocks/core";
 import * as Editor from "@math-blocks/editor";
 import {MathEditor} from "@math-blocks/react";
 import * as Semantic from "@math-blocks/semantic";
+import * as Solver from "@math-blocks/solver";
 import * as Tutor from "@math-blocks/tutor";
 
 import {HStack, VStack} from "../layout";
@@ -136,10 +137,14 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
     const handleGetHint = React.useCallback((): void => {
         const parsedPrev = Editor.parse(Editor.zipperToRow(prevValue));
-        const hint = Tutor.getHint(
-            parsedPrev,
-            Semantic.builders.identifier("x"),
-        );
+
+        // TODO: pass the problem as a prop to step?
+        const problem: Solver.Problem = {
+            type: "SolveEquation",
+            equation: parsedPrev as Semantic.types.Eq,
+            variable: Semantic.builders.identifier("x"),
+        };
+        const hint = Tutor.getHint(problem);
 
         // NOTE: Some steps will have their own sub-steps which we may want
         // to apply to help students better understand what the hint is doing.
@@ -161,10 +166,13 @@ const Step: React.FunctionComponent<Props> = (props) => {
             Editor.zipperToRow(prevValue),
         ) as Semantic.types.Eq;
 
-        const next = Tutor.showMeHow(
-            parsedPrev,
-            Semantic.builders.identifier("x"),
-        );
+        // TODO: pass the problem as a prop to step?
+        const problem: Solver.Problem = {
+            type: "SolveEquation",
+            equation: parsedPrev as Semantic.types.Eq,
+            variable: Semantic.builders.identifier("x"),
+        };
+        const next = Tutor.showMeHow(problem);
 
         setHint("showme");
         setShowed(true);
