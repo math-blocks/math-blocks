@@ -23,6 +23,14 @@ const questionZipper: Editor.Zipper = {
     },
 };
 
+const safeParse = (input: Editor.Zipper): Semantic.types.Node | null => {
+    try {
+        return Editor.parse(Editor.zipperToRow(input));
+    } catch {
+        return null;
+    }
+};
+
 // TODO:
 // - show error messages in the UI
 // - provide a UI disclosing sub-steps
@@ -32,47 +40,62 @@ const questionZipper: Editor.Zipper = {
 
 const SolverPage: React.FunctionComponent = () => {
     const [input, setInput] = React.useState<Editor.Zipper>(questionZipper);
-    const [solution, setSolution] = React.useState<Editor.types.CharRow | null>(
+    const [answer, setAnswer] = React.useState<Editor.types.CharRow | null>(
         null,
     );
     const [step, setStep] = React.useState<Solver.Step | null>(null);
+    const [error, setError] = React.useState<string | null>(null);
 
-    const handleSimplify = (): void => {
-        console.log("SIMPLIFY");
-        const ast = Editor.parse(Editor.zipperToRow(input));
-        if (!Semantic.util.isNumeric(ast)) {
-            throw new Error("ast is not a NumericNode");
+    const ast = safeParse(input);
+
+    const handleSimplify = React.useCallback((): void => {
+        if (!ast) {
+            setError("Couldn't parse input");
+            return;
         }
-        const result = Solver.simplify(ast);
+        if (!Semantic.util.isNumeric(ast)) {
+            setError("ast is not a NumericNode");
+            return;
+        }
+        const problem: Solver.Problem = {
+            type: "SimplifyExpression",
+            expression: ast,
+        };
+        const result = Solver.solveProblem(problem);
         if (result) {
             console.log(result);
-            const solution = Editor.print(result.after);
-            console.log(solution);
-            setSolution(solution);
-            setStep(result);
+            setAnswer(Editor.print(result.answer));
+            setStep(result.steps[0]);
+            setError(null);
         } else {
-            console.log("no solution found");
+            setError("no solution found");
         }
-    };
+    }, [ast]);
 
-    const handleSolve = (): void => {
-        console.log("SOLVE");
-        const ast = Editor.parse(Editor.zipperToRow(input));
+    const handleSolve = React.useCallback((): void => {
+        if (!ast) {
+            setError("Couldn't parse input");
+            return;
+        }
         if (ast.type === Semantic.NodeType.Equals) {
-            const result = Solver.solve(ast, Semantic.builders.identifier("x"));
+            const problem: Solver.Problem = {
+                type: "SolveEquation",
+                equation: ast,
+                variable: Semantic.builders.identifier("x"),
+            };
+            const result = Solver.solveProblem(problem);
             if (result) {
                 console.log(result);
-                const solution = Editor.print(result.after);
-                console.log(solution);
-                setSolution(solution);
-                setStep(result);
+                setAnswer(Editor.print(result.answer));
+                setStep(result.steps[0]);
+                setError(null);
             } else {
-                console.log("no solution found");
+                setError("no solution found");
             }
         } else {
-            console.warn("can't solve something that isn't an equation");
+            setError("can't solve something that isn't an equation");
         }
-    };
+    }, [ast]);
 
     const [font, setFont] = React.useState<Font | null>(null);
 
@@ -103,22 +126,27 @@ const SolverPage: React.FunctionComponent = () => {
     };
 
     const maybeRenderSolution = (): React.ReactNode => {
-        if (solution != null) {
-            const scene = Typesetter.typeset(solution, context);
+        if (answer != null) {
+            const scene = Typesetter.typeset(answer, context);
             return <MathRenderer scene={scene} />;
         }
         return null;
     };
 
-    const showSolution = solution != null;
+    const showSolution = answer != null && !error;
+
+    const canSimplify = ast && Semantic.util.isNumeric(ast);
+    const canSolve = ast && ast.type === Semantic.NodeType.Equals;
 
     return (
         <FontDataContext.Provider value={context.fontData}>
             <div style={styles.container}>
                 <div>
                     <div style={styles.label}>Question:</div>
-                    <button onClick={handleSimplify}>Simplify</button>
-                    <button onClick={handleSolve}>Solve</button>
+                    {canSimplify && (
+                        <button onClick={handleSimplify}>Simplify</button>
+                    )}
+                    {canSolve && <button onClick={handleSolve}>Solve</button>}
                 </div>
                 <div>
                     <MathEditor
@@ -130,6 +158,8 @@ const SolverPage: React.FunctionComponent = () => {
                 </div>
                 <div style={styles.gap}></div>
                 <div style={styles.gap}></div>
+                {error && <h1>Error</h1>}
+                {error && <h1>{error}</h1>}
                 {showSolution && <div style={styles.label}>Steps:</div>}
                 {showSolution && step && (
                     <Substeps start={step.before} step={step} />
