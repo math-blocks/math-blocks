@@ -211,13 +211,9 @@ const Step: React.FunctionComponent<Props> = (props) => {
         setHintText(hint.message);
     }, [prevValue]);
 
-    const handleChange = React.useCallback(
-        (zipper: Editor.Zipper): void => {
-            dispatch({type: "set_pending"});
-            setZipper(zipper);
-        },
-        [dispatch],
-    );
+    const handleChange = React.useCallback((zipper: Editor.Zipper): void => {
+        setZipper(zipper);
+    }, []);
 
     const handleShowMe = React.useCallback((): void => {
         // TODO: check that we're solving an equations
@@ -258,6 +254,11 @@ const Step: React.FunctionComponent<Props> = (props) => {
         handleChange(zipper);
     }, [dispatch, handleChange, prevValue]);
 
+    const prev = Editor.zipperToRow(prevValue);
+    const next = Editor.zipperToRow(zipper);
+
+    const disableCheckButton = Editor.util.isEqual(prev, next);
+
     let buttonsOrIcon = (
         <HStack>
             <button
@@ -268,7 +269,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     e.preventDefault();
                     e.stopPropagation();
                 }}
-                disabled={step.status !== Tutor.StepStatus.Pending}
+                disabled={disableCheckButton}
             >
                 Check
             </button>
@@ -336,7 +337,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     type: "update",
                     value: zipper,
                 });
-                dispatch({type: "set_pending"});
                 setZipper(zipper); // update this value so that we can submit the new answer
             }
         }
