@@ -18,9 +18,7 @@ describe("#showMeHow", () => {
 
         const result = showMeHow(problem);
 
-        expect(Testing.print(result)).toMatchInlineSnapshot(
-            `"2x + 5 - 5 = 10 - 5"`,
-        );
+        expect(Testing.print(result)).toMatchInlineSnapshot(`"2x = 5"`);
     });
 
     it("should work with expressions", () => {

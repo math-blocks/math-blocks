@@ -444,7 +444,7 @@ describe("collect like terms", () => {
 
             expect(step.message).toEqual("collect like terms");
             // TODO: have the output use -x instead of -1x
-            expect(Testing.print(step.after)).toEqual("2 - x");
+            expect(Testing.print(step.after)).toEqual("2 - 1x");
         });
 
         test("3 - x - 1 -> -x + 2", () => {

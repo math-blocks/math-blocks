@@ -19,6 +19,10 @@ export function collectLikeTerms(
 
     const newSum = subToAddNeg(node, substeps);
     const groups = getGroups(newSum.args);
+    if ([...groups.values()].every((group) => group.length === 1)) {
+        // There are no like terms to collect
+        return;
+    }
     const orderedSum = orderTerms(newSum, groups, substeps);
 
     if (!orderedSum) {
@@ -175,6 +179,27 @@ const orderTerms = (
     return node;
 };
 
+const areAdditiveInverses = (
+    left: Semantic.types.NumericNode,
+    right: Semantic.types.NumericNode,
+): boolean => {
+    if (
+        left.type === Semantic.NodeType.Neg &&
+        Semantic.util.deepEquals(left.arg, right)
+    ) {
+        return true;
+    }
+
+    if (
+        right.type === Semantic.NodeType.Neg &&
+        Semantic.util.deepEquals(left, right.arg)
+    ) {
+        return true;
+    }
+
+    return false;
+};
+
 /**
  * This function always returns a new node.
  * @param node
@@ -190,11 +215,22 @@ const groupTerms = (
     for (const [key, values] of groups.entries()) {
         let newTerm: Semantic.types.NumericNode;
         if (key === null) {
+            // group constants together
             newTerm = Semantic.builders.add(values);
-        } else {
+        } else if (
+            values.length === 2 &&
+            areAdditiveInverses(values[0], values[1])
+        ) {
+            // x + -x -> 0
+            newTerm = Semantic.builders.number("0");
+        } else if (values.length > 1) {
+            // ax + bx + ... -> (a + b + ...)x
             const coeffs = values.map(getCoeff);
             const coeff = Semantic.builders.add(coeffs);
             newTerm = Semantic.builders.mul([coeff, key], true);
+        } else {
+            // ax -> ax
+            newTerm = values[0];
         }
         newTerms.push(newTerm);
     }
@@ -224,15 +260,20 @@ const evaluteCoeffs = (
         // Ideally we'd deal with it first, but we should try to be defensive and
         // make sure that we're only processing nodes created by the previous step.
         // Passthrough nodes should be ignored.
-        if (term.type === NodeType.Add) {
+        if (
+            term.type === NodeType.Add &&
+            term.args.every(Semantic.util.isNumber)
+        ) {
             // number group
             return evalNode(term);
         } else if (term.type === NodeType.Mul && term.args.length === 2) {
             const [coeff, variable] = term.args;
-            const newCoeff = evalNode(coeff);
-            // use simplifyMul here to handle situations where variable has more
-            // than one factor
-            return Semantic.builders.mul([newCoeff, variable], true);
+            if (Semantic.util.isNumber(coeff)) {
+                const newCoeff = evalNode(coeff);
+                // use simplifyMul here to handle situations where variable has more
+                // than one factor
+                return Semantic.builders.mul([newCoeff, variable], true);
+            }
         }
 
         // passthrough
@@ -260,6 +301,8 @@ const simplifyTerms = (
     substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
 ): Semantic.types.NumericNode => {
     let changed = false;
+    // TODO: don't mark (-3)(x) -> -(3x) as a chnage since these these two
+    // are printed to look exactly the same
     const newTerms = Semantic.util.getTerms(node).map((term) => {
         if (term.type === NodeType.Mul) {
             // simplifyMul returns the same term if nothing changed

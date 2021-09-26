@@ -13,6 +13,7 @@ import {reduceFraction} from "./transforms/reduce-fraction";
 import {mulFraction} from "./transforms/mul-fraction";
 import {mulToPow} from "./transforms/mul-to-pow";
 import {simplifyMul} from "./transforms/simplify-mul";
+import {mulByZeroIsZero} from "./transforms/mul-by-zero-is-zero";
 
 export function simplify(
     node: Semantic.types.NumericNode,
@@ -21,6 +22,7 @@ export function simplify(
         dropAddIdentity,
 
         simplifyMul, // We do this first so that we don't repeat what it does in other transforms
+        mulByZeroIsZero,
 
         distribute,
         distributeDiv,
