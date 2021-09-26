@@ -24,11 +24,13 @@ type Props = {
     readonly prevValue: Editor.Zipper;
     readonly step: Tutor.Step;
 
+    readonly problem: Solver.Problem;
+
     readonly dispatch: Dispatch;
 };
 
 const Step: React.FunctionComponent<Props> = (props) => {
-    const {readonly, prevValue, step, dispatch} = props;
+    const {readonly, prevValue, step, dispatch, problem} = props;
 
     const parsedNextRef = React.useRef<Semantic.types.Node | null>(null);
     const [hint, setHint] = React.useState<"none" | "text" | "showme">("none");
@@ -117,6 +119,63 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
                 return true;
             } else {
+                const solverResult = Solver.solveProblem(problem);
+                if (solverResult) {
+                    const {result, mistakes} = Tutor.checkStep(
+                        parsedNext,
+                        solverResult.answer,
+                    );
+                    if (
+                        mistakes.length === 0 &&
+                        result &&
+                        result.steps.length === 0
+                    ) {
+                        dispatch({type: "right", hint});
+                        dispatch({type: "complete"});
+
+                        setTimeout(() => {
+                            const inputs = document.querySelectorAll("input");
+                            const lastInput = inputs[inputs.length - 1];
+                            lastInput.focus();
+                        }, 0);
+
+                        return true;
+                    }
+                }
+
+                if (
+                    solverResult &&
+                    parsedNext.type === Semantic.NodeType.Equals
+                ) {
+                    const nextProblem = {
+                        ...problem,
+                        equation: parsedNext,
+                    };
+
+                    const nextSolverResult = Solver.solveProblem(nextProblem);
+
+                    if (nextSolverResult) {
+                        if (
+                            Semantic.util.deepEquals(
+                                solverResult.answer,
+                                nextSolverResult.answer,
+                            )
+                        ) {
+                            dispatch({type: "right", hint});
+                            dispatch({type: "new_step", value: zipper});
+
+                            setTimeout(() => {
+                                const inputs =
+                                    document.querySelectorAll("input");
+                                const lastInput = inputs[inputs.length - 1];
+                                lastInput.focus();
+                            }, 0);
+
+                            return true;
+                        }
+                    }
+                }
+
                 dispatch({type: "wrong", mistakes});
                 // TODO: highlight nodes in the previous step as well if they're listed in
                 // mistakes[*].prevNodes.
@@ -132,7 +191,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
 
             return false;
         },
-        [dispatch, hint, prevValue, step.value],
+        [dispatch, hint, prevValue, step.value, problem],
     );
 
     const handleGetHint = React.useCallback((): void => {
@@ -152,13 +211,9 @@ const Step: React.FunctionComponent<Props> = (props) => {
         setHintText(hint.message);
     }, [prevValue]);
 
-    const handleChange = React.useCallback(
-        (zipper: Editor.Zipper): void => {
-            dispatch({type: "set_pending"});
-            setZipper(zipper);
-        },
-        [dispatch],
-    );
+    const handleChange = React.useCallback((zipper: Editor.Zipper): void => {
+        setZipper(zipper);
+    }, []);
 
     const handleShowMe = React.useCallback((): void => {
         // TODO: check that we're solving an equations
@@ -199,6 +254,11 @@ const Step: React.FunctionComponent<Props> = (props) => {
         handleChange(zipper);
     }, [dispatch, handleChange, prevValue]);
 
+    const prev = Editor.zipperToRow(prevValue);
+    const next = Editor.zipperToRow(zipper);
+
+    const disableCheckButton = Editor.util.isEqual(prev, next);
+
     let buttonsOrIcon = (
         <HStack>
             <button
@@ -209,7 +269,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     e.preventDefault();
                     e.stopPropagation();
                 }}
-                disabled={step.status !== Tutor.StepStatus.Pending}
+                disabled={disableCheckButton}
             >
                 Check
             </button>
@@ -277,7 +337,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                     type: "update",
                     value: zipper,
                 });
-                dispatch({type: "set_pending"});
                 setZipper(zipper); // update this value so that we can submit the new answer
             }
         }

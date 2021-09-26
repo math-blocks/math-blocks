@@ -89,31 +89,6 @@ describe("reducer", () => {
         });
     });
 
-    it("should change the status of the last step to Pending", () => {
-        const step: Step = {
-            status: StepStatus.Incorrect,
-            value: zipper,
-            mistakes: [],
-        };
-
-        const state: State = {
-            steps: [step],
-            status: ProblemStatus.Incomplete,
-        };
-
-        const result = reducer(state, {type: "set_pending"});
-
-        expect(result).toEqual({
-            steps: [
-                {
-                    value: step.value,
-                    status: StepStatus.Pending,
-                },
-            ],
-            status: ProblemStatus.Incomplete,
-        });
-    });
-
     it("should update the value of the last step", () => {
         const step: Step = {
             status: StepStatus.Incorrect,

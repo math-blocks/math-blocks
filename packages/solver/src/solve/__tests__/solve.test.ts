@@ -450,5 +450,17 @@ describe("solve", () => {
                 ],
             });
         });
+
+        test("x = 5/2", () => {
+            // Arrange
+            const ast = parseEq("x = 5 / 2");
+
+            // Act
+            const result = solve(ast, Semantic.builders.identifier("x"));
+
+            // Assert
+            expect(Testing.print(result.after)).toEqual("x = 5 / 2");
+            expect(result.substeps).toHaveLength(0);
+        });
     });
 });

@@ -3,6 +3,8 @@ import * as React from "react";
 
 import {MathKeypad, MathEditor} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
+import * as Semantic from "@math-blocks/semantic";
+import * as Solver from "@math-blocks/solver";
 import {
     createInitialState,
     reducer,
@@ -18,6 +20,12 @@ const {useState} = React;
 
 const question: Editor.types.CharRow = Editor.util.row("2x+5=10");
 const initialState = createInitialState(question);
+
+const problem: Solver.Problem = {
+    type: "SolveEquation",
+    equation: Editor.parse(question) as Semantic.types.Eq,
+    variable: Semantic.builders.identifier("x"),
+};
 
 // TODO: Create two modes: immediate and delayed
 // - Immediate feedback will show whether the current step is
@@ -120,6 +128,7 @@ const Tutor: React.FunctionComponent = () => {
                             // focus={isLast && mode === "solve"}
                             dispatch={dispatch}
                             readonly={!isLast || isComplete}
+                            problem={problem}
                             prevValue={prevStep.value}
                             step={step}
                         />

@@ -26,6 +26,19 @@ export function solve(
     node: Semantic.types.Eq,
     ident: Semantic.types.Identifier,
 ): Step | void {
+    if (
+        node.type === NodeType.Equals &&
+        node.args[0].type === NodeType.Identifier &&
+        Semantic.util.isNumber(node.args[1])
+    ) {
+        return {
+            message: "solve for variable", // TODO: include variable in message
+            before: node,
+            after: node,
+            substeps: [],
+        };
+    }
+
     // NOTE: We simplify both sides before and after every other transform.
     // This is so that we don't jump from something like 2x = 10 - 5 to 2x / 2 = 5 / 2.
     const transforms = [moveTermsToOneSide, divBothSides, mulBothSides].flatMap(
