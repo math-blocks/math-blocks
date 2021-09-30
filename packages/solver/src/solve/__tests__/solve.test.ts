@@ -333,11 +333,10 @@ describe("solve", () => {
 
             const result = solve(ast, Semantic.builders.identifier("x"));
 
-            expect(Testing.print(result.after)).toEqual("x = 3 / 2");
+            expect(Testing.print(result.after)).toEqual("3 / 2 = x");
             expect(result.substeps.map((step) => step.message)).toEqual([
-                "move terms to one side",
                 "divide both sides",
-                "simplify both sides",
+                "simplify the right hand side",
             ]);
         });
 
@@ -358,7 +357,7 @@ describe("solve", () => {
             });
         });
 
-        test.skip("1 = x / 4", () => {
+        test("1 = x / 4", () => {
             const ast = parseEq("1 = x / 4");
 
             const result = solve(ast, Semantic.builders.identifier("x"));

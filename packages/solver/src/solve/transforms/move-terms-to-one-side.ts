@@ -29,6 +29,19 @@ export function moveTermsToOneSide(
     const leftTerms = Semantic.util.getTerms(left);
     const rightTerms = Semantic.util.getTerms(right);
 
+    const leftIdentTerms = leftTerms.filter((term) =>
+        isTermOfIdent(term, ident),
+    );
+
+    const rightNonIdentTerms = rightTerms.filter(
+        (term) => !isTermOfIdent(term, ident),
+    );
+
+    if (leftIdentTerms.length === 0 && rightNonIdentTerms.length === 0) {
+        // Terms have already been separated.
+        return undefined;
+    }
+
     const rightIdentTerms = rightTerms.filter((term) =>
         isTermOfIdent(term, ident),
     );
@@ -38,6 +51,7 @@ export function moveTermsToOneSide(
     );
 
     if (rightIdentTerms.length === 0 && leftNonIdentTerms.length === 0) {
+        // Terms have already been separated.
         return undefined;
     }
 
