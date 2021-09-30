@@ -1,10 +1,9 @@
 import * as Semantic from "@math-blocks/semantic";
 
-import {isTermOfIdent, flipSign, convertSubTermToNeg} from "../util";
+import {isTermOfIdent, flipSign} from "../util";
+import {simplifyBothSides} from "./simplify-both-sides";
 
 import type {Step} from "../../types";
-
-const {NodeType} = Semantic;
 
 /**
  * Moves all terms matching `ident` to one side and those that don't to the
@@ -23,7 +22,9 @@ export function moveTermsToOneSide(
     before: Semantic.types.Eq,
     ident: Semantic.types.Identifier,
 ): Step<Semantic.types.Eq> | void {
-    const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+    const originalBefore = before;
+
+    let [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
     const leftTerms = Semantic.util.getTerms(left);
     const rightTerms = Semantic.util.getTerms(right);
@@ -31,6 +32,16 @@ export function moveTermsToOneSide(
     const leftIdentTerms = leftTerms.filter((term) =>
         isTermOfIdent(term, ident),
     );
+
+    const rightNonIdentTerms = rightTerms.filter(
+        (term) => !isTermOfIdent(term, ident),
+    );
+
+    if (leftIdentTerms.length === 0 && rightNonIdentTerms.length === 0) {
+        // Terms have already been separated.
+        return undefined;
+    }
+
     const rightIdentTerms = rightTerms.filter((term) =>
         isTermOfIdent(term, ident),
     );
@@ -38,102 +49,100 @@ export function moveTermsToOneSide(
     const leftNonIdentTerms = leftTerms.filter(
         (term) => !isTermOfIdent(term, ident),
     );
-    const rightNonIdentTerms = rightTerms.filter(
-        (term) => !isTermOfIdent(term, ident),
-    );
 
-    if (leftIdentTerms.length > 1 || rightIdentTerms.length > 1) {
-        // One (or both) of the sides hasn't been simplified
+    if (rightIdentTerms.length === 0 && leftNonIdentTerms.length === 0) {
+        // Terms have already been separated.
         return undefined;
     }
 
-    if (leftIdentTerms.length === 1 && rightIdentTerms.length === 1) {
-        // There's a term with the identifier we're trying to solve for on both sides
+    let newLeft;
+    let newRight;
 
-        // TODO: create two sub-steps for each of these moves
-        // Move identifiers to the left
-        const left =
-            leftIdentTerms[0].type === NodeType.Neg
-                ? Semantic.builders.add([
-                      convertSubTermToNeg(leftIdentTerms[0]),
-                      ...leftIdentTerms.slice(1),
-                      ...rightIdentTerms.map(flipSign),
-                  ])
-                : Semantic.builders.add([
-                      ...leftIdentTerms,
-                      ...rightIdentTerms.map(flipSign),
-                  ]);
+    const substeps: Step<Semantic.types.Eq<Semantic.types.Node>>[] = [];
 
-        // Move non-identifiers to the right
-        const right = Semantic.builders.add([
-            ...rightNonIdentTerms,
-            ...leftNonIdentTerms.map(flipSign),
+    for (const leftNonIdentTerm of leftNonIdentTerms) {
+        newLeft = Semantic.builders.add([
+            ...Semantic.util.getTerms(left),
+            flipSign(leftNonIdentTerm),
         ]);
-
-        const after = Semantic.builders.eq([left, right]);
-        return {
-            message: "move terms to one side",
-            before,
-            after,
+        newRight = Semantic.builders.add([
+            ...Semantic.util.getTerms(right),
+            flipSign(leftNonIdentTerm),
+        ]);
+        const after = Semantic.builders.eq([newLeft, newRight]);
+        substeps.push({
+            message: "subtract term from both sides",
+            before: before,
+            after: after,
             substeps: [],
-        };
-    }
-
-    if (
-        leftIdentTerms.length === 1 &&
-        rightIdentTerms.length === 0 &&
-        leftNonIdentTerms.length > 0
-    ) {
-        let left = Semantic.builders.add([
-            leftIdentTerms[0],
-            ...leftNonIdentTerms,
-            ...leftNonIdentTerms.map(flipSign),
-        ]);
-
-        // TODO: run this check on leftIdentTerms[0]
-        if (left.type === NodeType.Neg) {
-            left = convertSubTermToNeg(left);
+        });
+        const step = simplifyBothSides(after) as void | Step<
+            Semantic.types.Eq<Semantic.types.NumericNode>
+        >;
+        if (step) {
+            before = after;
+            const newAfter = step.after;
+            substeps.push({
+                message: "simplify both sides",
+                before: before,
+                after: newAfter,
+                substeps: step.substeps,
+            });
+            left = newAfter.args[0];
+            right = newAfter.args[1];
+            before = newAfter;
+            /* istanbul ignore */
+        } else {
+            left = newLeft;
+            right = newRight;
+            before = after;
         }
-
-        // Move non-identifiers to the right.
-        const right = Semantic.builders.add([
-            ...rightNonIdentTerms,
-            ...leftNonIdentTerms.map(flipSign),
-        ]);
-
-        const after = Semantic.builders.eq([left, right]);
-        return {
-            message: "move terms to one side",
-            before,
-            after,
-            substeps: [],
-        };
     }
 
-    if (
-        leftIdentTerms.length === 0 &&
-        rightIdentTerms.length === 1 &&
-        rightNonIdentTerms.length > 0
-    ) {
-        // Move non-identifiers to the left.
-        const left = Semantic.builders.add([
-            ...leftNonIdentTerms,
-            ...rightNonIdentTerms.map(flipSign),
+    for (const rightIdentTerm of rightIdentTerms) {
+        newLeft = Semantic.builders.add([
+            ...Semantic.util.getTerms(left),
+            flipSign(rightIdentTerm),
         ]);
-
-        let right = rightIdentTerms[0];
-        if (right.type === NodeType.Neg) {
-            right = convertSubTermToNeg(right);
+        newRight = Semantic.builders.add([
+            ...Semantic.util.getTerms(right),
+            flipSign(rightIdentTerm),
+        ]);
+        const after = Semantic.builders.eq([newLeft, newRight]);
+        substeps.push({
+            message: "subtract term from both sides",
+            before: before,
+            after: after,
+            substeps: [],
+        });
+        const step = simplifyBothSides(after) as void | Step<
+            Semantic.types.Eq<Semantic.types.NumericNode>
+        >;
+        if (step) {
+            before = after;
+            const newAfter = step.after;
+            substeps.push({
+                message: "simplify both sides",
+                before: before,
+                after: newAfter,
+                substeps: step.substeps,
+            });
+            left = newAfter.args[0];
+            right = newAfter.args[1];
+            before = newAfter;
+            /* istanbul ignore */
+        } else {
+            left = newLeft;
+            right = newRight;
+            before = after;
         }
-
-        const after = Semantic.builders.eq([left, right]);
-        return {
-            message: "move terms to one side",
-            before,
-            after,
-            substeps: [],
-        };
     }
 
-    return undefined;
+    // TODO: determine if there were any changes between before and after
+    return {
+        message: "move terms to one side",
+        before: originalBefore,
+        after: substeps[substeps.length - 1].after,
+        substeps: substeps,
+    };
 }

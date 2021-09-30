@@ -31,13 +31,17 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
         // colorMap: props.colorMap,
     };
 
+    const beforeRow = Editor.print(step.before);
+    const beforeScene = Typesetter.typeset(beforeRow, context);
+
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
+            <MathRenderer scene={beforeScene} style={{marginBottom: 32}} />
             {step.substeps.map((substep, index) => {
                 const before = current;
 
                 const after = Solver.applyStep(before, substep);
-                const afterRow = Editor.print(after);
+                const afterRow = Editor.print(substep.after);
                 const afterScene = Typesetter.typeset(afterRow, context);
 
                 current = after;
@@ -59,12 +63,12 @@ const Substeps: React.FunctionComponent<Props> = ({prefix, start, step}) => {
                                 />
                             </div>
                         )}
-                        {substep.substeps.length === 0 && (
+                        {
                             <MathRenderer
                                 scene={afterScene}
                                 style={{marginBottom: 32}}
                             />
-                        )}
+                        }
                     </React.Fragment>
                 );
             })}
