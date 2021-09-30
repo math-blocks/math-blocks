@@ -77,6 +77,7 @@ export function moveTermsToOneSide(
             left = newAfter.args[0];
             right = newAfter.args[1];
             before = newAfter;
+            /* istanbul ignore */
         } else {
             left = newLeft;
             right = newRight;
@@ -115,7 +116,9 @@ export function moveTermsToOneSide(
             left = newAfter.args[0];
             right = newAfter.args[1];
             before = newAfter;
+            /* istanbul ignore */
         } else {
+            //
             left = newLeft;
             right = newRight;
             before = after;

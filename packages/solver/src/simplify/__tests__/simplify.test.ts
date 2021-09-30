@@ -1035,4 +1035,18 @@ describe("simplify", () => {
             expect(Testing.print(step.after)).toEqual("-a");
         });
     });
+
+    describe("multiplication by zero", () => {
+        test("(a)(0)", () => {
+            const ast = Testing.parse("(a)(0)");
+
+            const step = simplify(ast);
+
+            expect(step.message).toEqual("simplify expression");
+            expect(step.substeps.map((substep) => substep.message)).toEqual([
+                "multiplying by zero is equivalent to zero",
+            ]);
+            expect(Testing.print(step.after)).toEqual("0");
+        });
+    });
 });
