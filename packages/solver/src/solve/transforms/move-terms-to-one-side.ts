@@ -118,7 +118,6 @@ export function moveTermsToOneSide(
             before = newAfter;
             /* istanbul ignore */
         } else {
-            //
             left = newLeft;
             right = newRight;
             before = after;
