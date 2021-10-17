@@ -1,6 +1,7 @@
 import {UnreachableCaseError} from "@math-blocks/core";
 
 import * as Layout from "./layout";
+import * as types from "./types";
 
 import type {FontData} from "@math-blocks/opentype";
 
@@ -21,7 +22,7 @@ export type Group = {
     readonly y: number;
     // `bounds` includes height and depth which is even information to compute
     // the bounding box of the group in `findIntersections`.
-    readonly bounds: Layout.Dim;
+    readonly bounds: types.Dim;
     readonly children: readonly Node[];
 } & Common;
 
@@ -30,7 +31,7 @@ export type Glyph = {
     readonly x: number;
     readonly y: number;
     readonly width: number;
-    readonly glyph: Layout.Glyph;
+    readonly glyph: types.Glyph;
 } & Common;
 
 export type Line = {
@@ -60,7 +61,7 @@ export type Point = {
     readonly y: number;
 };
 
-const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
+const processHRule = (hrule: types.HRule, loc: Point): Node => {
     const advance = Layout.getWidth(hrule);
     return {
         type: "line",
@@ -76,7 +77,7 @@ const processHRule = (hrule: Layout.HRule, loc: Point): Node => {
     };
 };
 
-const processGlyph = (glyph: Layout.Glyph, loc: Point): Node => {
+const processGlyph = (glyph: types.Glyph, loc: Point): Node => {
     return {
         type: "char",
         x: loc.x,
@@ -99,7 +100,7 @@ export type LayoutCursor = {
 
 const CURSOR_WIDTH = 2;
 
-const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
+const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     const selectionBoxes: Rect[] = [];
@@ -391,7 +392,7 @@ const processHBox = (box: Layout.HBox, loc: Point, context: Context): Group => {
     };
 };
 
-const processVBox = (box: Layout.VBox, loc: Point, context: Context): Group => {
+const processVBox = (box: types.VBox, loc: Point, context: Context): Group => {
     const pen = {x: 0, y: 0};
 
     pen.y -= box.height;
@@ -545,7 +546,7 @@ type Context = {
 };
 
 const _processBox = (
-    box: Layout.HBox | Layout.VBox,
+    box: types.HBox | types.VBox,
     loc: Point,
     context: Context,
 ): Group => {
@@ -568,7 +569,7 @@ export type Scene = {
 };
 
 export const processBox = (
-    box: Layout.HBox,
+    box: types.HBox,
     fontData: FontData,
     options: Options = {},
 ): Scene => {

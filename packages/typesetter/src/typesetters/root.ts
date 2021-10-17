@@ -2,39 +2,29 @@ import * as Editor from "@math-blocks/editor";
 import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
-import {MathStyle} from "../enums";
+import {MathStyle, RadicalDegreeAlgorithm} from "../enums";
 
-import {RadicalDegreeAlgorithm} from "../enums";
-import {
-    multiplierForContext,
-    fontSizeForContext,
-    makeDelimiter,
-} from "../utils";
-
-import type {Context} from "../types";
+import type {Context, HBox} from "../types";
 
 export const typesetRoot = (
-    typesetChild: (index: number, context: Context) => Layout.HBox | null,
+    typesetChild: (index: number, context: Context) => HBox | null,
     node: Editor.types.CharRoot | Editor.ZRoot,
     context: Context,
-): Layout.HBox => {
+): HBox => {
     const degreeContext = {
         ...context,
         // It doesn't matter what the mathStyle is of the parent, we
         // always use ScriptScript for root indicies.
         mathStyle: MathStyle.ScriptScript,
     };
-    const degree = typesetChild(
-        0,
-        degreeContext,
-    ) as Mutable<Layout.HBox> | null;
-    const radicand = typesetChild(1, context) as Mutable<Layout.HBox> | null;
+    const degree = typesetChild(0, degreeContext) as Mutable<HBox> | null;
+    const radicand = typesetChild(1, context) as Mutable<HBox> | null;
 
     if (!radicand) {
         throw new Error("Radicand must be defined");
     }
 
-    const multiplier = multiplierForContext(context);
+    const multiplier = Layout.multiplierForContext(context);
 
     // Give the radicand a minimal width in case it's empty
     radicand.width = Math.max(radicand.width, 30 * multiplier);
@@ -45,11 +35,11 @@ export const typesetRoot = (
     };
 
     const surd = Layout.makeStaticHBox(
-        [makeDelimiter("\u221A", radicand, thresholdOptions, context)],
+        [Layout.makeDelimiter("\u221A", radicand, thresholdOptions, context)],
         context,
-    ) as Mutable<Layout.HBox>;
+    ) as Mutable<HBox>;
 
-    const fontSize = fontSizeForContext(context);
+    const fontSize = Layout.fontSizeForContext(context);
     const {font} = context.fontData;
     const {constants} = context.fontData.font.math;
     const thickness =
@@ -119,12 +109,12 @@ export const typesetRoot = (
         root = Layout.makeStaticHBox(
             [beforeDegreeKern, degree, afterDegreeKern, surd, radicalWithRule],
             context,
-        ) as Mutable<Layout.HBox>;
+        ) as Mutable<HBox>;
     } else {
         root = Layout.makeStaticHBox(
             [surd, radicalWithRule],
             context,
-        ) as Mutable<Layout.HBox>;
+        ) as Mutable<HBox>;
     }
 
     root.width += endPadding;

@@ -13,3 +13,78 @@ export type Context = {
     readonly renderMode: RenderMode;
     readonly radicalDegreeAlgorithm?: RadicalDegreeAlgorithm;
 };
+
+export type Dist = number;
+
+export type Dim = Readonly<{
+    readonly width: Dist;
+    readonly depth: Dist;
+    readonly height: Dist;
+}>;
+
+type Style = {
+    readonly color?: string;
+    readonly cancel?: number; // The ID of the cancel notation
+};
+
+type Common = {
+    readonly id?: number;
+    readonly style: Style;
+};
+
+export type Content =
+    | {
+          readonly type: "static";
+          readonly nodes: readonly Node[];
+      }
+    | {
+          readonly type: "cursor";
+          readonly left: readonly Node[];
+          readonly right: readonly Node[];
+      }
+    | {
+          readonly type: "selection";
+          readonly left: readonly Node[];
+          readonly selection: readonly Node[];
+          readonly right: readonly Node[];
+      };
+
+export type HBox = {
+    readonly type: "HBox";
+    readonly shift: Dist;
+    readonly content: Content;
+    readonly fontSize: number;
+} & Common &
+    Dim;
+
+export type VBox = {
+    readonly type: "VBox";
+    readonly shift: Dist;
+    readonly content: readonly Node[];
+    readonly fontSize: number;
+} & Common &
+    Dim;
+
+export type Glyph = {
+    readonly type: "Glyph";
+    readonly char?: string;
+    readonly glyphID: number; // This is specific to the Font in FontData
+    readonly size: number;
+    readonly fontData: FontData;
+    readonly pending?: boolean;
+} & Common;
+
+export type Kern = {
+    readonly type: "Kern";
+    readonly size: Dist;
+    // Used for hitboxes at the start/end of a numerator or denominator
+    readonly flag?: "start" | "end";
+} & Common;
+
+export type HRule = {
+    readonly type: "HRule";
+    readonly thickness: number;
+    readonly width: number;
+} & Common;
+
+export type Node = HBox | VBox | Glyph | Kern | HRule;

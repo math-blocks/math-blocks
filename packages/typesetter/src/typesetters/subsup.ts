@@ -4,7 +4,7 @@ import type {Mutable} from "utility-types";
 import * as Layout from "../layout";
 import {MathStyle} from "../enums";
 
-import type {Context} from "../types";
+import type {Context, Node, HBox, VBox, Kern} from "../types";
 
 const childContextForSubsup = (context: Context): Context => {
     const {mathStyle} = context;
@@ -26,12 +26,12 @@ const childContextForSubsup = (context: Context): Context => {
 };
 
 export const typesetSubsup = (
-    typesetChild: (index: number, context: Context) => Layout.HBox | null,
+    typesetChild: (index: number, context: Context) => HBox | null,
     node: Editor.types.CharSubSup | Editor.ZSubSup,
     context: Context,
     prevEditNode?: Editor.types.CharNode | Editor.Focus,
-    prevLayoutNode?: Layout.Node,
-): Layout.VBox => {
+    prevLayoutNode?: Node,
+): VBox => {
     const childContext = childContextForSubsup(context);
     const subBox = typesetChild(0, childContext);
     const supBox = typesetChild(1, childContext);
@@ -90,7 +90,7 @@ export const typesetSubsup = (
             upList,
             dnList,
             context,
-        ) as Mutable<Layout.VBox>;
+        ) as Mutable<VBox>;
 
         subsupBox.id = node.id;
         subsupBox.style = node.style;
@@ -124,8 +124,8 @@ export const typesetSubsup = (
         // that doesn't require this correction
         const kernShift = -supBox.depth + shift;
 
-        upList.push(Layout.makeKern(kernShift) as Mutable<Layout.Kern>);
-        upList.push(supBox as Mutable<Layout.HBox>);
+        upList.push(Layout.makeKern(kernShift) as Mutable<Kern>);
+        upList.push(supBox as Mutable<HBox>);
     }
 
     const dnList = [];
@@ -188,7 +188,7 @@ export const typesetSubsup = (
         upList,
         dnList,
         context,
-    ) as Mutable<Layout.VBox>;
+    ) as Mutable<VBox>;
 
     subsupBox.id = node.id;
     subsupBox.style = node.style;

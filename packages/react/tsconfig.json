@@ -1,8 +1,9 @@
 {
   "extends": "../tsconfig-base.json",
+  "exclude": ["dist", "out"],
   "compilerOptions": {
-    "outDir": "./out",
-    "rootDir": "./src",
+    "outDir": "out",
+    "rootDir": "src",
     "tsBuildInfoFile": "../../.buildcache/react.tsbuildinfo"
   },
   "references": [

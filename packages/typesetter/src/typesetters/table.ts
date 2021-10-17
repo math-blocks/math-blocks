@@ -2,10 +2,9 @@ import * as Editor from "@math-blocks/editor";
 import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
-import {fontSizeForContext, makeDelimiter} from "../utils";
 import {MathStyle} from "../enums";
 
-import type {Context} from "../types";
+import type {Context, HBox, VBox} from "../types";
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
@@ -36,18 +35,18 @@ export const typesetTable = (
         index: number,
         context: Context,
         padFirstOperator?: boolean,
-    ) => Layout.HBox | null,
+    ) => HBox | null,
     node: Editor.types.CharTable | Editor.ZTable,
     context: Context,
     zipper?: Editor.Zipper,
-): Layout.HBox | Layout.VBox => {
+): HBox | VBox => {
     type Row = {
-        children: Mutable<Layout.HBox>[];
+        children: Mutable<HBox>[];
         height: number;
         depth: number;
     };
     type Col = {
-        children: Mutable<Layout.HBox>[];
+        children: Mutable<HBox>[];
         width: number;
     };
 
@@ -264,7 +263,7 @@ export const typesetTable = (
         gutterWidth * (columns.length - 1);
 
     const {constants} = context.fontData.font.math;
-    const fontSize = fontSizeForContext(context);
+    const fontSize = Layout.fontSizeForContext(context);
 
     const rowBoxes = rows.map((row, index) => {
         const result = Layout.makeStaticHBox(row.children, context);
@@ -307,7 +306,7 @@ export const typesetTable = (
         [],
         rowBoxes.slice(1),
         context,
-    ) as Mutable<Layout.VBox>;
+    ) as Mutable<VBox>;
 
     const shift = (fontSize * constants.axisHeight.value) / 1000;
     // Equalize the depth and height and then shift up so the center of the
@@ -328,13 +327,13 @@ export const typesetTable = (
         return inner;
     }
 
-    const open = makeDelimiter(
+    const open = Layout.makeDelimiter(
         node.delimiters.left.value,
         inner,
         thresholdOptions,
         context,
     );
-    const close = makeDelimiter(
+    const close = Layout.makeDelimiter(
         node.delimiters.right.value,
         inner,
         thresholdOptions,
@@ -344,7 +343,7 @@ export const typesetTable = (
     const table = Layout.makeStaticHBox(
         [open, inner, close],
         context,
-    ) as Mutable<Layout.HBox>;
+    ) as Mutable<HBox>;
 
     table.id = node.id;
     table.style = node.style;

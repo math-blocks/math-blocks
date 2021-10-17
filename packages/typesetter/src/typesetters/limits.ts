@@ -4,7 +4,7 @@ import type {Mutable} from "utility-types";
 import * as Layout from "../layout";
 import {MathStyle} from "../enums";
 
-import type {Context} from "../types";
+import type {Context, HBox, VBox, Node} from "../types";
 
 const childContextForLimits = (context: Context): Context => {
     const {mathStyle} = context;
@@ -27,20 +27,14 @@ const childContextForLimits = (context: Context): Context => {
 
 // TODO: render as a subsup if context.mathStyle isn't MathStyle.Display
 export const typesetLimits = (
-    typesetChild: (index: number, context: Context) => Layout.HBox | null,
+    typesetChild: (index: number, context: Context) => HBox | null,
     node: Editor.types.CharLimits | Editor.ZLimits,
     context: Context,
-    typesetNode: (node: Editor.types.CharNode, context: Context) => Layout.Node,
-): Layout.VBox => {
+    typesetNode: (node: Editor.types.CharNode, context: Context) => Node,
+): VBox => {
     const childContext = childContextForLimits(context);
-    const lowerBox = typesetChild(
-        0,
-        childContext,
-    ) as Mutable<Layout.HBox> | null;
-    const upperBox = typesetChild(
-        1,
-        childContext,
-    ) as Mutable<Layout.HBox> | null;
+    const lowerBox = typesetChild(0, childContext) as Mutable<HBox> | null;
+    const upperBox = typesetChild(1, childContext) as Mutable<HBox> | null;
 
     if (!lowerBox) {
         throw new Error("Lower limit should always be defined");
@@ -49,7 +43,7 @@ export const typesetLimits = (
     const inner = typesetNode(node.inner, {
         ...context,
         operator: true,
-    }) as Mutable<Layout.Node>;
+    }) as Mutable<Node>;
     inner.id = node.inner.id;
     inner.style = {
         ...inner.style,
@@ -72,7 +66,7 @@ export const typesetLimits = (
                       Layout.makeKern((width - innerWidth) / 2),
                   ],
                   context,
-              ) as Mutable<Layout.HBox>)
+              ) as Mutable<HBox>)
             : inner;
     if (lowerBox.width < width) {
         lowerBox.shift = (width - lowerBox.width) / 2;
@@ -87,7 +81,7 @@ export const typesetLimits = (
         upperBox ? [Layout.makeKern(6), upperBox] : [],
         [Layout.makeKern(4), lowerBox],
         context,
-    ) as Mutable<Layout.VBox>;
+    ) as Mutable<VBox>;
 
     limits.id = node.id;
     limits.style = node.style;

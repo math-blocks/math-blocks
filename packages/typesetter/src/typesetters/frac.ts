@@ -2,15 +2,14 @@ import * as Editor from "@math-blocks/editor";
 import type {Mutable} from "utility-types";
 
 import * as Layout from "../layout";
-import {multiplierForContext, fontSizeForContext} from "../utils";
 import {MathStyle} from "../enums";
 
-import type {Context} from "../types";
+import type {Context, Dist, HBox, VBox, Node} from "../types";
 
-const makeList = (
-    size: Layout.Dist,
-    box: Layout.HBox,
-): readonly Layout.Node[] => [Layout.makeKern(size), box];
+const makeList = (size: Dist, box: HBox): readonly Node[] => [
+    Layout.makeKern(size),
+    box,
+];
 
 const childContextForFrac = (context: Context): Context => {
     const {mathStyle} = context;
@@ -31,10 +30,10 @@ const childContextForFrac = (context: Context): Context => {
 };
 
 export const typesetFrac = (
-    typesetChild: (index: number, context: Context) => Layout.HBox | null,
+    typesetChild: (index: number, context: Context) => HBox | null,
     node: Editor.types.CharFrac | Editor.ZFrac,
     context: Context,
-): Layout.VBox => {
+): VBox => {
     const childContext = childContextForFrac(context);
     let numBox = typesetChild(0, childContext);
     let denBox = typesetChild(1, childContext);
@@ -46,7 +45,7 @@ export const typesetFrac = (
     const {mathStyle} = context;
     const {constants} = context.fontData.font.math;
 
-    const fontSize = fontSizeForContext(context);
+    const fontSize = Layout.fontSizeForContext(context);
     const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
     const shift = (fontSize * constants.axisHeight.value) / 1000;
 
@@ -81,7 +80,7 @@ export const typesetFrac = (
     //     minDenGap,
     // );
 
-    const multiplier = multiplierForContext(context);
+    const multiplier = Layout.multiplierForContext(context);
     const endPadding = thickness; // add extra space around the numerator and denominator
     const width =
         Math.max(
@@ -123,7 +122,7 @@ export const typesetFrac = (
         upList,
         dnList,
         context,
-    ) as Mutable<Layout.VBox>;
+    ) as Mutable<VBox>;
     fracBox.shift = -shift;
 
     fracBox.id = node.id;

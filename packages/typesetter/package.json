@@ -1,9 +1,9 @@
 {
     "name": "@math-blocks/typesetter",
     "version": "0.0.3",
-    "main": "./out/index.js",
+    "main": "./dist/index.js",
     "files": [
-        "out"
+        "dist"
     ],
     "publishConfig": {
         "access": "public"
