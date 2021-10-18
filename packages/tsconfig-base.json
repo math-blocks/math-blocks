@@ -2,8 +2,8 @@
   "compilerOptions": {
     /* Basic Options */
     "incremental": true,
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES2018",
+    "module": "ES2020",
     "lib": [
       "dom",
       "esnext"
@@ -47,7 +47,7 @@
     // "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true,    /* Report errors for fallthrough cases in switch statement. */
     /* Module Resolution Options */
-    // "moduleResolution": "node",            /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
+    "moduleResolution": "node",            /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
     "baseUrl": "../", /* Base directory to resolve non-absolute module names. */
     "paths": {
       "@math-blocks/*": [

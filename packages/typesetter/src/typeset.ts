@@ -5,7 +5,6 @@ import type {Mutable} from "utility-types";
 import * as Layout from "./layout";
 import {processBox} from "./scene-graph";
 import {RenderMode} from "./enums";
-import {fontSizeForContext} from "./utils";
 
 import {typesetDelimited} from "./typesetters/delimited";
 import {typesetFrac} from "./typesetters/frac";
@@ -15,7 +14,7 @@ import {typesetSubsup} from "./typesetters/subsup";
 import {typesetTable} from "./typesetters/table";
 import {maybeAddOperatorPadding} from "./typesetters/atom";
 
-import type {Context} from "./types";
+import type {Context, HBox, Dim, Node} from "./types";
 import type {Scene} from "./scene-graph";
 
 const {NodeType} = Editor;
@@ -24,7 +23,7 @@ const typesetRow = (
     row: Editor.types.CharRow,
     context: Context,
     padFirstOperator?: boolean,
-): Layout.HBox => {
+): HBox => {
     const box = Layout.makeStaticHBox(
         typesetNodes(
             row.children,
@@ -34,7 +33,7 @@ const typesetRow = (
             padFirstOperator,
         ),
         context,
-    ) as Mutable<Layout.HBox>;
+    ) as Mutable<HBox>;
     box.id = row.id;
     box.style = {
         ...box.style,
@@ -59,18 +58,15 @@ const typesetRow = (
  * TODO: add originalDepth and originalHeight so that getDelimiter can make its
  * decisions based on the original dimensions of the box.
  *
- * @param {Mutable<Layout.Dim>} dim
+ * @param {Mutable<Dim>} dim
  * @param {Context} context
  * @return {void}
  */
-const ensureMinDepthAndHeight = (
-    dim: Mutable<Layout.Dim>,
-    context: Context,
-): void => {
+const ensureMinDepthAndHeight = (dim: Mutable<Dim>, context: Context): void => {
     const {
         fontData: {font},
     } = context;
-    const fontSize = fontSizeForContext(context);
+    const fontSize = Layout.fontSizeForContext(context);
     const parenMetrics = font.getGlyphMetrics(font.getGlyphID(")"));
 
     // This assumes that parenMetrics.height < font.head.unitsPerEm
@@ -89,12 +85,12 @@ const ensureMinDepthAndHeight = (
 const getTypesetChildFromZipper = (
     zipper: Editor.Zipper,
     focus: Editor.Focus,
-): ((index: number, context: Context) => Layout.HBox | null) => {
+): ((index: number, context: Context) => HBox | null) => {
     return (
         index: number,
         context: Context,
         padFirstOperator?: boolean,
-    ): Layout.HBox | null => {
+    ): HBox | null => {
         if (index < focus.left.length) {
             const child = focus.left[index];
             return child && typesetRow(child, context, padFirstOperator);
@@ -111,12 +107,12 @@ const getTypesetChildFromNodes = <
     T extends readonly (Editor.types.CharRow | null)[],
 >(
     children: T,
-): ((index: number, context: Context) => Layout.HBox | null) => {
+): ((index: number, context: Context) => HBox | null) => {
     return (
         index: number,
         context: Context,
         padFirstOperator?: boolean,
-    ): Layout.HBox | null => {
+    ): HBox | null => {
         const child = children[index];
         return child && typesetRow(child, context, padFirstOperator);
     };
@@ -127,8 +123,8 @@ const typesetFocus = (
     zipper: Editor.Zipper,
     context: Context,
     prevEditNode?: Editor.types.CharNode,
-    prevLayoutNode?: Layout.Node,
-): Layout.Node => {
+    prevLayoutNode?: Node,
+): Node => {
     const typesetChild = getTypesetChildFromZipper(zipper, focus);
     switch (focus.type) {
         case "zfrac": {
@@ -164,9 +160,9 @@ const typesetNode = (
     node: Editor.types.CharNode,
     context: Context,
     prevEditNode?: Editor.types.CharNode | Editor.Focus,
-    prevLayoutNode?: Layout.Node,
+    prevLayoutNode?: Node,
     padFirstOperator?: boolean,
-): Layout.Node => {
+): Node => {
     switch (node.type) {
         case NodeType.Row: {
             // The only time this can happen is if limits.inner is a row
@@ -218,9 +214,9 @@ const typesetNodes = (
     nodes: readonly Editor.types.CharNode[],
     context: Context,
     prevChild?: Editor.types.CharNode | Editor.Focus,
-    prevLayoutNode?: Layout.Node,
+    prevLayoutNode?: Node,
     padFirstOperator?: boolean,
-): readonly Layout.Node[] => {
+): readonly Node[] => {
     return nodes.map((child, index) => {
         const result = typesetNode(
             child,
@@ -239,7 +235,7 @@ const _typesetZipper = (
     zipper: Editor.Zipper,
     context: Context,
     padFirstOperator?: boolean,
-): Layout.HBox => {
+): HBox => {
     // The bottommost crumb is the outermost row
     const [crumb, ...restCrumbs] = zipper.breadcrumbs;
 
@@ -249,7 +245,7 @@ const _typesetZipper = (
             ...zipper,
             breadcrumbs: restCrumbs,
         };
-        const nodes: Layout.Node[] = [];
+        const nodes: Node[] = [];
 
         nodes.push(
             ...typesetNodes(
@@ -279,10 +275,7 @@ const _typesetZipper = (
             ),
         );
 
-        const box = Layout.makeStaticHBox(
-            nodes,
-            context,
-        ) as Mutable<Layout.HBox>;
+        const box = Layout.makeStaticHBox(nodes, context) as Mutable<HBox>;
         box.id = row.id;
         box.style = {
             ...box.style,
@@ -317,7 +310,7 @@ const _typesetZipper = (
             selection.length > 0
                 ? Layout.makeSelectionHBox(left, selection, right, context)
                 : Layout.makeCursorHBox(left, right, context)
-        ) as Mutable<Layout.HBox>;
+        ) as Mutable<HBox>;
 
         box.id = row.id;
         box.style = {
@@ -342,7 +335,7 @@ export const typesetZipper = (
     context: Context,
     options: Options = {},
 ): Scene => {
-    const box = _typesetZipper(zipper, context) as Layout.HBox;
+    const box = _typesetZipper(zipper, context) as HBox;
     return processBox(box, context.fontData, options);
 };
 
@@ -351,6 +344,6 @@ export const typeset = (
     context: Context,
     options: Options = {},
 ): Scene => {
-    const box = typesetNode(node, context) as Layout.HBox;
+    const box = typesetNode(node, context) as HBox;
     return processBox(box, context.fontData, options);
 };

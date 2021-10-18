@@ -3,7 +3,7 @@ module.exports = {
         "^.+\\.[t|j]sx?$": "babel-jest",
         ".+\\.(css|styl|less|sass|scss)$": "jest-css-modules-transform",
     },
-    modulePathIgnorePatterns: ["/out/"],
+    modulePathIgnorePatterns: ["/out/", "/dist/"],
     moduleNameMapper: {
         "^@math-blocks/(.*)$": "<rootDir>/packages/$1/src/index.ts",
         // Load a .js file with no exports whenever an .otf file is requested.

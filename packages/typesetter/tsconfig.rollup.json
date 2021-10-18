@@ -2,11 +2,13 @@
   "extends": "../tsconfig-base.json",
   "exclude": ["dist", "out"],
   "compilerOptions": {
-    "outDir": "out",
+    "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "../../.buildcache/semantic.tsbuildinfo"
+    "declarationDir": ".",
   },
   "references": [
-    {"path": "../core"}
+    {"path": "../core"},
+    {"path": "../editor"},
+    {"path": "../opentype"}
   ]
 }

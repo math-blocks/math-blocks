@@ -2,9 +2,9 @@
     "extends": "../tsconfig-base.json",
     "exclude": ["out", "dist"],
     "compilerOptions": {
-      "outDir": "out",
+      "outDir": "dist",
       "rootDir": "src",
-      "tsBuildInfoFile": "../../.buildcache/solver.tsbuildinfo"
+      "declarationDir": ".",
     },
     "references": [
       {"path": "../core"},

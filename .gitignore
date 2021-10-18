@@ -1,4 +1,5 @@
 .buildcache
+.rollup.cache
 .DS_Store
 node_modules
 dist
