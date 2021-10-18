@@ -1,6 +1,6 @@
 import path from "path";
 import typescript from "@rollup/plugin-typescript";
-import commonjs from '@rollup/plugin-commonjs';
+import commonjs from "@rollup/plugin-commonjs";
 import postcss from "rollup-plugin-postcss";
 
 const external = [
