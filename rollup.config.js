@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import postcss from "rollup-plugin-postcss";
 
 const external = [
+    "assert",
     "classnames",
     "react",
     "react-dom",
