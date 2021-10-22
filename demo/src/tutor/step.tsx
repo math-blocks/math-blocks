@@ -353,7 +353,6 @@ const Step: React.FunctionComponent<Props> = (props) => {
                 <MathEditor
                     readonly={readonly}
                     zipper={step.value}
-                    stepChecker={true}
                     onSubmit={handleCheckStep}
                     onChange={handleChange}
                     style={{flexGrow: 1}}

@@ -1,12 +1,7 @@
 import * as React from "react";
 
-import {
-    MathmlRenderer,
-    MathRenderer,
-    FontDataContext,
-} from "@math-blocks/react";
+import {MathmlRenderer, MathRenderer} from "@math-blocks/react";
 import * as Editor from "@math-blocks/editor";
-import * as Typesetter from "@math-blocks/typesetter";
 
 type Props = {
     readonly math: Editor.types.CharRow;
@@ -15,20 +10,6 @@ type Props = {
 const AccessibleMath: React.FC<Props> = (props) => {
     const {math} = props;
 
-    const fontData = React.useContext(FontDataContext);
-
-    const fontSize = 64;
-    const context: Typesetter.Context = {
-        fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-
-    const options = {showCursor: false};
-
-    const scene = Typesetter.typeset(math, context, options);
     const node = Editor.parse(math);
     console.log(node);
 
@@ -58,7 +39,7 @@ const AccessibleMath: React.FC<Props> = (props) => {
 
     return (
         <div style={{position: "relative"}}>
-            <MathRenderer scene={scene} ref={mathRef} />
+            <MathRenderer row={math} ref={mathRef} />
             <div
                 style={{
                     position: "absolute",
