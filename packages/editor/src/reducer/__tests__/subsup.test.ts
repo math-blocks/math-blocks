@@ -1,7 +1,7 @@
-import {toEqualEditorNodes} from "../test-util";
+import { toEqualEditorNodes } from '../test-util';
 
-expect.extend({toEqualEditorNodes});
+expect.extend({ toEqualEditorNodes });
 
-describe("subsup", () => {
-    test.todo("write these tests");
+describe('subsup', () => {
+  test.todo('write these tests');
 });

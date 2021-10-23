@@ -1,5 +1,4 @@
 *.html
 *.md
 *.json
-flow-typed/**/*.js
 *.yml

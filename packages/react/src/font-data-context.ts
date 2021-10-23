@@ -1,10 +1,10 @@
-import * as React from "react";
+import * as React from 'react';
 
-import type {FontData} from "@math-blocks/opentype";
+import type { FontData } from '@math-blocks/opentype';
 
 // @ts-expect-error: we're missing the 'font' property
 const placeholder: FontData = {
-    fontFamily: "",
+  fontFamily: '',
 };
 
 // TODO: switch the type to FontData | null
