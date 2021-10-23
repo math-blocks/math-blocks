@@ -558,7 +558,6 @@ describe("renderer", () => {
                 <FontDataContext.Provider value={fontData}>
                     <MathRenderer
                         zipper={zipper}
-                        showCursor={true}
                         fontSize={fontSize}
                         style={{background: "white"}}
                     />
