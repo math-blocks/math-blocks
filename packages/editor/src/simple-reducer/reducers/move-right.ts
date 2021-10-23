@@ -1,5 +1,5 @@
-import type {State} from "../types";
+import type { State } from '../types';
 
 export const moveRight = (state: State): State => {
-    return state;
+  return state;
 };

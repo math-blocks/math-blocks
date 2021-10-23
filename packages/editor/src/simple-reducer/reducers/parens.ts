@@ -1,8 +1,8 @@
-import type {State} from "../types";
+import type { State } from '../types';
 
 export const parens = (
-    state: State,
-    char: "(" | ")" | "[" | "]" | "{" | "}" | "|",
+  state: State,
+  char: '(' | ')' | '[' | ']' | '{' | '}' | '|',
 ): State => {
-    return state;
+  return state;
 };
