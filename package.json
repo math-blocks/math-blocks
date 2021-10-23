@@ -89,7 +89,6 @@
     "webpack-build": "NODE_ENV=production webpack --mode production",
     "watch": "webpack -w",
     "start": "vite",
-    "prettier": "pretty-quick --stage",
     "test": "jest",
     "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "coverage": "jest --coverage",

@@ -1,6 +1,6 @@
-import * as React from "react";
+import * as React from 'react';
 
-import "./handwriting-element";
+import './handwriting-element';
 
 // TODO:
 // - have a separate mode for selecting one or more strokes
@@ -9,26 +9,26 @@ import "./handwriting-element";
 // - provide a way to save the data
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
-    namespace JSX {
-        interface IntrinsicElements {
-            "x-handwriting": any;
-        }
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    interface IntrinsicElements {
+      readonly 'x-handwriting': any;
     }
+  }
 }
 
 const HandwritingPage: React.FunctionComponent = () => {
-    return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "start",
-            }}
-        >
-            <x-handwriting style={{border: "solid 1px black"}}></x-handwriting>
-        </div>
-    );
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'start',
+      }}
+    >
+      <x-handwriting style={{ border: 'solid 1px black' }}></x-handwriting>
+    </div>
+  );
 };
 
 export default HandwritingPage;

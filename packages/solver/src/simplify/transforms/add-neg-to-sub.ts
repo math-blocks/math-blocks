@@ -1,29 +1,29 @@
-import * as Semantic from "@math-blocks/semantic";
+import * as Semantic from '@math-blocks/semantic';
 
-import type {Step} from "../../types";
+import type { Step } from '../../types';
 
-const {NodeType} = Semantic;
+const { NodeType } = Semantic;
 
 export function addNegToSub(
-    node: Semantic.types.NumericNode,
+  node: Semantic.types.NumericNode,
 ): Step<Semantic.types.NumericNode> | void {
-    const terms = Semantic.util.getTerms(node);
-    let changed = false;
-    const newTerms = terms.map((term, index) => {
-        if (index > 0 && term.type === NodeType.Neg && !term.subtraction) {
-            changed = true;
-            return Semantic.builders.neg(term.arg, true);
-        } else {
-            return term;
-        }
-    });
-    if (!changed) {
-        return undefined;
+  const terms = Semantic.util.getTerms(node);
+  let changed = false;
+  const newTerms = terms.map((term, index) => {
+    if (index > 0 && term.type === NodeType.Neg && !term.subtraction) {
+      changed = true;
+      return Semantic.builders.neg(term.arg, true);
+    } else {
+      return term;
     }
-    return {
-        message: "adding the inverse is the same as subtraction",
-        before: node,
-        after: Semantic.builders.add(newTerms),
-        substeps: [],
-    };
+  });
+  if (!changed) {
+    return undefined;
+  }
+  return {
+    message: 'adding the inverse is the same as subtraction',
+    before: node,
+    after: Semantic.builders.add(newTerms),
+    substeps: [],
+  };
 }

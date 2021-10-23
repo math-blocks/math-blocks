@@ -1,4 +1,4 @@
-require("@testing-library/jest-dom");
-const {TextDecoder} = require("util");
+require('@testing-library/jest-dom');
+const { TextDecoder } = require('util');
 
 global.TextDecoder = TextDecoder;
