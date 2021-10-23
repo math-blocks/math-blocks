@@ -1,6 +1,6 @@
-import * as Semantic from "@math-blocks/semantic";
+import * as Semantic from '@math-blocks/semantic';
 
-import type {Check, Result, Context} from "./types";
+import type { Check, Result, Context } from './types';
 
 /**
  * Returns a Check that runs all checks until one returns a result.
@@ -9,17 +9,17 @@ import type {Check, Result, Context} from "./types";
  * @returns {Check}
  */
 export const first =
-    (checks: readonly Check[]): Check =>
-    (prev, next, context) => {
-        for (const check of checks) {
-            const result = runCheck(check, prev, next, context);
-            if (result) {
-                return result;
-            }
-        }
+  (checks: readonly Check[]): Check =>
+  (prev, next, context) => {
+    for (const check of checks) {
+      const result = runCheck(check, prev, next, context);
+      if (result) {
+        return result;
+      }
+    }
 
-        return;
-    };
+    return;
+  };
 
 /**
  * Returns a Check that runs all checks and returns the shortest result.
@@ -28,29 +28,29 @@ export const first =
  * @returns {Check}
  */
 export const shortest =
-    (checks: readonly Check[]): Check =>
-    (prev, next, context) => {
-        const results: readonly Result[] = checks
-            .map((check) => runCheck(check, prev, next, context))
-            .filter(notUndefined);
+  (checks: readonly Check[]): Check =>
+  (prev, next, context) => {
+    const results: readonly Result[] = checks
+      .map((check) => runCheck(check, prev, next, context))
+      .filter(notUndefined);
 
-        if (results.length === 0) {
-            return;
-        }
+    if (results.length === 0) {
+      return;
+    }
 
-        let shortestResult = results[0];
-        for (let i = 1; i < results.length; i++) {
-            const result = results[i];
-            if (result.steps.length < shortestResult.steps.length) {
-                shortestResult = result;
-            }
-        }
+    let shortestResult = results[0];
+    for (let i = 1; i < results.length; i++) {
+      const result = results[i];
+      if (result.steps.length < shortestResult.steps.length) {
+        shortestResult = result;
+      }
+    }
 
-        return shortestResult;
-    };
+    return shortestResult;
+  };
 
 function notUndefined<T>(x: T | undefined): x is T {
-    return x !== undefined;
+  return x !== undefined;
 }
 
 /**
@@ -63,30 +63,30 @@ function notUndefined<T>(x: T | undefined): x is T {
  * @param {Context} context
  */
 const runCheck = (
-    check: Check,
-    prev: Semantic.types.Node,
-    next: Semantic.types.Node,
-    context: Context,
+  check: Check,
+  prev: Semantic.types.Node,
+  next: Semantic.types.Node,
+  context: Context,
 ): Result | undefined => {
-    // TODO: create a copy of context before calling 'check' just in case.
-    const result = check(prev, next, context);
-    if (result) {
-        context.successfulChecks.add(check.name);
-        return result;
-    }
+  // TODO: create a copy of context before calling 'check' just in case.
+  const result = check(prev, next, context);
+  if (result) {
+    context.successfulChecks.add(check.name);
+    return result;
+  }
 
-    // We can't rely on simply calling each symmetric check with a 'reversed'
-    // param since some paths modify the root node multiple times.  If we
-    // reverse for one of the checks then the subsequent checks in that path
-    // must also be reversed.
-    if (check.symmetric) {
-        const result = check(next, prev, {
-            ...context,
-            reversed: !context.reversed,
-        });
-        if (result) {
-            context.successfulChecks.add(check.name);
-            return result;
-        }
+  // We can't rely on simply calling each symmetric check with a 'reversed'
+  // param since some paths modify the root node multiple times.  If we
+  // reverse for one of the checks then the subsequent checks in that path
+  // must also be reversed.
+  if (check.symmetric) {
+    const result = check(next, prev, {
+      ...context,
+      reversed: !context.reversed,
+    });
+    if (result) {
+      context.successfulChecks.add(check.name);
+      return result;
     }
+  }
 };

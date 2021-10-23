@@ -1,11 +1,11 @@
 // TODO: dedupe with parser and semantic
 export type SourceLocation = {
-    readonly path: readonly number[];
-    readonly start: number;
-    readonly end: number;
+  readonly path: readonly number[];
+  readonly start: number;
+  readonly end: number;
 };
 
-import * as sharedTypes from "../shared-types";
+import * as sharedTypes from '../shared-types';
 
 // operations / relations: + - = < <= > >= != sqrt
 // symbols: a - z, pi, theta, etc.
@@ -14,38 +14,38 @@ import * as sharedTypes from "../shared-types";
 // const funcs = ["sin", "cos", "tan", "log", "lim"];
 
 export enum TokenKind {
-    Identifier = "Identifier",
-    Number = "Number",
-    Plus = "Plus",
-    Minus = "Minus",
-    PlusMinus = "PlusMinus",
-    Times = "Times",
-    Equal = "Equal",
-    LessThan = "LessThan",
-    LessThanOrEqual = "LessThanOrEqual",
-    GreaterThan = "GreaterThan",
-    GreaterThanOrEqual = "GreaterThanOrEqual",
-    LeftParens = "LeftParens",
-    RightParens = "RightParens",
-    Ellipsis = "Ellipsis",
-    SummationOperator = "SummationOperator",
-    ProductOperator = "ProductOperator",
-    Lim = "Lim",
-    EOL = "EOL",
+  Identifier = 'Identifier',
+  Number = 'Number',
+  Plus = 'Plus',
+  Minus = 'Minus',
+  PlusMinus = 'PlusMinus',
+  Times = 'Times',
+  Equal = 'Equal',
+  LessThan = 'LessThan',
+  LessThanOrEqual = 'LessThanOrEqual',
+  GreaterThan = 'GreaterThan',
+  GreaterThanOrEqual = 'GreaterThanOrEqual',
+  LeftParens = 'LeftParens',
+  RightParens = 'RightParens',
+  Ellipsis = 'Ellipsis',
+  SummationOperator = 'SummationOperator',
+  ProductOperator = 'ProductOperator',
+  Lim = 'Lim',
+  EOL = 'EOL',
 }
 
 type ValueToken<kind extends TokenKind> = {
-    readonly type: "token";
-    readonly name: kind;
-    readonly value: string;
+  readonly type: 'token';
+  readonly name: kind;
+  readonly value: string;
 };
 
 type Identifier = ValueToken<TokenKind.Identifier>;
 type Number = ValueToken<TokenKind.Number>;
 
 type SimpleToken<kind extends TokenKind> = {
-    readonly type: "token";
-    readonly name: kind;
+  readonly type: 'token';
+  readonly name: kind;
 };
 
 type Plus = SimpleToken<TokenKind.Plus>;
@@ -64,24 +64,24 @@ type Lim = SimpleToken<TokenKind.Lim>;
 type EOL = SimpleToken<TokenKind.EOL>;
 
 export type Token =
-    | Identifier
-    | Number // eslint-disable-line @typescript-eslint/ban-types
-    | Plus
-    | Minus
-    | PlusMinus
-    | Times
-    | Equal
-    | LessThan
-    | GreaterThan
-    | LeftParens
-    | RightParens
-    | Ellipsis
-    | SummationOperator
-    | ProductOperator
-    | Lim
-    | EOL;
+  | Identifier
+  | Number // eslint-disable-line @typescript-eslint/ban-types
+  | Plus
+  | Minus
+  | PlusMinus
+  | Times
+  | Equal
+  | LessThan
+  | GreaterThan
+  | LeftParens
+  | RightParens
+  | Ellipsis
+  | SummationOperator
+  | ProductOperator
+  | Lim
+  | EOL;
 
-type Common = {readonly loc: SourceLocation};
+type Common = { readonly loc: SourceLocation };
 
 export type TokenRow = sharedTypes.Row<Token, Common>;
 export type TokenDelimited = sharedTypes.Delimited<Token, Common>;
@@ -93,11 +93,11 @@ export type TokenRoot = sharedTypes.Root<Token, Common>;
 export type TokenAtom = sharedTypes.Atom<Token, Common>;
 
 export type TokenNode =
-    | TokenRow
-    | TokenDelimited
-    | TokenTable
-    | TokenSubSup
-    | TokenLimits
-    | TokenFrac
-    | TokenRoot
-    | TokenAtom;
+  | TokenRow
+  | TokenDelimited
+  | TokenTable
+  | TokenSubSup
+  | TokenLimits
+  | TokenFrac
+  | TokenRoot
+  | TokenAtom;

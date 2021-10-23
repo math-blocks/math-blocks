@@ -1,10 +1,10 @@
-import * as Semantic from "@math-blocks/semantic";
+import * as Semantic from '@math-blocks/semantic';
 
-import {isNegative} from "../util";
+import { isNegative } from '../util';
 
-import type {Step} from "../../types";
+import type { Step } from '../../types';
 
-const {NodeType} = Semantic;
+const { NodeType } = Semantic;
 
 // This transform should go at the top of the simplify stack so that other
 // transforms that work with `mul` nodes don't have to handle as many cases.
@@ -20,49 +20,49 @@ const {NodeType} = Semantic;
 // 1x -> x
 // -1x -> -x
 export function simplifyMul(
-    node: Semantic.types.NumericNode,
-    path: readonly Semantic.types.NumericNode[],
+  node: Semantic.types.NumericNode,
+  path: readonly Semantic.types.NumericNode[],
 ): Step<Semantic.types.NumericNode> | void {
-    if (node.type !== NodeType.Mul) {
-        return undefined;
+  if (node.type !== NodeType.Mul) {
+    return undefined;
+  }
+
+  let changed = false;
+  for (const arg of node.args) {
+    if (arg.type === NodeType.Neg) {
+      changed = true;
+      break;
     }
+  }
 
-    let changed = false;
-    for (const arg of node.args) {
-        if (arg.type === NodeType.Neg) {
-            changed = true;
-            break;
-        }
-    }
+  // This seems like a weird exception to have on this function
+  if (node.args.some((f) => f.type === NodeType.Add)) {
+    return undefined;
+  }
 
-    // This seems like a weird exception to have on this function
-    if (node.args.some((f) => f.type === NodeType.Add)) {
-        return undefined;
-    }
+  const factors = Semantic.util
+    .getFactors(node)
+    .map((f) => (f.type === NodeType.Neg ? f.arg : f));
 
-    const factors = Semantic.util
-        .getFactors(node)
-        .map((f) => (f.type === NodeType.Neg ? f.arg : f));
+  const one = Semantic.builders.number('1');
+  const newFactors = factors.filter((f) => !Semantic.util.deepEquals(one, f));
 
-    const one = Semantic.builders.number("1");
-    const newFactors = factors.filter((f) => !Semantic.util.deepEquals(one, f));
+  changed = changed || newFactors.length < factors.length;
 
-    changed = changed || newFactors.length < factors.length;
+  if (!changed) {
+    return undefined;
+  }
 
-    if (!changed) {
-        return undefined;
-    }
+  const newProd = Semantic.builders.mul(newFactors, node.implicit);
 
-    const newProd = Semantic.builders.mul(newFactors, node.implicit);
+  const after = isNegative(node)
+    ? Semantic.builders.neg(newProd, false)
+    : newProd;
 
-    const after = isNegative(node)
-        ? Semantic.builders.neg(newProd, false)
-        : newProd;
-
-    return {
-        message: "simplify multiplication",
-        before: node,
-        after,
-        substeps: [],
-    };
+  return {
+    message: 'simplify multiplication',
+    before: node,
+    after,
+    substeps: [],
+  };
 }

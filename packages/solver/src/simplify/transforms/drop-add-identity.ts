@@ -1,41 +1,41 @@
-import * as Semantic from "@math-blocks/semantic";
+import * as Semantic from '@math-blocks/semantic';
 
-import type {Step} from "../../types";
+import type { Step } from '../../types';
 
-const {NodeType} = Semantic;
+const { NodeType } = Semantic;
 
 const isZero = (node: Semantic.types.Node): boolean => {
-    if (node.type === NodeType.Number && node.value === "0") {
-        return true;
-    } else if (node.type === NodeType.Neg) {
-        return isZero(node.arg);
-    } else {
-        return false;
-    }
+  if (node.type === NodeType.Number && node.value === '0') {
+    return true;
+  } else if (node.type === NodeType.Neg) {
+    return isZero(node.arg);
+  } else {
+    return false;
+  }
 };
 
 export function dropAddIdentity(
-    node: Semantic.types.NumericNode,
+  node: Semantic.types.NumericNode,
 ): Step<Semantic.types.NumericNode> | void {
-    if (node.type !== NodeType.Add) {
-        return;
+  if (node.type !== NodeType.Add) {
+    return;
+  }
+  const terms = Semantic.util.getTerms(node);
+  let changed = false;
+  const newTerms = terms.filter((term) => {
+    if (isZero(term)) {
+      changed = true;
+      return false;
     }
-    const terms = Semantic.util.getTerms(node);
-    let changed = false;
-    const newTerms = terms.filter((term) => {
-        if (isZero(term)) {
-            changed = true;
-            return false;
-        }
-        return true;
-    });
-    if (!changed) {
-        return;
-    }
-    return {
-        message: "drop adding zero (additive identity)",
-        before: node,
-        after: Semantic.builders.add(newTerms),
-        substeps: [],
-    };
+    return true;
+  });
+  if (!changed) {
+    return;
+  }
+  return {
+    message: 'drop adding zero (additive identity)',
+    before: node,
+    after: Semantic.builders.add(newTerms),
+    substeps: [],
+  };
 }

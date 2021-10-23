@@ -1,60 +1,60 @@
 @font-face {
-    font-family: STIX2;
-    src: url(/STIX2Math.otf);
+  font-family: STIX2;
+  src: url(/STIX2Math.otf);
 }
 
 @font-face {
-    font-family: LM-Math;
-    src: url(/latinmodern-math.otf);
+  font-family: LM-Math;
+  src: url(/latinmodern-math.otf);
 }
 
 @font-face {
-    font-family: Bonum-Math;
-    src: url(/texgyrebonum-math.otf);
+  font-family: Bonum-Math;
+  src: url(/texgyrebonum-math.otf);
 }
 
 @font-face {
-    font-family: Pagella-Math;
-    src: url(/texgyrepagella-math.otf);
+  font-family: Pagella-Math;
+  src: url(/texgyrepagella-math.otf);
 }
 
 @font-face {
-    font-family: Schola-Math;
-    src: url(/texgyreschola-math.otf);
+  font-family: Schola-Math;
+  src: url(/texgyreschola-math.otf);
 }
 
 @font-face {
-    font-family: Termes-Math;
-    src: url(/texgyretermes-math.otf);
+  font-family: Termes-Math;
+  src: url(/texgyretermes-math.otf);
 }
 
 html,
 body {
-    /* overflow: hidden; */
-    touch-action: none;
+  /* overflow: hidden; */
+  touch-action: none;
 }
 canvas {
-    touch-action: none;
+  touch-action: none;
 }
 div {
-    touch-action: none;
+  touch-action: none;
 }
 
 a {
-    font-family: sans-serif;
-    color: navy;
+  font-family: sans-serif;
+  color: navy;
 }
 body {
-    background-color: #fff;
-    color: #1f1f1f;
+  background-color: #fff;
+  color: #1f1f1f;
 }
 @media screen and (prefers-color-scheme: dark) {
-    body {
-        background-color: #1f1f1f;
-        color: #e0e0e0;
-    }
+  body {
+    background-color: #1f1f1f;
+    color: #e0e0e0;
+  }
 
-    a {
-        color: lightskyblue;
-    }
+  a {
+    color: lightskyblue;
+  }
 }
