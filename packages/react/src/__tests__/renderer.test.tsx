@@ -437,6 +437,7 @@ describe("renderer", () => {
                         <MathRenderer
                             fontSize={fontSize}
                             zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
                         />
                     </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
@@ -455,6 +456,7 @@ describe("renderer", () => {
                         <MathRenderer
                             fontSize={fontSize}
                             zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
                         />
                     </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
@@ -474,6 +476,7 @@ describe("renderer", () => {
                         <MathRenderer
                             fontSize={fontSize}
                             zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
                         />
                     </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
@@ -494,6 +497,7 @@ describe("renderer", () => {
                         <MathRenderer
                             fontSize={fontSize}
                             zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
                         />
                     </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
@@ -549,15 +553,6 @@ describe("renderer", () => {
 
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context: Typesetter.Context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Static,
-                cramped: false,
-            };
-
-            const scene = Typesetter.typesetZipper(zipper, context);
 
             expect(
                 <FontDataContext.Provider value={fontData}>
