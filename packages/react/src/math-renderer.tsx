@@ -30,14 +30,20 @@ type Props = {
 export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
     (props, ref) => {
         const fontData = useContext(FontDataContext);
-        const {style, fontSize, showHitboxes} = props;
+        const {
+            style,
+            fontSize = 64,
+            showHitboxes,
+            mathStyle = Typesetter.MathStyle.Display,
+            renderMode = Typesetter.RenderMode.Static,
+        } = props;
 
         const context: Typesetter.Context = {
             fontData: fontData,
-            baseFontSize: fontSize || 64,
-            mathStyle: Typesetter.MathStyle.Display,
+            baseFontSize: fontSize,
+            mathStyle: mathStyle,
             cramped: false,
-            renderMode: Typesetter.RenderMode.Dynamic,
+            renderMode: renderMode,
             radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
         };
 
@@ -69,12 +75,5 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
 );
 
 MathRenderer.displayName = "MathRenderer";
-
-MathRenderer.defaultProps = {
-    style: {},
-    fontSize: 64,
-    renderMode: Typesetter.RenderMode.Static,
-    mathStyle: Typesetter.MathStyle.Display,
-};
 
 export default MathRenderer;
