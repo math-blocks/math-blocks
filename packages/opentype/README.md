@@ -1,3 +1,3 @@
 # @math-blocks/opentype
 
-TODO
+Library for parsing OpenType font files that contain a MATH table.

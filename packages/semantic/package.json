@@ -2,12 +2,10 @@
     "name": "@math-blocks/semantic",
     "version": "0.0.5",
     "main": "./dist/index.js",
+    "private": true,
     "files": [
         "dist"
     ],
-    "publishConfig": {
-        "access": "public"
-    },
     "dependencies": {
         "@math-blocks/core": "^0.0.5",
         "fraction.js": "^4.0.12"
