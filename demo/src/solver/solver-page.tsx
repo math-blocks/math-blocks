@@ -127,8 +127,7 @@ const SolverPage: React.FunctionComponent = () => {
 
     const maybeRenderSolution = (): React.ReactNode => {
         if (answer != null) {
-            const scene = Typesetter.typeset(answer, context);
-            return <MathRenderer scene={scene} />;
+            return <MathRenderer row={answer} />;
         }
         return null;
     };
@@ -152,7 +151,6 @@ const SolverPage: React.FunctionComponent = () => {
                     <MathEditor
                         readonly={false}
                         zipper={input}
-                        stepChecker={true}
                         onChange={(value: Editor.Zipper) => setInput(value)}
                     />
                 </div>

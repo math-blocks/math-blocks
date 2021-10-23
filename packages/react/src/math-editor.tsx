@@ -6,7 +6,7 @@ import * as Typesetter from "@math-blocks/typesetter";
 
 import {FontDataContext} from "./font-data-context";
 import styles from "./editor.module.css";
-import MathRenderer from "./math-renderer";
+import SceneRenderer from "./scene-renderer";
 import useEventListener from "./use-event-listener";
 
 import type {EditingEvent} from "./math-keypad";
@@ -23,12 +23,8 @@ type Props = {
     readonly onSubmit?: (zipper: Editor.Zipper) => unknown;
     readonly onChange?: (zipper: Editor.Zipper) => unknown;
 
-    /**
-     * Style
-     */
+    // Style
     readonly style?: React.CSSProperties;
-
-    readonly stepChecker?: boolean;
 
     // Renders bounding boxes around each group and glyph.
     readonly showHitboxes?: boolean;
@@ -86,6 +82,8 @@ const keyupToAction = (key: string): Editor.Action | null => {
     }
 };
 
+// TODO: expose other settings such as display style as props
+// TODO: add an onBlur prop
 export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     const memoizedState = useMemo(
         () => Editor.stateFromZipper(props.zipper),
@@ -317,7 +315,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
                 autoComplete="off"
                 spellCheck="false"
             />
-            <MathRenderer
+            <SceneRenderer
                 scene={scene}
                 ref={svgRef}
                 showHitboxes={showHitboxes}

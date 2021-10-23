@@ -15,6 +15,7 @@ import type {FontData} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
 import * as stories from "../stories/2-math-renderer.stories";
+import {FontDataContext} from "../font-data-context";
 
 const {char: glyph, row, subsup} = Editor.builders;
 
@@ -244,11 +245,13 @@ describe("renderer", () => {
 
         describe("cursor with tall delimiters", () => {
             let state: Editor.State;
-            let context: Typesetter.Context;
-            let options: Typesetter.Options;
+            let editNode: Editor.types.CharRow;
+            let fontData: FontData;
+            const fontSize = 60;
+
             beforeEach(async () => {
-                const fontData = await stixFontLoader();
-                const editNode = Editor.builders.row([
+                fontData = await stixFontLoader();
+                editNode = Editor.builders.row([
                     Editor.builders.delimited(
                         [
                             Editor.builders.frac(
@@ -262,14 +265,6 @@ describe("renderer", () => {
                     subsup([glyph("n")], [glyph("2")]),
                 ]);
 
-                const fontSize = 60;
-                context = {
-                    fontData: fontData,
-                    baseFontSize: fontSize,
-                    mathStyle: Typesetter.MathStyle.Display,
-                    renderMode: Typesetter.RenderMode.Dynamic,
-                    cramped: false,
-                };
                 const zipper: Editor.Zipper = {
                     row: {
                         type: "zrow",
@@ -287,21 +282,18 @@ describe("renderer", () => {
                     zipper: zipper,
                     selecting: false,
                 };
-                // TODO: update typesetZipper to default showCursor to true
-                options = {
-                    showCursor: true,
-                };
             });
 
             test("1 cursor at the end", () => {
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            showCursor={true}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -312,13 +304,14 @@ describe("renderer", () => {
                 moveLeft();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            showCursor={true}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -331,13 +324,14 @@ describe("renderer", () => {
                 moveLeft();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            showCursor={true}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -352,13 +346,14 @@ describe("renderer", () => {
                 moveLeft();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            showCursor={true}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
         });
@@ -367,8 +362,11 @@ describe("renderer", () => {
             let state: Editor.State;
             let context: Typesetter.Context;
             let options: Typesetter.Options;
+            let fontData: FontData;
+            const fontSize = 60;
+
             beforeEach(async () => {
-                const fontData = await stixFontLoader();
+                fontData = await stixFontLoader();
                 const editNode = Editor.builders.row([
                     Editor.builders.delimited(
                         [
@@ -383,7 +381,6 @@ describe("renderer", () => {
                     subsup([glyph("n")], [glyph("2")]),
                 ]);
 
-                const fontSize = 60;
                 context = {
                     fontData: fontData,
                     baseFontSize: fontSize,
@@ -436,13 +433,13 @@ describe("renderer", () => {
                 selectRight();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -455,13 +452,13 @@ describe("renderer", () => {
                 selectRight();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -475,13 +472,13 @@ describe("renderer", () => {
                 selectRight();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
 
@@ -496,13 +493,13 @@ describe("renderer", () => {
                 selectRight();
 
                 expect(
-                    <MathRenderer
-                        scene={Typesetter.typesetZipper(
-                            state.zipper,
-                            context,
-                            options,
-                        )}
-                    />,
+                    <FontDataContext.Provider value={fontData}>
+                        <MathRenderer
+                            fontSize={fontSize}
+                            zipper={state.zipper}
+                            renderMode={Typesetter.RenderMode.Dynamic}
+                        />
+                    </FontDataContext.Provider>,
                 ).toMatchSVGSnapshot();
             });
         });
@@ -556,18 +553,15 @@ describe("renderer", () => {
 
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context: Typesetter.Context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Static,
-                cramped: false,
-            };
-
-            const scene = Typesetter.typesetZipper(zipper, context);
 
             expect(
-                <MathRenderer scene={scene} style={{background: "white"}} />,
+                <FontDataContext.Provider value={fontData}>
+                    <MathRenderer
+                        zipper={zipper}
+                        fontSize={fontSize}
+                        style={{background: "white"}}
+                    />
+                </FontDataContext.Provider>,
             ).toMatchSVGSnapshot();
         });
     });
@@ -628,19 +622,16 @@ describe("renderer", () => {
 
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
 
             expect(
-                <MathRenderer
-                    scene={Typesetter.typesetZipper(zipper, context, options)}
-                />,
+                <FontDataContext.Provider value={fontData}>
+                    <MathRenderer
+                        zipper={zipper}
+                        showCursor={true}
+                        fontSize={fontSize}
+                        renderMode={Typesetter.RenderMode.Dynamic}
+                    />
+                </FontDataContext.Provider>,
             ).toMatchSVGSnapshot();
         });
     });
@@ -747,22 +738,19 @@ describe("renderer", () => {
         `("row 2, column $column", async ({column}) => {
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
 
             const state = moveRight(Editor.stateFromZipper(zipper), column);
-            const scene = Typesetter.typesetZipper(
-                state.zipper,
-                context,
-                options,
-            );
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+
+            expect(
+                <FontDataContext.Provider value={fontData}>
+                    <MathRenderer
+                        zipper={state.zipper}
+                        showCursor={true}
+                        fontSize={fontSize}
+                        renderMode={Typesetter.RenderMode.Dynamic}
+                    />
+                </FontDataContext.Provider>,
+            ).toMatchSVGSnapshot();
         });
 
         test("don't pad an empty cell in the bottom row if there is an non-empty cell above", async () => {
@@ -824,17 +812,17 @@ describe("renderer", () => {
 
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
 
-            const scene = Typesetter.typesetZipper(zipper, context, options);
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+            expect(
+                <FontDataContext.Provider value={fontData}>
+                    <MathRenderer
+                        zipper={zipper}
+                        showCursor={true}
+                        fontSize={fontSize}
+                        renderMode={Typesetter.RenderMode.Dynamic}
+                    />
+                </FontDataContext.Provider>,
+            ).toMatchSVGSnapshot();
         });
 
         test("don't pad an empty cell in the middle row if there is non-empty cells in below it", async () => {
@@ -896,17 +884,17 @@ describe("renderer", () => {
 
             const fontData = await stixFontLoader();
             const fontSize = 60;
-            const context = {
-                fontData: fontData,
-                baseFontSize: fontSize,
-                mathStyle: Typesetter.MathStyle.Display,
-                renderMode: Typesetter.RenderMode.Dynamic,
-                cramped: false,
-            };
-            const options = {showCursor: true};
 
-            const scene = Typesetter.typesetZipper(zipper, context, options);
-            expect(<MathRenderer scene={scene} />).toMatchSVGSnapshot();
+            expect(
+                <FontDataContext.Provider value={fontData}>
+                    <MathRenderer
+                        zipper={zipper}
+                        showCursor={true}
+                        fontSize={fontSize}
+                        renderMode={Typesetter.RenderMode.Dynamic}
+                    />
+                </FontDataContext.Provider>,
+            ).toMatchSVGSnapshot();
         });
     });
 });

@@ -9,6 +9,7 @@ import {getFontData, parse} from "@math-blocks/opentype";
 import type {FontData} from "@math-blocks/opentype";
 
 import MathRenderer from "../math-renderer";
+import {FontDataContext} from "../font-data-context";
 
 // @ts-expect-error: TypeScript doesn't know about this path
 import stixPath from "../../../../assets/STIX2Math.otf";
@@ -55,16 +56,7 @@ export const Small: Story<EmptyProps> = (args, {loaded: fontData}) => {
         glyph("0"),
     ]);
     const fontSize = 20;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const scene = Typesetter.typeset(math, context);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return <MathRenderer row={math} style={style} fontSize={fontSize} />;
 };
 
 export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -79,16 +71,11 @@ export const Equation: Story<EmptyProps> = (args, {loaded: fontData}) => {
         glyph("0"),
     ]);
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const scene = Typesetter.typeset(math, context);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />
+        </FontDataContext.Provider>
+    );
 };
 
 export const LatinModernEquation: Story<EmptyProps> = (
@@ -106,16 +93,11 @@ export const LatinModernEquation: Story<EmptyProps> = (
         glyph("0"),
     ]);
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const scene = Typesetter.typeset(math, context);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 // @ts-expect-error: Story doesn't include 'loaders' static
 LatinModernEquation.loaders = [lmFontLoader];
@@ -128,16 +110,11 @@ export const LatinModernRootAndFraction: Story<EmptyProps> = (
         root(null, [frac([glyph("1")], [glyph("1"), glyph("+"), glyph("x")])]),
     ]);
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const scene = Typesetter.typeset(math, context);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 // @ts-expect-error: Story doesn't include 'loaders' static
 LatinModernRootAndFraction.loaders = [lmFontLoader];
@@ -165,20 +142,18 @@ export const Cursor: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const options = {
-        showCursor: true,
-    };
-
-    const scene = Typesetter.typesetZipper(zipper, context, options);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -204,44 +179,44 @@ export const Selection: Story<EmptyProps> = (args, {loaded: fontData}) => {
     };
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-
-    const scene = Typesetter.typesetZipper(zipper, context);
-
-    return <MathRenderer scene={scene} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const Pythagoras: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
+    const pythagoras = row([
+        glyph("a"),
+        Editor.util.sup("2"),
+        glyph("+"),
+        glyph("b"),
+        Editor.util.sup("2"),
+        glyph("="),
+        glyph("c"),
+        Editor.util.sup("2"),
+    ]);
 
-    const pythagoras = Typesetter.typeset(
-        row([
-            glyph("a"),
-            Editor.util.sup("2"),
-            glyph("+"),
-            glyph("b"),
-            Editor.util.sup("2"),
-            glyph("="),
-            glyph("c"),
-            Editor.util.sup("2"),
-        ]),
-        context,
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={pythagoras}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+            />
+            ;
+        </FontDataContext.Provider>
     );
-
-    return <MathRenderer scene={pythagoras} style={style} />;
 };
 
 export const QuadraticEquation: Story<EmptyProps> = (
@@ -249,91 +224,75 @@ export const QuadraticEquation: Story<EmptyProps> = (
     {loaded: fontData},
 ) => {
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-
-    const quadraticEquation = Typesetter.typeset(
-        row([
-            glyph("x"),
-            glyph("="),
-            frac(
-                [
-                    glyph("\u2212"),
+    const math = row([
+        glyph("x"),
+        glyph("="),
+        frac(
+            [
+                glyph("\u2212"),
+                glyph("b"),
+                glyph("\u00B1"),
+                root(null, [
                     glyph("b"),
-                    glyph("\u00B1"),
-                    root(null, [
-                        glyph("b"),
-                        Editor.util.sup("2"),
-                        glyph("\u2212"),
-                        glyph("4"),
-                        glyph("a"),
-                        glyph("c"),
-                    ]),
-                ],
-                [glyph("2"), glyph("a")],
-            ),
-        ]),
+                    Editor.util.sup("2"),
+                    glyph("\u2212"),
+                    glyph("4"),
+                    glyph("a"),
+                    glyph("c"),
+                ]),
+            ],
+            [glyph("2"), glyph("a")],
+        ),
+    ]);
 
-        context,
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
     );
-
-    return <MathRenderer scene={quadraticEquation} style={style} />;
 };
 
 export const Limit: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-
-    const lim = Typesetter.typeset(
-        row([
-            limits(row([glyph("l"), glyph("i"), glyph("m")]), [
-                glyph("y"),
-                glyph("—"),
-                glyph(">"),
-                glyph("0"),
-            ]),
-            glyph("x"),
+    const math = row([
+        limits(row([glyph("l"), glyph("i"), glyph("m")]), [
+            glyph("y"),
+            glyph("—"),
+            glyph(">"),
+            glyph("0"),
         ]),
-        context,
-    );
+        glyph("x"),
+    ]);
 
-    return <MathRenderer scene={lim} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={math}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const Summation: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
+    const math = row([
+        limits(
+            glyph("\u03a3"),
+            [glyph("i"), glyph("="), glyph("0")],
+            [glyph("\u221e")],
+        ),
+        frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
+    ]);
 
-    const sum = Typesetter.typeset(
-        row([
-            limits(
-                glyph("\u03a3"),
-                [glyph("i"), glyph("="), glyph("0")],
-                [glyph("\u221e")],
-            ),
-            frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]),
-        ]),
-        context,
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
     );
-
-    return <MathRenderer scene={sum} style={style} />;
 };
 
 export const ColorizedFraction: Story<EmptyProps> = (
@@ -342,14 +301,6 @@ export const ColorizedFraction: Story<EmptyProps> = (
 ) => {
     const fontSize = 60;
     const colorMap = new Map<number, string>();
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-
     const fracNode = frac([glyph("1")], [glyph("2"), Editor.util.sup("i")]);
 
     colorMap.set(fracNode.id, "darkcyan");
@@ -360,9 +311,13 @@ export const ColorizedFraction: Story<EmptyProps> = (
     }
 
     const fracNodeWithColor = applyColorMapToEditorNode(fracNode, colorMap);
-    const sum = Typesetter.typeset(row([fracNodeWithColor]), context);
+    const math = row([fracNodeWithColor]);
 
-    return <MathRenderer scene={sum} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 
 export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -388,18 +343,16 @@ export const ColorizedSum: Story<EmptyProps> = (args, {loaded: fontData}) => {
     }
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
+    const math = applyColorMapToEditorNode(
+        editNode,
+        colorMap,
+    ) as Editor.types.CharRow;
 
-    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
-    const prod = Typesetter.typeset(editNodeWithColor, context);
-
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 
 export const SimpleSemanticColoring: Story<EmptyProps> = (
@@ -446,17 +399,16 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
     }
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
-    const prod = Typesetter.typeset(editNodeWithColor, context);
+    const math = applyColorMapToEditorNode(
+        editNode,
+        colorMap,
+    ) as Editor.types.CharRow;
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 
 export const NestedSemanticColoring: Story<EmptyProps> = (
@@ -493,17 +445,16 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
     }
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const editNodeWithColor = applyColorMapToEditorNode(editNode, colorMap);
-    const prod = Typesetter.typeset(editNodeWithColor, context);
+    const math = applyColorMapToEditorNode(
+        editNode,
+        colorMap,
+    ) as Editor.types.CharRow;
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={math} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 
 export const TallDelimiters: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -518,16 +469,12 @@ export const TallDelimiters: Story<EmptyProps> = (args, {loaded: fontData}) => {
     ]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Static,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer row={editNode} style={style} fontSize={fontSize} />;
+        </FontDataContext.Provider>
+    );
 };
 
 export const TallDelimitersWithCursor: Story<EmptyProps> = (
@@ -566,19 +513,19 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     state = Editor.reducer(state, {type: "ArrowRight"});
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const options = {
-        showCursor: true,
-    };
-    const prod = Typesetter.typesetZipper(state.zipper, context, options);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={state.zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const TallDelimitersWithSelection: Story<EmptyProps> = (
@@ -617,19 +564,19 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     state = Editor.reducer(state, {type: "ArrowRight"});
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const options = {
-        showCursor: true,
-    };
-    const prod = Typesetter.typesetZipper(state.zipper, context, options);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={state.zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -659,19 +606,20 @@ export const CursorSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
     state = Editor.reducer(state, {type: "ArrowLeft"});
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Text,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const options = {
-        showCursor: true,
-    };
-    const prod = Typesetter.typesetZipper(state.zipper, context, options);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={state.zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+                mathStyle={Typesetter.MathStyle.Text}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -713,19 +661,20 @@ export const SelectionSize: Story<EmptyProps> = (args, {loaded: fontData}) => {
     state = Editor.reducer(state, {type: "ArrowLeft"});
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Text,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const options = {
-        showCursor: true,
-    };
-    const prod = Typesetter.typesetZipper(state.zipper, context, options);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                zipper={state.zipper}
+                style={style}
+                fontSize={fontSize}
+                showCursor={true}
+                renderMode={Typesetter.RenderMode.Dynamic}
+                mathStyle={Typesetter.MathStyle.Text}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
@@ -735,16 +684,18 @@ export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
     const editNode = Editor.builders.row([root([glyph("3")], [glyph("x")])]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={editNode}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
@@ -759,16 +710,18 @@ export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
     ]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={editNode}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
@@ -790,16 +743,18 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
     ]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={editNode}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+            ;
+        </FontDataContext.Provider>
+    );
 };
 
 export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
@@ -820,16 +775,17 @@ export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
     ]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={editNode}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+        </FontDataContext.Provider>
+    );
 };
 
 export const Cancelling: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -856,16 +812,17 @@ export const Cancelling: Story<EmptyProps> = (args, {loaded: fontData}) => {
     editNode.children[5].children[1].children[2].style.cancel = 4;
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(editNode, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={editNode}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+        </FontDataContext.Provider>
+    );
 };
 
 export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -903,16 +860,17 @@ export const Matrix: Story<EmptyProps> = (args, {loaded: fontData}) => {
     ]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(matrix, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={matrix}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+        </FontDataContext.Provider>
+    );
 };
 
 export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
@@ -965,14 +923,15 @@ export const VerticalWork: Story<EmptyProps> = (args, {loaded: fontData}) => {
     const verticalWork = builders.row([table]);
 
     const fontSize = 60;
-    const context: Typesetter.Context = {
-        fontData: fontData,
-        baseFontSize: fontSize,
-        mathStyle: Typesetter.MathStyle.Display,
-        renderMode: Typesetter.RenderMode.Dynamic,
-        cramped: false,
-    };
-    const prod = Typesetter.typeset(verticalWork, context);
 
-    return <MathRenderer scene={prod} style={style} />;
+    return (
+        <FontDataContext.Provider value={fontData}>
+            <MathRenderer
+                row={verticalWork}
+                style={style}
+                fontSize={fontSize}
+                renderMode={Typesetter.RenderMode.Dynamic}
+            />
+        </FontDataContext.Provider>
+    );
 };

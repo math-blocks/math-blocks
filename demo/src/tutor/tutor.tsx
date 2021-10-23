@@ -101,7 +101,6 @@ const Tutor: React.FunctionComponent = () => {
                         key={`question`}
                         readonly={false}
                         zipper={zipper}
-                        stepChecker={true}
                         // focus={mode === "edit"}
                         style={{marginTop: 8, flexGrow: 1}}
                         onChange={(zipper: Editor.Zipper) => {
