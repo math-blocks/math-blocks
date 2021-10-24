@@ -1,3 +1,5 @@
+import * as PathUtils from './path-utils';
+
 import type { Path, Selection } from './types';
 
 export const updateSelection = (
@@ -32,5 +34,31 @@ export const getSelectionRange = (
   return {
     start: Math.min(focus.offset, anchor.offset),
     end: Math.max(focus.offset, anchor.offset),
+  };
+};
+
+export const isCollapsed = (selection: Selection): boolean => {
+  return (
+    PathUtils.equals(selection.anchor.path, selection.focus.path) &&
+    selection.anchor.offset === selection.focus.offset
+  );
+};
+
+export const makeSelection = (path: Path, offset: number): Selection => {
+  return {
+    anchor: { path, offset },
+    focus: { path, offset },
+  };
+};
+
+export const makeSelection2 = (
+  anchorPath: Path,
+  anchorOffset: number,
+  focusPath: Path,
+  focusOffset: number,
+): Selection => {
+  return {
+    anchor: { path: anchorPath, offset: anchorOffset },
+    focus: { path: focusPath, offset: focusOffset },
   };
 };

@@ -8,11 +8,7 @@ export const moveRight = (state: State): State => {
 
   // Collapse selection if we aren't selecting and it hasn't
   // already been collapsed.
-  if (
-    !selecting &&
-    (!PathUtils.equals(selection.anchor.path, selection.focus.path) ||
-      selection.anchor.offset !== selection.focus.offset)
-  ) {
+  if (!selecting && !SelectionUtils.isCollapsed(selection)) {
     const { end } = SelectionUtils.getSelectionRange(selection);
     const newFocus = {
       path: selection.focus.path,
