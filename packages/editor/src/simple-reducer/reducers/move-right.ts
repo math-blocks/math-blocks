@@ -1,13 +1,13 @@
-import { traverseNode } from '../../char/transforms';
 import * as PathUtils from '../path-utils';
 import * as SelectionUtils from '../selection-utils';
 
 import type { State } from '../types';
-import type { CharNode } from '../../char/types';
 
 export const moveRight = (state: State): State => {
   const { selection, row, selecting } = state;
 
+  // Collapse selection if we aren't selecting and it hasn't
+  // already been collapsed.
   if (
     !selecting &&
     (!PathUtils.equals(selection.anchor.path, selection.focus.path) ||
@@ -27,25 +27,13 @@ export const moveRight = (state: State): State => {
     };
   }
 
-  let focusParent = null as CharNode | null;
-
-  traverseNode(
-    row,
-    {
-      exit: (node, path) => {
-        if (PathUtils.equals(path, selection.focus.path)) {
-          focusParent = node;
-        }
-      },
-    },
-    [],
-  );
+  const focusParent = PathUtils.getNodeAtPath(row, selection.focus.path);
 
   if (focusParent?.type === 'row') {
     const { focus } = selection;
 
+    // Check if we're before the end of the current row.
     if (selection.focus.offset < focusParent.children.length) {
-      // There are sibling nodes to the right of selection.focus.
       const { anchor, focus } = selection;
       const nextNode = focusParent.children[focus.offset];
       // We nav into if we're not selecting or if the anchor isn't
@@ -89,7 +77,8 @@ export const moveRight = (state: State): State => {
       };
     }
 
-    // We're at the end of the row
+    // We're at the end of a row
+
     if (focus.path.length > 0) {
       // if there's a sibling we can navigate to...
       const parentPath = focus.path.slice(0, -1);

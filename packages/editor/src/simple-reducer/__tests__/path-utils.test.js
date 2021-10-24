@@ -41,13 +41,13 @@ describe('PathUtils.getNodeAtPath', () => {
     expect(result).toEqual(row);
   });
 
-  it('should return null if the path isn\'t valid for the given root', () => {
+  it("should return null if the path isn't valid for the given root", () => {
     const result = PathUtils.getNodeAtPath(row, [7, 8]);
 
     expect(result).toBeNull();
   });
 
-  it("should return the correct node for a valid path", () => {
+  it('should return the correct node for a valid path', () => {
     const result = PathUtils.getNodeAtPath(row, [1, 1]);
 
     const exp = row.children[1].children[1];
