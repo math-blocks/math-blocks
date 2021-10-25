@@ -4,6 +4,7 @@ import type { Mutable } from 'utility-types';
 import * as Layout from '../layout';
 import { MathStyle } from '../enums';
 
+import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, VBox, Node } from '../types';
 
 const childContextForLimits = (context: Context): Context => {
@@ -29,8 +30,13 @@ const childContextForLimits = (context: Context): Context => {
 export const typesetLimits = (
   typesetChild: (index: number, context: Context) => HBox | null,
   node: Editor.types.CharLimits | Editor.ZLimits,
+  path: Path,
   context: Context,
-  typesetNode: (node: Editor.types.CharNode, context: Context) => Node,
+  typesetNode: (
+    node: Editor.types.CharNode,
+    path: Path,
+    context: Context,
+  ) => Node,
 ): VBox => {
   const childContext = childContextForLimits(context);
   const lowerBox = typesetChild(0, childContext) as Mutable<HBox> | null;
@@ -40,7 +46,8 @@ export const typesetLimits = (
     throw new Error('Lower limit should always be defined');
   }
 
-  const inner = typesetNode(node.inner, {
+  // TODO: figure out what the path should be for `inner`
+  const inner = typesetNode(node.inner, path, {
     ...context,
     operator: true,
   }) as Mutable<Node>;

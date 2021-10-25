@@ -14,6 +14,7 @@ import { typesetSubsup } from './typesetters/subsup';
 import { typesetTable } from './typesetters/table';
 import { maybeAddOperatorPadding } from './typesetters/atom';
 
+import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, Dim, Node } from './types';
 import type { Scene } from './scene-graph';
 
@@ -21,11 +22,19 @@ const { NodeType } = Editor;
 
 const typesetRow = (
   row: Editor.types.CharRow,
+  path: Path,
   context: Context,
   padFirstOperator?: boolean,
 ): HBox => {
   const box = Layout.makeStaticHBox(
-    typesetNodes(row.children, context, undefined, undefined, padFirstOperator),
+    typesetNodes(
+      row.children,
+      path,
+      context,
+      undefined,
+      undefined,
+      padFirstOperator,
+    ),
     context,
   ) as Mutable<HBox>;
   box.id = row.id;
@@ -79,6 +88,7 @@ const ensureMinDepthAndHeight = (dim: Mutable<Dim>, context: Context): void => {
 const getTypesetChildFromZipper = (
   zipper: Editor.Zipper,
   focus: Editor.Focus,
+  path: Path,
 ): ((index: number, context: Context) => HBox | null) => {
   return (
     index: number,
@@ -87,12 +97,16 @@ const getTypesetChildFromZipper = (
   ): HBox | null => {
     if (index < focus.left.length) {
       const child = focus.left[index];
-      return child && typesetRow(child, context, padFirstOperator);
+      return (
+        child && typesetRow(child, [...path, index], context, padFirstOperator)
+      );
     } else if (index === focus.left.length) {
-      return _typesetZipper(zipper, context, padFirstOperator);
+      return _typesetZipper(zipper, path, context, padFirstOperator);
     } else {
       const child = focus.right[index - focus.left.length - 1];
-      return child && typesetRow(child, context, padFirstOperator);
+      return (
+        child && typesetRow(child, [...path, index], context, padFirstOperator)
+      );
     }
   };
 };
@@ -101,6 +115,7 @@ const getTypesetChildFromNodes = <
   T extends readonly (Editor.types.CharRow | null)[],
 >(
   children: T,
+  path: Path,
 ): ((index: number, context: Context) => HBox | null) => {
   return (
     index: number,
@@ -108,18 +123,21 @@ const getTypesetChildFromNodes = <
     padFirstOperator?: boolean,
   ): HBox | null => {
     const child = children[index];
-    return child && typesetRow(child, context, padFirstOperator);
+    return (
+      child && typesetRow(child, [...path, index], context, padFirstOperator)
+    );
   };
 };
 
 const typesetFocus = (
   focus: Editor.Focus,
   zipper: Editor.Zipper,
+  path: Path,
   context: Context,
   prevEditNode?: Editor.types.CharNode,
   prevLayoutNode?: Node,
 ): Node => {
-  const typesetChild = getTypesetChildFromZipper(zipper, focus);
+  const typesetChild = getTypesetChildFromZipper(zipper, focus, path);
   switch (focus.type) {
     case 'zfrac': {
       return typesetFrac(typesetChild, focus, context);
@@ -137,7 +155,7 @@ const typesetFocus = (
       return typesetRoot(typesetChild, focus, context);
     }
     case 'zlimits': {
-      return typesetLimits(typesetChild, focus, context, typesetNode);
+      return typesetLimits(typesetChild, focus, path, context, typesetNode);
     }
     case 'zdelimited': {
       return typesetDelimited(typesetChild, focus, context);
@@ -152,6 +170,7 @@ const typesetFocus = (
 
 const typesetNode = (
   node: Editor.types.CharNode,
+  path: Path,
   context: Context,
   prevEditNode?: Editor.types.CharNode | Editor.Focus,
   prevLayoutNode?: Node,
@@ -160,15 +179,15 @@ const typesetNode = (
   switch (node.type) {
     case NodeType.Row: {
       // The only time this can happen is if limits.inner is a row
-      return typesetRow(node, context);
+      return typesetRow(node, path, context);
     }
     case NodeType.Frac: {
-      const typesetChild = getTypesetChildFromNodes(node.children);
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetFrac(typesetChild, node, context);
     }
     case NodeType.SubSup: {
       return typesetSubsup(
-        getTypesetChildFromNodes(node.children),
+        getTypesetChildFromNodes(node.children, path),
         node,
         context,
         prevEditNode,
@@ -176,19 +195,19 @@ const typesetNode = (
       );
     }
     case NodeType.Root: {
-      const typesetChild = getTypesetChildFromNodes(node.children);
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetRoot(typesetChild, node, context);
     }
     case NodeType.Limits: {
-      const typesetChild = getTypesetChildFromNodes(node.children);
-      return typesetLimits(typesetChild, node, context, typesetNode);
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
+      return typesetLimits(typesetChild, node, path, context, typesetNode);
     }
     case NodeType.Delimited: {
-      const typesetChild = getTypesetChildFromNodes(node.children);
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetDelimited(typesetChild, node, context);
     }
     case NodeType.Table: {
-      const typesetChild = getTypesetChildFromNodes(node.children);
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetTable(typesetChild, node, context);
     }
     case 'char': {
@@ -206,6 +225,7 @@ const typesetNode = (
 
 const typesetNodes = (
   nodes: readonly Editor.types.CharNode[],
+  path: Path,
   context: Context,
   prevChild?: Editor.types.CharNode | Editor.Focus,
   prevLayoutNode?: Node,
@@ -214,6 +234,7 @@ const typesetNodes = (
   return nodes.map((child, index) => {
     const result = typesetNode(
       child,
+      path,
       context,
       prevChild,
       prevLayoutNode,
@@ -227,6 +248,7 @@ const typesetNodes = (
 
 const _typesetZipper = (
   zipper: Editor.Zipper,
+  path: Path,
   context: Context,
   padFirstOperator?: boolean,
 ): HBox => {
@@ -244,6 +266,7 @@ const _typesetZipper = (
     nodes.push(
       ...typesetNodes(
         row.left,
+        path,
         context,
         undefined,
         undefined,
@@ -254,6 +277,7 @@ const _typesetZipper = (
       typesetFocus(
         crumb.focus,
         nextZipper,
+        path,
         context,
         row.left[row.left.length - 1], // previous edit node
         nodes[nodes.length - 1], // previous layout node
@@ -262,6 +286,7 @@ const _typesetZipper = (
     nodes.push(
       ...typesetNodes(
         row.right,
+        path,
         context,
         crumb.focus, // previous edit node
         nodes[nodes.length - 1], // previous layout node
@@ -287,6 +312,7 @@ const _typesetZipper = (
     const input = [...row.left, ...row.selection, ...row.right];
     const output = typesetNodes(
       input,
+      path,
       context,
       undefined,
       undefined,
@@ -329,7 +355,8 @@ export const typesetZipper = (
   context: Context,
   options: Options = {},
 ): Scene => {
-  const box = _typesetZipper(zipper, context) as HBox;
+  const path: Path = [];
+  const box = _typesetZipper(zipper, path, context) as HBox;
   return processBox(box, context.fontData, options);
 };
 
@@ -338,6 +365,7 @@ export const typeset = (
   context: Context,
   options: Options = {},
 ): Scene => {
-  const box = typesetNode(node, context) as HBox;
+  const path: Path = [];
+  const box = typesetNode(node, path, context) as HBox;
   return processBox(box, context.fontData, options);
 };
