@@ -10,7 +10,14 @@ export { print } from './printer/printer';
 export { parse } from './parser/parser';
 export { reducer } from './reducer/reducer';
 export { reducer as simpleReducer } from './simple-reducer/reducer';
-export type { Path } from './simple-reducer/types';
+export type {
+  Path,
+  Selection,
+  State as SimpleState,
+  Action as SimpleAction,
+} from './simple-reducer/types';
+export * as PathUtils from './simple-reducer/path-utils';
+export * as SelectionUtils from './simple-reducer/selection-utils';
 export { zipperToState } from './reducer/util';
 export {
   zipperToRow,

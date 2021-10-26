@@ -18,7 +18,7 @@ import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, Dim, Node } from './types';
 import type { Scene } from './scene-graph';
 
-const { NodeType } = Editor;
+const { NodeType, SelectionUtils, PathUtils } = Editor;
 
 const typesetRow = (
   row: Editor.types.CharRow,
@@ -26,17 +26,42 @@ const typesetRow = (
   context: Context,
   padFirstOperator?: boolean,
 ): HBox => {
-  const box = Layout.makeStaticHBox(
-    typesetNodes(
-      row.children,
-      path,
-      context,
-      undefined,
-      undefined,
-      padFirstOperator,
-    ),
+  const output = typesetNodes(
+    row.children,
+    path,
     context,
-  ) as Mutable<HBox>;
+    undefined,
+    undefined,
+    padFirstOperator,
+  );
+
+  const { selection } = context;
+  if (selection && PathUtils.equals(path, selection.focus.path)) {
+    const { start, end } = SelectionUtils.getSelectionRange(selection);
+    const left = output.slice(0, start);
+    const middle = output.slice(start, end);
+    const right = output.slice(end);
+
+    const box = (
+      SelectionUtils.isCollapsed(selection)
+        ? Layout.makeCursorHBox(left, right, context)
+        : Layout.makeSelectionHBox(left, middle, right, context)
+    ) as Mutable<HBox>;
+
+    box.id = row.id;
+    box.style = {
+      ...box.style,
+      color: row.style.color,
+    };
+
+    if (context.renderMode === RenderMode.Dynamic) {
+      ensureMinDepthAndHeight(box, context);
+    }
+
+    return box;
+  }
+
+  const box = Layout.makeStaticHBox(output, context) as Mutable<HBox>;
   box.id = row.id;
   box.style = {
     ...box.style,
@@ -234,7 +259,7 @@ const typesetNodes = (
   return nodes.map((child, index) => {
     const result = typesetNode(
       child,
-      path,
+      [...path, index],
       context,
       prevChild,
       prevLayoutNode,
