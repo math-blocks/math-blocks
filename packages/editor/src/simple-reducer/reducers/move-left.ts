@@ -60,7 +60,6 @@ export const moveLeft = (state: State): State => {
             path: [...focus.path, prevOffset, lastChildIndex],
             offset: lastChildNode.children.length,
           };
-          newFocus; // ?
           return {
             ...state,
             selection: SelectionUtils.updateSelection(
