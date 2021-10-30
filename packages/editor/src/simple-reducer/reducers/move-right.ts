@@ -32,19 +32,34 @@ export const moveRight = (state: State): State => {
     if (selection.focus.offset < focusParent.children.length) {
       const { anchor, focus } = selection;
       const nextNode = focusParent.children[focus.offset];
+      const isStrictPrefix = PathUtils.isPrefix(focus.path, anchor.path);
       // We nav into if we're not selecting or if the anchor isn't
       // a descendent of the path we're nav-ing into
-      if (
-        'children' in nextNode &&
-        (!selecting || PathUtils.isPrefix(focus.path, anchor.path))
-      ) {
-        const firstChildIndex = nextNode.children.findIndex(
-          (child) => child != null,
-        );
-        if (firstChildIndex !== -1) {
+      if ('children' in nextNode) {
+        if (!selecting) {
+          const firstChildIndex = nextNode.children.findIndex(
+            (child) => child != null,
+          );
+          if (firstChildIndex !== -1) {
+            // nav into
+            const newFocus = {
+              path: [...focus.path, focus.offset, firstChildIndex],
+              offset: 0,
+            };
+            return {
+              ...state,
+              selection: SelectionUtils.updateSelection(
+                selection,
+                selecting,
+                newFocus,
+              ),
+            };
+          }
+        } else if (isStrictPrefix && anchor.path.length > focus.path.length) {
+          const childIndex = anchor.path[focus.path.length + 1];
           // nav into
           const newFocus = {
-            path: [...focus.path, focus.offset, firstChildIndex],
+            path: [...focus.path, focus.offset, childIndex],
             offset: 0,
           };
           return {
@@ -79,7 +94,7 @@ export const moveRight = (state: State): State => {
       // if there's a sibling we can navigate to...
       const parentPath = focus.path.slice(0, -1);
       const parentNode = PathUtils.getNodeAtPath(row, parentPath);
-      if (parentNode && 'children' in parentNode) {
+      if (parentNode && 'children' in parentNode && !selecting) {
         const parentIndex = focus.path[focus.path.length - 1];
         const nextChildIndex = parentNode.children.findIndex(
           (child, index) => index > parentIndex && child,

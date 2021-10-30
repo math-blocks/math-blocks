@@ -46,28 +46,46 @@ export const moveLeft = (state: State): State => {
       const { anchor, focus } = selection;
       const prevOffset = focus.offset - 1;
       const prevNode = focusParent.children[prevOffset];
+      const isStrictPrefix = PathUtils.isPrefix(focus.path, anchor.path);
       // We nav into if we're not selecting or if the anchor isn't
       // a descendent of the path we're nav-ing into
-      if (
-        'children' in prevNode &&
-        (!selecting || PathUtils.isPrefix(focus.path, anchor.path))
-      ) {
-        const lastChildIndex = findLastIndex(prevNode.children);
-        const lastChildNode = prevNode.children[lastChildIndex];
-        if (lastChildNode && 'children' in lastChildNode) {
-          // nav into
-          const newFocus = {
-            path: [...focus.path, prevOffset, lastChildIndex],
-            offset: lastChildNode.children.length,
-          };
-          return {
-            ...state,
-            selection: SelectionUtils.updateSelection(
-              selection,
-              selecting,
-              newFocus,
-            ),
-          };
+      if ('children' in prevNode) {
+        if (!selecting) {
+          const lastChildIndex = findLastIndex(prevNode.children);
+          const lastChildNode = prevNode.children[lastChildIndex];
+          if (lastChildNode && 'children' in lastChildNode) {
+            // nav into
+            const newFocus = {
+              path: [...focus.path, prevOffset, lastChildIndex],
+              offset: lastChildNode.children.length,
+            };
+            return {
+              ...state,
+              selection: SelectionUtils.updateSelection(
+                selection,
+                selecting,
+                newFocus,
+              ),
+            };
+          }
+        } else if (isStrictPrefix && anchor.path.length > focus.path.length) {
+          const childIndex = anchor.path[focus.path.length + 1];
+          const lastChildNode = prevNode.children[childIndex];
+          if (lastChildNode && 'children' in lastChildNode) {
+            // nav into
+            const newFocus = {
+              path: [...focus.path, prevOffset, childIndex],
+              offset: lastChildNode.children.length,
+            };
+            return {
+              ...state,
+              selection: SelectionUtils.updateSelection(
+                selection,
+                selecting,
+                newFocus,
+              ),
+            };
+          }
         }
       }
 
@@ -89,7 +107,7 @@ export const moveLeft = (state: State): State => {
         // we aren't in the root
         const parentPath = focus.path.slice(0, -1);
         const parentNode = PathUtils.getNodeAtPath(row, parentPath);
-        if (parentNode && 'children' in parentNode) {
+        if (parentNode && 'children' in parentNode && !selecting) {
           const parentIndex = focus.path[focus.path.length - 1];
           const prevChildIndex = findPrevIndex(
             parentNode.children,

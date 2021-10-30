@@ -197,6 +197,94 @@ describe('moveRight', () => {
         SelectionUtils.makeSelection2([1, 1], 1, [1, 1], 0),
       );
     });
+
+    it('should skip over complex nodes', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.char('a'),
+          b.char('+'),
+          b.frac([b.char('b')], [b.char('c')]),
+        ]),
+        selection: SelectionUtils.makeSelection2([], 0, [], 2),
+        selecting: true,
+      };
+      const action: Action = { type: 'ArrowRight' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.selection).toEqual(
+        SelectionUtils.makeSelection2([], 0, [], 3),
+      );
+    });
+
+    it('navigate out at the end of a numerator', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.char('a'),
+          b.char('+'),
+          b.frac([b.char('b')], [b.char('c')]),
+        ]),
+        selection: SelectionUtils.makeSelection2([2, 0], 0, [2, 0], 1),
+        selecting: true,
+      };
+      const action: Action = { type: 'ArrowRight' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.selection).toEqual(
+        SelectionUtils.makeSelection2([2, 0], 0, [], 3),
+      );
+    });
+
+    it('navigate out at the end of a denominator', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.char('a'),
+          b.char('+'),
+          b.frac([b.char('b')], [b.char('c')]),
+        ]),
+        selection: SelectionUtils.makeSelection2([2, 1], 0, [2, 1], 1),
+        selecting: true,
+      };
+      const action: Action = { type: 'ArrowRight' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.selection).toEqual(
+        SelectionUtils.makeSelection2([2, 1], 0, [], 3),
+      );
+    });
+
+    it('should move into the same child as the anchor', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.char('a'),
+          b.char('+'),
+          b.frac([b.char('b')], [b.char('c')]),
+        ]),
+        selection: SelectionUtils.makeSelection2([2, 1], 1, [], 2),
+        selecting: true,
+      };
+      const action: Action = { type: 'ArrowRight' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.selection).toEqual(
+        SelectionUtils.makeSelection2([2, 1], 1, [2, 1], 0),
+      );
+    });
   });
 
   describe('collapsing selections', () => {

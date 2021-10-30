@@ -9,7 +9,7 @@ export const equals = (path1: Path, path2: Path): boolean => {
 };
 
 export const isPrefix = (prefixPath: Path, otherPath: Path): boolean => {
-  if (prefixPath.length > otherPath.length) {
+  if (prefixPath.length >= otherPath.length) {
     return false;
   }
 
