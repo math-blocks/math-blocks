@@ -1,4 +1,3 @@
-import { traverseNode } from '../../char/transforms';
 import * as b from '../../char/builders';
 
 import * as PathUtils from '../path-utils';
@@ -12,25 +11,14 @@ export const insertChar = (state: State, char: string): State => {
 
   const { focus } = selection;
   const { start, end } = SelectionUtils.getSelectionRange(selection);
-  const newRow = traverseNode(
-    row,
-    {
-      exit: (node, path) => {
-        if (
-          PathUtils.equals(path, selection.focus.path) &&
-          'children' in node
-        ) {
-          const beforeSelection = node.children.slice(0, start);
-          const afterSelection = node.children.slice(end);
-          return {
-            ...node,
-            children: [...beforeSelection, newNode, ...afterSelection],
-          };
-        }
-      },
-    },
-    [],
-  );
+  const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
+    const beforeSelection = node.children.slice(0, start);
+    const afterSelection = node.children.slice(end);
+    return {
+      ...node,
+      children: [...beforeSelection, newNode, ...afterSelection],
+    };
+  });
 
   if (newRow === row) {
     return state;
