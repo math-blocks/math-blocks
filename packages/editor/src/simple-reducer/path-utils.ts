@@ -1,4 +1,6 @@
-import type { CharNode } from '../char/types';
+import { traverseNode } from '../char/transforms';
+
+import type { CharNode, CharRow } from '../char/types';
 import type { Path } from './types';
 
 export const equals = (path1: Path, path2: Path): boolean => {
@@ -30,4 +32,24 @@ export const getNodeAtPath = (root: CharNode, path: Path): CharNode | null => {
   }
 
   return null;
+};
+
+export const updateRowAtPath = (
+  root: CharRow,
+  path: Path,
+  callback: (rowToUpdate: CharRow) => CharRow | void,
+): CharRow => {
+  return traverseNode(
+    root,
+    {
+      // @ts-expect-error: it's hard to convince TypeScript that this is safe
+      exit: (node, currentPath) => {
+        if (equals(currentPath, path) && node.type === 'row') {
+          return callback(node);
+        }
+        return undefined;
+      },
+    },
+    [],
+  );
 };

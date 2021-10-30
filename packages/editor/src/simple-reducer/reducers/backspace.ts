@@ -1,32 +1,9 @@
-import { traverseNode } from '../../char/transforms';
-
 import * as PathUtils from '../path-utils';
 import * as SelectionUtils from '../selection-utils';
 
 import { moveLeft } from './move-left';
 
-import type { CharRow } from '../../char/types';
-import type { Path, State } from '../types';
-
-const updateRowAtPath = (
-  root: CharRow,
-  path: Path,
-  callback: (rowToUpdate: CharRow) => CharRow | void,
-): CharRow => {
-  return traverseNode(
-    root,
-    {
-      // @ts-expect-error: it's hard to convince TypeScript that this is safe
-      exit: (node, currentPath) => {
-        if (PathUtils.equals(currentPath, path) && node.type === 'row') {
-          return callback(node);
-        }
-        return undefined;
-      },
-    },
-    [],
-  );
-};
+import type { State } from '../types';
 
 export const backspace = (state: State): State => {
   const { selection, row } = state;
@@ -39,14 +16,18 @@ export const backspace = (state: State): State => {
       // Deletes the whole range.
       const { start, end } = SelectionUtils.getSelectionRange(selection);
 
-      const newRow = updateRowAtPath(row, selection.focus.path, (node) => {
-        const beforeSelection = node.children.slice(0, start);
-        const afterSelection = node.children.slice(end);
-        return {
-          ...node,
-          children: [...beforeSelection, ...afterSelection],
-        };
-      });
+      const newRow = PathUtils.updateRowAtPath(
+        row,
+        selection.focus.path,
+        (node) => {
+          const beforeSelection = node.children.slice(0, start);
+          const afterSelection = node.children.slice(end);
+          return {
+            ...node,
+            children: [...beforeSelection, ...afterSelection],
+          };
+        },
+      );
 
       if (newRow !== row) {
         // Moves the cursor to where the start of the selection was.
@@ -67,14 +48,18 @@ export const backspace = (state: State): State => {
 
       if (prevNode.type === 'char') {
         // Deletes the char node to the left.
-        const newRow = updateRowAtPath(row, selection.focus.path, (node) => {
-          const beforeSelection = node.children.slice(0, focus.offset - 1);
-          const afterSelection = node.children.slice(focus.offset);
-          return {
-            ...node,
-            children: [...beforeSelection, ...afterSelection],
-          };
-        });
+        const newRow = PathUtils.updateRowAtPath(
+          row,
+          selection.focus.path,
+          (node) => {
+            const beforeSelection = node.children.slice(0, focus.offset - 1);
+            const afterSelection = node.children.slice(focus.offset);
+            return {
+              ...node,
+              children: [...beforeSelection, ...afterSelection],
+            };
+          },
+        );
 
         if (newRow !== row) {
           const newFocus = {
@@ -103,7 +88,7 @@ export const backspace = (state: State): State => {
 
       let offsetAdjustment = 0;
 
-      const newRow = updateRowAtPath(row, grandparentPath, (node) => {
+      const newRow = PathUtils.updateRowAtPath(row, grandparentPath, (node) => {
         if (
           parentNode &&
           parentNode.type !== 'row' &&
