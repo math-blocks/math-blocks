@@ -5,6 +5,10 @@ import { moveLeft } from './move-left';
 
 import type { State } from '../types';
 
+// TODO:
+// - add special casing to handle deleting delimiters so that it basically
+//   undoes what completing a pending paren does
+
 export const backspace = (state: State): State => {
   const { selection, row } = state;
   const { focus } = selection;

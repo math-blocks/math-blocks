@@ -1,4 +1,5 @@
 import * as b from '../../char/builders';
+import { CharDelimited } from '../../char/types';
 
 import * as PathUtils from '../path-utils';
 import * as SelectionUtils from '../selection-utils';
@@ -75,27 +76,90 @@ export const parens = (
 
   const focusRow = PathUtils.getNodeAtPath(row, focus.path);
   if (focusRow?.type === 'row') {
-    // TODO: check if we're inside a 'delimited' node with a pending
-    // parens matching the 'char' the user pressed.
+    // If we're inside a delimited node with a pending paren and `char` matches
+    // the pending paren, update the contents of the delimited and its parent and
+    // set `pending: false` on the delimited.
     if (focus.path.length > 0) {
       const parentNode = PathUtils.getNodeAtPath(row, focus.path.slice(0, -1));
       if (parentNode?.type === 'delimited') {
-        console.log('Inside delimited node');
-        console.log(parentNode);
+        const grandparentPath = focus.path.slice(0, -2);
+        const grandparentIndex = focus.path[focus.path.length - 2];
         if (parentNode.leftDelim.pending && leftGlyphMap[char] === char) {
-          // mark the leftDelim as not pending
-          // reposition the leftDelim so that it's immediately to the left
-          // of where the cursor currently is
+          const newRow = PathUtils.updateRowAtPath(
+            row,
+            grandparentPath,
+            (node) => {
+              const inner = parentNode.children[0];
+              const beforeLeftParen = inner.children.slice(0, focus.offset);
+              const afterLeftParen = inner.children.slice(focus.offset);
+              const newParens: CharDelimited = {
+                ...parentNode,
+                children: [b.row(afterLeftParen)],
+                leftDelim: {
+                  ...parentNode.leftDelim,
+                  pending: false,
+                },
+              };
+              return {
+                ...node,
+                children: [
+                  ...beforeLeftParen,
+                  newParens,
+                  ...node.children.slice(1),
+                ],
+              };
+            },
+          );
+
+          const newFocus = {
+            path: [...grandparentPath, focus.offset, 0],
+            offset: 0,
+          };
+
+          return {
+            ...state,
+            row: newRow,
+            selection: { anchor: newFocus, focus: newFocus },
+          };
         }
         if (parentNode.rightDelim.pending && rightGlyphMap[char] === char) {
-          // mark the rightDelim as not pending
-          // reposition the rightDelim so that it's immediately to the right
-          // of where the cursor currently is
-        }
+          const newRow = PathUtils.updateRowAtPath(
+            row,
+            grandparentPath,
+            (node) => {
+              const inner = parentNode.children[0];
+              const beforeRightParen = inner.children.slice(0, focus.offset);
+              const afterRightParen = inner.children.slice(focus.offset);
+              const newParens: CharDelimited = {
+                ...parentNode,
+                children: [b.row(beforeRightParen)],
+                rightDelim: {
+                  ...parentNode.rightDelim,
+                  pending: false,
+                },
+              };
+              return {
+                ...node,
+                children: [
+                  ...node.children.slice(0, -1),
+                  newParens,
+                  ...afterRightParen,
+                ],
+              };
+            },
+          );
 
-        // TODO: check if the parens matches the 'char' and is pending
-        // if it is, set it to be not pending
-        return state;
+          const newFocus = {
+            path: [...grandparentPath],
+            offset: grandparentIndex + 1,
+          };
+
+          return {
+            ...state,
+            row: newRow,
+            selection: { anchor: newFocus, focus: newFocus },
+          };
+        }
       }
     }
 
