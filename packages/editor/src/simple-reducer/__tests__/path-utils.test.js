@@ -3,10 +3,10 @@ import * as b from '../../char/builders';
 import * as PathUtils from '../path-utils';
 
 describe('PathUtils.isPrefix', () => {
-  it('should return true if the paths are the same', () => {
+  it('should return false if the paths are the same', () => {
     const result = PathUtils.isPrefix([1, 2, 3], [1, 2, 3]);
 
-    expect(result).toBe(true);
+    expect(result).toBe(false);
   });
 
   it('should return true even if the second arg has extra elements', () => {
