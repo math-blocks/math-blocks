@@ -30,14 +30,11 @@ export const parens = (
   state: State,
   char: '(' | ')' | '[' | ']' | '{' | '}' | '|',
 ): State => {
-  // wiggle your big toe
-  // - replace everything to the right the current cursor location with a parens node
   const { selection, row } = state;
   const { focus } = selection;
 
   if (!SelectionUtils.isCollapsed(selection)) {
-    // replace the selection with a parens node
-
+    // Replaces the selection with a parens node.
     const { start, end } = SelectionUtils.getSelectionRange(selection);
 
     const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
