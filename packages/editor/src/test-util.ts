@@ -18,6 +18,8 @@ export const toEqualMath = (
   };
 };
 
+// TODO: remove the ids from received and actual and then use the regular
+// comparison method
 export const toEqualEditorNode = (
   received: types.CharNode,
   actual: types.CharNode,

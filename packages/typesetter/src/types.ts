@@ -1,5 +1,6 @@
 import { MathStyle, RenderMode, RadicalDegreeAlgorithm } from './enums';
 
+import type { Selection } from '@math-blocks/editor';
 import type { FontData } from '@math-blocks/opentype';
 
 export type Context = {
@@ -12,6 +13,7 @@ export type Context = {
   readonly operator?: boolean; // if true, doesn't use italics for latin glyphs
   readonly renderMode: RenderMode;
   readonly radicalDegreeAlgorithm?: RadicalDegreeAlgorithm;
+  readonly selection?: Selection;
 };
 
 export type Dist = number;
