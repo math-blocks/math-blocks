@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 309.68 44.94" width="309.68" height="44.94" style="background:white">
-    <g fill="currentColor" stroke="currentColor">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 310 45" width="310" height="45" style="background:white;vertical-align:-5px">
+    <g fill="currentColor" stroke="currentColor" transform="translate(0,0.060000000000002274)">
         <g transform="translate(0,39.96)" id="7">
             <g transform="translate(64.32,0)" id="2"></g>
             <g transform="translate(171,0)" id="4"></g>

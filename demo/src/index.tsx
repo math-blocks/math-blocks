@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Link, Switch, Route, HashRouter as Router } from 'react-router-dom';
 
+import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
 import SimpleEditorPage from './editor/simple-editor-page';
 import MathmlPage from './mathml/mathml-page';
@@ -19,6 +20,9 @@ if (document.body) {
 ReactDOM.render(
   <Router>
     <Switch>
+      <Route path="/baseline">
+        <BaselinePage />
+      </Route>
       <Route path="/editor">
         <EditorPage />
       </Route>
@@ -43,6 +47,9 @@ ReactDOM.render(
       <Route path="/">
         <h1>MathBlocks Demos</h1>
         <ul>
+          <li>
+            <Link to="/baseline">Baseline</Link>
+          </li>
           <li>
             <Link to="/editor">Editor</Link>
           </li>

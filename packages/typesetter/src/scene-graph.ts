@@ -588,8 +588,8 @@ export const processBox = (
   const hitboxes = _processBox(box, loc, { ...context, layer: 'hitboxes' });
 
   const scene: Scene = {
-    width: contentLayer.bounds.width,
-    height: contentLayer.bounds.height + contentLayer.bounds.depth,
+    width: Math.ceil(contentLayer.bounds.width),
+    height: Math.ceil(contentLayer.bounds.height + contentLayer.bounds.depth),
     content: contentLayer,
     selection: selectionLayer,
     debug: debugLayer,

@@ -109,6 +109,9 @@ export const typesetFrac = (
     );
   }
 
+  // TODO: use FractionNumeratorDisplayStyleShiftUp/FractionNumeratorShiftUp
+  // to determine what the actually gap should be between the numerator and
+  // the fraction line.
   const upList = makeList(minNumGap, numBox);
   const dnList = makeList(minDenGap, denBox);
   const stroke = Layout.makeStaticHBox(
