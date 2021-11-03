@@ -151,6 +151,8 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
   const { width, height } = scene;
   const padding = CURSOR_WIDTH / 2;
   const viewBox = `-${padding} 0 ${width + CURSOR_WIDTH} ${height}`;
+  const { bounds } = scene.content;
+  const yAdjust = height - (bounds.depth + bounds.height);
 
   return (
     <svg
@@ -161,7 +163,11 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
       style={style}
       ref={ref}
     >
-      <g fill="currentColor" stroke="currentColor">
+      <g
+        fill="currentColor"
+        stroke="currentColor"
+        transform={`translate(0,${yAdjust})`}
+      >
         <Group {...scene.selection} />
         {/**
          * We set 'fill' and stroke to 'currentColor' so that the base
