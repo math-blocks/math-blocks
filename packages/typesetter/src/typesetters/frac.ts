@@ -46,20 +46,20 @@ export const typesetFrac = (
   const { constants } = context.fontData.font.math;
 
   const fontSize = Layout.fontSizeForContext(context);
-  const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
-  const shift = (fontSize * constants.axisHeight.value) / 1000;
+  const thickness = fontSize * constants.fractionRuleThickness;
+  const shift = fontSize * constants.axisHeight;
 
   // If useDisplayStyle is false then we need to reduce the font size of
   // numerators and denominators
   const useDisplayStyle = mathStyle === MathStyle.Display;
 
   const minDenGap = useDisplayStyle
-    ? (fontSize * constants.fractionDenomDisplayStyleGapMin.value) / 1000
-    : (fontSize * constants.fractionDenominatorGapMin.value) / 1000;
+    ? fontSize * constants.fractionDenomDisplayStyleGapMin
+    : fontSize * constants.fractionDenominatorGapMin;
 
   const minNumGap = useDisplayStyle
-    ? (fontSize * constants.fractionNumDisplayStyleGapMin.value) / 1000
-    : (fontSize * constants.fractionNumeratorGapMin.value) / 1000;
+    ? fontSize * constants.fractionNumDisplayStyleGapMin
+    : fontSize * constants.fractionNumeratorGapMin;
 
   // TODO: fix this code once we have debugging outlines in place, right now
   // gap between the fraction bar and the numerator/denominator is too big
@@ -67,12 +67,12 @@ export const typesetFrac = (
   // Check context.renderMode === RenderMode.Static when doing so.
 
   // const numeratorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000
-  //     : (fontSize * constants.fractionNumeratorShiftUp) / 1000;
+  //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp)
+  //     : (fontSize * constants.fractionNumeratorShiftUp);
 
   // const denominatorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown) / 1000
-  //     : (fontSize * constants.fractionDenominatorShiftDown) / 1000;
+  //     ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown)
+  //     : (fontSize * constants.fractionDenominatorShiftDown);
 
   // const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
   // const denGap = Math.max(

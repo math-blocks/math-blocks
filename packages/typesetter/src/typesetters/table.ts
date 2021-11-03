@@ -262,8 +262,7 @@ export const typesetTable = (
     const result = Layout.makeStaticHBox(row.children, context);
     const style = node.rowStyles?.[index];
     if (style?.border === 'top') {
-      const thickness =
-        (fontSize * constants.fractionRuleThickness.value) / 1000;
+      const thickness = fontSize * constants.fractionRuleThickness;
       const stroke = Layout.makeStaticHBox(
         [Layout.makeHRule(thickness, width)],
         context,
@@ -273,12 +272,12 @@ export const typesetTable = (
       const useDisplayStyle = mathStyle === MathStyle.Display;
 
       const minDenGap = useDisplayStyle
-        ? (fontSize * constants.fractionDenomDisplayStyleGapMin.value) / 1000
-        : (fontSize * constants.fractionDenominatorGapMin.value) / 1000;
+        ? fontSize * constants.fractionDenomDisplayStyleGapMin
+        : fontSize * constants.fractionDenominatorGapMin;
 
       const minNumGap = useDisplayStyle
-        ? (fontSize * constants.fractionNumDisplayStyleGapMin.value) / 1000
-        : (fontSize * constants.fractionNumeratorGapMin.value) / 1000;
+        ? fontSize * constants.fractionNumDisplayStyleGapMin
+        : fontSize * constants.fractionNumeratorGapMin;
 
       return Layout.makeVBox(
         width,
@@ -299,7 +298,7 @@ export const typesetTable = (
     context,
   ) as Mutable<VBox>;
 
-  const shift = (fontSize * constants.axisHeight.value) / 1000;
+  const shift = fontSize * constants.axisHeight;
   // Equalize the depth and height and then shift up so the center of the
   // table aligns with the central axis.
   const vsize = Layout.vsize(inner);

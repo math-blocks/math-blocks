@@ -1,5 +1,4 @@
 import { UnreachableCaseError } from '@math-blocks/core';
-import type { MathValueRecord } from '@math-blocks/opentype';
 
 import { MathStyle } from './enums';
 import type {
@@ -297,13 +296,10 @@ export const makeVBox = (
 };
 
 export const getConstantValue = (
-  constant: MathValueRecord,
+  constant: number,
   context: Context,
 ): number => {
-  const { font } = context.fontData;
-  const fontSize = fontSizeForContext(context);
-
-  return (constant.value * fontSize) / font.head.unitsPerEm;
+  return constant * fontSizeForContext(context);
 };
 
 // TODO: return the font size instead of the multiplier

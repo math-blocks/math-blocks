@@ -345,7 +345,7 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
 
   if (cancelRegion !== null && layer === 'content') {
     const thickness =
-      (fontSize * font.math.constants.fractionRuleThickness.value) /
+      (fontSize * font.math.constants.fractionRuleThickness) /
       font.head.unitsPerEm;
     children.push({
       type: 'line',

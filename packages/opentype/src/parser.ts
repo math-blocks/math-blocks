@@ -70,6 +70,16 @@ export const parseDirectory = async (blob: Blob): Promise<TableDirectory> => {
 export const parse = async (blob: Blob): Promise<Font> => {
   const dir = await parseDirectory(blob);
 
+  const headTableRecord = dir.tableRecords['head'];
+  if (!headTableRecord) {
+    throw new Error("No TableRecord for 'head' table");
+  }
+  const headBlob = blob.slice(
+    headTableRecord.offset,
+    headTableRecord.offset + headTableRecord.length,
+  );
+  const head = await parseHead(headBlob);
+
   // TODO: move the blob for each table record into the parseDirector result
   const cmapTableRecord = dir.tableRecords['cmap'];
   if (!cmapTableRecord) {
@@ -89,17 +99,7 @@ export const parse = async (blob: Blob): Promise<Font> => {
     mathTableRecord.offset,
     mathTableRecord.offset + mathTableRecord.length,
   );
-  const math = await parseMATH(mathBlob);
-
-  const headTableRecord = dir.tableRecords['head'];
-  if (!headTableRecord) {
-    throw new Error("No TableRecord for 'head' table");
-  }
-  const headBlob = blob.slice(
-    headTableRecord.offset,
-    headTableRecord.offset + headTableRecord.length,
-  );
-  const head = await parseHead(headBlob);
+  const math = await parseMATH(mathBlob, head.unitsPerEm);
 
   const cffTableRecord = dir.tableRecords['CFF '];
   if (!cffTableRecord) {

@@ -80,215 +80,62 @@ Object {
 
 exports[`parse math MathContants constants should have expected values 1`] = `
 Object {
-  "accentBaseHeight": Object {
-    "deviceOffset": 0,
-    "value": 480,
-  },
-  "axisHeight": Object {
-    "deviceOffset": 0,
-    "value": 258,
-  },
-  "delimitedSubFormulaMinHeight": 1325,
-  "displayOperatorMinHeight": 1800,
-  "flattenedAccentBaseHeight": Object {
-    "deviceOffset": 0,
-    "value": 656,
-  },
-  "fractionDenomDisplayStyleGapMin": Object {
-    "deviceOffset": 0,
-    "value": 150,
-  },
-  "fractionDenominatorDisplayStyleShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 640,
-  },
-  "fractionDenominatorGapMin": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "fractionDenominatorShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 585,
-  },
-  "fractionNumDisplayStyleGapMin": Object {
-    "deviceOffset": 0,
-    "value": 150,
-  },
-  "fractionNumeratorDisplayStyleShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 640,
-  },
-  "fractionNumeratorGapMin": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "fractionNumeratorShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 585,
-  },
-  "fractionRuleThickness": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "lowerLimitBaselineDropMin": Object {
-    "deviceOffset": 0,
-    "value": 670,
-  },
-  "lowerLimitGapMin": Object {
-    "deviceOffset": 0,
-    "value": 135,
-  },
-  "mathLeading": Object {
-    "deviceOffset": 0,
-    "value": 150,
-  },
-  "overbarExtraAscender": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "overbarRuleThickness": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "overbarVerticalGap": Object {
-    "deviceOffset": 0,
-    "value": 175,
-  },
+  "accentBaseHeight": 0.48,
+  "axisHeight": 0.258,
+  "delimitedSubFormulaMinHeight": 1.325,
+  "displayOperatorMinHeight": 1.8,
+  "flattenedAccentBaseHeight": 0.656,
+  "fractionDenomDisplayStyleGapMin": 0.15,
+  "fractionDenominatorDisplayStyleShiftDown": 0.64,
+  "fractionDenominatorGapMin": 0.068,
+  "fractionDenominatorShiftDown": 0.585,
+  "fractionNumDisplayStyleGapMin": 0.15,
+  "fractionNumeratorDisplayStyleShiftUp": 0.64,
+  "fractionNumeratorGapMin": 0.068,
+  "fractionNumeratorShiftUp": 0.585,
+  "fractionRuleThickness": 0.068,
+  "lowerLimitBaselineDropMin": 0.67,
+  "lowerLimitGapMin": 0.135,
+  "mathLeading": 0.15,
+  "overbarExtraAscender": 0.068,
+  "overbarRuleThickness": 0.068,
+  "overbarVerticalGap": 0.175,
   "radicalDegreeBottomRaisePercent": 55,
-  "radicalDisplayStyleVerticalGap": Object {
-    "deviceOffset": 0,
-    "value": 170,
-  },
-  "radicalExtraAscender": Object {
-    "deviceOffset": 0,
-    "value": 78,
-  },
-  "radicalKernAfterDegree": Object {
-    "deviceOffset": 0,
-    "value": -335,
-  },
-  "radicalKernBeforeDegree": Object {
-    "deviceOffset": 0,
-    "value": 65,
-  },
-  "radicalRuleThickness": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "radicalVerticalGap": Object {
-    "deviceOffset": 0,
-    "value": 85,
-  },
+  "radicalDisplayStyleVerticalGap": 0.17,
+  "radicalExtraAscender": 0.078,
+  "radicalKernAfterDegree": -0.335,
+  "radicalKernBeforeDegree": 0.065,
+  "radicalRuleThickness": 0.068,
+  "radicalVerticalGap": 0.085,
   "scriptPercentScaleDown": 70,
   "scriptScriptPercentScaleDown": 55,
-  "skewedFractionHorizontalGap": Object {
-    "deviceOffset": 0,
-    "value": 350,
-  },
-  "skewedFractionVerticalGap": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "spaceAfterScript": Object {
-    "deviceOffset": 0,
-    "value": 40,
-  },
-  "stackBottomDisplayStyleShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 690,
-  },
-  "stackBottomShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 385,
-  },
-  "stackDisplayStyleGapMin": Object {
-    "deviceOffset": 0,
-    "value": 300,
-  },
-  "stackGapMin": Object {
-    "deviceOffset": 0,
-    "value": 150,
-  },
-  "stackTopDisplayStyleShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 780,
-  },
-  "stackTopShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 470,
-  },
-  "stretchStackBottomShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 590,
-  },
-  "stretchStackGapAboveMin": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "stretchStackGapBelowMin": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "stretchStackTopShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 800,
-  },
-  "subSuperscriptGapMin": Object {
-    "deviceOffset": 0,
-    "value": 150,
-  },
-  "subscriptBaselineDropMin": Object {
-    "deviceOffset": 0,
-    "value": 160,
-  },
-  "subscriptShiftDown": Object {
-    "deviceOffset": 0,
-    "value": 210,
-  },
-  "subscriptTopMax": Object {
-    "deviceOffset": 0,
-    "value": 368,
-  },
-  "superscriptBaselineDropMax": Object {
-    "deviceOffset": 0,
-    "value": 230,
-  },
-  "superscriptBottomMaxWithSubscript": Object {
-    "deviceOffset": 0,
-    "value": 380,
-  },
-  "superscriptBottomMin": Object {
-    "deviceOffset": 0,
-    "value": 120,
-  },
-  "superscriptShiftUp": Object {
-    "deviceOffset": 0,
-    "value": 360,
-  },
-  "superscriptShiftUpCramped": Object {
-    "deviceOffset": 0,
-    "value": 252,
-  },
-  "underbarExtraDescender": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "underbarRuleThickness": Object {
-    "deviceOffset": 0,
-    "value": 68,
-  },
-  "underbarVerticalGap": Object {
-    "deviceOffset": 0,
-    "value": 175,
-  },
-  "upperLimitBaselineRiseMin": Object {
-    "deviceOffset": 0,
-    "value": 300,
-  },
-  "upperLimitGapMin": Object {
-    "deviceOffset": 0,
-    "value": 135,
-  },
+  "skewedFractionHorizontalGap": 0.35,
+  "skewedFractionVerticalGap": 0.068,
+  "spaceAfterScript": 0.04,
+  "stackBottomDisplayStyleShiftDown": 0.69,
+  "stackBottomShiftDown": 0.385,
+  "stackDisplayStyleGapMin": 0.3,
+  "stackGapMin": 0.15,
+  "stackTopDisplayStyleShiftUp": 0.78,
+  "stackTopShiftUp": 0.47,
+  "stretchStackBottomShiftDown": 0.59,
+  "stretchStackGapAboveMin": 0.068,
+  "stretchStackGapBelowMin": 0.068,
+  "stretchStackTopShiftUp": 0.8,
+  "subSuperscriptGapMin": 0.15,
+  "subscriptBaselineDropMin": 0.16,
+  "subscriptShiftDown": 0.21,
+  "subscriptTopMax": 0.368,
+  "superscriptBaselineDropMax": 0.23,
+  "superscriptBottomMaxWithSubscript": 0.38,
+  "superscriptBottomMin": 0.12,
+  "superscriptShiftUp": 0.36,
+  "superscriptShiftUpCramped": 0.252,
+  "underbarExtraDescender": 0.068,
+  "underbarRuleThickness": 0.068,
+  "underbarVerticalGap": 0.175,
+  "upperLimitBaselineRiseMin": 0.3,
+  "upperLimitGapMin": 0.135,
 }
 `;
 

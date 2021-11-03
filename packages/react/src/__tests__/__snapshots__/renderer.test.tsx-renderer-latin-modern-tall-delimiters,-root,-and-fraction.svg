@@ -5,8 +5,8 @@
             <g transform="translate(0,0)" id="9">
                 <g transform="translate(35.82,0)" id="10">
                     <g transform="translate(0,-15)" id="4">
-                        <g transform="translate(0,-8.400000000000006)" id="5"></g>
-                        <g transform="translate(0,-5.551115123125783e-15)" id="undefined"></g>
+                        <g transform="translate(0,-8.399999999999999)" id="5"></g>
+                        <g transform="translate(0,6.661338147750939e-16)" id="undefined"></g>
                         <g transform="translate(0,48.36)" id="6">
                             <g transform="translate(32.400000000000006,0)" id="2"></g>
                         </g>
@@ -17,10 +17,10 @@
             <g transform="translate(294.12,0)" id="19">
                 <g transform="translate(0,-2.760000000000005)" id="undefined"></g>
                 <g transform="translate(60,0)" id="undefined">
-                    <g transform="translate(0,7.105427357601002e-15)" id="20">
+                    <g transform="translate(0,0)" id="20">
                         <g transform="translate(0,-15)" id="16">
-                            <g transform="translate(0,-8.400000000000006)" id="17"></g>
-                            <g transform="translate(0,-5.551115123125783e-15)" id="undefined"></g>
+                            <g transform="translate(0,-8.399999999999999)" id="17"></g>
+                            <g transform="translate(0,6.661338147750939e-16)" id="undefined"></g>
                             <g transform="translate(0,48.36)" id="18">
                                 <g transform="translate(32.400000000000006,0)" id="14"></g>
                             </g>
@@ -34,10 +34,10 @@
                 <path id="undefined" style="opacity:1" aria-hidden="true" d="M 539,-632 C 539,-627 537,-623 534,-620C 367,-495 251,-154 251,132L 251,368 C 251,654 367,995 534,1120C 537,1123 539,1127 539,1132C 539,1140 533,1146 525,1146C 522,1146 519,1145 516,1144C 341,1012 179,669 179,368L 179,132 C 179,-169 341,-512 516,-644C 519,-645 522,-646 525,-646C 533,-646 539,-640 539,-632Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                 <g transform="translate(35.82,0)" id="10">
                     <g transform="translate(0,-15)" id="4">
-                        <g transform="translate(0,-8.400000000000006)" id="5">
+                        <g transform="translate(0,-8.399999999999999)" id="5">
                             <path id="0" style="opacity:1" aria-hidden="true" d="M 419,0 L 419,31 L 387,31 C 297,31 294,42 294,79L 294,640 C 294,664 294,666 271,666C 209,602 121,602 89,602L 89,571 C 109,571 168,571 220,597L 220,79 C 220,43 217,31 127,31L 95,31 L 95,0 C 130,3 217,3 257,3C 297,3 384,3 419,0Z" transform="translate(57.900000000000006, 0) scale(0.06, -0.06)"></path>
                         </g>
-                        <g transform="translate(0,-5.551115123125783e-15)" id="undefined">
+                        <g transform="translate(0,6.661338147750939e-16)" id="undefined">
                             <line type="line" x1="0" y1="0" x2="145.8" y2="0" stroke-width="2.4" stroke-linecap="butt"></line>
                         </g>
                         <g transform="translate(0,48.36)" id="6">
@@ -60,12 +60,12 @@
                 </g>
                 <g transform="translate(60,0)" id="undefined">
                     <line type="line" x1="0" y1="-70.56" x2="148.20000000000002" y2="-70.56" stroke-width="2.4" stroke-linecap="butt"></line>
-                    <g transform="translate(0,7.105427357601002e-15)" id="20">
+                    <g transform="translate(0,0)" id="20">
                         <g transform="translate(0,-15)" id="16">
-                            <g transform="translate(0,-8.400000000000006)" id="17">
+                            <g transform="translate(0,-8.399999999999999)" id="17">
                                 <path id="12" style="opacity:1" aria-hidden="true" d="M 419,0 L 419,31 L 387,31 C 297,31 294,42 294,79L 294,640 C 294,664 294,666 271,666C 209,602 121,602 89,602L 89,571 C 109,571 168,571 220,597L 220,79 C 220,43 217,31 127,31L 95,31 L 95,0 C 130,3 217,3 257,3C 297,3 384,3 419,0Z" transform="translate(57.900000000000006, 0) scale(0.06, -0.06)"></path>
                             </g>
-                            <g transform="translate(0,-5.551115123125783e-15)" id="undefined">
+                            <g transform="translate(0,6.661338147750939e-16)" id="undefined">
                                 <line type="line" x1="0" y1="0" x2="145.8" y2="0" stroke-width="2.4" stroke-linecap="butt"></line>
                             </g>
                             <g transform="translate(0,48.36)" id="18">
