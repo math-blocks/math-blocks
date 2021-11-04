@@ -66,19 +66,16 @@ export const typesetFrac = (
   // when the font has been scaled.
   // Check context.renderMode === RenderMode.Static when doing so.
 
-  // const numeratorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp)
-  //     : (fontSize * constants.fractionNumeratorShiftUp);
+  const numeratorShift = useDisplayStyle
+    ? fontSize * constants.fractionNumeratorDisplayStyleShiftUp
+    : fontSize * constants.fractionNumeratorShiftUp;
 
-  // const denominatorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown)
-  //     : (fontSize * constants.fractionDenominatorShiftDown);
+  const denominatorShift = useDisplayStyle
+    ? fontSize * constants.fractionDenominatorDisplayStyleShiftDown
+    : fontSize * constants.fractionDenominatorShiftDown;
 
-  // const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
-  // const denGap = Math.max(
-  //     shift + denominatorShift - denBox.height,
-  //     minDenGap,
-  // );
+  const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
+  const denGap = Math.max(shift + denominatorShift - denBox.height, minDenGap);
 
   const multiplier = Layout.multiplierForContext(context);
   const endPadding = thickness; // add extra space around the numerator and denominator
@@ -112,8 +109,8 @@ export const typesetFrac = (
   // TODO: use FractionNumeratorDisplayStyleShiftUp/FractionNumeratorShiftUp
   // to determine what the actually gap should be between the numerator and
   // the fraction line.
-  const upList = makeList(minNumGap, numBox);
-  const dnList = makeList(minDenGap, denBox);
+  const upList = makeList(numGap, numBox);
+  const dnList = makeList(denGap, denBox);
   const stroke = Layout.makeStaticHBox(
     [Layout.makeHRule(thickness, width)],
     context,

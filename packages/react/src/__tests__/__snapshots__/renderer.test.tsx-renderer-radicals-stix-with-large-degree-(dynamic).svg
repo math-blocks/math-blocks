@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 125 154" width="125" height="154" style="background:white;vertical-align:-67px">
-    <g fill="currentColor" stroke="currentColor" transform="translate(0,0.6999999999999886)">
-        <g transform="translate(0,86.52000000000001)" id="11">
+    <g fill="currentColor" stroke="currentColor" transform="translate(0,0.5799999999999841)">
+        <g transform="translate(0,86.64000000000001)" id="11">
             <g transform="translate(0,-15.48)" id="8">
-                <g transform="translate(0,-24.840000000000003)" id="9"></g>
-                <g transform="translate(0,-2.6645352591003757e-15)" id="undefined"></g>
+                <g transform="translate(0,-24.960000000000008)" id="9"></g>
+                <g transform="translate(0,-9.769962616701378e-15)" id="undefined"></g>
                 <g transform="translate(0,67.32)" id="10">
                     <g transform="translate(4.079999999999998,0)" id="5">
                         <g transform="translate(0,-24.231)" id="6"></g>
@@ -16,12 +16,12 @@
                 </g>
             </g>
         </g>
-        <g transform="translate(0,86.52000000000001)" id="11">
+        <g transform="translate(0,86.64000000000001)" id="11">
             <g transform="translate(0,-15.48)" id="8">
-                <g transform="translate(0,-24.840000000000003)" id="9">
+                <g transform="translate(0,-24.960000000000008)" id="9">
                     <path id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(46.3125, 0) scale(0.06, -0.06)"></path>
                 </g>
-                <g transform="translate(0,-2.6645352591003757e-15)" id="undefined">
+                <g transform="translate(0,-9.769962616701378e-15)" id="undefined">
                     <line type="line" x1="0" y1="0" x2="122.325" y2="0" stroke-width="4.08" stroke-linecap="butt"></line>
                 </g>
                 <g transform="translate(0,67.32)" id="10">
