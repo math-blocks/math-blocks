@@ -46,46 +46,38 @@ export const typesetFrac = (
   const { constants } = context.fontData.font.math;
 
   const fontSize = Layout.fontSizeForContext(context);
-  const thickness = (fontSize * constants.fractionRuleThickness.value) / 1000;
-  const shift = (fontSize * constants.axisHeight.value) / 1000;
+  const thickness = fontSize * constants.fractionRuleThickness;
+  const shift = fontSize * constants.axisHeight;
 
   // If useDisplayStyle is false then we need to reduce the font size of
   // numerators and denominators
   const useDisplayStyle = mathStyle === MathStyle.Display;
 
   const minDenGap = useDisplayStyle
-    ? (fontSize * constants.fractionDenomDisplayStyleGapMin.value) / 1000
-    : (fontSize * constants.fractionDenominatorGapMin.value) / 1000;
+    ? fontSize * constants.fractionDenomDisplayStyleGapMin
+    : fontSize * constants.fractionDenominatorGapMin;
 
   const minNumGap = useDisplayStyle
-    ? (fontSize * constants.fractionNumDisplayStyleGapMin.value) / 1000
-    : (fontSize * constants.fractionNumeratorGapMin.value) / 1000;
+    ? fontSize * constants.fractionNumDisplayStyleGapMin
+    : fontSize * constants.fractionNumeratorGapMin;
 
-  // TODO: fix this code once we have debugging outlines in place, right now
-  // gap between the fraction bar and the numerator/denominator is too big
-  // when the font has been scaled.
-  // Check context.renderMode === RenderMode.Static when doing so.
+  const numeratorShift = useDisplayStyle
+    ? fontSize * constants.fractionNumeratorDisplayStyleShiftUp
+    : fontSize * constants.fractionNumeratorShiftUp;
 
-  // const numeratorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionNumeratorDisplayStyleShiftUp) / 1000
-  //     : (fontSize * constants.fractionNumeratorShiftUp) / 1000;
+  const denominatorShift = useDisplayStyle
+    ? fontSize * constants.fractionDenominatorDisplayStyleShiftDown
+    : fontSize * constants.fractionDenominatorShiftDown;
 
-  // const denominatorShift = useDisplayStyle
-  //     ? (fontSize * constants.fractionDenominatorDisplayStyleShiftDown) / 1000
-  //     : (fontSize * constants.fractionDenominatorShiftDown) / 1000;
-
-  // const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
-  // const denGap = Math.max(
-  //     shift + denominatorShift - denBox.height,
-  //     minDenGap,
-  // );
+  const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
+  const denGap = Math.max(shift + denominatorShift - denBox.height, minDenGap);
 
   const multiplier = Layout.multiplierForContext(context);
   const endPadding = thickness; // add extra space around the numerator and denominator
   const width =
     Math.max(
-      Math.max(Layout.getWidth(numBox), Layout.getWidth(denBox)), // TODO: calculate this based on current font size
-      30 * multiplier, // empty numerator/denominator width
+      Math.max(Layout.getWidth(numBox), Layout.getWidth(denBox)),
+      fontSize * multiplier * 0.5, // empty numerator/denominator width
     ) +
     2 * endPadding;
 
@@ -109,11 +101,8 @@ export const typesetFrac = (
     );
   }
 
-  // TODO: use FractionNumeratorDisplayStyleShiftUp/FractionNumeratorShiftUp
-  // to determine what the actually gap should be between the numerator and
-  // the fraction line.
-  const upList = makeList(minNumGap, numBox);
-  const dnList = makeList(minDenGap, denBox);
+  const upList = makeList(numGap, numBox);
+  const dnList = makeList(denGap, denBox);
   const stroke = Layout.makeStaticHBox(
     [Layout.makeHRule(thickness, width)],
     context,

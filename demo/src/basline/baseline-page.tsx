@@ -14,7 +14,10 @@ const simpleRow = b.row([
   b.char('2'),
   b.char('x'),
   b.char('+'),
-  b.frac([b.char('t')], [b.char('b'), b.char('+'), b.char('x')]),
+  b.frac(
+    [b.char('t'), b.subsup([b.char('n'), b.char('-'), b.char('j')], undefined)],
+    [b.char('b'), b.subsup(undefined, [b.char('2')]), b.char('+'), b.char('x')],
+  ),
   b.char('='),
   b.char('1'),
   b.char('0'),
@@ -42,10 +45,12 @@ const BaselinePage: React.FunctionComponent = () => {
 
   return (
     <FontDataContext.Provider value={stixFontData}>
-      <div style={{ fontFamily: 'sans-serif' }}>
+      <div
+        style={{ fontFamily: 'sans-serif', fontSize: 32, lineHeight: '48px' }}
+      >
         <h1>Baseline Alignment Demo</h1>
-        <p style={{ fontSize: 32, lineHeight: '48px' }}>Hello, world!</p>
-        <p style={{ fontSize: 32, lineHeight: '48px' }}>
+        <p>Hello, world!</p>
+        <p>
           Hello,{' '}
           <MathRenderer
             fontSize={fontSize}
@@ -53,11 +58,11 @@ const BaselinePage: React.FunctionComponent = () => {
             radicalDegreeAlgorithm={RadicalDegreeAlgorithm.OpenType}
             showHitboxes={false}
             mathStyle={MathStyle.Display}
-            renderMode={RenderMode.Dynamic}
+            renderMode={RenderMode.Static}
           />{' '}
           world!
         </p>
-        <p style={{ fontSize: 32, lineHeight: '48px' }}>
+        <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
           minim veniam, quis nostrud exercitation{' '}
@@ -67,7 +72,7 @@ const BaselinePage: React.FunctionComponent = () => {
             radicalDegreeAlgorithm={RadicalDegreeAlgorithm.OpenType}
             showHitboxes={false}
             mathStyle={MathStyle.Display}
-            renderMode={RenderMode.Dynamic}
+            renderMode={RenderMode.Static}
           />{' '}
           ullamco laboris nisi ut aliquip ex{' '}
           <MathRenderer
@@ -76,7 +81,7 @@ const BaselinePage: React.FunctionComponent = () => {
             radicalDegreeAlgorithm={RadicalDegreeAlgorithm.OpenType}
             showHitboxes={false}
             mathStyle={MathStyle.Display}
-            renderMode={RenderMode.Dynamic}
+            renderMode={RenderMode.Static}
           />{' '}
           ea commodo consequat. Duis aute irure dolor in reprehenderit in
           voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur

@@ -40,10 +40,8 @@ export const typesetRoot = (
   ) as Mutable<HBox>;
 
   const fontSize = Layout.fontSizeForContext(context);
-  const { font } = context.fontData;
   const { constants } = context.fontData.font.math;
-  const thickness =
-    (fontSize * constants.radicalRuleThickness.value) / font.head.unitsPerEm;
+  const thickness = fontSize * constants.radicalRuleThickness;
   const endPadding = thickness; // Add extra space at the end of the radicand
   const stroke = Layout.makeHRule(thickness, radicand.width + endPadding);
 
@@ -63,8 +61,7 @@ export const typesetRoot = (
   let root;
   if (degree) {
     const afterDegreeKern = Layout.makeKern(
-      (fontSize * constants.radicalKernAfterDegree.value) /
-        font.head.unitsPerEm,
+      fontSize * constants.radicalKernAfterDegree,
     );
 
     // TODO: take into account constants.radicalKernBeforeDegree
