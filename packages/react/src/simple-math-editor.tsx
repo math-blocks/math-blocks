@@ -274,8 +274,6 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
 
   const { style, fontSize, showHitboxes } = props;
 
-  console.log(`fontSize = ${fontSize}`);
-
   const context: Typesetter.Context = {
     fontData: fontData,
     baseFontSize: fontSize || 64,
