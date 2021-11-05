@@ -62,8 +62,9 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
 
-  // TODO: always render paths when generating snapshots for CI
-  if (glyph.isDelimiter) {
+  // Always uses paths when running in the 'test' environment so that
+  // the SVGs render correctly even without the fonts.
+  if (glyph.isDelimiter || process.env.NODE_ENV === 'test') {
     return (
       <path
         fill={style.fill}
