@@ -61,17 +61,6 @@ export const typesetFrac = (
     ? fontSize * constants.fractionNumDisplayStyleGapMin
     : fontSize * constants.fractionNumeratorGapMin;
 
-  const numeratorShift = useDisplayStyle
-    ? fontSize * constants.fractionNumeratorDisplayStyleShiftUp
-    : fontSize * constants.fractionNumeratorShiftUp;
-
-  const denominatorShift = useDisplayStyle
-    ? fontSize * constants.fractionDenominatorDisplayStyleShiftDown
-    : fontSize * constants.fractionDenominatorShiftDown;
-
-  const numGap = Math.max(numeratorShift - numBox.depth - shift, minNumGap);
-  const denGap = Math.max(shift + denominatorShift - denBox.height, minDenGap);
-
   const multiplier = Layout.multiplierForContext(context);
   const endPadding = thickness; // add extra space around the numerator and denominator
   const width =
@@ -101,8 +90,8 @@ export const typesetFrac = (
     );
   }
 
-  const upList = makeList(numGap, numBox);
-  const dnList = makeList(denGap, denBox);
+  const upList = makeList(minNumGap, numBox);
+  const dnList = makeList(minDenGap, denBox);
   const stroke = Layout.makeStaticHBox(
     [Layout.makeHRule(thickness, width)],
     context,
