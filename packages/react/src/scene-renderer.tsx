@@ -51,11 +51,6 @@ const getPath = (glyph: OpenType.Glyph): string => {
   return result;
 };
 
-enum GlyphRendering {
-  Path,
-  Text,
-}
-
 const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   x,
   y,
@@ -67,9 +62,9 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
 
-  const glyphRendering: GlyphRendering = GlyphRendering.Path;
-
-  if (glyphRendering === GlyphRendering.Path) {
+  // Always uses paths when running in the 'test' environment so that
+  // the SVGs render correctly even without the fonts.
+  if (glyph.isDelimiter || process.env.NODE_ENV === 'test') {
     return (
       <path
         fill={style.fill}
@@ -89,6 +84,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
         fontFamily={fontFamily}
         fontSize={glyph.size}
         fill={style.fill}
+        stroke="none" // TODO: set this in CSS
         id={id}
         style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
         aria-hidden="true"

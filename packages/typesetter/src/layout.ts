@@ -66,6 +66,7 @@ export const makeGlyph = (
   char: string,
   glyphID: number,
   context: Context,
+  isDelimiter = false,
 ): Glyph => {
   return {
     type: 'Glyph',
@@ -74,6 +75,7 @@ export const makeGlyph = (
     size: fontSizeForContext(context),
     fontData: context.fontData,
     style: {},
+    isDelimiter,
   };
 };
 
@@ -419,5 +421,5 @@ export const makeDelimiter = (
 ): Glyph => {
   const glyphID = getDelimiter(char, box, thresholdOptions, context);
 
-  return makeGlyph(char, glyphID, context);
+  return makeGlyph(char, glyphID, context, true);
 };

@@ -74,6 +74,7 @@ export type Glyph = {
   readonly size: number;
   readonly fontData: FontData;
   readonly pending?: boolean;
+  readonly isDelimiter: boolean;
 } & Common;
 
 export type Kern = {
