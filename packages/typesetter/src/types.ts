@@ -91,3 +91,8 @@ export type HRule = {
 } & Common;
 
 export type Node = HBox | VBox | Glyph | Kern | HRule;
+
+export type Side = 'left' | 'right'; // TODO: make this a real enum
+export type Intersection =
+  | { readonly type: 'content'; readonly id: number; readonly side: Side }
+  | { readonly type: 'padding'; readonly flag: 'start' | 'end' };

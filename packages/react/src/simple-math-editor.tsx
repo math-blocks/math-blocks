@@ -231,7 +231,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
     [handleEditing], // Re-run if the handler changes
   );
 
-  const positionCursor = (e: React.MouseEvent, select: boolean): void => {
+  const positionCursor = (e: React.MouseEvent, selecting: boolean): void => {
     if (!svgRef?.current) {
       return;
     }
@@ -243,22 +243,13 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       scene.hitboxes,
     );
 
-    const { row } = state;
-    const cursorZipper = Editor.rowToZipper(row, intersections);
-
-    if (cursorZipper) {
-      const newState = select
-        ? Editor.simpleReducer(state, { type: 'StartSelecting' })
-        : Editor.simpleReducer(state, { type: 'StopSelecting' });
-      setState(
-        Editor.simpleReducer(newState, {
-          type: 'SetSelection',
-          // STOPSHIP: this is wrong, we need a version of rowToZipper
-          // that can compute what the new selection should be.
-          selection: newState.selection,
-        }),
-      );
-    }
+    // TODO: handle select === true
+    const newState = Editor.simpleReducer(state, {
+      type: 'UpdateSelection',
+      intersections,
+      selecting,
+    });
+    setState(newState);
   };
 
   // We need to update the state.zipper when props.zipper changes otherwise

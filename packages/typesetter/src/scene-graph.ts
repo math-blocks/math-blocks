@@ -597,8 +597,6 @@ export const processBox = (
   return scene;
 };
 
-type Side = 'left' | 'right';
-
 type Bounds = {
   readonly x: number;
   readonly y: number;
@@ -606,7 +604,10 @@ type Bounds = {
   readonly height: number;
 };
 
-const isPointInBounds = (point: Point, bounds: Bounds): Side | undefined => {
+const isPointInBounds = (
+  point: Point,
+  bounds: Bounds,
+): types.Side | undefined => {
   if (
     point.x > bounds.x &&
     point.x < bounds.x + bounds.width / 2 &&
@@ -642,14 +643,10 @@ const getBounds = (child: Group | Rect, translation: Point): Bounds => {
       };
 };
 
-type Intersection =
-  | { readonly type: 'content'; readonly id: number; readonly side: Side }
-  | { readonly type: 'padding'; readonly flag: 'start' | 'end' };
-
 const getIntersection = (
   child: Group | Rect,
-  side: Side,
-): Intersection | void => {
+  side: types.Side,
+): types.Intersection | void => {
   if (child.id) {
     return {
       type: 'content',
@@ -668,8 +665,8 @@ export const findIntersections = (
   point: Point,
   node: Group, // must be the group containing the debug bounding rectangles
   translation?: Point,
-): Intersection[] => {
-  const result: Intersection[] = [];
+): types.Intersection[] => {
+  const result: types.Intersection[] = [];
 
   translation = translation || {
     x: node.x,
@@ -752,7 +749,8 @@ export const findIntersections = (
     // Determine whether the cursor should be to the left or the right of
     // the closest node.
     bounds = getBounds(closest, translation);
-    const side: Side = point.x < bounds.x + bounds.width / 2 ? 'left' : 'right';
+    const side: types.Side =
+      point.x < bounds.x + bounds.width / 2 ? 'left' : 'right';
 
     if (side) {
       const intersection = getIntersection(closest, side);

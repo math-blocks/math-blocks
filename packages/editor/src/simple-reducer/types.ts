@@ -41,8 +41,9 @@ export type Action =
   | { readonly type: 'StartSelecting' }
   | { readonly type: 'StopSelecting' }
   | {
-      readonly type: 'SetSelection';
-      readonly selection: Selection;
+      readonly type: 'UpdateSelection';
+      readonly intersections: readonly Intersection[];
+      readonly selecting: boolean;
     }
   // Formatting actions
   | {
@@ -52,3 +53,8 @@ export type Action =
   | { readonly type: 'Cancel' }
   | { readonly type: 'Uncancel' }
   | MatrixActions;
+
+type Side = 'left' | 'right';
+export type Intersection =
+  | { readonly type: 'content'; readonly id: number; readonly side: Side }
+  | { readonly type: 'padding'; readonly flag: 'start' | 'end' };
