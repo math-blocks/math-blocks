@@ -4,6 +4,7 @@ import * as Layout from './layout';
 import * as types from './types';
 
 import type { FontData } from '@math-blocks/opentype';
+import { SceneGraph } from '.';
 
 type Style = {
   readonly fill?: string;
@@ -13,6 +14,8 @@ type Style = {
 type Common = {
   readonly id?: number;
   readonly style: Style;
+  readonly key?: string;
+  readonly className?: string;
 };
 
 export type Group = {
@@ -98,7 +101,7 @@ export type LayoutCursor = {
   readonly selection: boolean;
 };
 
-const CURSOR_WIDTH = 2;
+const CURSOR_WIDTH = 1;
 
 const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
   const pen = { x: 0, y: 0 };
@@ -163,14 +166,20 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
       layer === 'selection'
     ) {
       // Draw the cursor.
-      children.push({
+      const cursorRect: SceneGraph.Rect = {
         type: 'rect',
         x: pen.x - CURSOR_WIDTH / 2,
         y: pen.y - ascent,
         width: CURSOR_WIDTH,
         height: fontSize,
         style: {},
-      });
+        className: 'blink',
+        // We give the cursor rect a unique key whenever we re-render
+        // the scene-graph so that it's always visible when moving the
+        // cursor.
+        key: Math.random().toString(),
+      };
+      children.push(cursorRect);
     }
 
     section.forEach((node) => {

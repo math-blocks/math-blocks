@@ -15,7 +15,7 @@
             </g>
             <g transform="translate(203.94,0)" id="13">
                 <g transform="translate(0,-90.78)" id="15">
-                    <rect type="rect" x="19.79" y="-32.34" width="2" height="42"></rect>
+                    <rect type="rect" x="20.29" y="-32.34" width="1" height="42" class="blink" stroke="none"></rect>
                 </g>
                 <g transform="translate(0,85.26)" id="14"></g>
             </g>
