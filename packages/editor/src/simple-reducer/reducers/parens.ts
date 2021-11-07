@@ -35,7 +35,7 @@ export const parens = (
 
   if (!SelectionUtils.isCollapsed(selection)) {
     // Replaces the selection with a parens node.
-    const { start, end } = SelectionUtils.getSelectionRange(selection);
+    const { start, end } = SelectionUtils.getPathAndRange(selection);
 
     const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
       const beforeSelection = node.children.slice(0, start);

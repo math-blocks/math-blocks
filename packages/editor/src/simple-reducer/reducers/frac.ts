@@ -11,7 +11,7 @@ export const frac = (state: State): State => {
   const { focus } = selection;
 
   if (!SelectionUtils.isCollapsed(selection)) {
-    const { start, end } = SelectionUtils.getSelectionRange(selection);
+    const { start, end } = SelectionUtils.getPathAndRange(selection);
 
     const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
       const beforeSelection = node.children.slice(0, start);

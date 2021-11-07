@@ -18,7 +18,7 @@ export const backspace = (state: State): State => {
   if (focusParent?.type === 'row') {
     if (!SelectionUtils.isCollapsed(selection)) {
       // Deletes the whole range.
-      const { start, end } = SelectionUtils.getSelectionRange(selection);
+      const { start, end } = SelectionUtils.getPathAndRange(selection);
 
       const newRow = PathUtils.updateRowAtPath(
         row,

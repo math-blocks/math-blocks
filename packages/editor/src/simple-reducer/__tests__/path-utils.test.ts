@@ -50,7 +50,34 @@ describe('PathUtils.getNodeAtPath', () => {
   it('should return the correct node for a valid path', () => {
     const result = PathUtils.getNodeAtPath(row, [1, 1]);
 
+    // @ts-expect-error: we know that the subsup has children
     const exp = row.children[1].children[1];
     expect(result).toEqual(exp);
+  });
+});
+
+describe('PathUtils.getCommonPrefix', () => {
+  it('should return [] if there is no common prefix', () => {
+    const result = PathUtils.getCommonPrefix([1, 2, 3], [4, 5, 6]);
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return a common prefix if there is one', () => {
+    const result = PathUtils.getCommonPrefix([1, 2, 3, 4], [1, 2, 5]);
+
+    expect(result).toEqual([1, 2]);
+  });
+
+  it('should return the shorter path if the whole is a prefix of the other', () => {
+    const result = PathUtils.getCommonPrefix([1, 2, 3], [1, 2, 3, 4]);
+
+    expect(result).toEqual([1, 2, 3]);
+  });
+
+  it("order of args doesn't matter", () => {
+    const result = PathUtils.getCommonPrefix([1, 2, 3, 4], [1, 2, 3]);
+
+    expect(result).toEqual([1, 2, 3]);
   });
 });

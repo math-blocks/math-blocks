@@ -36,29 +36,37 @@ const typesetRow = (
   );
 
   const { selection } = context;
-  if (selection && PathUtils.equals(path, selection.focus.path)) {
-    const { start, end } = SelectionUtils.getSelectionRange(selection);
-    const left = output.slice(0, start);
-    const middle = output.slice(start, end);
-    const right = output.slice(end);
 
-    const box = (
-      SelectionUtils.isCollapsed(selection)
-        ? Layout.makeCursorHBox(left, right, context)
-        : Layout.makeSelectionHBox(left, middle, right, context)
-    ) as Mutable<HBox>;
+  if (selection) {
+    const {
+      path: selectionPath,
+      start,
+      end,
+    } = SelectionUtils.getPathAndRange(selection);
 
-    box.id = row.id;
-    box.style = {
-      ...box.style,
-      color: row.style.color,
-    };
+    if (PathUtils.equals(path, selectionPath)) {
+      const left = output.slice(0, start);
+      const middle = output.slice(start, end);
+      const right = output.slice(end);
 
-    if (context.renderMode === RenderMode.Dynamic) {
-      ensureMinDepthAndHeight(box, context);
+      const box = (
+        SelectionUtils.isCollapsed(selection)
+          ? Layout.makeCursorHBox(left, right, context)
+          : Layout.makeSelectionHBox(left, middle, right, context)
+      ) as Mutable<HBox>;
+
+      box.id = row.id;
+      box.style = {
+        ...box.style,
+        color: row.style.color,
+      };
+
+      if (context.renderMode === RenderMode.Dynamic) {
+        ensureMinDepthAndHeight(box, context);
+      }
+
+      return box;
     }
-
-    return box;
   }
 
   const box = Layout.makeStaticHBox(output, context) as Mutable<HBox>;

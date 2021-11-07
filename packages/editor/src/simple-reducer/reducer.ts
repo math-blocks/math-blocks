@@ -80,8 +80,8 @@ export const reducer = (state: State = initialState, action: Action): State => {
             selecting: false,
           }
         : state;
-    case 'SetSelection':
-      return setSelection(state, action.selection);
+    case 'UpdateSelection':
+      return setSelection(state, action.intersections, action.selecting);
     case 'InsertMatrix':
     case 'AddRow':
     case 'AddColumn':

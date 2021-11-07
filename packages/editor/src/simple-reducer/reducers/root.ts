@@ -8,7 +8,7 @@ export const root = (state: State, withIndex: boolean): State => {
   const { selection, row } = state;
   const { focus } = selection;
 
-  const { start, end } = SelectionUtils.getSelectionRange(selection);
+  const { start, end } = SelectionUtils.getPathAndRange(selection);
 
   const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
     const beforeSelection = node.children.slice(0, start);

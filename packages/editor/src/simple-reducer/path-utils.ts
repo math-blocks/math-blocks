@@ -18,6 +18,18 @@ export const isPrefix = (prefixPath: Path, otherPath: Path): boolean => {
   return prefixPath.every((value, index) => value === otherPath[index]);
 };
 
+export const getCommonPrefix = (path1: Path, path2: Path): Path => {
+  if (path1.length === 0 || path2.length === 0) {
+    return [];
+  }
+  const [head1, ...rest1] = path1;
+  const [head2, ...rest2] = path2;
+  if (head1 === head2) {
+    return [head1, ...getCommonPrefix(rest1, rest2)];
+  }
+  return [];
+};
+
 export const getNodeAtPath = (root: CharNode, path: Path): CharNode | null => {
   if (path.length === 0) {
     return root;
