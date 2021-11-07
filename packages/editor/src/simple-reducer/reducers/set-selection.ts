@@ -52,7 +52,8 @@ export const setSelection = (
           if (node.id === secondLastInt.id && 'children' in node) {
             newFocus = {
               path: path,
-              offset: secondLastInt.side === 'left' ? 0 : node.children.length,
+              // TODO: make the Intersection type more consistent
+              offset: lastInt.flag === 'start' ? 0 : node.children.length,
             };
           }
         },

@@ -304,6 +304,9 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       onMouseUp={(e) => {
         setMouseDown(false);
         setState(Editor.simpleReducer(state, { type: 'StopSelecting' }));
+
+        console.log(state.selection);
+        console.log(Editor.SelectionUtils.getPathAndRange(state.selection));
       }}
       className={cx({ [styles.container]: true, [styles.focus]: active })}
       style={style}

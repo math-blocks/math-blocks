@@ -50,6 +50,7 @@ describe('PathUtils.getNodeAtPath', () => {
   it('should return the correct node for a valid path', () => {
     const result = PathUtils.getNodeAtPath(row, [1, 1]);
 
+    // @ts-expect-error: we know that the subsup has children
     const exp = row.children[1].children[1];
     expect(result).toEqual(exp);
   });
