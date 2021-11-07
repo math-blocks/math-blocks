@@ -4,7 +4,6 @@ import * as Layout from './layout';
 import * as types from './types';
 
 import type { FontData } from '@math-blocks/opentype';
-import { SceneGraph } from '.';
 
 type Style = {
   readonly fill?: string;
@@ -166,7 +165,7 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
       layer === 'selection'
     ) {
       // Draw the cursor.
-      const cursorRect: SceneGraph.Rect = {
+      children.push({
         type: 'rect',
         x: pen.x - CURSOR_WIDTH / 2,
         y: pen.y - ascent,
@@ -178,8 +177,7 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
         // the scene-graph so that it's always visible when moving the
         // cursor.
         key: Math.random().toString(),
-      };
-      children.push(cursorRect);
+      });
     }
 
     section.forEach((node) => {
