@@ -22,9 +22,9 @@ export const moveLeft = (state: State): State => {
   // Collapse selection if we aren't selecting and it hasn't
   // already been collapsed.
   if (!selecting && !SelectionUtils.isCollapsed(selection)) {
-    const { start } = SelectionUtils.getSelectionRange(selection);
+    const { path, start } = SelectionUtils.getPathAndRange(selection);
     const newFocus = {
-      path: selection.focus.path,
+      path: path,
       offset: start,
     };
     return {

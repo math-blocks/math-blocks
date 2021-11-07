@@ -30,7 +30,6 @@ export const setSelection = (
       [],
     );
     if (newFocus) {
-      console.log(newFocus);
       return {
         ...state,
         selection: selecting
@@ -61,7 +60,6 @@ export const setSelection = (
       [],
     );
     if (newFocus) {
-      console.log(newFocus);
       return {
         ...state,
         selection: selecting

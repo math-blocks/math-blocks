@@ -16,24 +16,45 @@ export const updateSelection = (
       { anchor: newFocus, focus: newFocus };
 };
 
-export const getSelectionRange = (
+export const getPathAndRange = (
   selection: Selection,
-): { readonly start: number; readonly end: number } => {
+): { readonly path: Path; readonly start: number; readonly end: number } => {
   const { anchor, focus } = selection;
-  // invariants:
-  // - selection anchor should always be within the same parent as the focus
-  //   or a descendant of one of the children of said parent
+  const commonPrefix = PathUtils.getCommonPrefix(anchor.path, focus.path);
 
-  if (anchor.path.length > focus.path.length) {
+  if (commonPrefix.length % 2) {
+    const lastIndex = commonPrefix[commonPrefix.length - 1];
     return {
-      start: Math.min(focus.offset, anchor.path[focus.path.length]),
-      end: Math.max(focus.offset, anchor.path[focus.path.length] + 1),
+      path: commonPrefix.slice(0, -1),
+      start: lastIndex,
+      end: lastIndex + 1,
     };
   }
 
+  const anchorOffset =
+    anchor.path.length > commonPrefix.length
+      ? anchor.path[commonPrefix.length]
+      : anchor.offset;
+
+  const focusOffset =
+    focus.path.length > commonPrefix.length
+      ? focus.path[commonPrefix.length]
+      : focus.offset;
+
+  const start = Math.min(anchorOffset, focusOffset);
+  let end = Math.max(anchorOffset, focusOffset);
+
+  if (end === focusOffset && focus.path.length > commonPrefix.length) {
+    end += 1;
+  }
+  if (end === anchorOffset && anchor.path.length > commonPrefix.length) {
+    end += 1;
+  }
+
   return {
-    start: Math.min(focus.offset, anchor.offset),
-    end: Math.max(focus.offset, anchor.offset),
+    path: commonPrefix,
+    start,
+    end,
   };
 };
 

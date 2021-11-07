@@ -10,7 +10,7 @@ export const insertChar = (state: State, char: string): State => {
   const newNode = b.char(char);
 
   const { focus } = selection;
-  const { start, end } = SelectionUtils.getSelectionRange(selection);
+  const { start, end } = SelectionUtils.getPathAndRange(selection);
   const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
     const beforeSelection = node.children.slice(0, start);
     const afterSelection = node.children.slice(end);
