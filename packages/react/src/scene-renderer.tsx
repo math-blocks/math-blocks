@@ -25,7 +25,7 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
   id,
   ...props
 }) => {
-  return <rect {...props} fill={fill} />;
+  return <rect {...props} fill={fill} stroke="none" />;
 };
 
 const getPath = (glyph: OpenType.Glyph): string => {
@@ -112,7 +112,7 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
       id={_id}
     >
       {children.map((child, i) => {
-        const key = `${i}`;
+        const key = child.key || `${i}`;
         return <Node {...child} key={key} />;
       })}
     </g>

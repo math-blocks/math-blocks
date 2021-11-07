@@ -30,7 +30,7 @@
                     <g transform="translate(239.33999999999997,0)" id="27"></g>
                     <g transform="translate(239.33999999999997,0)" id="28"></g>
                     <g transform="translate(298.73999999999995,0)" id="29">
-                        <rect type="rect" x="15" y="-46.2" width="2" height="60"></rect>
+                        <rect type="rect" x="15.5" y="-46.2" width="1" height="60" class="blink" stroke="none"></rect>
                     </g>
                 </g>
             </g>
