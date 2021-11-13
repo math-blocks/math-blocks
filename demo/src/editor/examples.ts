@@ -154,6 +154,18 @@ const matrix = builders.row([
   ),
 ]);
 
+const subsups = builders.row([
+  builders.char('x'),
+  builders.subsup([builders.char('n')], undefined),
+  builders.char('x'),
+  builders.subsup(undefined, [builders.char('2')]),
+  builders.char('x'),
+  builders.subsup(
+    [builders.char('n'), builders.char('t')],
+    [builders.char('2'), builders.char('j')],
+  ),
+]);
+
 export const examples = [
   simpleRow,
   addingFractions,
@@ -161,4 +173,5 @@ export const examples = [
   delimiters,
   nestedFractions,
   matrix,
+  subsups,
 ];

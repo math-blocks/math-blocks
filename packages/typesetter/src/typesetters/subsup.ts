@@ -52,15 +52,12 @@ export const typesetSubsup = (
   // layout structure (frac, delimited, etc.) and should have its subscript
   // and/or superscript positioned based on the size of the box.
   if (prevEditNode?.type !== 'char' && prevLayoutNode) {
-    const { superscriptBaselineDropMax, subscriptBaselineDropMin } =
-      font.math.constants;
-
-    const baselineDropMax = Layout.getConstantValue(
-      superscriptBaselineDropMax,
+    const superscriptBaselineDropMax = Layout.getConstantValue(
+      font.math.constants.superscriptBaselineDropMax,
       context,
     );
-    const baselineDropMin = Layout.getConstantValue(
-      subscriptBaselineDropMin,
+    const subscriptBaselineDropMin = Layout.getConstantValue(
+      font.math.constants.subscriptBaselineDropMin,
       context,
     );
 
@@ -69,7 +66,7 @@ export const typesetSubsup = (
 
     if (supBox) {
       const shift = Layout.getHeight(prevLayoutNode);
-      const kernShift = shift - baselineDropMax;
+      const kernShift = shift - superscriptBaselineDropMax;
 
       upList.push(Layout.makeKern(kernShift));
       upList.push(supBox);
@@ -77,7 +74,7 @@ export const typesetSubsup = (
 
     if (subBox) {
       const shift = Layout.getDepth(prevLayoutNode);
-      const kernSize = shift - baselineDropMin;
+      const kernSize = shift - subscriptBaselineDropMin;
 
       dnList.push(Layout.makeKern(kernSize));
       dnList.push(subBox);
@@ -98,80 +95,54 @@ export const typesetSubsup = (
     return subsupBox;
   }
 
-  const {
-    subscriptTopMax,
-    superscriptBottomMin,
-    subscriptShiftDown,
-    superscriptShiftUp,
-    subSuperscriptGapMin,
-    superscriptBottomMaxWithSubscript,
-  } = font.math.constants;
-
-  const bottomMin = Layout.getConstantValue(superscriptBottomMin, context);
-  const shiftUp = Layout.getConstantValue(superscriptShiftUp, context);
-  const topMax = Layout.getConstantValue(subscriptTopMax, context);
-  const shiftDown = Layout.getConstantValue(subscriptShiftDown, context);
-
   const upList = [];
 
+  const fontSize = Layout.fontSizeForContext(context);
+  const childFontSize = Layout.fontSizeForContext(childContext);
+  const parenMetrics = font.getGlyphMetrics(font.getGlyphID(')'));
+  const overshoot = (font.head.unitsPerEm - parenMetrics.height) / 2;
+
   if (supBox) {
-    // compute shift in baseline of superscript
-    const shift = Math.max(shiftUp, supBox.depth + bottomMin);
+    const xMetrics = font.getGlyphMetrics(font.getGlyphID('x'));
+    const xHeight = (xMetrics.bearingY * fontSize) / font.head.unitsPerEm;
 
-    // -supBox.depth is to align the baseline of the superscript with the
-    // baseline of the base.
-    // TODO: replace the up/dn list that makeVBox uses with something else
-    // that doesn't require this correction
-    const kernShift = -supBox.depth + shift;
+    const maxDepth =
+      ((parenMetrics.height - parenMetrics.bearingY + overshoot) *
+        childFontSize) /
+      font.head.unitsPerEm;
 
-    upList.push(Layout.makeKern(kernShift) as Mutable<Kern>);
+    // Compute shift in baseline of superscript.
+    // The baseline is at the same height as the xHeight of the parent.
+    let kernSize = -supBox.depth + xHeight;
+    if (supBox.depth > maxDepth) {
+      // If the superscript's depth is greater that of a row without any non-atom
+      // childre, then push the superscript up by whatever the difference is.
+      kernSize += supBox.depth - maxDepth;
+    }
+
+    upList.push(Layout.makeKern(kernSize) as Mutable<Kern>);
     upList.push(supBox as Mutable<HBox>);
   }
 
   const dnList = [];
 
   if (subBox) {
-    // compute shift in baseline of subscript
-    let shift = Math.max(shiftDown, subBox.height - topMax);
+    const xMetrics = font.getGlyphMetrics(font.getGlyphID('x'));
+    const xHeight = (xMetrics.bearingY * childFontSize) / font.head.unitsPerEm;
 
-    if (supBox) {
-      const supBoxShift = Math.max(shiftUp, supBox.depth + bottomMin);
+    const maxHeight =
+      ((parenMetrics.bearingY + overshoot) * childFontSize) /
+      font.head.unitsPerEm;
 
-      const supBottom = supBoxShift - supBox.depth;
-      const subTop = subBox.height - shift;
-
-      const gap = supBottom - subTop;
-      const gapMin = Layout.getConstantValue(subSuperscriptGapMin, context);
-
-      if (gap < gapMin) {
-        if (upList[0].type === 'Kern' && upList[1].type === 'HBox') {
-          // shift the superscript up to increase the gap
-          const correction = gapMin - gap;
-          upList[0].size += correction;
-
-          // We can't use upList[0].size in the calculation since it
-          // includes the initial -supBox.depth to align baselines.
-          const supBottom = supBoxShift + correction - upList[1].depth;
-          const supBottomMax = Layout.getConstantValue(
-            superscriptBottomMaxWithSubscript,
-            context,
-          );
-
-          if (supBottom > supBottomMax) {
-            // shift both down to maintain to gap
-            const correcion = supBottom - supBottomMax;
-            upList[0].size -= correcion;
-            shift += correcion; // down is positive for dnList
-          }
-        }
-      }
+    // Compute shift in baseline of subscript.
+    // The x-height of the subscript is the same as baseline of the character to
+    // the left of the subsup.
+    let kernSize = -subBox.height + xHeight;
+    if (subBox.height > maxHeight) {
+      // If the subscript's height is greater that of a row without any non-atom
+      // childre, then push the subscript down by whatever the difference is.
+      kernSize += subBox.height - maxHeight;
     }
-
-    // We start with -subBox.height to align the subscript's baseline with
-    // the baseline of the base it's attached to
-    // TODO: replace the up/dn list that makeVBox uses with something else
-    // that doesn't require this correction
-    const kernSize = -subBox.height + shift;
 
     dnList.push(Layout.makeKern(kernSize));
     dnList.push(subBox);
