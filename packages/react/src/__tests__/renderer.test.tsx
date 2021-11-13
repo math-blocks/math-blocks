@@ -498,6 +498,30 @@ describe('renderer', () => {
         ).toMatchSVGSnapshot();
       });
     });
+
+    test('subsup consistency', async () => {
+      const { char, subsup, row } = Editor.builders;
+      const subsups = row([
+        char('x'),
+        subsup([char('n')], undefined),
+        char('x'),
+        subsup(undefined, [char('2')]),
+        char('x'),
+        subsup([char('n'), char('t')], [char('2'), char('j')]),
+      ]);
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            fontSize={fontSize}
+            row={subsups}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
   });
 
   describe('fractions', () => {

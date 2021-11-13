@@ -11,7 +11,7 @@ import { HStack, VStack } from '../layout';
 import FormattingPalette from './formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 0;
+const initialExample = 6;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
@@ -188,6 +188,7 @@ const EditorPage: React.FunctionComponent = () => {
               <option value={3}>Tall Delimiters</option>
               <option value={4}>Nested Fractions</option>
               <option value={5}>Matrix</option>
+              <option value={6}>Subsups</option>
             </select>
             <span
               style={{
