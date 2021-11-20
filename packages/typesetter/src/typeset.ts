@@ -7,6 +7,7 @@ import { processBox } from './scene-graph';
 import { RenderMode } from './enums';
 
 import { typesetDelimited } from './typesetters/delimited';
+import { typesetMacro } from './typesetters/macro';
 import { typesetFrac } from './typesetters/frac';
 import { typesetLimits } from './typesetters/limits';
 import { typesetRoot } from './typesetters/root';
@@ -238,6 +239,10 @@ const typesetNode = (
     case NodeType.Delimited: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetDelimited(typesetChild, node, context);
+    }
+    case NodeType.Macro: {
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
+      return typesetMacro(typesetChild, node, context);
     }
     case NodeType.Table: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);

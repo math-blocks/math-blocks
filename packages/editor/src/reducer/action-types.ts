@@ -13,6 +13,7 @@ export type Action =
       readonly type: 'Parens';
       readonly char: '(' | ')' | '[' | ']' | '{' | '}' | '|';
     }
+  | { readonly type: 'Macro' }
   | { readonly type: 'Fraction' }
   | {
       // TODO: add support for an index

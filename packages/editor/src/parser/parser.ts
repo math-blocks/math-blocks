@@ -123,6 +123,8 @@ const getPrefixParselet = (
       throw new Error("Unexpected 'limits' token");
     case NodeType.Row:
       throw new Error("Unexpected 'row' token");
+    case NodeType.Macro:
+      throw new Error("Unexpected 'macro' token");
     default:
       throw new UnreachableCaseError(node);
   }
@@ -372,6 +374,8 @@ const getInfixParselet = (
       throw new Error(`Unexpected 'limits' token`);
     case NodeType.Row:
       throw new Error(`Unexpected 'row' token`);
+    case NodeType.Macro:
+      throw new Error("Unexpected 'macro' token");
     default:
       throw new UnreachableCaseError(node);
   }

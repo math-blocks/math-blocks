@@ -15,6 +15,7 @@ import { root } from './reducers/root';
 import { insertChar } from './reducers/insert-char';
 import { color } from './reducers/color';
 import { setSelection } from './reducers/set-selection';
+import { startMacro, completeMacro } from './reducers/macro';
 
 import type { Action, State } from './types';
 
@@ -50,6 +51,10 @@ export const reducer = (state: State = initialState, action: Action): State => {
       return subsup(state, 1);
     case 'Parens':
       return parens(state, action.char);
+    case 'Backslash':
+      return startMacro(state);
+    case 'Space':
+      return completeMacro(state);
     case 'Fraction':
       return frac(state);
     // TODO: use "Sqrt" and "NthRoot" to differentiate the two possibilities

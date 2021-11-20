@@ -45,4 +45,4 @@ export type {
   ZTable,
   State,
 } from './reducer/types';
-export type { Action } from './reducer/action-types';
+export type { Action } from './simple-reducer/types';

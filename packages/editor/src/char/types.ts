@@ -15,6 +15,7 @@ type Common = { readonly id: number; readonly style: Readonly<Style> };
 
 export type CharRow = sharedTypes.Row<Char, Common>;
 export type CharDelimited = sharedTypes.Delimited<Char, Common>;
+export type CharMacro = sharedTypes.Macro<Char, Common>;
 export type CharTable = sharedTypes.Table<Char, Common>;
 export type CharSubSup = sharedTypes.SubSup<Char, Common>;
 export type CharLimits = sharedTypes.Limits<Char, Common>;
@@ -27,6 +28,7 @@ export type CharAtom = sharedTypes.Atom<Char, Common>;
 export type CharNode =
   | CharRow
   | CharDelimited
+  | CharMacro
   | CharTable
   | CharSubSup
   | CharLimits

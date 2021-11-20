@@ -32,6 +32,8 @@ export type Action =
       readonly type: 'Parens';
       readonly char: '(' | ')' | '[' | ']' | '{' | '}' | '|';
     }
+  | { readonly type: 'Backslash' }
+  | { readonly type: 'Space' }
   | { readonly type: 'Fraction' }
   | { readonly type: 'Root' } // TODO: add support for an index
   | {

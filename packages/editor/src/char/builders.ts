@@ -79,6 +79,15 @@ export function delimited(
   };
 }
 
+export function macro(inner: readonly types.CharNode[]): types.CharMacro {
+  return {
+    id: getId(),
+    type: NodeType.Macro,
+    children: [row(inner)],
+    style: {},
+  };
+}
+
 export function table(
   subtype: 'matrix' | 'algebra',
   cells: readonly (readonly types.CharNode[] | null)[],

@@ -64,6 +64,8 @@ const keydownToAction = (key: string): Editor.Action | null => {
       return { type: 'InsertChar', char: '\u2212' };
     case 'Shift':
       return { type: 'StartSelecting' };
+    case '\\':
+      return { type: 'Macro' };
     default: {
       if (key.length === 1 && key.charCodeAt(0) > 32) {
         return { type: 'InsertChar', char: key };

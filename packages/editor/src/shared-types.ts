@@ -3,6 +3,7 @@
 export enum NodeType {
   Row = 'row',
   Delimited = 'delimited',
+  Macro = 'macro',
   Table = 'table',
   SubSup = 'subsup',
   Limits = 'limits',
@@ -23,6 +24,11 @@ export type Delimited<A, C> = C & {
   // How do we limit what can be used as a delimiter?s
   readonly leftDelim: Atom<A, C>;
   readonly rightDelim: Atom<A, C>;
+};
+
+export type Macro<A, C> = C & {
+  readonly type: NodeType.Macro;
+  readonly children: readonly [Row<A, C>];
 };
 
 export type RowStyle = {
@@ -76,6 +82,7 @@ export type Atom<A, C> = C & A;
 export type Node<A, C> =
   | Row<A, C>
   | Delimited<A, C>
+  | Macro<A, C>
   | Table<A, C>
   | SubSup<A, C>
   | Limits<A, C>

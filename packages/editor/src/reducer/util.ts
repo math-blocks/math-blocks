@@ -257,7 +257,8 @@ export const nodeToFocus = (
     | types.CharRoot
     | types.CharLimits
     | types.CharDelimited
-    | types.CharTable,
+    | types.CharTable
+    | types.CharMacro,
   index: number,
 ): Focus => {
   switch (node.type) {
@@ -285,6 +286,8 @@ export const nodeToFocus = (
       return zdelimited(node);
     case NodeType.Table:
       return ztable(node, index);
+    case NodeType.Macro:
+      throw new Error("the old reducer doesn't support macros");
     default:
       throw new UnreachableCaseError(node);
   }

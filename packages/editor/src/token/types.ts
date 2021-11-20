@@ -34,13 +34,17 @@ export enum TokenKind {
   EOL = 'EOL',
 }
 
-type ValueToken<kind extends TokenKind> = {
+export type ValueToken<kind extends TokenKind> = {
   readonly type: 'token';
   readonly name: kind;
   readonly value: string;
 };
 
-type Identifier = ValueToken<TokenKind.Identifier>;
+export type Identifier = {
+  readonly type: 'token';
+  readonly name: TokenKind.Identifier;
+  readonly value: string;
+};
 type Number = ValueToken<TokenKind.Number>;
 
 type SimpleToken<kind extends TokenKind> = {
@@ -85,6 +89,7 @@ type Common = { readonly loc: SourceLocation };
 
 export type TokenRow = sharedTypes.Row<Token, Common>;
 export type TokenDelimited = sharedTypes.Delimited<Token, Common>;
+export type TokenMacro = sharedTypes.Macro<Token, Common>;
 export type TokenTable = sharedTypes.Table<Token, Common>;
 export type TokenSubSup = sharedTypes.SubSup<Token, Common>;
 export type TokenLimits = sharedTypes.Limits<Token, Common>;
@@ -95,6 +100,7 @@ export type TokenAtom = sharedTypes.Atom<Token, Common>;
 export type TokenNode =
   | TokenRow
   | TokenDelimited
+  | TokenMacro
   | TokenTable
   | TokenSubSup
   | TokenLimits
