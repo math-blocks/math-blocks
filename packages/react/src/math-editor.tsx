@@ -30,7 +30,7 @@ type Props = {
   readonly showHitboxes?: boolean;
 };
 
-const keydownToAction = (key: string): Editor.Action | null => {
+const keydownToAction = (key: string): Editor.OldAction | null => {
   switch (key) {
     case '(':
     case ')':
@@ -65,7 +65,9 @@ const keydownToAction = (key: string): Editor.Action | null => {
     case 'Shift':
       return { type: 'StartSelecting' };
     case '\\':
-      return { type: 'Macro' };
+      return { type: 'Backslash' };
+    case ' ':
+      return { type: 'Space' };
     default: {
       if (key.length === 1 && key.charCodeAt(0) > 32) {
         return { type: 'InsertChar', char: key };
@@ -75,7 +77,7 @@ const keydownToAction = (key: string): Editor.Action | null => {
   return null;
 };
 
-const keyupToAction = (key: string): Editor.Action | null => {
+const keyupToAction = (key: string): Editor.OldAction | null => {
   switch (key) {
     case 'Shift':
       return { type: 'StopSelecting' };

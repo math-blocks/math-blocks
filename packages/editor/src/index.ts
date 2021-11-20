@@ -46,3 +46,4 @@ export type {
   State,
 } from './reducer/types';
 export type { Action } from './simple-reducer/types';
+export type { Action as OldAction } from './reducer/action-types';

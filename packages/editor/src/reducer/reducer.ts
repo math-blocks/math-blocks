@@ -86,7 +86,8 @@ export const reducer = (state: State = initialState, action: Action): State => {
     case 'DeleteRow':
     case 'DeleteColumn':
       return matrix(state, action);
-    case 'Macro':
+    case 'Backslash':
+    case 'Space':
       throw new Error("the old reducer doesn't support macros");
     default:
       throw new UnreachableCaseError(action);
