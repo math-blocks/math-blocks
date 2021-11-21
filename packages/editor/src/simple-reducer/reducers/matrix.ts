@@ -1,3 +1,5 @@
+import type { Mutable } from 'utility-types';
+
 import * as t from '../../char/types';
 import * as b from '../../char/builders';
 import { NodeType } from '../../shared-types';
@@ -48,13 +50,49 @@ const repeat = <T>(count: number, createElement: () => T): readonly T[] => {
   return result;
 };
 
-export const matrix = (state: State, action: Action): State => {
-  // TODO:
-  // - check if we're inside a matrix
-  // - if we are, determine which cell we're in
-  // - once we have that info, add cells in the appropriate places
+type Cell = {
+  readonly row: number;
+  readonly col: number;
+  readonly content: t.CharRow | null;
+};
 
+const getCellsFromTable = (table: t.CharTable): Cell[] => {
+  const cells: Cell[] = [];
+  const { colCount, children } = table;
+
+  let index = 0;
+  for (let i = 0; i < children.length; i++) {
+    const col = index % colCount;
+    const row = Math.floor(index / colCount);
+    cells[index++] = {
+      row,
+      col,
+      content: children[i],
+    };
+  }
+
+  return cells;
+};
+
+const getChildrenFromCells = (
+  cells: readonly Cell[],
+  colCount: number,
+): t.CharTable['children'] => {
+  const children: (t.CharRow | null)[] = [];
+
+  for (const cell of cells) {
+    const { row, col, content } = cell;
+    const index = row * colCount + col;
+
+    children[index] = content;
+  }
+
+  return children;
+};
+
+export const matrix = (state: State, action: Action): State => {
   if (action.type === 'InsertMatrix') {
+    // TODO: implement this
     return state;
   }
 
@@ -157,6 +195,7 @@ export const matrix = (state: State, action: Action): State => {
     const { focus } = state.selection;
     const newFocus = {
       path:
+        // only move the cursor if its in the last row
         rowIndex === matrix.rowCount - 1
           ? replaceElement(
               cellPathIndex,
@@ -178,11 +217,128 @@ export const matrix = (state: State, action: Action): State => {
   }
 
   if (action.type === 'AddColumn') {
-    return state;
+    const cells = getCellsFromTable(matrix) as Mutable<Cell>[];
+
+    if (action.side === 'left') {
+      for (const cell of cells) {
+        if (cell.col >= colIndex) {
+          cell.col++;
+        }
+      }
+      for (let row = 0; row < matrix.rowCount; row++) {
+        cells.push({
+          col: colIndex,
+          row: row,
+          content: b.row([b.char('0')]),
+        });
+      }
+    } else if (action.side === 'right') {
+      for (const cell of cells) {
+        if (cell.col > colIndex) {
+          cell.col++;
+        }
+      }
+      for (let row = 0; row < matrix.rowCount; row++) {
+        cells.push({
+          col: colIndex + 1,
+          row: row,
+          content: b.row([b.char('0')]),
+        });
+      }
+    }
+
+    const newRoot = PathUtils.updateRowAtPath(
+      state.row,
+      matrixParentPath,
+      (node) => {
+        const newColCount = matrix.colCount + 1;
+        const newMatrix = {
+          ...matrix,
+          children: getChildrenFromCells(cells, newColCount),
+          colCount: newColCount,
+        };
+
+        return {
+          ...node,
+          children: replaceElement(matrixOffset, node.children, newMatrix),
+        };
+      },
+    );
+
+    if (newRoot === state.row) {
+      return state;
+    }
+
+    const { focus } = state.selection;
+    const newFocus = {
+      ...focus,
+      path: replaceElement(
+        cellPathIndex,
+        focus.path,
+        action.side === 'left' ? cellIndex + 2 : cellIndex + 1,
+      ),
+    };
+
+    return {
+      ...state,
+      row: newRoot,
+      selection: {
+        anchor: newFocus,
+        focus: newFocus,
+      },
+    };
   }
 
   if (action.type === 'DeleteColumn') {
-    return state;
+    const cells = getCellsFromTable(matrix).filter(
+      (cell) => cell.col !== colIndex,
+    ) as Mutable<Cell>[];
+
+    for (const cell of cells) {
+      if (cell.col > colIndex) {
+        cell.col--;
+      }
+    }
+
+    const newRoot = PathUtils.updateRowAtPath(
+      state.row,
+      matrixParentPath,
+      (node) => {
+        const newColCount = matrix.colCount - 1;
+        const newMatrix = {
+          ...matrix,
+          children: getChildrenFromCells(cells, newColCount),
+          colCount: newColCount,
+        };
+
+        return {
+          ...node,
+          children: replaceElement(matrixOffset, node.children, newMatrix),
+        };
+      },
+    );
+
+    if (newRoot === state.row) {
+      return state;
+    }
+
+    const { focus } = state.selection;
+    const newFocus = {
+      ...focus,
+      path:
+        colIndex === matrix.colCount - 1
+          ? replaceElement(cellPathIndex, focus.path, cellIndex - rowIndex - 1)
+          : replaceElement(cellPathIndex, focus.path, cellIndex - rowIndex),
+    };
+
+    return {
+      ...state,
+      row: newRoot,
+      selection: {
+        anchor: newFocus,
+        focus: newFocus,
+      },
+    };
   }
 
   return state;

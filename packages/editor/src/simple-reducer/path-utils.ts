@@ -46,6 +46,8 @@ export const getNodeAtPath = (root: CharNode, path: Path): CharNode | null => {
   return null;
 };
 
+// TODO: create a version of this that replaces a given Selection with the node(s)
+// returned by the callback.
 export const updateRowAtPath = (
   root: CharRow,
   path: Path,
