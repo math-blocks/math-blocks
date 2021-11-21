@@ -76,8 +76,42 @@ const getChildrenFromCells = (
 
 export const matrix = (state: State, action: Action): State => {
   if (action.type === 'InsertMatrix') {
-    // TODO: implement this
-    return state;
+    const newRoot = SelectionUtils.replaceSelection(
+      state.row,
+      state.selection,
+      () =>
+        b.matrix(
+          [[b.char('1')], [b.char('0')], [b.char('0')], [b.char('1')]],
+          2,
+          2,
+          action.delimiters === 'brackets'
+            ? {
+                left: b.char('['),
+                right: b.char(']'),
+              }
+            : {
+                left: b.char('('),
+                right: b.char(')'),
+              },
+        ),
+    );
+
+    if (newRoot === state.row) {
+      return state;
+    }
+
+    const { start, path } = SelectionUtils.getPathAndRange(state.selection);
+
+    const newFocus = {
+      path: path,
+      offset: start + 1,
+    };
+
+    return {
+      ...state,
+      row: newRoot,
+      selection: { anchor: newFocus, focus: newFocus },
+    };
   }
 
   const { path } = state.selection.focus;
