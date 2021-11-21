@@ -27,8 +27,8 @@ const nodesForPath = (root: t.CharRow, path: Path): t.CharNode[] => {
 };
 
 const replaceElement = <T>(
-  at: number,
   inArray: readonly T[],
+  at: number,
   withElement: T,
 ): readonly T[] => {
   return [...inArray.slice(0, at), withElement, ...inArray.slice(at + 1)];
@@ -169,25 +169,17 @@ export const matrix = (state: State, action: Action): State => {
     }
 
     const { focus } = state.selection;
-    const newFocus = {
-      path:
-        action.side === 'above'
-          ? replaceElement(
-              cellPathIndex,
-              focus.path,
-              cellIndex + matrix.colCount,
-            )
-          : focus.path,
-      offset: focus.offset,
-    };
+    const newSelection = SelectionUtils.makeSelection(
+      action.side === 'above'
+        ? replaceElement(focus.path, cellPathIndex, cellIndex + matrix.colCount)
+        : focus.path,
+      focus.offset,
+    );
 
     return {
       ...state,
       row: newRoot,
-      selection: {
-        anchor: newFocus,
-        focus: newFocus,
-      },
+      selection: newSelection,
     };
   }
 
@@ -218,16 +210,13 @@ export const matrix = (state: State, action: Action): State => {
     }
 
     const { focus } = state.selection;
+    const newCellIndex =
+      cursorRow === matrix.rowCount - 1
+        ? cellIndex - matrix.colCount
+        : cellIndex;
     const newFocus = {
-      path:
-        // only move the cursor if its in the last row
-        cursorRow === matrix.rowCount - 1
-          ? replaceElement(
-              cellPathIndex,
-              focus.path,
-              cellIndex - matrix.colCount,
-            )
-          : focus.path,
+      path: replaceElement(focus.path, cellPathIndex, newCellIndex),
+      // TODO: update the offset if the cursor changes which cell it's in
       offset: focus.offset,
     };
 
@@ -273,24 +262,19 @@ export const matrix = (state: State, action: Action): State => {
     }
 
     const { focus } = state.selection;
-    const newFocus = {
-      ...focus,
-      path: replaceElement(
-        cellPathIndex,
-        focus.path,
-        action.side === 'left'
-          ? cellIndex + cursorRow + 1
-          : cellIndex + cursorRow,
-      ),
-    };
+    const newCellIndex =
+      action.side === 'left'
+        ? cellIndex + cursorRow + 1
+        : cellIndex + cursorRow;
+    const newSelection = SelectionUtils.makeSelection(
+      replaceElement(focus.path, cellPathIndex, newCellIndex),
+      focus.offset,
+    );
 
     return {
       ...state,
       row: newRoot,
-      selection: {
-        anchor: newFocus,
-        focus: newFocus,
-      },
+      selection: newSelection,
     };
   }
 
@@ -320,12 +304,14 @@ export const matrix = (state: State, action: Action): State => {
     }
 
     const { focus } = state.selection;
+    const nextCellIndex =
+      cursorCol === matrix.colCount - 1
+        ? cellIndex - cursorRow - 1
+        : cellIndex - cursorRow;
     const newFocus = {
-      ...focus,
-      path:
-        cursorCol === matrix.colCount - 1
-          ? replaceElement(cellPathIndex, focus.path, cellIndex - cursorRow - 1)
-          : replaceElement(cellPathIndex, focus.path, cellIndex - cursorRow),
+      path: replaceElement(focus.path, cellPathIndex, nextCellIndex),
+      // TODO: update the offset if the cursor changes which cell it's in
+      offset: focus.offset,
     };
 
     return {

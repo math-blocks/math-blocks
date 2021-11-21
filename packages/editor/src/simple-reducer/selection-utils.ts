@@ -88,9 +88,9 @@ export const makeSelection2 = (
 };
 
 const replaceElements = <T>(
+  inArray: readonly T[],
   from: number,
   to: number,
-  inArray: readonly T[],
   withElement: T,
 ): readonly T[] => {
   return [...inArray.slice(0, from), withElement, ...inArray.slice(to + 1)];
@@ -112,7 +112,7 @@ export const replaceSelection = (
 
           return {
             ...node,
-            children: replaceElements(start, end, node.children, newNode),
+            children: replaceElements(node.children, start, end, newNode),
           };
         }
         return undefined;
