@@ -34,22 +34,6 @@ const replaceElement = <T>(
   return [...inArray.slice(0, at), withElement, ...inArray.slice(at + 1)];
 };
 
-const insertElements = <T>(
-  at: number,
-  inArray: readonly T[],
-  withElements: readonly T[],
-): readonly T[] => {
-  return [...inArray.slice(0, at), ...withElements, ...inArray.slice(at)];
-};
-
-const repeat = <T>(count: number, createElement: () => T): readonly T[] => {
-  const result: T[] = [];
-  for (let i = 0; i < count; i++) {
-    result.push(createElement());
-  }
-  return result;
-};
-
 type Cell = {
   readonly row: number;
   readonly col: number;
@@ -109,30 +93,53 @@ export const matrix = (state: State, action: Action): State => {
   const matrix = nodes[matrixPathIndex] as t.CharTable;
   const cellPathIndex = matrixPathIndex + 1;
   const cellIndex = path[cellPathIndex];
-  const rowIndex = Math.floor(cellIndex / matrix.colCount);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const colIndex = cellIndex % matrix.colCount;
+  const cursorRow = Math.floor(cellIndex / matrix.colCount);
+  const cursorCol = cellIndex % matrix.colCount;
 
   const matrixOffset = path[matrixPathIndex];
   const matrixParentPath = path.slice(0, matrixPathIndex);
 
   if (action.type === 'AddRow') {
-    const splitIndex =
-      action.side === 'above'
-        ? matrix.colCount * rowIndex
-        : matrix.colCount * (rowIndex + 1);
+    const cells = getCellsFromTable(matrix) as Mutable<Cell>[];
 
-    const newRow = repeat(matrix.colCount, () => b.row([b.char('0')]));
-    const newMatrix: t.CharTable = {
-      ...matrix,
-      children: insertElements(splitIndex, matrix.children, newRow),
-      rowCount: matrix.rowCount + 1,
-    };
+    if (action.side === 'above') {
+      for (const cell of cells) {
+        if (cell.row >= cursorRow) {
+          cell.row++;
+        }
+      }
+      for (let col = 0; col < matrix.colCount; col++) {
+        cells.push({
+          row: cursorRow,
+          col: col,
+          content: b.row([b.char('0')]),
+        });
+      }
+    } else if (action.side === 'below') {
+      for (const cell of cells) {
+        if (cell.row > cursorRow) {
+          cell.row++;
+        }
+      }
+      for (let col = 0; col < matrix.colCount; col++) {
+        cells.push({
+          row: cursorRow + 1,
+          col: col,
+          content: b.row([b.char('0')]),
+        });
+      }
+    }
 
     const newRoot = PathUtils.updateRowAtPath(
       state.row,
       matrixParentPath,
       (node) => {
+        const newMatrix = {
+          ...matrix,
+          children: getChildrenFromCells(cells, matrix.colCount),
+          rowCount: matrix.rowCount + 1,
+        };
+
         return {
           ...node,
           children: replaceElement(matrixOffset, node.children, newMatrix),
@@ -168,19 +175,26 @@ export const matrix = (state: State, action: Action): State => {
   }
 
   if (action.type === 'DeleteRow') {
-    const before = matrix.children.slice(0, matrix.colCount * rowIndex);
-    const after = matrix.children.slice(matrix.colCount * (rowIndex + 1));
+    const cells = getCellsFromTable(matrix)
+      // remove all cells in the current row
+      .filter((cell) => cell.row !== cursorRow) as Mutable<Cell>[];
 
-    const newMatrix: t.CharTable = {
-      ...matrix,
-      children: [...before, ...after],
-      rowCount: matrix.rowCount - 1,
-    };
+    for (const cell of cells) {
+      if (cell.row > cursorRow) {
+        cell.row--;
+      }
+    }
 
     const newRoot = PathUtils.updateRowAtPath(
       state.row,
       matrixParentPath,
       (node) => {
+        const newMatrix = {
+          ...matrix,
+          children: getChildrenFromCells(cells, matrix.colCount),
+          rowCount: matrix.rowCount - 1,
+        };
+
         return {
           ...node,
           children: replaceElement(matrixOffset, node.children, newMatrix),
@@ -196,7 +210,7 @@ export const matrix = (state: State, action: Action): State => {
     const newFocus = {
       path:
         // only move the cursor if its in the last row
-        rowIndex === matrix.rowCount - 1
+        cursorRow === matrix.rowCount - 1
           ? replaceElement(
               cellPathIndex,
               focus.path,
@@ -221,26 +235,26 @@ export const matrix = (state: State, action: Action): State => {
 
     if (action.side === 'left') {
       for (const cell of cells) {
-        if (cell.col >= colIndex) {
+        if (cell.col >= cursorCol) {
           cell.col++;
         }
       }
       for (let row = 0; row < matrix.rowCount; row++) {
         cells.push({
-          col: colIndex,
+          col: cursorCol,
           row: row,
           content: b.row([b.char('0')]),
         });
       }
     } else if (action.side === 'right') {
       for (const cell of cells) {
-        if (cell.col > colIndex) {
+        if (cell.col > cursorCol) {
           cell.col++;
         }
       }
       for (let row = 0; row < matrix.rowCount; row++) {
         cells.push({
-          col: colIndex + 1,
+          col: cursorCol + 1,
           row: row,
           content: b.row([b.char('0')]),
         });
@@ -275,7 +289,9 @@ export const matrix = (state: State, action: Action): State => {
       path: replaceElement(
         cellPathIndex,
         focus.path,
-        action.side === 'left' ? cellIndex + 2 : cellIndex + 1,
+        action.side === 'left'
+          ? cellIndex + cursorRow + 1
+          : cellIndex + cursorRow,
       ),
     };
 
@@ -291,11 +307,11 @@ export const matrix = (state: State, action: Action): State => {
 
   if (action.type === 'DeleteColumn') {
     const cells = getCellsFromTable(matrix).filter(
-      (cell) => cell.col !== colIndex,
+      (cell) => cell.col !== cursorCol,
     ) as Mutable<Cell>[];
 
     for (const cell of cells) {
-      if (cell.col > colIndex) {
+      if (cell.col > cursorCol) {
         cell.col--;
       }
     }
@@ -326,9 +342,9 @@ export const matrix = (state: State, action: Action): State => {
     const newFocus = {
       ...focus,
       path:
-        colIndex === matrix.colCount - 1
-          ? replaceElement(cellPathIndex, focus.path, cellIndex - rowIndex - 1)
-          : replaceElement(cellPathIndex, focus.path, cellIndex - rowIndex),
+        cursorCol === matrix.colCount - 1
+          ? replaceElement(cellPathIndex, focus.path, cellIndex - cursorRow - 1)
+          : replaceElement(cellPathIndex, focus.path, cellIndex - cursorRow),
     };
 
     return {
