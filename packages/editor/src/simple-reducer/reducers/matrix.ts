@@ -106,32 +106,18 @@ export const matrix = (state: State, action: Action): State => {
   if (action.type === 'AddRow') {
     const cells = getCellsFromTable(matrix) as Mutable<Cell>[];
 
-    if (action.side === 'above') {
-      for (const cell of cells) {
-        if (cell.row >= cursorRow) {
-          cell.row++;
-        }
+    const row = action.side === 'above' ? cursorRow : cursorRow + 1;
+    for (const cell of cells) {
+      if (cell.row >= row) {
+        cell.row++;
       }
-      for (let col = 0; col < matrix.colCount; col++) {
-        cells.push({
-          row: cursorRow,
-          col: col,
-          content: b.row([b.char('0')]),
-        });
-      }
-    } else if (action.side === 'below') {
-      for (const cell of cells) {
-        if (cell.row > cursorRow) {
-          cell.row++;
-        }
-      }
-      for (let col = 0; col < matrix.colCount; col++) {
-        cells.push({
-          row: cursorRow + 1,
-          col: col,
-          content: b.row([b.char('0')]),
-        });
-      }
+    }
+    for (let col = 0; col < matrix.colCount; col++) {
+      cells.push({
+        row: row,
+        col: col,
+        content: b.row([b.char('0')]),
+      });
     }
 
     const newRoot = SelectionUtils.replaceSelection(
@@ -224,32 +210,18 @@ export const matrix = (state: State, action: Action): State => {
   if (action.type === 'AddColumn') {
     const cells = getCellsFromTable(matrix) as Mutable<Cell>[];
 
-    if (action.side === 'left') {
-      for (const cell of cells) {
-        if (cell.col >= cursorCol) {
-          cell.col++;
-        }
+    const col = action.side === 'left' ? cursorCol : cursorCol + 1;
+    for (const cell of cells) {
+      if (cell.col >= col) {
+        cell.col++;
       }
-      for (let row = 0; row < matrix.rowCount; row++) {
-        cells.push({
-          col: cursorCol,
-          row: row,
-          content: b.row([b.char('0')]),
-        });
-      }
-    } else if (action.side === 'right') {
-      for (const cell of cells) {
-        if (cell.col > cursorCol) {
-          cell.col++;
-        }
-      }
-      for (let row = 0; row < matrix.rowCount; row++) {
-        cells.push({
-          col: cursorCol + 1,
-          row: row,
-          content: b.row([b.char('0')]),
-        });
-      }
+    }
+    for (let row = 0; row < matrix.rowCount; row++) {
+      cells.push({
+        col: col,
+        row: row,
+        content: b.row([b.char('0')]),
+      });
     }
 
     const newRoot = SelectionUtils.replaceSelection(
