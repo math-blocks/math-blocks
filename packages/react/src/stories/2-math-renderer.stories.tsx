@@ -17,7 +17,7 @@ import stixPath from '../../../../assets/STIX2Math.otf';
 // @ts-expect-error: TypeScript doesn't know about this path
 import lmPath from '../../../../assets/latinmodern-math.otf';
 
-const { row, char: glyph, frac, limits, root, subsup } = Editor.builders;
+const { row, char: glyph, frac, limits, root, subsup, macro } = Editor.builders;
 const { applyColorMapToEditorNode } = Editor.transforms;
 
 const stixFontLoader = async (): Promise<FontData> => {
@@ -56,7 +56,11 @@ export const Small: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('0'),
   ]);
   const fontSize = 20;
-  return <MathRenderer row={math} style={style} fontSize={fontSize} />;
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
+    </FontDataContext.Provider>
+  );
 };
 
 export const Equation: Story<EmptyProps> = (args, { loaded: fontData }) => {
@@ -95,7 +99,7 @@ export const LatinModernEquation: Story<EmptyProps> = (
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -112,7 +116,7 @@ export const LatinModernRootAndFraction: Story<EmptyProps> = (
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -151,7 +155,6 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
         showCursor={true}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -188,7 +191,6 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
         showCursor={true}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -214,7 +216,6 @@ export const Pythagoras: Story<EmptyProps> = (args, { loaded: fontData }) => {
         fontSize={fontSize}
         showCursor={true}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -247,7 +248,7 @@ export const QuadraticEquation: Story<EmptyProps> = (
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -272,7 +273,6 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -290,7 +290,7 @@ export const Summation: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -315,7 +315,7 @@ export const ColorizedFraction: Story<EmptyProps> = (
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -350,7 +350,7 @@ export const ColorizedSum: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -406,7 +406,7 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -450,7 +450,7 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={math} style={style} fontSize={fontSize} />;
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -473,7 +473,7 @@ export const TallDelimiters: Story<EmptyProps> = (
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathRenderer row={editNode} style={style} fontSize={fontSize} />;
+      <MathRenderer row={editNode} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
@@ -524,7 +524,6 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
         showCursor={true}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -575,7 +574,6 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
         showCursor={true}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -616,7 +614,6 @@ export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
         renderMode={Typesetter.RenderMode.Dynamic}
         mathStyle={Typesetter.MathStyle.Text}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -674,7 +671,6 @@ export const SelectionSize: Story<EmptyProps> = (
         renderMode={Typesetter.RenderMode.Dynamic}
         mathStyle={Typesetter.MathStyle.Text}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -695,7 +691,6 @@ export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -721,7 +716,6 @@ export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -754,7 +748,6 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
       />
-      ;
     </FontDataContext.Provider>
   );
 };
@@ -930,6 +923,32 @@ export const VerticalWork: Story<EmptyProps> = (args, { loaded: fontData }) => {
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={verticalWork}
+        style={style}
+        fontSize={fontSize}
+        renderMode={Typesetter.RenderMode.Dynamic}
+      />
+    </FontDataContext.Provider>
+  );
+};
+
+export const InProgressMacro: Story<EmptyProps> = (
+  args,
+  { loaded: fontData },
+) => {
+  const math = Editor.builders.row([
+    glyph('x'),
+    glyph('+'),
+    macro([glyph('p'), glyph('i')]),
+    glyph('+'),
+    glyph('y'),
+  ]);
+
+  const fontSize = 60;
+
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer
+        row={math}
         style={style}
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}

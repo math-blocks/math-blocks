@@ -911,4 +911,11 @@ describe('renderer', () => {
       ).toMatchSVGSnapshot();
     });
   });
+
+  describe('macro', () => {
+    test('in progress macro', async () => {
+      const InProgressMacro = await storyToComponent(stories.InProgressMacro);
+      expect(<InProgressMacro />).toMatchSVGSnapshot();
+    });
+  });
 });
