@@ -4,7 +4,7 @@ import * as t from '../../char/types';
 import * as b from '../../char/builders';
 import { NodeType } from '../../shared-types';
 
-import * as PathUtils from '../path-utils';
+import * as SelectionUtils from '../selection-utils';
 
 import type { State, Path, Action } from '../types';
 
@@ -98,6 +98,10 @@ export const matrix = (state: State, action: Action): State => {
 
   const matrixOffset = path[matrixPathIndex];
   const matrixParentPath = path.slice(0, matrixPathIndex);
+  const selection = SelectionUtils.makeSelection(
+    matrixParentPath,
+    matrixOffset,
+  );
 
   if (action.type === 'AddRow') {
     const cells = getCellsFromTable(matrix) as Mutable<Cell>[];
@@ -130,21 +134,14 @@ export const matrix = (state: State, action: Action): State => {
       }
     }
 
-    const newRoot = PathUtils.updateRowAtPath(
+    const newRoot = SelectionUtils.replaceSelection(
       state.row,
-      matrixParentPath,
-      (node) => {
-        const newMatrix = {
-          ...matrix,
-          children: getChildrenFromCells(cells, matrix.colCount),
-          rowCount: matrix.rowCount + 1,
-        };
-
-        return {
-          ...node,
-          children: replaceElement(matrixOffset, node.children, newMatrix),
-        };
-      },
+      selection,
+      () => ({
+        ...matrix,
+        children: getChildrenFromCells(cells, matrix.colCount),
+        rowCount: matrix.rowCount + 1,
+      }),
     );
 
     if (newRoot === state.row) {
@@ -181,25 +178,19 @@ export const matrix = (state: State, action: Action): State => {
 
     for (const cell of cells) {
       if (cell.row > cursorRow) {
+        // update the row number of all cells after the removed row
         cell.row--;
       }
     }
 
-    const newRoot = PathUtils.updateRowAtPath(
+    const newRoot = SelectionUtils.replaceSelection(
       state.row,
-      matrixParentPath,
-      (node) => {
-        const newMatrix = {
-          ...matrix,
-          children: getChildrenFromCells(cells, matrix.colCount),
-          rowCount: matrix.rowCount - 1,
-        };
-
-        return {
-          ...node,
-          children: replaceElement(matrixOffset, node.children, newMatrix),
-        };
-      },
+      selection,
+      () => ({
+        ...matrix,
+        children: getChildrenFromCells(cells, matrix.colCount),
+        rowCount: matrix.rowCount - 1,
+      }),
     );
 
     if (newRoot === state.row) {
@@ -261,22 +252,14 @@ export const matrix = (state: State, action: Action): State => {
       }
     }
 
-    const newRoot = PathUtils.updateRowAtPath(
+    const newRoot = SelectionUtils.replaceSelection(
       state.row,
-      matrixParentPath,
-      (node) => {
-        const newColCount = matrix.colCount + 1;
-        const newMatrix = {
-          ...matrix,
-          children: getChildrenFromCells(cells, newColCount),
-          colCount: newColCount,
-        };
-
-        return {
-          ...node,
-          children: replaceElement(matrixOffset, node.children, newMatrix),
-        };
-      },
+      selection,
+      () => ({
+        ...matrix,
+        children: getChildrenFromCells(cells, matrix.colCount + 1),
+        colCount: matrix.colCount + 1,
+      }),
     );
 
     if (newRoot === state.row) {
@@ -316,22 +299,14 @@ export const matrix = (state: State, action: Action): State => {
       }
     }
 
-    const newRoot = PathUtils.updateRowAtPath(
+    const newRoot = SelectionUtils.replaceSelection(
       state.row,
-      matrixParentPath,
-      (node) => {
-        const newColCount = matrix.colCount - 1;
-        const newMatrix = {
-          ...matrix,
-          children: getChildrenFromCells(cells, newColCount),
-          colCount: newColCount,
-        };
-
-        return {
-          ...node,
-          children: replaceElement(matrixOffset, node.children, newMatrix),
-        };
-      },
+      selection,
+      () => ({
+        ...matrix,
+        children: getChildrenFromCells(cells, matrix.colCount - 1),
+        colCount: matrix.colCount - 1,
+      }),
     );
 
     if (newRoot === state.row) {
