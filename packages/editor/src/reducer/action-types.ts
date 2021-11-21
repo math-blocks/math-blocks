@@ -13,6 +13,8 @@ export type Action =
       readonly type: 'Parens';
       readonly char: '(' | ')' | '[' | ']' | '{' | '}' | '|';
     }
+  | { readonly type: 'Backslash' }
+  | { readonly type: 'Space' }
   | { readonly type: 'Fraction' }
   | {
       // TODO: add support for an index

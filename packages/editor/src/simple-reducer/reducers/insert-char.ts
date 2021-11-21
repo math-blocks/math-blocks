@@ -11,6 +11,7 @@ export const insertChar = (state: State, char: string): State => {
 
   const { focus } = selection;
   const { start, end } = SelectionUtils.getPathAndRange(selection);
+
   const newRow = PathUtils.updateRowAtPath(row, focus.path, (node) => {
     const beforeSelection = node.children.slice(0, start);
     const afterSelection = node.children.slice(end);
@@ -21,6 +22,7 @@ export const insertChar = (state: State, char: string): State => {
   });
 
   if (newRow === row) {
+    console.log('row update failed');
     return state;
   }
 

@@ -15,7 +15,7 @@ import { HStack, VStack } from '../layout';
 import FormattingPalette from './formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 2;
+const initialExample = 0;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);

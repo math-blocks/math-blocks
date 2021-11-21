@@ -90,7 +90,9 @@ export const typesetAtom = (
   // current font.
   if (/[a-z]/.test(node.value) && !context.operator) {
     const offset = node.value.charCodeAt(0) - 'a'.charCodeAt(0);
-    const char = String.fromCodePoint(0x1d44e + offset);
+    const char = context.macro
+      ? node.value
+      : String.fromCodePoint(0x1d44e + offset);
     const glyphID = font.getGlyphID(char);
     glyph = Layout.makeGlyph(char, glyphID, context);
   }

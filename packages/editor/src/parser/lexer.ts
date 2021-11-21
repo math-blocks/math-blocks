@@ -277,7 +277,7 @@ const lex = (
       const rightDelim = rparens(location(path, offset, offset));
       return {
         type: node.type,
-        children: [lexRow(node.children[0])],
+        children: [lexRow(node.children[0], [...path, offset, 0])],
         leftDelim: leftDelim,
         rightDelim: rightDelim,
         loc: location(path, offset, offset + 1),
@@ -295,6 +295,12 @@ const lex = (
         loc: location(path, offset, offset + 1),
       };
     }
+    case NodeType.Macro:
+      return {
+        type: node.type,
+        children: [lexRow(node.children[0], [...path, offset, 0])],
+        loc: location(path, offset, offset + 1),
+      };
     case 'char':
       throw new Error('lexChildren coalesces chars, use it instead');
     default:

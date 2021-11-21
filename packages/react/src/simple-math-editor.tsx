@@ -35,6 +35,7 @@ type Props = {
 };
 
 const keydownToAction = (key: string): Editor.SimpleAction | null => {
+  console.log(key);
   switch (key) {
     case '(':
     case ')':
@@ -68,6 +69,10 @@ const keydownToAction = (key: string): Editor.SimpleAction | null => {
       return { type: 'InsertChar', char: '\u2212' };
     case 'Shift':
       return { type: 'StartSelecting' };
+    case '\\':
+      return { type: 'Backslash' };
+    case ' ':
+      return { type: 'Space' };
     default: {
       if (key.length === 1 && key.charCodeAt(0) > 32) {
         return { type: 'InsertChar', char: key };

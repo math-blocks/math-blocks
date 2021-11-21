@@ -85,6 +85,9 @@ const print = (
         loc.end
       } ${children.join(' ')})`;
     }
+    case NodeType.Macro: {
+      throw new Error('TODO: add support for serializing Macro nodes');
+    }
     default:
       throw new UnreachableCaseError(ast);
   }
