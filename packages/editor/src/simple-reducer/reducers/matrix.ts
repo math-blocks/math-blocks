@@ -75,11 +75,14 @@ export const matrix = (state: State, action: Action): State => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const colIndex = cellIndex % matrix.colCount;
 
+  const matrixOffset = path[matrixPathIndex];
+  const matrixParentPath = path.slice(0, matrixPathIndex);
+
   if (action.type === 'AddRow') {
     const splitIndex =
       action.side === 'above'
-        ? Math.max(0, matrix.colCount * rowIndex)
-        : Math.max(0, matrix.colCount * (rowIndex + 1));
+        ? matrix.colCount * rowIndex
+        : matrix.colCount * (rowIndex + 1);
 
     const newRow = repeat(matrix.colCount, () => b.row([b.char('0')]));
     const newMatrix: t.CharTable = {
@@ -87,9 +90,6 @@ export const matrix = (state: State, action: Action): State => {
       children: insertElements(splitIndex, matrix.children, newRow),
       rowCount: matrix.rowCount + 1,
     };
-
-    const matrixOffset = path[matrixPathIndex];
-    const matrixParentPath = path.slice(0, matrixPathIndex);
 
     const newRoot = PathUtils.updateRowAtPath(
       state.row,
@@ -107,11 +107,14 @@ export const matrix = (state: State, action: Action): State => {
     }
 
     const { focus } = state.selection;
-    const newCellIndex = cellIndex + matrix.colCount;
     const newFocus = {
       path:
         action.side === 'above'
-          ? replaceElement(cellPathIndex, focus.path, newCellIndex)
+          ? replaceElement(
+              cellPathIndex,
+              focus.path,
+              cellIndex + matrix.colCount,
+            )
           : focus.path,
       offset: focus.offset,
     };
@@ -125,12 +128,59 @@ export const matrix = (state: State, action: Action): State => {
       },
     };
   }
+
+  if (action.type === 'DeleteRow') {
+    const before = matrix.children.slice(0, matrix.colCount * rowIndex);
+    const after = matrix.children.slice(matrix.colCount * (rowIndex + 1));
+
+    const newMatrix: t.CharTable = {
+      ...matrix,
+      children: [...before, ...after],
+      rowCount: matrix.rowCount - 1,
+    };
+
+    const newRoot = PathUtils.updateRowAtPath(
+      state.row,
+      matrixParentPath,
+      (node) => {
+        return {
+          ...node,
+          children: replaceElement(matrixOffset, node.children, newMatrix),
+        };
+      },
+    );
+
+    if (newRoot === state.row) {
+      return state;
+    }
+
+    const { focus } = state.selection;
+    const newFocus = {
+      path:
+        rowIndex === matrix.rowCount - 1
+          ? replaceElement(
+              cellPathIndex,
+              focus.path,
+              cellIndex - matrix.colCount,
+            )
+          : focus.path,
+      offset: focus.offset,
+    };
+
+    return {
+      ...state,
+      row: newRoot,
+      selection: {
+        anchor: newFocus,
+        focus: newFocus,
+      },
+    };
+  }
+
   if (action.type === 'AddColumn') {
     return state;
   }
-  if (action.type === 'DeleteRow') {
-    return state;
-  }
+
   if (action.type === 'DeleteColumn') {
     return state;
   }
