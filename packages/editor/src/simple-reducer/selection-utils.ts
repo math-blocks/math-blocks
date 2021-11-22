@@ -1,3 +1,6 @@
+import { traverseNode } from '../char/transforms';
+import { CharNode, CharRow } from '../char/types';
+
 import * as PathUtils from './path-utils';
 
 import type { Path, Selection } from './types';
@@ -82,4 +85,39 @@ export const makeSelection2 = (
     anchor: { path: anchorPath, offset: anchorOffset },
     focus: { path: focusPath, offset: focusOffset },
   };
+};
+
+const replaceElements = <T>(
+  inArray: readonly T[],
+  from: number,
+  to: number,
+  withElement: T,
+): readonly T[] => {
+  return [...inArray.slice(0, from), withElement, ...inArray.slice(to + 1)];
+};
+
+export const replaceSelection = (
+  root: CharRow,
+  selection: Selection,
+  callback: () => CharNode,
+): CharRow => {
+  const { start, end, path } = getPathAndRange(selection);
+
+  return traverseNode(
+    root,
+    {
+      exit: (node, currentPath) => {
+        if (PathUtils.equals(currentPath, path) && node.type === 'row') {
+          const newNode = callback();
+
+          return {
+            ...node,
+            children: replaceElements(node.children, start, end, newNode),
+          };
+        }
+        return undefined;
+      },
+    },
+    [],
+  );
 };
