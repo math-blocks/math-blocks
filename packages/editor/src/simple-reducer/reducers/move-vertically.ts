@@ -1,6 +1,7 @@
-import type { State } from '../types';
-import type { Action } from '../../reducer/action-types';
+import type { Action, State } from '../types';
+
+import { verticalWork } from './vertical-work/reducer';
 
 export const moveVertically = (state: State, action: Action): State => {
-  return state;
+  return verticalWork(state, action);
 };

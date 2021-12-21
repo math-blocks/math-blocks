@@ -46,6 +46,22 @@ export const getNodeAtPath = (root: CharNode, path: Path): CharNode | null => {
   return null;
 };
 
+export const getNodesForPath = (root: CharNode, path: Path): CharNode[] => {
+  if (path.length === 0) {
+    return [];
+  }
+
+  if ('children' in root) {
+    const [first, ...rest] = path;
+    const child = root.children[first];
+    if (child) {
+      return [child, ...getNodesForPath(child, rest)];
+    }
+  }
+
+  return [];
+};
+
 export const updateRowAtPath = (
   root: CharRow,
   path: Path,
