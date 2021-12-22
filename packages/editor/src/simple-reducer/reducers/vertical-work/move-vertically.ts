@@ -5,7 +5,7 @@ import * as b from '../../../char/builders';
 import { NodeType } from '../../../shared-types';
 
 import * as PathUtils from '../../path-utils';
-import type { State } from '../../types';
+import type { State, Selection } from '../../types';
 
 import { stateToVerticalWork, verticalWorkToState, getCursorLoc } from './util';
 import { adjustColumns } from './adjust-columns';
@@ -38,6 +38,48 @@ export const moveUp = (state: State): State => {
     work = {
       ...work,
       cursorId: work.columns[loc.col][loc.row - 1].id,
+    };
+  }
+
+  // Removes the last row if it's empty
+  if (work.rowCount > 1) {
+    const { rowCount } = work;
+    const isLastRowEmpty = work.columns.every((col) => {
+      const lastCell = col[rowCount - 1];
+      return lastCell.children.length === 0;
+    });
+
+    if (isLastRowEmpty) {
+      work = {
+        ...work,
+        rowCount: rowCount - 1,
+        columns: work.columns.map((col) => col.slice(0, -1)),
+      };
+    }
+  }
+
+  // Converts VerticalWork back to a simple CharRow if there's only a single row
+  if (work.rowCount === 1) {
+    // Merge all cells into a single row
+    const cells = work.columns.map((col) => col[0]);
+    const nodes = cells.flatMap((cell) => cell?.children ?? []);
+
+    const row = b.row(nodes);
+
+    const focus = {
+      path: [],
+      offset: 0, // TODO: maintain cursor position within the cell
+    };
+
+    const selection: Selection = {
+      anchor: focus,
+      focus: focus,
+    };
+
+    return {
+      row,
+      selection,
+      selecting: false,
     };
   }
 
