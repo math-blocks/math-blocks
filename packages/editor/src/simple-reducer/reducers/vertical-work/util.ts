@@ -11,7 +11,6 @@ import { NodeType } from '../../../shared-types';
 export const stateToVerticalWork = (state: State): VerticalWork | null => {
   const { row, selection } = state;
 
-  // This isn't right, we need to get all nodes for the path
   const pathNodes = PathUtils.getNodesForPath(row, selection.focus.path);
 
   if (pathNodes.length < 1) {
