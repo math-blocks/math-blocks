@@ -2,7 +2,7 @@ import { getId } from '@math-blocks/core';
 
 import * as t from '../../../char/types';
 import * as b from '../../../char/builders';
-import { NodeType } from '../../../shared-types';
+import { NodeType, RowStyle } from '../../../shared-types';
 
 import * as PathUtils from '../../path-utils';
 import type { State, Selection } from '../../types';
@@ -54,6 +54,7 @@ export const moveUp = (state: State): State => {
         ...work,
         rowCount: rowCount - 1,
         columns: work.columns.map((col) => col.slice(0, -1)),
+        rowStyles: rowStylesFromRowCount(rowCount - 1),
       };
     }
   }
@@ -142,6 +143,7 @@ const createVerticalWorkTable = (state: State): VerticalWork | null => {
     children: splitCells,
     rowCount: 1,
     colCount: colCount,
+    rowStyles: rowStylesFromRowCount(1),
     style: {},
   };
 
@@ -159,6 +161,21 @@ const createVerticalWorkTable = (state: State): VerticalWork | null => {
   };
 
   return stateToVerticalWork(result);
+};
+
+const rowStylesFromRowCount = (rowCount: number): (RowStyle | null)[] => {
+  switch (rowCount) {
+    case 0:
+      return [];
+    case 1:
+      return [null];
+    case 2:
+      return [null, null];
+    case 3:
+      return [null, null, { border: 'top' }];
+    default:
+      throw new Error(`${rowCount} is too many rows in vertical work`);
+  }
 };
 
 export const moveDown = (state: State): State => {
@@ -185,11 +202,12 @@ export const moveDown = (state: State): State => {
   if (loc.row === work.rowCount - 1 && work.rowCount < 3) {
     // TODO: use null if the previous row used null
     const columns = work.columns.map((col) => [...col, b.row([])]);
-    console.log('new columns = ', columns);
+    const rowCount = work.rowCount + 1;
     work = {
       ...work,
       columns: columns,
-      rowCount: work.rowCount + 1,
+      rowCount: rowCount,
+      rowStyles: rowStylesFromRowCount(rowCount),
     };
   }
 
