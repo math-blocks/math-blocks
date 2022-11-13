@@ -17,4 +17,5 @@ module.exports = {
     '\\/test-util\\.ts$',
   ],
   setupFilesAfterEnv: ['./jest.setup.js'],
+  testPathIgnorePatterns: ['/node_modules/', '.d.ts'],
 };

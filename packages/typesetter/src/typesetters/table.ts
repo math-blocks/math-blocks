@@ -148,10 +148,13 @@ export const typesetTable = (
     }
   }
 
-  const cursorIndex = node.type === 'ztable' ? node.left.length : -1;
+  const cursorIndex =
+    node.type === 'ztable'
+      ? node.left.length
+      : context.selection?.focus.path[1] ?? -1;
+
   if (node.subtype === 'algebra' && cursorIndex !== -1) {
     const col = cursorIndex % node.colCount;
-    const zrow = zipper?.row;
 
     type Column = readonly Editor.types.CharRow[];
     const cellColumns: Column[] = [];
@@ -165,7 +168,7 @@ export const typesetTable = (
       cellColumns.push(col); // this is unsafe
     }
 
-    if (zrow) {
+    if (cursorIndex !== -1) {
       if (col === 0 && !cellColumns[col + 1].some(isOperator)) {
         // Add right padding on every cell in the first column
         reboxColumn(col, 0, 16);
