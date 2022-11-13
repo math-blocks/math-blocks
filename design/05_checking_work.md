@@ -35,9 +35,16 @@ it may take a while to determine a valid path from one step to the next.  There
 may also be valid steps that the system cannot find a path between.  This
 usually means that the user is skipping steps.
 
+Some of the rules are able to determine what mistake a user made.  For example,
+when adding the same number to both sides of the equation, if the user fails to
+add the numbers correctly, there's a rule that can detect this.  This is
+different from most rules which can either be applied or not.
+
 ## Future Work
 
 - More rules: logarithms, absolute value, series and sequences, limits, etc.
+- Detect more mistakes: adding fractions incorrectly, distributing subtraction
+  or negative numbers incorrectly, etc.
 - Investigate "big steps" which encompass multiple smaller rules as a way to
   reduce the size of the search tree
 - Fallback check for when no search path can be found
