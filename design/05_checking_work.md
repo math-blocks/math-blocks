@@ -42,3 +42,5 @@ usually means that the user is skipping steps.
   reduce the size of the search tree
 - Fallback check for when no search path can be found
 - Move computation to a Web Worker so that we don't block the main thread
+- A way for users to add their own equations or definitions when solving a
+  problem.
