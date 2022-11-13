@@ -24,41 +24,66 @@ will be used to determine if an expression is semantically valid or not.  Since
 the tutor currently supports basic algebraic equations, the assumption is that
 all identifiers are numeric.  That will change sometime in the future.
 
-There's also a `Parens` in all three categories.  This should only be used model
-parentheses that are **unnecessary**.  We want to be able to reconstruct the
-original editor tree from a semantic tree.  This is because the tutor can make
-suggestions or fixes to student work and we want to be able to preserve that
-part of the user's work that isn't involved in the tutor's change.  We also
-want the tutor to be able to tell a user when they're using unecessary parens.
+```ts
+// 2(x + 1)
+const semantic = {
+    type: "mul",
+    id: 1,
+    implicit: true,
+    args: [
+        {type: "number", value: "2"},
+        {type: "add", args: [
+            {type: "identifier", value: "x"},
+            {type: "number", value: "1"},
+        ]}
+    ]
+}
+```
 
-Those parens that are necessary are modeled by the nesting of sub-expressions
-and the relative precedence of the operators.  From this information, necessary
-parens are added in when converting a semantic tree to an editor tree.
+### Losslessness
+
+We'd like to be able to reconstruct the original editor tree from the semantic
+tree.  This is useful when we want to modify part of an expression that a user
+has provided, but don't want to modify unrelated parts of the expression.  To
+this end, the semantic tree has the following features:
+
+- Numbers are stored as strings - this is so that we can preserve their exact
+  value.
+- Multiplication can be implicit `2x` or explicit `2 * x`.  NOTE: We don't have
+  a way yet to differentiate between different explicit multiplication
+  operators.
+- Parentheses are not stored in the tree except for **unnecessary** parentheses.
+  This is because the unnecessary ones can be reconstructred from the semantic
+  tree.
+
+### Traversal and Modification
 
 `@math-blocks/semantic` provides types which describe these nodes as well as
 some utilities for working with semantic trees.  The most important utility is
 probably `traverse` which can be used to visit all nodes in a tree, but also
-replace nodes. 
+replace nodes.
 
 ## Parsing
 
-TODO: clean this up
+The parser is implemented as a Pratt parser.  Pratt parsers are a good choice
+for parsing expressions because it's easy to specify the precedence of different
+operations and easily make changes if necessary.
 
-Implements a Pratt parser factory.  The factory implements the generic parts of
-the parsing algorithm, i.e. how to handle prefix, infix, and postfix operators.
-Handling specific operators though is handled by
-[@math-blocks/editor](editor.md) which provides the specific parselets needed
-for the particular parsers it implements.
+There is a parser factory which implements basic handling of prefix, infix, and
+postfix operators.  The actual parser is implemented by providing specific
+callbacks for each of these handle the various operators (and operands) that we
+want to handle. 
 
-The reason for separating the factory from the parser is that even within the
-editor, we implement two different parsers.  [@math-blocks/testing](testing.md)
-also implements a parser for a text-only representation of the editor tree
-structure.  The purpose of this text-only representation is to make writing
-tests easier.
+The parser is a little different from traditional parsers.  Instead of the input
+being a string of characters, the input is actually a tree structure (an editor
+tree to be exact).  Because of this, lexing, which converts individual chars or
+groups of chars to tokens has to been done differently.  Instead of lexing the
+whole input at once, we lex a `CharRow` whenever the parser encounters one.
+This converts it to a `TokenRow` which the parser then parses.
 
-Pratt parsing is a type of top-down operator precedence parsing.  The benefit of
-this type of parsing is that it's very easy to specify the precedence of
-different operators.
+The reason for having a parser factory is that we also have parser that takes a
+text-only representation of math as an input instead of an editor tree.  This is
+used to make test writing easier.
 
 References:
 - [Pratt Parsers: Expression Parsing Made
@@ -66,4 +91,16 @@ References:
 
 ## Printing
 
-TODO
+Printing is the opposite of parsing and converts a semantic tree into an editor
+tree (or a string representation for writing tests).  This is useful when you
+want to visualize math that was generated as a semantic tree.
+
+## Future Work
+
+- Parse more things: logarithms, trig functions, units of measure, etc.
+- Semantic checks based on context, e.g. `A` is a matrix vs `A` is a boolean
+- Address gaps in semantic tree: mismatch delimeters (interval notation),
+  different operators for explicit multiplication, etc.
+- Options to parse things differently, e.g. `(0, 1)` could be an interval from
+  `0` to `1` or it could be a point on the cartesian plane
+- Reorganize the packages to be better named and more targetted

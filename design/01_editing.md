@@ -97,3 +97,32 @@ The `anchor` and `focus` can have different `Path`s.  The reducer determines how
 the focus should jump into and out of nodes in the tree to produce the standard
 cursor selection behavior that people expect.  During rendering, the typesetter
 will figure out what glyphs should highlighted as selected.
+
+## Vertical Layouts
+
+Vertical layouts are used in a number of places in math:
+
+- manipulating equations
+- solving systems of equations
+- matrices
+- standard arithmetic algorithms, e.g. long addition, long subtraction, etc.
+
+### Manipulating Equations
+
+Equations using inline operations as well as vertically stacked operations.
+It's important to support both so that we can accommodate whatever practices
+students are learning from their teachers. 
+
+The editor allows you add a line below the equation by pressing down.  This
+converts the equation into a grid layout with the terms and operators in the
+equation appearing in different cells.  Operators and values are aligned in the
+same columns.  New columns can be added by positioning the cursor between
+existing columns.  Pressing down a second time will add a third row with a
+horizontal line separating the second and third rows.
+
+NOTE: This keyboard UI isn't very discoverable, having some on-screen buttons
+will help with this.
+
+### Matrices
+
+TODO
