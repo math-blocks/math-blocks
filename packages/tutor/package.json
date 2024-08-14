@@ -2,7 +2,7 @@
     "name": "@math-blocks/tutor",
     "version": "0.0.5",
     "main": "./dist/index.js",
-    "private": true,
+    "type": "module",
     "files": [
         "dist"
     ],

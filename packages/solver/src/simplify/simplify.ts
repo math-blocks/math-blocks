@@ -59,7 +59,7 @@ export function simplify(
     if (Semantic.util.isNumeric(node)) {
       let current: Semantic.types.NumericNode = node;
       for (let i = 0; i < 10; i++) {
-        let step: Step<Semantic.types.NumericNode> | void;
+        let step: Step<Semantic.types.NumericNode> | void = undefined;
         for (const transform of tranforms) {
           step = transform(current, path);
           // Multiple transforms can be applied to the current node.

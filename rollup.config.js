@@ -1,6 +1,5 @@
 import path from 'path';
 import typescript from '@rollup/plugin-typescript';
-import commonjs from '@rollup/plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
 
 const external = [
@@ -32,13 +31,8 @@ const createBuildConfig = (name) => {
     plugins: [
       typescript({
         outputToFilesystem: false,
-        typescript: require('typescript'),
-        tsconfig: path.resolve(
-          __dirname,
-          `packages/${name}/tsconfig.rollup.json`,
-        ),
+        tsconfig: `./packages/${name}/tsconfig.rollup.json`,
       }),
-      commonjs(),
       postcss({
         extract: true,
         minimize: true,
@@ -47,7 +41,7 @@ const createBuildConfig = (name) => {
   };
 };
 
-const config = [
+export default [
   createBuildConfig('core'),
   createBuildConfig('editor'),
   createBuildConfig('opentype'),
@@ -59,5 +53,3 @@ const config = [
   createBuildConfig('tutor'),
   createBuildConfig('typesetter'),
 ];
-
-export default config;
