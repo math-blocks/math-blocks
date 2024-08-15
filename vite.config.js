@@ -12,5 +12,4 @@ export default defineConfig({
       },
     ],
   },
-  publicDir: path.join(__dirname, 'assets'),
 });

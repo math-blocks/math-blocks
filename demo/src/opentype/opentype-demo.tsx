@@ -4,6 +4,8 @@ import type { Mutable } from 'utility-types';
 
 import type { Font, Glyph, Path } from '@math-blocks/opentype';
 
+import stix2 from '../../../assets/STIX2Math.otf';
+
 const getPath = (glyph: Glyph): string => {
   let result = '';
 
@@ -101,7 +103,7 @@ const OpenTypeDemo: React.FC = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/STIX2Math.otf');
+      const res = await fetch(stix2);
       const blob = await res.blob();
       const font = await parse(blob);
       console.log(font);

@@ -10,6 +10,13 @@ import { parse, getFontData } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { RadicalDegreeAlgorithm } from '@math-blocks/typesetter';
 
+import stix2 from '../../../assets/STIX2Math.otf';
+import latinModern from '../../../assets/latinmodern-math.otf';
+import gyreBonum from '../../../assets/texgyrebonum-math.otf';
+import gryePagella from '../../../assets/texgyrepagella-math.otf';
+import gryeSchola from '../../../assets/texgyreschola-math.otf';
+import gyreTermes from '../../../assets/texgyretermes-math.otf';
+
 import { HStack, VStack } from '../layout';
 
 import FormattingPalette from './formatting-palette';
@@ -45,7 +52,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/STIX2Math.otf');
+      const res = await fetch(stix2);
       const blob = await res.blob();
       const font = await parse(blob);
       setStixFontData(getFontData(font, 'STIX2'));
@@ -56,7 +63,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/latinmodern-math.otf');
+      const res = await fetch(latinModern);
       const blob = await res.blob();
       const font = await parse(blob);
       setLmFontData(getFontData(font, 'LM-Math'));
@@ -67,7 +74,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/texgyrebonum-math.otf');
+      const res = await fetch(gyreBonum);
       const blob = await res.blob();
       const font = await parse(blob);
       setBonumFontData(getFontData(font, 'Bonum-Math'));
@@ -78,7 +85,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/texgyrepagella-math.otf');
+      const res = await fetch(gryePagella);
       const blob = await res.blob();
       const font = await parse(blob);
       setPagellaFontData(getFontData(font, 'Pagella-Math'));
@@ -89,7 +96,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/texgyreschola-math.otf');
+      const res = await fetch(gryeSchola);
       const blob = await res.blob();
       const font = await parse(blob);
       setScholaFontData(getFontData(font, 'Schola-Math'));
@@ -100,7 +107,7 @@ const EditorPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/texgyretermes-math.otf');
+      const res = await fetch(gyreTermes);
       const blob = await res.blob();
       const font = await parse(blob);
       setTermesFontData(getFontData(font, 'Termes-Math'));

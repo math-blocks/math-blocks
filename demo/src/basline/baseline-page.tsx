@@ -10,6 +10,8 @@ import {
   RenderMode,
 } from '@math-blocks/typesetter';
 
+import stix2 from '../../../assets/STIX2Math.otf';
+
 const simpleRow = b.row([
   b.char('2'),
   b.char('x'),
@@ -28,7 +30,7 @@ const BaselinePage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/STIX2Math.otf');
+      const res = await fetch(stix2);
       const blob = await res.blob();
       const font = await parse(blob);
       setStixFontData(getFontData(font, 'STIX2'));

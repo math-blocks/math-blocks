@@ -8,6 +8,8 @@ import { MathEditor, MathRenderer, FontDataContext } from '@math-blocks/react';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { Font } from '@math-blocks/opentype';
 
+import stix2 from '../../../assets/STIX2Math.otf';
+
 import Substeps from './substeps';
 
 const question: Editor.types.CharRow = Editor.util.row('2x+5=10');
@@ -99,7 +101,7 @@ const SolverPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
-      const res = await fetch('/STIX2Math.otf');
+      const res = await fetch(stix2);
       const blob = await res.blob();
       const font = await parse(blob);
       console.log(font);
