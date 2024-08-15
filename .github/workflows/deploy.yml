@@ -32,8 +32,8 @@ jobs:
             ${{ runner.OS }}-node_modules-
       - name: yarn install
         run: yarn install
-      - name: build
-        run: yarn build
+      - name: build-ci
+        run: yarn build-ci
       - name: Upload Page Artifact
         uses: actions/upload-pages-artifact@v3
         with:
