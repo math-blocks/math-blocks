@@ -1,5 +1,6 @@
 // import {UnreachableCaseError} from "@math-blocks/core";
 import * as Semantic from '@math-blocks/semantic';
+import { UnreachableCaseError } from '@math-blocks/core';
 
 const { NodeType } = Semantic;
 
@@ -170,10 +171,26 @@ const print = (
       const args = ast.args.map((arg) => print(arg, serialize, indent));
       return `(func ${func} ${args.join(' ')})`;
     }
-    default: {
-      // TODO: finish handle cases and the uncomment this line
-      // throw new UnreachableCaseError(ast);
+    case NodeType.PlusMinus:
+    case NodeType.MinusPlus:
+    case NodeType.Product:
+    case NodeType.Summation:
+    case NodeType.Limit:
+    case NodeType.Derivative:
+    case NodeType.Integral:
+    case NodeType.PartialDerivative:
+    case NodeType.LongAddition:
+    case NodeType.LongSubtraction:
+    case NodeType.LongMultiplication:
+    case NodeType.LongDivision:
+    case NodeType.ElementOf:
+    case NodeType.NotElementOf:
+    case NodeType.EmptySet:
+    case NodeType.Log: {
       throw new Error(`we don't handle serializing '${ast.type}' nodes yet`);
+    }
+    default: {
+      throw new UnreachableCaseError(ast);
     }
   }
 };
