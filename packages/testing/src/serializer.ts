@@ -165,6 +165,11 @@ const print = (
         `:resultingRelation ${resultingRelation}`,
       )})`;
     }
+    case NodeType.Func: {
+      const func = print(ast.func, serialize, indent);
+      const args = ast.args.map((arg) => print(arg, serialize, indent));
+      return `(func ${func} ${args.join(' ')})`;
+    }
     default: {
       // TODO: finish handle cases and the uncomment this line
       // throw new UnreachableCaseError(ast);

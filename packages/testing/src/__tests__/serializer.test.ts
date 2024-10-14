@@ -118,6 +118,16 @@ describe('serializer', () => {
     expect(ast).toMatchInlineSnapshot(`\u221e`);
   });
 
+  test('func', () => {
+    const ast: Semantic.types.NumericNode = {
+      type: NodeType.Func,
+      id: getId(),
+      func: Semantic.builders.identifier('f'),
+      args: [Semantic.builders.identifier('x')],
+    };
+    expect(ast).toMatchInlineSnapshot(`(func f x)`);
+  });
+
   test('unhandled node', () => {
     expect(() => {
       const ast: Semantic.types.Node = {
