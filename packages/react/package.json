@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/react",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,11 +10,11 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.5",
-        "@math-blocks/editor": "^0.0.5",
-        "@math-blocks/opentype": "^0.0.5",
-        "@math-blocks/semantic": "^0.0.5",
-        "@math-blocks/typesetter": "^0.0.5",
+        "@math-blocks/core": "^0.0.6",
+        "@math-blocks/editor": "^0.0.6",
+        "@math-blocks/opentype": "^0.0.6",
+        "@math-blocks/semantic": "^0.0.6",
+        "@math-blocks/typesetter": "^0.0.6",
         "classnames": "^2.3.1"
     },
     "peerDependencies": {
