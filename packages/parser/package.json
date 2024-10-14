@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/parser",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,7 +10,7 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.7",
-        "@math-blocks/semantic": "^0.0.7"
+        "@math-blocks/core": "^0.0.8",
+        "@math-blocks/semantic": "^0.0.8"
     }
 }
