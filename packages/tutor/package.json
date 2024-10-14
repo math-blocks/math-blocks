@@ -2,10 +2,13 @@
     "name": "@math-blocks/tutor",
     "version": "0.0.5",
     "main": "./dist/index.js",
-    "type": "module",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist"
     ],
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "@math-blocks/core": "^0.0.5",
         "@math-blocks/editor": "^0.0.5",

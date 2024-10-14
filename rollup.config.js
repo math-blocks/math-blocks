@@ -26,7 +26,7 @@ const createBuildConfig = (name) => {
     external: external,
     output: {
       file: `packages/${name}/dist/index.js`,
-      format: 'es',
+      format: 'cjs',
     },
     plugins: [
       typescript({

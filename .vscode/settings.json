@@ -2,8 +2,7 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "search.exclude": {
         "**/dist": true,
-        "**/out": true,
-        "packages/react/out": true
+        "**/out": true
     },
     "search.quickOpen.includeHistory": false,
     "files.exclude": {
