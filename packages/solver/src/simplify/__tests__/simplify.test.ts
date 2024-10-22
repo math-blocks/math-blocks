@@ -442,12 +442,12 @@ describe('simplify', () => {
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
       ).toEqual([
-        'negation is the same as multipyling by one',
+        'negation is the same as multiplying by negative one',
         'multiply each term',
         'multiplying a negative by a positive is negative',
         'multiplying a negative by a positive is negative',
-        'adding the negative is the same as subtraction',
-        'adding the negative is the same as subtraction',
+        'adding the inverse is the same as subtraction',
+        'adding the inverse is the same as subtraction',
       ]);
       expect(Testing.print(step.substeps[0].substeps[0].before)).toEqual(
         '-(x + 1)',
@@ -485,11 +485,11 @@ describe('simplify', () => {
       expect(
         step.substeps[2].substeps.map((substep) => substep.message),
       ).toEqual([
-        'subtraction is the same as adding the negative',
+        'subtraction is the same as adding the inverse',
         'multiply each term',
         'multiply monomials',
         'multiplying a negative by a positive is negative',
-        'adding the negative is the same as subtraction',
+        'adding the inverse is the same as subtraction',
       ]);
       expect(Testing.print(step.after)).toEqual('9x - 6');
     });
@@ -520,7 +520,7 @@ describe('simplify', () => {
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
       ).toEqual([
-        'subtraction is the same as adding the negative',
+        'subtraction is the same as adding the inverse',
         'multiply each term',
         'multiplying a negative by a positive is negative',
         'multiplying two negatives is a positive',
@@ -613,10 +613,10 @@ describe('simplify', () => {
       expect(
         step.substeps[0].substeps.map((substep) => substep.message),
       ).toEqual([
-        'subtraction is the same as adding the negative',
+        'subtraction is the same as adding the inverse',
         'multiply each term',
         'multiplying a negative by a positive is negative',
-        'adding the negative is the same as subtraction',
+        'adding the inverse is the same as subtraction',
       ]);
     });
 
@@ -986,7 +986,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'drop adding zero (additive identity)',
+        'drop adding zero',
       ]);
       expect(Testing.print(step.after)).toEqual('a');
     });
@@ -998,7 +998,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'drop adding zero (additive identity)',
+        'drop adding zero',
       ]);
       expect(Testing.print(step.after)).toEqual('a + b');
     });
@@ -1010,7 +1010,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'drop adding zero (additive identity)',
+        'drop adding zero',
       ]);
       expect(Testing.print(step.after)).toEqual('a');
     });
@@ -1022,7 +1022,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'drop adding zero (additive identity)',
+        'drop adding zero',
       ]);
       expect(Testing.print(step.after)).toEqual('-a');
     });

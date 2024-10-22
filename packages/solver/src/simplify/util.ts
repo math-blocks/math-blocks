@@ -100,7 +100,7 @@ export const simplifyMul = (
     return node;
   }
 
-  let message: string;
+  let message: Step['message'];
   if (a.type === NodeType.Neg && b.type === NodeType.Neg) {
     message = 'multiplying two negatives is a positive';
   } else if (resultIsNeg) {
