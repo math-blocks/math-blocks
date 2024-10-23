@@ -19,7 +19,7 @@ const distSub = (
   ) as Semantic.types.Mul;
   // TODO: return new steps instead of mutating
   substeps.push({
-    message: 'negation is the same as multipyling by one',
+    message: 'negation is the same as multiplying by negative one',
     before: node,
     after: mulNegOne,
     substeps: [],
@@ -36,7 +36,7 @@ const subToNeg = (
     const after = Semantic.builders.neg(before.arg, false);
     // TODO: return new steps instead of mutating
     substeps.push({
-      message: 'subtraction is the same as adding the negative',
+      message: 'subtraction is the same as adding the inverse',
       before,
       after,
       substeps: [],
@@ -56,7 +56,7 @@ const negToSub = (
     const after = Semantic.builders.neg(before.arg, true);
     // TODO: return new steps instead of mutating
     substeps.push({
-      message: 'adding the negative is the same as subtraction',
+      message: 'adding the inverse is the same as subtraction',
       before,
       after,
       substeps: [],

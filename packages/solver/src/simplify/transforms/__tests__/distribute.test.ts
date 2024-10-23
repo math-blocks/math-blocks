@@ -106,11 +106,11 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('3x - 3');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'subtraction is the same as adding the negative',
+      'subtraction is the same as adding the inverse',
       'multiply each term',
       'multiply monomials',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
     expect(step).toHaveSubstepsLike([
       ['-1', '-1'], // subtraction -> add inverse
@@ -184,7 +184,7 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('-2x + 6');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'subtraction is the same as adding the negative',
+      'subtraction is the same as adding the inverse',
       'multiply each term',
       'multiplying a negative by a positive is negative',
       'multiplying two negatives is a positive',
@@ -228,12 +228,12 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('3 - x - 1');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'negation is the same as multipyling by one',
+      'negation is the same as multiplying by negative one',
       'multiply each term',
       'multiplying a negative by a positive is negative',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
 
     expect(step).toHaveSubstepsLike([
@@ -271,11 +271,11 @@ describe('distribution', () => {
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'subtraction is the same as adding the negative',
+      'subtraction is the same as adding the inverse',
       'multiply each term',
       'multiply monomials',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
 
     expect(step).toHaveSubstepsLike([
@@ -311,7 +311,7 @@ describe('distribution', () => {
     );
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'subtraction is the same as adding the negative',
+      'subtraction is the same as adding the inverse',
       'multiply each term',
       'multiplying a negative by a positive is negative',
       'multiplying two negatives is a positive',
@@ -375,10 +375,10 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('xx - x');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'subtraction is the same as adding the negative',
+      'subtraction is the same as adding the inverse',
       'multiply each term',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
 
     expect(step).toHaveSubstepsLike([
@@ -410,12 +410,12 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('0 - 2x - 5');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'negation is the same as multipyling by one',
+      'negation is the same as multiplying by negative one',
       'multiply each term',
       'multiplying a negative by a positive is negative',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
 
     expect(step).toHaveSubstepsLike([
@@ -453,11 +453,11 @@ describe('distribution', () => {
     expect(Testing.print(applySteps(ast, step.substeps))).toEqual('-2x - 5');
 
     expect(step.substeps.map((substep) => substep.message)).toEqual([
-      'negation is the same as multipyling by one',
+      'negation is the same as multiplying by negative one',
       'multiply each term',
       'multiplying a negative by a positive is negative',
       'multiplying a negative by a positive is negative',
-      'adding the negative is the same as subtraction',
+      'adding the inverse is the same as subtraction',
     ]);
 
     expect(step).toHaveSubstepsLike([

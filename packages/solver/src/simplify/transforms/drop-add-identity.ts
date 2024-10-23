@@ -33,7 +33,7 @@ export function dropAddIdentity(
     return;
   }
   return {
-    message: 'drop adding zero (additive identity)',
+    message: 'drop adding zero',
     before: node,
     after: Semantic.builders.add(newTerms),
     substeps: [],

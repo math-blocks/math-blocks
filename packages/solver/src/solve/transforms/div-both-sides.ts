@@ -57,10 +57,12 @@ export function divBothSides(
     );
 
     return {
-      message: 'divide both sides',
+      message: 'do the same operation to both sides',
       before,
       after,
       substeps: [],
+      operation: 'div',
+      value: coeff,
     };
   }
 
@@ -89,10 +91,12 @@ export function divBothSides(
     );
 
     return {
-      message: 'divide both sides',
+      message: 'do the same operation to both sides',
       before,
       after,
       substeps: [],
+      operation: 'div',
+      value: coeff,
     };
   }
 }

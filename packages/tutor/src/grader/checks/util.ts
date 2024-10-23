@@ -142,8 +142,8 @@ export const correctResult = (
   reversed: boolean,
   beforeSteps: readonly Solver.Step[],
   afterSteps: readonly Solver.Step[],
-  forwardMessage: string,
-  reverseMessage: string = forwardMessage,
+  forwardMessage: Solver.Step['message'],
+  reverseMessage: Solver.Step['message'] = forwardMessage,
 ): Result => {
   const newPrev = beforeSteps
     ? reversed
@@ -171,6 +171,8 @@ export const correctResult = (
   // }
 
   return {
+    // @ts-expect-error: TypeScript doesn't like how the `message` fields are
+    // being assigned here.
     steps: reversed
       ? [
           ...afterSteps,
