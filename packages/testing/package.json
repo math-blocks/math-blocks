@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/testing",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,8 +10,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.8",
-        "@math-blocks/parser": "^0.0.8",
-        "@math-blocks/semantic": "^0.0.8"
+        "@math-blocks/core": "^0.0.9",
+        "@math-blocks/parser": "^0.0.9",
+        "@math-blocks/semantic": "^0.0.9"
     }
 }
