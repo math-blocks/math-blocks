@@ -18,6 +18,15 @@ const solve = (
   return result;
 };
 
+const printStep = (step: Step) => {
+  switch (step.message) {
+    case 'do the same operation to both sides':
+      return `${step.message}:${step.operation}:${Testing.print(step.value)}`;
+    default:
+      return step.message;
+  }
+};
+
 const parseEq = (input: string): Semantic.types.Eq => {
   return Testing.parse(input) as Semantic.types.Eq;
 };
@@ -31,9 +40,9 @@ describe('solve', () => {
 
       expect(Testing.print(result.after)).toEqual('x = 5 / 2');
 
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify the left hand side',
       ]);
 
@@ -51,9 +60,9 @@ describe('solve', () => {
 
       expect(Testing.print(result.after)).toEqual('x = 5 / 2');
 
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'simplify the left hand side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify the left hand side',
       ]);
 
@@ -69,22 +78,22 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3 / 5');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'simplify both sides',
-        'divide both sides',
+        'do the same operation to both sides:div:5',
         'simplify the left hand side',
       ]);
-      expect(result.substeps[0].substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps[0].substeps.map(printStep)).toEqual([
         'simplify the left hand side',
         'simplify the right hand side',
       ]);
-      expect(
-        result.substeps[0].substeps[0].substeps.map((step) => step.message),
-      ).toEqual(['collect like terms']);
-      expect(
-        result.substeps[0].substeps[1].substeps.map((step) => step.message),
-      ).toEqual(['evaluate addition']);
-      expect(result.substeps[2].substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps[0].substeps[0].substeps.map(printStep)).toEqual([
+        'collect like terms',
+      ]);
+      expect(result.substeps[0].substeps[1].substeps.map(printStep)).toEqual([
+        'evaluate addition',
+      ]);
+      expect(result.substeps[2].substeps.map(printStep)).toEqual([
         'reduce fraction',
       ]);
     });
@@ -95,9 +104,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -7');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:-1',
         'simplify both sides',
       ]);
     });
@@ -108,7 +117,7 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -7');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'simplify the left hand side',
       ]);
     });
@@ -119,7 +128,7 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -7');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
       ]);
     });
@@ -130,9 +139,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -2');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:-1',
         'simplify both sides',
       ]);
     });
@@ -143,9 +152,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify both sides',
       ]);
 
@@ -161,9 +170,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:-2',
         'simplify both sides',
       ]);
 
@@ -179,9 +188,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 4 / 3');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:3',
         'simplify the left hand side',
       ]);
 
@@ -202,7 +211,7 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 4');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
       ]);
     });
@@ -213,9 +222,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -3');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:-1',
         'simplify both sides',
       ]);
     });
@@ -226,9 +235,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -(3 / 2)');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:-2',
         'simplify both sides',
       ]);
 
@@ -249,9 +258,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3 / 2');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify the left hand side',
       ]);
 
@@ -272,9 +281,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3 / 2');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'simplify the left hand side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify the left hand side',
       ]);
     });
@@ -285,9 +294,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 0');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify both sides',
       ]);
 
@@ -303,8 +312,8 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('3 / 2 = x');
-      expect(result.substeps.map((step) => step.message)).toEqual([
-        'divide both sides',
+      expect(result.substeps.map(printStep)).toEqual([
+        'do the same operation to both sides:div:2',
         'simplify the right hand side',
       ]);
     });
@@ -315,8 +324,8 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       // expect(Testing.print(result.after)).toEqual("x = 4");
-      expect(result.substeps.map((step) => step.message)).toEqual([
-        'multiply both sides',
+      expect(result.substeps.map(printStep)).toEqual([
+        'do the same operation to both sides:mul:4',
         'simplify both sides',
       ]);
 
@@ -332,8 +341,8 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('4 = x');
-      expect(result.substeps.map((step) => step.message)).toEqual([
-        'multiply both sides',
+      expect(result.substeps.map(printStep)).toEqual([
+        'do the same operation to both sides:mul:4',
         'simplify both sides',
       ]);
     });
@@ -344,10 +353,10 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = 3 / 2');
-      expect(result.substeps.map((step) => step.message)).toEqual([
-        'multiply both sides',
+      expect(result.substeps.map(printStep)).toEqual([
+        'do the same operation to both sides:mul:3',
         'simplify both sides',
-        'divide both sides',
+        'do the same operation to both sides:div:2',
         'simplify the left hand side',
       ]);
       expect(Testing.print(result.substeps[0].after)).toEqual(
@@ -364,9 +373,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -6');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'multiply both sides',
+        'do the same operation to both sides:mul:6',
         'simplify both sides',
       ]);
     });
@@ -377,9 +386,9 @@ describe('solve', () => {
       const result = solve(ast, Semantic.builders.identifier('x'));
 
       expect(Testing.print(result.after)).toEqual('x = -1');
-      expect(result.substeps.map((step) => step.message)).toEqual([
+      expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'multiply both sides',
+        'do the same operation to both sides:mul:6',
         'simplify both sides',
       ]);
 

@@ -30,10 +30,12 @@ export function mulBothSides(
       const after = Semantic.builders.eq([newLeft, newRight]);
 
       return {
-        message: 'multiply both sides',
+        message: 'do the same operation to both sides',
         before,
         after,
         substeps: [],
+        operation: 'mul',
+        value: den,
       };
     }
   }
@@ -52,10 +54,12 @@ export function mulBothSides(
       const after = Semantic.builders.eq([newLeft, newRight]);
 
       return {
-        message: 'multiply both sides',
+        message: 'do the same operation to both sides',
         before,
         after,
         substeps: [],
+        operation: 'mul',
+        value: den,
       };
     }
   }

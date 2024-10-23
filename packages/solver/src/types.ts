@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import * as Semantic from '@math-blocks/semantic';
 
-type StepType<TMessage extends string, TNode extends Semantic.types.Node> = {
+type StepType<
+  TMessage extends string,
+  TNode extends Semantic.types.Node,
+  Options extends Record<string, unknown> = {},
+> = {
   readonly message: TMessage;
   readonly before: TNode;
   readonly after: TNode;
   readonly substeps: readonly Step<TNode>[];
-};
+} & Options;
 
 export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'simplify expression', TNode>
@@ -34,9 +39,15 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'reduce fraction', TNode>
   | StepType<'simplify multiplication', TNode>
   | StepType<'solve for variable', TNode>
-  | StepType<'divide both sides', TNode>
-  | StepType<'multiply both sides', TNode>
-  | StepType<'subtract term from both sides', TNode>
+  // TODO: combine all of these into a single step type
+  | StepType<
+      'do the same operation to both sides',
+      TNode,
+      {
+        readonly operation: 'add' | 'sub' | 'mul' | 'div';
+        readonly value: Semantic.types.NumericNode;
+      }
+    >
   | StepType<'move terms to one side', TNode>
   | StepType<'simplify both sides', TNode>
   | StepType<'simplify the left hand side', TNode>

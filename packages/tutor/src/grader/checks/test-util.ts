@@ -1,6 +1,7 @@
 import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
+import * as Solver from '@math-blocks/solver';
 
 import { checkStep as _checkStep } from '../step-checker';
 import type { Result, Mistake } from '../types';
@@ -61,15 +62,24 @@ export const toParseLike = (
   };
 };
 
+const printStep = (step: Solver.Step) => {
+  switch (step.message) {
+    case 'do the same operation to both sides':
+      return `${step.message}:${step.operation}:${Testing.print(step.value)}`;
+    default:
+      return step.message;
+  }
+};
+
 export function toHaveMessages(
   this: any,
   received: Result,
   expected: readonly string[],
 ): { readonly message: () => string; readonly pass: boolean } {
   if (this.isNot) {
-    expect(received.steps.map((step) => step.message)).not.toEqual(expected);
+    expect(received.steps.map(printStep)).not.toEqual(expected);
   } else {
-    expect(received.steps.map((step) => step.message)).toEqual(expected);
+    expect(received.steps.map(printStep)).toEqual(expected);
   }
 
   // This point is reached when the above assertion was successful.

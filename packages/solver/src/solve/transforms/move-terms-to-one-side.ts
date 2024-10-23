@@ -69,10 +69,16 @@ export function moveTermsToOneSide(
     ]);
     const after = Semantic.builders.eq([newLeft, newRight]);
     substeps.push({
-      message: 'subtract term from both sides',
+      message: 'do the same operation to both sides',
       before: before,
       after: after,
       substeps: [],
+      operation:
+        leftNonIdentTerm.type === Semantic.NodeType.Neg ? 'add' : 'sub',
+      value:
+        leftNonIdentTerm.type === Semantic.NodeType.Neg
+          ? leftNonIdentTerm.arg
+          : leftNonIdentTerm,
     });
     const step = simplifyBothSides(after) as void | Step<
       Semantic.types.Eq<Semantic.types.NumericNode>
@@ -108,10 +114,15 @@ export function moveTermsToOneSide(
     ]);
     const after = Semantic.builders.eq([newLeft, newRight]);
     substeps.push({
-      message: 'subtract term from both sides',
+      message: 'do the same operation to both sides',
       before: before,
       after: after,
       substeps: [],
+      operation: rightIdentTerm.type === Semantic.NodeType.Neg ? 'add' : 'sub',
+      value:
+        rightIdentTerm.type === Semantic.NodeType.Neg
+          ? rightIdentTerm.arg
+          : rightIdentTerm,
     });
     const step = simplifyBothSides(after) as void | Step<
       Semantic.types.Eq<Semantic.types.NumericNode>
