@@ -16,13 +16,15 @@ import { simplifyMul } from './transforms/simplify-mul';
 import { mulByZeroIsZero } from './transforms/mul-by-zero-is-zero';
 import { simplifyDivByFrac } from './transforms/simplify-div-by-frac';
 
+// TODO:
+// - negOfNegIsPos
+
 export function simplify(
   node: Semantic.types.NumericNode,
 ): Step<Semantic.types.NumericNode> | void {
   const tranforms = [
     dropAddIdentity,
 
-    // TODO: add a transform to convert division of fractions to multiplication
     simplifyDivByFrac,
     simplifyMul, // We do this first so that we don't repeat what it does in other transforms
     mulByZeroIsZero,
