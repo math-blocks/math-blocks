@@ -414,5 +414,48 @@ describe('solve', () => {
       expect(Testing.print(result.after)).toEqual('x = 5 / 2');
       expect(result.substeps).toHaveLength(0);
     });
+
+    test('4 = b', () => {
+      // Arrange
+      const ast = parseEq('4 = b');
+
+      // Act
+      const result = solve(ast, Semantic.builders.identifier('b'));
+
+      // Assert
+      expect(Testing.print(result.after)).toEqual('4 = b');
+      expect(result.substeps).toHaveLength(0);
+    });
+
+    test('b = 4', () => {
+      // Arrange
+      const ast = parseEq('b = 4');
+
+      // Act
+      const result = solve(ast, Semantic.builders.identifier('b'));
+
+      // Assert
+      expect(Testing.print(result.after)).toEqual('b = 4');
+      expect(result.substeps).toHaveLength(0);
+    });
+
+    test('1 - n = 3/2 n + 17/2', () => {
+      // Arrange
+      const ast = parseEq('1 - n = (3/2)(n) + 17/2');
+
+      // Act
+      const result = solve(ast, Semantic.builders.identifier('n'));
+
+      // Assert
+      const steps = result.substeps.map((step) => Testing.print(step.after));
+      expect(steps).toMatchInlineSnapshot(`
+        Array [
+          "1 - n = 3n / 2 + 17 / 2",
+          "-(5n / 2) = 15 / 2",
+          "-(5n / 2) / -(5 / 2) = (15 / 2) / -(5 / 2)",
+          "n = -3",
+        ]
+      `);
+    });
   });
 });
