@@ -30,6 +30,10 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'evaluate multiplication', TNode>
   | StepType<'evaluate addition', TNode>
   | StepType<'evaluate division', TNode>
+  | StepType<
+      'dividing by a fraction is the same as multiplyin by the reciprocal',
+      TNode
+    >
   | StepType<'multiplying by zero is equivalent to zero', TNode>
   | StepType<'multiplying two negatives is a positive', TNode>
   | StepType<'multiplying a negative by a positive is negative', TNode>

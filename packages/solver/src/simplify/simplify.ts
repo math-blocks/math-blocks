@@ -14,6 +14,10 @@ import { mulFraction } from './transforms/mul-fraction';
 import { mulToPow } from './transforms/mul-to-pow';
 import { simplifyMul } from './transforms/simplify-mul';
 import { mulByZeroIsZero } from './transforms/mul-by-zero-is-zero';
+import { simplifyDivByFrac } from './transforms/simplify-div-by-frac';
+
+// TODO:
+// - negOfNegIsPos
 
 export function simplify(
   node: Semantic.types.NumericNode,
@@ -21,6 +25,7 @@ export function simplify(
   const tranforms = [
     dropAddIdentity,
 
+    simplifyDivByFrac,
     simplifyMul, // We do this first so that we don't repeat what it does in other transforms
     mulByZeroIsZero,
 
