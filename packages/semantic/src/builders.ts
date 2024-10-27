@@ -85,6 +85,16 @@ export const eq = <T extends types.Node>(
   loc,
 });
 
+export const numRel = (
+  args: TwoOrMore<types.NumericNode>,
+  type: types.NumRelType,
+  loc?: types.SourceLocation,
+): types.NumericRelation => ({
+  type,
+  id: getId(),
+  args,
+});
+
 export const neg = (
   arg: types.NumericNode,
   subtraction = false,

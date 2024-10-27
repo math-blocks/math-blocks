@@ -70,8 +70,14 @@ export const ellipsis = (loc: SourceLocation): TokenAtom =>
 export const eq = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.Equal }, loc);
 
+export const lt = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.LessThan }, loc);
+
+export const gt = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.GreaterThan }, loc);
+
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(<|>|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source chars in parsed tokens
 
@@ -104,6 +110,12 @@ const tokenizeChars = (
         switch (sym) {
           case '=':
             tokens.push(eq(loc));
+            break;
+          case '<':
+            tokens.push(lt(loc));
+            break;
+          case '>':
+            tokens.push(gt(loc));
             break;
           case '+':
             tokens.push(plus(loc));

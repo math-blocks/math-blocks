@@ -150,9 +150,10 @@ export type Solution<T extends Semantic.types.Node = Semantic.types.Node> = {
   readonly answer: T;
 };
 
+// TODO: Rename this to 'SolveNumericRelation' or something like that
 type SolveEquation = {
   readonly type: 'SolveEquation';
-  readonly equation: Semantic.types.Eq;
+  readonly equation: Semantic.types.NumericRelation;
   readonly variable: Semantic.types.Identifier;
 };
 

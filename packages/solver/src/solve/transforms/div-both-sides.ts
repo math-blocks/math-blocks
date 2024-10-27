@@ -7,9 +7,9 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function divBothSides(
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
-): Step<Semantic.types.Eq> | void {
+): Step<Semantic.types.NumericRelation> | void {
   const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
   // Prevent an infinite loop between these two transforms
@@ -45,7 +45,7 @@ export function divBothSides(
     // TODO: add a check to make sure this is true
     const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
-    const after = Semantic.builders.eq(
+    const after = Semantic.builders.numRel(
       args.map((arg) => {
         const result = Semantic.builders.div(
           arg as Semantic.types.NumericNode,
@@ -54,6 +54,7 @@ export function divBothSides(
         result.source = 'divBothSides';
         return result;
       }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
+      before.type,
     );
 
     return {
@@ -79,7 +80,7 @@ export function divBothSides(
     // TODO: add a check to make sure this is true
     const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
 
-    const after = Semantic.builders.eq(
+    const after = Semantic.builders.numRel(
       args.map((arg) => {
         const result = Semantic.builders.div(
           arg as Semantic.types.NumericNode,
@@ -88,6 +89,7 @@ export function divBothSides(
         result.source = 'divBothSides';
         return result;
       }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
+      before.type,
     );
 
     return {

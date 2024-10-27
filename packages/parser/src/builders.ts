@@ -65,6 +65,26 @@ export const eq = (
   loc,
 });
 
+export const lt = (
+  args: TwoOrMore<types.Node>,
+  loc?: types.SourceLocation,
+): types.Lt => ({
+  type: NodeType.LessThan,
+  id: getId(),
+  args,
+  loc,
+});
+
+export const gt = (
+  args: TwoOrMore<types.Node>,
+  loc?: types.SourceLocation,
+): types.Gt => ({
+  type: NodeType.GreaterThan,
+  id: getId(),
+  args,
+  loc,
+});
+
 export const neg = (
   arg: types.Node,
   subtraction = false,

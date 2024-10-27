@@ -8,7 +8,7 @@ import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../test-util';
 expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
 
 const solve = (
-  node: Semantic.types.Eq,
+  node: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
 ): Step => {
   const result = _solve(node, ident);
@@ -27,8 +27,8 @@ const printStep = (step: Step) => {
   }
 };
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseEq = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('solve', () => {

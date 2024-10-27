@@ -6,9 +6,9 @@ import { simplifyBothSides } from './simplify-both-sides';
 import type { Step } from '../../types';
 
 export function moveMatchingVariableTermsToOneSide(
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
-): Step<Semantic.types.Eq> | void {
+): Step<Semantic.types.NumericRelation> | void {
   const originalBefore = before;
   let [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
@@ -29,8 +29,8 @@ export function moveMatchingVariableTermsToOneSide(
 
   // TODO: dedupe with `moveTermToSide` in move-other-terms-to-the-other-side.ts
   if (leftMatchingTerms.length > 0 && rightMatchingTerms.length > 0) {
-    const substeps: Step<Semantic.types.Eq>[] = [];
-    let after: Semantic.types.Node | null = null;
+    const substeps: Step<Semantic.types.NumericRelation>[] = [];
+    let after: Semantic.types.NumericRelation | null = null;
 
     // NOTE: In theory, there should only be one matching term since the terms
     // on each side should have already be simplified by collecting like terms.
@@ -43,7 +43,7 @@ export function moveMatchingVariableTermsToOneSide(
 
       left = Semantic.builders.add(newLeftTerms);
       right = Semantic.builders.add(newRightTerms);
-      after = Semantic.builders.eq([left, right]);
+      after = Semantic.builders.numRel([left, right], before.type);
 
       substeps.push({
         message: 'do the same operation to both sides',

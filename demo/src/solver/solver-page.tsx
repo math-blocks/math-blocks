@@ -47,6 +47,7 @@ const SolverPage: React.FunctionComponent = () => {
   const [error, setError] = React.useState<string | null>(null);
 
   const ast = safeParse(input);
+  console.log('ast = ', ast);
 
   const handleSimplify = React.useCallback((): void => {
     if (!ast) {
@@ -77,7 +78,7 @@ const SolverPage: React.FunctionComponent = () => {
       setError("Couldn't parse input");
       return;
     }
-    if (ast.type === Semantic.NodeType.Equals) {
+    if (Semantic.util.isNumericRelation(ast)) {
       const problem: Solver.Problem = {
         type: 'SolveEquation',
         equation: ast,
@@ -135,7 +136,7 @@ const SolverPage: React.FunctionComponent = () => {
   const showSolution = answer != null && !error;
 
   const canSimplify = ast && Semantic.util.isNumeric(ast);
-  const canSolve = ast && ast.type === Semantic.NodeType.Equals;
+  const canSolve = ast && Semantic.util.isNumericRelation(ast);
 
   return (
     <FontDataContext.Provider value={context.fontData}>

@@ -23,11 +23,10 @@ const { NodeType } = Semantic;
  * @param ident the variable being solved for
  */
 export function solve(
-  node: Semantic.types.Eq,
+  node: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
 ): Step | void {
   if (
-    node.type === NodeType.Equals &&
     node.args[0].type === NodeType.Identifier &&
     Semantic.util.isNumber(node.args[1])
   ) {
@@ -40,7 +39,6 @@ export function solve(
   }
 
   if (
-    node.type === NodeType.Equals &&
     node.args[1].type === NodeType.Identifier &&
     Semantic.util.isNumber(node.args[0])
   ) {
@@ -60,14 +58,14 @@ export function solve(
   transforms.push(simplifyBothSides);
 
   const substeps: Step[] = [];
-  let current = node as Semantic.types.Eq;
+  let current = node as Semantic.types.NumericRelation;
   for (let i = 0; i < 10; i++) {
     let changed = false;
     for (const transform of transforms) {
       const next = transform(current, ident);
       if (next) {
         changed = true;
-        current = next.after as Semantic.types.Eq;
+        current = next.after as Semantic.types.NumericRelation;
         substeps.push(next);
       }
     }
@@ -84,7 +82,7 @@ export function solve(
 
   const after = current;
 
-  if (after.type === NodeType.Equals) {
+  if (Semantic.util.isNumericRelation(after)) {
     const [left, right] = after.args;
     if (
       Semantic.util.deepEquals(left, ident) ||

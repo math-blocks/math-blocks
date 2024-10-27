@@ -4,15 +4,15 @@ import * as Testing from '@math-blocks/testing';
 
 import { showMeHow } from '../show-me-how';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('#showMeHow', () => {
   it('should work with equations', () => {
     const problem: Solver.Problem = {
       type: 'SolveEquation',
-      equation: parseEq('2x + 5 = 10'),
+      equation: parseNumRel('2x + 5 = 10'),
       variable: Semantic.builders.identifier('x'),
     };
 

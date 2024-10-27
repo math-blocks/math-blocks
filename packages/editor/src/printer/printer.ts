@@ -315,12 +315,20 @@ const _print = (
         denominator.type === 'row' ? denominator.children : [denominator],
       );
     }
+    case Semantic.NodeType.LessThan:
+    case Semantic.NodeType.GreaterThan:
     case Semantic.NodeType.Equals: {
       const children: types.CharNode[] = [];
 
       for (const arg of expr.args) {
         children.push(...getChildren(arg, oneToOne));
-        children.push(builders.char('='));
+        if (expr.type === Semantic.NodeType.Equals) {
+          children.push(builders.char('='));
+        } else if (expr.type === Semantic.NodeType.LessThan) {
+          children.push(builders.char('<'));
+        } else if (expr.type === Semantic.NodeType.GreaterThan) {
+          children.push(builders.char('>'));
+        }
       }
 
       children.pop(); // remove extra "="

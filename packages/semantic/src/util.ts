@@ -73,6 +73,19 @@ export const isNumeric = (node: types.Node): node is types.NumericNode => {
   return NumericNodeTypes.includes(node.type);
 };
 
+export const isNumericRelation = (
+  node: types.Node,
+): node is types.NumericRelation => {
+  return (
+    node.type === NodeType.Equals ||
+    // node.type === NodeType.NotEquals ||
+    node.type === NodeType.LessThan ||
+    node.type === NodeType.GreaterThan ||
+    node.type === NodeType.LessThanOrEquals ||
+    node.type === NodeType.GreaterThanOrEquals
+  );
+};
+
 const isObject = (val: unknown): val is Record<string, unknown> => {
   return typeof val === 'object' && val != null;
 };

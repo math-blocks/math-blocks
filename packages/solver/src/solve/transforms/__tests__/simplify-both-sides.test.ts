@@ -5,11 +5,11 @@ import { simplifyBothSides } from '../simplify-both-sides';
 
 import type { Step } from '../../../types';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
-const simplify = (node: Semantic.types.Eq): Step => {
+const simplify = (node: Semantic.types.NumericRelation): Step => {
   const result = simplifyBothSides(node);
   if (!result) {
     throw new Error('no step returned');
@@ -19,7 +19,7 @@ const simplify = (node: Semantic.types.Eq): Step => {
 
 describe('simplify both sides', () => {
   test('2x + 5 - 5 = 10 - 5', () => {
-    const before = parseEq('2x + 5 - 5 = 10 - 5');
+    const before = parseNumRel('2x + 5 - 5 = 10 - 5');
 
     const step = simplify(before);
 

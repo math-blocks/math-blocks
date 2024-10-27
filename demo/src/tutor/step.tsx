@@ -133,7 +133,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
           }
         }
 
-        if (solverResult && parsedNext.type === Semantic.NodeType.Equals) {
+        if (solverResult && Semantic.util.isNumericRelation(parsedNext)) {
           const nextProblem = {
             ...problem,
             equation: parsedNext,
@@ -182,7 +182,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     // TODO: pass the problem as a prop to step?
     const problem: Solver.Problem = {
       type: 'SolveEquation',
-      equation: parsedPrev as Semantic.types.Eq,
+      equation: parsedPrev as Semantic.types.NumericRelation,
       variable: Semantic.builders.identifier('x'),
     };
     const hint = Tutor.getHint(problem);
@@ -206,7 +206,7 @@ const Step: React.FunctionComponent<Props> = (props) => {
     // TODO: pass the problem as a prop to step?
     const problem: Solver.Problem = {
       type: 'SolveEquation',
-      equation: parsedPrev as Semantic.types.Eq,
+      equation: parsedPrev as Semantic.types.NumericRelation,
       variable: Semantic.builders.identifier('x'),
     };
     const next = Tutor.showMeHow(problem);

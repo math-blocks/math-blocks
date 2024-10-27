@@ -5,11 +5,11 @@ import { moveTermsToOneSide } from '../move-terms-to-one-side';
 
 import type { Step } from '../../../types';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
-const transform = (node: Semantic.types.Eq): Step => {
+const transform = (node: Semantic.types.NumericRelation): Step => {
   const ident = Semantic.builders.identifier('x');
   const result = moveTermsToOneSide(node, ident);
   if (!result) {
@@ -20,7 +20,7 @@ const transform = (node: Semantic.types.Eq): Step => {
 
 describe('move constants from left to right', () => {
   test('2x + 5 = 10', () => {
-    const before = parseEq('2x + 5 = 10');
+    const before = parseNumRel('2x + 5 = 10');
 
     const step = transform(before);
 
@@ -35,7 +35,7 @@ describe('move constants from left to right', () => {
   });
 
   test('2x - 5 = 10', () => {
-    const before = parseEq('2x - 5 = 10');
+    const before = parseNumRel('2x - 5 = 10');
 
     const step = transform(before);
 
@@ -50,7 +50,7 @@ describe('move constants from left to right', () => {
   });
 
   test('2x + -5 = 10', () => {
-    const before = parseEq('2x + -5 = 10');
+    const before = parseNumRel('2x + -5 = 10');
 
     const step = transform(before);
 
@@ -66,7 +66,7 @@ describe('move constants from left to right', () => {
 
   // TODO: Only move `+ 5` to the left side
   test('10 = 2x + 5', () => {
-    const before = parseEq('10 = 2x + 5');
+    const before = parseNumRel('10 = 2x + 5');
 
     const step = transform(before);
 
@@ -81,7 +81,7 @@ describe('move constants from left to right', () => {
   });
 
   test('10 = 2x - 5', () => {
-    const before = parseEq('10 = 2x - 5');
+    const before = parseNumRel('10 = 2x - 5');
 
     const step = transform(before);
 
@@ -96,7 +96,7 @@ describe('move constants from left to right', () => {
   });
 
   test('10 = 2x + -5', () => {
-    const before = parseEq('10 = 2x + -5');
+    const before = parseNumRel('10 = 2x + -5');
 
     const step = transform(before);
 

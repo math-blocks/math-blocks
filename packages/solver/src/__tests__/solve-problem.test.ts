@@ -5,13 +5,13 @@ import { solveProblem } from '../solve-problem';
 
 import type { Problem } from '../types';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('solveProblem', () => {
   it('should solve linear equations', () => {
-    const ast = parseEq('2x + 5 = 10');
+    const ast = parseNumRel('2x + 5 = 10');
 
     const problem: Problem = {
       type: 'SolveEquation',

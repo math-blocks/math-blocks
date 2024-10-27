@@ -23,7 +23,7 @@ const initialState = createInitialState(question);
 
 const problem: Solver.Problem = {
   type: 'SolveEquation',
-  equation: Editor.parse(question) as Semantic.types.Eq,
+  equation: Editor.parse(question) as Semantic.types.NumericRelation,
   variable: Semantic.builders.identifier('x'),
 };
 

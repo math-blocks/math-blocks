@@ -39,6 +39,22 @@ export type NumericNode =
   | PartialDerivative
   | Integral;
 
+export type NumericRelation =
+  | Eq<NumericNode>
+  // | Neq
+  | Lt
+  | Gt
+  | Lte
+  | Gte;
+
+export type NumRelType =
+  | NodeType.Equals
+  // | NodeType.NotEquals
+  | NodeType.LessThan
+  | NodeType.GreaterThan
+  | NodeType.LessThanOrEquals
+  | NodeType.GreaterThanOrEquals;
+
 /**
  * Number
  *

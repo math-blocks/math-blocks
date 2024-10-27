@@ -41,12 +41,56 @@ describe('EditorParser', () => {
     }
   });
 
+  it('should handle less than', () => {
+    const input = util.row('2x<10');
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`
+(LessThan
+  (mul.imp 2 x)
+  10)
+`);
+  });
+
+  it('should handle greater than', () => {
+    const input = util.row('2x>10');
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`
+(GreaterThan
+  (mul.imp 2 x)
+  10)
+`);
+  });
+
   it('should handle n-ary equality', () => {
     const input = util.row('x=y=z');
 
     const ast = parser.parse(input);
 
     expect(ast).toMatchInlineSnapshot(`(Equals x y z)`);
+  });
+
+  it('should handle n-ary less than', () => {
+    const input = util.row('x<y<z');
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`(LessThan x y z)`);
+  });
+
+  it('should handle n-ary greater than', () => {
+    const input = util.row('2x>10');
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`
+(GreaterThan
+  (mul.imp 2 x)
+  10)
+`);
   });
 
   it('should parse binary expressions containing subtraction', () => {

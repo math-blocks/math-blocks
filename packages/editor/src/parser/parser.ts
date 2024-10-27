@@ -22,10 +22,20 @@ type Operator =
   | 'mul.imp'
   | 'neg'
   | 'eq'
+  | 'lt'
+  | 'gt'
   | 'supsub'
   | 'nul';
 
-type NAryOperator = 'add' | 'sub' | 'plusminus' | 'mul.exp' | 'mul.imp' | 'eq';
+type NAryOperator =
+  | 'add'
+  | 'sub'
+  | 'plusminus'
+  | 'mul.exp'
+  | 'mul.imp'
+  | 'eq'
+  | 'lt'
+  | 'gt';
 
 type EditorParser = Parser.IParser<TokenNode, Parser.types.Node, Operator>;
 
@@ -162,6 +172,10 @@ const parseNaryInfix =
         return Parser.builders.mul([left, right, ...rest], false, loc);
       case 'eq':
         return Parser.builders.eq([left, right, ...rest], loc);
+      case 'lt':
+        return Parser.builders.lt([left, right, ...rest], loc);
+      case 'gt':
+        return Parser.builders.gt([left, right, ...rest], loc);
     }
   };
 
@@ -218,6 +232,12 @@ const parseNaryArgs = (
     } else if (op === 'mul.imp' && nextToken.name === TokenKind.Identifier) {
       return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === 'eq' && nextToken.name === TokenKind.Equal) {
+      return [expr, ...parseNaryArgs(parser, op)];
+    } else if (op === 'lt' && nextToken.name === TokenKind.LessThan) {
+      // How do we deal wiht a mix of lt and lte, e.g. x < y <= z?
+      return [expr, ...parseNaryArgs(parser, op)];
+    } else if (op === 'gt' && nextToken.name === TokenKind.GreaterThan) {
+      // How do we deal wiht a mix of gt and gte, e.g. x > y >= z?
       return [expr, ...parseNaryArgs(parser, op)];
     } else {
       return [expr];
@@ -284,6 +304,10 @@ const getInfixParselet = (
           return { op: 'mul.exp', parse: parseNaryInfix('mul.exp') };
         case TokenKind.Equal:
           return { op: 'eq', parse: parseNaryInfix('eq') };
+        case TokenKind.LessThan:
+          return { op: 'lt', parse: parseNaryInfix('lt') };
+        case TokenKind.GreaterThan:
+          return { op: 'gt', parse: parseNaryInfix('gt') };
         case TokenKind.Identifier:
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
         case TokenKind.Number:
@@ -386,6 +410,8 @@ const getOpPrecedence = (op: Operator): number => {
     case 'nul':
       return 0;
     case 'eq':
+    case 'lt':
+    case 'gt':
       return 2;
     case 'add':
     case 'sub':
@@ -466,6 +492,7 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
 export const parse = (input: CharRow): Semantic.types.Node => {
   const tokenRow = Lexer.lexRow(input);
+  tokenRow.children; // ?
   // The Semantic types have more restrictions on where certain node types can appear.
   // We cast for now, but really we should have function that checks that the result of
   // editorParser.parse() follows those restrictions.
