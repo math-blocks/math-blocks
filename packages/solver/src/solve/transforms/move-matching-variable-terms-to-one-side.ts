@@ -27,6 +27,7 @@ export function moveMatchingVariableTermsToOneSide(
     return;
   }
 
+  // TODO: dedupe with `moveTermToSide` in move-other-terms-to-the-other-side.ts
   if (leftMatchingTerms.length > 0 && rightMatchingTerms.length > 0) {
     const substeps: Step<Semantic.types.Eq>[] = [];
     let after: Semantic.types.Node | null = null;
