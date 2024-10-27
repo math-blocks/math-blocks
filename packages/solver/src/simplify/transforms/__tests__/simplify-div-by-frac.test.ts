@@ -17,7 +17,7 @@ describe('simplify division by fraction', () => {
     ${'-2/(1/y)'}      | ${'(-2)(y / 1)'}
     ${'2/-(1/y)'}      | ${'(2)(-(y / 1))'}
     ${'-2/-(1/y)'}     | ${'(-2)(-(y / 1))'}
-  `('isNegative($input) -> $output', ({ input, output }) => {
+  `('simplifyDivByFrac($input) -> $output', ({ input, output }) => {
     const result = simplifyDivByFrac(parse(input))!;
     expect(Testing.print(result.after)).toEqual(output);
   });

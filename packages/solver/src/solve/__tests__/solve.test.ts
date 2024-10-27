@@ -169,16 +169,16 @@ describe('solve', () => {
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
-      expect(Testing.print(result.after)).toEqual('x = 3');
+      expect(Testing.print(result.after)).toEqual('3 = x');
       expect(result.substeps.map(printStep)).toEqual([
         'move terms to one side',
-        'do the same operation to both sides:div:-2',
+        'do the same operation to both sides:div:2',
         'simplify both sides',
       ]);
 
       expect(ast).toHaveFullStepsLike({
         steps: result.substeps,
-        expressions: ['7 = 2x + 1', '-2x = -6', '-2x / -2 = -6 / -2', 'x = 3'],
+        expressions: ['7 = 2x + 1', '6 = 2x', '6 / 2 = 2x / 2', '3 = x'],
       });
     });
 
