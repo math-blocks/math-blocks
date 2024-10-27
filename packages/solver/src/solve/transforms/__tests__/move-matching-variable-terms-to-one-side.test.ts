@@ -3,8 +3,8 @@ import * as Testing from '@math-blocks/testing';
 
 import { moveMatchingVariableTermsToOneSide } from '../move-matching-variable-terms-to-one-side';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('move constants from left to right', () => {
@@ -21,7 +21,10 @@ describe('move constants from left to right', () => {
     'moveVariableToOneSide($input) -> $output',
     ({ input, output, substeps }) => {
       const ident = Semantic.builders.identifier('x');
-      const result = moveMatchingVariableTermsToOneSide(parseEq(input), ident)!;
+      const result = moveMatchingVariableTermsToOneSide(
+        parseNumRel(input),
+        ident,
+      )!;
       if (result === undefined) {
         expect(input).toEqual(output);
       } else {

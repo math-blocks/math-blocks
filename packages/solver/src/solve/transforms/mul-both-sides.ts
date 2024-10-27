@@ -7,9 +7,9 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function mulBothSides(
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
-): Step<Semantic.types.Eq> | void {
+): Step<Semantic.types.NumericRelation> | void {
   const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
   if (left.source === 'divBothSides' || right.source === 'divBothSides') {
@@ -27,7 +27,7 @@ export function mulBothSides(
       newLeft.source = 'mulBothSides';
       newRight.source = 'mulBothSides';
 
-      const after = Semantic.builders.eq([newLeft, newRight]);
+      const after = Semantic.builders.numRel([newLeft, newRight], before.type);
 
       return {
         message: 'do the same operation to both sides',
@@ -51,7 +51,7 @@ export function mulBothSides(
       newLeft.source = 'mulBothSides';
       newRight.source = 'mulBothSides';
 
-      const after = Semantic.builders.eq([newLeft, newRight]);
+      const after = Semantic.builders.numRel([newLeft, newRight], before.type);
 
       return {
         message: 'do the same operation to both sides',

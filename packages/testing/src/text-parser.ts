@@ -17,9 +17,11 @@ type Operator =
   | 'neg'
   | 'caret'
   | 'eq'
+  | 'lt'
+  | 'gt'
   | 'nul';
 
-type NAryOperator = 'add' | 'sub' | 'mul.exp' | 'mul.imp' | 'eq';
+type NAryOperator = 'add' | 'sub' | 'mul.exp' | 'mul.imp' | 'eq' | 'lt' | 'gt';
 
 type Node = Parser.types.Node;
 
@@ -91,6 +93,10 @@ const getInfixParselet = (
   switch (token.type) {
     case 'eq':
       return { op: 'eq', parse: parseNaryInfix('eq') };
+    case 'lt':
+      return { op: 'lt', parse: parseNaryInfix('lt') };
+    case 'gt':
+      return { op: 'gt', parse: parseNaryInfix('gt') };
     case 'plus':
       return { op: 'add', parse: parseNaryInfix('add') };
     case 'minus':
@@ -155,6 +161,10 @@ const parseNaryInfix =
         return Parser.builders.mul([left, right, ...rest], false);
       case 'eq':
         return Parser.builders.eq([left, right, ...rest]);
+      case 'lt':
+        return Parser.builders.lt([left, right, ...rest]);
+      case 'gt':
+        return Parser.builders.gt([left, right, ...rest]);
     }
   };
 
@@ -188,6 +198,10 @@ const parseNaryArgs = (
   } else if (op === 'mul.imp' && nextToken.type === 'identifier') {
     return [expr, ...parseNaryArgs(parser, op)];
   } else if (op === 'eq' && nextToken.type === 'eq') {
+    return [expr, ...parseNaryArgs(parser, op)];
+  } else if (op === 'lt' && nextToken.type === 'lt') {
+    return [expr, ...parseNaryArgs(parser, op)];
+  } else if (op === 'gt' && nextToken.type === 'gt') {
     return [expr, ...parseNaryArgs(parser, op)];
   } else {
     return [expr];
@@ -225,6 +239,8 @@ const getOpPrecedence = (op: Operator): number => {
   switch (op) {
     case 'nul':
       return 0;
+    case 'lt':
+    case 'gt':
     case 'eq':
       return 2;
     case 'add':
@@ -292,6 +308,7 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 };
 
 export const parse = (input: string): Semantic.types.Node => {
-  const result = textParser.parse(lex(input));
+  const tokens = lex(input);
+  const result = textParser.parse(tokens);
   return removeExcessParens(result as Semantic.types.Node);
 };

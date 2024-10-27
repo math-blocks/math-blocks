@@ -8,9 +8,9 @@ import type { Step } from '../../types';
 const isSubtraction = Semantic.util.isSubtraction;
 
 export function moveOtherTermsToOneSide(
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
-): Step<Semantic.types.Eq> | void {
+): Step<Semantic.types.NumericRelation> | void {
   const [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
   const leftTerms = Semantic.util.getTerms(left);
@@ -52,15 +52,15 @@ export function moveOtherTermsToOneSide(
 }
 
 const moveTermToSide = (
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   nonMatchingTerms: readonly Semantic.types.NumericNode[],
   side: 'left' | 'right',
-): Step<Semantic.types.Eq> | void => {
+): Step<Semantic.types.NumericRelation> | void => {
   const originalBefore = before;
   let [left, right] = before.args as readonly Semantic.types.NumericNode[];
 
-  const substeps: Step<Semantic.types.Eq>[] = [];
-  let after: Semantic.types.Node | null = null;
+  const substeps: Step<Semantic.types.NumericRelation>[] = [];
+  let after: Semantic.types.NumericRelation | null = null;
 
   for (const nonMatchingTerm of nonMatchingTerms) {
     const leftTerms = Semantic.util.getTerms(left);
@@ -71,12 +71,12 @@ const moveTermToSide = (
 
     left = Semantic.builders.add(newLeftTerms);
     right = Semantic.builders.add(newRightTerms);
-    after = Semantic.builders.eq([left, right]);
+    after = Semantic.builders.numRel([left, right], originalBefore.type);
 
     substeps.push({
       message: 'do the same operation to both sides',
       before,
-      after,
+      after: after,
       substeps: [],
       operation: isSubtraction(nonMatchingTerm) ? 'add' : 'sub',
       value: isSubtraction(nonMatchingTerm)
@@ -86,9 +86,9 @@ const moveTermToSide = (
     before = after;
 
     // TODO: show the cancelling of terms after the addition/subtraction
-    const step = simplifyBothSides(after) as void | Step<
-      Semantic.types.Eq<Semantic.types.NumericNode>
-    >;
+    const step = simplifyBothSides(
+      after,
+    ) as void | Step<Semantic.types.NumericRelation>;
     if (step) {
       after = step.after;
       substeps.push({

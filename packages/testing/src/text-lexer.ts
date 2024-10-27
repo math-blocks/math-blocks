@@ -6,6 +6,8 @@ type Minus = { readonly type: 'minus' };
 type Times = { readonly type: 'times' };
 type Slash = { readonly type: 'slash' };
 type Eq = { readonly type: 'eq' };
+type LessThan = { readonly type: 'lt' };
+type GreaterThan = { readonly type: 'gt' };
 type Caret = { readonly type: 'caret' };
 type Underscore = { readonly type: 'underscore' };
 type LParen = { readonly type: 'lparen' };
@@ -17,6 +19,8 @@ export type Token =
   | Ident
   | Num
   | Eq
+  | LessThan
+  | GreaterThan
   | Plus
   | Minus
   | Times
@@ -29,7 +33,7 @@ export type Token =
   | EOL;
 
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|-|\*|\/|=|\^|_|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|-|\*|\/|=|<|>|\^|_|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 export const identifier = (name: string): Token => ({
   type: 'identifier',
@@ -38,6 +42,8 @@ export const identifier = (name: string): Token => ({
 export const number = (value: string): Token => ({ type: 'number', value });
 
 export const eq = (): Token => ({ type: 'eq' });
+export const lt = (): Token => ({ type: 'lt' });
+export const gt = (): Token => ({ type: 'gt' });
 export const plus = (): Token => ({ type: 'plus' });
 export const minus = (): Token => ({ type: 'minus' });
 export const times = (): Token => ({ type: 'times' });
@@ -52,6 +58,8 @@ const stringToToken: {
   readonly [key: string]: () => Token;
 } = {
   '=': eq,
+  '>': gt,
+  '<': lt,
   '+': plus,
   '-': minus,
   '*': times,

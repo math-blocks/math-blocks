@@ -10,12 +10,12 @@ import type { Step } from '../../types';
  * other side.
  */
 export function moveTermsToOneSide(
-  before: Semantic.types.Eq,
+  before: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
-): Step<Semantic.types.Eq> | void {
+): Step<Semantic.types.NumericRelation> | void {
   const originalBefore = before;
 
-  const substeps: Step<Semantic.types.Eq>[] = [];
+  const substeps: Step<Semantic.types.NumericRelation>[] = [];
   const step1 = moveMatchingVariableTermsToOneSide(before, ident);
   if (step1) {
     substeps.push(step1);

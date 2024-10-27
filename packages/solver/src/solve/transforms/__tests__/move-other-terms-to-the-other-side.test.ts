@@ -3,8 +3,8 @@ import * as Testing from '@math-blocks/testing';
 
 import { moveOtherTermsToOneSide } from '../move-other-terms-to-the-other-side';
 
-const parseEq = (input: string): Semantic.types.Eq => {
-  return Testing.parse(input) as Semantic.types.Eq;
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
+  return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('move other terms to the other side', () => {
@@ -23,7 +23,7 @@ describe('move other terms to the other side', () => {
     'moveVariableToOneSide($input) -> $output',
     ({ input, output, substeps }) => {
       const ident = Semantic.builders.identifier('x');
-      const result = moveOtherTermsToOneSide(parseEq(input), ident)!;
+      const result = moveOtherTermsToOneSide(parseNumRel(input), ident)!;
       if (result === undefined) {
         expect(input).toEqual(output);
       } else {
