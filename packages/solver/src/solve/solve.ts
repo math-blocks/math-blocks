@@ -1,4 +1,5 @@
 import * as Semantic from '@math-blocks/semantic';
+import * as Testing from '@math-blocks/testing';
 
 import { divBothSides } from './transforms/div-both-sides';
 import { mulBothSides } from './transforms/mul-both-sides';
@@ -81,6 +82,8 @@ export function solve(
   }
 
   const after = current;
+
+  Testing.print(after); // ?
 
   if (Semantic.util.isNumericRelation(after)) {
     const [left, right] = after.args;

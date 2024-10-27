@@ -138,10 +138,19 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
       // TODO: change the spacing depending on the parent.
       return `${numerator} / ${denominator}`;
     }
+    case NodeType.LessThan:
+    case NodeType.GreaterThan:
     case NodeType.Equals: {
       // TODO: add a check to make sure this is true
       const args = expr.args as TwoOrMore<Semantic.types.NumericNode>;
-      return args.map((arg) => print(arg, oneToOne)).join(' = ');
+      let operation = ' = ';
+      if (expr.type === NodeType.LessThan) {
+        operation = ' < ';
+      } else if (expr.type === NodeType.GreaterThan) {
+        operation = ' > ';
+      }
+
+      return args.map((arg) => print(arg, oneToOne)).join(operation);
     }
     case NodeType.Power: {
       const { base, exp } = expr;

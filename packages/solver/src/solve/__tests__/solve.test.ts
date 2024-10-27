@@ -27,14 +27,14 @@ const printStep = (step: Step) => {
   }
 };
 
-const parseEq = (input: string): Semantic.types.NumericRelation => {
+const parseNumRel = (input: string): Semantic.types.NumericRelation => {
   return Testing.parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('solve', () => {
   describe('linear equations', () => {
     test('2x + 5 = 10', () => {
-      const ast = parseEq('2x + 5 = 10');
+      const ast = parseNumRel('2x + 5 = 10');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -54,7 +54,7 @@ describe('solve', () => {
 
     // TODO: update 'simplify' to deal with '+ 0'
     test('2x + 0 = 5', () => {
-      const ast = parseEq('2x + 0 = 5');
+      const ast = parseNumRel('2x + 0 = 5');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -73,7 +73,7 @@ describe('solve', () => {
     });
 
     test('2x + 3x = 7 - 4', () => {
-      const ast = parseEq('2x + 3x = 7 - 4');
+      const ast = parseNumRel('2x + 3x = 7 - 4');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -99,7 +99,7 @@ describe('solve', () => {
     });
 
     test('2x = 7 + 3x', () => {
-      const ast = parseEq('2x = 7 + 3x');
+      const ast = parseNumRel('2x = 7 + 3x');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -112,7 +112,7 @@ describe('solve', () => {
     });
 
     test('-x / -1 = -7', () => {
-      const ast = parseEq('-x / -1 = -7');
+      const ast = parseNumRel('-x / -1 = -7');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -123,7 +123,7 @@ describe('solve', () => {
     });
 
     test('7 + 3x = 2x', () => {
-      const ast = parseEq('7 + 3x = 2x');
+      const ast = parseNumRel('7 + 3x = 2x');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -134,7 +134,7 @@ describe('solve', () => {
     });
 
     test('2x + 5 = 7 + 3x', () => {
-      const ast = parseEq('2x + 5 = 7 + 3x');
+      const ast = parseNumRel('2x + 5 = 7 + 3x');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -147,7 +147,7 @@ describe('solve', () => {
     });
 
     test('2x + 1 = 7', () => {
-      const ast = parseEq('2x + 1 = 7');
+      const ast = parseNumRel('2x + 1 = 7');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -165,7 +165,7 @@ describe('solve', () => {
     });
 
     test('7 = 2x + 1', () => {
-      const ast = parseEq('7 = 2x + 1');
+      const ast = parseNumRel('7 = 2x + 1');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -183,7 +183,7 @@ describe('solve', () => {
     });
 
     test('x + 1 = -2x + 5', () => {
-      const ast = parseEq('x + 1 = -2x + 5');
+      const ast = parseNumRel('x + 1 = -2x + 5');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -206,7 +206,7 @@ describe('solve', () => {
     });
 
     test('-x + 1 = -2x + 5', () => {
-      const ast = parseEq('-x + 1 = -2x + 5');
+      const ast = parseNumRel('-x + 1 = -2x + 5');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -217,7 +217,7 @@ describe('solve', () => {
     });
 
     test('2 - x = 5', () => {
-      const ast = parseEq('2 - x = 5');
+      const ast = parseNumRel('2 - x = 5');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -230,7 +230,7 @@ describe('solve', () => {
     });
 
     test('2 - 2x = 5', () => {
-      const ast = parseEq('2 - 2x = 5');
+      const ast = parseNumRel('2 - 2x = 5');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -253,7 +253,7 @@ describe('solve', () => {
     });
 
     test('2 - x = 5 - 3x', () => {
-      const ast = parseEq('2 - x = 5 - 3x');
+      const ast = parseNumRel('2 - x = 5 - 3x');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -276,7 +276,7 @@ describe('solve', () => {
     });
 
     test('-x + 3x = 3', () => {
-      const ast = parseEq('-x + 3x = 3');
+      const ast = parseNumRel('-x + 3x = 3');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -289,7 +289,7 @@ describe('solve', () => {
     });
 
     test('2x + 3 = 3', () => {
-      const ast = parseEq('2x + 3 = 3');
+      const ast = parseNumRel('2x + 3 = 3');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -307,7 +307,7 @@ describe('solve', () => {
     });
 
     test('3 = 2x', () => {
-      const ast = parseEq('3 = 2x');
+      const ast = parseNumRel('3 = 2x');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -319,7 +319,7 @@ describe('solve', () => {
     });
 
     test('x / 4 = 1', () => {
-      const ast = parseEq('x / 4 = 1');
+      const ast = parseNumRel('x / 4 = 1');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -336,7 +336,7 @@ describe('solve', () => {
     });
 
     test('1 = x / 4', () => {
-      const ast = parseEq('1 = x / 4');
+      const ast = parseNumRel('1 = x / 4');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -348,7 +348,7 @@ describe('solve', () => {
     });
 
     test('2x / 3 = 1', () => {
-      const ast = parseEq('2x / 3 = 1');
+      const ast = parseNumRel('2x / 3 = 1');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -368,7 +368,7 @@ describe('solve', () => {
     });
 
     test('x / 2 + 1 = x / 3', () => {
-      const ast = parseEq('x / 2 + 1 = x / 3');
+      const ast = parseNumRel('x / 2 + 1 = x / 3');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -381,7 +381,7 @@ describe('solve', () => {
     });
 
     test('x/2 + 1/2 = x/3 + 1/3', () => {
-      const ast = parseEq('x/2 + 1/2 = x/3 + 1/3');
+      const ast = parseNumRel('x/2 + 1/2 = x/3 + 1/3');
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 
@@ -405,7 +405,7 @@ describe('solve', () => {
 
     test('x = 5/2', () => {
       // Arrange
-      const ast = parseEq('x = 5 / 2');
+      const ast = parseNumRel('x = 5 / 2');
 
       // Act
       const result = solve(ast, Semantic.builders.identifier('x'));
@@ -417,7 +417,7 @@ describe('solve', () => {
 
     test('4 = b', () => {
       // Arrange
-      const ast = parseEq('4 = b');
+      const ast = parseNumRel('4 = b');
 
       // Act
       const result = solve(ast, Semantic.builders.identifier('b'));
@@ -429,7 +429,7 @@ describe('solve', () => {
 
     test('b = 4', () => {
       // Arrange
-      const ast = parseEq('b = 4');
+      const ast = parseNumRel('b = 4');
 
       // Act
       const result = solve(ast, Semantic.builders.identifier('b'));
@@ -441,7 +441,7 @@ describe('solve', () => {
 
     test('1 - n = 3/2 n + 17/2', () => {
       // Arrange
-      const ast = parseEq('1 - n = (3/2)(n) + 17/2');
+      const ast = parseNumRel('1 - n = (3/2)(n) + 17/2');
 
       // Act
       const result = solve(ast, Semantic.builders.identifier('n'));
@@ -456,6 +456,94 @@ describe('solve', () => {
           "n = -3",
         ]
       `);
+    });
+  });
+
+  describe('linear inequalities', () => {
+    test('2x + 5 < 10', () => {
+      const ast = parseNumRel('2x + 5 < 10');
+
+      const result = solve(ast, Semantic.builders.identifier('x'));
+
+      expect(Testing.print(result.after)).toEqual('x < 5 / 2');
+
+      expect(result.substeps.map(printStep)).toEqual([
+        'move terms to one side',
+        'do the same operation to both sides:div:2',
+        'simplify the left hand side',
+      ]);
+
+      expect(ast).toHaveFullStepsLike({
+        steps: result.substeps,
+        expressions: ['2x + 5 < 10', '2x < 5', '2x / 2 < 5 / 2', 'x < 5 / 2'],
+      });
+    });
+
+    test('2x + 5 > 10', () => {
+      const ast = parseNumRel('2x + 5 > 10');
+
+      const result = solve(ast, Semantic.builders.identifier('x'));
+
+      expect(Testing.print(result.after)).toEqual('x > 5 / 2');
+
+      expect(result.substeps.map(printStep)).toEqual([
+        'move terms to one side',
+        'do the same operation to both sides:div:2',
+        'simplify the left hand side',
+      ]);
+
+      expect(ast).toHaveFullStepsLike({
+        steps: result.substeps,
+        expressions: ['2x + 5 > 10', '2x > 5', '2x / 2 > 5 / 2', 'x > 5 / 2'],
+      });
+    });
+
+    test('-2x + 5 < 10', () => {
+      const ast = parseNumRel('-2x + 5 < 10');
+
+      const result = solve(ast, Semantic.builders.identifier('x'));
+
+      expect(Testing.print(result.after)).toEqual('x > -(5 / 2)');
+
+      expect(result.substeps.map(printStep)).toEqual([
+        'move terms to one side',
+        'do the same operation to both sides:div:-2',
+        'simplify both sides',
+      ]);
+
+      expect(ast).toHaveFullStepsLike({
+        steps: result.substeps,
+        expressions: [
+          '-2x + 5 < 10',
+          '-2x < 5',
+          '-2x / -2 > 5 / -2',
+          'x > -(5 / 2)',
+        ],
+      });
+    });
+
+    test('10 > -2x + 5', () => {
+      const ast = parseNumRel('10 > -2x + 5');
+
+      const result = solve(ast, Semantic.builders.identifier('x'));
+
+      expect(Testing.print(result.after)).toEqual('-(5 / 2) < x');
+
+      expect(result.substeps.map(printStep)).toEqual([
+        'move terms to one side',
+        'do the same operation to both sides:div:-2',
+        'simplify both sides',
+      ]);
+
+      expect(ast).toHaveFullStepsLike({
+        steps: result.substeps,
+        expressions: [
+          '10 > -2x + 5',
+          '5 > -2x',
+          '5 / -2 < -2x / -2',
+          '-(5 / 2) < x',
+        ],
+      });
     });
   });
 });

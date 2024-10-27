@@ -34,71 +34,57 @@ export function divBothSides(
 
   if (leftIdentTerms.length === 1 && leftNonIdentTerms.length === 0) {
     const coeff = getCoeff(leftIdentTerms[0]);
-    if (coeff.type === NodeType.Div) {
-      return;
-    }
-
-    if (Semantic.util.deepEquals(coeff, Semantic.builders.number('1'))) {
-      return;
-    }
-
-    // TODO: add a check to make sure this is true
-    const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
-
-    const after = Semantic.builders.numRel(
-      args.map((arg) => {
-        const result = Semantic.builders.div(
-          arg as Semantic.types.NumericNode,
-          coeff,
-        );
-        result.source = 'divBothSides';
-        return result;
-      }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
-      before.type,
-    );
-
-    return {
-      message: 'do the same operation to both sides',
-      before,
-      after,
-      substeps: [],
-      operation: 'div',
-      value: coeff,
-    };
+    return divByCoeff(before, coeff);
   }
 
   if (rightIdentTerms.length === 1 && rightNonIdentTerms.length === 0) {
     const coeff = getCoeff(rightIdentTerms[0]);
-    if (coeff.type === NodeType.Div) {
-      return undefined;
-    }
-
-    if (Semantic.util.deepEquals(coeff, Semantic.builders.number('1'))) {
-      return undefined;
-    }
-
-    // TODO: add a check to make sure this is true
-    const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
-
-    const after = Semantic.builders.numRel(
-      args.map((arg) => {
-        const result = Semantic.builders.div(
-          arg as Semantic.types.NumericNode,
-          coeff,
-        );
-        result.source = 'divBothSides';
-        return result;
-      }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
-      before.type,
-    );
-
-    return {
-      message: 'do the same operation to both sides',
-      before,
-      after,
-      substeps: [],
-      operation: 'div',
-      value: coeff,
-    };
+    return divByCoeff(before, coeff);
   }
 }
+
+const divByCoeff = (
+  before: Semantic.types.NumericRelation,
+  coeff: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericRelation> | void => {
+  if (coeff.type === NodeType.Div) {
+    return;
+  }
+
+  if (Semantic.util.deepEquals(coeff, Semantic.builders.number('1'))) {
+    return;
+  }
+
+  // TODO: add a check to make sure this is true
+  const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
+
+  let opType = before.type;
+  if (coeff.type === NodeType.Neg) {
+    if (opType === NodeType.LessThan) {
+      opType = NodeType.GreaterThan;
+    } else if (opType === NodeType.GreaterThan) {
+      opType = NodeType.LessThan;
+    }
+  }
+
+  const after = Semantic.builders.numRel(
+    args.map((arg) => {
+      const result = Semantic.builders.div(
+        arg as Semantic.types.NumericNode,
+        coeff,
+      );
+      result.source = 'divBothSides';
+      return result;
+    }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
+    opType,
+  );
+
+  return {
+    message: 'do the same operation to both sides',
+    before,
+    after,
+    substeps: [],
+    operation: 'div',
+    value: coeff,
+  };
+};
