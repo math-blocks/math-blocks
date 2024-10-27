@@ -12,6 +12,8 @@ type StepType<
   readonly substeps: readonly Step<TNode>[];
 } & Options;
 
+export type Side = 'left' | 'right';
+
 export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'simplify expression', TNode>
   | StepType<'adding the inverse is the same as subtraction', TNode>
@@ -53,6 +55,16 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       }
     >
   | StepType<'move terms to one side', TNode>
+  | StepType<
+      'move matching variable terms to one side',
+      TNode,
+      { readonly side: Side }
+    >
+  | StepType<
+      'move other terms to the other side',
+      TNode,
+      { readonly side: Side }
+    >
   | StepType<'simplify both sides', TNode>
   | StepType<'simplify the left hand side', TNode>
   | StepType<'simplify the right hand side', TNode>
