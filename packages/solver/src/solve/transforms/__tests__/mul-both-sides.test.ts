@@ -51,4 +51,25 @@ describe('mulBothSides', () => {
 
     expect(Testing.print(step.after)).toEqual('x / 2 * 2 = (a + b) * 2');
   });
+
+  test.each`
+    input           | output
+    ${'x / 2 < 5'}  | ${'x / 2 * 2 < 5 * 2'}
+    ${'x / 2 > 5'}  | ${'x / 2 * 2 > 5 * 2'}
+    ${'5 < x / 2'}  | ${'5 * 2 < x / 2 * 2'}
+    ${'5 > x / 2'}  | ${'5 * 2 > x / 2 * 2'}
+    ${'x / -2 < 5'} | ${'x / -2 * -2 > 5 * -2'}
+    ${'x / -2 > 5'} | ${'x / -2 * -2 < 5 * -2'}
+    ${'5 < x / -2'} | ${'5 * -2 > x / -2 * -2'}
+    ${'5 > x / -2'} | ${'5 * -2 < x / -2 * -2'}
+  `('divBothSides($input) -> $output', ({ input, output }) => {
+    const ident = Semantic.builders.identifier('x');
+    const result = mulBothSides(parseNumRel(input), ident);
+
+    if (!result) {
+      throw new Error('no result');
+    }
+
+    expect(Testing.print(result.after)).toEqual(output);
+  });
 });
