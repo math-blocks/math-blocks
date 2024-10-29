@@ -207,6 +207,7 @@ const OpenTypeDemo: React.FC = () => {
     metrics.bearingY *= scale;
     metrics.width *= scale;
     metrics.height *= scale;
+    metrics.advance *= scale;
 
     return (
       <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
