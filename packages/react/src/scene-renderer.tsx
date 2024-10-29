@@ -62,37 +62,18 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
 
-  // Always uses paths when running in the 'test' environment so that
-  // the SVGs render correctly even without the fonts.
-  if (glyph.isDelimiter || process.env.NODE_ENV === 'test') {
-    return (
-      <path
-        fill={style.fill}
-        id={id}
-        style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
-        aria-hidden="true"
-        d={getPath(font.getGlyph(glyph.glyphID))}
-        transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
-      />
-    );
-  } else {
-    const { fontFamily } = glyph.fontData;
-    return (
-      <text
-        x={x}
-        y={y}
-        fontFamily={fontFamily}
-        fontSize={glyph.size}
-        fill={style.fill}
-        stroke="none" // TODO: set this in CSS
-        id={id}
-        style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
-        aria-hidden="true"
-      >
-        {glyph.char}
-      </text>
-    );
-  }
+  // Always uses paths since browsers do weird things to glyphs when rendering
+  // them in <text> elements.
+  return (
+    <path
+      fill={style.fill}
+      id={id}
+      style={{ opacity: glyph.pending ? 0.5 : 1.0 }}
+      aria-hidden="true"
+      d={getPath(font.getGlyph(glyph.glyphID))}
+      transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+    />
+  );
 };
 
 const Group: React.FunctionComponent<SceneGraph.Group> = ({
