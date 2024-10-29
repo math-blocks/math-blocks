@@ -21,22 +21,7 @@ export function mulBothSides(
   if (leftTerms.length === 1 && leftTerms[0].type === NodeType.Div) {
     const [num, den] = leftTerms[0].args;
     if (isTermOfIdent(num, ident) && Semantic.util.isNumber(den)) {
-      const newLeft = Semantic.builders.mul([leftTerms[0], den]);
-      const newRight = Semantic.builders.mul([right, den]);
-
-      newLeft.source = 'mulBothSides';
-      newRight.source = 'mulBothSides';
-
-      const after = Semantic.builders.numRel([newLeft, newRight], before.type);
-
-      return {
-        message: 'do the same operation to both sides',
-        before,
-        after,
-        substeps: [],
-        operation: 'mul',
-        value: den,
-      };
+      return mulByNumber(before, den);
     }
   }
 
@@ -45,24 +30,42 @@ export function mulBothSides(
   if (rightTerms.length === 1 && rightTerms[0].type === NodeType.Div) {
     const [num, den] = rightTerms[0].args;
     if (isTermOfIdent(num, ident) && Semantic.util.isNumber(den)) {
-      const newLeft = Semantic.builders.mul([left, den]);
-      const newRight = Semantic.builders.mul([rightTerms[0], den]);
-
-      newLeft.source = 'mulBothSides';
-      newRight.source = 'mulBothSides';
-
-      const after = Semantic.builders.numRel([newLeft, newRight], before.type);
-
-      return {
-        message: 'do the same operation to both sides',
-        before,
-        after,
-        substeps: [],
-        operation: 'mul',
-        value: den,
-      };
+      return mulByNumber(before, den);
     }
   }
 
   return;
 }
+
+const mulByNumber = (
+  before: Semantic.types.NumericRelation,
+  num: Semantic.types.NumericNode,
+): Step<Semantic.types.NumericRelation> | void => {
+  const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+
+  const newLeft = Semantic.builders.mul([left, num]);
+  const newRight = Semantic.builders.mul([right, num]);
+
+  newLeft.source = 'mulBothSides';
+  newRight.source = 'mulBothSides';
+
+  let opType = before.type;
+  if (num.type === NodeType.Neg) {
+    if (opType === NodeType.LessThan) {
+      opType = NodeType.GreaterThan;
+    } else if (opType === NodeType.GreaterThan) {
+      opType = NodeType.LessThan;
+    }
+  }
+
+  const after = Semantic.builders.numRel([newLeft, newRight], opType);
+
+  return {
+    message: 'do the same operation to both sides',
+    before,
+    after,
+    substeps: [],
+    operation: 'mul',
+    value: num,
+  };
+};

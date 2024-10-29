@@ -18,8 +18,8 @@ const transform = (node: Semantic.types.NumericRelation): Step => {
   return result;
 };
 
-describe('mulBothSides', () => {
-  it('should multiple both sides (variable on left)', () => {
+describe('divBothSides', () => {
+  it('should divide both sides (variable on left)', () => {
     const before = parseNumRel('2x = 5');
     const step = transform(before);
 
@@ -32,7 +32,7 @@ describe('mulBothSides', () => {
     expect(Testing.print(step.value)).toEqual('2');
   });
 
-  it('should multiple both sides (variable on right)', () => {
+  it('should divide both sides (variable on right)', () => {
     const before = parseNumRel('5 = 2x');
     const step = transform(before);
 
@@ -50,5 +50,26 @@ describe('mulBothSides', () => {
     const step = transform(before);
 
     expect(Testing.print(step.after)).toEqual('2x / 2 = (a + b) / 2');
+  });
+
+  test.each`
+    input        | output
+    ${'2x < 5'}  | ${'2x / 2 < 5 / 2'}
+    ${'2x > 5'}  | ${'2x / 2 > 5 / 2'}
+    ${'5 < 2x'}  | ${'5 / 2 < 2x / 2'}
+    ${'5 > 2x'}  | ${'5 / 2 > 2x / 2'}
+    ${'-2x < 5'} | ${'-2x / -2 > 5 / -2'}
+    ${'-2x > 5'} | ${'-2x / -2 < 5 / -2'}
+    ${'5 < -2x'} | ${'5 / -2 > -2x / -2'}
+    ${'5 > -2x'} | ${'5 / -2 < -2x / -2'}
+  `('divBothSides($input) -> $output', ({ input, output }) => {
+    const ident = Semantic.builders.identifier('x');
+    const result = divBothSides(parseNumRel(input), ident);
+
+    if (!result) {
+      throw new Error('no result');
+    }
+
+    expect(Testing.print(result.after)).toEqual(output);
   });
 });
