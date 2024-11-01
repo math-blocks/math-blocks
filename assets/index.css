@@ -28,6 +28,15 @@
   src: url(/texgyretermes-math.otf);
 }
 
+:root {
+  --bg-color: #fff;
+}
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1f1f1f;
+  }
+}
+
 html,
 body {
   /* overflow: hidden; */

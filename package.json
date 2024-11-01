@@ -61,6 +61,7 @@
     "react-docgen-typescript-loader": "^3.6.0",
     "react-hot-loader": "^4.12.18",
     "react-is": "^17.0.1",
+    "react-json-view": "^1.21.3",
     "rollup": "^4.20.0",
     "rollup-plugin-postcss": "^4.0.2",
     "sloc": "^0.2.1",

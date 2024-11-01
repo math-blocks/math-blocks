@@ -41,6 +41,46 @@ describe('EditorParser', () => {
     }
   });
 
+  it('should handle deep nesting in expressions', () => {
+    const input = builders.row([
+      char('1'),
+      char('+'),
+      builders.delimited(
+        [
+          char('2'),
+          char('+'),
+          builders.delimited(
+            [
+              char('3'),
+              char('+'),
+              builders.delimited(
+                [char('4'), char('+'), char('5')],
+                char('('),
+                char(')'),
+              ),
+            ],
+            char('('),
+            char(')'),
+          ),
+        ],
+        char('('),
+        char(')'),
+      ),
+    ]);
+
+    const ast = parser.parse(input);
+
+    expect(ast).toMatchInlineSnapshot(`
+(Add
+  1
+  (Add
+    2
+    (Add
+      3
+      (Add 4 5))))
+`);
+  });
+
   it('should handle less than', () => {
     const input = util.row('2x<10');
 
