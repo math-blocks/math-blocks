@@ -26,6 +26,11 @@ const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
   const [editTree, setEditTree] = React.useState<SimpleState['row']>(simpleRow);
   const [ast, setAst] = React.useState<types.Node>(() => parse(simpleRow));
+  const [darkMode, setDarkMode] = React.useState<boolean>(() => {
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    return query.matches;
+  });
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
@@ -38,6 +43,14 @@ const EditorPage: React.FunctionComponent = () => {
     loadFont();
   }, []);
 
+  React.useEffect(() => {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', (query) => {
+        setDarkMode(query.matches);
+      });
+  });
+
   if (!stixFontData) {
     return null;
   }
@@ -49,8 +62,11 @@ const EditorPage: React.FunctionComponent = () => {
     try {
       setEditTree(state.row);
       setAst(parse(state.row));
+      setError(null);
     } catch (e) {
-      // TODO: show error
+      const { message } = e as Error;
+      setError(message);
+      console.log(message);
     }
   };
 
@@ -73,6 +89,9 @@ const EditorPage: React.FunctionComponent = () => {
             onChange={handleChange}
             style={{ marginBottom: 8 }}
           />
+          {error && (
+            <VStack style={{ color: 'red', fontSize: 18 }}>{error}</VStack>
+          )}
           <HStack style={{ justifyContent: 'space-between' }}>
             <VStack style={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}>
               Editor Tree
@@ -85,13 +104,13 @@ const EditorPage: React.FunctionComponent = () => {
         <HStack>
           <ReactJson
             src={editTree}
-            theme="monokai"
+            theme={darkMode ? 'monokai' : 'rjv-default'}
             style={{ flex: 1 }}
             enableClipboard={false}
           />
           <ReactJson
             src={ast}
-            theme="monokai"
+            theme={darkMode ? 'monokai' : 'rjv-default'}
             style={{ flex: 1 }}
             shouldCollapse={(field) => field.name === 'loc'}
             enableClipboard={false}
