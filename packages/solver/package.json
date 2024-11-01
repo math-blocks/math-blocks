@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/solver",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,10 +10,10 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.9",
-        "@math-blocks/semantic": "^0.0.9"
+        "@math-blocks/core": "^0.0.10",
+        "@math-blocks/semantic": "^0.0.10"
     },
     "devDependencies": {
-        "@math-blocks/testing": "^0.0.9"
+        "@math-blocks/testing": "^0.0.10"
     }
 }
