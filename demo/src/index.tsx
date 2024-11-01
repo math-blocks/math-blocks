@@ -5,6 +5,7 @@ import { Link, Switch, Route, HashRouter as Router } from 'react-router-dom';
 import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
 import SimpleEditorPage from './editor/simple-editor-page';
+import ParserPage from './parser/parser-page';
 import MathmlPage from './mathml/mathml-page';
 import HandwritingPage from './handwriting/handwriting-page';
 import SolverPage from './solver/solver-page';
@@ -29,6 +30,9 @@ ReactDOM.render(
       </Route>
       <Route path="/simple-editor">
         <SimpleEditorPage />
+      </Route>
+      <Route path="/parser">
+        <ParserPage />
       </Route>
       <Route path="/mathml">
         <MathmlPage />
@@ -59,6 +63,9 @@ ReactDOM.render(
           </li>
           <li>
             <Link to="/simple-editor">Simple Editor</Link>
+          </li>
+          <li>
+            <Link to="/parser">Parser</Link>
           </li>
           <li>
             <Link to="/mathml">Mathml</Link>
