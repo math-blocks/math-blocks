@@ -45,23 +45,38 @@ describe('divBothSides', () => {
     expect(Testing.print(step.value)).toEqual('2');
   });
 
-  it('should multiple all terms', () => {
+  it('should divide all terms (right)', () => {
     const before = parseNumRel('2x = a + b');
     const step = transform(before);
 
     expect(Testing.print(step.after)).toEqual('2x / 2 = (a + b) / 2');
   });
 
+  it('should divide all terms (left)', () => {
+    const before = parseNumRel('a + b = 2x');
+    const step = transform(before);
+
+    expect(Testing.print(step.after)).toEqual('(a + b) / 2 = 2x / 2');
+  });
+
   test.each`
     input        | output
     ${'2x < 5'}  | ${'2x / 2 < 5 / 2'}
     ${'2x > 5'}  | ${'2x / 2 > 5 / 2'}
+    ${'2x ≤ 5'}  | ${'2x / 2 ≤ 5 / 2'}
+    ${'2x ≥ 5'}  | ${'2x / 2 ≥ 5 / 2'}
     ${'5 < 2x'}  | ${'5 / 2 < 2x / 2'}
     ${'5 > 2x'}  | ${'5 / 2 > 2x / 2'}
+    ${'5 ≤ 2x'}  | ${'5 / 2 ≤ 2x / 2'}
+    ${'5 ≥ 2x'}  | ${'5 / 2 ≥ 2x / 2'}
     ${'-2x < 5'} | ${'-2x / -2 > 5 / -2'}
     ${'-2x > 5'} | ${'-2x / -2 < 5 / -2'}
+    ${'-2x ≤ 5'} | ${'-2x / -2 ≥ 5 / -2'}
+    ${'-2x ≥ 5'} | ${'-2x / -2 ≤ 5 / -2'}
     ${'5 < -2x'} | ${'5 / -2 > -2x / -2'}
     ${'5 > -2x'} | ${'5 / -2 < -2x / -2'}
+    ${'5 ≤ -2x'} | ${'5 / -2 ≥ -2x / -2'}
+    ${'5 ≥ -2x'} | ${'5 / -2 ≤ -2x / -2'}
   `('divBothSides($input) -> $output', ({ input, output }) => {
     const ident = Semantic.builders.identifier('x');
     const result = divBothSides(parseNumRel(input), ident);

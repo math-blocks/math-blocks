@@ -23,7 +23,9 @@ type Operator =
   | 'neg'
   | 'eq'
   | 'lt'
+  | 'lte'
   | 'gt'
+  | 'gte'
   | 'supsub'
   | 'nul';
 
@@ -35,7 +37,9 @@ type NAryOperator =
   | 'mul.imp'
   | 'eq'
   | 'lt'
-  | 'gt';
+  | 'lte'
+  | 'gt'
+  | 'gte';
 
 type EditorParser = Parser.IParser<TokenNode, Parser.types.Node, Operator>;
 
@@ -174,8 +178,12 @@ const parseNaryInfix =
         return Parser.builders.eq([left, right, ...rest], loc);
       case 'lt':
         return Parser.builders.lt([left, right, ...rest], loc);
+      case 'lte':
+        return Parser.builders.lte([left, right, ...rest], loc);
       case 'gt':
         return Parser.builders.gt([left, right, ...rest], loc);
+      case 'gte':
+        return Parser.builders.gte([left, right, ...rest], loc);
     }
   };
 
@@ -193,7 +201,7 @@ const parseNaryArgs = (
   const node = parser.peek();
   if (node.type === 'token') {
     if (node.name === TokenKind.Identifier || node.name === TokenKind.Number) {
-      // implicit multiplication
+      // implicit multiplication - there is no token to consume
     } else {
       // an explicit operation, e.g. plus, times, etc.
       parser.consume();
@@ -306,8 +314,12 @@ const getInfixParselet = (
           return { op: 'eq', parse: parseNaryInfix('eq') };
         case TokenKind.LessThan:
           return { op: 'lt', parse: parseNaryInfix('lt') };
+        case TokenKind.LessThanOrEqual:
+          return { op: 'lte', parse: parseNaryInfix('lte') };
         case TokenKind.GreaterThan:
           return { op: 'gt', parse: parseNaryInfix('gt') };
+        case TokenKind.GreaterThanOrEqual:
+          return { op: 'gte', parse: parseNaryInfix('gte') };
         case TokenKind.Identifier:
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
         case TokenKind.Number:
@@ -411,7 +423,9 @@ const getOpPrecedence = (op: Operator): number => {
       return 0;
     case 'eq':
     case 'lt':
+    case 'lte':
     case 'gt':
+    case 'gte':
       return 2;
     case 'add':
     case 'sub':

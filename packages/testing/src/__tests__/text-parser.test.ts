@@ -438,4 +438,31 @@ describe('TextParser', () => {
             `);
     });
   });
+
+  describe('numeric relations', () => {
+    it('parses equals', () => {
+      const ast = parse('x = y');
+      expect(ast).toMatchInlineSnapshot(`(Equals x y)`);
+    });
+
+    it('parses less than', () => {
+      const ast = parse('x < y');
+      expect(ast).toMatchInlineSnapshot(`(LessThan x y)`);
+    });
+
+    it('parses less than or equals', () => {
+      const ast = parse('x ≤ y');
+      expect(ast).toMatchInlineSnapshot(`(LessThanOrEquals x y)`);
+    });
+
+    it('parses greater than', () => {
+      const ast = parse('x > y');
+      expect(ast).toMatchInlineSnapshot(`(GreaterThan x y)`);
+    });
+
+    it('parses greater than or equals', () => {
+      const ast = parse('x ≥ y');
+      expect(ast).toMatchInlineSnapshot(`(GreaterThanOrEquals x y)`);
+    });
+  });
 });

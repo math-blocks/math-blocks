@@ -71,14 +71,14 @@ describe('EditorParser', () => {
     const ast = parser.parse(input);
 
     expect(ast).toMatchInlineSnapshot(`
-(Add
-  1
-  (Add
-    2
-    (Add
-      3
-      (Add 4 5))))
-`);
+      (Add
+        1
+        (Add
+          2
+          (Add
+            3
+            (Add 4 5))))
+    `);
   });
 
   it('should handle less than', () => {
@@ -87,10 +87,10 @@ describe('EditorParser', () => {
     const ast = parser.parse(input);
 
     expect(ast).toMatchInlineSnapshot(`
-(LessThan
-  (mul.imp 2 x)
-  10)
-`);
+      (LessThan
+        (mul.imp 2 x)
+        10)
+    `);
   });
 
   it('should handle greater than', () => {
@@ -99,10 +99,10 @@ describe('EditorParser', () => {
     const ast = parser.parse(input);
 
     expect(ast).toMatchInlineSnapshot(`
-(GreaterThan
-  (mul.imp 2 x)
-  10)
-`);
+      (GreaterThan
+        (mul.imp 2 x)
+        10)
+    `);
   });
 
   it('should handle n-ary equality', () => {
@@ -127,10 +127,10 @@ describe('EditorParser', () => {
     const ast = parser.parse(input);
 
     expect(ast).toMatchInlineSnapshot(`
-(GreaterThan
-  (mul.imp 2 x)
-  10)
-`);
+      (GreaterThan
+        (mul.imp 2 x)
+        10)
+    `);
   });
 
   it('should parse binary expressions containing subtraction', () => {
@@ -977,6 +977,37 @@ describe('EditorParser', () => {
                   :actions (eq null (neg.sub 5))
                   :resultingRelation null)
             `);
+    });
+  });
+
+  describe('numeric relations', () => {
+    it('should parse equals', () => {
+      const input = builders.row([char('x'), char('='), char('y')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(Equals x y)`);
+    });
+
+    it('should parse less than', () => {
+      const input = builders.row([char('x'), char('<'), char('y')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(LessThan x y)`);
+    });
+
+    it('should parse less than or equals', () => {
+      const input = builders.row([char('x'), char('≤'), char('y')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(
+        `(LessThanOrEquals x y)`,
+      );
+    });
+
+    it('should parse greater than', () => {
+      const input = builders.row([char('x'), char('>'), char('y')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(`(GreaterThan x y)`);
+    });
+
+    it('should parse greater than or equals', () => {
+      const input = builders.row([char('x'), char('≥'), char('y')]);
+      expect(parser.parse(input)).toMatchInlineSnapshot(
+        `(GreaterThanOrEquals x y)`,
+      );
     });
   });
 });

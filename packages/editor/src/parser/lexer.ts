@@ -73,11 +73,17 @@ export const eq = (loc: SourceLocation): TokenAtom =>
 export const lt = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.LessThan }, loc);
 
+export const lte = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.LessThanOrEqual }, loc);
+
 export const gt = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.GreaterThan }, loc);
 
+export const gte = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.GreaterThanOrEqual }, loc);
+
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(<|>|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(<|>|≤|≥|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source chars in parsed tokens
 
@@ -114,8 +120,14 @@ const tokenizeChars = (
           case '<':
             tokens.push(lt(loc));
             break;
+          case '≤':
+            tokens.push(lte(loc));
+            break;
           case '>':
             tokens.push(gt(loc));
+            break;
+          case '≥':
+            tokens.push(gte(loc));
             break;
           case '+':
             tokens.push(plus(loc));

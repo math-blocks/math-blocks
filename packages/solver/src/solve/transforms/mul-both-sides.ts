@@ -53,8 +53,12 @@ const mulByNumber = (
   if (num.type === NodeType.Neg) {
     if (opType === NodeType.LessThan) {
       opType = NodeType.GreaterThan;
+    } else if (opType === NodeType.LessThanOrEquals) {
+      opType = NodeType.GreaterThanOrEquals;
     } else if (opType === NodeType.GreaterThan) {
       opType = NodeType.LessThan;
+    } else if (opType === NodeType.GreaterThanOrEquals) {
+      opType = NodeType.LessThanOrEquals;
     }
   }
 

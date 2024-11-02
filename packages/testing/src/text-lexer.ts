@@ -1,13 +1,16 @@
 // TODO: share these with editor-lexer.js
 type Ident = { readonly type: 'identifier'; readonly name: string };
 type Num = { readonly type: 'number'; readonly value: string };
+type Trig = { readonly type: 'trig'; readonly name: string };
 type Plus = { readonly type: 'plus' };
 type Minus = { readonly type: 'minus' };
 type Times = { readonly type: 'times' };
 type Slash = { readonly type: 'slash' };
 type Eq = { readonly type: 'eq' };
-type LessThan = { readonly type: 'lt' };
-type GreaterThan = { readonly type: 'gt' };
+type Lt = { readonly type: 'lt' };
+type Lte = { readonly type: 'lte' };
+type Gt = { readonly type: 'gt' };
+type Gte = { readonly type: 'gte' };
 type Caret = { readonly type: 'caret' };
 type Underscore = { readonly type: 'underscore' };
 type LParen = { readonly type: 'lparen' };
@@ -18,9 +21,12 @@ type EOL = { readonly type: 'eol' };
 export type Token =
   | Ident
   | Num
+  | Trig
   | Eq
-  | LessThan
-  | GreaterThan
+  | Lt
+  | Lte
+  | Gt
+  | Gte
   | Plus
   | Minus
   | Times
@@ -33,7 +39,7 @@ export type Token =
   | EOL;
 
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|-|\*|\/|=|<|>|\^|_|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(\+|-|\*|\/|=|<|>|≤|≥|\^|_|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 export const identifier = (name: string): Token => ({
   type: 'identifier',
@@ -41,25 +47,29 @@ export const identifier = (name: string): Token => ({
 });
 export const number = (value: string): Token => ({ type: 'number', value });
 
-export const eq = (): Token => ({ type: 'eq' });
-export const lt = (): Token => ({ type: 'lt' });
-export const gt = (): Token => ({ type: 'gt' });
-export const plus = (): Token => ({ type: 'plus' });
-export const minus = (): Token => ({ type: 'minus' });
-export const times = (): Token => ({ type: 'times' });
-export const slash = (): Token => ({ type: 'slash' });
-export const caret = (): Token => ({ type: 'caret' });
-export const underscore = (): Token => ({ type: 'underscore' });
-export const lparen = (): Token => ({ type: 'lparen' });
-export const rparen = (): Token => ({ type: 'rparen' });
-export const ellipsis = (): Token => ({ type: 'ellipsis' });
+const eq = (): Token => ({ type: 'eq' });
+const lt = (): Token => ({ type: 'lt' });
+const lte = (): Token => ({ type: 'lte' });
+const gt = (): Token => ({ type: 'gt' });
+const gte = (): Token => ({ type: 'gte' });
+const plus = (): Token => ({ type: 'plus' });
+const minus = (): Token => ({ type: 'minus' });
+const times = (): Token => ({ type: 'times' });
+const slash = (): Token => ({ type: 'slash' });
+const caret = (): Token => ({ type: 'caret' });
+const underscore = (): Token => ({ type: 'underscore' });
+const lparen = (): Token => ({ type: 'lparen' });
+const rparen = (): Token => ({ type: 'rparen' });
+const ellipsis = (): Token => ({ type: 'ellipsis' });
 
 const stringToToken: {
   readonly [key: string]: () => Token;
 } = {
   '=': eq,
   '>': gt,
+  '≥': gte,
   '<': lt,
+  '≤': lte,
   '+': plus,
   '-': minus,
   '*': times,
