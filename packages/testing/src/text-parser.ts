@@ -1,3 +1,4 @@
+import { UnreachableCaseError } from '@math-blocks/core';
 import * as Parser from '@math-blocks/parser';
 import * as Semantic from '@math-blocks/semantic';
 
@@ -18,10 +19,21 @@ type Operator =
   | 'caret'
   | 'eq'
   | 'lt'
+  | 'lte'
   | 'gt'
+  | 'gte'
   | 'nul';
 
-type NAryOperator = 'add' | 'sub' | 'mul.exp' | 'mul.imp' | 'eq' | 'lt' | 'gt';
+type NAryOperator =
+  | 'add'
+  | 'sub'
+  | 'mul.exp'
+  | 'mul.imp'
+  | 'eq'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte';
 
 type Node = Parser.types.Node;
 
@@ -95,8 +107,12 @@ const getInfixParselet = (
       return { op: 'eq', parse: parseNaryInfix('eq') };
     case 'lt':
       return { op: 'lt', parse: parseNaryInfix('lt') };
+    case 'lte':
+      return { op: 'lt', parse: parseNaryInfix('lte') };
     case 'gt':
       return { op: 'gt', parse: parseNaryInfix('gt') };
+    case 'gte':
+      return { op: 'gt', parse: parseNaryInfix('gte') };
     case 'plus':
       return { op: 'add', parse: parseNaryInfix('add') };
     case 'minus':
@@ -163,8 +179,14 @@ const parseNaryInfix =
         return Parser.builders.eq([left, right, ...rest]);
       case 'lt':
         return Parser.builders.lt([left, right, ...rest]);
+      case 'lte':
+        return Parser.builders.lte([left, right, ...rest]);
       case 'gt':
         return Parser.builders.gt([left, right, ...rest]);
+      case 'gte':
+        return Parser.builders.gte([left, right, ...rest]);
+      default:
+        throw new UnreachableCaseError(op);
     }
   };
 
@@ -240,11 +262,12 @@ const getOpPrecedence = (op: Operator): number => {
     case 'nul':
       return 0;
     case 'lt':
+    case 'lte':
     case 'gt':
+    case 'gte':
     case 'eq':
       return 2;
     case 'add':
-      return 3;
     case 'sub':
       return 3;
     case 'mul.exp':

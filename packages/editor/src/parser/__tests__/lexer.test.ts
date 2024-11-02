@@ -267,5 +267,29 @@ describe('Lexer', () => {
         Lexer.lexRow(glyphTree);
       }).toThrowErrorMatchingInlineSnapshot(`"rows cannot be empty"`);
     });
+
+    it('should lex less than', () => {
+      const glyphTree = row([char('x'), char('<'), char('y')]);
+      const tokenTree = Lexer.lexRow(glyphTree);
+
+      expect(tokenTree).toMatchInlineSnapshot(`
+(row 
+  (Identifier@[]:0:1 x) 
+  LessThan@[]:1:2 
+  (Identifier@[]:2:3 y))
+`);
+    });
+
+    it('should lex less than or equal', () => {
+      const glyphTree = row([char('x'), char('≤'), char('y')]);
+      const tokenTree = Lexer.lexRow(glyphTree);
+
+      expect(tokenTree).toMatchInlineSnapshot(`
+(row 
+  (Identifier@[]:0:1 x) 
+  LessThanOrEqual@[]:1:2 
+  (Identifier@[]:2:3 y))
+`);
+    });
   });
 });

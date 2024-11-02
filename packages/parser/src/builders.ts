@@ -75,11 +75,31 @@ export const lt = (
   loc,
 });
 
+export const lte = (
+  args: TwoOrMore<types.Node>,
+  loc?: types.SourceLocation,
+): types.Lte => ({
+  type: NodeType.LessThanOrEquals,
+  id: getId(),
+  args,
+  loc,
+});
+
 export const gt = (
   args: TwoOrMore<types.Node>,
   loc?: types.SourceLocation,
 ): types.Gt => ({
   type: NodeType.GreaterThan,
+  id: getId(),
+  args,
+  loc,
+});
+
+export const gte = (
+  args: TwoOrMore<types.Node>,
+  loc?: types.SourceLocation,
+): types.Gte => ({
+  type: NodeType.GreaterThanOrEquals,
   id: getId(),
   args,
   loc,

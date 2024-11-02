@@ -58,7 +58,9 @@ type PlusMinus = SimpleToken<TokenKind.PlusMinus>;
 type Times = SimpleToken<TokenKind.Times>;
 type Equal = SimpleToken<TokenKind.Equal>;
 type LessThan = SimpleToken<TokenKind.LessThan>;
+type LessThanOrEqual = SimpleToken<TokenKind.LessThanOrEqual>;
 type GreaterThan = SimpleToken<TokenKind.GreaterThan>;
+type GreaterThanOrEqual = SimpleToken<TokenKind.GreaterThanOrEqual>;
 type LeftParens = SimpleToken<TokenKind.LeftParens>;
 type RightParens = SimpleToken<TokenKind.RightParens>;
 type Ellipsis = SimpleToken<TokenKind.Ellipsis>;
@@ -76,7 +78,9 @@ export type Token =
   | Times
   | Equal
   | LessThan
+  | LessThanOrEqual
   | GreaterThan
+  | GreaterThanOrEqual
   | LeftParens
   | RightParens
   | Ellipsis
