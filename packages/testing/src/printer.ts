@@ -139,15 +139,21 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
       return `${numerator} / ${denominator}`;
     }
     case NodeType.LessThan:
+    case NodeType.LessThanOrEquals:
     case NodeType.GreaterThan:
+    case NodeType.GreaterThanOrEquals:
     case NodeType.Equals: {
       // TODO: add a check to make sure this is true
       const args = expr.args as TwoOrMore<Semantic.types.NumericNode>;
       let operation = ' = ';
       if (expr.type === NodeType.LessThan) {
         operation = ' < ';
+      } else if (expr.type === NodeType.LessThanOrEquals) {
+        operation = ' ≤ ';
       } else if (expr.type === NodeType.GreaterThan) {
         operation = ' > ';
+      } else if (expr.type === NodeType.GreaterThanOrEquals) {
+        operation = ' ≥ ';
       }
 
       return args.map((arg) => print(arg, oneToOne)).join(operation);
