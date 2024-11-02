@@ -45,11 +45,18 @@ describe('mulBothSides', () => {
     expect(Testing.print(step.value)).toEqual('2');
   });
 
-  it('should multiple all terms', () => {
+  it('should multiple all terms (right)', () => {
     const before = parseNumRel('x / 2 = a + b');
     const step = transform(before);
 
     expect(Testing.print(step.after)).toEqual('x / 2 * 2 = (a + b) * 2');
+  });
+
+  it('should multiple all terms (left)', () => {
+    const before = parseNumRel('a + b = x / 2');
+    const step = transform(before);
+
+    expect(Testing.print(step.after)).toEqual('(a + b) * 2 = x / 2 * 2');
   });
 
   test.each`
