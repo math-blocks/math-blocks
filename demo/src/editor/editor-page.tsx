@@ -13,9 +13,9 @@ import gryePagella from '../../../assets/texgyrepagella-math.otf';
 import gryeSchola from '../../../assets/texgyreschola-math.otf';
 import gyreTermes from '../../../assets/texgyretermes-math.otf';
 
-import { HStack, VStack } from '../layout';
+import { HStack, VStack } from '../shared/layout';
 
-import FormattingPalette from './formatting-palette';
+import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
 const initialExample = 6;

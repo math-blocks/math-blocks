@@ -12,7 +12,7 @@ import {
   StepStatus,
 } from '@math-blocks/tutor';
 
-import { HStack, VStack } from '../layout';
+import { HStack, VStack } from '../shared/layout';
 
 import Step from './step';
 

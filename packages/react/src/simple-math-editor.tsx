@@ -29,6 +29,7 @@ type Props = {
 
   // Style
   readonly style?: React.CSSProperties;
+  readonly className?: string;
 
   // Renders bounding boxes around each group and glyph.
   readonly showHitboxes?: boolean;
@@ -268,7 +269,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
     setState(newState);
   }, [props.row]);
 
-  const { style, fontSize, showHitboxes } = props;
+  const { className, style, fontSize, showHitboxes } = props;
 
   const context: Typesetter.Context = {
     fontData: fontData,
@@ -287,6 +288,15 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
   };
 
   const scene = Typesetter.typeset(state.row, context, options);
+
+  const classNames: Record<string, boolean> = {
+    [styles.container]: true,
+    [styles.focus]: active,
+  };
+
+  if (className) {
+    classNames[className] = true;
+  }
 
   return (
     <div
@@ -313,7 +323,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
         console.log(state.selection);
         console.log(Editor.SelectionUtils.getPathAndRange(state.selection));
       }}
-      className={cx({ [styles.container]: true, [styles.focus]: active })}
+      className={cx(classNames)}
       style={style}
       role="textbox"
     >

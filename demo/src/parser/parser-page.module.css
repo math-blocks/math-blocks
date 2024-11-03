@@ -1,0 +1,36 @@
+body { 
+  margin: 0;
+}
+
+.tabButton {
+  background: transparent;
+  border: none;
+  color: black;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  font-family: sans-serif;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 5px;
+  margin: 2px;
+  color: #CCC;
+  border: solid 1px #CCC;
+}
+
+.tabButton:hover {
+  background-color: #333;
+}
+
+.selected {
+  background-color: #555;
+}
+
+.selected:hover {
+  background-color: #555;
+}
+
+.input {
+  margin: 4px 2px;
+}
