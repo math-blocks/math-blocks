@@ -1,6 +1,6 @@
-import * as builders from '../../char/builders';
-import { State } from '../types';
-import { moveVertically } from '../reducers/move-vertically';
+import * as builders from '../../../char/builders';
+import { State } from '../../types';
+import { moveVertically } from '../move-vertically';
 
 type Cursor = {
   readonly offset: number;
