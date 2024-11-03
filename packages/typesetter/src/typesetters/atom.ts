@@ -92,6 +92,8 @@ export const typesetAtom = (
     const offset = node.value.charCodeAt(0) - 'a'.charCodeAt(0);
     const char = context.macro
       ? node.value
+      : node.value === 'h'
+      ? '\u210E'
       : String.fromCodePoint(0x1d44e + offset);
     const glyphID = font.getGlyphID(char);
     glyph = Layout.makeGlyph(char, glyphID, context);

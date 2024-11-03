@@ -7,7 +7,7 @@ import * as Semantic from '@math-blocks/semantic';
 import * as Solver from '@math-blocks/solver';
 import * as Tutor from '@math-blocks/tutor';
 
-import { HStack, VStack } from '../layout';
+import { HStack, VStack } from '../shared/layout';
 
 import Icon from './icon';
 import { MistakeMessages } from './mistake-messages';

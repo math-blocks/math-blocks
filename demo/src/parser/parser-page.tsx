@@ -1,7 +1,12 @@
 import * as React from 'react';
 import ReactJson from 'react-json-view';
+import cx from 'classnames';
 
-import { SimpleMathEditor, FontDataContext } from '@math-blocks/react';
+import {
+  SimpleMathEditor,
+  MathKeypad,
+  FontDataContext,
+} from '@math-blocks/react';
 import { parse as parseFont, getFontData } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { builders, parse } from '@math-blocks/editor';
@@ -10,7 +15,9 @@ import type { types } from '@math-blocks/semantic';
 
 import stix2 from '../../../assets/STIX2Math.otf';
 
-import { HStack, VStack } from '../layout';
+import { HStack, VStack } from '../shared/layout';
+import FormattingPalette from '../shared/formatting-palette';
+import styles from './parser-page.module.css';
 
 const simpleRow = builders.row([
   builders.char('2'),
@@ -23,6 +30,7 @@ const simpleRow = builders.row([
 ]);
 
 const EditorPage: React.FunctionComponent = () => {
+  const [tab, setTab] = React.useState<'parse' | 'edit'>('parse');
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
   const [editTree, setEditTree] = React.useState<SimpleState['row']>(simpleRow);
   const [ast, setAst] = React.useState<types.Node>(() => parse(simpleRow));
@@ -72,51 +80,60 @@ const EditorPage: React.FunctionComponent = () => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <VStack>
-        <VStack
-          style={{
-            position: 'sticky',
-            top: 0,
-            marginTop: -8,
-            paddingTop: 8,
-            backgroundColor: 'var(--bg-color)',
-          }}
-        >
+      <HStack style={{ height: '100vh' }}>
+        <VStack>
+          <FormattingPalette />
+          <MathKeypad />
+        </VStack>
+        <VStack style={{ flex: 1 }}>
           <SimpleMathEditor
             fontSize={fontSize}
             readonly={false}
             row={simpleRow}
             onChange={handleChange}
-            style={{ marginBottom: 8 }}
+            className={styles.input}
           />
-          {error && (
-            <VStack style={{ color: 'red', fontSize: 18 }}>{error}</VStack>
-          )}
-          <HStack style={{ justifyContent: 'space-between' }}>
-            <VStack style={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}>
-              Editor Tree
-            </VStack>
-            <VStack style={{ flex: 1, fontSize: 18, fontWeight: 'bold' }}>
+          <HStack>
+            <div
+              className={cx({
+                [styles.tabButton]: true,
+                [styles.selected]: tab === 'parse',
+              })}
+              onClick={() => setTab('parse')}
+            >
               Parse Tree
-            </VStack>
+            </div>
+            <div
+              className={cx({
+                [styles.tabButton]: true,
+                [styles.selected]: tab === 'edit',
+              })}
+              onClick={() => setTab('edit')}
+            >
+              Edit Tree
+            </div>
           </HStack>
+          {tab === 'edit' ? (
+            <ReactJson
+              src={editTree}
+              theme={darkMode ? 'monokai' : 'rjv-default'}
+              style={{ overflow: 'scroll' }}
+              shouldCollapse={(field) => field.name === 'loc'}
+              enableClipboard={false}
+            />
+          ) : error ? (
+            <div style={{ color: 'red', fontSize: 18 }}>{error}</div>
+          ) : (
+            <ReactJson
+              src={ast}
+              theme={darkMode ? 'monokai' : 'rjv-default'}
+              style={{ overflow: 'scroll' }}
+              shouldCollapse={(field) => field.name === 'loc'}
+              enableClipboard={false}
+            />
+          )}
         </VStack>
-        <HStack>
-          <ReactJson
-            src={editTree}
-            theme={darkMode ? 'monokai' : 'rjv-default'}
-            style={{ flex: 1 }}
-            enableClipboard={false}
-          />
-          <ReactJson
-            src={ast}
-            theme={darkMode ? 'monokai' : 'rjv-default'}
-            style={{ flex: 1 }}
-            shouldCollapse={(field) => field.name === 'loc'}
-            enableClipboard={false}
-          />
-        </HStack>
-      </VStack>
+      </HStack>
     </FontDataContext.Provider>
   );
 };
