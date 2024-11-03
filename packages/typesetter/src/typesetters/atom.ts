@@ -90,6 +90,11 @@ export const typesetAtom = (
   // current font.
   if (/[a-z]/.test(node.value) && !context.operator) {
     const offset = node.value.charCodeAt(0) - 'a'.charCodeAt(0);
+    // 0x1D455 doesn't exist in the unicode standard, so we use 0x210E which
+    // is the Planck constant symbol.
+    // TODO: Handle other characters that are missing the from the mathematical
+    // alphanumeric symbols block.  The missing symbols can be found in the
+    // letter-like symbols block.  See https://www.unicode.org/charts/PDF/U2100.pdf.
     const char = context.macro
       ? node.value
       : node.value === 'h'
