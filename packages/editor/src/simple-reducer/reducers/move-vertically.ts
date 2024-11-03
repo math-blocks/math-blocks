@@ -125,6 +125,7 @@ const getNewSelection = (
       };
     }
     case 'limits': {
+      /* istanbul ignore next */
       throw new Error('Move Vertically - subsup - Not implemented');
     }
   }
