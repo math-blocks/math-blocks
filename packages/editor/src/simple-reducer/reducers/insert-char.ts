@@ -1,13 +1,25 @@
-import * as b from '../../char/builders';
+import * as builders from '../../char/builders';
 
 import * as PathUtils from '../path-utils';
 import * as SelectionUtils from '../selection-utils';
 
 import type { State } from '../types';
 
+// TODO: place cursor in lower limits
+const LIMIT_CHARS = [
+  '\u2211', // \sum
+  '\u220F', // \prod
+  '\u222B', // \int
+  // TODO: handle \lim (need to make sure we exclude the upper limit)
+];
+
 export const insertChar = (state: State, char: string): State => {
   const { row, selection } = state;
-  const newNode = b.char(char);
+  const newNode = LIMIT_CHARS.includes(char)
+    ? builders.limits(builders.char(char), [], [])
+    : builders.char(char);
+
+  console.log('newNode =', newNode);
 
   const { start, end, path } = SelectionUtils.getPathAndRange(selection);
 

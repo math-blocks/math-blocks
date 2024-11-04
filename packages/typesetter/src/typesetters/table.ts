@@ -15,12 +15,8 @@ const isOperator = (cell: Editor.types.CharRow | null): boolean =>
 const childContextForTable = (context: Context): Context => {
   const { mathStyle } = context;
 
-  const childMathStyle = {
-    [MathStyle.Display]: MathStyle.Text,
-    [MathStyle.Text]: MathStyle.Script,
-    [MathStyle.Script]: MathStyle.ScriptScript,
-    [MathStyle.ScriptScript]: MathStyle.ScriptScript,
-  }[mathStyle];
+  const childMathStyle =
+    mathStyle === MathStyle.Display ? MathStyle.Text : context.mathStyle;
 
   const childContext: Context = {
     ...context,

@@ -3,6 +3,7 @@ import type { Mutable } from 'utility-types';
 
 import * as Layout from '../layout';
 import { MathStyle } from '../enums';
+import { typesetSubsup } from './subsup';
 
 import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, VBox, Node } from '../types';
@@ -37,7 +38,26 @@ export const typesetLimits = (
     path: Path,
     context: Context,
   ) => Node,
-): VBox => {
+): VBox | HBox => {
+  if (context.mathStyle !== MathStyle.Display && node.type === 'limits') {
+    const subsup: Editor.types.CharSubSup = {
+      type: Editor.NodeType.SubSup,
+      children: node.children,
+      id: node.id,
+      style: node.style,
+    };
+
+    const output = [
+      typesetNode(node.inner, path, {
+        ...context,
+        operator: true,
+      }),
+      typesetSubsup(typesetChild, subsup, context, node.inner, undefined),
+    ];
+
+    return Layout.makeStaticHBox(output, context) as Mutable<HBox>;
+  }
+
   const childContext = childContextForLimits(context);
   const lowerBox = typesetChild(0, childContext) as Mutable<HBox> | null;
   const upperBox = typesetChild(1, childContext) as Mutable<HBox> | null;

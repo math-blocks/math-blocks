@@ -22,7 +22,7 @@ import { HStack, VStack } from '../shared/layout';
 import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 5;
+const initialExample = 2;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
@@ -49,6 +49,7 @@ const EditorPage: React.FunctionComponent = () => {
     React.useState<RadicalDegreeAlgorithm>(RadicalDegreeAlgorithm.OpenType);
 
   const [showHitboxes, setShowHitboxes] = React.useState<boolean>(false);
+  const [inline, setInline] = React.useState<boolean>(true);
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
@@ -158,80 +159,106 @@ const EditorPage: React.FunctionComponent = () => {
             row={math}
             radicalDegreeAlgorithm={radicalDegreeAlgorithm}
             showHitboxes={showHitboxes}
+            inline={inline}
+            style={{ marginTop: 8 }}
           />
           <br />
           <br />
           <div style={{ fontFamily: 'Bonum-Math', fontSize: fontSize }}></div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontFamily: 'sans-serif', paddingRight: 8 }}>
-              Example:{' '}
-            </span>
-            <select
-              onChange={(e) => {
-                const index = parseInt(e.target.value);
-                setMath(examples[index]);
-              }}
-              defaultValue={initialExample}
-            >
-              <option value={0}>Simple Equation</option>
-              <option value={1}>Adding Fractions</option>
-              <option value={2}>All Node Types</option>
-              <option value={3}>Tall Delimiters</option>
-              <option value={4}>Nested Fractions</option>
-              <option value={5}>Matrix</option>
-            </select>
-            <span
-              style={{
-                fontFamily: 'sans-serif',
-                paddingRight: 8,
-                marginLeft: 32,
-              }}
-            >
-              Font:{' '}
-            </span>
-            <select
-              onChange={(e) => setFontIndex(parseInt(e.target.value))}
-              defaultValue={fontIndex}
-            >
-              <option value={0}>STIX2</option>
-              <option value={1}>Latin Modern</option>
-              <option value={2}>Gyre Bonum</option>
-              <option value={3}>Gyre Pagella</option>
-              <option value={4}>Gyre Schola</option>
-              <option value={5}>Gyre Termes</option>
-            </select>
-            <span
-              style={{
-                fontFamily: 'sans-serif',
-                paddingRight: 8,
-                marginLeft: 32,
-              }}
-            >
-              Radical Degree Algorithm:{' '}
-            </span>
-            <select
-              onChange={(e) =>
-                setRadicalDegreeAlgorithm(parseInt(e.target.value))
-              }
-              defaultValue={RadicalDegreeAlgorithm.OpenType}
-            >
-              <option value={RadicalDegreeAlgorithm.OpenType}>OpenType</option>
-              <option value={RadicalDegreeAlgorithm.MathML}>MathML/Word</option>
-            </select>
-            <span
-              style={{
-                fontFamily: 'sans-serif',
-                paddingRight: 8,
-                marginLeft: 32,
-              }}
-            >
-              Show Hitboxes
-            </span>
-            <input
-              type="checkbox"
-              onChange={(e) => setShowHitboxes(e.target.checked)}
-            ></input>
-          </div>
+          <VStack style={{ gap: 4 }}>
+            <HStack>
+              <span style={{ fontFamily: 'sans-serif', paddingRight: 8 }}>
+                Example:{' '}
+              </span>
+              <select
+                onChange={(e) => {
+                  const index = parseInt(e.target.value);
+                  setMath(examples[index]);
+                }}
+                defaultValue={initialExample}
+              >
+                <option value={0}>Simple Equation</option>
+                <option value={1}>Adding Fractions</option>
+                <option value={2}>All Node Types</option>
+                <option value={3}>Tall Delimiters</option>
+                <option value={4}>Nested Fractions</option>
+                <option value={5}>Matrix</option>
+              </select>
+            </HStack>
+            <HStack>
+              <span
+                style={{
+                  fontFamily: 'sans-serif',
+                  paddingRight: 8,
+                }}
+              >
+                Font:{' '}
+              </span>
+              <select
+                onChange={(e) => setFontIndex(parseInt(e.target.value))}
+                defaultValue={fontIndex}
+              >
+                <option value={0}>STIX2</option>
+                <option value={1}>Latin Modern</option>
+                <option value={2}>Gyre Bonum</option>
+                <option value={3}>Gyre Pagella</option>
+                <option value={4}>Gyre Schola</option>
+                <option value={5}>Gyre Termes</option>
+              </select>
+            </HStack>
+            <HStack>
+              <span
+                style={{
+                  fontFamily: 'sans-serif',
+                  paddingRight: 8,
+                }}
+              >
+                Radical Degree Algorithm:{' '}
+              </span>
+              <select
+                onChange={(e) =>
+                  setRadicalDegreeAlgorithm(parseInt(e.target.value))
+                }
+                defaultValue={RadicalDegreeAlgorithm.OpenType}
+              >
+                <option value={RadicalDegreeAlgorithm.OpenType}>
+                  OpenType
+                </option>
+                <option value={RadicalDegreeAlgorithm.MathML}>
+                  MathML/Word
+                </option>
+              </select>
+            </HStack>
+            <HStack>
+              <span
+                style={{
+                  fontFamily: 'sans-serif',
+                  paddingRight: 8,
+                }}
+              >
+                Show Hitboxes
+              </span>
+              <input
+                type="checkbox"
+                onChange={(e) => setShowHitboxes(e.target.checked)}
+              ></input>
+            </HStack>
+            <HStack>
+              <span
+                style={{
+                  fontFamily: 'sans-serif',
+                  paddingRight: 8,
+                }}
+              >
+                Inline
+              </span>
+              <input
+                type="checkbox"
+                checked={inline}
+                onChange={(e) => setInline(e.target.checked)}
+              ></input>
+            </HStack>
+          </VStack>
         </VStack>
       </HStack>
     </FontDataContext.Provider>
