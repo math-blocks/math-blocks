@@ -153,7 +153,7 @@ expect.extend({
 
         // TODO: include the diff in the message
         return {
-          message: () => `SVG Snapshot failed`,
+          message: () => `SVG Snapshot failed: ${svgText} != ${contents}`,
           pass: false,
         };
       } else {
