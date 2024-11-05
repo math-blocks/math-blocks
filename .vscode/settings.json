@@ -9,6 +9,7 @@
         "**/dist": true,
         "**/out": true
     },
+    "editor.tabSize": 2,
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#b4c9e3",
         "activityBar.background": "#b4c9e3",
@@ -29,5 +30,5 @@
         "titleBar.inactiveForeground": "#15202b99"
     },
     "peacock.color": "#8faed5",
-    "editor.tabSize": 2
+    "svg.preview.background": "white"
 }

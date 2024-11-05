@@ -258,8 +258,7 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const math = row([
     limits(row([glyph('l'), glyph('i'), glyph('m')]), [
       glyph('y'),
-      glyph('—'),
-      glyph('>'),
+      glyph('\u2192'), // \rightarrow
       glyph('0'),
     ]),
     glyph('x'),
@@ -272,6 +271,30 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
         style={style}
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
+      />
+    </FontDataContext.Provider>
+  );
+};
+
+export const InlineLimit: Story<EmptyProps> = (args, { loaded: fontData }) => {
+  const fontSize = 60;
+  const math = row([
+    limits(row([glyph('l'), glyph('i'), glyph('m')]), [
+      glyph('y'),
+      glyph('\u2192'), // \rightarrow
+      glyph('0'),
+    ]),
+    glyph('x'),
+  ]);
+
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer
+        row={math}
+        style={style}
+        fontSize={fontSize}
+        renderMode={Typesetter.RenderMode.Dynamic}
+        mathStyle={Typesetter.MathStyle.Text}
       />
     </FontDataContext.Provider>
   );
@@ -291,6 +314,32 @@ export const Summation: Story<EmptyProps> = (args, { loaded: fontData }) => {
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
+    </FontDataContext.Provider>
+  );
+};
+
+export const InlineSummation: Story<EmptyProps> = (
+  args,
+  { loaded: fontData },
+) => {
+  const fontSize = 60;
+  const math = row([
+    limits(
+      glyph('\u03a3'),
+      [glyph('i'), glyph('='), glyph('0')],
+      [glyph('\u221e')],
+    ),
+    frac([glyph('1')], [glyph('2'), Editor.util.sup('i')]),
+  ]);
+
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer
+        row={math}
+        style={style}
+        fontSize={fontSize}
+        mathStyle={Typesetter.MathStyle.Text}
+      />
     </FontDataContext.Provider>
   );
 };
