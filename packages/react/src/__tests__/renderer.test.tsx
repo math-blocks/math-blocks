@@ -586,22 +586,22 @@ describe('renderer', () => {
   });
 
   describe('limits', () => {
-    test('lim - display', async () => {
+    test('lim display', async () => {
       const Limit = await storyToComponent(stories.Limit);
       expect(<Limit />).toMatchSVGSnapshot();
     });
 
-    test('lim - inline', async () => {
+    test('lim inline', async () => {
       const InlineLimit = await storyToComponent(stories.InlineLimit);
       expect(<InlineLimit />).toMatchSVGSnapshot();
     });
 
-    test('sum - display', async () => {
+    test('sum display', async () => {
       const Summation = await storyToComponent(stories.Summation);
       expect(<Summation />).toMatchSVGSnapshot();
     });
 
-    test('sum - inline', async () => {
+    test('sum inline', async () => {
       const InlineSummation = await storyToComponent(stories.InlineSummation);
       expect(<InlineSummation />).toMatchSVGSnapshot();
     });
