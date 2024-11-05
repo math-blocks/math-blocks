@@ -6,7 +6,7 @@ import format from 'xml-formatter';
 // @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 import type { Story, StoryContext } from '@storybook/react';
-import Diff from 'diff';
+import { diffChars } from 'diff';
 
 import * as Core from '@math-blocks/core';
 import * as Typesetter from '@math-blocks/typesetter';
@@ -152,7 +152,7 @@ expect.extend({
           };
         }
 
-        const diff = Diff.diffChars(contents, svgText);
+        const diff = diffChars(contents, svgText);
         console.log(diff);
 
         // TODO: include the diff in the message
