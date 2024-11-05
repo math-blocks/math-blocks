@@ -7876,6 +7876,11 @@ diff@^4.0.1:
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.1.tgz#0c667cb467ebbb5cea7f14f135cc2dba7780a8ff"
   integrity sha512-s2+XdvhPCOF01LRQBC8hf4vhbVmI2CGS5aZnxLJlT5FtdhPCDFq80q++zK2KlrVorVDdL5BOGZ/VfLrVtYNF+Q==
 
+diff@^5.1.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-5.2.0.tgz#26ded047cd1179b78b9537d5ef725503ce1ae531"
+  integrity sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==
+
 diffie-hellman@^5.0.0:
   version "5.0.3"
   resolved "https://registry.yarnpkg.com/diffie-hellman/-/diffie-hellman-5.0.3.tgz#40e8ee98f55a2149607146921c63e1ae5f3d2875"
@@ -14596,6 +14601,13 @@ pretty-quick@^4.0.0:
     picocolors "^1.0.0"
     picomatch "^3.0.1"
     tslib "^2.6.2"
+
+print-diff@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/print-diff/-/print-diff-2.0.0.tgz#b0fa1f468fdb0f0e7ab490a9768197903ca0764a"
+  integrity sha512-8dp/OpRSNveJHqOluVCcMyJWnE8LDLRrlvHFAoaxbM9GKUqOUs0aZhdzS34Em5YAiZC9lwwJJUlxScsunrktmw==
+  dependencies:
+    diff "^5.1.0"
 
 prismjs@^1.21.0, prismjs@~1.23.0:
   version "1.23.0"

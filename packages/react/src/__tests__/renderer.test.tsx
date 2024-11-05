@@ -6,6 +6,7 @@ import format from 'xml-formatter';
 // @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 import type { Story, StoryContext } from '@storybook/react';
+import { printInlineDiff } from 'print-diff';
 
 import * as Core from '@math-blocks/core';
 import * as Typesetter from '@math-blocks/typesetter';
@@ -153,7 +154,8 @@ expect.extend({
 
         // TODO: include the diff in the message
         return {
-          message: () => `SVG Snapshot failed: ${svgText} != ${contents}`,
+          message: () =>
+            `SVG Snapshot failed: ${printInlineDiff(contents, svgText)}`,
           pass: false,
         };
       } else {
