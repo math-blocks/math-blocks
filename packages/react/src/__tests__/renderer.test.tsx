@@ -153,11 +153,10 @@ expect.extend({
         }
 
         const diff = diffChars(contents, svgText);
-        console.log(diff);
 
         // TODO: include the diff in the message
         return {
-          message: () => 'SVG Snapshot failed',
+          message: () => `SVG Snapshot failed, diff - ${JSON.stringify(diff)}`,
           pass: false,
         };
       } else {
