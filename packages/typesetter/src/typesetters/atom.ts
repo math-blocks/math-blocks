@@ -83,8 +83,7 @@ export const typesetAtom = (
 ): Glyph => {
   const { font } = context.fontData;
 
-  const glyphID = font.getGlyphID(node.value);
-  let glyph = Layout.makeGlyph(node.value, glyphID, context) as Mutable<Glyph>;
+  let glyph: Mutable<Glyph>;
 
   // Convert individual glyphs to italic glyphs if they exist in the
   // current font.
@@ -102,6 +101,9 @@ export const typesetAtom = (
       : String.fromCodePoint(0x1d44e + offset);
     const glyphID = font.getGlyphID(char);
     glyph = Layout.makeGlyph(char, glyphID, context);
+  } else {
+    const glyphID = font.getGlyphID(node.value);
+    glyph = Layout.makeGlyph(node.value, glyphID, context);
   }
 
   glyph.id = node.id;

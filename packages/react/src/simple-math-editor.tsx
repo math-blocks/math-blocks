@@ -23,6 +23,7 @@ type Props = {
   readonly readonly: boolean;
   readonly fontSize?: number;
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
+  readonly inline?: boolean;
 
   readonly onSubmit?: (zipper: Editor.SimpleState) => unknown;
   readonly onChange?: (zipper: Editor.SimpleState) => unknown;
@@ -269,12 +270,14 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
     setState(newState);
   }, [props.row]);
 
-  const { className, style, fontSize, showHitboxes } = props;
+  const { className, style, fontSize, showHitboxes, inline } = props;
 
   const context: Typesetter.Context = {
     fontData: fontData,
     baseFontSize: fontSize || 64,
-    mathStyle: Typesetter.MathStyle.Display,
+    mathStyle: inline
+      ? Typesetter.MathStyle.Text
+      : Typesetter.MathStyle.Display,
     cramped: false,
     renderMode: Typesetter.RenderMode.Dynamic,
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,

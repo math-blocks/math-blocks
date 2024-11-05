@@ -76,4 +76,27 @@ describe('insertChar', () => {
     // Assert
     expect(newState.selection).toEqual(SelectionUtils.makeSelection([], 2));
   });
+
+  it.each`
+    char
+    ${'\u2211'}
+    ${'\u220F'}
+    ${'\u222B'}
+  `('should insert limits if the char is $char', ({ char }) => {
+    // Arrange
+    const state: State = {
+      row: b.row([b.char('x'), b.char('y')]),
+      selection: SelectionUtils.makeSelection([], 1),
+      selecting: false,
+    };
+    const action: Action = { type: 'InsertChar', char: char };
+
+    // Act
+    const newState = reducer(state, action);
+
+    // Assert
+    expect(newState.row).toEqualEditorNode(
+      b.row([b.char('x'), b.limits(b.char(char), [], []), b.char('y')]),
+    );
+  });
 });

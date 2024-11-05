@@ -6,6 +6,7 @@ import format from 'xml-formatter';
 // @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 import type { Story, StoryContext } from '@storybook/react';
+import { diffChars } from 'diff';
 
 import * as Core from '@math-blocks/core';
 import * as Typesetter from '@math-blocks/typesetter';
@@ -126,7 +127,7 @@ expect.extend({
     const output = ReactDOMServer.renderToStaticMarkup(element);
     const svgText = format(
       '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + output,
-    );
+    ).replace(/\r\n/g, '\n');
 
     // TODO: Determine if Jest is in `-u`?
     // can be done via the private API
@@ -151,9 +152,11 @@ expect.extend({
           };
         }
 
+        const diff = diffChars(contents, svgText);
+
         // TODO: include the diff in the message
         return {
-          message: () => `SVG Snapshot failed`,
+          message: () => `SVG Snapshot failed, diff - ${JSON.stringify(diff)}`,
           pass: false,
         };
       } else {
@@ -586,14 +589,24 @@ describe('renderer', () => {
   });
 
   describe('limits', () => {
-    test('lim', async () => {
+    test('lim (display)', async () => {
       const Limit = await storyToComponent(stories.Limit);
       expect(<Limit />).toMatchSVGSnapshot();
     });
 
-    test('sum', async () => {
+    test('lim (inline)', async () => {
+      const InlineLimit = await storyToComponent(stories.InlineLimit);
+      expect(<InlineLimit />).toMatchSVGSnapshot();
+    });
+
+    test('sum (display)', async () => {
       const Summation = await storyToComponent(stories.Summation);
       expect(<Summation />).toMatchSVGSnapshot();
+    });
+
+    test('sum (inline)', async () => {
+      const InlineSummation = await storyToComponent(stories.InlineSummation);
+      expect(<InlineSummation />).toMatchSVGSnapshot();
     });
   });
 
