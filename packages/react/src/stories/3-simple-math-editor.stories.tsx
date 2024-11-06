@@ -1,6 +1,7 @@
 import React from 'react';
 import { action } from '@storybook/addon-actions';
 import type { Story } from '@storybook/react';
+import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
@@ -18,7 +19,7 @@ const { row, char: glyph } = builders;
 const fontLoader = async (): Promise<FontData> => {
   const res = await fetch(fontPath);
   const blob = await res.blob();
-  const font = await parse(blob);
+  const font = await parse(blob as Blob);
   return getFontData(font, 'STIX2');
 };
 

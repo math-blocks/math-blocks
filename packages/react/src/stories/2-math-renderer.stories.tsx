@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { Story } from '@storybook/react';
 import type { Mutable } from 'utility-types';
+import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
@@ -23,14 +24,14 @@ const { applyColorMapToEditorNode } = Editor.transforms;
 const stixFontLoader = async (): Promise<FontData> => {
   const res = await fetch(stixPath);
   const blob = await res.blob();
-  const font = await parse(blob);
+  const font = await parse(blob as Blob);
   return getFontData(font, 'STIX2');
 };
 
 const lmFontLoader = async (): Promise<FontData> => {
   const res = await fetch(lmPath);
   const blob = await res.blob();
-  const font = await parse(blob);
+  const font = await parse(blob as Blob);
   return getFontData(font, 'LM-Math');
 };
 

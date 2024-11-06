@@ -1,6 +1,7 @@
 import * as React from 'react';
 import ReactJson from 'react-json-view';
 import cx from 'classnames';
+import type { Blob } from 'buffer';
 
 import {
   SimpleMathEditor,
@@ -44,7 +45,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(stix2);
       const blob = await res.blob();
-      const font = await parseFont(blob);
+      const font = await parseFont(blob as Blob);
       setStixFontData(getFontData(font, 'STIX2'));
     };
 
