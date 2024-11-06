@@ -1,3 +1,5 @@
+import { Blob } from 'buffer';
+
 export type HeaderTable = {
   readonly majorVersion: number; // uint16
   readonly minorVersion: number; // uint16

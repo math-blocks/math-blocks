@@ -45,7 +45,7 @@ const TestComp: React.FunctionComponent<Props> = (props: Props) => {
 };
 
 describe('MathKeypad', () => {
-  test("it should trigger a 'keydown' event", () => {
+  test("it should trigger a 'keydown' event", async () => {
     const mockKeyDown = jest.fn();
 
     render(
@@ -56,19 +56,19 @@ describe('MathKeypad', () => {
     );
 
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('\u221A'));
+    await userEvent.click(screen.getByText('\u221A'));
 
     expect(mockKeyDown).toHaveBeenCalled();
   });
 
-  test("'+ bmatrix' should trigger 'InsertMatrix' editing event", () => {
+  test("'+ bmatrix' should trigger 'InsertMatrix' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ bmatrix'));
+    await userEvent.click(screen.getByText('+ bmatrix'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({
@@ -77,14 +77,14 @@ describe('MathKeypad', () => {
     });
   });
 
-  test("'+ pmatrix' should trigger 'InsertMatrix' editing event", () => {
+  test("'+ pmatrix' should trigger 'InsertMatrix' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ pmatrix'));
+    await userEvent.click(screen.getByText('+ pmatrix'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({
@@ -95,53 +95,53 @@ describe('MathKeypad', () => {
 
   // TODO: create a separate button component so that we only have to test
   // the focus behavior once.
-  test("clicking '+ bmatrix' doesn't unfocus input", () => {
+  test("clicking '+ bmatrix' doesn't unfocus input", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ bmatrix'));
+    await userEvent.click(screen.getByText('+ bmatrix'));
 
     // Assert
     expect(screen.getByRole('textbox')).toHaveFocus();
   });
 
-  test("'+ row above' should trigger 'AddRow' editing event", () => {
+  test("'+ row above' should trigger 'AddRow' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ row above'));
+    await userEvent.click(screen.getByText('+ row above'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({ type: 'AddRow', side: 'above' });
   });
 
-  test("'+ row below' should trigger 'AddRow' editing event", () => {
+  test("'+ row below' should trigger 'AddRow' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ row below'));
+    await userEvent.click(screen.getByText('+ row below'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({ type: 'AddRow', side: 'below' });
   });
 
-  test("'+ col left' should trigger 'AddColumn' editing event", () => {
+  test("'+ col left' should trigger 'AddColumn' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ col left'));
+    await userEvent.click(screen.getByText('+ col left'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({
@@ -150,14 +150,14 @@ describe('MathKeypad', () => {
     });
   });
 
-  test("'+ col right' should trigger 'AddColumn' editing event", () => {
+  test("'+ col right' should trigger 'AddColumn' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('+ col right'));
+    await userEvent.click(screen.getByText('+ col right'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({
@@ -166,14 +166,14 @@ describe('MathKeypad', () => {
     });
   });
 
-  test("'- row' should trigger 'DeleteRow' editing event", () => {
+  test("'- row' should trigger 'DeleteRow' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('- row'));
+    await userEvent.click(screen.getByText('- row'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({
@@ -181,14 +181,14 @@ describe('MathKeypad', () => {
     });
   });
 
-  test("'- col' should trigger 'DeleteColumn' editing event", () => {
+  test("'- col' should trigger 'DeleteColumn' editing event", async () => {
     // Arrange
     const editMock = jest.fn();
     render(<TestComp editMock={editMock} />);
 
     // Act
     screen.getByRole('textbox').focus();
-    userEvent.click(screen.getByText('- col'));
+    await userEvent.click(screen.getByText('- col'));
 
     // Assert
     expect(editMock).toHaveBeenCalledWith({

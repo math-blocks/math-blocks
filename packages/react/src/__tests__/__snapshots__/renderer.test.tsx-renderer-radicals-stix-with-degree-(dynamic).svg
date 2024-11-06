@@ -4,8 +4,8 @@
         <g transform="translate(0,56.28)" id="5">
             <g transform="translate(0,0)" id="2">
                 <g transform="translate(3.7650000000000006,-24.231)" id="3"></g>
-                <g transform="translate(0,-0.9600000000000009)" id="undefined"></g>
-                <g transform="translate(47.64,0)" id="undefined">
+                <g transform="translate(0,-0.9600000000000009)"></g>
+                <g transform="translate(47.64,0)">
                     <g transform="translate(0,0)" id="4"></g>
                 </g>
             </g>
@@ -15,10 +15,10 @@
                 <g transform="translate(3.7650000000000006,-24.231)" id="3">
                     <path id="0" style="opacity:1" aria-hidden="true" d="M 86,498 C 120,551 157,579 217,579C 279,579 319,545 319,486C 319,405 248,350 180,350L 161,350 L 161,312 L 181,312 C 277,312 362,253 362,164C 362,66 301,37 238,37C 214,37 200,41 157,63C 122,81 114,86 98,86C 72,86 59,63 59,42C 59,16 81,-13 171,-13C 317,-13 444,57 444,194C 444,283 377,336 297,361L 297,364 C 360,404 405,441 405,510C 405,586 346,644 244,644C 162,644 100,598 63,511Z" transform="translate(0, 0) scale(0.033, -0.033)"></path>
                 </g>
-                <g transform="translate(0,-0.9600000000000009)" id="undefined">
-                    <path id="undefined" style="opacity:1" aria-hidden="true" d="M 667,922 L 399,-93 L 395,-93 L 197,417 L 177,417 L 18,307 L 34,279 L 138,319 L 371,-265 L 413,-265 L 713,854 L 829,854 L 829,922 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
+                <g transform="translate(0,-0.9600000000000009)">
+                    <path style="opacity:1" aria-hidden="true" d="M 667,922 L 399,-93 L 395,-93 L 197,417 L 177,417 L 18,307 L 34,279 L 138,319 L 371,-265 L 413,-265 L 713,854 L 829,854 L 829,922 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                 </g>
-                <g transform="translate(47.64,0)" id="undefined">
+                <g transform="translate(47.64,0)">
                     <line type="line" x1="0" y1="-54.24" x2="37.62" y2="-54.24" stroke-width="4.08" stroke-linecap="butt"></line>
                     <g transform="translate(0,0)" id="4">
                         <path id="1" style="opacity:1" aria-hidden="true" d="M 315,298 L 312,298 L 300,349 C 286,403 267,447 243,475L 228,475 L 89,459 L 89,429 C 89,429 104,432 120,432C 186,433 203,406 230,322L 258,231 L 186,126 C 147,70 129,69 125,69C 108,69 84,82 62,82C 38,82 23,60 23,40C 23,15 38,-9 81,-9C 141,-9 174,38 206,90L 270,194 L 274,194 L 299,93 C 313,28 335,-10 381,-10C 449,-10 491,58 520,102L 499,118 C 472,82 453,62 427,62C 396,62 376,99 348,191L 327,259 L 388,356 C 405,384 419,398 442,398C 455,398 478,388 494,388C 521,388 540,411 540,435C 540,463 528,479 490,479C 431,479 391,430 364,382Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>

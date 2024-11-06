@@ -1,3 +1,4 @@
+import { Blob } from 'buffer';
 import type { Mutable } from 'utility-types';
 
 import { STANDARD_STRINGS } from './cff-standard-strings';

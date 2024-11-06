@@ -242,11 +242,7 @@ export const traverse = (
       // Since we never pass a Location as an arg to traverse we should
       // be okey without doing additional checks.
       newValues[key] = value.map((child) => traverse(child, callbacks));
-    } else if (
-      typeof value === 'object' &&
-      value != null &&
-      value.hasOwnProperty('type')
-    ) {
+    } else if (value?.hasOwnProperty('type')) {
       newValues[key] = traverse(value as types.Node, callbacks);
     }
   }
@@ -326,11 +322,7 @@ export const traverseNumeric = (
       // Since we never pass a Location as an arg to traverse we should
       // be okey without doing additional checks.
       newValues[key] = value.map((child) => traverseNumeric(child, callbacks));
-    } else if (
-      typeof value === 'object' &&
-      value != null &&
-      value.hasOwnProperty('type')
-    ) {
+    } else if (value?.hasOwnProperty('type')) {
       newValues[key] = traverseNumeric(value as types.NumericNode, callbacks);
     }
   }

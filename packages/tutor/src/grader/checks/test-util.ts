@@ -72,6 +72,7 @@ const printStep = (step: Solver.Step) => {
 };
 
 export function toHaveMessages(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   this: any,
   received: Result,
   expected: readonly string[],

@@ -1,3 +1,5 @@
+import { Blob } from 'buffer';
+
 import { parseCFF } from './tables/cff';
 import { parseCmap } from './tables/cmap';
 import { parseMATH } from './tables/math';

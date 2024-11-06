@@ -1,3 +1,5 @@
+import { Blob } from 'buffer';
+
 import type {
   MathValueRecord,
   MathConstants,

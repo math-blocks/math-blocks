@@ -8,7 +8,6 @@ module.exports = {
     'typescript/react',
   ],
   plugins: [
-    'flowtype',
     'functional',
     'import',
     'jest',
