@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs';
-// @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 
 import type { Font, TableDirectory } from '../types';

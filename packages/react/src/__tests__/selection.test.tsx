@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-// @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 
 import * as Typesetter from '@math-blocks/typesetter';

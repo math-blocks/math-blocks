@@ -4,7 +4,7 @@
         <g transform="translate(0,64.86)" id="8">
             <g transform="translate(0,-15.48)" id="5">
                 <g transform="translate(0,-11.04)" id="6"></g>
-                <g transform="translate(0,8.881784197001252e-16)" id="undefined"></g>
+                <g transform="translate(0,8.881784197001252e-16)"></g>
                 <g transform="translate(0,67.35000000000001)" id="7">
                     <g transform="translate(33.78,0)" id="3">
                         <g transform="translate(0,-28.380000000000003)" id="4"></g>
@@ -17,7 +17,7 @@
                 <g transform="translate(0,-11.04)" id="6">
                     <path id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(9.833999999999998, 0) scale(0.06, -0.06)"></path>
                 </g>
-                <g transform="translate(0,8.881784197001252e-16)" id="undefined">
+                <g transform="translate(0,8.881784197001252e-16)">
                     <line type="line" x1="0" y1="0" x2="49.367999999999995" y2="0" stroke-width="4.08" stroke-linecap="butt"></line>
                 </g>
                 <g transform="translate(0,67.35000000000001)" fill="orange" stroke="orange" id="7">

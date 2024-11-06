@@ -3,7 +3,6 @@ import path from 'path';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import format from 'xml-formatter';
-// @ts-expect-error: Blob is only available in node 15.7.0 onward
 import { Blob } from 'buffer';
 import type { Story, StoryContext } from '@storybook/react';
 import { diffChars } from 'diff';

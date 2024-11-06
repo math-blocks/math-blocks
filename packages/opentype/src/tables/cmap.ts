@@ -1,3 +1,5 @@
+import { Blob } from 'buffer';
+
 type EncodingRecord = {
   readonly platformID: number; // uint16
   readonly encodingID: number; // uint16

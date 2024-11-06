@@ -3,7 +3,7 @@
     <g fill="currentColor" stroke="currentColor" transform="translate(0,0)">
         <g transform="translate(0,75.48)" id="30">
             <g transform="translate(0,0)" id="9">
-                <g transform="translate(0,-29.28)" id="undefined">
+                <g transform="translate(0,-29.28)">
                     <g transform="translate(0,0)" id="10"></g>
                     <g transform="translate(0,0)" id="11"></g>
                     <g transform="translate(63.239999999999995,0)" id="12"></g>
@@ -19,7 +19,7 @@
                     <g transform="translate(255.33999999999997,0)" id="18"></g>
                     <g transform="translate(314.73999999999995,0)" id="19"></g>
                 </g>
-                <g transform="translate(0,30.720000000000002)" id="undefined">
+                <g transform="translate(0,30.720000000000002)">
                     <g transform="translate(0,0)" id="31"></g>
                     <g transform="translate(0,0)" id="21"></g>
                     <g transform="translate(63.239999999999995,0)" id="22">
@@ -37,7 +37,7 @@
         </g>
         <g transform="translate(0,75.48)" id="30">
             <g transform="translate(0,0)" id="9">
-                <g transform="translate(0,-29.28)" id="undefined">
+                <g transform="translate(0,-29.28)">
                     <g transform="translate(0,0)" id="10"></g>
                     <g transform="translate(0,0)" id="11">
                         <path id="2" style="opacity:1" aria-hidden="true" d="M 464,160 L 435,160 C 412,100 399,79 346,79L 207,79 L 137,76 L 137,81 L 269,206 C 375,313 432,382 432,471C 432,576 353,644 240,644C 143,644 75,588 44,491L 68,481 C 105,556 149,579 214,579C 291,579 339,531 339,456C 339,351 289,288 190,186L 38,34 L 38,0 L 432,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
@@ -46,7 +46,7 @@
                     <g transform="translate(63.239999999999995,0)" id="12"></g>
                     <g transform="translate(79.24,0)" id="13">
                         <g transform="translate(0,0)" id="4">
-                            <path id="undefined" style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
+                            <path style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
                         </g>
                     </g>
                     <g transform="translate(152.44,0)" id="14">
@@ -55,7 +55,7 @@
                     <g transform="translate(182.14,0)" id="15"></g>
                     <g transform="translate(182.14,0)" id="16">
                         <g transform="translate(0,0)" id="6">
-                            <path id="undefined" style="opacity:1" aria-hidden="true" d="M 658,327 L 658,395 L 62,395 L 62,327 ZM 658,123 L 658,190 L 62,190 L 62,123 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
+                            <path style="opacity:1" aria-hidden="true" d="M 658,327 L 658,395 L 62,395 L 62,327 ZM 658,123 L 658,190 L 62,190 L 62,123 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
                         </g>
                     </g>
                     <g transform="translate(255.33999999999997,0)" id="17"></g>
@@ -65,7 +65,7 @@
                     </g>
                     <g transform="translate(314.73999999999995,0)" id="19"></g>
                 </g>
-                <g transform="translate(0,30.720000000000002)" id="undefined">
+                <g transform="translate(0,30.720000000000002)">
                     <g transform="translate(0,0)" id="31"></g>
                     <g transform="translate(0,0)" id="21"></g>
                     <g transform="translate(63.239999999999995,0)" id="22"></g>

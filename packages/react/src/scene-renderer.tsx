@@ -57,7 +57,7 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   glyph,
   style,
 }) => {
-  const id = typeof glyph.id !== undefined ? String(glyph.id) : undefined;
+  const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
 
   const { font } = glyph.fontData;
   const scale = glyph.size / font.head.unitsPerEm;
@@ -83,7 +83,7 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
   style,
   id,
 }) => {
-  const _id = typeof id !== undefined ? String(id) : undefined;
+  const _id = typeof id !== 'undefined' ? String(id) : undefined;
 
   return (
     <g

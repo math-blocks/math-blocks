@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 203 76" width="203" height="76" style="background:white;vertical-align:-30px">
     <g fill="currentColor" stroke="currentColor" transform="translate(0,0.2740000000000009)">
         <g transform="translate(0,46.2)" id="10">
-            <g transform="translate(0,0)" id="undefined">
+            <g transform="translate(0,0)">
                 <g transform="translate(0,0)" id="3"></g>
                 <g transform="translate(85.19999999999999,0)" id="7">
                     <g transform="translate(0,19.866)" id="8"></g>
@@ -10,7 +10,7 @@
             </g>
         </g>
         <g transform="translate(0,46.2)" id="10">
-            <g transform="translate(0,0)" id="undefined">
+            <g transform="translate(0,0)">
                 <g transform="translate(0,0)" id="3">
                     <path id="0" style="opacity:1" aria-hidden="true" d="M 260,29 C 188,29 183,43 183,101L 183,706 L 158,706 L 26,671 L 26,644 C 26,644 41,646 58,646C 83,646 100,644 100,603L 100,101 C 100,45 96,29 30,29L 30,0 L 260,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                     <path id="1" style="opacity:1" aria-hidden="true" d="M 145,673 C 110,673 88,647 88,617C 88,586 111,560 145,560C 180,560 202,586 202,617C 202,647 180,673 145,673ZM 257,28 C 190,28 185,43 185,101L 185,482 L 159,482 L 33,454 L 33,425 C 33,425 44,427 58,427C 87,427 102,423 102,380L 102,101 C 102,44 99,28 32,28L 32,0 L 257,0 Z" transform="translate(16.98, 0) scale(0.06, -0.06)"></path>

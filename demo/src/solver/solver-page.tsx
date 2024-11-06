@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
@@ -104,7 +105,7 @@ const SolverPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(stix2);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       console.log(font);
       setFont(font);
     };

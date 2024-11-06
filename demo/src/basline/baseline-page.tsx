@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { Blob } from 'buffer';
 
 import { builders as b } from '@math-blocks/editor';
 import { MathRenderer, FontDataContext } from '@math-blocks/react';
@@ -32,7 +33,7 @@ const BaselinePage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(stix2);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setStixFontData(getFontData(font, 'STIX2'));
     };
 

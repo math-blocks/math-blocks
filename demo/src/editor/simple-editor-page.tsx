@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { Blob } from 'buffer';
 
 import {
   SimpleMathEditor,
@@ -55,7 +56,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(stix2);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setStixFontData(getFontData(font, 'STIX2'));
     };
 
@@ -66,7 +67,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(latinModern);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setLmFontData(getFontData(font, 'LM-Math'));
     };
 
@@ -77,7 +78,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(gyreBonum);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setBonumFontData(getFontData(font, 'Bonum-Math'));
     };
 
@@ -88,7 +89,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(gryePagella);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setPagellaFontData(getFontData(font, 'Pagella-Math'));
     };
 
@@ -99,7 +100,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(gryeSchola);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setScholaFontData(getFontData(font, 'Schola-Math'));
     };
 
@@ -110,7 +111,7 @@ const EditorPage: React.FunctionComponent = () => {
     const loadFont = async (): Promise<void> => {
       const res = await fetch(gyreTermes);
       const blob = await res.blob();
-      const font = await parse(blob);
+      const font = await parse(blob as Blob);
       setTermesFontData(getFontData(font, 'Termes-Math'));
     };
 
