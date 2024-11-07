@@ -64,6 +64,7 @@ export const typesetLimits = (
     throw new Error('Lower limit should always be defined');
   }
 
+  // TODO: Use subsup for integrals directly.
   let inner: Mutable<Node>;
   if (
     node.type === 'limits' &&

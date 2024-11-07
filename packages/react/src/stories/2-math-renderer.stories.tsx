@@ -345,6 +345,54 @@ export const InlineSummation: Story<EmptyProps> = (
   );
 };
 
+export const Integral: Story<EmptyProps> = (args, { loaded: fontData }) => {
+  const fontSize = 60;
+  const math = row([
+    limits(
+      glyph('\u222B'), // \sum
+      [glyph('0')],
+      [glyph('1')], // \infty
+    ),
+    frac([glyph('1')], [glyph('x')]),
+    glyph('d'),
+    glyph('x'),
+  ]);
+
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer row={math} style={style} fontSize={fontSize} />
+    </FontDataContext.Provider>
+  );
+};
+
+export const InlineIntegral: Story<EmptyProps> = (
+  args,
+  { loaded: fontData },
+) => {
+  const fontSize = 60;
+  const math = row([
+    limits(
+      glyph('\u222B'), // \sum
+      [glyph('0')],
+      [glyph('1')], // \infty
+    ),
+    frac([glyph('1')], [glyph('x')]),
+    glyph('d'),
+    glyph('x'),
+  ]);
+
+  return (
+    <FontDataContext.Provider value={fontData}>
+      <MathRenderer
+        row={math}
+        style={style}
+        fontSize={fontSize}
+        mathStyle={Typesetter.MathStyle.Text}
+      />
+    </FontDataContext.Provider>
+  );
+};
+
 export const ColorizedFraction: Story<EmptyProps> = (
   args,
   { loaded: fontData },
