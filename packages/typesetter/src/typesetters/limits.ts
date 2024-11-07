@@ -47,13 +47,11 @@ export const typesetLimits = (
       style: node.style,
     };
 
-    const output = [
-      typesetNode(node.inner, path, {
-        ...context,
-        operator: true,
-      }),
-      typesetSubsup(typesetChild, subsup, context, node.inner, undefined),
-    ];
+    const inner = typesetNode(node.inner, path, {
+      ...context,
+      operator: true,
+    });
+    const output = [inner, typesetSubsup(typesetChild, subsup, context, inner)];
 
     return Layout.makeStaticHBox(output, context) as Mutable<HBox>;
   }
@@ -66,11 +64,41 @@ export const typesetLimits = (
     throw new Error('Lower limit should always be defined');
   }
 
-  // TODO: figure out what the path should be for `inner`
-  const inner = typesetNode(node.inner, path, {
-    ...context,
-    operator: true,
-  }) as Mutable<Node>;
+  let inner: Mutable<Node>;
+  if (
+    node.type === 'limits' &&
+    node.inner.type === 'char' &&
+    node.inner.value === '\u222B'
+  ) {
+    const { font } = context.fontData;
+
+    const char = node.inner.value;
+    let glyphID = font.getGlyphID(char);
+    const construction = font.math.variants.getVertGlyphConstruction(glyphID);
+    if (construction) {
+      glyphID = construction.mathGlyphVariantRecords[1].variantGlyph;
+    }
+
+    inner = Layout.makeGlyph(char, glyphID, context, true);
+
+    const subsup: Editor.types.CharSubSup = {
+      type: Editor.NodeType.SubSup,
+      children: node.children,
+      id: node.id,
+      style: node.style,
+    };
+
+    const output = [inner, typesetSubsup(typesetChild, subsup, context, inner)];
+
+    return Layout.makeStaticHBox(output, context) as Mutable<HBox>;
+  } else {
+    // TODO: figure out what the path should be for `inner`
+    inner = typesetNode(node.inner, path, {
+      ...context,
+      operator: true,
+    });
+  }
+
   inner.id = node.inner.id;
   inner.style = {
     ...inner.style,

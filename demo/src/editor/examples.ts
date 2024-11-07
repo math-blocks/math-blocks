@@ -166,6 +166,17 @@ const subsups = builders.row([
   ),
 ]);
 
+const integral = builders.row([
+  builders.limits(
+    builders.char('\u222B'), // \sum
+    [builders.char('0')],
+    [builders.char('1')], // \infty
+  ),
+  builders.frac([builders.char('1')], [builders.char('x')]),
+  builders.char('d'),
+  builders.char('x'),
+]);
+
 export const examples = [
   simpleRow,
   addingFractions,
@@ -174,4 +185,5 @@ export const examples = [
   nestedFractions,
   matrix,
   subsups,
+  integral,
 ];

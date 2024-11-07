@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 139 81" width="139" height="81" style="background:white;vertical-align:-33px">
-    <g fill="currentColor" stroke="currentColor" transform="translate(0,0.1110000000000042)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 139 79" width="139" height="79" style="background:white;vertical-align:-30px">
+    <g fill="currentColor" stroke="currentColor" transform="translate(0,0.5889999999999986)">
         <g transform="translate(0,48.438)" id="16">
             <g transform="translate(0,0)">
                 <g transform="translate(36.24,0)" id="5">
-                    <g transform="translate(0,-28.38)" id="7"></g>
-                    <g transform="translate(0,19.866)" id="6"></g>
+                    <g transform="translate(0,-25.62)" id="7"></g>
+                    <g transform="translate(0,12.6)" id="6"></g>
                 </g>
             </g>
             <g transform="translate(98.77799999999999,-15.48)" id="13">
                 <g transform="translate(0,-6.119999999999997)" id="14"></g>
                 <g transform="translate(0,2.6645352591003757e-15)"></g>
-                <g transform="translate(0,47.931000000000004)" id="15">
+                <g transform="translate(0,45.453)" id="15">
                     <g transform="translate(24.953999999999997,0)" id="11">
-                        <g transform="translate(0,-19.866)" id="12"></g>
+                        <g transform="translate(0,-17.387999999999998)" id="12"></g>
                     </g>
                 </g>
             </g>
@@ -22,10 +22,10 @@
             <g transform="translate(0,0)">
                 <path id="0" style="opacity:1" aria-hidden="true" d="M 576,204 L 543,204 C 523,126 498,80 422,80L 138,80 L 138,85 L 362,357 L 362,375 L 173,605 L 173,612 L 365,612 C 460,612 495,598 511,488L 544,488 L 538,657 L 31,657 L 31,633 L 283,335 L 30,31 L 30,0 L 543,0 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                 <g transform="translate(36.24,0)" id="5">
-                    <g transform="translate(0,-28.38)" id="7">
+                    <g transform="translate(0,-25.62)" id="7">
                         <path id="4" style="opacity:1" aria-hidden="true" d="M 878,227 C 878,364 784,440 692,440C 588,440 541,375 494,290C 397,421 346,440 271,440C 212,440 75,393 75,205C 75,63 168,0 256,0C 354,0 424,55 470,148C 533,54 592,0 675,0C 805,0 878,128 878,227ZM 515,251 C 544,294 583,354 674,354C 765,354 817,275 817,182C 817,116 772,60 714,60C 645,60 588,126 515,248ZM 447,185 C 419,148 370,86 279,86C 189,86 137,171 137,258C 137,323 182,380 239,380C 309,380 373,310 447,188Z" transform="translate(0, 0) scale(0.042, -0.042)"></path>
                     </g>
-                    <g transform="translate(0,19.866)" id="6">
+                    <g transform="translate(0,12.6)" id="6">
                         <path id="1" style="opacity:1" aria-hidden="true" d="M 243,610 C 243,643 224,665 191,665C 158,665 136,644 136,610C 136,575 158,556 188,556C 218,556 243,576 243,610ZM 219,476 L 197,476 L 57,465 L 57,438 C 57,438 74,440 91,440C 118,440 123,424 123,411C 123,394 120,380 120,380L 69,142 C 56,83 52,61 52,44C 52,9 75,-9 115,-9C 181,-9 220,47 255,96L 235,111 C 219,93 191,59 157,59C 145,59 139,65 139,78C 139,92 144,120 144,120Z" transform="translate(0, 0) scale(0.042, -0.042)"></path>
                         <path id="2" style="opacity:1" aria-hidden="true" d="M 658,327 L 658,395 L 62,395 L 62,327 ZM 658,123 L 658,190 L 62,190 L 62,123 Z" transform="translate(11.508, 0) scale(0.042, -0.042)"></path>
                         <path id="3" style="opacity:1" aria-hidden="true" d="M 468,317 C 468,523 378,642 249,642C 104,642 27,510 27,320C 27,143 86,-11 247,-11C 404,-11 468,146 468,317ZM 371,311 C 371,119 326,25 247,25C 167,25 123,121 123,315C 123,513 167,608 246,608C 328,608 371,514 371,311Z" transform="translate(41.748, 0) scale(0.042, -0.042)"></path>
@@ -39,10 +39,10 @@
                 <g transform="translate(0,2.6645352591003757e-15)">
                     <line type="line" x1="0" y1="0" x2="38.16" y2="0" stroke-width="4.08" stroke-linecap="butt"></line>
                 </g>
-                <g transform="translate(0,47.931000000000004)" id="15">
+                <g transform="translate(0,45.453)" id="15">
                     <path id="9" style="opacity:1" aria-hidden="true" d="M 464,160 L 435,160 C 412,100 399,79 346,79L 207,79 L 137,76 L 137,81 L 269,206 C 375,313 432,382 432,471C 432,576 353,644 240,644C 143,644 75,588 44,491L 68,481 C 105,556 149,579 214,579C 291,579 339,531 339,456C 339,351 289,288 190,186L 38,34 L 38,0 L 432,0 Z" transform="translate(4.163999999999998, 0) scale(0.042, -0.042)"></path>
                     <g transform="translate(24.953999999999997,0)" id="11">
-                        <g transform="translate(0,-19.866)" id="12">
+                        <g transform="translate(0,-17.387999999999998)" id="12">
                             <path id="10" style="opacity:1" aria-hidden="true" d="M 243,610 C 243,643 224,665 191,665C 158,665 136,644 136,610C 136,575 158,556 188,556C 218,556 243,576 243,610ZM 219,476 L 197,476 L 57,465 L 57,438 C 57,438 74,440 91,440C 118,440 123,424 123,411C 123,394 120,380 120,380L 69,142 C 56,83 52,61 52,44C 52,9 75,-9 115,-9C 181,-9 220,47 255,96L 235,111 C 219,93 191,59 157,59C 145,59 139,65 139,78C 139,92 144,120 144,120Z" transform="translate(0, 0) scale(0.033, -0.033)"></path>
                         </g>
                     </g>
