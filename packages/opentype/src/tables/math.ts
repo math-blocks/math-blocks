@@ -197,6 +197,9 @@ const parseGlyphConstruction = (
 
 type MathGlyphInfo = {
   readonly isExtendedShape: (glyphID: number) => boolean;
+  readonly getItalicCorrection: (
+    glyphID: number,
+  ) => MathValueRecord | undefined;
 };
 
 const parseMathGlyphInfo = async (
@@ -208,18 +211,42 @@ const parseMathGlyphInfo = async (
   const buffer = await mathGlyphInfoBlob.arrayBuffer();
   const view = new DataView(buffer);
 
-  // const mathItalicsCorrectionInfoOffset = view.getUint16(0);
+  const mathItalicsCorrectionInfoOffset = view.getUint16(0);
   // const mathTopAccentAttachmentOffset = view.getUint16(2);
   const extendedShapeCoverageOffset = view.getUint16(4);
   // const mathKernInfoOffset = view.getUint16(6);
 
+  const italicsCorrectionCoverageOffset = view.getUint16(
+    mathItalicsCorrectionInfoOffset,
+  );
   const extendedShapeCoverage = await parseCovergeTable(
     mathGlyphInfoBlob,
     extendedShapeCoverageOffset,
   );
 
+  const italicsCorrectionCoverage = await parseCovergeTable(
+    mathGlyphInfoBlob,
+    mathItalicsCorrectionInfoOffset + italicsCorrectionCoverageOffset,
+  );
+
+  const getMathValueRecord = (offset: number): MathValueRecord => {
+    return {
+      value: view.getInt16(offset + 0), // FWORD
+      deviceOffset: view.getUint16(offset + 2), // Offset16
+    };
+  };
+
   return {
     isExtendedShape: (glyphID) => extendedShapeCoverage.indexOf(glyphID) !== -1,
+    getItalicCorrection: (glyphID) => {
+      const index = italicsCorrectionCoverage.indexOf(glyphID);
+      if (index === -1) {
+        return undefined;
+      }
+
+      const offset = mathItalicsCorrectionInfoOffset + 4 + index * 4;
+      return getMathValueRecord(offset);
+    },
   };
 };
 

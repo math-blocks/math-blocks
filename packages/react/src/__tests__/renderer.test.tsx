@@ -607,6 +607,16 @@ describe('renderer', () => {
       const InlineSummation = await storyToComponent(stories.InlineSummation);
       expect(<InlineSummation />).toMatchSVGSnapshot();
     });
+
+    test('integral (display)', async () => {
+      const Integral = await storyToComponent(stories.Integral);
+      expect(<Integral />).toMatchSVGSnapshot();
+    });
+
+    test('integral (inline)', async () => {
+      const InlineIntegral = await storyToComponent(stories.InlineIntegral);
+      expect(<InlineIntegral />).toMatchSVGSnapshot();
+    });
   });
 
   describe('tall delimiters', () => {

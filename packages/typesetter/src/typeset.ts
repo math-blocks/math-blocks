@@ -177,13 +177,7 @@ const typesetFocus = (
       return typesetFrac(typesetChild, focus, context);
     }
     case 'zsubsup': {
-      return typesetSubsup(
-        typesetChild,
-        focus,
-        context,
-        prevEditNode,
-        prevLayoutNode,
-      );
+      return typesetSubsup(typesetChild, focus, context, prevLayoutNode);
     }
     case 'zroot': {
       return typesetRoot(typesetChild, focus, context);
@@ -224,7 +218,6 @@ const typesetNode = (
         getTypesetChildFromNodes(node.children, path),
         node,
         context,
-        prevEditNode,
         prevLayoutNode,
       );
     }

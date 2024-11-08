@@ -29,11 +29,10 @@ export const typesetSubsup = (
   typesetChild: (index: number, context: Context) => HBox | null,
   node: Editor.types.CharSubSup | Editor.ZSubSup,
   context: Context,
-  prevEditNode?: Editor.types.CharNode | Editor.Focus,
   prevLayoutNode?: Node,
 ): VBox => {
   const childContext = childContextForSubsup(context);
-  const subBox = typesetChild(0, childContext);
+  const subBox: Mutable<HBox> | null = typesetChild(0, childContext);
   const supBox = typesetChild(1, childContext);
 
   if (!supBox && !subBox) {
@@ -47,36 +46,106 @@ export const typesetSubsup = (
     subBox ? Layout.getWidth(subBox) : 0,
   );
 
-  // Some atoms gets wrapped in a box to add padding to them so we need to
-  // filter them out.  Anything else that's in a box is some sort of compound
-  // layout structure (frac, delimited, etc.) and should have its subscript
-  // and/or superscript positioned based on the size of the box.
-  if (prevEditNode?.type !== 'char' && prevLayoutNode) {
-    const superscriptBaselineDropMax = Layout.getConstantValue(
-      font.math.constants.superscriptBaselineDropMax,
-      context,
-    );
-    const subscriptBaselineDropMin = Layout.getConstantValue(
-      font.math.constants.subscriptBaselineDropMin,
-      context,
-    );
+  if (prevLayoutNode) {
+    let italicsCorrection = 0;
+    if (prevLayoutNode.type === 'Glyph') {
+      const correction = font.math.glyphInfo.getItalicCorrection(
+        prevLayoutNode.glyphID,
+      );
+
+      if (correction) {
+        const fontSize = Layout.fontSizeForContext(context);
+        italicsCorrection =
+          (correction.value * fontSize) / font.head.unitsPerEm;
+      }
+    }
 
     const upList = [];
     const dnList = [];
 
-    if (supBox) {
-      const shift = Layout.getHeight(prevLayoutNode);
-      const kernShift = shift - superscriptBaselineDropMax;
+    let supShift = 0;
+    let subShift = 0;
 
-      upList.push(Layout.makeKern(kernShift));
+    if (supBox) {
+      const superscriptBaselineDropMax = Layout.getConstantValue(
+        font.math.constants.superscriptBaselineDropMax,
+        context,
+      );
+      const superscriptShiftUp = Layout.getConstantValue(
+        font.math.constants.superscriptShiftUp,
+        context,
+      );
+
+      supShift =
+        Math.max(
+          superscriptShiftUp,
+          Layout.getHeight(prevLayoutNode) - superscriptBaselineDropMax,
+        ) - Layout.getDepth(supBox);
+    }
+
+    if (subBox) {
+      const subscriptBaselineDropMin = Layout.getConstantValue(
+        font.math.constants.subscriptBaselineDropMin,
+        context,
+      );
+      const subscriptShiftDown = Layout.getConstantValue(
+        font.math.constants.subscriptShiftDown,
+        context,
+      );
+
+      // We take the max here so that we can satisfy subscriptBaselineDropMin.
+      subShift =
+        Math.max(
+          subscriptShiftDown,
+          Layout.getDepth(prevLayoutNode) + subscriptBaselineDropMin,
+        ) - Layout.getHeight(subBox);
+    }
+
+    if (supBox && subBox) {
+      const SubSuperscriptGapMin = Layout.getConstantValue(
+        font.math.constants.subSuperscriptGapMin,
+        context,
+      );
+
+      // The value of subShift is usually negative because the dnList is rendered
+      // with the top of the subscript starting at the parent's baseline.
+      // TODO: make the gap min less when rendering in dynamic mode.
+      const gap = supShift + subShift;
+      if (gap < SubSuperscriptGapMin) {
+        subShift += SubSuperscriptGapMin - gap;
+      }
+
+      const SuperscriptBottomMaxWithSubscript = Layout.getConstantValue(
+        font.math.constants.superscriptBottomMaxWithSubscript,
+        context,
+      );
+      if (supShift < SuperscriptBottomMaxWithSubscript) {
+        const adjustment = SuperscriptBottomMaxWithSubscript - supShift;
+        supShift += adjustment;
+        subShift -= adjustment;
+      }
+    } else if (supBox) {
+      // TODO: handle the case where there's only a superscript and it's lower
+      // than the SuperscriptBottomMin.
+    } else if (subBox) {
+      // TODO: handle the case where there's only a subscript and it's higher
+      // than the SubscriptTopMax.
+    }
+
+    if (supBox) {
+      // Positive measurements are from the baseline going up.
+      // We subtract the depth of the superscript since the upList renders things
+      // starting from their bottom.
+      upList.push(Layout.makeKern(supShift));
       upList.push(supBox);
     }
 
     if (subBox) {
-      const shift = Layout.getDepth(prevLayoutNode);
-      const kernSize = shift - subscriptBaselineDropMin;
-
-      dnList.push(Layout.makeKern(kernSize));
+      // Positive measurements are from the baseline going down.
+      // We subtract the height of the subscript since the dnList renders things
+      // starting from their top.
+      dnList.push(Layout.makeKern(subShift));
+      subBox.shift = -italicsCorrection;
       dnList.push(subBox);
     }
 
@@ -95,7 +164,11 @@ export const typesetSubsup = (
     return subsupBox;
   }
 
+  // The rest of this function deals with the case when there's no prevLayoutNode.
+  // TODO: Figure out how to deduplciate this code with the code above.
+
   const upList = [];
+  const dnList = [];
 
   const fontSize = Layout.fontSizeForContext(context);
   const childFontSize = Layout.fontSizeForContext(childContext);
@@ -123,8 +196,6 @@ export const typesetSubsup = (
     upList.push(Layout.makeKern(kernSize) as Mutable<Kern>);
     upList.push(supBox as Mutable<HBox>);
   }
-
-  const dnList = [];
 
   if (subBox) {
     const xMetrics = font.getGlyphMetrics(font.getGlyphID('x'));

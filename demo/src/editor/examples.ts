@@ -164,6 +164,22 @@ const subsups = builders.row([
     [builders.char('n'), builders.char('t')],
     [builders.char('2'), builders.char('j')],
   ),
+  builders.char('x'),
+  builders.subsup(
+    [builders.char('n'), builders.subsup(undefined, [builders.char('t')])],
+    [builders.char('2'), builders.subsup([builders.char('j')], undefined)],
+  ),
+]);
+
+const integral = builders.row([
+  builders.limits(
+    builders.char('\u222B'), // \sum
+    [builders.char('0')],
+    [builders.char('1')], // \infty
+  ),
+  builders.frac([builders.char('1')], [builders.char('x')]),
+  builders.char('d'),
+  builders.char('x'),
 ]);
 
 export const examples = [
@@ -174,4 +190,5 @@ export const examples = [
   nestedFractions,
   matrix,
   subsups,
+  integral,
 ];

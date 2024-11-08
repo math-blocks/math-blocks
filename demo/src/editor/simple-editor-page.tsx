@@ -23,7 +23,7 @@ import { HStack, VStack } from '../shared/layout';
 import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 2;
+const initialExample = 7;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
@@ -50,7 +50,7 @@ const EditorPage: React.FunctionComponent = () => {
     React.useState<RadicalDegreeAlgorithm>(RadicalDegreeAlgorithm.OpenType);
 
   const [showHitboxes, setShowHitboxes] = React.useState<boolean>(false);
-  const [inline, setInline] = React.useState<boolean>(true);
+  const [inline, setInline] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const loadFont = async (): Promise<void> => {
@@ -184,6 +184,8 @@ const EditorPage: React.FunctionComponent = () => {
                 <option value={3}>Tall Delimiters</option>
                 <option value={4}>Nested Fractions</option>
                 <option value={5}>Matrix</option>
+                <option value={6}>Superscripts & Subscripts</option>
+                <option value={7}>Integral</option>
               </select>
             </HStack>
             <HStack>

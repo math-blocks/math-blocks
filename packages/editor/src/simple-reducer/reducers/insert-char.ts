@@ -19,8 +19,6 @@ export const insertChar = (state: State, char: string): State => {
     ? builders.limits(builders.char(char), [], [])
     : builders.char(char);
 
-  console.log('newNode =', newNode);
-
   const { start, end, path } = SelectionUtils.getPathAndRange(selection);
 
   const newRow = PathUtils.updateRowAtPath(row, path, (node) => {
