@@ -63,6 +63,9 @@ export const typesetSubsup = (
     const upList = [];
     const dnList = [];
 
+    let supShift = 0;
+    let subShift = 0;
+
     if (supBox) {
       const superscriptBaselineDropMax = Layout.getConstantValue(
         font.math.constants.superscriptBaselineDropMax,
@@ -73,16 +76,11 @@ export const typesetSubsup = (
         context,
       );
 
-      const kernShift = Math.max(
-        superscriptShiftUp,
-        Layout.getHeight(prevLayoutNode) - superscriptBaselineDropMax,
-      );
-
-      // Positive measurements are from the baseline going up.
-      // We subtract the depth of the superscript since the upList renders things
-      // starting from their bottom.
-      upList.push(Layout.makeKern(kernShift - Layout.getDepth(supBox)));
-      upList.push(supBox);
+      supShift =
+        Math.max(
+          superscriptShiftUp,
+          Layout.getHeight(prevLayoutNode) - superscriptBaselineDropMax,
+        ) - Layout.getDepth(supBox);
     }
 
     if (subBox) {
@@ -96,15 +94,57 @@ export const typesetSubsup = (
       );
 
       // We take the max here so that we can satisfy subscriptBaselineDropMin.
-      const kernSize = Math.max(
-        subscriptShiftDown,
-        Layout.getDepth(prevLayoutNode) + subscriptBaselineDropMin,
+      subShift =
+        Math.max(
+          subscriptShiftDown,
+          Layout.getDepth(prevLayoutNode) + subscriptBaselineDropMin,
+        ) - Layout.getHeight(subBox);
+    }
+
+    if (supBox && subBox) {
+      const SubSuperscriptGapMin = Layout.getConstantValue(
+        font.math.constants.subSuperscriptGapMin,
+        context,
       );
 
+      // The value of subShift is usually negative because the dnList is rendered
+      // with the top of the subscript starting at the parent's baseline.
+      // TODO: make the gap min less when rendering in dynamic mode.
+      const gap = supShift + subShift;
+      if (gap < SubSuperscriptGapMin) {
+        subShift += SubSuperscriptGapMin - gap;
+      }
+
+      const SuperscriptBottomMaxWithSubscript = Layout.getConstantValue(
+        font.math.constants.superscriptBottomMaxWithSubscript,
+        context,
+      );
+      if (supShift < SuperscriptBottomMaxWithSubscript) {
+        const adjustment = SuperscriptBottomMaxWithSubscript - supShift;
+        supShift += adjustment;
+        subShift -= adjustment;
+      }
+    } else if (supBox) {
+      // TODO: handle the case where there's only a superscript and it's lower
+      // than the SuperscriptBottomMin.
+    } else if (subBox) {
+      // TODO: handle the case where there's only a subscript and it's higher
+      // than the SubscriptTopMax.
+    }
+
+    if (supBox) {
+      // Positive measurements are from the baseline going up.
+      // We subtract the depth of the superscript since the upList renders things
+      // starting from their bottom.
+      upList.push(Layout.makeKern(supShift));
+      upList.push(supBox);
+    }
+
+    if (subBox) {
       // Positive measurements are from the baseline going down.
       // We subtract the height of the subscript since the dnList renders things
       // starting from their top.
-      dnList.push(Layout.makeKern(kernSize - Layout.getHeight(subBox)));
+      dnList.push(Layout.makeKern(subShift));
       subBox.shift = -italicsCorrection;
       dnList.push(subBox);
     }

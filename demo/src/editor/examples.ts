@@ -164,6 +164,11 @@ const subsups = builders.row([
     [builders.char('n'), builders.char('t')],
     [builders.char('2'), builders.char('j')],
   ),
+  builders.char('x'),
+  builders.subsup(
+    [builders.char('n'), builders.subsup(undefined, [builders.char('t')])],
+    [builders.char('2'), builders.subsup([builders.char('j')], undefined)],
+  ),
 ]);
 
 const integral = builders.row([
