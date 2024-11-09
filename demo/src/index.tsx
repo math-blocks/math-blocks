@@ -10,7 +10,6 @@ import MathmlPage from './mathml/mathml-page';
 import HandwritingPage from './handwriting/handwriting-page';
 import SolverPage from './solver/solver-page';
 import OpenTypeDemo from './opentype/opentype-demo';
-import TutorPage from './tutor/tutor-page';
 import SvgPage from './svg/svg-page';
 
 const container = document.createElement('div');
@@ -46,9 +45,6 @@ ReactDOM.render(
       <Route path="/opentype-demo">
         <OpenTypeDemo />
       </Route>
-      <Route path="/tutor">
-        <TutorPage />
-      </Route>
       <Route path="/svg">
         <SvgPage />
       </Route>
@@ -78,9 +74,6 @@ ReactDOM.render(
           </li>
           <li>
             <Link to="/opentype-demo">OpenType Demo</Link>
-          </li>
-          <li>
-            <Link to="/tutor">Tutor</Link>
           </li>
           <li>
             <Link to="/svg">SVG</Link>
