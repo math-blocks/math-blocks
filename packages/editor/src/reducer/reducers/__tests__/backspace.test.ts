@@ -1,10 +1,12 @@
-import * as b from '../../../char/builders';
+import { getId } from '@math-blocks/core';
 
+import * as b from '../../../char/builders';
 import { toEqualEditorNode } from '../../../test-util';
 import { reducer } from '../../reducer';
 import * as SelectionUtils from '../../selection-utils';
 
 import type { Action, State } from '../../types';
+import type { CharAtom } from '../../../char/types';
 
 expect.extend({ toEqualEditorNode });
 
@@ -40,6 +42,30 @@ describe('backspace', () => {
 
       // Assert
       expect(newState.selection).toEqual(SelectionUtils.makeSelection([], 1));
+    });
+
+    it('should expanded the composed character and delete the last char in it', () => {
+      // Arrange
+      const composedChar: CharAtom = {
+        id: getId(),
+        type: 'char',
+        value: '\u2264',
+        style: {},
+        composition: [b.char('<'), b.char('=')],
+      };
+      const state: State = {
+        row: b.row([b.char('a'), composedChar]),
+        selection: SelectionUtils.makeSelection([], 2),
+        selecting: false,
+      };
+      const action: Action = { type: 'Backspace' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.row).toEqualEditorNode(b.row([b.char('a'), b.char('<')]));
+      expect(newState.selection).toEqual(SelectionUtils.makeSelection([], 2));
     });
   });
 

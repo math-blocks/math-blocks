@@ -4,6 +4,7 @@ export type Char = {
   readonly type: 'char';
   readonly value: string;
   readonly pending?: boolean; // TODO: move this into Style
+  readonly composition?: readonly CharAtom[];
 };
 
 export type Style = {

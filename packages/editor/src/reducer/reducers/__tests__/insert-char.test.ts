@@ -99,4 +99,44 @@ describe('insertChar', () => {
       b.row([b.char('x'), b.limits(b.char(char), [], []), b.char('y')]),
     );
   });
+
+  it('should compose < and = into ≤', () => {
+    // Arrange
+    const state: State = {
+      row: b.row([b.char('a'), b.char('<')]),
+      selection: SelectionUtils.makeSelection([], 2),
+      selecting: false,
+    };
+    const action: Action = { type: 'InsertChar', char: '=' };
+
+    // Act
+    const newState = reducer(state, action);
+
+    // Assert
+    expect(newState.row.children).toHaveLength(2);
+    if (newState.row.children[1].type !== 'char') {
+      throw new Error('Expected a char node');
+    }
+    expect(newState.row.children[1].value).toBe('\u2264');
+  });
+
+  it('should compose > and = into ≥', () => {
+    // Arrange
+    const state: State = {
+      row: b.row([b.char('a'), b.char('>')]),
+      selection: SelectionUtils.makeSelection([], 2),
+      selecting: false,
+    };
+    const action: Action = { type: 'InsertChar', char: '=' };
+
+    // Act
+    const newState = reducer(state, action);
+
+    // Assert
+    expect(newState.row.children).toHaveLength(2);
+    if (newState.row.children[1].type !== 'char') {
+      throw new Error('Expected a char node');
+    }
+    expect(newState.row.children[1].value).toBe('\u2265');
+  });
 });
