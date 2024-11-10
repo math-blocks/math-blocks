@@ -65,7 +65,7 @@ const getSelectionState = async (
   };
   const scene = Typesetter.typeset(math, context);
 
-  let state: Editor.SimpleState = {
+  let state: Editor.State = {
     row: math,
     selecting: false,
     selection: Editor.SelectionUtils.makeSelection([], 0),

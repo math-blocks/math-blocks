@@ -9,12 +9,6 @@ export { builders, transforms, types, util, NodeType };
 export { print } from './printer/printer';
 export { parse } from './parser/parser';
 export { reducer } from './reducer/reducer';
-export type {
-  Path,
-  Selection,
-  State as SimpleState,
-  Action as SimpleAction,
-} from './reducer/types';
+export type { Path, Selection, State, Action } from './reducer/types';
 export * as PathUtils from './reducer/path-utils';
 export * as SelectionUtils from './reducer/selection-utils';
-export type { Action } from './reducer/types';

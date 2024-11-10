@@ -7,7 +7,7 @@ import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 
-import MathEditor from '../simple-math-editor';
+import MathEditor from '../math-editor';
 import { FontDataContext } from '../font-data-context';
 
 // @ts-expect-error: TypeScript doesn't know about this path

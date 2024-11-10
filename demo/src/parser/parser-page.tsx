@@ -7,7 +7,7 @@ import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
 import { parse as parseFont, getFontData } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { builders, parse } from '@math-blocks/editor';
-import type { SimpleState } from '@math-blocks/editor';
+import type { State } from '@math-blocks/editor';
 import type { types } from '@math-blocks/semantic';
 
 import stix2 from '../../../assets/STIX2Math.otf';
@@ -29,7 +29,7 @@ const simpleRow = builders.row([
 const EditorPage: React.FunctionComponent = () => {
   const [tab, setTab] = React.useState<'parse' | 'edit'>('parse');
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
-  const [editTree, setEditTree] = React.useState<SimpleState['row']>(simpleRow);
+  const [editTree, setEditTree] = React.useState<State['row']>(simpleRow);
   const [ast, setAst] = React.useState<types.Node>(() => parse(simpleRow));
   const [darkMode, setDarkMode] = React.useState<boolean>(() => {
     const query = window.matchMedia('(prefers-color-scheme: dark)');
@@ -63,7 +63,7 @@ const EditorPage: React.FunctionComponent = () => {
   const fontData = stixFontData;
   const fontSize = 64;
 
-  const handleChange = (state: SimpleState) => {
+  const handleChange = (state: State) => {
     try {
       setEditTree(state.row);
       setAst(parse(state.row));
