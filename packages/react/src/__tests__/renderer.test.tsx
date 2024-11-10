@@ -266,8 +266,8 @@ describe('renderer', () => {
           row: editNode,
           selecting: false,
           selection: {
-            anchor: { path: [], offset: 0 },
-            focus: { path: [], offset: 0 },
+            anchor: { path: [], offset: 2 },
+            focus: { path: [], offset: 2 },
           },
         };
       });
@@ -380,7 +380,6 @@ describe('renderer', () => {
           renderMode: Typesetter.RenderMode.Dynamic,
           cramped: false,
         };
-        // TODO: update typesetZipper to default showCursor to true
         options = {
           showCursor: true,
         };
@@ -388,8 +387,8 @@ describe('renderer', () => {
           row: editNode,
           selecting: false,
           selection: {
-            anchor: { path: [], offset: 0 },
-            focus: { path: [], offset: 0 },
+            anchor: { path: [], offset: 2 },
+            focus: { path: [], offset: 2 },
           },
         };
 
@@ -625,7 +624,7 @@ describe('renderer', () => {
     });
 
     test('cursor in front of operator', async () => {
-      const row = Editor.builders.row([glyph('n'), glyph('+'), glyph('a')]);
+      const row = Editor.builders.row([glyph('2'), glyph('+'), glyph('a')]);
       const selection: Editor.Selection = {
         anchor: { path: [], offset: 1 },
         focus: { path: [], offset: 1 },
