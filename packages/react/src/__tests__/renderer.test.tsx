@@ -241,7 +241,7 @@ describe('renderer', () => {
     });
 
     describe('cursor with tall delimiters', () => {
-      let state: Editor.State;
+      let state: Editor.SimpleState;
       let editNode: Editor.types.CharRow;
       let fontData: FontData;
       const fontSize = 60;
@@ -262,22 +262,13 @@ describe('renderer', () => {
           subsup([glyph('n')], [glyph('2')]),
         ]);
 
-        const zipper: Editor.Zipper = {
-          row: {
-            type: 'zrow',
-            id: editNode.id,
-            left: editNode.children,
-            selection: [],
-            right: [],
-            style: {},
-          },
-          breadcrumbs: [],
-        };
         state = {
-          startZipper: zipper,
-          endZipper: zipper,
-          zipper: zipper,
+          row: editNode,
           selecting: false,
+          selection: {
+            anchor: { path: [], offset: 0 },
+            focus: { path: [], offset: 0 },
+          },
         };
       });
 
@@ -286,7 +277,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -296,7 +287,7 @@ describe('renderer', () => {
 
       test('2 cursor in superscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
 
@@ -304,7 +295,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -314,7 +305,7 @@ describe('renderer', () => {
 
       test('3 cursor in subscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -324,7 +315,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -334,7 +325,7 @@ describe('renderer', () => {
 
       test('4 cursor inside delimited', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -346,7 +337,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -356,7 +347,7 @@ describe('renderer', () => {
     });
 
     describe('selection with tall delimiters', () => {
-      let state: Editor.State;
+      let state: Editor.SimpleState;
       let context: Typesetter.Context;
       let options: Typesetter.Options;
       let fontData: FontData;
@@ -385,30 +376,21 @@ describe('renderer', () => {
           renderMode: Typesetter.RenderMode.Dynamic,
           cramped: false,
         };
-        const startZipper: Editor.Zipper = {
-          row: {
-            type: 'zrow',
-            id: editNode.id,
-            left: editNode.children,
-            selection: [],
-            right: [],
-            style: {},
-          },
-          breadcrumbs: [],
-        };
         // TODO: update typesetZipper to default showCursor to true
         options = {
           showCursor: true,
         };
         state = {
-          startZipper: startZipper,
-          endZipper: startZipper,
-          zipper: startZipper,
+          row: editNode,
           selecting: false,
+          selection: {
+            anchor: { path: [], offset: 0 },
+            focus: { path: [], offset: 0 },
+          },
         };
 
         const moveLeft = () => {
-          state = Editor.reducer(state, {
+          state = Editor.simpleReducer(state, {
             type: 'ArrowLeft',
           });
         };
@@ -425,7 +407,7 @@ describe('renderer', () => {
       test('1 selection in denominator', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
         };
         selectRight();
 
@@ -433,7 +415,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -443,7 +425,7 @@ describe('renderer', () => {
       test('2 fraction selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -452,7 +434,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -462,7 +444,7 @@ describe('renderer', () => {
       test('3 delimited selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -472,7 +454,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -482,7 +464,7 @@ describe('renderer', () => {
       test('4 subsup selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -493,7 +475,7 @@ describe('renderer', () => {
           <FontDataContext.Provider value={fontData}>
             <MathRenderer
               fontSize={fontSize}
-              zipper={state.zipper}
+              row={state.row}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -560,25 +542,13 @@ describe('renderer', () => {
         subsup([glyph('n'), glyph('\u2212'), glyph('2')]),
       ]);
 
-      const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-          id: node.id,
-          type: 'zrow',
-          left: [],
-          selection: [],
-          right: node.children,
-          style: {},
-        },
-      };
-
       const fontData = await stixFontLoader();
       const fontSize = 60;
 
       expect(
         <FontDataContext.Provider value={fontData}>
           <MathRenderer
-            zipper={zipper}
+            row={node}
             fontSize={fontSize}
             style={{ background: 'white' }}
           />
@@ -647,25 +617,14 @@ describe('renderer', () => {
     });
 
     test('cursor in front of operator', async () => {
-      const zipper: Editor.Zipper = {
-        breadcrumbs: [],
-        row: {
-          id: Core.getId(),
-          type: 'zrow',
-          left: [glyph('2')],
-          selection: [],
-          right: [glyph('+'), glyph('a')],
-          style: {},
-        },
-      };
-
+      const row = Editor.builders.row([glyph('n'), glyph('+'), glyph('a')]);
       const fontData = await stixFontLoader();
       const fontSize = 60;
 
       expect(
         <FontDataContext.Provider value={fontData}>
           <MathRenderer
-            zipper={zipper}
+            row={row}
             showCursor={true}
             fontSize={fontSize}
             renderMode={Typesetter.RenderMode.Dynamic}
@@ -698,239 +657,6 @@ describe('renderer', () => {
     test('showing work vertically', async () => {
       const VerticalWork = await storyToComponent(stories.VerticalWork);
       expect(<VerticalWork />).toMatchSVGSnapshot();
-    });
-  });
-
-  describe('showing work vertically', () => {
-    const { char: glyph } = Editor.builders;
-    const node: Editor.types.CharTable = Editor.builders.algebra(
-      [
-        // first row
-        [],
-        [glyph('2'), glyph('x')],
-        [],
-        [glyph('+')],
-        [glyph('5')],
-        [],
-        [glyph('=')],
-        [],
-        [glyph('1'), glyph('0')],
-        [],
-
-        // second row
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-      ],
-      10,
-      2,
-    );
-
-    const bcRow: Editor.BreadcrumbRow = {
-      id: Core.getId(),
-      type: 'bcrow',
-      left: [],
-      right: [],
-      style: {},
-    };
-
-    const zipper: Editor.Zipper = {
-      row: Editor.zrow(Core.getId(), [], []),
-      breadcrumbs: [
-        {
-          row: bcRow,
-          focus: Editor.nodeToFocus(node, 10),
-        },
-      ],
-    };
-
-    const moveRight = (state: Editor.State, count: number): Editor.State => {
-      let newState = state;
-      for (let i = 0; i < count; i++) {
-        newState = Editor.reducer(newState, { type: 'ArrowRight' });
-      }
-      return newState;
-    };
-
-    test.each`
-      column
-      ${0}
-      ${1}
-      ${2}
-      ${3}
-      ${4}
-      ${5}
-      ${6}
-      ${7}
-      ${8}
-      ${9}
-    `('row 2, column $column', async ({ column }) => {
-      const fontData = await stixFontLoader();
-      const fontSize = 60;
-
-      const state = moveRight(Editor.stateFromZipper(zipper), column);
-
-      expect(
-        <FontDataContext.Provider value={fontData}>
-          <MathRenderer
-            zipper={state.zipper}
-            showCursor={true}
-            fontSize={fontSize}
-            renderMode={Typesetter.RenderMode.Dynamic}
-          />
-        </FontDataContext.Provider>,
-      ).toMatchSVGSnapshot();
-    });
-
-    test("don't pad an empty cell in the bottom row if there is an non-empty cell above", async () => {
-      const { char: glyph } = Editor.builders;
-      const node: Editor.types.CharTable = Editor.builders.algebra(
-        [
-          // first row
-          [glyph('x')],
-          [],
-          [],
-          [],
-          [],
-          [glyph('=')],
-          [],
-          [glyph('y')],
-
-          // second row
-          [],
-          [],
-          [glyph('+')],
-          [glyph('1')],
-          [],
-          [],
-          [],
-          [],
-
-          // third row
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-        ],
-        8,
-        3,
-      );
-
-      const bcRow: Editor.BreadcrumbRow = {
-        id: Core.getId(),
-        type: 'bcrow',
-        left: [],
-        right: [],
-        style: {},
-      };
-
-      const zipper: Editor.Zipper = {
-        row: Editor.zrow(Core.getId(), [], []),
-        breadcrumbs: [
-          {
-            row: bcRow,
-            // third row, third column
-            focus: Editor.nodeToFocus(node, 18),
-          },
-        ],
-      };
-
-      const fontData = await stixFontLoader();
-      const fontSize = 60;
-
-      expect(
-        <FontDataContext.Provider value={fontData}>
-          <MathRenderer
-            zipper={zipper}
-            showCursor={true}
-            fontSize={fontSize}
-            renderMode={Typesetter.RenderMode.Dynamic}
-          />
-        </FontDataContext.Provider>,
-      ).toMatchSVGSnapshot();
-    });
-
-    test("don't pad an empty cell in the middle row if there is non-empty cells in below it", async () => {
-      const { char: glyph } = Editor.builders;
-      const node: Editor.types.CharTable = Editor.builders.algebra(
-        [
-          // first row
-          [glyph('x')],
-          [],
-          [],
-          [],
-          [],
-          [glyph('=')],
-          [],
-          [glyph('y')],
-
-          // second row
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-          [],
-
-          // third row
-          [],
-          [],
-          [glyph('+')],
-          [glyph('1')],
-          [],
-          [],
-          [],
-          [],
-        ],
-        8,
-        3,
-      );
-
-      const bcRow: Editor.BreadcrumbRow = {
-        id: Core.getId(),
-        type: 'bcrow',
-        left: [],
-        right: [],
-        style: {},
-      };
-
-      const zipper: Editor.Zipper = {
-        row: Editor.zrow(Core.getId(), [], []),
-        breadcrumbs: [
-          {
-            row: bcRow,
-            // second row, third column
-            focus: Editor.nodeToFocus(node, 10),
-          },
-        ],
-      };
-
-      const fontData = await stixFontLoader();
-      const fontSize = 60;
-
-      expect(
-        <FontDataContext.Provider value={fontData}>
-          <MathRenderer
-            zipper={zipper}
-            showCursor={true}
-            fontSize={fontSize}
-            renderMode={Typesetter.RenderMode.Dynamic}
-          />
-        </FontDataContext.Provider>,
-      ).toMatchSVGSnapshot();
     });
   });
 

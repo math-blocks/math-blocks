@@ -8,7 +8,6 @@ export { builders, transforms, types, util, NodeType };
 
 export { print } from './printer/printer';
 export { parse } from './parser/parser';
-export { reducer } from './reducer/reducer';
 export { reducer as simpleReducer } from './simple-reducer/reducer';
 export type {
   Path,

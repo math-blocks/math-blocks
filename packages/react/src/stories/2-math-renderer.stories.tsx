@@ -134,23 +134,12 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('1'),
     glyph('0'),
   ]);
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: math.children.slice(0, 1),
-      selection: [],
-      right: math.children.slice(1),
-      style: {},
-    },
-    breadcrumbs: [],
-  };
 
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={zipper}
+        row={math}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -170,23 +159,12 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('1'),
     glyph('0'),
   ]);
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: math.children.slice(0, 1),
-      selection: math.children.slice(1, 5),
-      right: math.children.slice(5),
-      style: {},
-    },
-    breadcrumbs: [],
-  };
 
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={zipper}
+        row={math}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -590,33 +568,24 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
   ]);
 
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: [],
-      right: math.children,
-      selection: [],
-      style: {},
-    },
-    breadcrumbs: [],
-  };
-  let state: Editor.State = {
-    startZipper: zipper,
-    endZipper: zipper,
-    zipper: zipper,
+  let state: Editor.SimpleState = {
+    row: math,
     selecting: false,
+    selection: {
+      anchor: { path: [], offset: 0 },
+      focus: { path: [], offset: 0 },
+    },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowRight' });
-  state = Editor.reducer(state, { type: 'ArrowRight' });
+  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
 
   const fontSize = 60;
 
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={state.zipper}
+        row={state.row}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -640,33 +609,24 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
   ]);
 
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: [],
-      right: math.children,
-      selection: [],
-      style: {},
-    },
-    breadcrumbs: [],
-  };
-  let state: Editor.State = {
-    startZipper: zipper,
-    endZipper: zipper,
-    zipper: zipper,
+  let state: Editor.SimpleState = {
+    row: math,
     selecting: true,
+    selection: {
+      anchor: { path: [], offset: 0 },
+      focus: { path: [], offset: 0 },
+    },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowRight' });
-  state = Editor.reducer(state, { type: 'ArrowRight' });
+  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
 
   const fontSize = 60;
 
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={state.zipper}
+        row={state.row}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -679,33 +639,24 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
 export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const math = row([frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]);
 
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: math.children,
-      right: [],
-      selection: [],
-      style: {},
-    },
-    breadcrumbs: [],
-  };
-  let state: Editor.State = {
-    startZipper: zipper,
-    endZipper: zipper,
-    zipper: zipper,
+  let state: Editor.SimpleState = {
+    row: math,
     selecting: false,
+    selection: {
+      anchor: { path: [], offset: 0 },
+      focus: { path: [], offset: 0 },
+    },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={state.zipper}
+        row={state.row}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -733,36 +684,27 @@ export const SelectionSize: Story<EmptyProps> = (
     ),
   ]);
 
-  const zipper: Editor.Zipper = {
-    row: {
-      type: 'zrow',
-      id: math.id,
-      left: math.children,
-      right: [],
-      selection: [],
-      style: {},
-    },
-    breadcrumbs: [],
-  };
-  let state: Editor.State = {
-    startZipper: zipper,
-    endZipper: zipper,
-    zipper: zipper,
+  let state: Editor.SimpleState = {
+    row: math,
     selecting: false,
+    selection: {
+      anchor: { path: [], offset: 0 },
+      focus: { path: [], offset: 0 },
+    },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
   state = { ...state, selecting: true };
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
-        zipper={state.zipper}
+        row={state.row}
         style={style}
         fontSize={fontSize}
         showCursor={true}

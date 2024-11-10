@@ -9,9 +9,7 @@ import SceneRenderer from './scene-renderer';
 const { useContext } = React;
 
 type Props = {
-  // The initial value for the editor
-  readonly row?: Editor.types.CharRow;
-  readonly zipper?: Editor.Zipper;
+  readonly row: Editor.types.CharRow;
   readonly fontSize?: number;
   readonly showCursor?: boolean;
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
@@ -49,19 +47,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
 
     const options = { showCursor: props.showCursor, debug: true };
 
-    const scene = (() => {
-      if (props.row) {
-        return Typesetter.typeset(props.row, context, options);
-      } else if (props.zipper) {
-        return Typesetter.typesetZipper(props.zipper, context, options);
-      } else {
-        return null;
-      }
-    })();
-
-    if (scene == null) {
-      return null;
-    }
+    const scene = Typesetter.typeset(props.row, context, options);
 
     const { depth } = scene.content.bounds;
 

@@ -2,7 +2,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 301 60" width="301" height="60" style="background:white;vertical-align:-14px">
     <g fill="currentColor" stroke="currentColor" transform="translate(0,0)">
         <g transform="translate(0,46.2)" id="7">
-            <rect type="rect" x="29.2" y="-46.2" width="1" height="60" class="blink" stroke="none"></rect>
             <g transform="translate(63.239999999999995,0)" id="2"></g>
             <g transform="translate(166.14,0)" id="4"></g>
         </g>

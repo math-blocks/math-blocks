@@ -19,7 +19,6 @@ const Substeps: React.FunctionComponent<Props> = ({ prefix, start, step }) => {
   let current = start;
 
   const beforeRow = Editor.print(step.before);
-  console.log(beforeRow);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -29,7 +28,6 @@ const Substeps: React.FunctionComponent<Props> = ({ prefix, start, step }) => {
 
         const after = Solver.applyStep(before, substep);
         const afterRow = Editor.print(substep.after);
-        console.log(afterRow);
 
         current = after;
 

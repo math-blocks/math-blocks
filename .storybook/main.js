@@ -1,6 +1,6 @@
-const path = require('path');
+import path from 'path';
 
-module.exports = {
+export default {
   stories: [
     '../packages/react/src/stories/*.stories.mdx',
     '../packages/react/src/stories/*.stories.@(ts|tsx)',

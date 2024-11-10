@@ -25,8 +25,8 @@ type Props = {
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
   readonly inline?: boolean;
 
-  readonly onSubmit?: (zipper: Editor.SimpleState) => unknown;
-  readonly onChange?: (zipper: Editor.SimpleState) => unknown;
+  readonly onSubmit?: (state: Editor.SimpleState) => unknown;
+  readonly onChange?: (state: Editor.SimpleState) => unknown;
 
   // Style
   readonly style?: React.CSSProperties;
