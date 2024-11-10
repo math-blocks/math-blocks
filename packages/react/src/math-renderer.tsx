@@ -15,6 +15,7 @@ type Props = {
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
   readonly mathStyle?: Typesetter.MathStyle;
   readonly renderMode?: Typesetter.RenderMode;
+  readonly selection?: Editor.Selection;
 
   // Style
   readonly style?: React.CSSProperties;
@@ -34,6 +35,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       showHitboxes,
       mathStyle = Typesetter.MathStyle.Display,
       renderMode = Typesetter.RenderMode.Static,
+      selection,
     } = props;
 
     const context: Typesetter.Context = {
@@ -43,6 +45,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       cramped: false,
       renderMode: renderMode,
       radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
+      selection: selection,
     };
 
     const options = { showCursor: props.showCursor, debug: true };

@@ -7,7 +7,7 @@ import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 
-import MathEditor from '../math-editor';
+import MathEditor from '../simple-math-editor';
 import { FontDataContext } from '../font-data-context';
 
 // @ts-expect-error: TypeScript doesn't know about this path
@@ -42,23 +42,11 @@ export const Editable: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('0'),
   ]);
 
-  const zipper: Editor.Zipper = {
-    breadcrumbs: [],
-    row: {
-      id: math.id,
-      type: 'zrow',
-      left: [],
-      selection: [],
-      right: math.children,
-      style: {},
-    },
-  };
-
   return (
     <FontDataContext.Provider value={fontData}>
       <MathEditor
         readonly={false}
-        zipper={zipper}
+        row={math}
         onChange={action('onChange')}
         onSubmit={action('onSubmit')}
       />
@@ -78,21 +66,9 @@ export const Readonly: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('0'),
   ]);
 
-  const zipper: Editor.Zipper = {
-    breadcrumbs: [],
-    row: {
-      id: math.id,
-      type: 'zrow',
-      left: [],
-      selection: [],
-      right: math.children,
-      style: {},
-    },
-  };
-
   return (
     <FontDataContext.Provider value={fontData}>
-      <MathEditor readonly={true} zipper={zipper} />
+      <MathEditor readonly={true} row={math} />
     </FontDataContext.Provider>
   );
 };

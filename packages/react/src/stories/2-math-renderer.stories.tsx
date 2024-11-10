@@ -134,12 +134,17 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('1'),
     glyph('0'),
   ]);
+  const selection: Editor.Selection = {
+    anchor: { path: [], offset: 1 },
+    focus: { path: [], offset: 1 },
+  };
 
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
+        selection={selection}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -159,12 +164,17 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
     glyph('1'),
     glyph('0'),
   ]);
+  const selection: Editor.Selection = {
+    anchor: { path: [], offset: 1 },
+    focus: { path: [], offset: 5 },
+  };
 
   const fontSize = 60;
   return (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={math}
+        selection={selection}
         style={style}
         fontSize={fontSize}
         showCursor={true}

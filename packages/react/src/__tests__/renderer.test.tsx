@@ -278,6 +278,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -296,6 +297,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -316,6 +318,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -338,6 +341,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               showCursor={true}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
@@ -416,6 +420,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -435,6 +440,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -455,6 +461,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -476,6 +483,7 @@ describe('renderer', () => {
             <MathRenderer
               fontSize={fontSize}
               row={state.row}
+              selection={state.selection}
               renderMode={Typesetter.RenderMode.Dynamic}
             />
           </FontDataContext.Provider>,
@@ -618,6 +626,10 @@ describe('renderer', () => {
 
     test('cursor in front of operator', async () => {
       const row = Editor.builders.row([glyph('n'), glyph('+'), glyph('a')]);
+      const selection: Editor.Selection = {
+        anchor: { path: [], offset: 1 },
+        focus: { path: [], offset: 1 },
+      };
       const fontData = await stixFontLoader();
       const fontSize = 60;
 
@@ -625,6 +637,7 @@ describe('renderer', () => {
         <FontDataContext.Provider value={fontData}>
           <MathRenderer
             row={row}
+            selection={selection}
             showCursor={true}
             fontSize={fontSize}
             renderMode={Typesetter.RenderMode.Dynamic}
