@@ -5,7 +5,9 @@
             <g transform="translate(0,0)" id="9">
                 <g transform="translate(31.14,0)" id="10">
                     <g transform="translate(0,-15.48)" id="4">
-                        <g transform="translate(0,-24.840000000000003)" id="5"></g>
+                        <g transform="translate(0,-24.840000000000003)" id="5">
+                            <rect type="rect" x="56.949999999999996" y="-46.2" width="1" height="60" class="blink" stroke="none"></rect>
+                        </g>
                         <g transform="translate(0,-2.6645352591003757e-15)"></g>
                         <g transform="translate(0,57.24)" id="6">
                             <g transform="translate(33.78,0)" id="2"></g>

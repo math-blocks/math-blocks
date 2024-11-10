@@ -596,6 +596,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={state.row}
+        selection={state.selection}
         style={style}
         fontSize={fontSize}
         showCursor={true}
@@ -619,17 +620,14 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
   ]);
 
-  let state: Editor.SimpleState = {
+  const state: Editor.SimpleState = {
     row: math,
     selecting: true,
     selection: {
       anchor: { path: [], offset: 0 },
-      focus: { path: [], offset: 0 },
+      focus: { path: [], offset: 2 },
     },
   };
-
-  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
-  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
 
   const fontSize = 60;
 
@@ -637,6 +635,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={state.row}
+        selection={state.selection}
         style={style}
         fontSize={fontSize}
         showCursor={true}
