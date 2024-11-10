@@ -8,7 +8,7 @@ import type { Context, HBox } from '../types';
 
 export const typesetRoot = (
   typesetChild: (index: number, context: Context) => HBox | null,
-  node: Editor.types.CharRoot | Editor.ZRoot,
+  node: Editor.types.CharRoot,
   context: Context,
 ): HBox => {
   const degreeContext = {

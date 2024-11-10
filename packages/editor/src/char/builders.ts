@@ -89,7 +89,6 @@ export function macro(inner: readonly types.CharNode[]): types.CharMacro {
 }
 
 export function table(
-  subtype: 'matrix' | 'algebra',
   cells: readonly (readonly types.CharNode[] | null)[],
   colCount: number,
   rowCount: number,
@@ -101,7 +100,6 @@ export function table(
   return {
     id: getId(),
     type: NodeType.Table,
-    subtype,
     children: cells.map((cell) => cell && row(cell)),
     colCount,
     rowCount,
@@ -110,14 +108,6 @@ export function table(
     delimiters,
     style: {},
   };
-}
-
-export function algebra(
-  cells: readonly (readonly types.CharNode[] | null)[],
-  colCount: number,
-  rowCount: number,
-): types.CharTable {
-  return table('algebra', cells, colCount, rowCount, undefined);
 }
 
 export function matrix(
@@ -129,7 +119,7 @@ export function matrix(
     readonly right: types.CharAtom;
   },
 ): types.CharTable {
-  return table('matrix', cells, colCount, rowCount, delimiters);
+  return table(cells, colCount, rowCount, delimiters);
 }
 
 export function atom(value: types.Char): types.CharAtom {

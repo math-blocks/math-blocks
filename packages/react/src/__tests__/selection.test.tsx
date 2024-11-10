@@ -49,11 +49,11 @@ const stixFontLoader = async (): Promise<FontData> => {
 
 type Point = { readonly x: number; readonly y: number };
 
-const getSelectionZipper = async (
+const getSelectionState = async (
   math: Editor.types.CharRow,
   p1: Point,
   p2: Point,
-): Promise<Editor.Zipper> => {
+) => {
   const fontData = await stixFontLoader();
   const fontSize = 64;
   const context: Typesetter.Context = {
@@ -65,38 +65,32 @@ const getSelectionZipper = async (
   };
   const scene = Typesetter.typeset(math, context);
 
-  const startZipper = Editor.rowToZipper(
-    math,
-    Typesetter.SceneGraph.findIntersections(p1, scene.hitboxes),
-  );
+  let state: Editor.SimpleState = {
+    row: math,
+    selecting: false,
+    selection: Editor.SelectionUtils.makeSelection([], 0),
+  };
 
-  const endZipper = Editor.rowToZipper(
-    math,
-    Typesetter.SceneGraph.findIntersections(p2, scene.hitboxes),
-  );
+  state = Editor.simpleReducer(state, {
+    type: 'UpdateSelection',
+    intersections: Typesetter.SceneGraph.findIntersections(p1, scene.hitboxes),
+    selecting: false,
+  });
 
-  if (!startZipper) {
-    throw new Error('startZipper is undefined');
-  }
+  state = Editor.simpleReducer(state, {
+    type: 'UpdateSelection',
+    intersections: Typesetter.SceneGraph.findIntersections(p2, scene.hitboxes),
+    selecting: true,
+  });
 
-  if (!endZipper) {
-    throw new Error('endZipper is undefined');
-  }
-
-  const zipper = Editor.selectionZipperFromZippers(startZipper, endZipper);
-
-  if (!zipper) {
-    throw new Error('zipper is undefined');
-  }
-
-  return zipper;
+  return state;
 };
 
 describe('moving cursor with mouse', () => {
   describe('simple row', () => {
     let math: Editor.types.CharRow;
 
-    beforeEach(async () => {
+    beforeEach(() => {
       math = row([
         glyph('2'),
         glyph('x'),
@@ -109,66 +103,49 @@ describe('moving cursor with mouse', () => {
     });
 
     test('from left to right', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 67, y: 30 },
         { x: 257, y: 30 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([glyph('2'), glyph('x')]);
-
-      expect(zipper.row.selection).toEqualEditorNodes([
-        glyph('+'),
-        glyph('5'),
-        glyph('='),
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([glyph('1'), glyph('0')]);
+      expect(state.selection).toEqual({
+        anchor: { path: [], offset: 2 },
+        focus: { path: [], offset: 5 },
+      });
     });
 
     test('from right to left', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 257, y: 30 },
         { x: 67, y: 30 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([glyph('2'), glyph('x')]);
-
-      expect(zipper.row.selection).toEqualEditorNodes([
-        glyph('+'),
-        glyph('5'),
-        glyph('='),
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([glyph('1'), glyph('0')]);
+      expect(state.selection).toEqual({
+        anchor: { path: [], offset: 5 },
+        focus: { path: [], offset: 2 },
+      });
     });
 
     test('at the same location', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 67, y: 30 },
         { x: 67, y: 30 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([glyph('2'), glyph('x')]);
-
-      expect(zipper.row.selection).toHaveLength(0);
-
-      expect(zipper.row.right).toEqualEditorNodes([
-        glyph('+'),
-        glyph('5'),
-        glyph('='),
-        glyph('1'),
-        glyph('0'),
-      ]);
+      expect(state.selection).toEqual({
+        anchor: { path: [], offset: 2 },
+        focus: { path: [], offset: 2 },
+      });
     });
   });
 
   describe('adding fractions', () => {
     let math: Editor.types.CharRow;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       math = Editor.builders.row([
         Editor.builders.char('2'),
         Editor.builders.char('+'),
@@ -204,167 +181,81 @@ describe('moving cursor with mouse', () => {
     });
 
     test('two-levels deep, common node in root row', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 150, y: 24 },
         { x: 380, y: 24 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([
-        math.children[0],
-        math.children[1],
-      ]);
-
-      expect(zipper.row.selection).toEqualEditorNodes([
-        math.children[2],
-        math.children[3],
-        math.children[4],
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([
-        math.children[5],
-        math.children[6],
-      ]);
+      expect(state.selection).toEqual({
+        anchor: { path: [2, 0, 0, 0], offset: 1 },
+        focus: { path: [4, 0, 0, 0], offset: 0 },
+      });
     });
 
     test('two-levels deep, common node in fraction numerator', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 142, y: 24 },
         { x: 244, y: 24 },
       );
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].row.left).toEqualEditorNodes([
-        math.children[0],
-        math.children[1],
-      ]);
-      expect(zipper.breadcrumbs[0].row.right).toEqualEditorNodes([
-        math.children[3],
-        math.children[4],
-        math.children[5],
-        math.children[6],
-      ]);
-
-      // @ts-expect-error: we know math.chilren[2] is a "frac" node
-      const numerator = math.children[2].children[0];
-
-      expect(zipper.row.left).toEqualEditorNodes([]);
-
-      // All nodes in the numerator are selected
-      expect(zipper.row.selection).toEqualEditorNodes(numerator.children);
-
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(state.selection).toEqual({
+        anchor: { path: [2, 0, 0, 0], offset: 1 },
+        focus: { path: [2, 0, 2, 0], offset: 0 },
+      });
     });
 
     test('two-levels deep and one-level deep in fraction numerator', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 145, y: 24 },
         { x: 216, y: 54 },
       );
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].row.left).toEqualEditorNodes([
-        math.children[0],
-        math.children[1],
-      ]);
-      expect(zipper.breadcrumbs[0].row.right).toEqualEditorNodes([
-        math.children[3],
-        math.children[4],
-        math.children[5],
-        math.children[6],
-      ]);
-
-      // @ts-expect-error: we know math.chilren[2] is a "frac" node
-      const numerator = math.children[2].children[0];
-
-      expect(zipper.row.left).toEqualEditorNodes([]);
-
-      // All nodes in the numerator are selected
-      expect(zipper.row.selection).toEqualEditorNodes([
-        numerator.children[0],
-        numerator.children[1],
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([numerator.children[2]]);
+      expect(state.selection).toEqual({
+        anchor: { path: [2, 0, 0, 0], offset: 1 },
+        focus: { path: [2, 0], offset: 2 },
+      });
     });
 
     test('one-level deep and two-levels deep in fraction numerator', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 216, y: 54 },
         { x: 145, y: 24 },
       );
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].row.left).toEqualEditorNodes([
-        math.children[0],
-        math.children[1],
-      ]);
-      expect(zipper.breadcrumbs[0].row.right).toEqualEditorNodes([
-        math.children[3],
-        math.children[4],
-        math.children[5],
-        math.children[6],
-      ]);
-
-      // @ts-expect-error: we know math.chilren[2] is a "frac" node
-      const numerator = math.children[2].children[0];
-
-      expect(zipper.row.left).toEqualEditorNodes([]);
-
-      // All nodes in the numerator are selected
-      expect(zipper.row.selection).toEqualEditorNodes([
-        numerator.children[0],
-        numerator.children[1],
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([numerator.children[2]]);
+      expect(state.selection).toEqual({
+        anchor: { path: [2, 0], offset: 2 },
+        focus: { path: [2, 0, 0, 0], offset: 1 },
+      });
     });
 
     test('two-levels deep and at the root level', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 145, y: 24 },
         { x: 34, y: 112 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
-
-      expect(zipper.row.selection).toEqualEditorNodes([
-        math.children[1],
-        math.children[2],
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([
-        math.children[3],
-        math.children[4],
-        math.children[5],
-        math.children[6],
-      ]);
+      expect(state.selection).toEqual({
+        anchor: { path: [2, 0, 0, 0], offset: 1 },
+        focus: { path: [], offset: 1 },
+      });
     });
 
     test('at the root level and two-levels deep', async () => {
-      const zipper = await getSelectionZipper(
+      const state = await getSelectionState(
         math,
         { x: 34, y: 112 },
         { x: 145, y: 24 },
       );
 
-      expect(zipper.row.left).toEqualEditorNodes([math.children[0]]);
-
-      expect(zipper.row.selection).toEqualEditorNodes([
-        math.children[1],
-        math.children[2],
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([
-        math.children[3],
-        math.children[4],
-        math.children[5],
-        math.children[6],
-      ]);
+      expect(state.selection).toEqual({
+        anchor: { path: [], offset: 1 },
+        focus: { path: [2, 0, 0, 0], offset: 1 },
+      });
     });
   });
 });

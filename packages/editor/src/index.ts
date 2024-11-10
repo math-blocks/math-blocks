@@ -17,32 +17,4 @@ export type {
 } from './simple-reducer/types';
 export * as PathUtils from './simple-reducer/path-utils';
 export * as SelectionUtils from './simple-reducer/selection-utils';
-export { zipperToState } from './reducer/util';
-export {
-  zipperToRow,
-  rowToZipper,
-  selectionZipperFromZippers,
-} from './reducer/convert';
-export { stateFromZipper } from './reducer/test-util';
-export { zrowToRow, zrow, nodeToFocus } from './reducer/util';
-export {
-  zipperToVerticalWork as zipperToVerticalWork,
-  isColumnEmpty,
-  isCellEmpty,
-} from './reducer/vertical-work/util';
-export type {
-  Breadcrumb,
-  BreadcrumbRow,
-  Focus,
-  Zipper,
-  ZDelimited,
-  ZFrac,
-  ZLimits,
-  ZRow,
-  ZRoot,
-  ZSubSup,
-  ZTable,
-  State,
-} from './reducer/types';
 export type { Action } from './simple-reducer/types';
-export type { Action as OldAction } from './reducer/action-types';

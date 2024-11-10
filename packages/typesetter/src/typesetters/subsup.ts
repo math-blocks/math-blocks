@@ -27,7 +27,7 @@ const childContextForSubsup = (context: Context): Context => {
 
 export const typesetSubsup = (
   typesetChild: (index: number, context: Context) => HBox | null,
-  node: Editor.types.CharSubSup | Editor.ZSubSup,
+  node: Editor.types.CharSubSup,
   context: Context,
   prevLayoutNode?: Node,
 ): VBox => {

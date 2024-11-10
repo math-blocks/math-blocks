@@ -7,7 +7,7 @@ import type { Context, HBox, Glyph } from '../types';
 
 export const typesetDelimited = (
   typesetChild: (index: number, context: Context) => HBox | null,
-  node: Editor.types.CharDelimited | Editor.ZDelimited,
+  node: Editor.types.CharDelimited,
   context: Context,
 ): HBox => {
   const thresholdOptions = {

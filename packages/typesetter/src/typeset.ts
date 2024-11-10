@@ -119,32 +119,6 @@ const ensureMinDepthAndHeight = (dim: Mutable<Dim>, context: Context): void => {
   dim.height = Math.max(dim.height, height);
 };
 
-const getTypesetChildFromZipper = (
-  zipper: Editor.Zipper,
-  focus: Editor.Focus,
-  path: Path,
-): ((index: number, context: Context) => HBox | null) => {
-  return (
-    index: number,
-    context: Context,
-    padFirstOperator?: boolean,
-  ): HBox | null => {
-    if (index < focus.left.length) {
-      const child = focus.left[index];
-      return (
-        child && typesetRow(child, [...path, index], context, padFirstOperator)
-      );
-    } else if (index === focus.left.length) {
-      return _typesetZipper(zipper, path, context, padFirstOperator);
-    } else {
-      const child = focus.right[index - focus.left.length - 1];
-      return (
-        child && typesetRow(child, [...path, index], context, padFirstOperator)
-      );
-    }
-  };
-};
-
 const getTypesetChildFromNodes = <
   T extends readonly (Editor.types.CharRow | null)[],
 >(
@@ -163,44 +137,11 @@ const getTypesetChildFromNodes = <
   };
 };
 
-const typesetFocus = (
-  focus: Editor.Focus,
-  zipper: Editor.Zipper,
-  path: Path,
-  context: Context,
-  prevEditNode?: Editor.types.CharNode,
-  prevLayoutNode?: Node,
-): Node => {
-  const typesetChild = getTypesetChildFromZipper(zipper, focus, path);
-  switch (focus.type) {
-    case 'zfrac': {
-      return typesetFrac(typesetChild, focus, context);
-    }
-    case 'zsubsup': {
-      return typesetSubsup(typesetChild, focus, context, prevLayoutNode);
-    }
-    case 'zroot': {
-      return typesetRoot(typesetChild, focus, context);
-    }
-    case 'zlimits': {
-      return typesetLimits(typesetChild, focus, path, context, typesetNode);
-    }
-    case 'zdelimited': {
-      return typesetDelimited(typesetChild, focus, context);
-    }
-    case 'ztable': {
-      return typesetTable(typesetChild, focus, context, zipper);
-    }
-    default:
-      throw new UnreachableCaseError(focus);
-  }
-};
-
 const typesetNode = (
   node: Editor.types.CharNode,
   path: Path,
   context: Context,
-  prevEditNode?: Editor.types.CharNode | Editor.Focus,
+  prevEditNode?: Editor.types.CharNode,
   prevLayoutNode?: Node,
   padFirstOperator?: boolean,
 ): Node => {
@@ -258,7 +199,7 @@ const typesetNodes = (
   nodes: readonly Editor.types.CharNode[],
   path: Path,
   context: Context,
-  prevChild?: Editor.types.CharNode | Editor.Focus,
+  prevChild?: Editor.types.CharNode,
   prevLayoutNode?: Node,
   padFirstOperator?: boolean,
 ): readonly Node[] => {
@@ -277,118 +218,8 @@ const typesetNodes = (
   });
 };
 
-const _typesetZipper = (
-  zipper: Editor.Zipper,
-  path: Path,
-  context: Context,
-  padFirstOperator?: boolean,
-): HBox => {
-  // The bottommost crumb is the outermost row
-  const [crumb, ...restCrumbs] = zipper.breadcrumbs;
-
-  if (crumb) {
-    const row = crumb.row;
-    const nextZipper: Editor.Zipper = {
-      ...zipper,
-      breadcrumbs: restCrumbs,
-    };
-    const nodes: Node[] = [];
-
-    nodes.push(
-      ...typesetNodes(
-        row.left,
-        path,
-        context,
-        undefined,
-        undefined,
-        padFirstOperator,
-      ),
-    );
-    nodes.push(
-      typesetFocus(
-        crumb.focus,
-        nextZipper,
-        path,
-        context,
-        row.left[row.left.length - 1], // previous edit node
-        nodes[nodes.length - 1], // previous layout node
-      ),
-    );
-    nodes.push(
-      ...typesetNodes(
-        row.right,
-        path,
-        context,
-        crumb.focus, // previous edit node
-        nodes[nodes.length - 1], // previous layout node
-        padFirstOperator,
-      ),
-    );
-
-    const box = Layout.makeStaticHBox(nodes, context) as Mutable<HBox>;
-    box.id = row.id;
-    box.style = {
-      ...box.style,
-      color: row.style.color,
-    };
-
-    if (context.renderMode === RenderMode.Dynamic) {
-      ensureMinDepthAndHeight(box, context);
-    }
-
-    return box;
-  } else {
-    const row = zipper.row;
-
-    const input = [...row.left, ...row.selection, ...row.right];
-    const output = typesetNodes(
-      input,
-      path,
-      context,
-      undefined,
-      undefined,
-      padFirstOperator,
-    );
-
-    const firstCut = row.left.length;
-    const secondCut = firstCut + row.selection.length;
-
-    const left = output.slice(0, firstCut);
-    const selection = output.slice(firstCut, secondCut);
-    const right = output.slice(secondCut);
-
-    const box = (
-      selection.length > 0
-        ? Layout.makeSelectionHBox(left, selection, right, context)
-        : Layout.makeCursorHBox(left, right, context)
-    ) as Mutable<HBox>;
-
-    box.id = row.id;
-    box.style = {
-      ...box.style,
-      color: row.style.color,
-    };
-
-    if (context.renderMode === RenderMode.Dynamic) {
-      ensureMinDepthAndHeight(box, context);
-    }
-
-    return box;
-  }
-};
-
 export type Options = {
   readonly showCursor?: boolean;
-};
-
-export const typesetZipper = (
-  zipper: Editor.Zipper,
-  context: Context,
-  options: Options = {},
-): Scene => {
-  const path: Path = [];
-  const box = _typesetZipper(zipper, path, context) as HBox;
-  return processBox(box, context.fontData, options);
 };
 
 export const typeset = (

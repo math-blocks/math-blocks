@@ -8,10 +8,6 @@ import type { Context, HBox, VBox } from '../types';
 
 const DEFAULT_GUTTER_WIDTH = 50;
 
-const isOperator = (cell: Editor.types.CharRow | null): boolean =>
-  cell?.children.length === 1 &&
-  Editor.util.isAtom(cell.children[0], ['+', '\u2212', '=', '<', '>']);
-
 const childContextForTable = (context: Context): Context => {
   const { mathStyle } = context;
 
@@ -32,9 +28,8 @@ export const typesetTable = (
     context: Context,
     padFirstOperator?: boolean,
   ) => HBox | null,
-  node: Editor.types.CharTable | Editor.ZTable,
+  node: Editor.types.CharTable,
   context: Context,
-  zipper?: Editor.Zipper,
 ): HBox | VBox => {
   type Row = {
     children: Mutable<HBox>[];
@@ -49,38 +44,8 @@ export const typesetTable = (
   const columns: Col[] = [];
   const rows: Row[] = [];
   const childContext = childContextForTable(context);
-
-  const reboxColumn = (
-    col: number,
-    leftKernSize: number,
-    rightKernSize: number,
-  ): void => {
-    for (let row = 0; row < node.rowCount; row++) {
-      let cell = rows[row].children[col];
-      cell = Layout.rebox(
-        cell,
-        Layout.makeKern(leftKernSize),
-        Layout.makeKern(rightKernSize),
-      );
-      rows[row].children[col] = cell;
-      columns[col].children[row] = cell;
-      columns[col].width = Math.max(columns[col].width, cell.width);
-    }
-  };
-
-  const gutterWidth: number =
-    node.subtype === 'algebra' ? 0 : DEFAULT_GUTTER_WIDTH;
-
-  const children =
-    node.type === 'table'
-      ? node.children
-      : [
-          ...node.left,
-          // @ts-expect-error: zipper is always defined when
-          // node is a ZTable
-          Editor.zrowToRow(zipper.row),
-          ...node.right,
-        ];
+  const gutterWidth: number = DEFAULT_GUTTER_WIDTH;
+  const children = node.children;
 
   const MIN_WIDTH = 0; // 32; // only use this for debugging purposes.
 
@@ -144,73 +109,6 @@ export const typesetTable = (
     }
   }
 
-  const cursorIndex = node.type === 'ztable' ? node.left.length : -1;
-  if (node.subtype === 'algebra' && cursorIndex !== -1) {
-    const col = cursorIndex % node.colCount;
-    const zrow = zipper?.row;
-
-    type Column = readonly Editor.types.CharRow[];
-    const cellColumns: Column[] = [];
-    for (let i = 0; i < node.colCount; i++) {
-      const col: Editor.types.CharRow[] = [];
-      for (let j = 0; j < node.rowCount; j++) {
-        const index = j * node.colCount + i;
-        // TODO: check that children[index] isn't null
-        col.push(children[index] as Editor.types.CharRow);
-      }
-      cellColumns.push(col); // this is unsafe
-    }
-
-    if (zrow) {
-      if (col === 0 && !cellColumns[col + 1].some(isOperator)) {
-        // Add right padding on every cell in the first column
-        reboxColumn(col, 0, 16);
-      } else if (
-        col === node.colCount - 1 &&
-        !cellColumns[col - 1].some(isOperator)
-      ) {
-        // Add left padding on every cell in the last column
-        reboxColumn(col, 16, 0);
-      } else if (
-        col > 0 &&
-        col < cellColumns.length - 1 &&
-        Editor.isColumnEmpty(cellColumns[col])
-      ) {
-        // If the cursor is in an empty column, only add padding to one
-        // side of the column if there's an operator in one of the
-        // columns. The padding goes on the opposite side of the column
-        // with the operator since operators have their own built-in
-        // padding.
-        if (
-          cellColumns[col - 1].some(isOperator) &&
-          !cellColumns[col + 1].some(isOperator)
-        ) {
-          reboxColumn(col, 0, 16);
-        } else if (
-          cellColumns[col + 1].some(isOperator) &&
-          !cellColumns[col - 1].some(isOperator)
-        ) {
-          reboxColumn(col, 16, 0);
-        }
-      }
-    }
-
-    // If there are any columns with no operators on either side, add both
-    // left and right padding regardless of whether the cursor is in the
-    // column or not.
-    for (let col = 0; col < node.colCount; col++) {
-      if (
-        col > 0 &&
-        col < cellColumns.length - 1 &&
-        Editor.isColumnEmpty(cellColumns[col]) &&
-        !cellColumns[col - 1].some(isOperator) &&
-        !cellColumns[col + 1].some(isOperator)
-      ) {
-        reboxColumn(col, 16, 16);
-      }
-    }
-  }
-
   // Adjust the width of cells in the same column to be the same
   for (let i = 0; i < columns.length; i++) {
     const col = columns[i];
@@ -218,15 +116,10 @@ export const typesetTable = (
       // center the cell content
       const originalWidth = Layout.getWidth(col.children[j]);
       const baseKernSize = (col.width - originalWidth) / 2;
-      let rightKernSize =
+      const rightKernSize =
         i < columns.length - 1 ? baseKernSize + gutterWidth / 2 : baseKernSize;
-      let leftKernSize = i > 0 ? baseKernSize + gutterWidth / 2 : baseKernSize;
-      const child = children[j * node.colCount + i];
-      // Right align any child that has content when showing work
-      if (node.subtype === 'algebra' && child && child.children.length > 0) {
-        leftKernSize = baseKernSize * 2;
-        rightKernSize = 0;
-      }
+      const leftKernSize =
+        i > 0 ? baseKernSize + gutterWidth / 2 : baseKernSize;
       const cell = Layout.rebox(
         col.children[j],
         Layout.makeKern(leftKernSize, 'start'),
