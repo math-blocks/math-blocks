@@ -126,7 +126,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
         }
 
         if (action) {
-          const newState = Editor.simpleReducer(state, action);
+          const newState = Editor.reducer(state, action);
           setState(newState);
 
           // We always call on change even when the user is moving the
@@ -152,7 +152,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       if (active && !props.readonly) {
         const action = keyupToAction(e.key);
         if (action) {
-          setState(Editor.simpleReducer(state, action));
+          setState(Editor.reducer(state, action));
         }
       }
     },
@@ -181,16 +181,16 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       }
       const { detail } = e;
       if (detail.type === 'color') {
-        const newState = Editor.simpleReducer(state, {
+        const newState = Editor.reducer(state, {
           type: 'Color',
           color: detail.value,
         });
         setState(newState);
       } else if (detail.type === 'cancel') {
-        const newState = Editor.simpleReducer(state, { type: 'Cancel' });
+        const newState = Editor.reducer(state, { type: 'Cancel' });
         setState(newState);
       } else if (detail.type === 'uncancel') {
-        const newState = Editor.simpleReducer(state, { type: 'Uncancel' });
+        const newState = Editor.reducer(state, { type: 'Uncancel' });
         setState(newState);
       }
     },
@@ -217,7 +217,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       if (!active || props.readonly) {
         return;
       }
-      const newState = Editor.simpleReducer(state, detail);
+      const newState = Editor.reducer(state, detail);
       setState(newState);
     },
     [state, active, props.readonly],
@@ -251,7 +251,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
     );
 
     // TODO: handle select === true
-    const newState = Editor.simpleReducer(state, {
+    const newState = Editor.reducer(state, {
       type: 'UpdateSelection',
       intersections,
       selecting,
@@ -321,7 +321,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
       }}
       onMouseUp={(e) => {
         setMouseDown(false);
-        setState(Editor.simpleReducer(state, { type: 'StopSelecting' }));
+        setState(Editor.reducer(state, { type: 'StopSelecting' }));
 
         console.log(state.selection);
         console.log(Editor.SelectionUtils.getPathAndRange(state.selection));

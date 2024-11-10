@@ -71,13 +71,13 @@ const getSelectionState = async (
     selection: Editor.SelectionUtils.makeSelection([], 0),
   };
 
-  state = Editor.simpleReducer(state, {
+  state = Editor.reducer(state, {
     type: 'UpdateSelection',
     intersections: Typesetter.SceneGraph.findIntersections(p1, scene.hitboxes),
     selecting: false,
   });
 
-  state = Editor.simpleReducer(state, {
+  state = Editor.reducer(state, {
     type: 'UpdateSelection',
     intersections: Typesetter.SceneGraph.findIntersections(p2, scene.hitboxes),
     selecting: true,
