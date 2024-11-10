@@ -43,6 +43,154 @@ describe('backspace', () => {
     });
   });
 
+  describe('deleting a delimited', () => {
+    test('deleting a right pending delimiter should do nothing to the delimiter', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.delimited(
+            [b.char('x'), b.char('+'), b.char('y'), b.char('+'), b.char('z')],
+            b.char('('),
+            b.char(')', true),
+          ),
+        ]),
+        selection: SelectionUtils.makeSelection([], 1),
+        selecting: false,
+      };
+      const action: Action = { type: 'Backspace' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.row).toEqual(state.row);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+
+    it('should convert a non-pending right delimiter to a pending delimiter', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.delimited(
+            [b.char('x'), b.char('+'), b.char('y'), b.char('+'), b.char('z')],
+            b.char('('),
+            b.char(')'),
+          ),
+        ]),
+        selection: SelectionUtils.makeSelection([], 1),
+        selecting: false,
+      };
+      const action: Action = { type: 'Backspace' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      const delimited = newState.row.children[0];
+      if (delimited.type !== 'delimited') {
+        throw new Error('Expected a delimited node');
+      }
+      expect(delimited.rightDelim.pending).toBe(true);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      });
+    });
+
+    it('should move the right delimited to the end of the parent', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.delimited(
+            [b.char('x'), b.char('+'), b.char('y')],
+            b.char('('),
+            b.char(')'),
+          ),
+          b.char('+'),
+          b.char('z'),
+        ]),
+        selection: SelectionUtils.makeSelection([], 1),
+        selecting: false,
+      };
+      const action: Action = { type: 'Backspace' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      expect(newState.row.children).toHaveLength(1);
+      const delimited = newState.row.children[0];
+      if (delimited.type !== 'delimited') {
+        throw new Error('Expected a delimited node');
+      }
+      expect(delimited.rightDelim.pending).toBe(true);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      });
+    });
+
+    it('should move the right delimited to the end of the parent (nested)', () => {
+      // Arrange
+      const state: State = {
+        row: b.row([
+          b.delimited(
+            [
+              b.delimited(
+                [b.char('x'), b.char('+'), b.char('y')],
+                b.char('('),
+                b.char(')'),
+              ),
+              b.char('+'),
+              b.char('z'),
+            ],
+            b.char('('),
+            b.char(')'),
+          ),
+        ]),
+        selection: SelectionUtils.makeSelection([0, 0], 1),
+        selecting: false,
+      };
+      const action: Action = { type: 'Backspace' };
+
+      // Act
+      const newState = reducer(state, action);
+
+      // Assert
+      const expectedState: State = {
+        row: b.row([
+          b.delimited(
+            [
+              b.delimited(
+                [
+                  b.char('x'),
+                  b.char('+'),
+                  b.char('y'),
+                  b.char('+'),
+                  b.char('z'),
+                ],
+                b.char('('),
+                b.char(')', true),
+              ),
+            ],
+            b.char('('),
+            b.char(')'),
+          ),
+        ]),
+        selection: SelectionUtils.makeSelection([0, 0], 3),
+        selecting: false,
+      };
+      expect(newState.row).toEqualEditorNode(expectedState.row);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0], offset: 3 },
+        focus: { path: [0, 0, 0, 0], offset: 3 },
+      });
+    });
+  });
+
   describe('deleting a selection', () => {
     it('should delete the range of nodes', () => {
       // Arrange
