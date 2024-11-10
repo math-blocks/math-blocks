@@ -4,6 +4,7 @@ import * as SelectionUtils from '../selection-utils';
 import { moveLeft } from './move-left';
 
 import type { State } from '../types';
+import type { CharDelimited } from '../../char/types';
 
 // TODO:
 // - add special casing to handle deleting delimiters so that it basically
@@ -69,6 +70,51 @@ export const backspace = (state: State): State => {
           const newFocus = {
             path: focus.path,
             offset: focus.offset - 1,
+          };
+
+          return {
+            ...state,
+            row: newRow,
+            selection: { anchor: newFocus, focus: newFocus },
+          };
+        }
+      } else if (prevNode.type === 'delimited') {
+        const newDelimited: CharDelimited = {
+          ...prevNode,
+          rightDelim: {
+            ...prevNode.rightDelim,
+            pending: true,
+          },
+          children: [
+            {
+              ...prevNode.children[0],
+              children: [
+                ...prevNode.children[0].children,
+                ...focusParent.children.slice(focus.offset),
+              ],
+            },
+          ],
+        };
+        const newParent = {
+          ...focusParent,
+          children: [
+            ...focusParent.children.slice(0, prevOffset),
+            newDelimited,
+          ],
+        };
+
+        const newRow = PathUtils.updateRowAtPath(
+          row,
+          selection.focus.path,
+          (node) => {
+            return newParent;
+          },
+        );
+
+        if (newRow !== row) {
+          const newFocus = {
+            path: [...focus.path, focus.offset - 1, 0],
+            offset: prevNode.children[0].children.length,
           };
 
           return {
