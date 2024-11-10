@@ -577,7 +577,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
   ]);
 
-  let state: Editor.SimpleState = {
+  let state: Editor.State = {
     row: math,
     selecting: false,
     selection: {
@@ -619,7 +619,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
     root(null, [frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]),
   ]);
 
-  const state: Editor.SimpleState = {
+  const state: Editor.State = {
     row: math,
     selecting: true,
     selection: {
@@ -647,7 +647,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
 export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const math = row([frac([glyph('1')], [glyph('1'), glyph('+'), glyph('x')])]);
 
-  let state: Editor.SimpleState = {
+  let state: Editor.State = {
     row: math,
     selecting: false,
     selection: {
@@ -692,7 +692,7 @@ export const SelectionSize: Story<EmptyProps> = (
     ),
   ]);
 
-  let state: Editor.SimpleState = {
+  let state: Editor.State = {
     row: math,
     selecting: false,
     selection: {

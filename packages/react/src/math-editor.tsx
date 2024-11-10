@@ -25,8 +25,8 @@ type Props = {
   readonly radicalDegreeAlgorithm?: Typesetter.RadicalDegreeAlgorithm;
   readonly inline?: boolean;
 
-  readonly onSubmit?: (state: Editor.SimpleState) => unknown;
-  readonly onChange?: (state: Editor.SimpleState) => unknown;
+  readonly onSubmit?: (state: Editor.State) => unknown;
+  readonly onChange?: (state: Editor.State) => unknown;
 
   // Style
   readonly style?: React.CSSProperties;
@@ -36,7 +36,7 @@ type Props = {
   readonly showHitboxes?: boolean;
 };
 
-const keydownToAction = (key: string): Editor.SimpleAction | null => {
+const keydownToAction = (key: string): Editor.Action | null => {
   console.log(key);
   switch (key) {
     case '(':
@@ -84,7 +84,7 @@ const keydownToAction = (key: string): Editor.SimpleAction | null => {
   return null;
 };
 
-const keyupToAction = (key: string): Editor.SimpleAction | null => {
+const keyupToAction = (key: string): Editor.Action | null => {
   switch (key) {
     case 'Shift':
       return { type: 'StopSelecting' };
@@ -95,10 +95,8 @@ const keyupToAction = (key: string): Editor.SimpleAction | null => {
 
 // TODO: expose other settings such as display style as props
 // TODO: add an onBlur prop
-export const SimpleMathEditor: React.FunctionComponent<Props> = (
-  props: Props,
-) => {
-  const memoizedState: Editor.SimpleState = useMemo(() => {
+export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
+  const memoizedState: Editor.State = useMemo(() => {
     return {
       selecting: false,
       selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -106,7 +104,7 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
     };
   }, [props.row]);
 
-  const [state, setState] = useState<Editor.SimpleState>(memoizedState);
+  const [state, setState] = useState<Editor.State>(memoizedState);
   const [active, setActive] = useState<boolean>(false);
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
@@ -353,9 +351,9 @@ export const SimpleMathEditor: React.FunctionComponent<Props> = (
   );
 };
 
-SimpleMathEditor.defaultProps = {
+MathEditor.defaultProps = {
   style: {},
   fontSize: 64,
 };
 
-export default SimpleMathEditor;
+export default MathEditor;

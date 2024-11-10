@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { Link, Switch, Route, HashRouter as Router } from 'react-router-dom';
 
 import BaselinePage from './basline/baseline-page';
-import SimpleEditorPage from './editor/simple-editor-page';
+import EditorPage from './editor/editor-page';
 import ParserPage from './parser/parser-page';
 import MathmlPage from './mathml/mathml-page';
 import HandwritingPage from './handwriting/handwriting-page';
@@ -24,7 +24,7 @@ ReactDOM.render(
         <BaselinePage />
       </Route>
       <Route path="/editor">
-        <SimpleEditorPage />
+        <EditorPage />
       </Route>
       <Route path="/parser">
         <ParserPage />

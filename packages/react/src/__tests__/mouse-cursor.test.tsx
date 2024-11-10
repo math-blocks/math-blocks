@@ -70,7 +70,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -95,7 +95,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -142,7 +142,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -167,7 +167,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -192,7 +192,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -217,7 +217,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -267,7 +267,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -292,7 +292,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -317,7 +317,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -342,7 +342,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -387,7 +387,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -412,7 +412,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -459,7 +459,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -511,7 +511,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -536,7 +536,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),
@@ -561,7 +561,7 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const state: Editor.SimpleState = {
+      const state: Editor.State = {
         row: math,
         selecting: false,
         selection: Editor.SelectionUtils.makeSelection([], 0),

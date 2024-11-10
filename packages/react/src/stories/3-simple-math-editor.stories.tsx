@@ -7,7 +7,7 @@ import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 
-import SimpleMathEditor from '../simple-math-editor';
+import MathEditor from '../math-editor';
 import { FontDataContext } from '../font-data-context';
 
 // @ts-expect-error: TypeScript doesn't know about this path
@@ -24,8 +24,8 @@ const fontLoader = async (): Promise<FontData> => {
 };
 
 export default {
-  title: 'SimpleMathEditor',
-  component: SimpleMathEditor,
+  title: 'MathEditor',
+  component: MathEditor,
   loaders: [fontLoader],
 };
 
@@ -45,7 +45,7 @@ export const Editable: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <SimpleMathEditor
+      <MathEditor
         readonly={false}
         row={math}
         onChange={action('onChange')}
@@ -65,7 +65,7 @@ export const AllNodes: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <SimpleMathEditor
+      <MathEditor
         readonly={false}
         row={addingFractions}
         onChange={action('onChange')}
@@ -88,7 +88,7 @@ export const Readonly: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   return (
     <FontDataContext.Provider value={fontData}>
-      <SimpleMathEditor readonly={true} row={math} />
+      <MathEditor readonly={true} row={math} />
     </FontDataContext.Provider>
   );
 };

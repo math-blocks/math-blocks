@@ -241,7 +241,7 @@ describe('renderer', () => {
     });
 
     describe('cursor with tall delimiters', () => {
-      let state: Editor.SimpleState;
+      let state: Editor.State;
       let editNode: Editor.types.CharRow;
       let fontData: FontData;
       const fontSize = 60;
@@ -351,7 +351,7 @@ describe('renderer', () => {
     });
 
     describe('selection with tall delimiters', () => {
-      let state: Editor.SimpleState;
+      let state: Editor.State;
       let context: Typesetter.Context;
       let options: Typesetter.Options;
       let fontData: FontData;
