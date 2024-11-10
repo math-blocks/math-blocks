@@ -76,7 +76,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -101,7 +101,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -148,7 +148,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -173,7 +173,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -198,7 +198,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -223,7 +223,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -273,7 +273,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -298,7 +298,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -323,7 +323,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -348,7 +348,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -393,7 +393,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -418,7 +418,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -465,7 +465,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -517,7 +517,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -542,7 +542,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -567,7 +567,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.simpleReducer(state, {
+      const newState = Editor.reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,

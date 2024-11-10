@@ -288,7 +288,7 @@ describe('renderer', () => {
 
       test('2 cursor in superscript', () => {
         const moveLeft = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+          state = Editor.reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
 
@@ -307,7 +307,7 @@ describe('renderer', () => {
 
       test('3 cursor in subscript', () => {
         const moveLeft = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+          state = Editor.reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -328,7 +328,7 @@ describe('renderer', () => {
 
       test('4 cursor inside delimited', () => {
         const moveLeft = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+          state = Editor.reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -393,7 +393,7 @@ describe('renderer', () => {
         };
 
         const moveLeft = () => {
-          state = Editor.simpleReducer(state, {
+          state = Editor.reducer(state, {
             type: 'ArrowLeft',
           });
         };
@@ -410,7 +410,7 @@ describe('renderer', () => {
       test('1 selection in denominator', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+          state = Editor.reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
 
@@ -429,7 +429,7 @@ describe('renderer', () => {
       test('2 fraction selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+          state = Editor.reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -449,7 +449,7 @@ describe('renderer', () => {
       test('3 delimited selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+          state = Editor.reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -470,7 +470,7 @@ describe('renderer', () => {
       test('4 subsup selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+          state = Editor.reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();

@@ -586,8 +586,8 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     },
   };
 
-  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
-  state = Editor.simpleReducer(state, { type: 'ArrowRight' });
+  state = Editor.reducer(state, { type: 'ArrowRight' });
+  state = Editor.reducer(state, { type: 'ArrowRight' });
 
   const fontSize = 60;
 
@@ -656,8 +656,8 @@ export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
     },
   };
 
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 
@@ -701,11 +701,11 @@ export const SelectionSize: Story<EmptyProps> = (
     },
   };
 
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
   state = { ...state, selecting: true };
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
-  state = Editor.simpleReducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = Editor.reducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 
