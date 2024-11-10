@@ -30,7 +30,7 @@ const childContextForLimits = (context: Context): Context => {
 // TODO: render as a subsup if context.mathStyle isn't MathStyle.Display
 export const typesetLimits = (
   typesetChild: (index: number, context: Context) => HBox | null,
-  node: Editor.types.CharLimits | Editor.ZLimits,
+  node: Editor.types.CharLimits,
   path: Path,
   context: Context,
   typesetNode: (

@@ -16,7 +16,7 @@ const canBeUnary = (char: string): boolean => {
 };
 
 const shouldHavePadding = (
-  prevNode: Editor.types.CharNode | Editor.Focus | undefined,
+  prevNode: Editor.types.CharNode | undefined,
   currentNode: Editor.types.CharAtom,
   context: Context,
 ): boolean => {
@@ -39,8 +39,7 @@ const shouldHavePadding = (
     if (
       !prevNode ||
       (prevNode.type === 'char' && Editor.util.isOperator(prevNode)) ||
-      prevNode.type === 'limits' ||
-      prevNode.type === 'zlimits'
+      prevNode.type === 'limits'
     ) {
       return false;
     }
@@ -51,7 +50,7 @@ const shouldHavePadding = (
 };
 
 export const maybeAddOperatorPadding = (
-  prevNode: Editor.types.CharNode | Editor.Focus | undefined,
+  prevNode: Editor.types.CharNode | undefined,
   currentNode: Editor.types.CharAtom,
   context: Context,
   padOperator?: boolean,

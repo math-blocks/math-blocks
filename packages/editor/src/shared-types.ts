@@ -43,7 +43,6 @@ type ColStyle = {
 
 export type Table<A, C> = C & {
   readonly type: NodeType.Table;
-  readonly subtype: 'matrix' | 'algebra';
   readonly children: readonly (Row<A, C> | null)[];
   readonly rowCount: number;
   readonly colCount: number;

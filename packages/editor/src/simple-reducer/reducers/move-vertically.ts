@@ -1,7 +1,5 @@
 import * as PathUtils from '../path-utils';
-import type { State } from '../types';
-import type { Action } from '../../reducer/action-types';
-import type { Path, Selection } from '../types';
+import type { State, Action, Path, Selection } from '../types';
 import type { CharRow } from '../../char/types';
 
 export const moveVertically = (state: State, action: Action): State => {

@@ -117,7 +117,7 @@ export const matrix = (state: State, action: Action): State => {
   const { path } = state.selection.focus;
   const nodes = nodesForPath(state.row, path);
   const matrixPathIndex = nodes.findIndex(
-    (node) => node.type === NodeType.Table && node.subtype === 'matrix',
+    (node) => node.type === NodeType.Table,
   );
 
   if (matrixPathIndex === -1) {

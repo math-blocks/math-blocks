@@ -310,7 +310,6 @@ const lex = (
     case NodeType.Table: {
       return {
         type: node.type,
-        subtype: node.subtype,
         colCount: node.colCount,
         rowCount: node.rowCount,
         children: node.children.map(

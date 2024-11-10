@@ -4,7 +4,6 @@ import { Blob } from 'buffer';
 
 import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
-import * as Semantic from '@math-blocks/semantic';
 import { getFontData, parse } from '@math-blocks/opentype';
 
 import type { FontData } from '@math-blocks/opentype';
@@ -20,25 +19,6 @@ const {
 } = Editor.builders;
 
 let stixFontData: FontData | null = null;
-
-const toEqualEditorNodes = (
-  received: readonly Editor.types.CharNode[],
-  actual: readonly Editor.types.CharNode[],
-): { readonly message: () => string; readonly pass: boolean } => {
-  const message = "Editor nodes didn't match";
-  if (Semantic.util.deepEquals(received, actual)) {
-    return {
-      message: () => message,
-      pass: true,
-    };
-  }
-  return {
-    message: () => message,
-    pass: false,
-  };
-};
-
-expect.extend({ toEqualEditorNodes });
 
 const stixFontLoader = async (): Promise<FontData> => {
   if (stixFontData) {
@@ -90,24 +70,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.row.left).toEqualEditorNodes([
-        glyph('2'),
-        glyph('x'),
-        glyph('+'),
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([
-        glyph('5'),
-        glyph('='),
-        glyph('1'),
-        glyph('0'),
-      ]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [], offset: 3 },
+        focus: { path: [], offset: 3 },
+      });
     });
 
     test('end of row', () => {
@@ -117,23 +95,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.row.left).toEqualEditorNodes([
-        glyph('2'),
-        glyph('x'),
-        glyph('+'),
-        glyph('5'),
-        glyph('='),
-        glyph('1'),
-        glyph('0'),
-      ]);
-
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [], offset: 7 },
+        focus: { path: [], offset: 7 },
+      });
     });
   });
 
@@ -165,16 +142,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('1'), glyph('2')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
     });
 
     test('numerator middle', () => {
@@ -184,16 +167,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('1')]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('2')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
     });
 
     test('numerator right', () => {
@@ -203,16 +192,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('1'), glyph('2')]);
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
     });
 
     test('denominator', () => {
@@ -222,16 +217,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('x'), glyph('+')]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('y')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 1], offset: 2 },
+        focus: { path: [0, 1], offset: 2 },
+      });
     });
   });
 
@@ -266,16 +267,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('2')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [3, 1], offset: 0 },
+        focus: { path: [3, 1], offset: 0 },
+      });
     });
 
     test('superscript right', () => {
@@ -285,16 +292,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('2')]);
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [3, 1], offset: 1 },
+        focus: { path: [3, 1], offset: 1 },
+      });
     });
 
     test('subscript left', () => {
@@ -304,16 +317,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('n')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [3, 0], offset: 0 },
+        focus: { path: [3, 0], offset: 0 },
+      });
     });
 
     test('subscript right', () => {
@@ -323,16 +342,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('n')]);
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [3, 0], offset: 1 },
+        focus: { path: [3, 0], offset: 1 },
+      });
     });
   });
 
@@ -362,16 +387,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('3')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
     });
 
     test('radicand', () => {
@@ -381,16 +412,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('x'), glyph('+')]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('1')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 1], offset: 2 },
+        focus: { path: [0, 1], offset: 2 },
+      });
     });
   });
 
@@ -422,16 +459,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('x'), glyph('+')]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('1')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
     });
   });
 
@@ -468,16 +511,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.right).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('\u221e')]);
-      expect(zipper.row.right).toEqualEditorNodes([]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 1], offset: 1 },
+        focus: { path: [0, 1], offset: 1 },
+      });
     });
 
     test('below', () => {
@@ -487,16 +536,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      if (!zipper) {
-        throw new Error('zipper is undefined');
-      }
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
 
-      expect(zipper.breadcrumbs).toHaveLength(1);
-      expect(zipper.breadcrumbs[0].focus.left).toEqual([]);
-      expect(zipper.row.left).toEqualEditorNodes([glyph('i'), glyph('=')]);
-      expect(zipper.row.right).toEqualEditorNodes([glyph('0')]);
+      expect(newState.selection).toEqual({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
     });
 
     test('inner', () => {
@@ -506,10 +561,22 @@ describe('moving cursor with mouse', () => {
         scene.hitboxes,
       );
 
-      const zipper = Editor.rowToZipper(math, intersections);
+      const state: Editor.SimpleState = {
+        row: math,
+        selecting: false,
+        selection: Editor.SelectionUtils.makeSelection([], 0),
+      };
 
-      // We don't handle this case yet
-      expect(zipper).toBeUndefined();
+      const newState = Editor.simpleReducer(state, {
+        type: 'UpdateSelection',
+        intersections,
+        selecting: false,
+      });
+
+      expect(newState.selection).toEqual({
+        anchor: { path: [], offset: 0 },
+        focus: { path: [], offset: 0 },
+      });
     });
   });
 });

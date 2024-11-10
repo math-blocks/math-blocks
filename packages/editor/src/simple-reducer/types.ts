@@ -1,5 +1,4 @@
 import * as types from '../char/types';
-import type { MatrixActions } from '../reducer/matrix';
 
 export type Path = readonly number[];
 
@@ -19,6 +18,26 @@ export type State = {
   readonly selecting: boolean;
   readonly selection: Selection;
 };
+
+export type MatrixActions =
+  | {
+      readonly type: 'InsertMatrix';
+      readonly delimiters: 'brackets' | 'parens';
+    }
+  | {
+      readonly type: 'AddRow';
+      readonly side: 'above' | 'below';
+    }
+  | {
+      readonly type: 'AddColumn';
+      readonly side: 'left' | 'right';
+    }
+  | {
+      readonly type: 'DeleteRow';
+    }
+  | {
+      readonly type: 'DeleteColumn';
+    };
 
 export type Action =
   | { readonly type: 'ArrowLeft' }

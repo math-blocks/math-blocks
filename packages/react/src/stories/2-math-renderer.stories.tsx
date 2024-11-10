@@ -1,6 +1,5 @@
 import * as React from 'react';
 import type { Story } from '@storybook/react';
-import type { Mutable } from 'utility-types';
 import { Blob } from 'buffer';
 
 import * as Editor from '@math-blocks/editor';
@@ -909,69 +908,6 @@ export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
     <FontDataContext.Provider value={fontData}>
       <MathRenderer
         row={matrix}
-        style={style}
-        fontSize={fontSize}
-        renderMode={Typesetter.RenderMode.Dynamic}
-      />
-    </FontDataContext.Provider>
-  );
-};
-
-export const VerticalWork: Story<EmptyProps> = (args, { loaded: fontData }) => {
-  const { builders } = Editor;
-  const table = builders.algebra(
-    [
-      // first row
-      [],
-      [builders.char('2'), builders.char('x')],
-      [],
-      [],
-      [builders.char('+')],
-      [builders.char('5')],
-      [],
-      [builders.char('=')],
-      [],
-      [builders.char('1'), builders.char('0')],
-      [],
-
-      // second row
-      [],
-      [],
-      [builders.char('\u2212')],
-      [builders.char('y')],
-      [builders.char('\u2212')],
-      [builders.char('5')],
-      [],
-      [],
-      [builders.char('\u2212')],
-      [builders.char('5')],
-      [],
-
-      // third row
-      [],
-      [builders.char('2'), builders.char('x')],
-      [builders.char('\u2212')],
-      [builders.char('y')],
-      [builders.char('\u2212')],
-      [builders.char('5')],
-      [],
-      [builders.char('=')],
-      [],
-      [builders.char('5')],
-      [],
-    ],
-    11,
-    3,
-  ) as Mutable<Editor.types.CharTable>;
-  table.rowStyles = [null, null, { border: 'top' }];
-  const verticalWork = builders.row([table]);
-
-  const fontSize = 60;
-
-  return (
-    <FontDataContext.Provider value={fontData}>
-      <MathRenderer
-        row={verticalWork}
         style={style}
         fontSize={fontSize}
         renderMode={Typesetter.RenderMode.Dynamic}
