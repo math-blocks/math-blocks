@@ -52,6 +52,7 @@ export const backspace = (state: State): State => {
       const prevNode = focusParent.children[prevOffset];
 
       if (prevNode.type === 'char') {
+        console.log('composition =', prevNode.composition);
         // Deletes the char node to the left.
         const newRow = PathUtils.updateRowAtPath(
           row,
@@ -61,7 +62,13 @@ export const backspace = (state: State): State => {
             const afterSelection = node.children.slice(focus.offset);
             return {
               ...node,
-              children: [...beforeSelection, ...afterSelection],
+              children: prevNode.composition
+                ? [
+                    ...beforeSelection,
+                    ...prevNode.composition.slice(0, -1),
+                    ...afterSelection,
+                  ]
+                : [...beforeSelection, ...afterSelection],
             };
           },
         );
@@ -69,7 +76,7 @@ export const backspace = (state: State): State => {
         if (newRow !== row) {
           const newFocus = {
             path: focus.path,
-            offset: focus.offset - 1,
+            offset: prevNode.composition ? focus.offset : focus.offset - 1,
           };
 
           return {
