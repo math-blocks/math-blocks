@@ -3,11 +3,7 @@ import ReactJson from 'react-json-view';
 import cx from 'classnames';
 import type { Blob } from 'buffer';
 
-import {
-  SimpleMathEditor,
-  MathKeypad,
-  FontDataContext,
-} from '@math-blocks/react';
+import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
 import { parse as parseFont, getFontData } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
 import { builders, parse } from '@math-blocks/editor';
@@ -87,7 +83,7 @@ const EditorPage: React.FunctionComponent = () => {
           <MathKeypad />
         </VStack>
         <VStack style={{ flex: 1 }}>
-          <SimpleMathEditor
+          <MathEditor
             fontSize={fontSize}
             readonly={false}
             row={simpleRow}

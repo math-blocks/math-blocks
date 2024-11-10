@@ -1,11 +1,7 @@
 import * as React from 'react';
 import type { Blob } from 'buffer';
 
-import {
-  SimpleMathEditor,
-  MathKeypad,
-  FontDataContext,
-} from '@math-blocks/react';
+import { MathEditor, MathKeypad, FontDataContext } from '@math-blocks/react';
 import * as Editor from '@math-blocks/editor';
 import { parse, getFontData } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
@@ -154,7 +150,7 @@ const EditorPage: React.FunctionComponent = () => {
           <MathKeypad />
         </VStack>
         <VStack>
-          <SimpleMathEditor
+          <MathEditor
             fontSize={fontSize}
             readonly={false}
             row={math}

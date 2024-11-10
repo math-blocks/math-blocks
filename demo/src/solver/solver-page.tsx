@@ -14,21 +14,10 @@ import stix2 from '../../../assets/STIX2Math.otf';
 import Substeps from './substeps';
 
 const question: Editor.types.CharRow = Editor.util.row('2x+5=10');
-const questionZipper: Editor.Zipper = {
-  breadcrumbs: [],
-  row: {
-    id: question.id,
-    type: 'zrow',
-    left: [],
-    selection: [],
-    right: question.children,
-    style: {},
-  },
-};
 
-const safeParse = (input: Editor.Zipper): Semantic.types.Node | null => {
+const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
   try {
-    return Editor.parse(Editor.zipperToRow(input));
+    return Editor.parse(input);
   } catch {
     return null;
   }
@@ -42,13 +31,10 @@ const safeParse = (input: Editor.Zipper): Semantic.types.Node | null => {
 // - update MathRenderer to do the typesetting
 
 const SolverPage: React.FunctionComponent = () => {
-  const [input, setInput] = React.useState<Editor.Zipper>(questionZipper);
+  const [ast, setAst] = React.useState(safeParse(question));
   const [answer, setAnswer] = React.useState<Editor.types.CharRow | null>(null);
   const [step, setStep] = React.useState<Solver.Step | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-
-  const ast = safeParse(input);
-  console.log('ast = ', ast);
 
   const handleSimplify = React.useCallback((): void => {
     if (!ast) {
@@ -150,8 +136,8 @@ const SolverPage: React.FunctionComponent = () => {
         <div>
           <MathEditor
             readonly={false}
-            zipper={input}
-            onChange={(value: Editor.Zipper) => setInput(value)}
+            row={question}
+            onChange={(state) => setAst(safeParse(state.row))}
           />
         </div>
         <div style={styles.gap}></div>
