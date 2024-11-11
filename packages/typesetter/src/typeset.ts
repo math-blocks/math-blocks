@@ -18,6 +18,7 @@ import { maybeAddOperatorPadding } from './typesetters/atom';
 import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, Dim, Node } from './types';
 import type { Scene } from './scene-graph';
+import { typesetAccent } from './typesetters/accent';
 
 const { NodeType, SelectionUtils, PathUtils } = Editor;
 
@@ -34,7 +35,17 @@ const typesetRow = (
     undefined,
     undefined,
     padFirstOperator,
-  );
+  ) as Node[];
+
+  // If there are no children, then we need to add a box with dimensions so that
+  // the parent node can be typeset correctly.
+  if (output.length === 0) {
+    const box: Mutable<HBox> = Layout.makeStaticHBox([], context);
+    ensureMinDepthAndHeight(box, context);
+    const fontSize = Layout.fontSizeForContext(context);
+    box.width = fontSize / 2; // hack
+    output.push(box);
+  }
 
   const { selection } = context;
 
@@ -173,6 +184,10 @@ const typesetNode = (
     case NodeType.Delimited: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetDelimited(typesetChild, node, context);
+    }
+    case NodeType.Accent: {
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
+      return typesetAccent(typesetChild, node, context);
     }
     case NodeType.Macro: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);

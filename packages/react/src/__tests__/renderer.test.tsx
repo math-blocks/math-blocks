@@ -617,6 +617,80 @@ describe('renderer', () => {
     });
   });
 
+  describe('accents', () => {
+    it('should render accents', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.accent(
+          [
+            Editor.builders.char('a'),
+            Editor.builders.char('b'),
+            Editor.builders.char('c'),
+          ],
+          Editor.AccentType.Hat,
+        ),
+        Editor.builders.char('='),
+        Editor.builders.accent(
+          [Editor.builders.char('i')],
+          Editor.AccentType.Vector,
+        ),
+        Editor.builders.char('+'),
+        Editor.builders.accent(
+          [Editor.builders.char('j')],
+          Editor.AccentType.Vector,
+        ),
+        Editor.builders.char('+'),
+        Editor.builders.accent(
+          [Editor.builders.char('k')],
+          Editor.AccentType.Vector,
+        ),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    it('should render empty accents', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.accent(
+          [Editor.builders.char('i')],
+          Editor.AccentType.Vector,
+        ),
+        Editor.builders.char('+'),
+        Editor.builders.accent([], Editor.AccentType.Vector),
+        Editor.builders.char('+'),
+        Editor.builders.accent(
+          [Editor.builders.char('k')],
+          Editor.AccentType.Vector,
+        ),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+  });
+
   describe('cursor', () => {
     test('cursor in the middle', async () => {
       const Cursor = await storyToComponent(stories.Cursor);

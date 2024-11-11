@@ -19,7 +19,7 @@ import { HStack, VStack } from '../shared/layout';
 import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 0;
+const initialExample = 8;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
@@ -182,6 +182,7 @@ const EditorPage: React.FunctionComponent = () => {
                 <option value={5}>Matrix</option>
                 <option value={6}>Superscripts & Subscripts</option>
                 <option value={7}>Integral</option>
+                <option value={8}>Accents</option>
               </select>
             </HStack>
             <HStack>

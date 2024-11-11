@@ -324,6 +324,14 @@ const lex = (
         children: [lexRow(node.children[0], [...path, offset, 0])],
         loc: location(path, offset, offset + 1),
       };
+    case NodeType.Accent:
+      return {
+        type: node.type,
+        accent: node.accent,
+        wide: false,
+        children: [lexRow(node.children[0], [...path, offset, 0])],
+        loc: location(path, offset, offset + 1),
+      };
     case 'char':
       throw new Error('lexChildren coalesces chars, use it instead');
     default:

@@ -119,18 +119,16 @@ const getPrefixParselet = (
           return Parser.builders.parens(result);
         },
       };
+    case NodeType.Accent:
     case NodeType.Table:
-      throw new Error("We don't handle 'table' tokens yet");
+      throw new Error(`We don't handle '${node.type}' tokens yet`);
     // TODO: Handle subsup at the start of a row, useful in Chemistry
-    case NodeType.SubSup:
-      throw new Error("Unexpected 'subsup' token");
     // TODO: Handle limits at the start of a row
+    case NodeType.SubSup:
     case NodeType.Limits:
-      throw new Error("Unexpected 'limits' token");
     case NodeType.Row:
-      throw new Error("Unexpected 'row' token");
     case NodeType.Macro:
-      throw new Error("Unexpected 'macro' token");
+      throw new Error(`Unexpected '${node.type}' token`);
     default:
       throw new UnreachableCaseError(node);
   }
@@ -397,13 +395,11 @@ const getInfixParselet = (
       };
     }
     case NodeType.Table:
-      throw new Error("We don't handle 'table' tokens yet");
+    case NodeType.Accent:
     case NodeType.Limits:
-      throw new Error(`Unexpected 'limits' token`);
     case NodeType.Row:
-      throw new Error(`Unexpected 'row' token`);
     case NodeType.Macro:
-      throw new Error("Unexpected 'macro' token");
+      throw new Error(`Unexpected '${node.type}' token`);
     default:
       throw new UnreachableCaseError(node);
   }
