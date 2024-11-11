@@ -80,6 +80,8 @@ export const typesetLimits = (
       glyphID = construction.mathGlyphVariantRecords[1].variantGlyph;
     }
 
+    const metrics = font.getGlyphMetrics(glyphID);
+    console.log('integrals metrics =', metrics);
     inner = Layout.makeGlyph(char, glyphID, context, true);
 
     const subsup: Editor.types.CharSubSup = {

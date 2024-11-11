@@ -3,6 +3,7 @@
 export enum NodeType {
   Row = 'row',
   Delimited = 'delimited',
+  Accent = 'accent',
   Macro = 'macro',
   Table = 'table',
   SubSup = 'subsup',
@@ -24,6 +25,21 @@ export type Delimited<A, C> = C & {
   // How do we limit what can be used as a delimiter?s
   readonly leftDelim: Atom<A, C>;
   readonly rightDelim: Atom<A, C>;
+};
+
+export enum AccentType {
+  Overline = 'overline',
+  Underline = 'underline',
+  Hat = 'hat',
+  Tilde = 'tilde',
+  Vector = 'vector',
+}
+
+export type Accent<A, C> = C & {
+  readonly type: NodeType.Accent;
+  readonly accent: AccentType;
+  readonly wide: boolean;
+  readonly children: readonly [Row<A, C>];
 };
 
 export type Macro<A, C> = C & {
@@ -81,6 +97,7 @@ export type Atom<A, C> = C & A;
 export type Node<A, C> =
   | Row<A, C>
   | Delimited<A, C>
+  | Accent<A, C>
   | Macro<A, C>
   | Table<A, C>
   | SubSup<A, C>

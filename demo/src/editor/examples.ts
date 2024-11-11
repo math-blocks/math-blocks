@@ -1,4 +1,4 @@
-import { builders } from '@math-blocks/editor';
+import { builders, AccentType } from '@math-blocks/editor';
 
 const simpleRow = builders.row([
   builders.char('2'),
@@ -182,6 +182,19 @@ const integral = builders.row([
   builders.char('x'),
 ]);
 
+const accents = builders.row([
+  builders.accent(
+    [builders.char('a'), builders.char('b'), builders.char('c')],
+    AccentType.Hat,
+  ),
+  builders.char('='),
+  builders.accent([builders.char('i')], AccentType.Vector),
+  builders.char('+'),
+  builders.accent([builders.char('j')], AccentType.Vector),
+  builders.char('+'),
+  builders.accent([builders.char('k')], AccentType.Vector),
+]);
+
 export const examples = [
   simpleRow,
   addingFractions,
@@ -191,4 +204,5 @@ export const examples = [
   matrix,
   subsups,
   integral,
+  accents,
 ];

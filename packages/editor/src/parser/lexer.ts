@@ -11,7 +11,7 @@ import { UnreachableCaseError } from '@math-blocks/core';
 import * as types from '../char/types';
 
 import { TokenKind } from '../token/types';
-import { NodeType } from '../shared-types';
+import { NodeType, AccentType } from '../shared-types';
 
 import {
   Token,
@@ -321,6 +321,14 @@ const lex = (
     case NodeType.Macro:
       return {
         type: node.type,
+        children: [lexRow(node.children[0], [...path, offset, 0])],
+        loc: location(path, offset, offset + 1),
+      };
+    case NodeType.Accent:
+      return {
+        type: node.type,
+        accent: AccentType.Vector,
+        wide: false,
         children: [lexRow(node.children[0], [...path, offset, 0])],
         loc: location(path, offset, offset + 1),
       };

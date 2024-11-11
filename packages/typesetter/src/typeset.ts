@@ -18,6 +18,7 @@ import { maybeAddOperatorPadding } from './typesetters/atom';
 import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, Dim, Node } from './types';
 import type { Scene } from './scene-graph';
+import { typesetAccent } from './typesetters/accent';
 
 const { NodeType, SelectionUtils, PathUtils } = Editor;
 
@@ -173,6 +174,10 @@ const typesetNode = (
     case NodeType.Delimited: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);
       return typesetDelimited(typesetChild, node, context);
+    }
+    case NodeType.Accent: {
+      const typesetChild = getTypesetChildFromNodes(node.children, path);
+      return typesetAccent(typesetChild, node, context);
     }
     case NodeType.Macro: {
       const typesetChild = getTypesetChildFromNodes(node.children, path);

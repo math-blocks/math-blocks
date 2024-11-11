@@ -89,4 +89,8 @@ export enum NodeType {
   Rationals = 'rationals',
   Reals = 'reals',
   Complexes = 'complexes',
+
+  // Linear Algebra
+  Vector = 'vector',
+  Matrix = 'matrix',
 }

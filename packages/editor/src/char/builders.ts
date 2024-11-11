@@ -1,7 +1,7 @@
 import { getId } from '@math-blocks/core';
 
 import * as types from './types';
-import { NodeType } from '../shared-types';
+import { NodeType, AccentType } from '../shared-types';
 
 export function row(children: readonly types.CharNode[]): types.CharRow {
   return {
@@ -75,6 +75,20 @@ export function delimited(
     children: [row(inner)],
     leftDelim: leftDelim,
     rightDelim: rightDelim,
+    style: {},
+  };
+}
+
+export function accent(
+  arg: readonly types.CharNode[],
+  accent: AccentType,
+): types.CharAccent {
+  return {
+    id: getId(),
+    type: NodeType.Accent,
+    accent,
+    wide: false,
+    children: [row(arg)],
     style: {},
   };
 }

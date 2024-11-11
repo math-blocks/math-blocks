@@ -88,6 +88,13 @@ const print = (
     case NodeType.Macro: {
       throw new Error('TODO: add support for serializing Macro nodes');
     }
+    case NodeType.Accent: {
+      const [child] = ast.children;
+      // TODO: include the .accent and .wide properties in the serialization
+      return `(accent@[${loc.path.map(String).join(',')}]:${loc.start}:${
+        loc.end
+      } ${print(child, serialize, indent)})`;
+    }
     default:
       throw new UnreachableCaseError(ast);
   }

@@ -571,6 +571,25 @@ export type Reals = Common<NodeType.Reals>;
  */
 export type Complexes = Common<NodeType.Complexes>;
 
+/**
+ * Linear Algebra
+ */
+export enum VectorDirection {
+  Row = 'row',
+  Column = 'column',
+}
+
+export type Vector = Common<NodeType.Vector> & {
+  readonly args: readonly Node[];
+  readonly dir: VectorDirection;
+};
+
+export type Matrix = Common<NodeType.Matrix> & {
+  readonly args: readonly Node[];
+  readonly rowCount: number;
+  readonly colCount: number;
+};
+
 // TODO: dedupe with editor and parser
 export interface SourceLocation {
   readonly path: readonly number[];

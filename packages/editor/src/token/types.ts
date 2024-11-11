@@ -93,6 +93,7 @@ type Common = { readonly loc: SourceLocation };
 
 export type TokenRow = sharedTypes.Row<Token, Common>;
 export type TokenDelimited = sharedTypes.Delimited<Token, Common>;
+export type TokenAccent = sharedTypes.Accent<Token, Common>;
 export type TokenMacro = sharedTypes.Macro<Token, Common>;
 export type TokenTable = sharedTypes.Table<Token, Common>;
 export type TokenSubSup = sharedTypes.SubSup<Token, Common>;
@@ -104,6 +105,7 @@ export type TokenAtom = sharedTypes.Atom<Token, Common>;
 export type TokenNode =
   | TokenRow
   | TokenDelimited
+  | TokenAccent
   | TokenMacro
   | TokenTable
   | TokenSubSup
