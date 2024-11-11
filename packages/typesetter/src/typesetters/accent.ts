@@ -24,10 +24,6 @@ export const typesetAccent = (
     throw new Error("Delimited's content should be defined");
   }
 
-  if (inner.type === 'HBox') {
-    console.log(inner);
-  }
-
   const fontSize = Layout.fontSizeForContext(context);
 
   const char = AccentMap[node.accent];
