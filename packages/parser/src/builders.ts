@@ -186,15 +186,3 @@ export const parens = (
   arg,
   loc,
 });
-
-export const vector = (
-  args: readonly types.Node[],
-  dir: types.VectorDirection,
-  loc?: types.SourceLocation,
-): types.Vector => ({
-  type: NodeType.Vector,
-  id: getId(),
-  dir,
-  args,
-  loc,
-});

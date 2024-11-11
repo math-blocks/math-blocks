@@ -35,7 +35,17 @@ const typesetRow = (
     undefined,
     undefined,
     padFirstOperator,
-  );
+  ) as Node[];
+
+  // If there are no children, then we need to add a box with dimensions so that
+  // the parent node can be typeset correctly.
+  if (output.length === 0) {
+    const box: Mutable<HBox> = Layout.makeStaticHBox([], context);
+    ensureMinDepthAndHeight(box, context);
+    const fontSize = Layout.fontSizeForContext(context);
+    box.width = fontSize / 2; // hack
+    output.push(box);
+  }
 
   const { selection } = context;
 

@@ -52,7 +52,6 @@ export const backspace = (state: State): State => {
       const prevNode = focusParent.children[prevOffset];
 
       if (prevNode.type === 'char') {
-        console.log('composition =', prevNode.composition);
         // Deletes the char node to the left.
         const newRow = PathUtils.updateRowAtPath(
           row,
