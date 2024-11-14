@@ -83,7 +83,7 @@ export class Parser {
     switch (char) {
       case '{': {
         this.consume(); // '{'
-        return this.parseRow();
+        return this.parseRow('{');
       }
       case '_': {
         this.consume(); // '_'
@@ -149,7 +149,7 @@ export class Parser {
         let index: types.CharNode | null = null;
         if (this.input[this.index] === '[') {
           this.consume(); // '['
-          index = this.parseRow();
+          index = this.parseRow('[');
         }
         const radicand = this.parseNode();
         return builders.root(
@@ -187,15 +187,15 @@ export class Parser {
     }
   }
 
-  parseRow(): types.CharRow {
+  parseRow(terminator?: string): types.CharRow {
     const nodes: types.CharNode[] = [];
     while (this.index < this.input.length) {
       const char = this.input[this.index];
-      if (char === '}') {
+      if (terminator === '{' && char === '}') {
         this.consume(); // '}'
         break;
       }
-      if (char === ']') {
+      if (terminator === '[' && char === ']') {
         this.consume(); // ']'
         break;
       }

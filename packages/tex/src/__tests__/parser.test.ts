@@ -271,4 +271,28 @@ describe('Parser', () => {
       ),
     ).toBe(true);
   });
+
+  test('unexpected rbrace', () => {
+    const parser = new Parser('}');
+
+    expect(() => parser.parse()).toThrowErrorMatchingInlineSnapshot(
+      `"unexpected rbrace"`,
+    );
+  });
+
+  test('no right delimiter', () => {
+    const parser = new Parser('\\left(a+b');
+
+    expect(() => parser.parse()).toThrowErrorMatchingInlineSnapshot(
+      `"no right delimiter"`,
+    );
+  });
+
+  test('unknown command', () => {
+    const parser = new Parser('\\foo');
+
+    expect(() => parser.parse()).toThrowErrorMatchingInlineSnapshot(
+      `"unknown command: foo"`,
+    );
+  });
 });
