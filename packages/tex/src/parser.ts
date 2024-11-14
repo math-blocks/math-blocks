@@ -83,7 +83,7 @@ export class Parser {
     switch (char) {
       case '{': {
         this.consume(); // '{'
-        return this.parseRow('{');
+        return this.parseRow('}');
       }
       case '_': {
         this.consume(); // '_'
@@ -149,7 +149,7 @@ export class Parser {
         let index: types.CharNode | null = null;
         if (this.input[this.index] === '[') {
           this.consume(); // '['
-          index = this.parseRow('[');
+          index = this.parseRow(']');
         }
         const radicand = this.parseNode();
         return builders.root(
@@ -161,7 +161,7 @@ export class Parser {
         // TODO: check if it's a valid delimiter
         const leftDelim = this.peek();
         this.consume(); // left delimiter
-        const inner = this.parseRow();
+        const inner = this.parseRow('right');
         const rightDelim = this.rightDelims.pop();
         if (!rightDelim) {
           throw new Error('no right delimiter');
@@ -183,20 +183,19 @@ export class Parser {
         if (symbolMap[name]) {
           return builders.char(symbolMap[name]);
         }
+        if (name === 'right') {
+          throw new Error('unexpected right delimiter');
+        }
         throw new Error(`unknown command: ${name}`);
     }
   }
 
-  parseRow(terminator?: string): types.CharRow {
+  parseRow(terminator?: '}' | ']' | 'right'): types.CharRow {
     const nodes: types.CharNode[] = [];
     while (this.index < this.input.length) {
       const char = this.input[this.index];
-      if (terminator === '{' && char === '}') {
+      if (terminator === char) {
         this.consume(); // '}'
-        break;
-      }
-      if (terminator === '[' && char === ']') {
-        this.consume(); // ']'
         break;
       }
       if (char === '\\') {
@@ -212,9 +211,9 @@ export class Parser {
             break;
           }
         }
-        if (name === 'right') {
+        if (terminator === name) {
           // TODO: check if it's a valid delimiter
-          this.input[this.index]; // ?
+          this.input[this.index];
           this.rightDelims.push(this.input[this.index]);
           this.consume(); // right delimiter
           break;

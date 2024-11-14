@@ -295,4 +295,12 @@ describe('Parser', () => {
       `"unknown command: foo"`,
     );
   });
+
+  test('unexpected right delimiter', () => {
+    const parser = new Parser('\\right)');
+
+    expect(() => parser.parse()).toThrowErrorMatchingInlineSnapshot(
+      `"unexpected right delimiter"`,
+    );
+  });
 });
