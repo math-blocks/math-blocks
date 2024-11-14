@@ -28,12 +28,17 @@ export type Delimited<A, C> = C & {
 };
 
 export enum AccentType {
-  Overline = 'overline',
-  Underline = 'underline',
   Hat = 'hat',
+  Bar = 'bar',
+  Vec = 'vec',
+  Dot = 'dot',
+  DDot = 'ddot',
   Tilde = 'tilde',
-  Vector = 'vector',
+  Acute = 'acute',
+  Grave = 'grave',
 }
+export const isAccentType = (accent: string): accent is AccentType =>
+  Object.values(AccentType).includes(accent as AccentType);
 
 export type Accent<A, C> = C & {
   readonly type: NodeType.Accent;
