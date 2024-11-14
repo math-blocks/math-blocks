@@ -1,1 +1,1 @@
-export const msg = 'Hello, world!';
+export { Parser } from './parser';
