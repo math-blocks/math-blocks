@@ -188,11 +188,11 @@ const accents = builders.row([
     AccentType.Hat,
   ),
   builders.char('='),
-  builders.accent([builders.char('i')], AccentType.Vector),
+  builders.accent([builders.char('i')], AccentType.Vec),
   builders.char('+'),
-  builders.accent([builders.char('j')], AccentType.Vector),
+  builders.accent([builders.char('j')], AccentType.Vec),
   builders.char('+'),
-  builders.accent([builders.char('k')], AccentType.Vector),
+  builders.accent([builders.char('k')], AccentType.Vec),
 ]);
 
 export const examples = [

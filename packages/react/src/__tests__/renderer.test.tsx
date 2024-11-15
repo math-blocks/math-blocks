@@ -631,17 +631,17 @@ describe('renderer', () => {
         Editor.builders.char('='),
         Editor.builders.accent(
           [Editor.builders.char('i')],
-          Editor.AccentType.Vector,
+          Editor.AccentType.Vec,
         ),
         Editor.builders.char('+'),
         Editor.builders.accent(
           [Editor.builders.char('j')],
-          Editor.AccentType.Vector,
+          Editor.AccentType.Vec,
         ),
         Editor.builders.char('+'),
         Editor.builders.accent(
           [Editor.builders.char('k')],
-          Editor.AccentType.Vector,
+          Editor.AccentType.Vec,
         ),
       ]);
 
@@ -664,14 +664,14 @@ describe('renderer', () => {
       const row = Editor.builders.row([
         Editor.builders.accent(
           [Editor.builders.char('i')],
-          Editor.AccentType.Vector,
+          Editor.AccentType.Vec,
         ),
         Editor.builders.char('+'),
-        Editor.builders.accent([], Editor.AccentType.Vector),
+        Editor.builders.accent([], Editor.AccentType.Vec),
         Editor.builders.char('+'),
         Editor.builders.accent(
           [Editor.builders.char('k')],
-          Editor.AccentType.Vector,
+          Editor.AccentType.Vec,
         ),
       ]);
 

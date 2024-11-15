@@ -55,6 +55,18 @@ export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     return a.children.every((aChild, index) =>
       isEqual(aChild, b.children[index]),
     );
+  } else if (a.type === 'delimited' && b.type === 'delimited') {
+    const [aInner] = a.children;
+    const [bInner] = b.children;
+    return (
+      isEqual(aInner, bInner) &&
+      isEqual(a.leftDelim, b.leftDelim) &&
+      isEqual(a.rightDelim, b.rightDelim)
+    );
+  } else if (a.type === 'accent' && b.type === 'accent') {
+    const [aInner] = a.children;
+    const [bInner] = b.children;
+    return isEqual(aInner, bInner) && a.accent === b.accent;
   } else {
     return false;
   }

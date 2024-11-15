@@ -7,11 +7,14 @@ import type { Context, HBox, VBox } from '../types';
 import { RenderMode } from '../enums';
 
 const AccentMap: Record<Editor.AccentType, string> = {
-  [Editor.AccentType.Overline]: '\u0305',
-  [Editor.AccentType.Underline]: '\u0332',
+  [Editor.AccentType.Grave]: '\u0300',
+  [Editor.AccentType.Acute]: '\u0301',
   [Editor.AccentType.Hat]: '\u0302',
   [Editor.AccentType.Tilde]: '\u0303',
-  [Editor.AccentType.Vector]: '\u20D7',
+  [Editor.AccentType.Bar]: '\u0305',
+  [Editor.AccentType.Dot]: '\u0307',
+  [Editor.AccentType.DDot]: '\u0308',
+  [Editor.AccentType.Vec]: '\u20D7',
 };
 
 export const typesetAccent = (

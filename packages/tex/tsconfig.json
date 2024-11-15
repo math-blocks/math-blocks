@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig-base.json",
+  "exclude": ["out", "dist"],
+  "compilerOptions": {
+    "outDir": "out",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../.buildcache/testing.tsbuildinfo"
+  },
+  "references": [
+    {"path": "../core"},
+    {"path": "../editor"},
+  ]
+}
