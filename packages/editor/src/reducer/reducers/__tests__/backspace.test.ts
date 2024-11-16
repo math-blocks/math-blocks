@@ -2,13 +2,15 @@ import { getId } from '@math-blocks/core';
 
 import * as b from '../../../char/builders';
 import { toEqualEditorNode } from '../../../test-util';
-import { reducer } from '../../reducer';
+import { getReducer } from '../../reducer';
 import * as SelectionUtils from '../../selection-utils';
 
 import type { Action, State } from '../../types';
 import type { CharAtom } from '../../../char/types';
 
 expect.extend({ toEqualEditorNode });
+
+const reducer = getReducer({});
 
 describe('backspace', () => {
   describe('deleting a char', () => {

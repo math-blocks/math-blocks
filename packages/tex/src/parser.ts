@@ -1,53 +1,6 @@
 import { types, builders, isAccentType } from '@math-blocks/editor';
 
-const symbolMap: Record<string, string> = {
-  infty: '\u221e',
-  lim: 'lim',
-
-  // operators
-  int: '\u222b',
-  sum: '\u2211',
-  prod: '\u220f',
-  pm: '\u00b1',
-  mp: '\u2213',
-  times: '\u00d7',
-  cdot: '\u22c5',
-
-  // inequalties
-  neq: '\u2260',
-  le: '\u2264',
-  leq: '\u2264',
-  ge: '\u2265',
-  geq: '\u2265',
-  lt: '\u003c',
-  gt: '\u003e',
-
-  // arrows
-  rightarrow: '\u2192',
-  leftarrow: '\u2190',
-  uparrow: '\u2191',
-  downarrow: '\u2193',
-
-  // logarithms
-  log: 'log',
-  ln: 'ln',
-
-  // trig functions
-  sin: 'sin',
-  cos: 'cos',
-  tan: 'tan',
-  cot: 'cot',
-  sec: 'sec',
-  csc: 'csc',
-
-  // inverse trig functions
-  arcsin: 'arcsin',
-  arccos: 'arccos',
-  arctan: 'arctan',
-  arccot: 'arccot',
-  arcsec: 'arcsec',
-  arccsc: 'arccsc',
-};
+import { macros } from './macros';
 
 export class Parser {
   // eslint-disable-next-line functional/prefer-readonly-type
@@ -180,8 +133,8 @@ export class Parser {
             name,
           );
         }
-        if (symbolMap[name]) {
-          return builders.char(symbolMap[name]);
+        if (macros[name]) {
+          return builders.char(macros[name]);
         }
         if (name === 'right') {
           throw new Error('unexpected right delimiter');

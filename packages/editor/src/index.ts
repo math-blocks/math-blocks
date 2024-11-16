@@ -16,7 +16,7 @@ export {
 
 export { print } from './printer/printer';
 export { parse } from './parser/parser';
-export { reducer } from './reducer/reducer';
+export { getReducer } from './reducer/reducer';
 export type { Path, Selection, State, Action } from './reducer/types';
 export * as PathUtils from './reducer/path-utils';
 export * as SelectionUtils from './reducer/selection-utils';

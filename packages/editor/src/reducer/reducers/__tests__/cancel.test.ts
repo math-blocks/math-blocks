@@ -3,11 +3,13 @@ import * as b from '../../../char/builders';
 
 import { toEqualEditorNode } from '../../../test-util';
 import * as SelectionUtils from '../../selection-utils';
-import { reducer } from '../../reducer';
+import { getReducer } from '../../reducer';
 
 import type { Action, State } from '../../types';
 
 expect.extend({ toEqualEditorNode });
+
+const reducer = getReducer({});
 
 describe('cancel', () => {
   it('should cancel the selected range', () => {

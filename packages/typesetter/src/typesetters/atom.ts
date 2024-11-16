@@ -10,6 +10,7 @@ const canBeUnary = (char: string): boolean => {
     '+',
     '\u2212', // \minus
     '\u00B1', // \pm
+    '\u2213', // \mp
   ];
 
   return unaryOperators.includes(char);
@@ -49,6 +50,10 @@ const shouldHavePadding = (
   return true;
 };
 
+// TODO(kevinb): Base padding off of page 170 in the TeXbook.
+// thin space = 3/18 em
+// medium space = 4/18 em
+// thick space = 5/18 em
 export const maybeAddOperatorPadding = (
   prevNode: Editor.types.CharNode | undefined,
   currentNode: Editor.types.CharAtom,

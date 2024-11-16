@@ -227,7 +227,8 @@ export const isOperator = (atom: types.CharAtom): boolean => {
     '+',
     '\u2212', // \minus
     '\u00B1', // \pm
-    '\u00B7', // \times
+    '\u00D7', // \times
+    '\u22C5', // \cdot
     '=',
     '<',
     '>',

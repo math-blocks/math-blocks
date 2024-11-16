@@ -1,12 +1,14 @@
 import * as b from '../../../char/builders';
 
 import { toEqualEditorNode } from '../../../test-util';
-import { reducer } from '../../reducer';
+import { getReducer } from '../../reducer';
 import * as SelectionUtils from '../../selection-utils';
 
 import type { Action, State } from '../../types';
 
 expect.extend({ toEqualEditorNode });
+
+const reducer = getReducer({});
 
 describe('insertChar', () => {
   it('should insert the char at the right location', () => {

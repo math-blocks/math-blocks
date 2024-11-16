@@ -12,12 +12,15 @@ import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
 import * as stories from '../stories/2-math-renderer.stories';
 import { FontDataContext } from '../font-data-context';
 
 const { char: glyph, row, subsup } = Editor.builders;
+
+const reducer = Editor.getReducer(macros);
 
 let stixFontData: FontData | null = null;
 let lmFontData: FontData | null = null;
@@ -288,7 +291,7 @@ describe('renderer', () => {
 
       test('2 cursor in superscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
 
@@ -307,7 +310,7 @@ describe('renderer', () => {
 
       test('3 cursor in subscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -328,7 +331,7 @@ describe('renderer', () => {
 
       test('4 cursor inside delimited', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -393,7 +396,7 @@ describe('renderer', () => {
         };
 
         const moveLeft = () => {
-          state = Editor.reducer(state, {
+          state = reducer(state, {
             type: 'ArrowLeft',
           });
         };
@@ -410,7 +413,7 @@ describe('renderer', () => {
       test('1 selection in denominator', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
 
@@ -429,7 +432,7 @@ describe('renderer', () => {
       test('2 fraction selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -449,7 +452,7 @@ describe('renderer', () => {
       test('3 delimited selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -470,7 +473,7 @@ describe('renderer', () => {
       test('4 subsup selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
