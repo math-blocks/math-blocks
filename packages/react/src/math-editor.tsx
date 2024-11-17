@@ -38,6 +38,7 @@ type Props = {
 };
 
 const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 const keydownToAction = (key: string): Editor.Action | null => {
   console.log(key);
@@ -283,6 +284,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     renderMode: Typesetter.RenderMode.Dynamic,
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     selection: state.selection,
+    operators: operators,
   };
 
   // TODO: properly type this

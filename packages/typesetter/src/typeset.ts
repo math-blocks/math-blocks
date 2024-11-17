@@ -13,7 +13,7 @@ import { typesetLimits } from './typesetters/limits';
 import { typesetRoot } from './typesetters/root';
 import { typesetSubsup } from './typesetters/subsup';
 import { typesetTable } from './typesetters/table';
-import { maybeAddOperatorPadding } from './typesetters/atom';
+import { typesetAtom } from './typesetters/atom';
 
 import type { Path } from '@math-blocks/editor';
 import type { Context, HBox, Dim, Node } from './types';
@@ -198,16 +198,43 @@ const typesetNode = (
       return typesetTable(typesetChild, node, context);
     }
     case 'char': {
-      return maybeAddOperatorPadding(
-        prevEditNode,
-        node,
-        context,
-        padFirstOperator,
-      );
+      return typesetAtom(node, context);
     }
     default:
       throw new UnreachableCaseError(node);
   }
+};
+
+const findSequencePositions = (
+  operators: readonly string[],
+  arr: readonly string[],
+): { start: number; end: number }[] => {
+  // Initialize the result array with empty arrays for each sequence
+  const positions: { start: number; end: number }[] = [];
+
+  // Loop over the array once
+  for (let i = 0; i <= arr.length - 1; i++) {
+    // For each sequence, check if it matches at this position
+    for (let j = 0; j < operators.length; j++) {
+      const sequence = operators[j];
+
+      // Check if there are enough elements left in the array for this sequence
+      if (i + sequence.length <= arr.length) {
+        // Check if the sequence matches starting at index i
+        if (
+          arr
+            .slice(i, i + sequence.length)
+            .every((val, idx) => val === sequence.charAt(idx))
+        ) {
+          // Store both start and end positions for the found sequence
+          positions.push({ start: i, end: i + sequence.length - 1 });
+          i += sequence.length - 1; // account for i++ in the outer loop
+        }
+      }
+    }
+  }
+
+  return positions;
 };
 
 const typesetNodes = (
@@ -218,19 +245,125 @@ const typesetNodes = (
   prevLayoutNode?: Node,
   padFirstOperator?: boolean,
 ): readonly Node[] => {
+  const chars = nodes.map((node) => {
+    return node.type === 'char' ? node.value : '';
+  });
+  const positions = findSequencePositions(context.operators, chars);
+
   return nodes.map((child, index) => {
+    const isOperator = positions.some((pos) => {
+      return pos.start <= index && pos.end >= index;
+    });
+    const isOperatorStart = positions.some((pos) => {
+      return pos.start === index;
+    });
+    const isOperatorEnd = positions.some((pos) => {
+      return pos.end === index;
+    });
+
     const result = typesetNode(
       child,
       [...path, index],
-      context,
+      isOperator ? { ...context, operator: true } : context,
       prevChild,
       prevLayoutNode,
       index === 0 ? padFirstOperator : undefined,
-    );
+    ) as Mutable<Node>;
+
+    const glyph = result;
+    const padOperator = index === 0 ? padFirstOperator : undefined;
+    const nextChild = nodes[index + 1];
+
+    if (child.type === 'char' && glyph.type === 'Glyph') {
+      const fontSize = Layout.fontSizeForContext(context);
+      const hbox: Node[] = [glyph];
+
+      // TODO(kevinb): Base padding off of page 170 in the TeXbook.
+      // thin space = 3/18 em
+      // medium space = 4/18 em
+      // thick space = 5/18 em
+      if (isOperatorStart) {
+        hbox.unshift(Layout.makeKern(fontSize / 6));
+      }
+      if (isOperatorEnd && nextChild?.type === 'char') {
+        hbox.push(Layout.makeKern(fontSize / 6));
+      }
+      if (
+        (padOperator && Editor.util.isOperator(child)) ||
+        shouldHavePadding(prevChild, child, context)
+      ) {
+        hbox.unshift(Layout.makeKern(fontSize / 4));
+        hbox.push(Layout.makeKern(fontSize / 4));
+      }
+
+      const result =
+        hbox.length > 1
+          ? (Layout.makeStaticHBox(hbox, context) as Mutable<HBox>)
+          : glyph;
+
+      if (result !== glyph) {
+        result.id = glyph.id;
+        delete glyph.id;
+        // Move the style to the result so that cancel overlays are
+        // continuous even when they include an operator with padding.
+        result.style = glyph.style;
+        glyph.style = {};
+      }
+
+      prevLayoutNode = result;
+      prevChild = child;
+      return result;
+    }
+
     prevLayoutNode = result;
     prevChild = child;
     return result;
   });
+};
+
+const shouldHavePadding = (
+  prevNode: Editor.types.CharNode | undefined,
+  currentNode: Editor.types.CharAtom,
+  context: Context,
+): boolean => {
+  const currentChar = currentNode.value;
+
+  // We only add padding around operators, so if we get a non-operator char
+  // we can return early.
+  if (!Editor.util.isOperator(currentNode)) {
+    return false;
+  }
+
+  // No operators get padding when `cramped` is true
+  if (context.cramped) {
+    return false;
+  }
+
+  // If the currentChar can be unary we check a number of situations where it
+  // should be unary and don't give it any padding in those situations.
+  if (canBeUnary(currentChar)) {
+    if (
+      !prevNode ||
+      (prevNode.type === 'char' && Editor.util.isOperator(prevNode)) ||
+      prevNode.type === 'limits'
+    ) {
+      return false;
+    }
+  }
+
+  // All other operators should have padding around them.
+  return true;
+};
+
+const canBeUnary = (char: string): boolean => {
+  const unaryOperators = [
+    '+',
+    '\u2212', // \minus
+    '\u00B1', // \pm
+    '\u2213', // \mp
+  ];
+
+  return unaryOperators.includes(char);
 };
 
 export type Options = {

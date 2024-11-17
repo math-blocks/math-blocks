@@ -4,16 +4,25 @@ export const macros: Record<string, string> = {
   // named functions
   log: 'log',
   ln: 'ln',
-  span: 'span',
-  proj: 'proj',
-  det: 'det',
-  dim: 'dim',
+  arg: 'arg',
   min: 'min',
   max: 'max',
   mod: 'mod',
   lcm: 'lcm',
   gcd: 'gcd',
+  limsup: 'limsup',
+  liminf: 'liminf',
   lim: 'lim',
+
+  // linear algebra
+  span: 'span',
+  rank: 'rank',
+  null: 'null',
+  adj: 'adj',
+  proj: 'proj',
+  ker: 'ker',
+  det: 'det',
+  dim: 'dim',
 
   // number sets
   C: '\u2102',

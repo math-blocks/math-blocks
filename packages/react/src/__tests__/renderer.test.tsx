@@ -21,6 +21,7 @@ import { FontDataContext } from '../font-data-context';
 const { char: glyph, row, subsup } = Editor.builders;
 
 const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 let stixFontData: FontData | null = null;
 let lmFontData: FontData | null = null;
@@ -382,6 +383,7 @@ describe('renderer', () => {
           mathStyle: Typesetter.MathStyle.Display,
           renderMode: Typesetter.RenderMode.Dynamic,
           cramped: false,
+          operators: operators,
         };
         options = {
           showCursor: true,

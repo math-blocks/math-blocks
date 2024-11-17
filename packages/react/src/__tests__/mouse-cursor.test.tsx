@@ -22,6 +22,7 @@ const {
 let stixFontData: FontData | null = null;
 
 const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 const stixFontLoader = async (): Promise<FontData> => {
   if (stixFontData) {
@@ -62,6 +63,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -134,6 +136,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -259,6 +262,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -379,6 +383,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -451,6 +456,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -503,6 +509,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
