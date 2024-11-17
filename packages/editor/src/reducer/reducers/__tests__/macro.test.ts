@@ -3,6 +3,7 @@ import * as b from '../../../char/builders';
 import { toEqualEditorNode } from '../../../test-util';
 import { getReducer } from '../../reducer';
 import * as SelectionUtils from '../../selection-utils';
+import { AccentType } from '../../../shared-types';
 
 import type { Action, State } from '../../types';
 
@@ -10,6 +11,7 @@ expect.extend({ toEqualEditorNode });
 
 const reducer = getReducer({
   pi: '\u03C0',
+  vec: '\u20D7',
 });
 
 describe('#startMacro', () => {
@@ -97,5 +99,31 @@ describe('#completeMacro', () => {
     expect(newState.row).toEqualEditorNode(
       b.row([b.char('x'), b.char('+'), b.char('y')]),
     );
+  });
+
+  it('space should complete a valid accent macro', () => {
+    // Arrange
+    const state: State = {
+      row: b.row([
+        b.char('x'),
+        b.char('+'),
+        b.macro([b.char('v'), b.char('e'), b.char('c')]),
+      ]),
+      selection: SelectionUtils.makeSelection([2, 0], 2),
+      selecting: false,
+    };
+    const action: Action = { type: 'Space' };
+
+    // Act
+    const newState = reducer(state, action);
+
+    // Assert
+    expect(newState.row).toEqualEditorNode(
+      b.row([b.char('x'), b.char('+'), b.accent([], AccentType.Vec)]),
+    );
+    expect(newState.selection).toEqual({
+      anchor: { path: [2, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 0 },
+    });
   });
 });
