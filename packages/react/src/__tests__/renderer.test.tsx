@@ -752,4 +752,80 @@ describe('renderer', () => {
       expect(<InProgressMacro />).toMatchSVGSnapshot();
     });
   });
+
+  describe('named operators', () => {
+    it('should render the operator with space before after it', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('l'),
+        Editor.builders.char('o'),
+        Editor.builders.char('g'),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    it('should not include trailing padding with subscript', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('l'),
+        Editor.builders.char('o'),
+        Editor.builders.char('g'),
+        Editor.builders.subsup([Editor.builders.char('2')]),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    it('should not include trailing padding with superscript', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('s'),
+        Editor.builders.char('i'),
+        Editor.builders.char('n'),
+        Editor.builders.subsup([Editor.builders.char('2')]),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+  });
 });
