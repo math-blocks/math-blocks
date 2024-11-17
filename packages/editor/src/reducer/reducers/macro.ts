@@ -1,5 +1,6 @@
 import * as b from '../../char/builders';
 import * as t from '../../char/types';
+import { isAccentType } from '../../shared-types';
 
 import * as PathUtils from '../path-utils';
 import * as SelectionUtils from '../selection-utils';
@@ -95,7 +96,9 @@ export const completeMacro = (
           state.row,
           grandparentPath,
           (node) => {
-            const newNode = b.char(macroValue);
+            const newNode = isAccentType(macroString)
+              ? b.accent([], macroString)
+              : b.char(macroValue);
             const beforeMacro = node.children.slice(0, index);
             const afterMacro = node.children.slice(index + 1);
             return {
@@ -106,10 +109,15 @@ export const completeMacro = (
         );
 
         if (newRow !== state.row) {
-          const newFocus = {
-            path: grandparentPath,
-            offset: index + 1,
-          };
+          const newFocus = isAccentType(macroString)
+            ? {
+                path: [...grandparentPath, index, 0],
+                offset: 0,
+              }
+            : {
+                path: grandparentPath,
+                offset: index + 1,
+              };
 
           return {
             ...state,

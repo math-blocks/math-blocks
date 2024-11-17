@@ -80,6 +80,16 @@ export const macros: Record<string, string> = {
   uparrow: '\u2191',
   downarrow: '\u2193',
 
+  // accents
+  vec: '\u20d7',
+  hat: '\u0302',
+  bar: '\u0304',
+  acute: '\u0301',
+  grave: '\u0300',
+  tilde: '\u0303',
+  dot: '\u0307',
+  ddot: '\u0308',
+
   // trig functions
   sin: 'sin',
   cos: 'cos',

@@ -221,8 +221,6 @@ export const hasChildren = (node: types.CharNode): node is HasChildren => {
 export const isOperator = (atom: types.CharAtom): boolean => {
   const char = atom.value;
 
-  // We don't include unary +/- in the numerator.  This mimic's mathquill's
-  // behavior.
   const operators = [
     '+',
     '\u2212', // \minus
