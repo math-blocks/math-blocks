@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 import * as Editor from '@math-blocks/editor';
 import * as Typesetter from '@math-blocks/typesetter';
+import { macros } from '@math-blocks/tex';
 
 import { FontDataContext } from './font-data-context';
 import styles from './editor.module.css';
@@ -35,6 +36,9 @@ type Props = {
   // Renders bounding boxes around each group and glyph.
   readonly showHitboxes?: boolean;
 };
+
+const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 const keydownToAction = (key: string): Editor.Action | null => {
   console.log(key);
@@ -124,7 +128,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
         }
 
         if (action) {
-          const newState = Editor.reducer(state, action);
+          const newState = reducer(state, action);
           setState(newState);
 
           // We always call on change even when the user is moving the
@@ -150,7 +154,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
       if (active && !props.readonly) {
         const action = keyupToAction(e.key);
         if (action) {
-          setState(Editor.reducer(state, action));
+          setState(reducer(state, action));
         }
       }
     },
@@ -179,16 +183,16 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
       }
       const { detail } = e;
       if (detail.type === 'color') {
-        const newState = Editor.reducer(state, {
+        const newState = reducer(state, {
           type: 'Color',
           color: detail.value,
         });
         setState(newState);
       } else if (detail.type === 'cancel') {
-        const newState = Editor.reducer(state, { type: 'Cancel' });
+        const newState = reducer(state, { type: 'Cancel' });
         setState(newState);
       } else if (detail.type === 'uncancel') {
-        const newState = Editor.reducer(state, { type: 'Uncancel' });
+        const newState = reducer(state, { type: 'Uncancel' });
         setState(newState);
       }
     },
@@ -215,7 +219,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
       if (!active || props.readonly) {
         return;
       }
-      const newState = Editor.reducer(state, detail);
+      const newState = reducer(state, detail);
       setState(newState);
     },
     [state, active, props.readonly],
@@ -249,7 +253,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     );
 
     // TODO: handle select === true
-    const newState = Editor.reducer(state, {
+    const newState = reducer(state, {
       type: 'UpdateSelection',
       intersections,
       selecting,
@@ -280,6 +284,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
     renderMode: Typesetter.RenderMode.Dynamic,
     radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
     selection: state.selection,
+    operators: operators,
   };
 
   // TODO: properly type this
@@ -319,7 +324,7 @@ export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
       }}
       onMouseUp={(e) => {
         setMouseDown(false);
-        setState(Editor.reducer(state, { type: 'StopSelecting' }));
+        setState(reducer(state, { type: 'StopSelecting' }));
 
         console.log(state.selection);
         console.log(Editor.SelectionUtils.getPathAndRange(state.selection));

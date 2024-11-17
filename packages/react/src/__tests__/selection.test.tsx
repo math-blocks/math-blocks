@@ -6,10 +6,14 @@ import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
 import * as Semantic from '@math-blocks/semantic';
 import { getFontData, parse } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import type { FontData } from '@math-blocks/opentype';
 
 const { row, char: glyph } = Editor.builders;
+
+const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 let stixFontData: FontData | null = null;
 
@@ -62,6 +66,7 @@ const getSelectionState = async (
     mathStyle: Typesetter.MathStyle.Display,
     renderMode: Typesetter.RenderMode.Dynamic, // match how the editor renders
     cramped: false,
+    operators: operators,
   };
   const scene = Typesetter.typeset(math, context);
 
@@ -71,13 +76,13 @@ const getSelectionState = async (
     selection: Editor.SelectionUtils.makeSelection([], 0),
   };
 
-  state = Editor.reducer(state, {
+  state = reducer(state, {
     type: 'UpdateSelection',
     intersections: Typesetter.SceneGraph.findIntersections(p1, scene.hitboxes),
     selecting: false,
   });
 
-  state = Editor.reducer(state, {
+  state = reducer(state, {
     type: 'UpdateSelection',
     intersections: Typesetter.SceneGraph.findIntersections(p2, scene.hitboxes),
     selecting: true,

@@ -12,12 +12,16 @@ import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
 import * as stories from '../stories/2-math-renderer.stories';
 import { FontDataContext } from '../font-data-context';
 
 const { char: glyph, row, subsup } = Editor.builders;
+
+const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 let stixFontData: FontData | null = null;
 let lmFontData: FontData | null = null;
@@ -288,7 +292,7 @@ describe('renderer', () => {
 
       test('2 cursor in superscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
 
@@ -307,7 +311,7 @@ describe('renderer', () => {
 
       test('3 cursor in subscript', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -328,7 +332,7 @@ describe('renderer', () => {
 
       test('4 cursor inside delimited', () => {
         const moveLeft = () => {
-          state = Editor.reducer(state, { type: 'ArrowLeft' });
+          state = reducer(state, { type: 'ArrowLeft' });
         };
         moveLeft();
         moveLeft();
@@ -379,6 +383,7 @@ describe('renderer', () => {
           mathStyle: Typesetter.MathStyle.Display,
           renderMode: Typesetter.RenderMode.Dynamic,
           cramped: false,
+          operators: operators,
         };
         options = {
           showCursor: true,
@@ -393,7 +398,7 @@ describe('renderer', () => {
         };
 
         const moveLeft = () => {
-          state = Editor.reducer(state, {
+          state = reducer(state, {
             type: 'ArrowLeft',
           });
         };
@@ -410,7 +415,7 @@ describe('renderer', () => {
       test('1 selection in denominator', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
 
@@ -429,7 +434,7 @@ describe('renderer', () => {
       test('2 fraction selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -449,7 +454,7 @@ describe('renderer', () => {
       test('3 delimited selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -470,7 +475,7 @@ describe('renderer', () => {
       test('4 subsup selected', () => {
         state = { ...state, selecting: true };
         const selectRight = () => {
-          state = Editor.reducer(state, { type: 'ArrowRight' });
+          state = reducer(state, { type: 'ArrowRight' });
         };
         selectRight();
         selectRight();
@@ -745,6 +750,82 @@ describe('renderer', () => {
     test('in progress macro', async () => {
       const InProgressMacro = await storyToComponent(stories.InProgressMacro);
       expect(<InProgressMacro />).toMatchSVGSnapshot();
+    });
+  });
+
+  describe('named operators', () => {
+    it('should render the operator with space before after it', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('l'),
+        Editor.builders.char('o'),
+        Editor.builders.char('g'),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    it('should not include trailing padding with subscript', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('l'),
+        Editor.builders.char('o'),
+        Editor.builders.char('g'),
+        Editor.builders.subsup([Editor.builders.char('2')]),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
+    });
+
+    it('should not include trailing padding with superscript', async () => {
+      const row = Editor.builders.row([
+        Editor.builders.char('5'),
+        Editor.builders.char('s'),
+        Editor.builders.char('i'),
+        Editor.builders.char('n'),
+        Editor.builders.subsup([Editor.builders.char('2')]),
+        Editor.builders.char('x'),
+      ]);
+
+      const fontData = await stixFontLoader();
+      const fontSize = 60;
+
+      expect(
+        <FontDataContext.Provider value={fontData}>
+          <MathRenderer
+            row={row}
+            showCursor={true}
+            fontSize={fontSize}
+            renderMode={Typesetter.RenderMode.Dynamic}
+          />
+        </FontDataContext.Provider>,
+      ).toMatchSVGSnapshot();
     });
   });
 });

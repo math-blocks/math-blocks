@@ -8,10 +8,13 @@ import * as Typesetter from '@math-blocks/typesetter';
 import { MathEditor, MathRenderer, FontDataContext } from '@math-blocks/react';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { Font } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import stix2 from '../../../assets/STIX2Math.otf';
 
 import Substeps from './substeps';
+
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 const question: Editor.types.CharRow = Editor.util.row('2x+5=10');
 
@@ -110,6 +113,7 @@ const SolverPage: React.FunctionComponent = () => {
     mathStyle: Typesetter.MathStyle.Display,
     renderMode: Typesetter.RenderMode.Static,
     cramped: false,
+    operators: operators,
     // colorMap: props.colorMap,
   };
 

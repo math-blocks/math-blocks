@@ -11,6 +11,7 @@
     {"path": "../editor"},
     {"path": "../opentype"},
     {"path": "../semantic"},
+    {"path": "../tex"},
     {"path": "../typesetter"}
   ]
 }

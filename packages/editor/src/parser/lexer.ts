@@ -133,9 +133,9 @@ const tokenizeChars = (
             tokens.push(plus(loc));
             break;
           case '*':
-            tokens.push(times(loc));
-            break;
-          case '\u00B7':
+          case '\u00B7': // middle dot (interpunct)
+          case '\u00D7': // multiplication sign
+          case '\u22C5': // dot operator
             tokens.push(times(loc));
             break;
           case '\u2212':

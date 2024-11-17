@@ -12,6 +12,7 @@ export type Context = {
   // colorMap?: Map<number, string>;
   readonly operator?: boolean; // if true, doesn't use italics for latin glyphs
   readonly macro?: boolean; // if true, glyphs are rendered upright
+  readonly operators: readonly string[]; // named operators, e.g. sin, cos, etc.
   readonly renderMode: RenderMode;
   readonly radicalDegreeAlgorithm?: RadicalDegreeAlgorithm;
   readonly selection?: Selection;

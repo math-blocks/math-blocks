@@ -7,6 +7,7 @@ import * as Semantic from '@math-blocks/semantic';
 import * as Typesetter from '@math-blocks/typesetter';
 import { getFontData, parse } from '@math-blocks/opentype';
 import type { FontData } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import MathRenderer from '../math-renderer';
 import { FontDataContext } from '../font-data-context';
@@ -19,6 +20,7 @@ import lmPath from '../../../../assets/latinmodern-math.otf';
 
 const { row, char: glyph, frac, limits, root, subsup, macro } = Editor.builders;
 const { applyColorMapToEditorNode } = Editor.transforms;
+const reducer = Editor.getReducer(macros);
 
 const stixFontLoader = async (): Promise<FontData> => {
   const res = await fetch(stixPath);
@@ -586,8 +588,8 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
     },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowRight' });
-  state = Editor.reducer(state, { type: 'ArrowRight' });
+  state = reducer(state, { type: 'ArrowRight' });
+  state = reducer(state, { type: 'ArrowRight' });
 
   const fontSize = 60;
 
@@ -656,8 +658,8 @@ export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
     },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 
@@ -701,11 +703,11 @@ export const SelectionSize: Story<EmptyProps> = (
     },
   };
 
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
   state = { ...state, selecting: true };
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
-  state = Editor.reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
+  state = reducer(state, { type: 'ArrowLeft' });
 
   const fontSize = 60;
 

@@ -5,6 +5,7 @@ import { Blob } from 'buffer';
 import * as Typesetter from '@math-blocks/typesetter';
 import * as Editor from '@math-blocks/editor';
 import { getFontData, parse } from '@math-blocks/opentype';
+import { macros } from '@math-blocks/tex';
 
 import type { FontData } from '@math-blocks/opentype';
 
@@ -19,6 +20,9 @@ const {
 } = Editor.builders;
 
 let stixFontData: FontData | null = null;
+
+const reducer = Editor.getReducer(macros);
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 const stixFontLoader = async (): Promise<FontData> => {
   if (stixFontData) {
@@ -59,6 +63,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -76,7 +81,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -101,7 +106,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -131,6 +136,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -148,7 +154,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -173,7 +179,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -198,7 +204,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -223,7 +229,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -256,6 +262,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -273,7 +280,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -298,7 +305,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -323,7 +330,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -348,7 +355,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -376,6 +383,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -393,7 +401,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -418,7 +426,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -448,6 +456,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -465,7 +474,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -500,6 +509,7 @@ describe('moving cursor with mouse', () => {
         mathStyle: Typesetter.MathStyle.Display,
         renderMode: Typesetter.RenderMode.Static,
         cramped: false,
+        operators: operators,
       };
       scene = Typesetter.typeset(math, context);
     });
@@ -517,7 +527,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -542,7 +552,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,
@@ -567,7 +577,7 @@ describe('moving cursor with mouse', () => {
         selection: Editor.SelectionUtils.makeSelection([], 0),
       };
 
-      const newState = Editor.reducer(state, {
+      const newState = reducer(state, {
         type: 'UpdateSelection',
         intersections,
         selecting: false,

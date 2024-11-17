@@ -1,9 +1,11 @@
 import * as b from '../../../char/builders';
 
-import { reducer } from '../../reducer';
+import { getReducer } from '../../reducer';
 import * as SelectionUtils from '../../selection-utils';
 
 import type { Action, Intersection, State } from '../../types';
+
+const reducer = getReducer({});
 
 describe('set-selection', () => {
   describe('click to move cursor', () => {

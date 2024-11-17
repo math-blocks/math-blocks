@@ -2,11 +2,14 @@ import * as React from 'react';
 
 import * as Editor from '@math-blocks/editor';
 import * as Typesetter from '@math-blocks/typesetter';
+import { macros } from '@math-blocks/tex';
 
 import { FontDataContext } from './font-data-context';
 import SceneRenderer from './scene-renderer';
 
 const { useContext } = React;
+
+const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 type Props = {
   readonly row: Editor.types.CharRow;
@@ -46,6 +49,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
       renderMode: renderMode,
       radicalDegreeAlgorithm: props.radicalDegreeAlgorithm,
       selection: selection,
+      operators: operators,
     };
 
     const options = { showCursor: props.showCursor, debug: true };
