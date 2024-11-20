@@ -17,7 +17,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
       for (const arg of math.args) {
         if (arg.type === NodeType.Neg && arg.subtraction) {
           children.push(<mo>-</mo>);
-        } else if (arg.type === NodeType.PlusMinus && arg.arity === 'binary') {
+        } else if (arg.type === NodeType.PlusMinus && arg.args.length === 2) {
           children.push(<mo>±</mo>);
         } else {
           children.push(<mo>+</mo>);
@@ -79,13 +79,16 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
       );
     }
     case NodeType.PlusMinus: {
-      const arg = print(math.arg);
-      return math.arity === 'binary' ? (
-        arg
+      return math.args.length === 2 ? (
+        <mrow>
+          {print(math.args[0])}
+          <mo>±</mo>
+          {print(math.args[1])}
+        </mrow>
       ) : (
         <mrow>
           <mo>±</mo>
-          {arg}
+          {print(math.args[0])}
         </mrow>
       );
     }

@@ -42,7 +42,6 @@ export const startMacro = (state: State): State => {
     path: [...focus.path, start, 0],
     offset: 0,
   };
-  console.log(newFocus);
 
   return {
     ...state,

@@ -1,4 +1,3 @@
-// import {UnreachableCaseError} from "@math-blocks/core";
 import * as Semantic from '@math-blocks/semantic';
 import { UnreachableCaseError } from '@math-blocks/core';
 

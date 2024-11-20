@@ -99,13 +99,11 @@ export type Neg = Common<NodeType.Neg> & {
 };
 
 export type PlusMinus = Common<NodeType.PlusMinus> & {
-  readonly arg: NumericNode;
-  readonly arity: 'unary' | 'binary';
+  readonly args: OneOrMore<NumericNode>;
 };
 
 export type MinusPlus = Common<NodeType.MinusPlus> & {
-  readonly arg: NumericNode;
-  readonly arity: 'unary' | 'binary';
+  readonly args: OneOrMore<NumericNode>;
 };
 
 /**
@@ -187,7 +185,7 @@ export type Parens = Common<NodeType.Parens> & {
   readonly arg: Node;
 };
 
-type Bound = {
+export type Bound = {
   readonly value: NumericNode;
   readonly inclusive: boolean; // NOTE: if `value` is +Infinity or -Infinity, this should be false
 };
@@ -196,7 +194,7 @@ type Bound = {
  * Used to represent the limits of an operation such as summation, integration,
  * etc.  Not a node itself and has no id.
  */
-type Limits = {
+export type Limits = {
   readonly lower: Bound;
   readonly upper: Bound;
 };
@@ -221,18 +219,14 @@ export type Product = Common<NodeType.Product> & {
   readonly limits: Limits;
 };
 
-type TendsTo = {
-  readonly value: NumericNode;
-  readonly from?: 'above' | 'below';
-};
-
 /**
  * Limit
  */
 export type Limit = Common<NodeType.Limit> & {
   readonly arg: NumericNode;
   readonly bvar: Identifier;
-  readonly tendsTo: TendsTo;
+  readonly value: NumericNode;
+  readonly dir?: 'plus' | 'minus';
 };
 
 /**
@@ -247,9 +241,9 @@ export type Derivative = Common<NodeType.Derivative> & {
  * Partial derivative
  */
 export type PartialDerivative = Common<NodeType.PartialDerivative> & {
-  // TODO: This is insufficient to model high degree partial derivatives
-  // https://www.w3.org/TR/MathML3/chapter4.html#contm.partialdiff
-  readonly args: readonly [NumericNode, NumericNode];
+  readonly arg: NumericNode;
+  readonly variables: readonly Identifier[];
+  readonly degrees: readonly NumericNode[];
 };
 
 /**
