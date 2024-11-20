@@ -84,11 +84,11 @@ export enum NodeType {
   EmptySet = 'EmptySet',
 
   // Well-Kwown Number Theory Sets
-  Naturals = 'naturals',
-  Integers = 'integers',
-  Rationals = 'rationals',
-  Reals = 'reals',
-  Complexes = 'complexes',
+  Naturals = 'Naturals',
+  Integers = 'Integers',
+  Rationals = 'Rationals',
+  Reals = 'Reals',
+  Complexes = 'Complexes',
 
   // Linear Algebra
   Vector = 'vector',
