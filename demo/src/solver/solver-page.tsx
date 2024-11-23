@@ -16,7 +16,18 @@ import Substeps from './substeps';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
-const question: Editor.types.CharRow = Editor.util.row('2x+5=10');
+const b = Editor.builders;
+const question: Editor.types.CharRow = b.row([
+  b.frac(
+    [
+      b.char('x'),
+      b.subsup(undefined, [b.char('2')]),
+      b.char('x'),
+      b.subsup(undefined, [b.char('4')]),
+    ],
+    [b.char('x'), b.subsup(undefined, [b.char('3')])],
+  ),
+]);
 
 const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
   try {

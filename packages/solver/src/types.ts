@@ -41,6 +41,8 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'multiplying a negative by a positive is negative', TNode>
   | StepType<'multiply fraction(s)', TNode>
   | StepType<'multiply monomials', TNode>
+  | StepType<'multiply powers', TNode>
+  | StepType<'divide powers', TNode>
   | StepType<'repeated multiplication can be written as a power', TNode>
   | StepType<'reduce fraction', TNode>
   | StepType<'simplify multiplication', TNode>
@@ -88,3 +90,9 @@ type SimplifyExpression = {
 };
 
 export type Problem = SolveEquation | SimplifyExpression;
+
+export type Transform = (
+  node: Semantic.types.NumericNode,
+  path: readonly Semantic.types.NumericNode[],
+  simplify: Transform,
+) => Step<Semantic.types.NumericNode> | void;
