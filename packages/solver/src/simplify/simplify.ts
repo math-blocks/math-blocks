@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import type { Step } from '../types';
+import type { Step, Transform } from '../types';
 
 import { addNegToSub } from './transforms/add-neg-to-sub';
 import { dropParens } from './transforms/drop-parens';
@@ -11,18 +11,23 @@ import { distribute } from './transforms/distribute';
 import { distributeDiv } from './transforms/distribute-div';
 import { reduceFraction } from './transforms/reduce-fraction';
 import { mulFraction } from './transforms/mul-fraction';
-import { mulToPow } from './transforms/mul-to-pow';
 import { simplifyMul } from './transforms/simplify-mul';
 import { mulByZeroIsZero } from './transforms/mul-by-zero-is-zero';
 import { simplifyDivByFrac } from './transforms/simplify-div-by-frac';
 
+import { mulToPow } from './transforms/mul-to-pow';
+import { multiplyPowers } from './transforms/multiply-powers';
+import { dividePowers } from './transforms/divide-powers';
+
 // TODO:
 // - negOfNegIsPos
 
+// TODO: Make simplify configurable so that we can get different behaviours.
+// For instance, someetimes we might not want to allow evaluation of expressions.
 export function simplify(
   node: Semantic.types.NumericNode,
 ): Step<Semantic.types.NumericNode> | void {
-  const tranforms = [
+  const tranforms: Transform[] = [
     dropAddIdentity,
 
     simplifyDivByFrac,
@@ -40,6 +45,8 @@ export function simplify(
     mulFraction,
     evalDiv,
     mulToPow,
+    multiplyPowers,
+    dividePowers,
 
     // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
     // before distributing.
@@ -66,7 +73,7 @@ export function simplify(
       for (let i = 0; i < 10; i++) {
         let step: Step<Semantic.types.NumericNode> | void = undefined;
         for (const transform of tranforms) {
-          step = transform(current, path);
+          step = transform(current, path, simplify);
           // Multiple transforms can be applied to the current node.
           if (step) {
             break;

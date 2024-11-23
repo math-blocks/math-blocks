@@ -7,6 +7,8 @@ import Fraction from 'fraction.js';
 import * as types from './types';
 import { NodeType } from './enums';
 
+export { print as normalize } from './normalize';
+
 export const isSubtraction = (node: types.NumericNode): node is types.Neg =>
   node.type === NodeType.Neg && node.subtraction;
 
