@@ -36,9 +36,9 @@ export const ellipsis = (loc?: types.SourceLocation): types.Ellipsis => ({
 });
 
 export const add = (
-  terms: readonly types.NumericNode[],
+  terms: readonly types.Node[],
   loc?: types.SourceLocation,
-): types.NumericNode => {
+): types.Node => {
   switch (terms.length) {
     case 0:
       return number('0', loc);
@@ -48,17 +48,17 @@ export const add = (
       return {
         type: NodeType.Add,
         id: getId(),
-        args: terms as TwoOrMore<types.NumericNode>,
+        args: terms as TwoOrMore<types.Node>,
         loc,
       };
   }
 };
 
 export const mul = (
-  factors: readonly types.NumericNode[],
+  factors: readonly types.Node[],
   implicit = false,
   loc?: types.SourceLocation,
-): types.NumericNode => {
+): types.Node => {
   switch (factors.length) {
     case 0:
       return number('1', loc);
@@ -69,16 +69,16 @@ export const mul = (
         type: NodeType.Mul,
         id: getId(),
         implicit,
-        args: factors as TwoOrMore<types.NumericNode>,
+        args: factors as TwoOrMore<types.Node>,
         loc,
       };
   }
 };
 
-export const eq = <T extends types.Node>(
-  args: TwoOrMore<T>,
+export const eq = (
+  args: TwoOrMore<types.Node>,
   loc?: types.SourceLocation,
-): types.Eq<T> => ({
+): types.Eq => ({
   type: NodeType.Equals,
   id: getId(),
   args,
@@ -86,7 +86,7 @@ export const eq = <T extends types.Node>(
 });
 
 export const numRel = (
-  args: TwoOrMore<types.NumericNode>,
+  args: TwoOrMore<types.Node>,
   type: types.NumRelType,
   loc?: types.SourceLocation,
 ): types.NumericRelation => ({
@@ -96,7 +96,7 @@ export const numRel = (
 });
 
 export const neg = (
-  arg: types.NumericNode,
+  arg: types.Node,
   subtraction = false,
   loc?: types.SourceLocation,
 ): types.Neg => ({
@@ -108,8 +108,8 @@ export const neg = (
 });
 
 export const div = (
-  num: types.NumericNode,
-  den: types.NumericNode,
+  num: types.Node,
+  den: types.Node,
   loc?: types.SourceLocation,
 ): types.Div => ({
   type: NodeType.Div,
@@ -119,8 +119,8 @@ export const div = (
 });
 
 export const pow = (
-  base: types.NumericNode,
-  exp: types.NumericNode,
+  base: types.Node,
+  exp: types.Node,
   loc?: types.SourceLocation,
 ): types.Pow => ({
   type: NodeType.Power,
@@ -131,8 +131,8 @@ export const pow = (
 });
 
 export const root = (
-  radicand: types.NumericNode,
-  index: types.NumericNode,
+  radicand: types.Node,
+  index: types.Node,
   loc?: types.SourceLocation,
 ): types.Root => ({
   type: NodeType.Root,
@@ -144,7 +144,7 @@ export const root = (
 });
 
 export const sqrt = (
-  radicand: types.NumericNode,
+  radicand: types.Node,
   loc?: types.SourceLocation,
 ): types.Root => ({
   type: NodeType.Root,

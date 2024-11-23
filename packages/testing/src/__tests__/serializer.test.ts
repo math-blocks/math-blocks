@@ -19,7 +19,7 @@ describe('serializer', () => {
   });
 
   test('identifier with subscript', () => {
-    const ast: Semantic.types.NumericNode = {
+    const ast: Semantic.types.Node = {
       id: getId(),
       type: NodeType.Identifier,
       name: 'a',
@@ -50,7 +50,7 @@ describe('serializer', () => {
   });
 
   test('not', () => {
-    const ast: Semantic.types.LogicNode = {
+    const ast: Semantic.types.Node = {
       id: getId(),
       type: NodeType.LogicalNot,
       arg: Semantic.builders.identifier('A'),
@@ -111,7 +111,7 @@ describe('serializer', () => {
   });
 
   test('infinity', () => {
-    const ast: Semantic.types.NumericNode = {
+    const ast: Semantic.types.Node = {
       type: NodeType.Infinity,
       id: getId(),
     };
@@ -119,7 +119,7 @@ describe('serializer', () => {
   });
 
   test('func', () => {
-    const ast: Semantic.types.NumericNode = {
+    const ast: Semantic.types.Node = {
       type: NodeType.Func,
       id: getId(),
       func: Semantic.builders.identifier('f'),

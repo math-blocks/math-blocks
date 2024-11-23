@@ -3,9 +3,7 @@ import * as Semantic from '@math-blocks/semantic';
 const { NodeType } = Semantic;
 
 // TODO: handle non-canonicalized terms
-export const getCoeff = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode => {
+export const getCoeff = (node: Semantic.types.Node): Semantic.types.Node => {
   if (node.type === NodeType.Neg) {
     return Semantic.builders.neg(getCoeff(node.arg));
   }
@@ -44,9 +42,7 @@ export const isTermOfIdent = (
   return false;
 };
 
-export const flipSign = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode => {
+export const flipSign = (node: Semantic.types.Node): Semantic.types.Node => {
   if (node.type === NodeType.Neg) {
     return node.arg;
   } else {
@@ -55,8 +51,8 @@ export const flipSign = (
 };
 
 export const convertSubTermToNeg = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode => {
+  node: Semantic.types.Node,
+): Semantic.types.Node => {
   if (node.type === NodeType.Neg && node.subtraction) {
     const factors = Semantic.util.getFactors(node.arg);
     const numericFactors = factors.filter(Semantic.util.isNumber);

@@ -39,8 +39,8 @@ const symbols = {
 };
 
 type WorkRow = {
-  readonly left: readonly (Semantic.types.NumericNode | null)[];
-  readonly right: readonly (Semantic.types.NumericNode | null)[];
+  readonly left: readonly (Semantic.types.Node | null)[];
+  readonly right: readonly (Semantic.types.Node | null)[];
 };
 
 const printWorkRow = (

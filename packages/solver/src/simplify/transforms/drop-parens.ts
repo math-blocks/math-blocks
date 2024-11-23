@@ -5,8 +5,8 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function dropParens(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }

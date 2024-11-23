@@ -87,7 +87,7 @@ describe('printer', () => {
     });
 
     test('leading subtraction', () => {
-      const ast: Semantic.types.NumericNode = {
+      const ast: Semantic.types.Node = {
         type: NodeType.Add,
         id: 0,
         args: [

@@ -9,13 +9,13 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function collectLikeTerms(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Add) {
     return;
   }
 
-  const substeps: Step<Semantic.types.NumericNode>[] = [];
+  const substeps: Step<Semantic.types.Node>[] = [];
 
   const newSum = subToAddNeg(node, substeps);
   const groups = getGroups(newSum.args);
@@ -43,19 +43,16 @@ export function collectLikeTerms(
 }
 
 type Groups = ReadonlyMap<
-  Semantic.types.NumericNode | null,
-  readonly Semantic.types.NumericNode[]
+  Semantic.types.Node | null,
+  readonly Semantic.types.Node[]
 >;
 
 /**
  * Given an array of terms, it groups them in a map where the key is the variable
  * part of the term and the value is an array of all terms of that type.
  */
-const getGroups = (terms: readonly Semantic.types.NumericNode[]): Groups => {
-  const map = new Map<
-    Semantic.types.NumericNode | null,
-    Semantic.types.NumericNode[]
-  >();
+const getGroups = (terms: readonly Semantic.types.Node[]): Groups => {
+  const map = new Map<Semantic.types.Node | null, Semantic.types.Node[]>();
 
   for (const term of terms) {
     if (Semantic.util.isNumber(term)) {
@@ -73,7 +70,7 @@ const getGroups = (terms: readonly Semantic.types.NumericNode[]): Groups => {
     const nonNumericFactors = factors.filter((f) => !Semantic.util.isNumber(f));
     const varPart = Semantic.builders.mul(nonNumericFactors, true);
 
-    let key: Semantic.types.NumericNode | null = null;
+    let key: Semantic.types.Node | null = null;
     for (const k of map.keys()) {
       if (Semantic.util.deepEquals(k, varPart)) {
         key = k;
@@ -137,10 +134,10 @@ const subToAddNeg = (
  * @param substeps this argument can be mutated by this function.
  */
 const orderTerms = (
-  node: Semantic.types.NumericNode,
+  node: Semantic.types.Node,
   groups: Groups,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode | undefined => {
+): Semantic.types.Node | undefined => {
   const keys = [...groups.keys()];
 
   // If all terms are numbers then don't do anything, let evalAdd handle it.
@@ -149,7 +146,7 @@ const orderTerms = (
   }
 
   let changed = false;
-  const newTerms: Semantic.types.NumericNode[] = [];
+  const newTerms: Semantic.types.Node[] = [];
   for (const values of groups.values()) {
     if (values.length > 1) {
       changed = true;
@@ -178,8 +175,8 @@ const orderTerms = (
 };
 
 const areAdditiveInverses = (
-  left: Semantic.types.NumericNode,
-  right: Semantic.types.NumericNode,
+  left: Semantic.types.Node,
+  right: Semantic.types.Node,
 ): boolean => {
   if (
     left.type === Semantic.NodeType.Neg &&
@@ -205,13 +202,13 @@ const areAdditiveInverses = (
  * @param substeps this argument will be mutated by this function.
  */
 const groupTerms = (
-  node: Semantic.types.NumericNode,
+  node: Semantic.types.Node,
   groups: Groups,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
-  const newTerms: Semantic.types.NumericNode[] = [];
+): Semantic.types.Node => {
+  const newTerms: Semantic.types.Node[] = [];
   for (const [key, values] of groups.entries()) {
-    let newTerm: Semantic.types.NumericNode;
+    let newTerm: Semantic.types.Node;
     if (key === null) {
       // group constants together
       newTerm = Semantic.builders.add(values);
@@ -250,9 +247,9 @@ const groupTerms = (
  * @param substeps this argument will be mutated by this function.
  */
 const evaluteCoeffs = (
-  node: Semantic.types.NumericNode,
+  node: Semantic.types.Node,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+): Semantic.types.Node => {
   const newTerms = Semantic.util.getTerms(node).map((term) => {
     // What if there was a term that was initial a sum of numbers, we wouldn't?
     // Ideally we'd deal with it first, but we should try to be defensive and
@@ -292,9 +289,9 @@ const evaluteCoeffs = (
  * @param substeps this argument can be mutated by this function.
  */
 const simplifyTerms = (
-  node: Semantic.types.NumericNode,
+  node: Semantic.types.Node,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+): Semantic.types.Node => {
   let changed = false;
   // TODO: don't mark (-3)(x) -> -(3x) as a chnage since these these two
   // are printed to look exactly the same
@@ -331,9 +328,9 @@ const simplifyTerms = (
  * @param substeps this argument can be mutated by this function.
  */
 const addNegToSub = (
-  node: Semantic.types.NumericNode,
+  node: Semantic.types.Node,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+): Semantic.types.Node => {
   let changed = false;
   const newTerms = Semantic.util.getTerms(node).map((term, index) => {
     if (term.type === NodeType.Neg && index > 0) {
@@ -362,8 +359,8 @@ const addNegToSub = (
 //
 
 const getFactors = (
-  node: Semantic.types.NumericNode,
-): OneOrMore<Semantic.types.NumericNode> => {
+  node: Semantic.types.Node,
+): OneOrMore<Semantic.types.Node> => {
   if (node.type === NodeType.Neg) {
     return [Semantic.builders.number('-1'), ...getFactors(node.arg)];
   } else {
@@ -373,9 +370,9 @@ const getFactors = (
 
 // TODO: add unit tests just for this
 const fancyGetFactors = (
-  arg: Semantic.types.NumericNode,
-): readonly Semantic.types.NumericNode[] => {
-  let factors: readonly Semantic.types.NumericNode[];
+  arg: Semantic.types.Node,
+): readonly Semantic.types.Node[] => {
+  let factors: readonly Semantic.types.Node[];
 
   // TODO: move this logic into `getFactors`.
   if (arg.type === NodeType.Div && Semantic.util.isNumber(arg.args[1])) {
@@ -411,9 +408,7 @@ const fancyGetFactors = (
 /**
  * Returns either a number, fraction (div), or negative (neg) node.
  */
-const evalNode = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode => {
+const evalNode = (node: Semantic.types.Node): Semantic.types.Node => {
   const value = Semantic.util.evalNode(node);
 
   const newValue =

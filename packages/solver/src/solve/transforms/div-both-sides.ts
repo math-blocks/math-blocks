@@ -10,7 +10,7 @@ export function divBothSides(
   before: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
 ): Step<Semantic.types.NumericRelation> | void {
-  const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  const [left, right] = before.args as readonly Semantic.types.Node[];
 
   // Prevent an infinite loop between these two transforms
   if (left.source === 'mulBothSides' || right.source === 'mulBothSides') {
@@ -45,7 +45,7 @@ export function divBothSides(
 
 const divByCoeff = (
   before: Semantic.types.NumericRelation,
-  coeff: Semantic.types.NumericNode,
+  coeff: Semantic.types.Node,
 ): Step<Semantic.types.NumericRelation> | void => {
   if (coeff.type === NodeType.Div) {
     return;
@@ -56,7 +56,7 @@ const divByCoeff = (
   }
 
   // TODO: add a check to make sure this is true
-  const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
+  const args = before.args as TwoOrMore<Semantic.types.Node>;
 
   let opType = before.type;
   if (coeff.type === NodeType.Neg) {
@@ -73,13 +73,10 @@ const divByCoeff = (
 
   const after = Semantic.builders.numRel(
     args.map((arg) => {
-      const result = Semantic.builders.div(
-        arg as Semantic.types.NumericNode,
-        coeff,
-      );
+      const result = Semantic.builders.div(arg as Semantic.types.Node, coeff);
       result.source = 'divBothSides';
       return result;
-    }) as unknown as TwoOrMore<Semantic.types.NumericNode>,
+    }) as unknown as TwoOrMore<Semantic.types.Node>,
     opType,
   );
 

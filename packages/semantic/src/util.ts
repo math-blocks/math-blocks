@@ -9,20 +9,16 @@ import { NodeType } from './enums';
 
 export { print as normalize } from './normalize';
 
-export const isSubtraction = (node: types.NumericNode): node is types.Neg =>
+export const isSubtraction = (node: types.Node): node is types.Neg =>
   node.type === NodeType.Neg && node.subtraction;
 
-export const isNegative = (node: types.NumericNode): node is types.Neg =>
+export const isNegative = (node: types.Node): node is types.Neg =>
   node.type === NodeType.Neg && !node.subtraction;
 
-export const getFactors = (
-  node: types.NumericNode,
-): OneOrMore<types.NumericNode> =>
+export const getFactors = (node: types.Node): OneOrMore<types.Node> =>
   node.type === NodeType.Mul ? node.args : [node];
 
-export const getTerms = (
-  node: types.NumericNode,
-): OneOrMore<types.NumericNode> =>
+export const getTerms = (node: types.Node): OneOrMore<types.Node> =>
   node.type === NodeType.Add ? node.args : [node];
 
 // TODO: create a function to check if an answer is simplified or not
@@ -48,7 +44,7 @@ export const isNumber = (node: types.Node): boolean => {
 };
 
 // TODO: autogenerate this from the validation schema
-export const isNumeric = (node: types.Node): node is types.NumericNode => {
+export const isNumeric = (node: types.Node): node is types.Node => {
   const NumericNodeTypes: NodeType[] = [
     NodeType.Number,
     NodeType.Identifier,
@@ -189,7 +185,7 @@ type Options = {
   readonly evalFractions?: boolean;
 };
 
-// TODO: create a wrapper around this that returns a Semantic.Types.NumericNode
+// TODO: create a wrapper around this that returns a Semantic.Types.Node
 // Right now we don't handle returning fractions in a lot of places.
 export const evalNode = (
   node: types.Node,
@@ -307,17 +303,17 @@ export const traverse = (
 };
 
 export const traverseNumeric = (
-  node: types.NumericNode,
+  node: types.Node,
   callbacks: {
-    readonly enter?: (node: types.NumericNode) => void;
-    readonly exit?: (node: types.NumericNode) => types.NumericNode | void;
+    readonly enter?: (node: types.Node) => void;
+    readonly exit?: (node: types.Node) => types.Node | void;
   },
-): types.NumericNode => {
+): types.Node => {
   if (callbacks.enter) {
     callbacks.enter(node);
   }
 
-  const newValues: Record<string, types.NumericNode | types.NumericNode[]> = {};
+  const newValues: Record<string, types.Node | types.Node[]> = {};
   for (const [key, value] of Object.entries(node)) {
     if (Array.isArray(value)) {
       // All arrays in the tree except for Location.path contain nodes.
@@ -325,7 +321,7 @@ export const traverseNumeric = (
       // be okey without doing additional checks.
       newValues[key] = value.map((child) => traverseNumeric(child, callbacks));
     } else if (value?.hasOwnProperty('type')) {
-      newValues[key] = traverseNumeric(value as types.NumericNode, callbacks);
+      newValues[key] = traverseNumeric(value as types.Node, callbacks);
     }
   }
 

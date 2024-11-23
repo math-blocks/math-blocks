@@ -15,8 +15,8 @@ const isZero = (node: Semantic.types.Node): boolean => {
 };
 
 export function dropAddIdentity(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Add) {
     return;
   }

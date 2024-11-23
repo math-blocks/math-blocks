@@ -10,7 +10,7 @@ export function mulBothSides(
   before: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
 ): Step<Semantic.types.NumericRelation> | void {
-  const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  const [left, right] = before.args as readonly Semantic.types.Node[];
 
   if (left.source === 'divBothSides' || right.source === 'divBothSides') {
     return;
@@ -39,9 +39,9 @@ export function mulBothSides(
 
 const mulByNumber = (
   before: Semantic.types.NumericRelation,
-  num: Semantic.types.NumericNode,
+  num: Semantic.types.Node,
 ): Step<Semantic.types.NumericRelation> | void => {
-  const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  const [left, right] = before.args as readonly Semantic.types.Node[];
 
   const newLeft = Semantic.builders.mul([left, num]);
   const newRight = Semantic.builders.mul([right, num]);

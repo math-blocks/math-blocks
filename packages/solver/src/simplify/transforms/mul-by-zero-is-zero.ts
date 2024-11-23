@@ -15,8 +15,8 @@ const isZero = (node: Semantic.types.Node): boolean => {
 };
 
 export function mulByZeroIsZero(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   const factors = Semantic.util.getFactors(node);
   if (factors.length > 1 && factors.some(isZero)) {
     return {

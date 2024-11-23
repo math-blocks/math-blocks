@@ -3,8 +3,8 @@ import * as Testing from '@math-blocks/testing';
 
 import { simplifyDivByFrac } from '../simplify-div-by-frac';
 
-const parse = (str: string): Semantic.types.NumericNode =>
-  Testing.parse(str) as Semantic.types.NumericNode;
+const parse = (str: string): Semantic.types.Node =>
+  Testing.parse(str) as Semantic.types.Node;
 
 describe('simplify division by fraction', () => {
   test.each`

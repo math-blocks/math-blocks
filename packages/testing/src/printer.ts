@@ -144,7 +144,7 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     case NodeType.GreaterThanOrEquals:
     case NodeType.Equals: {
       // TODO: add a check to make sure this is true
-      const args = expr.args as TwoOrMore<Semantic.types.NumericNode>;
+      const args = expr.args as TwoOrMore<Semantic.types.Node>;
       let operation = ' = ';
       if (expr.type === NodeType.LessThan) {
         operation = ' < ';

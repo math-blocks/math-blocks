@@ -20,9 +20,9 @@ const { NodeType } = Semantic;
 // 1x -> x
 // -1x -> -x
 export function simplifyMul(
-  node: Semantic.types.NumericNode,
-  path: readonly Semantic.types.NumericNode[],
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+  path: readonly Semantic.types.Node[],
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Mul) {
     return undefined;
   }

@@ -53,7 +53,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       TNode,
       {
         readonly operation: 'add' | 'sub' | 'mul' | 'div';
-        readonly value: Semantic.types.NumericNode;
+        readonly value: Semantic.types.Node;
       }
     >
   | StepType<'move terms to one side', TNode>
@@ -86,13 +86,13 @@ type SolveEquation = {
 
 type SimplifyExpression = {
   readonly type: 'SimplifyExpression';
-  readonly expression: Semantic.types.NumericNode;
+  readonly expression: Semantic.types.Node;
 };
 
 export type Problem = SolveEquation | SimplifyExpression;
 
 export type Transform = (
-  node: Semantic.types.NumericNode,
-  path: readonly Semantic.types.NumericNode[],
+  node: Semantic.types.Node,
+  path: readonly Semantic.types.Node[],
   simplify: Transform,
-) => Step<Semantic.types.NumericNode> | void;
+) => Step<Semantic.types.Node> | void;

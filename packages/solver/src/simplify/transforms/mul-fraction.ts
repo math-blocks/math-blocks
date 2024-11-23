@@ -5,14 +5,14 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function mulFraction(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (
     node.type === NodeType.Mul &&
     node.args.some((arg) => arg.type === NodeType.Div)
   ) {
-    const numFactors: Semantic.types.NumericNode[] = [];
-    const denFactors: Semantic.types.NumericNode[] = [];
+    const numFactors: Semantic.types.Node[] = [];
+    const denFactors: Semantic.types.Node[] = [];
 
     for (const factor of node.args) {
       if (factor.type === NodeType.Div) {

@@ -3,8 +3,8 @@ import * as Testing from '@math-blocks/testing';
 
 import { multiplyPowers } from '../multiply-powers';
 
-const parse = (str: string): Semantic.types.NumericNode =>
-  Testing.parse(str) as Semantic.types.NumericNode;
+const parse = (str: string): Semantic.types.Node =>
+  Testing.parse(str) as Semantic.types.Node;
 
 describe('multiplyPowers', () => {
   test.each`

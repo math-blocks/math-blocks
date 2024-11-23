@@ -2,24 +2,22 @@ import { util, types, builders, NodeType } from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-const isPower = (node: types.NumericNode): node is types.Pow =>
+const isPower = (node: types.Node): node is types.Pow =>
   node.type === NodeType.Power;
 
-const isMul = (node: types.NumericNode): node is types.Mul =>
+const isMul = (node: types.Node): node is types.Mul =>
   node.type === NodeType.Mul;
 
-const isDiv = (node: types.NumericNode): node is types.Div =>
+const isDiv = (node: types.Node): node is types.Div =>
   node.type === NodeType.Div;
 
-const getBase = (node: types.NumericNode): types.NumericNode => {
+const getBase = (node: types.Node): types.Node => {
   return isPower(node) ? node.base : node;
 };
 
 // TODO: combine this with multiplyPowers
 // OR... we could just always run multiplePowers first when simplifying
-export function dividePowers(
-  node: types.NumericNode,
-): Step<types.NumericNode> | void {
+export function dividePowers(node: types.Node): Step<types.Node> | void {
   if (!isDiv(node)) {
     return undefined;
   }
@@ -27,8 +25,8 @@ export function dividePowers(
   const numFactors = util.getFactors(node.args[0]);
   const denFactors = util.getFactors(node.args[1]);
 
-  const numMap: Map<string, types.NumericNode[]> = new Map();
-  const denMap: Map<string, types.NumericNode[]> = new Map();
+  const numMap: Map<string, types.Node[]> = new Map();
+  const denMap: Map<string, types.Node[]> = new Map();
 
   for (const fact of numFactors) {
     const base = getBase(fact);
@@ -47,11 +45,11 @@ export function dividePowers(
   }
 
   let modified = false;
-  const newFactors: types.NumericNode[] = [];
+  const newFactors: types.Node[] = [];
   for (const key of numMap.keys()) {
     if (denMap.has(key)) {
-      const numFactors = numMap.get(key) as types.NumericNode[];
-      const denFactors = denMap.get(key) as types.NumericNode[];
+      const numFactors = numMap.get(key) as types.Node[];
+      const denFactors = denMap.get(key) as types.Node[];
 
       const numExps = numFactors.map((factor) => {
         if (isPower(factor)) {
@@ -88,7 +86,7 @@ export function dividePowers(
   // denominators or not
   // for (const key of denMap.keys()) {
   //   if (!numMap.has(key)) {
-  //     const denFactors = denMap.get(key) as types.NumericNode[];
+  //     const denFactors = denMap.get(key) as types.Node[];
   //     const denExps = denFactors.map((factor) => {
   //       if (isPower(factor)) {
   //         return factor.exp;

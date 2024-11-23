@@ -6,8 +6,8 @@ const { NodeType } = Semantic;
 
 // (a + b) / c -> a/c + b/c
 export function distributeDiv(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Div) {
     return undefined;
   }

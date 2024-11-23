@@ -9,7 +9,7 @@ const { NodeType } = Semantic;
 // - is it negative
 // - is it subtraction
 // - is it negative and not subtraction
-export const isNegative = (node: Semantic.types.NumericNode): boolean => {
+export const isNegative = (node: Semantic.types.Node): boolean => {
   if (node.type === NodeType.Neg) {
     return !isNegative(node.arg);
   }
@@ -28,7 +28,7 @@ export const isNegative = (node: Semantic.types.NumericNode): boolean => {
 export const simplifyMul = (
   node: Semantic.types.Mul, // restrict this to 2 factors
   steps?: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+): Semantic.types.Node => {
   const [a, b] = node.args;
 
   // if a and b are monomials
@@ -43,7 +43,7 @@ export const simplifyMul = (
 
   const resultIsNeg = (a.type === NodeType.Neg) !== (b.type === NodeType.Neg);
 
-  let after: Semantic.types.NumericNode;
+  let after: Semantic.types.Node;
 
   if (
     Semantic.util.isNumber(aFactors[0]) &&
