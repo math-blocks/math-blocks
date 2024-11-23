@@ -11,7 +11,7 @@ export function moveOtherTermsToOneSide(
   before: Semantic.types.NumericRelation,
   variable: Semantic.types.Identifier,
 ): Step<Semantic.types.NumericRelation> | void {
-  const [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  const [left, right] = before.args as readonly Semantic.types.Node[];
 
   const leftTerms = Semantic.util.getTerms(left);
   const rightTerms = Semantic.util.getTerms(right);
@@ -53,11 +53,11 @@ export function moveOtherTermsToOneSide(
 
 const moveTermToSide = (
   before: Semantic.types.NumericRelation,
-  nonMatchingTerms: readonly Semantic.types.NumericNode[],
+  nonMatchingTerms: readonly Semantic.types.Node[],
   side: 'left' | 'right',
 ): Step<Semantic.types.NumericRelation> | void => {
   const originalBefore = before;
-  let [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  let [left, right] = before.args as readonly Semantic.types.Node[];
 
   const substeps: Step<Semantic.types.NumericRelation>[] = [];
   let after: Semantic.types.NumericRelation | null = null;

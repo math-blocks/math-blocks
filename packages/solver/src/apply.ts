@@ -33,7 +33,7 @@ export const applyStep = (
       }
       if (newNode.type === NodeType.Add && node.type === NodeType.Add) {
         const index = node.args.findIndex(
-          (arg: Semantic.types.NumericNode) => arg.id === oldNode.id,
+          (arg: Semantic.types.Node) => arg.id === oldNode.id,
         );
         if (index !== -1) {
           return Semantic.builders.add([

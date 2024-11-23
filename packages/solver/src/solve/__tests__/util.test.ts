@@ -5,28 +5,28 @@ import { getCoeff, isTermOfIdent } from '../util';
 
 describe('getCoeff', () => {
   test('x -> 1', () => {
-    const ast = Testing.parse('x') as Semantic.types.NumericNode;
+    const ast = Testing.parse('x') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('1');
   });
 
   test('2x -> 2', () => {
-    const ast = Testing.parse('2x') as Semantic.types.NumericNode;
+    const ast = Testing.parse('2x') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('2');
   });
 
   test('-x -> -1', () => {
-    const ast = Testing.parse('-x') as Semantic.types.NumericNode;
+    const ast = Testing.parse('-x') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('-1');
   });
 
   test('-2x -> -2', () => {
-    const ast = Testing.parse('-2x') as Semantic.types.NumericNode;
+    const ast = Testing.parse('-2x') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('-2');
@@ -34,21 +34,21 @@ describe('getCoeff', () => {
 
   // Doesn't handle non-canonicalized terms yet
   test.skip('(x)(2) -> 2', () => {
-    const ast = Testing.parse('(x)(2)') as Semantic.types.NumericNode;
+    const ast = Testing.parse('(x)(2)') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('2');
   });
 
   test('x / 2', () => {
-    const ast = Testing.parse('x / 2') as Semantic.types.NumericNode;
+    const ast = Testing.parse('x / 2') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('1 / 2');
   });
 
   test('3x / 2', () => {
-    const ast = Testing.parse('3x / 2') as Semantic.types.NumericNode;
+    const ast = Testing.parse('3x / 2') as Semantic.types.Node;
     const coeff = getCoeff(ast);
 
     expect(Testing.print(coeff)).toEqual('3 / 2');

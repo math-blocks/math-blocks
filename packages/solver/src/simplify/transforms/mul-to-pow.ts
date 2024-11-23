@@ -3,8 +3,8 @@ import * as Semantic from '@math-blocks/semantic';
 import type { Step } from '../../types';
 
 export function mulToPow(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -15,10 +15,10 @@ export function mulToPow(
   }
 
   // map from factor to factor count
-  const map = new Map<Semantic.types.NumericNode, number>();
+  const map = new Map<Semantic.types.Node, number>();
 
   for (const factor of factors) {
-    let key: Semantic.types.NumericNode | undefined;
+    let key: Semantic.types.Node | undefined;
     for (const k of map.keys()) {
       // TODO: add an option to ignore mul.implicit
       if (Semantic.util.deepEquals(k, factor)) {
@@ -37,7 +37,7 @@ export function mulToPow(
     return undefined;
   }
 
-  const newFactors: Semantic.types.NumericNode[] = [];
+  const newFactors: Semantic.types.Node[] = [];
   for (const [key, val] of map.entries()) {
     if (val === 1) {
       newFactors.push(key);

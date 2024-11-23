@@ -10,8 +10,8 @@ const { NodeType } = Semantic;
 // - powers
 // - negative factors
 export function reduceFraction(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Div) {
     return undefined;
   }
@@ -43,7 +43,7 @@ export function reduceFraction(
     true,
   );
 
-  let after: Semantic.types.NumericNode;
+  let after: Semantic.types.Node;
   if (Semantic.util.deepEquals(den, Semantic.builders.number('1'))) {
     // a / 1 -> a
     after = num;

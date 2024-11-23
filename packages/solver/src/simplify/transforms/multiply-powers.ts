@@ -2,19 +2,17 @@ import { util, types, builders, NodeType } from '@math-blocks/semantic';
 
 import type { Step } from '../../types';
 
-const isPower = (node: types.NumericNode): node is types.Pow =>
+const isPower = (node: types.Node): node is types.Pow =>
   node.type === NodeType.Power;
 
-const isMul = (node: types.NumericNode): node is types.Mul =>
+const isMul = (node: types.Node): node is types.Mul =>
   node.type === NodeType.Mul;
 
-const getBase = (node: types.NumericNode): types.NumericNode => {
+const getBase = (node: types.Node): types.Node => {
   return isPower(node) ? node.base : node;
 };
 
-export function multiplyPowers(
-  node: types.NumericNode,
-): Step<types.NumericNode> | void {
+export function multiplyPowers(node: types.Node): Step<types.Node> | void {
   const factors = util.getFactors(node);
 
   if (factors.length < 2) {
@@ -22,7 +20,7 @@ export function multiplyPowers(
   }
 
   // A mapping from base to array of factors with that base
-  const map: Map<string, types.NumericNode[]> = new Map();
+  const map: Map<string, types.Node[]> = new Map();
 
   for (const factor of factors) {
     const base = getBase(factor);
@@ -33,9 +31,9 @@ export function multiplyPowers(
   }
 
   // TODO: check if there's any entries in the map with more than one factor
-  const newFactors: types.NumericNode[] = [];
+  const newFactors: types.Node[] = [];
   // TODO: add substeps to simplify addition of exponents
-  const substeps: Step<types.NumericNode>[] = [];
+  const substeps: Step<types.Node>[] = [];
 
   const implicit = isMul(node) ? node.implicit : false;
 

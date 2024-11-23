@@ -3,8 +3,8 @@ import * as Testing from '@math-blocks/testing';
 
 import { dividePowers } from '../divide-powers';
 
-const parse = (str: string): Semantic.types.NumericNode =>
-  Testing.parse(str) as Semantic.types.NumericNode;
+const parse = (str: string): Semantic.types.Node =>
+  Testing.parse(str) as Semantic.types.Node;
 
 describe('dividePowers', () => {
   // TODO: This test case requires us to use an option to move

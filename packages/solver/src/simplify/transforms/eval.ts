@@ -5,9 +5,7 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 // TODO: backport this to @math-blocks/semantic
-const evalNode = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode => {
+const evalNode = (node: Semantic.types.Node): Semantic.types.Node => {
   const result = Semantic.util.evalNode(node);
   if (result.d === 1) {
     if (result.s === 1) {
@@ -39,8 +37,8 @@ const evalNode = (
 // (2)(x)(3)(y) -> 6xy
 // TODO: figure out why using our local version of getFactors breaks things.
 export function evalMul(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -64,8 +62,8 @@ export function evalMul(
 }
 
 export function evalAdd(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -91,8 +89,8 @@ export function evalAdd(
 // TODO: if the fraction is in lowest terms or otherwise can't be modified, don't
 // process it.
 export function evalDiv(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== NodeType.Div) {
     return;
   }
@@ -108,7 +106,7 @@ export function evalDiv(
   }
 
   const result = Semantic.util.evalNode(node);
-  let after: Semantic.types.NumericNode;
+  let after: Semantic.types.Node;
   if (result.d === 1) {
     if (result.s === 1) {
       after = Semantic.builders.number(result.n.toString());

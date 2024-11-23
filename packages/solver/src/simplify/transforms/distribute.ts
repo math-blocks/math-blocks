@@ -10,8 +10,8 @@ const { NodeType } = Semantic;
 // a - (b + c) -> a + -1(b + c)
 const distSub = (
   node: Semantic.types.Neg,
-  substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
-): readonly Semantic.types.NumericNode[] | undefined => {
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined => {
   const add = node.arg;
   const mulNegOne = Semantic.builders.mul(
     [Semantic.builders.number('-1'), add],
@@ -29,9 +29,9 @@ const distSub = (
 
 // a - b -> a + -b
 const subToNeg = (
-  before: Semantic.types.NumericNode,
-  substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+  before: Semantic.types.Node,
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): Semantic.types.Node => {
   if (Semantic.util.isSubtraction(before)) {
     const after = Semantic.builders.neg(before.arg, false);
     // TODO: return new steps instead of mutating
@@ -48,10 +48,10 @@ const subToNeg = (
 
 // a + -b -> a - b
 const negToSub = (
-  before: Semantic.types.NumericNode,
+  before: Semantic.types.Node,
   index: number,
   substeps: Step[], // eslint-disable-line functional/prefer-readonly-type
-): Semantic.types.NumericNode => {
+): Semantic.types.Node => {
   if (before.type === NodeType.Neg && !before.subtraction && index > 0) {
     const after = Semantic.builders.neg(before.arg, true);
     // TODO: return new steps instead of mutating
@@ -69,8 +69,8 @@ const negToSub = (
 // a(b + c) -> ab + bc
 const distMul = (
   node: Semantic.types.Mul,
-  substeps: Step<Semantic.types.NumericNode>[], // eslint-disable-line functional/prefer-readonly-type
-): readonly Semantic.types.NumericNode[] | undefined => {
+  substeps: Step<Semantic.types.Node>[], // eslint-disable-line functional/prefer-readonly-type
+): readonly Semantic.types.Node[] | undefined => {
   // TODO: handle distribution of more than two polynomials
   if (node.args.length === 2) {
     if (node.args[1].type === NodeType.Add) {
@@ -192,9 +192,9 @@ const distMul = (
  * @return {Step | undefined}
  */
 export function distribute(
-  node: Semantic.types.NumericNode,
-  path: readonly Semantic.types.NumericNode[],
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+  path: readonly Semantic.types.Node[],
+): Step<Semantic.types.Node> | void {
   if (!Semantic.util.isNumeric(node)) {
     return;
   }
@@ -215,7 +215,7 @@ export function distribute(
     return undefined;
   }
 
-  const substeps: Step<Semantic.types.NumericNode>[] = [];
+  const substeps: Step<Semantic.types.Node>[] = [];
   const nodes = Semantic.util.getTerms(node);
   let changed = false;
   const newNodes = nodes.flatMap((node, outerIndex) => {
@@ -224,7 +224,7 @@ export function distribute(
       return [node];
     }
 
-    let newTerms: readonly Semantic.types.NumericNode[] | undefined;
+    let newTerms: readonly Semantic.types.Node[] | undefined;
     if (node.type === NodeType.Neg) {
       newTerms = distSub(node, substeps);
     } else if (node.type === NodeType.Mul) {

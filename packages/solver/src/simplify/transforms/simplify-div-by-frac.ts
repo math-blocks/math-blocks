@@ -3,8 +3,8 @@ import * as Semantic from '@math-blocks/semantic';
 import type { Step } from '../../types';
 
 const getReciprocal = (
-  node: Semantic.types.NumericNode,
-): Semantic.types.NumericNode | undefined => {
+  node: Semantic.types.Node,
+): Semantic.types.Node | undefined => {
   if (node.type === Semantic.NodeType.Neg) {
     const reciprocal = getReciprocal(node.arg);
     return reciprocal ? Semantic.builders.neg(reciprocal) : undefined;
@@ -16,8 +16,8 @@ const getReciprocal = (
 };
 
 export function simplifyDivByFrac(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   if (node.type !== Semantic.NodeType.Div) {
     return undefined;
   }

@@ -10,7 +10,7 @@ export function moveMatchingVariableTermsToOneSide(
   variable: Semantic.types.Identifier,
 ): Step<Semantic.types.NumericRelation> | void {
   const originalBefore = before;
-  let [left, right] = before.args as readonly Semantic.types.NumericNode[];
+  let [left, right] = before.args as readonly Semantic.types.Node[];
 
   const leftTerms = Semantic.util.getTerms(left);
   const rightTerms = Semantic.util.getTerms(right);
@@ -56,9 +56,7 @@ export function moveMatchingVariableTermsToOneSide(
       before = after;
 
       // TODO: show the cancelling of terms after the addition/subtraction
-      const step = simplifyBothSides(after) as void | Step<
-        Semantic.types.Eq<Semantic.types.NumericNode>
-      >;
+      const step = simplifyBothSides(after) as void | Step<Semantic.types.Eq>;
       if (step) {
         after = step.after;
         substeps.push({

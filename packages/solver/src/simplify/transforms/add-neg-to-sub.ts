@@ -5,8 +5,8 @@ import type { Step } from '../../types';
 const { NodeType } = Semantic;
 
 export function addNegToSub(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   const terms = Semantic.util.getTerms(node);
   let changed = false;
   const newTerms = terms.map((term, index) => {

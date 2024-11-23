@@ -6,7 +6,7 @@ import type { Step } from '../../types';
 export function simplifyBothSides(
   before: Semantic.types.NumericRelation,
 ): Step | void {
-  const args = before.args as TwoOrMore<Semantic.types.NumericNode>;
+  const args = before.args as TwoOrMore<Semantic.types.Node>;
   const left = simplify(args[0]);
   const right = simplify(args[1]);
 

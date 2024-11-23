@@ -25,8 +25,8 @@ import { dividePowers } from './transforms/divide-powers';
 // TODO: Make simplify configurable so that we can get different behaviours.
 // For instance, someetimes we might not want to allow evaluation of expressions.
 export function simplify(
-  node: Semantic.types.NumericNode,
-): Step<Semantic.types.NumericNode> | void {
+  node: Semantic.types.Node,
+): Step<Semantic.types.Node> | void {
   const tranforms: Transform[] = [
     dropAddIdentity,
 
@@ -53,25 +53,23 @@ export function simplify(
     addNegToSub,
   ];
 
-  const substeps: Step<Semantic.types.NumericNode>[] = [];
+  const substeps: Step<Semantic.types.Node>[] = [];
 
-  const path: Semantic.types.NumericNode[] = [];
-  const enter = (node: Semantic.types.NumericNode): void => {
+  const path: Semantic.types.Node[] = [];
+  const enter = (node: Semantic.types.Node): void => {
     path.push(node);
   };
 
   // The inner loop attempts to apply one or more transforms to nodes in the
   // AST from the inside out.
-  const exit = (
-    node: Semantic.types.NumericNode,
-  ): Semantic.types.NumericNode | void => {
+  const exit = (node: Semantic.types.Node): Semantic.types.Node | void => {
     path.pop();
     // TODO: get rid of this check so that we can simplify other types of
     // expressions, e.g. logic expressions.
     if (Semantic.util.isNumeric(node)) {
-      let current: Semantic.types.NumericNode = node;
+      let current: Semantic.types.Node = node;
       for (let i = 0; i < 10; i++) {
-        let step: Step<Semantic.types.NumericNode> | void = undefined;
+        let step: Step<Semantic.types.Node> | void = undefined;
         for (const transform of tranforms) {
           step = transform(current, path, simplify);
           // Multiple transforms can be applied to the current node.
