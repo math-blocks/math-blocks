@@ -4,7 +4,11 @@
   "compilerOptions": {
     "outDir": "out",
     "rootDir": "src",
-    "tsBuildInfoFile": "../../.buildcache/react.tsbuildinfo"
+    "tsBuildInfoFile": "../../.buildcache/react.tsbuildinfo",
+    "lib": [
+      "esnext",
+      "dom",
+    ],
   },
   "references": [
     {"path": "../core"},
