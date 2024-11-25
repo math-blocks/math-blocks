@@ -232,12 +232,20 @@ export const definitions: Record<string, Descriptor> = {
     {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Num\']', approach: '\'left\' | \'right\' | \'both\''},
   ),
   Int: Operation(
-    'Int', 'unary', 'arith', undefined,
+    'Integral', 'unary', 'arith', undefined,
     {bvar: 'NodeTypes[\'Identifier\']'},
   ),
   DefInt: Operation(
-    'DefInt', 'unary', 'arith', undefined, 
+    'DefiniteIntegral', 'unary', 'arith', undefined, 
     {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
+  ),
+  Diff: Operation(
+    'Diff', 'unary', 'arith', undefined,
+    {bvar: 'NodeTypes[\'Identifier\']', degree: 'number'},
+  ),
+  PartialDiff: Operation(
+    'Diff', 'unary', 'arith', undefined,
+    {bvars: 'readonly NodeTypes[\'Identifier\'][]', degrees: 'readonly number[]'},
   ),
 
   // Sequences and Series

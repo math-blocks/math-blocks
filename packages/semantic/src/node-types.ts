@@ -135,6 +135,16 @@ export interface NodeTypes {
     readonly lower: Node,
     readonly upper: Node,
   },
+  readonly Diff: Common<'Diff'> & {
+    readonly arg: Node,
+    readonly bvar: NodeTypes['Identifier'],
+    readonly degree: number,
+  },
+  readonly PartialDiff: Common<'Diff'> & {
+    readonly arg: Node,
+    readonly bvars: readonly NodeTypes['Identifier'][],
+    readonly degrees: readonly number[],
+  },
   readonly Sum: Common<'Sum'> & {
     readonly arg: Node,
     readonly bvar: NodeTypes['Identifier'],

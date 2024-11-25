@@ -380,6 +380,20 @@ export const DefInt = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, up
   lower,
   upper,
 });
+export const Diff = (arg: Node, bvar: NodeTypes['Identifier'], degree: number): NodeTypes['Diff'] => ({
+  type: 'Diff',
+  id: getId(),
+  arg,
+  bvar,
+  degree,
+});
+export const PartialDiff = (arg: Node, bvars: readonly NodeTypes['Identifier'][], degrees: readonly number[]): NodeTypes['PartialDiff'] => ({
+  type: 'Diff',
+  id: getId(),
+  arg,
+  bvars,
+  degrees,
+});
 export const Sum = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Sum'] => ({
   type: 'Sum',
   id: getId(),
