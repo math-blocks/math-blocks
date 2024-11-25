@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./out",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.buildcache/demo.tsbuildinfo"
+    "tsBuildInfoFile": "../../.buildcache/demo.tsbuildinfo",
+    "lib": [
+      "esnext",
+      "dom",
+    ],
   },
   "references": [
     {"path": "../packages/core"},

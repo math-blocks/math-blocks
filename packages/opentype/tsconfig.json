@@ -4,6 +4,10 @@
     "compilerOptions": {
       "outDir": "out",
       "rootDir": "src",
-      "tsBuildInfoFile": "../../.buildcache/opentype.tsbuildinfo"
+      "tsBuildInfoFile": "../../.buildcache/opentype.tsbuildinfo",
+      "lib": [
+        "esnext",
+        "dom",
+      ],
     }
   }
