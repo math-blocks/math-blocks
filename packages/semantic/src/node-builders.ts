@@ -3,9 +3,8 @@
 
 /* eslint-disable no-shadow-restricted-names */
 
-import type { Node } from './types';
+import type { Node, NodeTypes, NumericRelation } from './types';
 import { NodeType } from './enums';
-import { NodeTypes, NumericRelation } from './node-types';
 import { SourceLocation } from './types';
 import { getId } from '@math-blocks/core';
 
