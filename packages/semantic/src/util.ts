@@ -45,7 +45,7 @@ export const isNumber = (node: types.Node): boolean => {
 
 // TODO: autogenerate this from the validation schema
 export const isNumeric = (node: types.Node): node is types.Node => {
-  const NumericNodeTypes: NodeType[] = [
+  const NumericNodeTypes: NodeType[keyof NodeType][] = [
     NodeType.Number,
     NodeType.Identifier,
     NodeType.Pi,
@@ -245,61 +245,19 @@ export const traverse = (
     }
   }
 
-  if (node.type === 'VerticalAdditionToRelation') {
-    const newNode = {
-      ...node,
-      ...newValues,
-      originalRelation: {
-        left: node.originalRelation.left.map(
-          (child) => child && traverse(child, callbacks),
-        ),
-        right: node.originalRelation.right.map(
-          (child) => child && traverse(child, callbacks),
-        ),
-      },
-      actions: {
-        left: node.actions.left.map(
-          (child) => child && traverse(child, callbacks),
-        ),
-        right: node.actions.right.map(
-          (child) => child && traverse(child, callbacks),
-        ),
-      },
-      resultingRelation: node.resultingRelation
-        ? {
-            left: node.resultingRelation.left.map(
-              (child) => child && traverse(child, callbacks),
-            ),
-            right: node.resultingRelation.right.map(
-              (child) => child && traverse(child, callbacks),
-            ),
-          }
-        : undefined,
-    } as types.Node;
+  const newNode = {
+    ...node,
+    ...newValues,
+  };
 
-    if (callbacks.exit) {
-      const result = callbacks.exit(newNode);
-      if (result) {
-        return result;
-      }
+  if (callbacks.exit) {
+    const result = callbacks.exit(newNode);
+    if (result) {
+      return result;
     }
-
-    return newNode;
-  } else {
-    const newNode = {
-      ...node,
-      ...newValues,
-    };
-
-    if (callbacks.exit) {
-      const result = callbacks.exit(newNode);
-      if (result) {
-        return result;
-      }
-    }
-
-    return newNode;
   }
+
+  return newNode;
 };
 
 export const traverseNumeric = (

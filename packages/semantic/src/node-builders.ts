@@ -3,7 +3,10 @@
 
 /* eslint-disable no-shadow-restricted-names */
 
-import { Node, NodeTypes } from './node-types';
+import type { Node } from './types';
+import { NodeType } from './enums';
+import { NodeTypes, NumericRelation } from './node-types';
+import { SourceLocation } from './types';
 import { getId } from '@math-blocks/core';
 
 export const Num = (value: string): NodeTypes['Num'] => ({
@@ -23,17 +26,6 @@ export const Func = (func: Node, args: readonly Node[]): NodeTypes['Func'] => ({
   func,
   args,
 });
-export const Add = (args: TwoOrMore<Node>): NodeTypes['Add'] => ({
-  type: 'Add',
-  id: getId(),
-  args,
-});
-export const Mul = (args: TwoOrMore<Node>, implicit: boolean): NodeTypes['Mul'] => ({
-  type: 'Mul',
-  id: getId(),
-  args,
-  implicit,
-});
 export const PlusMinus = (args: TwoOrMore<Node>): NodeTypes['PlusMinus'] => ({
   type: 'PlusMinus',
   id: getId(),
@@ -44,12 +36,12 @@ export const MinusPlus = (args: TwoOrMore<Node>): NodeTypes['MinusPlus'] => ({
   id: getId(),
   args,
 });
-export const Div = (args: readonly [Node, Node]): NodeTypes['Div'] => ({
+export const Div = (...args: readonly [Node, Node]): NodeTypes['Div'] => ({
   type: 'Div',
   id: getId(),
   args,
 });
-export const Mod = (args: readonly [Node, Node]): NodeTypes['Mod'] => ({
+export const Mod = (...args: readonly [Node, Node]): NodeTypes['Mod'] => ({
   type: 'Modulo',
   id: getId(),
   args,
@@ -72,7 +64,7 @@ export const Abs = (arg: Node): NodeTypes['Abs'] => ({
   id: getId(),
   arg,
 });
-export const Neg = (arg: Node, subtraction: boolean): NodeTypes['Neg'] => ({
+export const Neg = (arg: Node, subtraction = false): NodeTypes['Neg'] => ({
   type: 'Neg',
   id: getId(),
   arg,
@@ -186,6 +178,10 @@ export const E = (): NodeTypes['E'] => ({
   type: 'E',
   id: getId(),
 });
+export const Ellipsis = (): NodeTypes['Ellipsis'] => ({
+  type: 'Ellipsis',
+  id: getId(),
+});
 export const And = (args: TwoOrMore<Node>): NodeTypes['And'] => ({
   type: 'LogicalAnd',
   id: getId(),
@@ -206,12 +202,12 @@ export const Not = (arg: Node): NodeTypes['Not'] => ({
   id: getId(),
   arg,
 });
-export const Implies = (args: readonly [Node, Node]): NodeTypes['Implies'] => ({
+export const Implies = (...args: readonly [Node, Node]): NodeTypes['Implies'] => ({
   type: 'Conditional',
   id: getId(),
   args,
 });
-export const Equivalent = (args: readonly [Node, Node]): NodeTypes['Equivalent'] => ({
+export const Equivalent = (...args: readonly [Node, Node]): NodeTypes['Equivalent'] => ({
   type: 'Biconditional',
   id: getId(),
   args,
@@ -230,11 +226,11 @@ export const Set = (args: TwoOrMore<Node>): NodeTypes['Set'] => ({
   args,
 });
 export const Union = (args: TwoOrMore<Node>): NodeTypes['Union'] => ({
-  type: 'SetDifference',
+  type: 'Union',
   id: getId(),
   args,
 });
-export const Intersect = (args: TwoOrMore<Node>): NodeTypes['Intersect'] => ({
+export const Intersection = (args: TwoOrMore<Node>): NodeTypes['Intersection'] => ({
   type: 'SetIntersection',
   id: getId(),
   args,
@@ -244,8 +240,8 @@ export const CartesianProduct = (args: TwoOrMore<Node>): NodeTypes['CartesianPro
   id: getId(),
   args,
 });
-export const SetDiff = (args: readonly [Node, Node]): NodeTypes['SetDiff'] => ({
-  type: 'SetDiff',
+export const SetDiff = (...args: readonly [Node, Node]): NodeTypes['SetDiff'] => ({
+  type: 'SetDifference',
   id: getId(),
   args,
 });
@@ -269,22 +265,22 @@ export const ProperSuperset = (args: TwoOrMore<Node>): NodeTypes['ProperSuperset
   id: getId(),
   args,
 });
-export const NotSubset = (args: readonly [Node, Node]): NodeTypes['NotSubset'] => ({
+export const NotSubset = (...args: readonly [Node, Node]): NodeTypes['NotSubset'] => ({
   type: 'NotSubset',
   id: getId(),
   args,
 });
-export const NotProperSubset = (args: readonly [Node, Node]): NodeTypes['NotProperSubset'] => ({
+export const NotProperSubset = (...args: readonly [Node, Node]): NodeTypes['NotProperSubset'] => ({
   type: 'NotProperSubset',
   id: getId(),
   args,
 });
-export const NotSuperset = (args: readonly [Node, Node]): NodeTypes['NotSuperset'] => ({
+export const NotSuperset = (...args: readonly [Node, Node]): NodeTypes['NotSuperset'] => ({
   type: 'NotSuperset',
   id: getId(),
   args,
 });
-export const NotProperSuperset = (args: readonly [Node, Node]): NodeTypes['NotProperSuperset'] => ({
+export const NotProperSuperset = (...args: readonly [Node, Node]): NodeTypes['NotProperSuperset'] => ({
   type: 'NotProperSuperset',
   id: getId(),
   args,
@@ -348,17 +344,17 @@ export const Transpose = (arg: Node): NodeTypes['Transpose'] => ({
   id: getId(),
   arg,
 });
-export const VectorProduct = (args: readonly [Node, Node]): NodeTypes['VectorProduct'] => ({
+export const VectorProduct = (...args: readonly [Node, Node]): NodeTypes['VectorProduct'] => ({
   type: 'VectorProduct',
   id: getId(),
   args,
 });
-export const ScalarProduct = (args: readonly [Node, Node]): NodeTypes['ScalarProduct'] => ({
+export const ScalarProduct = (...args: readonly [Node, Node]): NodeTypes['ScalarProduct'] => ({
   type: 'ScalarProduct',
   id: getId(),
   args,
 });
-export const Limit = (arg: Node, bvar: NodeTypes['Identifier'], to: NodeTypes['Num'], approach: 'left' | 'right' | 'both'): NodeTypes['Limit'] => ({
+export const Limit = (arg: Node, bvar: NodeTypes['Identifier'], to: NodeTypes['Num'] | NodeTypes['Neg'], approach: 'left' | 'right' | 'both'): NodeTypes['Limit'] => ({
   type: 'Limit',
   id: getId(),
   arg,
@@ -366,44 +362,44 @@ export const Limit = (arg: Node, bvar: NodeTypes['Identifier'], to: NodeTypes['N
   to,
   approach,
 });
-export const Int = (arg: Node, bvar: NodeTypes['Identifier']): NodeTypes['Int'] => ({
-  type: 'Int',
+export const Integral = (arg: Node, bvar: NodeTypes['Identifier']): NodeTypes['Integral'] => ({
+  type: 'Integral',
   id: getId(),
   arg,
   bvar,
 });
 export const DefInt = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['DefInt'] => ({
-  type: 'DefInt',
+  type: 'DefiniteIntegral',
   id: getId(),
   arg,
   bvar,
   lower,
   upper,
 });
-export const Diff = (arg: Node, bvar: NodeTypes['Identifier'], degree: number): NodeTypes['Diff'] => ({
-  type: 'Diff',
+export const Diff = (arg: Node, bvar: NodeTypes['Identifier'], degree: Node): NodeTypes['Diff'] => ({
+  type: 'Derivative',
   id: getId(),
   arg,
   bvar,
   degree,
 });
-export const PartialDiff = (arg: Node, bvars: readonly NodeTypes['Identifier'][], degrees: readonly number[]): NodeTypes['PartialDiff'] => ({
-  type: 'Diff',
+export const PartialDiff = (arg: Node, bvars: readonly NodeTypes['Identifier'][], degrees: readonly Node[]): NodeTypes['PartialDiff'] => ({
+  type: 'PartialDerivative',
   id: getId(),
   arg,
   bvars,
   degrees,
 });
 export const Sum = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Sum'] => ({
-  type: 'Sum',
+  type: 'Summation',
   id: getId(),
   arg,
   bvar,
   lower,
   upper,
 });
-export const Prod = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Prod'] => ({
-  type: 'Prod',
+export const Product = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Product'] => ({
+  type: 'Product',
   id: getId(),
   arg,
   bvar,
@@ -424,4 +420,54 @@ export const Parens = (arg: Node): NodeTypes['Parens'] => ({
   type: 'Parens',
   id: getId(),
   arg,
+});
+
+export const Add = (
+  terms: readonly Node[],
+  loc?: SourceLocation,
+): Node => {
+  switch (terms.length) {
+    case 0:
+      return Num('0'); // , loc);
+    case 1:
+      return terms[0]; // TODO: figure out if we should give this node a location
+    default:
+      return {
+        type: NodeType.Add,
+        id: getId(),
+        args: terms as TwoOrMore<Node>,
+        loc,
+      };
+  }
+};
+
+export const Mul = (
+  factors: readonly Node[],
+  implicit = false,
+  loc?: SourceLocation,
+): Node => {
+  switch (factors.length) {
+    case 0:
+      return Num('1'); // , loc);
+    case 1:
+      return factors[0]; // TODO: figure out if we should give this node a location
+    default:
+      return {
+        type: NodeType.Mul,
+        id: getId(),
+        implicit,
+        args: factors as TwoOrMore<Node>,
+        loc,
+      };
+  }
+};
+
+export const numRel = (
+  args: TwoOrMore<Node>,
+  type: NumericRelation['type'],
+  loc?: SourceLocation,
+): NumericRelation => ({
+  type,
+  id: getId(),
+  args,
 });

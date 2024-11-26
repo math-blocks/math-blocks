@@ -176,6 +176,7 @@ export const definitions: Record<string, Descriptor> = {
   Infinity: Constant('Infinity', 'arith', '\\infty'),
   Pi: Constant('Pi', 'arith', '\\pi'),
   E: Constant('E', 'arith', 'e'),
+  Ellipsis: Constant('Ellipsis', 'arith', '\\ldots'),
 
   // Logic
   And: Operation('LogicalAnd', 'nary', 'logic'),
@@ -192,11 +193,11 @@ export const definitions: Record<string, Descriptor> = {
   // TODO: add support for suchthat, see https://openmath.org/cd/set1.html#suchthat
   Set: Constructor('Set', 'nary'),
 
-  Union: Operation('SetDifference', 'nary', 'set'),
-  Intersect: Operation('SetIntersection', 'nary', 'set'),
+  Union: Operation('Union', 'nary', 'set'),
+  Intersection: Operation('SetIntersection', 'nary', 'set'),
   CartesianProduct: Operation('CartesianProduct', 'nary', 'set'),
 
-  SetDiff: Operation('SetDiff', 'binary', 'set'),
+  SetDiff: Operation('SetDifference', 'binary', 'set'),
 
   Subset: Relation('Subset', 'nary', ['set']),
   ProperSubset: Relation('ProperSubset', 'nary', ['set']),
@@ -229,9 +230,9 @@ export const definitions: Record<string, Descriptor> = {
   // Calculus
   Limit: Operation(
     'Limit', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Num\']', approach: '\'left\' | \'right\' | \'both\''},
+    {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Num\'] | NodeTypes[\'Neg\']', approach: '\'left\' | \'right\' | \'both\''},
   ),
-  Int: Operation(
+  Integral: Operation(
     'Integral', 'unary', 'arith', undefined,
     {bvar: 'NodeTypes[\'Identifier\']'},
   ),
@@ -240,21 +241,21 @@ export const definitions: Record<string, Descriptor> = {
     {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
   ),
   Diff: Operation(
-    'Diff', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', degree: 'number'},
+    'Derivative', 'unary', 'arith', undefined,
+    {bvar: 'NodeTypes[\'Identifier\']', degree: 'Node'},
   ),
   PartialDiff: Operation(
-    'Diff', 'unary', 'arith', undefined,
-    {bvars: 'readonly NodeTypes[\'Identifier\'][]', degrees: 'readonly number[]'},
+    'PartialDerivative', 'unary', 'arith', undefined,
+    {bvars: 'readonly NodeTypes[\'Identifier\'][]', degrees: 'readonly Node[]'},
   ),
 
   // Sequences and Series
   Sum: Operation(
-    'Sum', 'unary', 'arith', undefined,
+    'Summation', 'unary', 'arith', undefined,
     {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
   ),
-  Prod: Operation(
-    'Prod', 'unary', 'arith', undefined,
+  Product: Operation(
+    'Product', 'unary', 'arith', undefined,
     {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
   ),
 
