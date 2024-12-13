@@ -11,3 +11,5 @@ updates:
       interval: "weekly"
     # Disable rebasing for npm pull requests
     rebase-strategy: "disabled"
+    allow:
+      - dependency-type: "production"
