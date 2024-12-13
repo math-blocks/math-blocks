@@ -28,6 +28,7 @@ const printArgs = (
 const symbols = {
   [NodeType.Infinity]: '\u221e',
   [NodeType.Pi]: '\u03c0',
+  E: 'e',
   [NodeType.Ellipsis]: '...', // TODO: replace with \u2026 or \u22ef
   [NodeType.True]: 'T',
   [NodeType.False]: 'F',
@@ -36,27 +37,6 @@ const symbols = {
   [NodeType.Rationals]: '\u221a',
   [NodeType.Reals]: '\u221d',
   [NodeType.Complexes]: '\u2102',
-};
-
-type WorkRow = {
-  readonly left: readonly (Semantic.types.Node | null)[];
-  readonly right: readonly (Semantic.types.Node | null)[];
-};
-
-const printWorkRow = (
-  workRow: WorkRow,
-  serialize: (ast: Semantic.types.Node) => string,
-  indent: (str: string) => string,
-): string => {
-  const leftArray = workRow.left.map((term) => print(term, serialize, indent));
-  const rightArray = workRow.right.map((term) =>
-    print(term, serialize, indent),
-  );
-  const leftStr =
-    leftArray.length > 1 ? `(add ${leftArray.join(' ')})` : leftArray[0];
-  const rightStr =
-    rightArray.length > 1 ? `(add ${rightArray.join(' ')})` : rightArray[0];
-  return `(eq ${leftStr} ${rightStr})`;
 };
 
 // TODO: figure out how to generate a serializer directly from the schema.
@@ -74,58 +54,81 @@ const print = (
     return 'null';
   }
   switch (ast.type) {
-    case NodeType.Number: {
+    case 'Number': {
       return `${ast.value}`;
     }
-    case NodeType.Identifier: {
+    case 'Identifier': {
       if (ast.subscript) {
         return `(ident ${ast.name} ${print(ast.subscript, serialize, indent)})`;
       } else {
         return `${ast.name}`;
       }
     }
-    case NodeType.Neg: {
+    case 'Neg': {
       const type = ast.subtraction ? 'neg.sub' : 'neg';
       return `(${type} ${print(ast.arg, serialize, indent)})`;
     }
-    case NodeType.LogicalNot:
-    case NodeType.AbsoluteValue:
-    case NodeType.Parens:
+    case 'Exp':
+    case 'Ln':
+    case 'Log':
+    case 'Sin':
+    case 'Cos':
+    case 'Tan':
+    case 'Cot':
+    case 'Sec':
+    case 'Csc':
+    case 'ArcSin':
+    case 'ArcCos':
+    case 'ArcTan':
+    case 'ArcCot':
+    case 'ArcSec':
+    case 'ArcCsc':
+    case 'LogicalNot':
+    case 'AbsoluteValue':
+    case 'Parens':
+    case 'Determinant':
+    case 'Transpose':
       return `(${ast.type} ${print(ast.arg, serialize, indent)})`;
-    case NodeType.Mul: {
+    case 'Mul': {
       const type = ast.implicit ? 'mul.imp' : 'mul.exp';
       return printArgs(type, ast.args, serialize, indent);
     }
-    case NodeType.Add:
-    case NodeType.Div:
-    case NodeType.Modulo:
-    case NodeType.LogicalAnd:
-    case NodeType.LogicalOr:
-    case NodeType.ExclusiveOr:
-    case NodeType.Conditional:
-    case NodeType.Biconditional:
-    case NodeType.Equals:
-    case NodeType.NotEquals:
-    case NodeType.LessThan:
-    case NodeType.LessThanOrEquals:
-    case NodeType.GreaterThan:
-    case NodeType.GreaterThanOrEquals:
-    case NodeType.Set:
-    case NodeType.Union:
-    case NodeType.SetIntersection:
-    case NodeType.SetDifference:
-    case NodeType.CartesianProduct:
-    case NodeType.Subset:
-    case NodeType.ProperSubset:
-    case NodeType.NotSubset:
-    case NodeType.NotProperSubset:
+    case 'Add':
+    case 'Div':
+    case 'Modulo':
+    case 'LogicalAnd':
+    case 'LogicalOr':
+    case 'ExclusiveOr':
+    case 'Conditional':
+    case 'Biconditional':
+    case 'Equals':
+    case 'NotEquals':
+    case 'LessThan':
+    case 'LessThanOrEquals':
+    case 'GreaterThan':
+    case 'GreaterThanOrEquals':
+    case 'Set':
+    case 'Union':
+    case 'SetIntersection':
+    case 'SetDifference':
+    case 'CartesianProduct':
+    case 'Subset':
+    case 'ProperSubset':
+    case 'NotSubset':
+    case 'NotProperSubset':
+    case 'Superset':
+    case 'ProperSuperset':
+    case 'NotSuperset':
+    case 'NotProperSuperset':
+    case 'VectorProduct':
+    case 'ScalarProduct':
       return printArgs(ast.type, ast.args, serialize, indent);
-    case NodeType.Root: {
+    case 'Root': {
       const radicand = print(ast.radicand, serialize, indent);
       const index = print(ast.index, serialize, indent);
       return `(${ast.type} :radicand ${radicand} :index ${index})`;
     }
-    case NodeType.Power: {
+    case 'Power': {
       const hasGrandchildren =
         (ast.base.type !== NodeType.Identifier &&
           ast.base.type !== NodeType.Number) ||
@@ -137,55 +140,37 @@ const print = (
         ? `(${ast.type}\n${indent(`:base ${base}`)}\n${indent(`:exp ${exp}`)})`
         : `(${ast.type} :base ${base} :exp ${exp})`;
     }
-    case NodeType.Infinity:
-    case NodeType.Pi:
-    case NodeType.Ellipsis:
-    case NodeType.True:
-    case NodeType.False:
-    case NodeType.Naturals:
-    case NodeType.Integers:
-    case NodeType.Rationals:
-    case NodeType.Reals:
-    case NodeType.Complexes:
+    case 'Infinity':
+    case 'Pi':
+    case 'E':
+    case 'Ellipsis':
+    case 'True':
+    case 'False':
+    case 'Naturals':
+    case 'Integers':
+    case 'Rationals':
+    case 'Reals':
+    case 'Complexes':
       return symbols[ast.type];
-    case NodeType.VerticalAdditionToRelation: {
-      const relOp = ast.relOp;
-      const originalRelation = printWorkRow(
-        ast.originalRelation,
-        serialize,
-        indent,
-      );
-      const actions = printWorkRow(ast.actions, serialize, indent);
-      const resultingRelation = ast.resultingRelation
-        ? printWorkRow(ast.resultingRelation, serialize, indent)
-        : 'null';
-      return `(${ast.type}\n${indent(`:relOp ${relOp}`)}\n${indent(
-        `:originalRelation ${originalRelation}`,
-      )}\n${indent(`:actions ${actions}`)}\n${indent(
-        `:resultingRelation ${resultingRelation}`,
-      )})`;
-    }
-    case NodeType.Func: {
+    case 'Func': {
       const func = print(ast.func, serialize, indent);
       const args = ast.args.map((arg) => print(arg, serialize, indent));
       return `(func ${func} ${args.join(' ')})`;
     }
-    case NodeType.PlusMinus:
-    case NodeType.MinusPlus:
-    case NodeType.Product:
-    case NodeType.Summation:
-    case NodeType.Limit:
-    case NodeType.Derivative:
-    case NodeType.Integral:
-    case NodeType.PartialDerivative:
-    case NodeType.LongAddition:
-    case NodeType.LongSubtraction:
-    case NodeType.LongMultiplication:
-    case NodeType.LongDivision:
-    case NodeType.ElementOf:
-    case NodeType.NotElementOf:
-    case NodeType.EmptySet:
-    case NodeType.Log: {
+    case 'PlusMinus':
+    case 'MinusPlus':
+    case 'Product':
+    case 'Summation':
+    case 'Limit':
+    case 'Derivative':
+    case 'PartialDerivative':
+    case 'Integral':
+    case 'DefiniteIntegral':
+    case 'ElementOf':
+    case 'NotElementOf':
+    case 'EmptySet':
+    case 'Vector':
+    case 'Matrix': {
       throw new Error(`we don't handle serializing '${ast.type}' nodes yet`);
     }
     default: {

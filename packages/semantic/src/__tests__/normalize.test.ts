@@ -124,19 +124,17 @@ describe('normalize', () => {
     expect(print(ast)).toMatchInlineSnapshot(`"Reals"`);
   });
 
-  test('Integral', () => {
+  test('DefInt', () => {
     const ast: Node = {
-      type: NodeType.Integral,
+      type: 'DefiniteIntegral',
       id: getId(),
       arg: builders.identifier('x'),
       bvar: builders.identifier('x'),
-      limits: {
-        lower: { value: builders.number('0'), inclusive: true },
-        upper: { value: builders.number('1'), inclusive: true },
-      },
+      lower: builders.number('0'),
+      upper: builders.number('1'),
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Integral x :bvar x :limits [0, 1])"`,
+      `"(DefiniteIntegral x :bvar x :lower 0 :upper 1)"`,
     );
   });
 
@@ -146,10 +144,11 @@ describe('normalize', () => {
       id: getId(),
       arg: builders.div(builders.number('1'), builders.identifier('x')),
       bvar: builders.identifier('x'),
-      value: builders.number('0'),
+      to: builders.number('0'),
+      approach: 'both',
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Limit (Div 1 x) :bvar x :value 0)"`,
+      `"(Limit (Div 1 x) :bvar x :to 0 :approach both)"`,
     );
   });
 
@@ -159,11 +158,11 @@ describe('normalize', () => {
       id: getId(),
       arg: builders.div(builders.number('1'), builders.identifier('x')),
       bvar: builders.identifier('x'),
-      value: builders.number('0'),
-      dir: 'plus',
+      to: builders.number('0'),
+      approach: 'right',
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Limit (Div 1 x) :bvar x :value 0 :dir plus)"`,
+      `"(Limit (Div 1 x) :bvar x :to 0 :approach right)"`,
     );
   });
 
@@ -172,9 +171,11 @@ describe('normalize', () => {
       type: NodeType.Derivative,
       id: getId(),
       arg: builders.pow(builders.identifier('x'), builders.number('2')),
+      bvar: builders.identifier('x'),
+      degree: builders.number('1'),
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Derivative (Power :base x :exp 2))"`,
+      `"(Derivative (Power :base x :exp 2) :degree [object Object])"`,
     );
   });
 
@@ -183,10 +184,11 @@ describe('normalize', () => {
       type: NodeType.Derivative,
       id: getId(),
       arg: builders.pow(builders.identifier('x'), builders.number('2')),
-      degree: 2,
+      bvar: builders.identifier('x'),
+      degree: builders.number('2'),
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(Derivative (Power :base x :exp 2) :degree 2)"`,
+      `"(Derivative (Power :base x :exp 2) :degree [object Object])"`,
     );
   });
 
@@ -199,10 +201,10 @@ describe('normalize', () => {
         builders.pow(builders.identifier('y'), builders.number('2')),
       ]),
       degrees: [builders.number('2'), builders.number('1')],
-      variables: [builders.identifier('x'), builders.identifier('y')],
+      bvars: [builders.identifier('x'), builders.identifier('y')],
     };
     expect(print(ast)).toMatchInlineSnapshot(
-      `"(PartialDerivative (mul.exp (Power :base x :exp 3),(Power :base y :exp 2)) :variables (x y) :degrees (2 1))"`,
+      `"(PartialDerivative (mul.exp (Power :base x :exp 3),(Power :base y :exp 2)) :bvars (x y) :degrees (2 1))"`,
     );
   });
 
@@ -214,18 +216,5 @@ describe('normalize', () => {
       set: builders.identifier('S'),
     };
     expect(print(ast)).toMatchInlineSnapshot(`"(ElementOf x S)"`);
-  });
-
-  test('LongAddition', () => {
-    const ast: Node = {
-      type: NodeType.LongAddition,
-      id: getId(),
-      terms: [],
-      sum: [],
-      carries: [],
-    };
-    expect(() => print(ast)).toThrowErrorMatchingInlineSnapshot(
-      `"we don't handle serializing 'LongAddition' nodes yet"`,
-    );
   });
 });

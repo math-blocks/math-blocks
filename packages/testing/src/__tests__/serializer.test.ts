@@ -132,9 +132,9 @@ describe('serializer', () => {
     expect(() => {
       const ast: Semantic.types.Node = {
         id: 0,
-        type: NodeType.Log,
-        base: Semantic.builders.number('2'),
-        arg: Semantic.builders.identifier('x'),
+        type: NodeType.ElementOf,
+        element: Semantic.builders.number('x'),
+        set: Semantic.builders.identifier('S'),
       };
       serializer.print(
         ast,
@@ -142,7 +142,7 @@ describe('serializer', () => {
         () => '',
       );
     }).toThrowErrorMatchingInlineSnapshot(
-      `"we don't handle serializing 'Log' nodes yet"`,
+      `"we don't handle serializing 'ElementOf' nodes yet"`,
     );
   });
 });

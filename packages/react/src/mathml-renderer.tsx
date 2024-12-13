@@ -10,14 +10,14 @@ const { NodeType } = Semantic;
 
 const print = (math: Semantic.types.Node): React.ReactElement | null => {
   switch (math.type) {
-    case NodeType.Add: {
+    case 'Add': {
       // TODO: handle adding parens when necessary (this is kind of link printers we have)
       const children: React.ReactNode[] = [];
       // TODO: give each child a key
       for (const arg of math.args) {
-        if (arg.type === NodeType.Neg && arg.subtraction) {
+        if (arg.type === 'Neg' && arg.subtraction) {
           children.push(<mo>-</mo>);
-        } else if (arg.type === NodeType.PlusMinus && arg.args.length === 2) {
+        } else if (arg.type === 'PlusMinus' && arg.args.length === 2) {
           children.push(<mo>±</mo>);
         } else {
           children.push(<mo>+</mo>);
@@ -27,7 +27,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
       children.shift(); // removes the leading operator
       return <mrow>{children}</mrow>;
     }
-    case NodeType.Mul: {
+    case 'Mul': {
       const children: React.ReactNode[] = [];
       // TODO: give each child a key
       for (const arg of math.args) {
@@ -55,7 +55,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
     case NodeType.Number: {
       return <mn>{math.value}</mn>;
     }
-    case NodeType.Identifier: {
+    case 'Identifier': {
       if (math.subscript) {
         return (
           <msub>
@@ -78,7 +78,7 @@ const print = (math: Semantic.types.Node): React.ReactElement | null => {
         </mrow>
       );
     }
-    case NodeType.PlusMinus: {
+    case 'PlusMinus': {
       return math.args.length === 2 ? (
         <mrow>
           {print(math.args[0])}
