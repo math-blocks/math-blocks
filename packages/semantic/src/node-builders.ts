@@ -563,4 +563,4 @@ export const makeNum = (
 export const makeSqrt = (
   radicand: Node,
   loc?: SourceLocation,
-): NodeTypes['Root'] => makeRoot(makeNum('2'), radicand, true, loc);
+): NodeTypes['Root'] => makeRoot(radicand, makeNum('2'), true, loc);

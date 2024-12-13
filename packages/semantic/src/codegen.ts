@@ -327,7 +327,7 @@ const generateNodeBuilders = () => {
   lines.push(`export const makeSqrt = (
   radicand: Node,
   loc?: SourceLocation,
-): NodeTypes['Root'] => makeRoot(makeNum('2'), radicand, true, loc);`);
+): NodeTypes['Root'] => makeRoot(radicand, makeNum('2'), true, loc);`);
   lines.push('');
 
   fs.writeFileSync(path.join(__dirname, 'node-builders.ts'), lines.join('\n'));
