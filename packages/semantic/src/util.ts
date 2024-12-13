@@ -53,7 +53,7 @@ export const isNumeric = (node: types.Node): node is types.Node => {
     NodeType.Ellipsis,
     NodeType.Add,
     NodeType.Mul,
-    NodeType.Func,
+    NodeType.Function,
     NodeType.Div,
     NodeType.Modulo,
     NodeType.Root,

@@ -4,7 +4,7 @@ import { NodeType } from '../enums';
 
 describe('traverse', () => {
   it('call enter and exit once for a single node', () => {
-    const num: types.Num = {
+    const num: types.Number = {
       id: 0,
       type: NodeType.Number,
       value: '123',
@@ -73,7 +73,7 @@ describe('traverse', () => {
   });
 
   it('should not call cb on location', () => {
-    const num: types.Num = {
+    const num: types.Number = {
       id: 0,
       type: NodeType.Number,
       value: '123',

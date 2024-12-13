@@ -152,7 +152,7 @@ const print = (
     case 'Reals':
     case 'Complexes':
       return symbols[ast.type];
-    case 'Func': {
+    case 'Function': {
       const func = print(ast.func, serialize, indent);
       const args = ast.args.map((arg) => print(arg, serialize, indent));
       return `(func ${func} ${args.join(' ')})`;

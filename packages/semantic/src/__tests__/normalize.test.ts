@@ -100,7 +100,7 @@ describe('normalize', () => {
 
   test('f(x)', () => {
     const ast: Node = {
-      type: NodeType.Func,
+      type: NodeType.Function,
       id: getId(),
       func: builders.identifier('f'),
       args: [builders.identifier('x')],
