@@ -4033,22 +4033,13 @@
     regenerator-runtime "^0.13.7"
     ts-dedent "^2.0.0"
 
-"@storybook/addon-links@^6.2.7":
-  version "6.2.7"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-links/-/addon-links-6.2.7.tgz#02d4636bd1ca26d243f346086d5b280fb70a730b"
-  integrity sha512-pGP3gtZSP9xDbS+KgP0fiTLrhcD8eauOsP0JgzyKVCgKYzG4Yx9xuZBcDCvG25DeczDvTx7kuR6U1TavSYn12w==
+"@storybook/addon-links@^8.1.11":
+  version "8.1.11"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-links/-/addon-links-8.1.11.tgz#3e15ac7fe1b7d298b7200f36b772baf6449a64c2"
+  integrity sha512-HlV2RQSrZyi+55W1B1a9eWNuJdNpWx0g3j7s2arNlNmbd6/kfWAp84axBstI1tL0nW4svut7bWlCsMSOIden+A==
   dependencies:
-    "@storybook/addons" "6.2.7"
-    "@storybook/client-logger" "6.2.7"
-    "@storybook/core-events" "6.2.7"
-    "@storybook/csf" "0.0.1"
-    "@storybook/router" "6.2.7"
-    "@types/qs" "^6.9.5"
-    core-js "^3.8.2"
-    global "^4.4.0"
-    prop-types "^15.7.2"
-    qs "^6.10.0"
-    regenerator-runtime "^0.13.7"
+    "@storybook/csf" "^0.1.7"
+    "@storybook/global" "^5.0.0"
     ts-dedent "^2.0.0"
 
 "@storybook/addon-toolbars@6.2.7":
@@ -4436,6 +4427,18 @@
   integrity sha512-USTLkZze5gkel8MYCujSRBVIrUQ3YPBrLOx7GNk/0wttvVtlzWXAq9eLbQ4p/NicGxP+3T7KPEMVV//g+yubpw==
   dependencies:
     lodash "^4.17.15"
+
+"@storybook/csf@^0.1.7":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@storybook/csf/-/csf-0.1.12.tgz#1dcfa0f398a69b834c563884b5f747db3d5a81df"
+  integrity sha512-9/exVhabisyIVL0VxTCxo01Tdm8wefIXKXfltAPTSr8cbLn5JAxGQ6QV3mjdecLGEOucfoVhAKtJfVHxEK1iqw==
+  dependencies:
+    type-fest "^2.19.0"
+
+"@storybook/global@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@storybook/global/-/global-5.0.0.tgz#b793d34b94f572c1d7d9e0f44fac4e0dbc9572ed"
+  integrity sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==
 
 "@storybook/node-logger@6.2.7":
   version "6.2.7"
@@ -18264,6 +18267,11 @@ type-fest@^0.8.1:
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
+
+type-fest@^2.19.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
+  integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
 type-is@~1.6.17, type-is@~1.6.18:
   version "1.6.18"
