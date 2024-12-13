@@ -164,8 +164,10 @@ const generateNodeBuilders = () => {
   lines.push("import { getId } from '@math-blocks/core';");
   lines.push('');
 
+  lines.push('const builders = {');
+
   for (const [name, node] of Object.entries(definitions)) {
-    if (name === 'Add' || name === 'Mul' || name === 'Num') {
+    if (name === 'Add' || name === 'Mul' || name === 'Number') {
       continue;
     }
 
@@ -226,7 +228,7 @@ const generateNodeBuilders = () => {
     params.push(['loc?', 'SourceLocation']);
 
     lines.push(
-      `export const make${name} = (${params
+      `  ${name.toLowerCase()}: (${params
         .map(([name, type]) => {
           // TODO: find a better way to specify optional params with defaults
           if (
@@ -241,96 +243,100 @@ const generateNodeBuilders = () => {
         })
         .join(', ')}): NodeTypes['${name}'] => ({`,
     );
-    lines.push(`  type: '${node.name}',`);
-    lines.push('  id: getId(),');
+    lines.push(`    type: '${node.name}',`);
+    lines.push('    id: getId(),');
     if (binaryArgNames.length > 0) {
-      lines.push(`  args: [${binaryArgNames.join(', ')}],`);
+      lines.push(`    args: [${binaryArgNames.join(', ')}],`);
     }
     for (const param of params) {
       if (param[0].endsWith('?')) {
-        lines.push(`  ${param[0].slice(0, -1)},`);
+        lines.push(`    ${param[0].slice(0, -1)},`);
       } else if (!binaryArgNames.includes(param[0])) {
-        lines.push(`  ${param[0]},`);
+        lines.push(`    ${param[0]},`);
       }
     }
-    lines.push('});');
+    lines.push('  }),');
   }
 
   lines.push('');
 
-  lines.push(`export const makeAdd = (
-  terms: readonly Node[],
-  loc?: SourceLocation,
-): Node => {
-  switch (terms.length) {
-    case 0:
-      return makeNum('0'); // , loc);
-    case 1:
-      return terms[0]; // TODO: figure out if we should give this node a location
-    default:
-      return {
-        type: NodeType.Add,
-        id: getId(),
-        args: terms as TwoOrMore<Node>,
-        loc,
-      };
-  }
-};`);
+  lines.push(`  add: (
+    terms: readonly Node[],
+    loc?: SourceLocation,
+  ): Node => {
+    switch (terms.length) {
+      case 0:
+        return builders.number('0'); // , loc);
+      case 1:
+        return terms[0]; // TODO: figure out if we should give this node a location
+      default:
+        return {
+          type: NodeType.Add,
+          id: getId(),
+          args: terms as TwoOrMore<Node>,
+          loc,
+        };
+    }
+  },`);
   lines.push('');
-  lines.push(`export const makeMul = (
-  factors: readonly Node[],
-  implicit = false,
-  loc?: SourceLocation,
-): Node => {
-  switch (factors.length) {
-    case 0:
-      return makeNum('1'); // , loc);
-    case 1:
-      return factors[0]; // TODO: figure out if we should give this node a location
-    default:
-      return {
-        type: NodeType.Mul,
-        id: getId(),
-        implicit,
-        args: factors as TwoOrMore<Node>,
-        loc,
-      };
-  }
-};`);
+  lines.push(`  mul: (
+    factors: readonly Node[],
+    implicit = false,
+    loc?: SourceLocation,
+  ): Node => {
+    switch (factors.length) {
+      case 0:
+        return builders.number('1'); // , loc);
+      case 1:
+        return factors[0]; // TODO: figure out if we should give this node a location
+      default:
+        return {
+          type: NodeType.Mul,
+          id: getId(),
+          implicit,
+          args: factors as TwoOrMore<Node>,
+          loc,
+        };
+    }
+  },`);
   lines.push('');
-  lines.push(`export const makeRel = (
-  args: TwoOrMore<Node>,
-  type: NumericRelation['type'],
-  loc?: SourceLocation,
-): NumericRelation => ({
-  type,
-  id: getId(),
-  args,
-});`);
-  lines.push('');
-  lines.push(`export const makeNum = (
-  value: string,
-  loc?: SourceLocation,
-): NodeTypes['Num'] | NodeTypes['Neg'] => {
-  if (value.startsWith('-')) {
-    // TODO: handle location data correctly
-    return makeNeg(makeNum(value.slice(1)));
-  }
-  return {
-    type: NodeType.Number,
+  lines.push(`  numRel: (
+    args: TwoOrMore<Node>,
+    type: NumericRelation['type'],
+    loc?: SourceLocation,
+  ): NumericRelation => ({
+    type,
     id: getId(),
-    value: value.replace(/-/g, '−'),
-    loc,
-  };
-};`);
+    args,
+  }),`);
   lines.push('');
-  lines.push(`export const makeSqrt = (
-  radicand: Node,
-  loc?: SourceLocation,
-): NodeTypes['Root'] => makeRoot(radicand, makeNum('2'), true, loc);`);
+  lines.push(`  number: (
+    value: string,
+    loc?: SourceLocation,
+  ): NodeTypes['Number'] | NodeTypes['Neg'] => {
+    if (value.startsWith('-')) {
+      // TODO: handle location data correctly
+      return builders.neg(builders.number(value.slice(1)));
+    }
+    return {
+      type: NodeType.Number,
+      id: getId(),
+      value: value.replace(/-/g, '−'),
+      loc,
+    };
+  },`);
+  lines.push('');
+  lines.push(`  sqrt: (
+    radicand: Node,
+    loc?: SourceLocation,
+  ): NodeTypes['Root'] => builders.root(radicand, builders.number('2'), true, loc),`);
+
+  lines.push('};');
+  lines.push('');
+  lines.push('export default builders;');
   lines.push('');
 
-  fs.writeFileSync(path.join(__dirname, 'node-builders.ts'), lines.join('\n'));
+  fs.writeFileSync(path.join(__dirname, 'builders.ts'), lines.join('\n'));
 };
 
 /* istanbul ignore next */
