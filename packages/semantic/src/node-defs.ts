@@ -14,7 +14,7 @@ type NumberDesc = {
 
 type FunctionDesc = {
   readonly kind: 'function';
-  readonly name: 'Func';
+  readonly name: 'Function';
   readonly arity: 'nary';
 };
 
@@ -133,9 +133,9 @@ const Constructor = <Name extends string>(
 // TODO: unify the property names with the 'name' field in each node
 // TODO: update the names to match the names from openmath.org
 export const definitions: Record<string, Descriptor> = {
-  Num: {kind: 'number', name: 'Number'},
+  Number: {kind: 'number', name: 'Number'},
   Identifier: {kind: 'identifier', name: 'Identifier'},
-  Func: {kind: 'function', name: 'Func', arity: 'nary'},
+  Function: {kind: 'function', name: 'Function', arity: 'nary'},
 
   // Arithmetic
   Add: Operation('Add', 'nary', 'arith'), // Rename to Plus
@@ -146,7 +146,7 @@ export const definitions: Record<string, Descriptor> = {
   Div: Operation('Div', 'binary', 'arith'), // Rename to Divide
   Mod: Operation('Modulo', 'binary', 'arith'),
   Pow: Operation('Power', 'binary', 'arith', ['base', 'exp']), // Rename to Power
-  Root: Operation('Root', 'binary', 'arith', ['index', 'radicand'], {sqrt: 'boolean'}),
+  Root: Operation('Root', 'binary', 'arith', ['radicand', 'index'], {sqrt: 'boolean'}),
 
   Abs: Operation('AbsoluteValue', 'unary', 'arith'),
   Neg: Operation('Neg', 'unary', 'arith', undefined, {subtraction: 'boolean'}),
@@ -230,7 +230,7 @@ export const definitions: Record<string, Descriptor> = {
   // Calculus
   Limit: Operation(
     'Limit', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Num\'] | NodeTypes[\'Neg\']', approach: '\'left\' | \'right\' | \'both\''},
+    {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Number\'] | NodeTypes[\'Neg\']', approach: '\'left\' | \'right\' | \'both\''},
   ),
   Integral: Operation(
     'Integral', 'unary', 'arith', undefined,

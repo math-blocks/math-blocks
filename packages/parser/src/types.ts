@@ -146,7 +146,7 @@ export type Log = Common<NodeType.Log> & {
  * Function
  * Can be used to represent function declaration as well as application.
  */
-export type Func = Common<NodeType.Func> & {
+export type Func = Common<NodeType.Function> & {
   readonly func: Node;
   readonly args: OneOrMore<Node>;
 };

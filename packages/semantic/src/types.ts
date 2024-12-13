@@ -15,12 +15,12 @@ export type Common<T extends string> = {
 };
 
 export interface NodeTypes {
-  readonly Num: Common<'Number'> & {readonly value: string}
+  readonly Number: Common<'Number'> & {readonly value: string}
   readonly Identifier: Common<'Identifier'> & {
     readonly name: string,
     readonly subscript?: Node,
   },
-  readonly Func: Common<'Func'> & {
+  readonly Function: Common<'Function'> & {
     readonly func: Node,
     readonly args: readonly Node[],
   },
@@ -38,8 +38,8 @@ export interface NodeTypes {
     readonly exp: Node,
   },
   readonly Root: Common<'Root'> & {
-    readonly index: Node,
     readonly radicand: Node,
+    readonly index: Node,
     readonly sqrt: boolean,
   },
   readonly Abs: Common<'AbsoluteValue'> & {readonly arg: Node}
@@ -124,7 +124,7 @@ export interface NodeTypes {
   readonly Limit: Common<'Limit'> & {
     readonly arg: Node,
     readonly bvar: NodeTypes['Identifier'],
-    readonly to: NodeTypes['Num'] | NodeTypes['Neg'],
+    readonly to: NodeTypes['Number'] | NodeTypes['Neg'],
     readonly approach: 'left' | 'right' | 'both',
   },
   readonly Integral: Common<'Integral'> & {
@@ -166,9 +166,9 @@ export interface NodeTypes {
 
 export type Node = NodeTypes[keyof NodeTypes];
 
-export type Num = NodeTypes['Num'];
+export type Number = NodeTypes['Number'];
 export type Identifier = NodeTypes['Identifier'];
-export type Func = NodeTypes['Func'];
+export type Function = NodeTypes['Function'];
 export type Add = NodeTypes['Add'];
 export type Mul = NodeTypes['Mul'];
 export type PlusMinus = NodeTypes['PlusMinus'];

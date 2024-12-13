@@ -16,7 +16,7 @@ export enum NodeType {
   PlusMinus = 'plusminus',
   MinusPlus = 'minusplus',
 
-  Func = 'Func', // TODO: split into FunctionDefinition and FunctionEvaluation
+  Function = 'Function', // TODO: split into FunctionDefinition and FunctionEvaluation
   Ellipsis = 'Ellipsis',
   Parens = 'Parens',
 

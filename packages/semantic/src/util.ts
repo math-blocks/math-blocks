@@ -53,7 +53,7 @@ export const isNumeric = (node: types.Node): node is types.Node => {
     NodeType.Ellipsis,
     NodeType.Add,
     NodeType.Mul,
-    NodeType.Func,
+    NodeType.Function,
     NodeType.Div,
     NodeType.Modulo,
     NodeType.Root,
@@ -88,6 +88,8 @@ const isObject = (val: unknown): val is Record<string, unknown> => {
   return typeof val === 'object' && val != null;
 };
 
+const ignoredKeys = ['id', 'loc', 'source'];
+
 export const deepEquals = (a: unknown, b: unknown): boolean => {
   if (Array.isArray(a) && Array.isArray(b)) {
     return (
@@ -96,10 +98,10 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     );
   } else if (isObject(a) && isObject(b)) {
     const aKeys = Object.keys(a).filter(
-      (key) => key !== 'id' && key !== 'loc' && key !== 'source',
+      (key) => !ignoredKeys.includes(key) && a[key] !== undefined,
     );
     const bKeys = Object.keys(b).filter(
-      (key) => key !== 'id' && key !== 'loc' && key !== 'source',
+      (key) => !ignoredKeys.includes(key) && b[key] !== undefined,
     );
     if (aKeys.length !== bKeys.length) {
       return false;

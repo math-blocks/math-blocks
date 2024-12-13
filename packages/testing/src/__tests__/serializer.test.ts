@@ -120,7 +120,7 @@ describe('serializer', () => {
 
   test('func', () => {
     const ast: Semantic.types.Node = {
-      type: NodeType.Func,
+      type: NodeType.Function,
       id: getId(),
       func: Semantic.builders.identifier('f'),
       args: [Semantic.builders.identifier('x')],

@@ -113,7 +113,7 @@ export const print = (ast: Node): string => {
     case 'Complexes':
     case 'EmptySet':
       return ast.type;
-    case 'Func': {
+    case 'Function': {
       const func = print(ast.func);
       const args = ast.args.map(print);
       return `(Func ${func} ${args.join(' ')})`;
