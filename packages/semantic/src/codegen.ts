@@ -156,20 +156,22 @@ const generateNodeBuilders = () => {
   lines.push('');
   lines.push('/* eslint-disable no-shadow-restricted-names */');
   lines.push('');
-  lines.push("import type { Node } from './types';");
+  lines.push(
+    "import type { Node, NodeTypes, NumericRelation } from './types';",
+  );
   lines.push("import { NodeType } from './enums';");
-  lines.push("import { NodeTypes, NumericRelation } from './node-types';");
   lines.push("import { SourceLocation } from './types';");
   lines.push("import { getId } from '@math-blocks/core';");
   lines.push('');
 
   for (const [name, node] of Object.entries(definitions)) {
-    if (name === 'Add' || name === 'Mul') {
+    if (name === 'Add' || name === 'Mul' || name === 'Num') {
       continue;
     }
 
     // eslint-disable-next-line functional/prefer-readonly-type
     const params: [string, string][] = [];
+    const binaryArgNames = [];
 
     if (node.kind === 'operation' || node.kind === 'relation') {
       if (node.argNames) {
@@ -182,7 +184,9 @@ const generateNodeBuilders = () => {
             params.push(['arg', 'Node']); // TODO: change to `args: [Node];`
             break;
           case 'binary':
-            params.push(['...args', 'readonly [Node, Node]']);
+            params.push(['arg0', 'Node']);
+            params.push(['arg1', 'Node']);
+            binaryArgNames.push('arg0', 'arg1');
             break;
           case 'nary':
             params.push(['args', 'TwoOrMore<Node>']);
@@ -219,10 +223,17 @@ const generateNodeBuilders = () => {
       }
     }
 
+    params.push(['loc?', 'SourceLocation']);
+
     lines.push(
-      `export const ${name} = (${params
+      `export const make${name} = (${params
         .map(([name, type]) => {
-          if (name === 'implicit' || name === 'subtraction') {
+          // TODO: find a better way to specify optional params with defaults
+          if (
+            name === 'implicit' ||
+            name === 'subtraction' ||
+            name === 'sqrt'
+          ) {
             return `${name} = false`;
           } else {
             return `${name}: ${type}`;
@@ -232,12 +243,13 @@ const generateNodeBuilders = () => {
     );
     lines.push(`  type: '${node.name}',`);
     lines.push('  id: getId(),');
+    if (binaryArgNames.length > 0) {
+      lines.push(`  args: [${binaryArgNames.join(', ')}],`);
+    }
     for (const param of params) {
       if (param[0].endsWith('?')) {
         lines.push(`  ${param[0].slice(0, -1)},`);
-      } else if (param[0].startsWith('...')) {
-        lines.push(`  ${param[0].slice(3)},`);
-      } else {
+      } else if (!binaryArgNames.includes(param[0])) {
         lines.push(`  ${param[0]},`);
       }
     }
@@ -246,13 +258,13 @@ const generateNodeBuilders = () => {
 
   lines.push('');
 
-  lines.push(`export const Add = (
+  lines.push(`export const makeAdd = (
   terms: readonly Node[],
   loc?: SourceLocation,
 ): Node => {
   switch (terms.length) {
     case 0:
-      return Num('0'); // , loc);
+      return makeNum('0'); // , loc);
     case 1:
       return terms[0]; // TODO: figure out if we should give this node a location
     default:
@@ -265,14 +277,14 @@ const generateNodeBuilders = () => {
   }
 };`);
   lines.push('');
-  lines.push(`export const Mul = (
+  lines.push(`export const makeMul = (
   factors: readonly Node[],
   implicit = false,
   loc?: SourceLocation,
 ): Node => {
   switch (factors.length) {
     case 0:
-      return Num('1'); // , loc);
+      return makeNum('1'); // , loc);
     case 1:
       return factors[0]; // TODO: figure out if we should give this node a location
     default:
@@ -286,7 +298,7 @@ const generateNodeBuilders = () => {
   }
 };`);
   lines.push('');
-  lines.push(`export const numRel = (
+  lines.push(`export const makeRel = (
   args: TwoOrMore<Node>,
   type: NumericRelation['type'],
   loc?: SourceLocation,
@@ -295,6 +307,27 @@ const generateNodeBuilders = () => {
   id: getId(),
   args,
 });`);
+  lines.push('');
+  lines.push(`export const makeNum = (
+  value: string,
+  loc?: SourceLocation,
+): NodeTypes['Num'] | NodeTypes['Neg'] => {
+  if (value.startsWith('-')) {
+    // TODO: handle location data correctly
+    return makeNeg(makeNum(value.slice(1)));
+  }
+  return {
+    type: NodeType.Number,
+    id: getId(),
+    value: value.replace(/-/g, '−'),
+    loc,
+  };
+};`);
+  lines.push('');
+  lines.push(`export const makeSqrt = (
+  radicand: Node,
+  loc?: SourceLocation,
+): NodeTypes['Root'] => makeRoot(makeNum('2'), radicand, true, loc);`);
   lines.push('');
 
   fs.writeFileSync(path.join(__dirname, 'node-builders.ts'), lines.join('\n'));

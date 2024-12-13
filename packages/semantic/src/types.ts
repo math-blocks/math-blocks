@@ -38,8 +38,8 @@ export interface NodeTypes {
     readonly exp: Node,
   },
   readonly Root: Common<'Root'> & {
-    readonly index: Node,
     readonly radicand: Node,
+    readonly index: Node,
     readonly sqrt: boolean,
   },
   readonly Abs: Common<'AbsoluteValue'> & {readonly arg: Node}

@@ -146,7 +146,7 @@ export const definitions: Record<string, Descriptor> = {
   Div: Operation('Div', 'binary', 'arith'), // Rename to Divide
   Mod: Operation('Modulo', 'binary', 'arith'),
   Pow: Operation('Power', 'binary', 'arith', ['base', 'exp']), // Rename to Power
-  Root: Operation('Root', 'binary', 'arith', ['index', 'radicand'], {sqrt: 'boolean'}),
+  Root: Operation('Root', 'binary', 'arith', ['radicand', 'index'], {sqrt: 'boolean'}),
 
   Abs: Operation('AbsoluteValue', 'unary', 'arith'),
   Neg: Operation('Neg', 'unary', 'arith', undefined, {subtraction: 'boolean'}),

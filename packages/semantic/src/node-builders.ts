@@ -8,426 +8,499 @@ import { NodeType } from './enums';
 import { SourceLocation } from './types';
 import { getId } from '@math-blocks/core';
 
-export const Num = (value: string): NodeTypes['Num'] => ({
-  type: 'Number',
-  id: getId(),
-  value,
-});
-export const Identifier = (name: string, subscript?: Node): NodeTypes['Identifier'] => ({
+export const makeIdentifier = (name: string, subscript?: Node, loc?: SourceLocation): NodeTypes['Identifier'] => ({
   type: 'Identifier',
   id: getId(),
   name,
   subscript,
+  loc,
 });
-export const Func = (func: Node, args: readonly Node[]): NodeTypes['Func'] => ({
+export const makeFunc = (func: Node, args: readonly Node[], loc?: SourceLocation): NodeTypes['Func'] => ({
   type: 'Func',
   id: getId(),
   func,
   args,
+  loc,
 });
-export const PlusMinus = (args: TwoOrMore<Node>): NodeTypes['PlusMinus'] => ({
+export const makePlusMinus = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['PlusMinus'] => ({
   type: 'PlusMinus',
   id: getId(),
   args,
+  loc,
 });
-export const MinusPlus = (args: TwoOrMore<Node>): NodeTypes['MinusPlus'] => ({
+export const makeMinusPlus = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['MinusPlus'] => ({
   type: 'MinusPlus',
   id: getId(),
   args,
+  loc,
 });
-export const Div = (...args: readonly [Node, Node]): NodeTypes['Div'] => ({
+export const makeDiv = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['Div'] => ({
   type: 'Div',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const Mod = (...args: readonly [Node, Node]): NodeTypes['Mod'] => ({
+export const makeMod = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['Mod'] => ({
   type: 'Modulo',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const Pow = (base: Node, exp: Node): NodeTypes['Pow'] => ({
+export const makePow = (base: Node, exp: Node, loc?: SourceLocation): NodeTypes['Pow'] => ({
   type: 'Power',
   id: getId(),
   base,
   exp,
+  loc,
 });
-export const Root = (index: Node, radicand: Node, sqrt: boolean): NodeTypes['Root'] => ({
+export const makeRoot = (radicand: Node, index: Node, sqrt = false, loc?: SourceLocation): NodeTypes['Root'] => ({
   type: 'Root',
   id: getId(),
-  index,
   radicand,
+  index,
   sqrt,
+  loc,
 });
-export const Abs = (arg: Node): NodeTypes['Abs'] => ({
+export const makeAbs = (arg: Node, loc?: SourceLocation): NodeTypes['Abs'] => ({
   type: 'AbsoluteValue',
   id: getId(),
   arg,
+  loc,
 });
-export const Neg = (arg: Node, subtraction = false): NodeTypes['Neg'] => ({
+export const makeNeg = (arg: Node, subtraction = false, loc?: SourceLocation): NodeTypes['Neg'] => ({
   type: 'Neg',
   id: getId(),
   arg,
   subtraction,
+  loc,
 });
-export const Sin = (arg: Node): NodeTypes['Sin'] => ({
+export const makeSin = (arg: Node, loc?: SourceLocation): NodeTypes['Sin'] => ({
   type: 'Sin',
   id: getId(),
   arg,
+  loc,
 });
-export const Cos = (arg: Node): NodeTypes['Cos'] => ({
+export const makeCos = (arg: Node, loc?: SourceLocation): NodeTypes['Cos'] => ({
   type: 'Cos',
   id: getId(),
   arg,
+  loc,
 });
-export const Tan = (arg: Node): NodeTypes['Tan'] => ({
+export const makeTan = (arg: Node, loc?: SourceLocation): NodeTypes['Tan'] => ({
   type: 'Tan',
   id: getId(),
   arg,
+  loc,
 });
-export const Cot = (arg: Node): NodeTypes['Cot'] => ({
+export const makeCot = (arg: Node, loc?: SourceLocation): NodeTypes['Cot'] => ({
   type: 'Cot',
   id: getId(),
   arg,
+  loc,
 });
-export const Sec = (arg: Node): NodeTypes['Sec'] => ({
+export const makeSec = (arg: Node, loc?: SourceLocation): NodeTypes['Sec'] => ({
   type: 'Sec',
   id: getId(),
   arg,
+  loc,
 });
-export const Csc = (arg: Node): NodeTypes['Csc'] => ({
+export const makeCsc = (arg: Node, loc?: SourceLocation): NodeTypes['Csc'] => ({
   type: 'Csc',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcSin = (arg: Node): NodeTypes['ArcSin'] => ({
+export const makeArcSin = (arg: Node, loc?: SourceLocation): NodeTypes['ArcSin'] => ({
   type: 'ArcSin',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcCos = (arg: Node): NodeTypes['ArcCos'] => ({
+export const makeArcCos = (arg: Node, loc?: SourceLocation): NodeTypes['ArcCos'] => ({
   type: 'ArcCos',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcTan = (arg: Node): NodeTypes['ArcTan'] => ({
+export const makeArcTan = (arg: Node, loc?: SourceLocation): NodeTypes['ArcTan'] => ({
   type: 'ArcTan',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcCot = (arg: Node): NodeTypes['ArcCot'] => ({
+export const makeArcCot = (arg: Node, loc?: SourceLocation): NodeTypes['ArcCot'] => ({
   type: 'ArcCot',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcSec = (arg: Node): NodeTypes['ArcSec'] => ({
+export const makeArcSec = (arg: Node, loc?: SourceLocation): NodeTypes['ArcSec'] => ({
   type: 'ArcSec',
   id: getId(),
   arg,
+  loc,
 });
-export const ArcCsc = (arg: Node): NodeTypes['ArcCsc'] => ({
+export const makeArcCsc = (arg: Node, loc?: SourceLocation): NodeTypes['ArcCsc'] => ({
   type: 'ArcCsc',
   id: getId(),
   arg,
+  loc,
 });
-export const Log = (base: Node, arg: Node): NodeTypes['Log'] => ({
+export const makeLog = (base: Node, arg: Node, loc?: SourceLocation): NodeTypes['Log'] => ({
   type: 'Log',
   id: getId(),
   base,
   arg,
+  loc,
 });
-export const Ln = (arg: Node): NodeTypes['Ln'] => ({
+export const makeLn = (arg: Node, loc?: SourceLocation): NodeTypes['Ln'] => ({
   type: 'Ln',
   id: getId(),
   arg,
+  loc,
 });
-export const Exp = (arg: Node): NodeTypes['Exp'] => ({
+export const makeExp = (arg: Node, loc?: SourceLocation): NodeTypes['Exp'] => ({
   type: 'Exp',
   id: getId(),
   arg,
+  loc,
 });
-export const Gt = (args: TwoOrMore<Node>): NodeTypes['Gt'] => ({
+export const makeGt = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Gt'] => ({
   type: 'GreaterThan',
   id: getId(),
   args,
+  loc,
 });
-export const Gte = (args: TwoOrMore<Node>): NodeTypes['Gte'] => ({
+export const makeGte = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Gte'] => ({
   type: 'GreaterThanOrEquals',
   id: getId(),
   args,
+  loc,
 });
-export const Lt = (args: TwoOrMore<Node>): NodeTypes['Lt'] => ({
+export const makeLt = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Lt'] => ({
   type: 'LessThan',
   id: getId(),
   args,
+  loc,
 });
-export const Lte = (args: TwoOrMore<Node>): NodeTypes['Lte'] => ({
+export const makeLte = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Lte'] => ({
   type: 'LessThanOrEquals',
   id: getId(),
   args,
+  loc,
 });
-export const Infinity = (): NodeTypes['Infinity'] => ({
+export const makeInfinity = (loc?: SourceLocation): NodeTypes['Infinity'] => ({
   type: 'Infinity',
   id: getId(),
+  loc,
 });
-export const Pi = (): NodeTypes['Pi'] => ({
+export const makePi = (loc?: SourceLocation): NodeTypes['Pi'] => ({
   type: 'Pi',
   id: getId(),
+  loc,
 });
-export const E = (): NodeTypes['E'] => ({
+export const makeE = (loc?: SourceLocation): NodeTypes['E'] => ({
   type: 'E',
   id: getId(),
+  loc,
 });
-export const Ellipsis = (): NodeTypes['Ellipsis'] => ({
+export const makeEllipsis = (loc?: SourceLocation): NodeTypes['Ellipsis'] => ({
   type: 'Ellipsis',
   id: getId(),
+  loc,
 });
-export const And = (args: TwoOrMore<Node>): NodeTypes['And'] => ({
+export const makeAnd = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['And'] => ({
   type: 'LogicalAnd',
   id: getId(),
   args,
+  loc,
 });
-export const Or = (args: TwoOrMore<Node>): NodeTypes['Or'] => ({
+export const makeOr = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Or'] => ({
   type: 'LogicalOr',
   id: getId(),
   args,
+  loc,
 });
-export const Xor = (args: TwoOrMore<Node>): NodeTypes['Xor'] => ({
+export const makeXor = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Xor'] => ({
   type: 'ExclusiveOr',
   id: getId(),
   args,
+  loc,
 });
-export const Not = (arg: Node): NodeTypes['Not'] => ({
+export const makeNot = (arg: Node, loc?: SourceLocation): NodeTypes['Not'] => ({
   type: 'LogicalNot',
   id: getId(),
   arg,
+  loc,
 });
-export const Implies = (...args: readonly [Node, Node]): NodeTypes['Implies'] => ({
+export const makeImplies = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['Implies'] => ({
   type: 'Conditional',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const Equivalent = (...args: readonly [Node, Node]): NodeTypes['Equivalent'] => ({
+export const makeEquivalent = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['Equivalent'] => ({
   type: 'Biconditional',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const True = (): NodeTypes['True'] => ({
+export const makeTrue = (loc?: SourceLocation): NodeTypes['True'] => ({
   type: 'True',
   id: getId(),
+  loc,
 });
-export const False = (): NodeTypes['False'] => ({
+export const makeFalse = (loc?: SourceLocation): NodeTypes['False'] => ({
   type: 'False',
   id: getId(),
+  loc,
 });
-export const Set = (args: TwoOrMore<Node>): NodeTypes['Set'] => ({
+export const makeSet = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Set'] => ({
   type: 'Set',
   id: getId(),
   args,
+  loc,
 });
-export const Union = (args: TwoOrMore<Node>): NodeTypes['Union'] => ({
+export const makeUnion = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Union'] => ({
   type: 'Union',
   id: getId(),
   args,
+  loc,
 });
-export const Intersection = (args: TwoOrMore<Node>): NodeTypes['Intersection'] => ({
+export const makeIntersection = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Intersection'] => ({
   type: 'SetIntersection',
   id: getId(),
   args,
+  loc,
 });
-export const CartesianProduct = (args: TwoOrMore<Node>): NodeTypes['CartesianProduct'] => ({
+export const makeCartesianProduct = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['CartesianProduct'] => ({
   type: 'CartesianProduct',
   id: getId(),
   args,
+  loc,
 });
-export const SetDiff = (...args: readonly [Node, Node]): NodeTypes['SetDiff'] => ({
+export const makeSetDiff = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['SetDiff'] => ({
   type: 'SetDifference',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const Subset = (args: TwoOrMore<Node>): NodeTypes['Subset'] => ({
+export const makeSubset = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Subset'] => ({
   type: 'Subset',
   id: getId(),
   args,
+  loc,
 });
-export const ProperSubset = (args: TwoOrMore<Node>): NodeTypes['ProperSubset'] => ({
+export const makeProperSubset = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['ProperSubset'] => ({
   type: 'ProperSubset',
   id: getId(),
   args,
+  loc,
 });
-export const Superset = (args: TwoOrMore<Node>): NodeTypes['Superset'] => ({
+export const makeSuperset = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Superset'] => ({
   type: 'Superset',
   id: getId(),
   args,
+  loc,
 });
-export const ProperSuperset = (args: TwoOrMore<Node>): NodeTypes['ProperSuperset'] => ({
+export const makeProperSuperset = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['ProperSuperset'] => ({
   type: 'ProperSuperset',
   id: getId(),
   args,
+  loc,
 });
-export const NotSubset = (...args: readonly [Node, Node]): NodeTypes['NotSubset'] => ({
+export const makeNotSubset = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['NotSubset'] => ({
   type: 'NotSubset',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const NotProperSubset = (...args: readonly [Node, Node]): NodeTypes['NotProperSubset'] => ({
+export const makeNotProperSubset = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['NotProperSubset'] => ({
   type: 'NotProperSubset',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const NotSuperset = (...args: readonly [Node, Node]): NodeTypes['NotSuperset'] => ({
+export const makeNotSuperset = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['NotSuperset'] => ({
   type: 'NotSuperset',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const NotProperSuperset = (...args: readonly [Node, Node]): NodeTypes['NotProperSuperset'] => ({
+export const makeNotProperSuperset = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['NotProperSuperset'] => ({
   type: 'NotProperSuperset',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const In = (element: Node, set: Node): NodeTypes['In'] => ({
+export const makeIn = (element: Node, set: Node, loc?: SourceLocation): NodeTypes['In'] => ({
   type: 'ElementOf',
   id: getId(),
   element,
   set,
+  loc,
 });
-export const NotIn = (element: Node, set: Node): NodeTypes['NotIn'] => ({
+export const makeNotIn = (element: Node, set: Node, loc?: SourceLocation): NodeTypes['NotIn'] => ({
   type: 'NotElementOf',
   id: getId(),
   element,
   set,
+  loc,
 });
-export const EmptySet = (): NodeTypes['EmptySet'] => ({
+export const makeEmptySet = (loc?: SourceLocation): NodeTypes['EmptySet'] => ({
   type: 'EmptySet',
   id: getId(),
+  loc,
 });
-export const Naturals = (): NodeTypes['Naturals'] => ({
+export const makeNaturals = (loc?: SourceLocation): NodeTypes['Naturals'] => ({
   type: 'Naturals',
   id: getId(),
+  loc,
 });
-export const Integers = (): NodeTypes['Integers'] => ({
+export const makeIntegers = (loc?: SourceLocation): NodeTypes['Integers'] => ({
   type: 'Integers',
   id: getId(),
+  loc,
 });
-export const Rationals = (): NodeTypes['Rationals'] => ({
+export const makeRationals = (loc?: SourceLocation): NodeTypes['Rationals'] => ({
   type: 'Rationals',
   id: getId(),
+  loc,
 });
-export const Reals = (): NodeTypes['Reals'] => ({
+export const makeReals = (loc?: SourceLocation): NodeTypes['Reals'] => ({
   type: 'Reals',
   id: getId(),
+  loc,
 });
-export const Complexes = (): NodeTypes['Complexes'] => ({
+export const makeComplexes = (loc?: SourceLocation): NodeTypes['Complexes'] => ({
   type: 'Complexes',
   id: getId(),
+  loc,
 });
-export const Matrix = (args: TwoOrMore<Node>, rows: number, cols: number): NodeTypes['Matrix'] => ({
+export const makeMatrix = (args: TwoOrMore<Node>, rows: number, cols: number, loc?: SourceLocation): NodeTypes['Matrix'] => ({
   type: 'Matrix',
   id: getId(),
   args,
   rows,
   cols,
+  loc,
 });
-export const Vector = (args: TwoOrMore<Node>, dim: number): NodeTypes['Vector'] => ({
+export const makeVector = (args: TwoOrMore<Node>, dim: number, loc?: SourceLocation): NodeTypes['Vector'] => ({
   type: 'Vector',
   id: getId(),
   args,
   dim,
+  loc,
 });
-export const Determinant = (arg: Node): NodeTypes['Determinant'] => ({
+export const makeDeterminant = (arg: Node, loc?: SourceLocation): NodeTypes['Determinant'] => ({
   type: 'Determinant',
   id: getId(),
   arg,
+  loc,
 });
-export const Transpose = (arg: Node): NodeTypes['Transpose'] => ({
+export const makeTranspose = (arg: Node, loc?: SourceLocation): NodeTypes['Transpose'] => ({
   type: 'Transpose',
   id: getId(),
   arg,
+  loc,
 });
-export const VectorProduct = (...args: readonly [Node, Node]): NodeTypes['VectorProduct'] => ({
+export const makeVectorProduct = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['VectorProduct'] => ({
   type: 'VectorProduct',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const ScalarProduct = (...args: readonly [Node, Node]): NodeTypes['ScalarProduct'] => ({
+export const makeScalarProduct = (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['ScalarProduct'] => ({
   type: 'ScalarProduct',
   id: getId(),
-  args,
+  args: [arg0, arg1],
+  loc,
 });
-export const Limit = (arg: Node, bvar: NodeTypes['Identifier'], to: NodeTypes['Num'] | NodeTypes['Neg'], approach: 'left' | 'right' | 'both'): NodeTypes['Limit'] => ({
+export const makeLimit = (arg: Node, bvar: NodeTypes['Identifier'], to: NodeTypes['Num'] | NodeTypes['Neg'], approach: 'left' | 'right' | 'both', loc?: SourceLocation): NodeTypes['Limit'] => ({
   type: 'Limit',
   id: getId(),
   arg,
   bvar,
   to,
   approach,
+  loc,
 });
-export const Integral = (arg: Node, bvar: NodeTypes['Identifier']): NodeTypes['Integral'] => ({
+export const makeIntegral = (arg: Node, bvar: NodeTypes['Identifier'], loc?: SourceLocation): NodeTypes['Integral'] => ({
   type: 'Integral',
   id: getId(),
   arg,
   bvar,
+  loc,
 });
-export const DefInt = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['DefInt'] => ({
+export const makeDefInt = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node, loc?: SourceLocation): NodeTypes['DefInt'] => ({
   type: 'DefiniteIntegral',
   id: getId(),
   arg,
   bvar,
   lower,
   upper,
+  loc,
 });
-export const Diff = (arg: Node, bvar: NodeTypes['Identifier'], degree: Node): NodeTypes['Diff'] => ({
+export const makeDiff = (arg: Node, bvar: NodeTypes['Identifier'], degree: Node, loc?: SourceLocation): NodeTypes['Diff'] => ({
   type: 'Derivative',
   id: getId(),
   arg,
   bvar,
   degree,
+  loc,
 });
-export const PartialDiff = (arg: Node, bvars: readonly NodeTypes['Identifier'][], degrees: readonly Node[]): NodeTypes['PartialDiff'] => ({
+export const makePartialDiff = (arg: Node, bvars: readonly NodeTypes['Identifier'][], degrees: readonly Node[], loc?: SourceLocation): NodeTypes['PartialDiff'] => ({
   type: 'PartialDerivative',
   id: getId(),
   arg,
   bvars,
   degrees,
+  loc,
 });
-export const Sum = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Sum'] => ({
+export const makeSum = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node, loc?: SourceLocation): NodeTypes['Sum'] => ({
   type: 'Summation',
   id: getId(),
   arg,
   bvar,
   lower,
   upper,
+  loc,
 });
-export const Product = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node): NodeTypes['Product'] => ({
+export const makeProduct = (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node, loc?: SourceLocation): NodeTypes['Product'] => ({
   type: 'Product',
   id: getId(),
   arg,
   bvar,
   lower,
   upper,
+  loc,
 });
-export const Eq = (args: TwoOrMore<Node>): NodeTypes['Eq'] => ({
+export const makeEq = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Eq'] => ({
   type: 'Equals',
   id: getId(),
   args,
+  loc,
 });
-export const Neq = (args: TwoOrMore<Node>): NodeTypes['Neq'] => ({
+export const makeNeq = (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Neq'] => ({
   type: 'NotEquals',
   id: getId(),
   args,
+  loc,
 });
-export const Parens = (arg: Node): NodeTypes['Parens'] => ({
+export const makeParens = (arg: Node, loc?: SourceLocation): NodeTypes['Parens'] => ({
   type: 'Parens',
   id: getId(),
   arg,
+  loc,
 });
 
-export const Add = (
+export const makeAdd = (
   terms: readonly Node[],
   loc?: SourceLocation,
 ): Node => {
   switch (terms.length) {
     case 0:
-      return Num('0'); // , loc);
+      return makeNum('0'); // , loc);
     case 1:
       return terms[0]; // TODO: figure out if we should give this node a location
     default:
@@ -440,14 +513,14 @@ export const Add = (
   }
 };
 
-export const Mul = (
+export const makeMul = (
   factors: readonly Node[],
   implicit = false,
   loc?: SourceLocation,
 ): Node => {
   switch (factors.length) {
     case 0:
-      return Num('1'); // , loc);
+      return makeNum('1'); // , loc);
     case 1:
       return factors[0]; // TODO: figure out if we should give this node a location
     default:
@@ -461,7 +534,7 @@ export const Mul = (
   }
 };
 
-export const numRel = (
+export const makeRel = (
   args: TwoOrMore<Node>,
   type: NumericRelation['type'],
   loc?: SourceLocation,
@@ -470,3 +543,24 @@ export const numRel = (
   id: getId(),
   args,
 });
+
+export const makeNum = (
+  value: string,
+  loc?: SourceLocation,
+): NodeTypes['Num'] | NodeTypes['Neg'] => {
+  if (value.startsWith('-')) {
+    // TODO: handle location data correctly
+    return makeNeg(makeNum(value.slice(1)));
+  }
+  return {
+    type: NodeType.Number,
+    id: getId(),
+    value: value.replace(/-/g, '−'),
+    loc,
+  };
+};
+
+export const makeSqrt = (
+  radicand: Node,
+  loc?: SourceLocation,
+): NodeTypes['Root'] => makeRoot(makeNum('2'), radicand, true, loc);
