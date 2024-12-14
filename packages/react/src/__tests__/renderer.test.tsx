@@ -74,6 +74,7 @@ const storyToComponent = async function <T>(
   }
 
   return () => {
+    // @ts-expect-error: this type is wrong
     const context: StoryContext = {
       id: '',
       kind: '',

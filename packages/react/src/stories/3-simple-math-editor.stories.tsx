@@ -44,7 +44,7 @@ export const Editable: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathEditor
         readonly={false}
         row={math}
@@ -64,7 +64,7 @@ export const AllNodes: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathEditor
         readonly={false}
         row={addingFractions}
@@ -87,7 +87,7 @@ export const Readonly: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathEditor readonly={true} row={math} />
     </FontDataContext.Provider>
   );

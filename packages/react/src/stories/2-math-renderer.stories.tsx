@@ -59,7 +59,7 @@ export const Small: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
   const fontSize = 20;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -78,7 +78,7 @@ export const Equation: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -100,12 +100,11 @@ export const LatinModernEquation: Story<EmptyProps> = (
   ]);
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
-// @ts-expect-error: Story doesn't include 'loaders' static
 LatinModernEquation.loaders = [lmFontLoader];
 
 export const LatinModernRootAndFraction: Story<EmptyProps> = (
@@ -117,12 +116,11 @@ export const LatinModernRootAndFraction: Story<EmptyProps> = (
   ]);
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
 };
-// @ts-expect-error: Story doesn't include 'loaders' static
 LatinModernRootAndFraction.loaders = [lmFontLoader];
 
 export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
@@ -142,7 +140,7 @@ export const Cursor: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         selection={selection}
@@ -172,7 +170,7 @@ export const Selection: Story<EmptyProps> = (args, { loaded: fontData }) => {
 
   const fontSize = 60;
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         selection={selection}
@@ -199,7 +197,7 @@ export const Pythagoras: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={pythagoras}
         style={style}
@@ -237,7 +235,7 @@ export const QuadraticEquation: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -255,7 +253,7 @@ export const Limit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -278,7 +276,7 @@ export const InlineLimit: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -302,7 +300,7 @@ export const Summation: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -323,7 +321,7 @@ export const InlineSummation: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -348,7 +346,7 @@ export const Integral: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -371,7 +369,7 @@ export const InlineIntegral: Story<EmptyProps> = (
   ]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         style={style}
@@ -401,7 +399,7 @@ export const ColorizedFraction: Story<EmptyProps> = (
   const math = row([fracNodeWithColor]);
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -436,7 +434,7 @@ export const ColorizedSum: Story<EmptyProps> = (args, { loaded: fontData }) => {
   ) as Editor.types.CharRow;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -492,7 +490,7 @@ export const SimpleSemanticColoring: Story<EmptyProps> = (
   ) as Editor.types.CharRow;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -536,7 +534,7 @@ export const NestedSemanticColoring: Story<EmptyProps> = (
   ) as Editor.types.CharRow;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={math} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -559,7 +557,7 @@ export const TallDelimiters: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer row={editNode} style={style} fontSize={fontSize} />
     </FontDataContext.Provider>
   );
@@ -594,7 +592,7 @@ export const TallDelimitersWithCursor: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={state.row}
         selection={state.selection}
@@ -633,7 +631,7 @@ export const TallDelimitersWithSelection: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={state.row}
         selection={state.selection}
@@ -664,7 +662,7 @@ export const CursorSize: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={state.row}
         style={style}
@@ -712,7 +710,7 @@ export const SelectionSize: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={state.row}
         style={style}
@@ -734,7 +732,7 @@ export const RadicalWithDegreeDynamic: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -759,7 +757,7 @@ export const RadicalWithLargeDegreeDynamic: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -791,7 +789,7 @@ export const SubscriptSuperscriptStressTest: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -822,7 +820,7 @@ export const ScriptsOnTallDelimiters: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -859,7 +857,7 @@ export const Cancelling: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={editNode}
         style={style}
@@ -907,7 +905,7 @@ export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={matrix}
         style={style}
@@ -933,7 +931,7 @@ export const InProgressMacro: Story<EmptyProps> = (
   const fontSize = 60;
 
   return (
-    <FontDataContext.Provider value={fontData}>
+    <FontDataContext.Provider value={fontData as FontData}>
       <MathRenderer
         row={math}
         style={style}
