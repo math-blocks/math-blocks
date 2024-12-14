@@ -19,7 +19,7 @@ describe('TextLexer', () => {
   it('should parse numbers and plus signs', () => {
     const tokens = lex('1 + 2 + 3');
     expect(tokens.map(printToken)).toMatchInlineSnapshot(`
-      Array [
+      [
         "number:1",
         "plus",
         "number:2",
@@ -32,7 +32,7 @@ describe('TextLexer', () => {
   it('should parse identifiers and minus signs', () => {
     const tokens = lex('a - b');
     expect(tokens.map(printToken)).toMatchInlineSnapshot(`
-      Array [
+      [
         "identifier:a",
         "minus",
         "identifier:b",
@@ -43,7 +43,7 @@ describe('TextLexer', () => {
   it('should parse parens', () => {
     const tokens = lex('(a + b)');
     expect(tokens.map(printToken)).toMatchInlineSnapshot(`
-      Array [
+      [
         "lparen",
         "identifier:a",
         "plus",

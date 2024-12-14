@@ -449,7 +449,7 @@ describe('solve', () => {
       // Assert
       const steps = result.substeps.map((step) => Testing.print(step.after));
       expect(steps).toMatchInlineSnapshot(`
-        Array [
+        [
           "1 - n = 3n / 2 + 17 / 2",
           "-(5n / 2) = 15 / 2",
           "-(5n / 2) / -(5 / 2) = (15 / 2) / -(5 / 2)",
