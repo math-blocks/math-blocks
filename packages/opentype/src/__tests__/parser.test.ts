@@ -61,16 +61,16 @@ describe('parse', () => {
     describe('MathVariants', () => {
       test('top-level variants properties', async () => {
         expect(font.math.variants).toMatchInlineSnapshot(`
-                    Object {
-                      "getHorizGlyphConstruction": [Function],
-                      "getVertGlyphConstruction": [Function],
-                      "horizGlyphCount": 47,
-                      "horizGlyphCoverageOffset": 992,
-                      "minConnectorOverlap": 100,
-                      "vertGlyphCount": 118,
-                      "vertGlyphCoverageOffset": 340,
-                    }
-                `);
+          {
+            "getHorizGlyphConstruction": [Function],
+            "getVertGlyphConstruction": [Function],
+            "horizGlyphCount": 47,
+            "horizGlyphCoverageOffset": 992,
+            "minConnectorOverlap": 100,
+            "vertGlyphCount": 118,
+            "vertGlyphCoverageOffset": 340,
+          }
+        `);
       });
 
       test('vertical glyph construction for parenleft', () => {

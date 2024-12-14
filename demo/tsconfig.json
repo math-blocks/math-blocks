@@ -8,6 +8,7 @@
       "esnext",
       "dom",
     ],
+    "jsx": "react",
   },
   "references": [
     {"path": "../packages/core"},

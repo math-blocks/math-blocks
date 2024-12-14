@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`parse CFF  topDict 1`] = `
-Object {
+{
   "BlueFuzz": 1,
   "BlueScale": 0.039625,
   "BlueShift": 6,
-  "BlueValues": Array [
+  "BlueValues": [
     -15,
     15,
     469,
@@ -23,11 +23,11 @@ Object {
   ],
   "CharStrings": 56085,
   "CharstringType": 2,
-  "Copyright": "Arie de Ruiter, who in 1995 was Head of Information Technology Development at Elsevier Science, made a proposal to the STI Pub group, an informal group of publishers consisting of representatives from the American Chemical Society \\\\(ACS\\\\), American Institute of Physics \\\\(AIP\\\\), American Mathematical Society \\\\(AMS\\\\), American Physical Society \\\\(APS\\\\), Elsevier, and Institute of Electrical and Electronics Engineers \\\\(IEEE\\\\). De Ruiter encouraged the members to consider development of a series of Web fonts, which he proposed should be called the Scientific and Technical Information eXchange, or STIX, Fonts. All STI Pub member organizations enthusiastically endorsed this proposal, and the STI Pub group agreed to embark on what has become a twelve-year project. The goal of the project was to identify all alphabetic, symbolic, and other special characters used in any facet of scientific publishing and to create a set of Unicode-based fonts that would be distributed free to every scientist, student, and other interested party worldwide. The fonts would be consistent with the emerging Unicode standard, and would permit universal representation of every character. With the release of the STIX fonts, de Ruiter's vision has been realized.",
+  "Copyright": "Arie de Ruiter, who in 1995 was Head of Information Technology Development at Elsevier Science, made a proposal to the STI Pub group, an informal group of publishers consisting of representatives from the American Chemical Society \\(ACS\\), American Institute of Physics \\(AIP\\), American Mathematical Society \\(AMS\\), American Physical Society \\(APS\\), Elsevier, and Institute of Electrical and Electronics Engineers \\(IEEE\\). De Ruiter encouraged the members to consider development of a series of Web fonts, which he proposed should be called the Scientific and Technical Information eXchange, or STIX, Fonts. All STI Pub member organizations enthusiastically endorsed this proposal, and the STI Pub group agreed to embark on what has become a twelve-year project. The goal of the project was to identify all alphabetic, symbolic, and other special characters used in any facet of scientific publishing and to create a set of Unicode-based fonts that would be distributed free to every scientist, student, and other interested party worldwide. The fonts would be consistent with the emerging Unicode standard, and would permit universal representation of every character. With the release of the STIX fonts, de Ruiter's vision has been realized.",
   "Encoding": 0,
   "ExpansionFactor": 0.06,
   "FamilyName": "STIX Two Math",
-  "FontBBox": Array [
+  "FontBBox": [
     -978,
     -1641,
     3072,
@@ -37,23 +37,23 @@ Object {
   "FullName": "STIX Two Math",
   "ItalicAngle": 0,
   "LanguageGroup": 0,
-  "Notice": "Copyright \\\\(c\\\\) 2001-2016 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physics, the American Mathematical Society, the American Physical Society, Elsevier, Inc., and The Institute of Electrical and Electronic Engineers, Inc.  Portions copyright \\\\(c\\\\) 1998-2003 by MicroPress, Inc.  Portions copyright \\\\(c\\\\) 1990 by Elsevier, Inc.  All rights reserved.  Portions copyright \\\\(c\\\\) Copyright 2010, 2012, 2014 Adobe Systems Incorporated.",
-  "OtherBlues": Array [
+  "Notice": "Copyright \\(c\\) 2001-2016 by the STI Pub Companies, consisting of the American Chemical Society, the American Institute of Physics, the American Mathematical Society, the American Physical Society, Elsevier, Inc., and The Institute of Electrical and Electronic Engineers, Inc.  Portions copyright \\(c\\) 1998-2003 by MicroPress, Inc.  Portions copyright \\(c\\) 1990 by Elsevier, Inc.  All rights reserved.  Portions copyright \\(c\\) Copyright 2010, 2012, 2014 Adobe Systems Incorporated.",
+  "OtherBlues": [
     -235,
     15,
   ],
   "PaintType": 0,
-  "Private": Array [
+  "Private": [
     691667,
     41,
   ],
   "StdHW": 29,
   "StdVW": 83,
-  "StemSnapH": Array [
+  "StemSnapH": [
     29,
     12,
   ],
-  "StemSnapV": Array [
+  "StemSnapV": [
     83,
     9,
   ],
@@ -63,7 +63,7 @@ Object {
   "Weight": "Normal",
   "charset": 55096,
   "defaultWidthX": 701,
-  "fontMatrix": Array [
+  "fontMatrix": [
     0.001,
     0,
     0,
@@ -79,7 +79,7 @@ Object {
 `;
 
 exports[`parse math MathContants constants should have expected values 1`] = `
-Object {
+{
   "accentBaseHeight": 0.48,
   "axisHeight": 0.258,
   "delimitedSubFormulaMinHeight": 1.325,
@@ -140,30 +140,30 @@ Object {
 `;
 
 exports[`parse math MathVariants horizontal glyph construction for uni0303 (combining tilde) 1`] = `
-Object {
+{
   "glyphAssembly": null,
-  "mathGlyphVariantRecords": Array [
-    Object {
+  "mathGlyphVariantRecords": [
+    {
       "advanceMeasurement": 322,
       "variantGlyph": 742,
     },
-    Object {
+    {
       "advanceMeasurement": 574,
       "variantGlyph": 1405,
     },
-    Object {
+    {
       "advanceMeasurement": 1003,
       "variantGlyph": 1406,
     },
-    Object {
+    {
       "advanceMeasurement": 1496,
       "variantGlyph": 1407,
     },
-    Object {
+    {
       "advanceMeasurement": 1932,
       "variantGlyph": 1408,
     },
-    Object {
+    {
       "advanceMeasurement": 2385,
       "variantGlyph": 1409,
     },
@@ -172,28 +172,28 @@ Object {
 `;
 
 exports[`parse math MathVariants vertical glyph construction for parenleft 1`] = `
-Object {
-  "glyphAssembly": Object {
-    "italicsCorrection": Object {
+{
+  "glyphAssembly": {
+    "italicsCorrection": {
       "deviceOffset": 0,
       "value": 0,
     },
-    "partRecords": Array [
-      Object {
+    "partRecords": [
+      {
         "endConnectorLength": 250,
         "fullAdvance": 1273,
         "glyphID": 4862,
         "partsFlags": 0,
         "startConnectorLength": 0,
       },
-      Object {
+      {
         "endConnectorLength": 1000,
         "fullAdvance": 1252,
         "glyphID": 4861,
         "partsFlags": 1,
         "startConnectorLength": 1000,
       },
-      Object {
+      {
         "endConnectorLength": 0,
         "fullAdvance": 1273,
         "glyphID": 4860,
@@ -202,56 +202,56 @@ Object {
       },
     ],
   },
-  "mathGlyphVariantRecords": Array [
-    Object {
+  "mathGlyphVariantRecords": [
+    {
       "advanceMeasurement": 933,
       "variantGlyph": 1064,
     },
-    Object {
+    {
       "advanceMeasurement": 1187,
       "variantGlyph": 1301,
     },
-    Object {
+    {
       "advanceMeasurement": 1427,
       "variantGlyph": 1302,
     },
-    Object {
+    {
       "advanceMeasurement": 1667,
       "variantGlyph": 1303,
     },
-    Object {
+    {
       "advanceMeasurement": 1907,
       "variantGlyph": 1304,
     },
-    Object {
+    {
       "advanceMeasurement": 2145,
       "variantGlyph": 1305,
     },
-    Object {
+    {
       "advanceMeasurement": 2385,
       "variantGlyph": 1306,
     },
-    Object {
+    {
       "advanceMeasurement": 2625,
       "variantGlyph": 1307,
     },
-    Object {
+    {
       "advanceMeasurement": 2865,
       "variantGlyph": 1308,
     },
-    Object {
+    {
       "advanceMeasurement": 3101,
       "variantGlyph": 1309,
     },
-    Object {
+    {
       "advanceMeasurement": 3341,
       "variantGlyph": 1310,
     },
-    Object {
+    {
       "advanceMeasurement": 3581,
       "variantGlyph": 1311,
     },
-    Object {
+    {
       "advanceMeasurement": 3821,
       "variantGlyph": 1312,
     },
@@ -260,80 +260,80 @@ Object {
 `;
 
 exports[`parseDirectory tableRecords 1`] = `
-Object {
-  "CFF ": Object {
+{
+  "CFF ": {
     "checksum": 2978540771,
     "length": 691708,
     "offset": 220,
     "tableTag": "CFF ",
   },
-  "GDEF": Object {
+  "GDEF": {
     "checksum": 356002236,
     "length": 66,
     "offset": 691928,
     "tableTag": "GDEF",
   },
-  "GPOS": Object {
+  "GPOS": {
     "checksum": 2118371111,
     "length": 23252,
     "offset": 691996,
     "tableTag": "GPOS",
   },
-  "GSUB": Object {
+  "GSUB": {
     "checksum": 2636999998,
     "length": 7360,
     "offset": 715248,
     "tableTag": "GSUB",
   },
-  "MATH": Object {
+  "MATH": {
     "checksum": 4056928493,
     "length": 23292,
     "offset": 722608,
     "tableTag": "MATH",
   },
-  "OS/2": Object {
+  "OS/2": {
     "checksum": 1836143976,
     "length": 96,
     "offset": 745900,
     "tableTag": "OS/2",
   },
-  "cmap": Object {
+  "cmap": {
     "checksum": 3520504363,
     "length": 29314,
     "offset": 745996,
     "tableTag": "cmap",
   },
-  "head": Object {
+  "head": {
     "checksum": 348148424,
     "length": 54,
     "offset": 775312,
     "tableTag": "head",
   },
-  "hhea": Object {
+  "hhea": {
     "checksum": 203759218,
     "length": 36,
     "offset": 775368,
     "tableTag": "hhea",
   },
-  "hmtx": Object {
+  "hmtx": {
     "checksum": 2942074728,
     "length": 22166,
     "offset": 775404,
     "tableTag": "hmtx",
   },
-  "maxp": Object {
+  "maxp": {
     "checksum": 363286528,
     "length": 6,
     "offset": 797572,
     "tableTag": "maxp",
   },
-  "name": Object {
+  "name": {
     "checksum": 1587078982,
     "length": 10608,
     "offset": 797580,
     "tableTag": "name",
   },
-  "post": Object {
+  "post": {
     "checksum": 4290052147,
     "length": 32,
     "offset": 808188,

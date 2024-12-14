@@ -63,17 +63,12 @@ const lmFontLoader = async (): Promise<FontData> => {
 
 const storyToComponent = async function <T>(
   story: Story<T>,
-  loaders = [stixFontLoader],
+  loader = stixFontLoader,
 ): Promise<React.FC> {
-  const loaded = {};
-
-  if (loaders) {
-    for (const value of await Promise.all(loaders.map((loader) => loader()))) {
-      Object.assign(loaded, value);
-    }
-  }
+  const loaded = await loader();
 
   return () => {
+    // @ts-expect-error: this type is wrong
     const context: StoryContext = {
       id: '',
       kind: '',
@@ -185,14 +180,15 @@ describe('renderer', () => {
 
   describe('latin modern', () => {
     test('equation', async () => {
-      const Equation = await storyToComponent(stories.Equation, [lmFontLoader]);
+      const Equation = await storyToComponent(stories.Equation, lmFontLoader);
       expect(<Equation />).toMatchSVGSnapshot();
     });
 
     test('tall delimiters, root, and fraction', async () => {
-      const TallDelimiters = await storyToComponent(stories.TallDelimiters, [
+      const TallDelimiters = await storyToComponent(
+        stories.TallDelimiters,
         lmFontLoader,
-      ]);
+      );
       expect(<TallDelimiters />).toMatchSVGSnapshot();
     });
   });
@@ -206,7 +202,7 @@ describe('renderer', () => {
       test('with degree (dynamic)', async () => {
         const RadicalWithDegreeDynamic = await storyToComponent(
           stories.RadicalWithDegreeDynamic,
-          [fontloader],
+          fontloader,
         );
         expect(<RadicalWithDegreeDynamic />).toMatchSVGSnapshot();
       });
@@ -214,7 +210,7 @@ describe('renderer', () => {
       test('with large degree (dynamic)', async () => {
         const RadicalWithLargeDegreeDynamic = await storyToComponent(
           stories.RadicalWithLargeDegreeDynamic,
-          [fontloader],
+          fontloader,
         );
         expect(<RadicalWithLargeDegreeDynamic />).toMatchSVGSnapshot();
       });
@@ -230,7 +226,7 @@ describe('renderer', () => {
       test('stress test (dynamic)', async () => {
         const SubscriptSuperscriptStressTest = await storyToComponent(
           stories.SubscriptSuperscriptStressTest,
-          [fontloader],
+          fontloader,
         );
         expect(<SubscriptSuperscriptStressTest />).toMatchSVGSnapshot();
       });
@@ -238,7 +234,7 @@ describe('renderer', () => {
       test('on tall delimiters (dynamic)', async () => {
         const ScriptsOnTallDelimiters = await storyToComponent(
           stories.ScriptsOnTallDelimiters,
-          [fontloader],
+          fontloader,
         );
         expect(<ScriptsOnTallDelimiters />).toMatchSVGSnapshot();
       });
