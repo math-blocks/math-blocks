@@ -11,6 +11,6 @@
     },
     "dependencies": {
         "@math-blocks/core": "^0.0.10",
-        "fraction.js": "^4.0.12"
+        "fraction.js": "^5.2.1"
     }
 }
