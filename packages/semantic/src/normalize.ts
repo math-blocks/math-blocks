@@ -13,6 +13,8 @@ export const print = (ast: Node): string => {
       const type = ast.subtraction ? 'neg.sub' : 'neg';
       return `(${type} ${print(ast.arg)})`;
     }
+    case 'UnaryPlusMinus':
+    case 'UnaryMinusPlus':
     case 'LogicalNot':
     case 'AbsoluteValue':
     case 'Ln':

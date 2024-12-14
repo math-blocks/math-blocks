@@ -31,6 +31,8 @@ export interface NodeTypes {
   },
   readonly PlusMinus: Common<'PlusMinus'> & {readonly args: TwoOrMore<Node>}
   readonly MinusPlus: Common<'MinusPlus'> & {readonly args: TwoOrMore<Node>}
+  readonly UnaryPlusMinus: Common<'UnaryPlusMinus'> & {readonly arg: Node}
+  readonly UnaryMinusPlus: Common<'UnaryMinusPlus'> & {readonly arg: Node}
   readonly Div: Common<'Div'> & {readonly args: readonly [Node, Node]}
   readonly Mod: Common<'Modulo'> & {readonly args: readonly [Node, Node]}
   readonly Pow: Common<'Power'> & {
@@ -173,6 +175,8 @@ export type Add = NodeTypes['Add'];
 export type Mul = NodeTypes['Mul'];
 export type PlusMinus = NodeTypes['PlusMinus'];
 export type MinusPlus = NodeTypes['MinusPlus'];
+export type UnaryPlusMinus = NodeTypes['UnaryPlusMinus'];
+export type UnaryMinusPlus = NodeTypes['UnaryMinusPlus'];
 export type Div = NodeTypes['Div'];
 export type Mod = NodeTypes['Mod'];
 export type Pow = NodeTypes['Pow'];

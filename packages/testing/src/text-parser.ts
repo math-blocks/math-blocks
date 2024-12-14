@@ -35,7 +35,7 @@ type NAryOperator =
   | 'gt'
   | 'gte';
 
-type Node = Parser.types.Node;
+type Node = Semantic.types.Node;
 
 type TextParser = Parser.IParser<Token, Node, Operator>;
 
@@ -54,27 +54,26 @@ const getPrefixParselet = (
   switch (token.type) {
     case 'identifier':
       return {
-        parse: (): Parser.types.Identifier =>
-          Parser.builders.identifier(token.name),
+        parse: () => Semantic.builders.identifier(token.name),
       };
     case 'number':
       return {
-        parse: (): Parser.types.Num => Parser.builders.number(token.value),
+        parse: () => Semantic.builders.number(token.value),
       };
     case 'minus':
       return {
-        parse: (parser): Parser.types.Neg =>
-          Parser.builders.neg(parser.parseWithOperator('neg'), false),
+        parse: (parser) =>
+          Semantic.builders.neg(parser.parseWithOperator('neg'), false),
       };
     case 'lparen':
       return {
-        parse: (parser): Parser.types.Node => {
+        parse: (parser) => {
           const result = parser.parse();
           const nextToken = parser.consume();
           if (nextToken.type !== 'rparen') {
             throw new Error('unmatched left paren');
           }
-          return Parser.builders.parens(result);
+          return Semantic.builders.parens(result);
         },
       };
     default:
@@ -91,7 +90,9 @@ const getPrefixParselet = (
 //   };
 // };
 
-const parseMulByParen = (parser: TextParser): OneOrMore<Parser.types.Node> => {
+const parseMulByParen = (
+  parser: TextParser,
+): OneOrMore<Semantic.types.Node> => {
   const expr = parser.parseWithOperator('mul.imp');
   if (parser.peek().type === 'lparen') {
     return [expr, ...parseMulByParen(parser)];
@@ -122,18 +123,18 @@ const getInfixParselet = (
     case 'slash':
       return {
         op: 'div',
-        parse: (parser, left): Parser.types.Div => {
+        parse: (parser, left): Semantic.types.Div => {
           parser.consume();
-          return Parser.builders.div(left, parser.parseWithOperator('div'));
+          return Semantic.builders.div(left, parser.parseWithOperator('div'));
         },
       };
     case 'caret':
       return {
         op: 'caret',
-        parse: (parser, left): Parser.types.Pow => {
+        parse: (parser, left): Semantic.types.Pow => {
           parser.consume();
           // exponents are right-associative
-          return Parser.builders.pow(
+          return Semantic.builders.pow(
             left,
             parser.parseWithOperator('caret', 'right'),
           );
@@ -146,15 +147,15 @@ const getInfixParselet = (
     case 'lparen':
       return {
         op: 'mul.imp',
-        parse: (parser, left): Parser.types.Mul => {
+        parse: (parser, left) => {
           const [right, ...rest] = parseMulByParen(parser);
-          return Parser.builders.mul([left, right, ...rest], true);
+          return Semantic.builders.mul([left, right, ...rest], true);
         },
       };
     case 'rparen':
       return {
         op: 'nul',
-        parse: (): Parser.types.Node => {
+        parse: (): Semantic.types.Node => {
           throw new Error('mismatched parens');
         },
       };
@@ -170,21 +171,21 @@ const parseNaryInfix =
     switch (op) {
       case 'add':
       case 'sub':
-        return Parser.builders.add([left, right, ...rest]);
+        return Semantic.builders.add([left, right, ...rest]);
       case 'mul.imp':
-        return Parser.builders.mul([left, right, ...rest], true);
+        return Semantic.builders.mul([left, right, ...rest], true);
       case 'mul.exp':
-        return Parser.builders.mul([left, right, ...rest], false);
+        return Semantic.builders.mul([left, right, ...rest], false);
       case 'eq':
-        return Parser.builders.eq([left, right, ...rest]);
+        return Semantic.builders.eq([left, right, ...rest]);
       case 'lt':
-        return Parser.builders.lt([left, right, ...rest]);
+        return Semantic.builders.lt([left, right, ...rest]);
       case 'lte':
-        return Parser.builders.lte([left, right, ...rest]);
+        return Semantic.builders.lte([left, right, ...rest]);
       case 'gt':
-        return Parser.builders.gt([left, right, ...rest]);
+        return Semantic.builders.gt([left, right, ...rest]);
       case 'gte':
-        return Parser.builders.gte([left, right, ...rest]);
+        return Semantic.builders.gte([left, right, ...rest]);
       default:
         throw new UnreachableCaseError(op);
     }
@@ -205,7 +206,7 @@ const parseNaryArgs = (
   }
   let expr: Node = parser.parseWithOperator(op);
   if (op === 'sub') {
-    expr = Parser.builders.neg(expr, true);
+    expr = Semantic.builders.neg(expr, true);
   }
   const nextToken = parser.peek();
 

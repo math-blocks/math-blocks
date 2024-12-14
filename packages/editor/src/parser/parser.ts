@@ -40,31 +40,32 @@ type NAryOperator =
   | 'gt'
   | 'gte';
 
-type EditorParser = Parser.IParser<TokenNode, Parser.types.Node, Operator>;
+type EditorParser = Parser.IParser<TokenNode, Semantic.types.Node, Operator>;
 
 const isIdentifier = (node: TokenNode): boolean =>
   node.type === 'token' && node.name === TokenKind.Identifier;
 
 const getPrefixParselet = (
   node: TokenNode,
-): Parser.PrefixParselet<TokenNode, Parser.types.Node, Operator> => {
+): Parser.PrefixParselet<TokenNode, Semantic.types.Node, Operator> => {
   switch (node.type) {
     case 'token': {
       switch (node.name) {
         case TokenKind.Identifier:
           return {
-            parse: () => Parser.builders.identifier(node.value, node.loc),
+            parse: () =>
+              Semantic.builders.identifier(node.value, undefined, node.loc),
           };
         case TokenKind.Number:
           return {
-            parse: () => Parser.builders.number(node.value, node.loc),
+            parse: () => Semantic.builders.number(node.value, node.loc),
           };
         case TokenKind.Minus:
           return {
             parse: (parser) => {
               const neg = parser.parseWithOperator('neg');
               const loc = locFromRange(node.loc, neg.loc);
-              return Parser.builders.neg(neg, false, loc);
+              return Semantic.builders.neg(neg, false, loc);
             },
           };
         case TokenKind.PlusMinus:
@@ -72,12 +73,12 @@ const getPrefixParselet = (
             parse: (parser) => {
               const neg = parser.parseWithOperator('plusminus');
               const loc = locFromRange(node.loc, neg.loc);
-              return Parser.builders.plusminus(neg, 'unary', loc);
+              return Semantic.builders.unaryplusminus(neg, loc);
             },
           };
         case TokenKind.Ellipsis:
           return {
-            parse: () => Parser.builders.ellipsis(node.loc),
+            parse: () => Semantic.builders.ellipsis(node.loc),
           };
         default:
           throw new Error(`Unexpected '${node.name}' atom`);
@@ -87,7 +88,7 @@ const getPrefixParselet = (
       return {
         parse: () => {
           const [numerator, denominator] = node.children;
-          return Parser.builders.div(
+          return Semantic.builders.div(
             editorParser.parse(numerator.children),
             editorParser.parse(denominator.children),
             node.loc,
@@ -99,13 +100,14 @@ const getPrefixParselet = (
         parse: () => {
           const [index, radicand] = node.children;
           return index === null
-            ? Parser.builders.sqrt(
+            ? Semantic.builders.sqrt(
                 editorParser.parse(radicand.children),
                 node.loc,
               )
-            : Parser.builders.root(
+            : Semantic.builders.root(
                 editorParser.parse(radicand.children),
                 editorParser.parse(index.children),
+                false,
                 node.loc,
               );
         },
@@ -116,7 +118,7 @@ const getPrefixParselet = (
           const [inner] = node.children;
           const result = editorParser.parse(inner.children);
           // TODO: what should `loc` be here?
-          return Parser.builders.parens(result);
+          return Semantic.builders.parens(result);
         },
       };
     case NodeType.Accent:
@@ -148,7 +150,7 @@ const getPrefixParselet = (
 
 const parseNaryInfix =
   (op: NAryOperator) =>
-  (parser: EditorParser, left: Parser.types.Node): Parser.types.Node => {
+  (parser: EditorParser, left: Semantic.types.Node): Semantic.types.Node => {
     const [right, ...rest] = parseNaryArgs(parser, op);
     const loc = locFromRange(
       left.loc,
@@ -159,21 +161,21 @@ const parseNaryInfix =
       case 'add':
       case 'sub':
       case 'plusminus':
-        return Parser.builders.add([left, right, ...rest], loc);
+        return Semantic.builders.add([left, right, ...rest], loc);
       case 'mul.imp':
-        return Parser.builders.mul([left, right, ...rest], true, loc);
+        return Semantic.builders.mul([left, right, ...rest], true, loc);
       case 'mul.exp':
-        return Parser.builders.mul([left, right, ...rest], false, loc);
+        return Semantic.builders.mul([left, right, ...rest], false, loc);
       case 'eq':
-        return Parser.builders.eq([left, right, ...rest], loc);
+        return Semantic.builders.eq([left, right, ...rest], loc);
       case 'lt':
-        return Parser.builders.lt([left, right, ...rest], loc);
+        return Semantic.builders.lt([left, right, ...rest], loc);
       case 'lte':
-        return Parser.builders.lte([left, right, ...rest], loc);
+        return Semantic.builders.lte([left, right, ...rest], loc);
       case 'gt':
-        return Parser.builders.gt([left, right, ...rest], loc);
+        return Semantic.builders.gt([left, right, ...rest], loc);
       case 'gte':
-        return Parser.builders.gte([left, right, ...rest], loc);
+        return Semantic.builders.gte([left, right, ...rest], loc);
     }
   };
 
@@ -186,7 +188,7 @@ const parseNaryInfix =
 const parseNaryArgs = (
   parser: EditorParser,
   op: NAryOperator,
-): OneOrMore<Parser.types.Node> => {
+): OneOrMore<Semantic.types.Node> => {
   // TODO: handle implicit multiplication
   const node = parser.peek();
   if (node.type === 'token') {
@@ -199,11 +201,7 @@ const parseNaryArgs = (
     let expr = parser.parseWithOperator(op);
     if (op === 'sub') {
       const loc = locFromRange(node.loc, expr.loc);
-      expr = Parser.builders.neg(expr, true, loc);
-    }
-    if (op === 'plusminus') {
-      const loc = locFromRange(node.loc, expr.loc);
-      expr = Parser.builders.plusminus(expr, 'binary', loc);
+      expr = Semantic.builders.neg(expr, true, loc);
     }
     const nextToken = parser.peek();
     if (nextToken.type !== 'token') {
@@ -246,10 +244,14 @@ const parseNaryArgs = (
     const [index, radicand] = node.children;
     const expr =
       index === null
-        ? Parser.builders.sqrt(editorParser.parse(radicand.children), node.loc)
-        : Parser.builders.root(
+        ? Semantic.builders.sqrt(
+            editorParser.parse(radicand.children),
+            node.loc,
+          )
+        : Semantic.builders.root(
             editorParser.parse(radicand.children),
             editorParser.parse(index.children),
+            false,
             node.loc,
           );
     const nextToken = parser.peek();
@@ -261,7 +263,7 @@ const parseNaryArgs = (
   } else if (node.type === 'frac') {
     parser.consume();
     const [num, den] = node.children;
-    const expr = Parser.builders.div(
+    const expr = Semantic.builders.div(
       editorParser.parse(num.children),
       editorParser.parse(den.children),
       node.loc,
@@ -272,7 +274,7 @@ const parseNaryArgs = (
     const [inner] = node.children;
     // TODO: make 'eol' its own token type instead of a co-opting 'atom'
     const nextToken = parser.peek();
-    const expr = Parser.builders.parens(editorParser.parse(inner.children));
+    const expr = Semantic.builders.parens(editorParser.parse(inner.children));
 
     return nextToken.type === 'delimited'
       ? [expr, ...parseNaryArgs(parser, op)]
@@ -285,7 +287,7 @@ const parseNaryArgs = (
 
 const getInfixParselet = (
   node: TokenNode,
-): Parser.InfixParselet<TokenNode, Parser.types.Node, Operator> | null => {
+): Parser.InfixParselet<TokenNode, Semantic.types.Node, Operator> | null => {
   switch (node.type) {
     case 'token': {
       switch (node.name) {
@@ -326,7 +328,7 @@ const getInfixParselet = (
       // TODO: determine the "op" based on what left is, but we can't currently do that
       return {
         op: 'supsub',
-        parse: (parser: EditorParser, left: Parser.types.Node) => {
+        parse: (parser: EditorParser, left: Semantic.types.Node) => {
           parser.consume(); // consume the subsup
           const [sub, sup] = node.children;
 
@@ -354,7 +356,7 @@ const getInfixParselet = (
               loc.end += 1;
             }
 
-            return Parser.builders.pow(
+            return Semantic.builders.pow(
               left,
               editorParser.parse(sup.children),
               loc,
@@ -371,7 +373,7 @@ const getInfixParselet = (
     case NodeType.Frac: {
       return {
         op: 'mul.imp',
-        parse: (parser, left): Parser.types.Node => {
+        parse: (parser, left): Semantic.types.Node => {
           const parselet = parseNaryInfix('mul.imp');
           if (left.type === Semantic.NodeType.Div) {
             throw new Error('An operator is required between fractions');
@@ -386,7 +388,7 @@ const getInfixParselet = (
         // the delimited node stands for something else like function
         // arguments.
         op: 'mul.imp',
-        parse: (parser, left): Parser.types.Node => {
+        parse: (parser, left): Semantic.types.Node => {
           const parselet = parseNaryInfix('mul.imp');
           // TODO: check the left.type can be implicitly multiplied
           // with parens.
@@ -439,7 +441,7 @@ const EOL: TokenNode = Lexer.atom(
 
 export const editorParser = Parser.parserFactory<
   TokenNode,
-  Parser.types.Node,
+  Semantic.types.Node,
   Operator
 >(getPrefixParselet, getInfixParselet, getOpPrecedence, EOL);
 
