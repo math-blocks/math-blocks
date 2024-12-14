@@ -1,6 +1,6 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { Link, Switch, Route, HashRouter as Router } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom';
 
 import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
@@ -17,63 +17,81 @@ if (document.body) {
   document.body.appendChild(container);
 }
 
-ReactDOM.render(
-  <Router>
-    <Switch>
-      <Route path="/baseline">
-        <BaselinePage />
-      </Route>
-      <Route path="/editor">
-        <EditorPage />
-      </Route>
-      <Route path="/parser">
-        <ParserPage />
-      </Route>
-      <Route path="/mathml">
-        <MathmlPage />
-      </Route>
-      <Route path="/handwriting">
-        <HandwritingPage />
-      </Route>
-      <Route path="/auto-solver">
-        <SolverPage />
-      </Route>
-      <Route path="/opentype-demo">
-        <OpenTypeDemo />
-      </Route>
-      <Route path="/svg">
-        <SvgPage />
-      </Route>
-      <Route path="/">
-        <h1>MathBlocks Demos</h1>
-        <ul>
-          <li>
-            <Link to="/baseline">Baseline</Link>
-          </li>
-          <li>
-            <Link to="/editor">Editor</Link>
-          </li>
-          <li>
-            <Link to="/parser">Parser</Link>
-          </li>
-          <li>
-            <Link to="/mathml">Mathml</Link>
-          </li>
-          <li>
-            <Link to="/handwriting">Handwriting input</Link>
-          </li>
-          <li>
-            <Link to="/auto-solver">Auto-solver</Link>
-          </li>
-          <li>
-            <Link to="/opentype-demo">OpenType Demo</Link>
-          </li>
-          <li>
-            <Link to="/svg">SVG</Link>
-          </li>
-        </ul>
-      </Route>
-    </Switch>
-  </Router>,
-  container,
-);
+const Homepage = () => {
+  return (
+    <div>
+      <h1>MathBlocks Demos</h1>
+      <ul>
+        <li>
+          <Link to="/baseline">Baseline</Link>
+        </li>
+        <li>
+          <Link to="/editor">Editor</Link>
+        </li>
+        <li>
+          <Link to="/parser">Parser</Link>
+        </li>
+        <li>
+          <Link to="/mathml">Mathml</Link>
+        </li>
+        <li>
+          <Link to="/handwriting">Handwriting input</Link>
+        </li>
+        <li>
+          <Link to="/auto-solver">Auto-solver</Link>
+        </li>
+        <li>
+          <Link to="/opentype-demo">OpenType Demo</Link>
+        </li>
+        <li>
+          <Link to="/svg">SVG</Link>
+        </li>
+        <li>
+          <Link to="/react-native">React Native</Link>
+        </li>
+      </ul>
+    </div>
+  );
+};
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    Component: Homepage,
+  },
+  {
+    path: '/baseline',
+    Component: BaselinePage,
+  },
+  {
+    path: '/editor',
+    Component: EditorPage,
+  },
+  {
+    path: '/parser',
+    Component: ParserPage,
+  },
+  {
+    path: '/mathml',
+    Component: MathmlPage,
+  },
+  {
+    path: '/handwriting',
+    Component: HandwritingPage,
+  },
+  {
+    path: '/auto-solver',
+    Component: SolverPage,
+  },
+  {
+    path: '/opentype-demo',
+    Component: OpenTypeDemo,
+  },
+  {
+    path: '/svg',
+    Component: SvgPage,
+  },
+]);
+
+const root = createRoot(container);
+root.render(<RouterProvider router={router} />);
