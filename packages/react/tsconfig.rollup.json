@@ -4,7 +4,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "."
+    "declarationDir": ".",
+    "lib": [
+      "esnext",
+      "dom",
+    ],
   },
   "references": [
     {"path": "../core"},
