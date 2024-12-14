@@ -35,6 +35,18 @@ const builders = {
     args,
     loc,
   }),
+  unaryplusminus: (arg: Node, loc?: SourceLocation): NodeTypes['UnaryPlusMinus'] => ({
+    type: 'UnaryPlusMinus',
+    id: getId(),
+    arg,
+    loc,
+  }),
+  unaryminusplus: (arg: Node, loc?: SourceLocation): NodeTypes['UnaryMinusPlus'] => ({
+    type: 'UnaryMinusPlus',
+    id: getId(),
+    arg,
+    loc,
+  }),
   div: (arg0: Node, arg1: Node, loc?: SourceLocation): NodeTypes['Div'] => ({
     type: 'Div',
     id: getId(),

@@ -82,7 +82,6 @@
     "codechecks": "codechecks",
     "build": "vite build",
     "build-ci": "vite build --base=/math-blocks/",
-    "build-types": "node tools/build-types.js",
     "build-rollup": "rollup -c rollup.config.js",
     "build-tsc": "tsc -b -v tsconfig.json",
     "type-coverage": "type-coverage",

@@ -142,6 +142,8 @@ export const definitions: Record<string, Descriptor> = {
   Mul: Operation('Mul', 'nary', 'arith', undefined, {implicit: 'boolean'}), // Rename to Times
   PlusMinus: Operation('PlusMinus', 'nary', 'arith'),
   MinusPlus: Operation('MinusPlus', 'nary', 'arith'),
+  UnaryPlusMinus: Operation('UnaryPlusMinus', 'unary', 'arith'),
+  UnaryMinusPlus: Operation('UnaryMinusPlus', 'unary', 'arith'),
 
   Div: Operation('Div', 'binary', 'arith'), // Rename to Divide
   Mod: Operation('Modulo', 'binary', 'arith'),

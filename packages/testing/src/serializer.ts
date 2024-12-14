@@ -68,6 +68,8 @@ const print = (
       const type = ast.subtraction ? 'neg.sub' : 'neg';
       return `(${type} ${print(ast.arg, serialize, indent)})`;
     }
+    case 'UnaryPlusMinus':
+    case 'UnaryMinusPlus':
     case 'Exp':
     case 'Ln':
     case 'Log':
