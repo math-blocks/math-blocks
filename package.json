@@ -100,7 +100,7 @@
   },
   "dependencies": {
     "classnames": "^2.3.1",
-    "fraction.js": "^4.0.12",
+    "fraction.js": "^5.2.1",
     "lerna": "^4.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
