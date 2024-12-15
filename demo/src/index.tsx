@@ -54,44 +54,47 @@ const Homepage = () => {
   );
 };
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    Component: Homepage,
-  },
-  {
-    path: '/baseline',
-    Component: BaselinePage,
-  },
-  {
-    path: '/editor',
-    Component: EditorPage,
-  },
-  {
-    path: '/parser',
-    Component: ParserPage,
-  },
-  {
-    path: '/mathml',
-    Component: MathmlPage,
-  },
-  {
-    path: '/handwriting',
-    Component: HandwritingPage,
-  },
-  {
-    path: '/auto-solver',
-    Component: SolverPage,
-  },
-  {
-    path: '/opentype-demo',
-    Component: OpenTypeDemo,
-  },
-  {
-    path: '/svg',
-    Component: SvgPage,
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      Component: Homepage,
+    },
+    {
+      path: '/baseline',
+      Component: BaselinePage,
+    },
+    {
+      path: '/editor',
+      Component: EditorPage,
+    },
+    {
+      path: '/parser',
+      Component: ParserPage,
+    },
+    {
+      path: '/mathml',
+      Component: MathmlPage,
+    },
+    {
+      path: '/handwriting',
+      Component: HandwritingPage,
+    },
+    {
+      path: '/auto-solver',
+      Component: SolverPage,
+    },
+    {
+      path: '/opentype-demo',
+      Component: OpenTypeDemo,
+    },
+    {
+      path: '/svg',
+      Component: SvgPage,
+    },
+  ],
+  { basename: import.meta.env.BASE_URL },
+);
 
 const root = createRoot(container);
 root.render(<RouterProvider router={router} />);
