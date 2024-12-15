@@ -107,6 +107,7 @@ export function factor(node: types.Add): Step | void {
   }
 
   const constTerm = constTerms[0];
+  constTerm; // ?
 
   // TODO: simplify all terms before proceeding
 
@@ -161,7 +162,7 @@ export function factor(node: types.Add): Step | void {
     quadraticTerm,
     monomial(builders.number(b0.toString()), variable),
     monomial(builders.number(b1.toString()), variable),
-    builders.number(c.toString()),
+    constTerm,
   ]);
   substeps.push({
     message: 'split linear term',
@@ -177,7 +178,7 @@ export function factor(node: types.Add): Step | void {
       add([variable, builders.number(new Fraction(c, b1).toString())]),
     ),
     monomial(builders.number(b1.toString()), variable),
-    builders.number(c.toString()),
+    constTerm,
   ]);
   substeps.push({
     message: 'factor', // factor x out of x^2 + 2x
