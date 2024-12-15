@@ -15,6 +15,8 @@ export const isSubtraction = (node: types.Node): node is types.Neg =>
 export const isNegative = (node: types.Node): node is types.Neg =>
   node.type === NodeType.Neg && !node.subtraction;
 
+// TODO: investigate why updating builders.getFactors to handle Neg nodes
+// causes a bunch of tests to fail
 export const getFactors = (node: types.Node): OneOrMore<types.Node> =>
   node.type === NodeType.Mul ? node.args : [node];
 
