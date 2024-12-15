@@ -70,6 +70,9 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'simplify both sides', TNode>
   | StepType<'simplify the left hand side', TNode>
   | StepType<'simplify the right hand side', TNode>
+  | StepType<'factor quadratic', TNode>
+  | StepType<'split linear term', TNode>
+  | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression
   | StepType<'test', TNode>; // this last one is only used in tests
 
 export type Solution<T extends Semantic.types.Node = Semantic.types.Node> = {
@@ -84,12 +87,17 @@ type SolveEquation = {
   readonly variable: Semantic.types.Identifier;
 };
 
+type FactorQuadratic = {
+  readonly type: 'FactorQuadratic';
+  readonly quadratic: Semantic.types.Add;
+};
+
 type SimplifyExpression = {
   readonly type: 'SimplifyExpression';
   readonly expression: Semantic.types.Node;
 };
 
-export type Problem = SolveEquation | SimplifyExpression;
+export type Problem = SolveEquation | SimplifyExpression | FactorQuadratic;
 
 export type Transform = (
   node: Semantic.types.Node,
