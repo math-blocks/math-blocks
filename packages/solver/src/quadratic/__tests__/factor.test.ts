@@ -32,6 +32,28 @@ describe('factor', () => {
     `);
   });
 
+  test('5x + x^2 + 6', () => {
+    const poly = parsePolynomial('5x + x^2 + 6');
+
+    const result = factor(poly)!;
+
+    const steps = [
+      Testing.print(result.before),
+      ...result.substeps.map((step) => Testing.print(step.after)),
+    ];
+
+    // TODO: add an explicit reordering step
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "5x + x^2 + 6",
+        "x^2 + 3x + 2x + 6",
+        "x(x + 3) + 2x + 6",
+        "x(x + 3) + 2(x + 3)",
+        "(x + 2)(x + 3)",
+      ]
+    `);
+  });
+
   test('x^2 + x - 6', () => {
     const poly = parsePolynomial('x^2 + x - 6');
 
@@ -115,5 +137,31 @@ describe('factor', () => {
         "(-3x - 1)(x - 4)",
       ]
     `);
+  });
+
+  describe('bail-out modes', () => {
+    test('x^2 + 2x (not a trinomial)', () => {
+      const poly = parsePolynomial('x^2 + 2x');
+
+      const result = factor(poly);
+
+      expect(result).toBe(undefined);
+    });
+
+    test('x^3 + 2x + 1 (not quadratic)', () => {
+      const poly = parsePolynomial('x^3 + 2x + 1');
+
+      const result = factor(poly);
+
+      expect(result).toBe(undefined);
+    });
+
+    test('x^2 + x + 1 (no real answers)', () => {
+      const poly = parsePolynomial('x^2 + x + 1');
+
+      const result = factor(poly);
+
+      expect(result).toBe(undefined);
+    });
   });
 });
