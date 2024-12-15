@@ -61,9 +61,9 @@ function findNumbers(b: number, c: number): [number, number] | null {
 
 function add(nodes: readonly types.Node[]): types.Node {
   return builders.add(
-    nodes.map((node) => {
+    nodes.map((node, index) => {
       if (node.type === 'Neg') {
-        return builders.neg(node.arg, true);
+        return builders.neg(node.arg, index !== 0);
       } else {
         return node;
       }

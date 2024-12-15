@@ -10,7 +10,7 @@ const parsePolynomial = (input: string): Semantic.types.Add => {
   return Testing.parse(input) as Semantic.types.Add;
 };
 
-describe('factor', () => {
+describe('quadratic', () => {
   test('x^2 + 5x + 6', () => {
     const poly = parsePolynomial('x^2 + 5x + 6');
 
