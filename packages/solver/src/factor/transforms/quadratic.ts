@@ -3,7 +3,7 @@ import Fraction from 'fraction.js';
 import { types, builders, util } from '@math-blocks/semantic';
 import { print } from '@math-blocks/testing';
 
-import type { Step } from '../types';
+import type { Step } from '../../types';
 
 function getBaseAndExp(node: types.Node): [types.Node, types.Node] {
   if (node.type === 'Power') {
@@ -61,9 +61,9 @@ function findNumbers(b: number, c: number): [number, number] | null {
 
 function add(nodes: readonly types.Node[]): types.Node {
   return builders.add(
-    nodes.map((node) => {
+    nodes.map((node, index) => {
       if (node.type === 'Neg') {
-        return builders.neg(node.arg, true);
+        return builders.neg(node.arg, index !== 0);
       } else {
         return node;
       }
@@ -95,7 +95,7 @@ export const getFactors = (node: types.Node): OneOrMore<types.Node> => {
   }
 };
 
-export function factor(node: types.Add): Step | void {
+export function factorQuadratic(node: types.Add): Step | void {
   if (node.args.length !== 3) {
     return;
   }
