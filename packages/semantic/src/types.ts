@@ -149,7 +149,8 @@ export interface NodeTypes {
     readonly bvars: readonly NodeTypes['Identifier'][],
     readonly degrees: readonly Node[],
   },
-  readonly Sum: Common<'Summation'> & {
+  readonly Sequence: Common<'Sequence'> & {readonly args: TwoOrMore<Node>}
+  readonly Sum: Common<'Sum'> & {
     readonly arg: Node,
     readonly bvar: NodeTypes['Identifier'],
     readonly lower: Node,
@@ -246,6 +247,7 @@ export type Integral = NodeTypes['Integral'];
 export type DefInt = NodeTypes['DefInt'];
 export type Diff = NodeTypes['Diff'];
 export type PartialDiff = NodeTypes['PartialDiff'];
+export type Sequence = NodeTypes['Sequence'];
 export type Sum = NodeTypes['Sum'];
 export type Product = NodeTypes['Product'];
 export type Eq = NodeTypes['Eq'];
