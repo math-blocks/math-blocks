@@ -14,17 +14,13 @@ describe('factor', () => {
   test('x^2 + 5x + 6', () => {
     const poly = parsePolynomial('x^2 + 5x + 6');
 
-    const result = factor(poly);
-    if (!result) {
-      throw new Error('expected result');
-    }
+    const result = factor(poly)!;
 
     const steps = [
       Testing.print(result.before),
       ...result.substeps.map((step) => Testing.print(step.after)),
     ];
 
-    // TODO: include the message in the snapshot
     expect(steps).toMatchInlineSnapshot(`
       [
         "x^2 + 5x + 6",
@@ -39,17 +35,13 @@ describe('factor', () => {
   test('x^2 + x - 6', () => {
     const poly = parsePolynomial('x^2 + x - 6');
 
-    const result = factor(poly);
-    if (!result) {
-      throw new Error('expected result');
-    }
+    const result = factor(poly)!;
 
     const steps = [
       Testing.print(result.before),
       ...result.substeps.map((step) => Testing.print(step.after)),
     ];
 
-    // TODO: include the message in the snapshot
     expect(steps).toMatchInlineSnapshot(`
       [
         "x^2 + x - 6",
@@ -64,17 +56,13 @@ describe('factor', () => {
   test('w^4 + 5w^2 + 6', () => {
     const poly = parsePolynomial('w^4 + 5w^2 + 6');
 
-    const result = factor(poly);
-    if (!result) {
-      throw new Error('expected result');
-    }
+    const result = factor(poly)!;
 
     const steps = [
       Testing.print(result.before),
       ...result.substeps.map((step) => Testing.print(step.after)),
     ];
 
-    // TODO: include the message in the snapshot
     expect(steps).toMatchInlineSnapshot(`
       [
         "w^4 + 5w^2 + 6",
@@ -82,6 +70,49 @@ describe('factor', () => {
         "w^2(w^2 + 3) + 2w^2 + 6",
         "w^2(w^2 + 3) + 2(w^2 + 3)",
         "(w^2 + 2)(w^2 + 3)",
+      ]
+    `);
+  });
+
+  test('3x^2 + 11x - 4', () => {
+    const poly = parsePolynomial('3x^2 + 11x - 4');
+
+    const result = factor(poly)!;
+
+    const steps = [
+      Testing.print(result.before),
+      ...result.substeps.map((step) => Testing.print(step.after)),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "3x^2 + 11x - 4",
+        "3x^2 + 12x - 1x - 4",
+        "(3x)(x + 4) - 1x - 4",
+        "(3x)(x + 4) - 1(x + 4)",
+        "(3x - 1)(x + 4)",
+      ]
+    `);
+  });
+
+  test('-3x^2 + 11x + 4', () => {
+    const poly = parsePolynomial('-3x^2 + 11x + 4');
+
+    const result = factor(poly)!;
+
+    const steps = [
+      Testing.print(result.before),
+      ...result.substeps.map((step) => Testing.print(step.after)),
+    ];
+
+    // TODO: factor out a `-1` from `(-3x - 1)`
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-3x^2 + 11x + 4",
+        "-3x^2 + 12x - 1x + 4",
+        "-(3x)(x - 4) - 1x + 4",
+        "-(3x)(x - 4) - 1(x - 4)",
+        "(-3x - 1)(x - 4)",
       ]
     `);
   });
