@@ -71,19 +71,18 @@ function add(nodes: readonly types.Node[]): types.Node {
   );
 }
 
-function mul(nodes: readonly types.Node[]): types.Node {
-  let negative = false;
-  const factors = nodes.map((node) => {
-    if (node.type === 'Neg') {
-      negative = !negative;
-      return node.arg;
-    } else {
-      return node;
-    }
-  });
-  return negative
-    ? builders.neg(builders.mul(factors, true), true)
-    : builders.mul(factors, true);
+// Customized version of builders.mul that:
+// - ignores coefficients of 1
+// - moves negation from the coefficient to outermost node
+// - uses implicit multiplication
+function monomial(coeff: types.Node, variable: types.Node): types.Node {
+  if (coeff.type === 'Number' && coeff.value === '1') {
+    return variable;
+  } else if (coeff.type === 'Neg') {
+    return builders.neg(monomial(coeff.arg, variable), coeff.subtraction);
+  } else {
+    return builders.mul([coeff, variable], true);
+  }
 }
 
 export const getFactors = (node: types.Node): OneOrMore<types.Node> => {
@@ -108,6 +107,7 @@ export function factor(node: types.Add): Step | void {
   }
 
   const constTerm = constTerms[0];
+  constTerm; // ?
 
   // TODO: simplify all terms before proceeding
 
@@ -160,9 +160,9 @@ export function factor(node: types.Add): Step | void {
 
   const step1 = add([
     quadraticTerm,
-    mul([builders.number(b0.toString()), variable]),
-    mul([builders.number(b1.toString()), variable]),
-    builders.number(c.toString()),
+    monomial(builders.number(b0.toString()), variable),
+    monomial(builders.number(b1.toString()), variable),
+    constTerm,
   ]);
   substeps.push({
     message: 'split linear term',
@@ -173,12 +173,12 @@ export function factor(node: types.Add): Step | void {
   print(step1);
 
   const step2 = add([
-    mul([
-      a !== 1 ? mul([builders.number(a.toString()), variable]) : variable,
+    monomial(
+      monomial(builders.number(a.toString()), variable),
       add([variable, builders.number(new Fraction(c, b1).toString())]),
-    ]),
-    mul([builders.number(b1.toString()), variable]),
-    builders.number(c.toString()),
+    ),
+    monomial(builders.number(b1.toString()), variable),
+    constTerm,
   ]);
   substeps.push({
     message: 'factor', // factor x out of x^2 + 2x
@@ -188,14 +188,14 @@ export function factor(node: types.Add): Step | void {
   });
 
   const step3 = add([
-    mul([
-      a !== 1 ? mul([builders.number(a.toString()), variable]) : variable,
+    monomial(
+      monomial(builders.number(a.toString()), variable),
       add([variable, builders.number(new Fraction(c, b1).toString())]),
-    ]),
-    mul([
+    ),
+    monomial(
       builders.number(b1.toString()),
       add([variable, builders.number(new Fraction(c, b1).toString())]),
-    ]),
+    ),
   ]);
   substeps.push({
     message: 'factor', // factor 3 out of 3x + 6
@@ -204,13 +204,16 @@ export function factor(node: types.Add): Step | void {
     substeps: [],
   });
 
-  const step4 = mul([
-    add([
-      a !== 1 ? mul([builders.number(a.toString()), variable]) : variable,
-      builders.number(b1.toString()),
-    ]),
-    add([variable, builders.number(new Fraction(c, b1).toString())]),
-  ]);
+  const step4 = builders.mul(
+    [
+      add([
+        monomial(builders.number(a.toString()), variable),
+        builders.number(b1.toString()),
+      ]),
+      add([variable, builders.number(new Fraction(c, b1).toString())]),
+    ],
+    true,
+  );
   substeps.push({
     message: 'factor', // factor (x + 3) out of x(x + 2) + 3(x + 2)
     before: step3,

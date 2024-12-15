@@ -109,9 +109,9 @@ describe('factor', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "3x^2 + 11x - 4",
-        "3x^2 + 12x - 1x - 4",
-        "(3x)(x + 4) - 1x - 4",
-        "(3x)(x + 4) - 1(x + 4)",
+        "3x^2 + 12x - x - 4",
+        "(3x)(x + 4) - x - 4",
+        "(3x)(x + 4) - (x + 4)",
         "(3x - 1)(x + 4)",
       ]
     `);
@@ -131,9 +131,9 @@ describe('factor', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "-3x^2 + 11x + 4",
-        "-3x^2 + 12x - 1x + 4",
-        "-(3x)(x - 4) - 1x + 4",
-        "-(3x)(x - 4) - 1(x - 4)",
+        "-3x^2 + 12x - x + 4",
+        "-(3x)(x - 4) - x + 4",
+        "-(3x)(x - 4) - (x - 4)",
         "(-3x - 1)(x - 4)",
       ]
     `);
