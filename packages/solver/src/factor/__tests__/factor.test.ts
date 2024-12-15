@@ -31,4 +31,12 @@ describe('factor', () => {
       ]
     `);
   });
+
+  test('5', () => {
+    const node = Testing.parse('5');
+
+    const result = factor(node);
+
+    expect(result).toBeUndefined();
+  });
 });
