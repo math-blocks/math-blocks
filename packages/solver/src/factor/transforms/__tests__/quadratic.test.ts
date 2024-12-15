@@ -1,8 +1,8 @@
 import * as Semantic from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 
-import { factor } from '../factor';
-import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../test-util';
+import { factorQuadratic } from '../quadratic';
+import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../../test-util';
 
 expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
 
@@ -14,7 +14,7 @@ describe('factor', () => {
   test('x^2 + 5x + 6', () => {
     const poly = parsePolynomial('x^2 + 5x + 6');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -35,7 +35,7 @@ describe('factor', () => {
   test('5x + x^2 + 6', () => {
     const poly = parsePolynomial('5x + x^2 + 6');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -57,7 +57,7 @@ describe('factor', () => {
   test('x^2 + x - 6', () => {
     const poly = parsePolynomial('x^2 + x - 6');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -78,7 +78,7 @@ describe('factor', () => {
   test('w^4 + 5w^2 + 6', () => {
     const poly = parsePolynomial('w^4 + 5w^2 + 6');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -99,7 +99,7 @@ describe('factor', () => {
   test('3x^2 + 11x - 4', () => {
     const poly = parsePolynomial('3x^2 + 11x - 4');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -120,7 +120,7 @@ describe('factor', () => {
   test('-3x^2 + 11x + 4', () => {
     const poly = parsePolynomial('-3x^2 + 11x + 4');
 
-    const result = factor(poly)!;
+    const result = factorQuadratic(poly)!;
 
     const steps = [
       Testing.print(result.before),
@@ -143,7 +143,7 @@ describe('factor', () => {
     test('x^2 + 2x (not a trinomial)', () => {
       const poly = parsePolynomial('x^2 + 2x');
 
-      const result = factor(poly);
+      const result = factorQuadratic(poly);
 
       expect(result).toBe(undefined);
     });
@@ -151,7 +151,7 @@ describe('factor', () => {
     test('x^3 + 2x + 1 (not quadratic)', () => {
       const poly = parsePolynomial('x^3 + 2x + 1');
 
-      const result = factor(poly);
+      const result = factorQuadratic(poly);
 
       expect(result).toBe(undefined);
     });
@@ -159,7 +159,7 @@ describe('factor', () => {
     test('x^2 + x + 1 (no real answers)', () => {
       const poly = parsePolynomial('x^2 + x + 1');
 
-      const result = factor(poly);
+      const result = factorQuadratic(poly);
 
       expect(result).toBe(undefined);
     });

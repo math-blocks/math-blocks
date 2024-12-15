@@ -3,7 +3,7 @@ import Fraction from 'fraction.js';
 import { types, builders, util } from '@math-blocks/semantic';
 import { print } from '@math-blocks/testing';
 
-import type { Step } from '../types';
+import type { Step } from '../../types';
 
 function getBaseAndExp(node: types.Node): [types.Node, types.Node] {
   if (node.type === 'Power') {
@@ -95,7 +95,7 @@ export const getFactors = (node: types.Node): OneOrMore<types.Node> => {
   }
 };
 
-export function factor(node: types.Add): Step | void {
+export function factorQuadratic(node: types.Add): Step | void {
   if (node.args.length !== 3) {
     return;
   }
