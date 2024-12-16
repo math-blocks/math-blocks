@@ -16,7 +16,6 @@ const { NodeType } = Semantic;
  * - linear
  *
  * TODO:
- * - linear inequality
  * - quadratic
  *
  * @param node the equation (or system of equations) being solved

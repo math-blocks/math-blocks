@@ -4,7 +4,10 @@ import type { Step } from '../../types';
 import { factor } from '../../factor/factor';
 import { solve } from '../../solve/solve';
 
-export function solveQuadratic(before: types.NumericRelation): Step | void {
+export function solveQuadratic(
+  before: types.NumericRelation,
+  ident: types.Identifier,
+): Step | void {
   // Assume that the equation is in the form of ax^2 + bx + c = 0
   // In the future we can add support for ax^2 + bx + c = dx^2 + ex + f by
   // moving all terms to one side.
@@ -49,8 +52,7 @@ export function solveQuadratic(before: types.NumericRelation): Step | void {
 
   const solutions: types.Node[] = [];
   for (const equation of relations) {
-    // TODO: determine the variable to solve for automatically
-    const step = solve(equation as types.Eq, builders.identifier('x'));
+    const step = solve(equation as types.Eq, ident);
     if (!step) {
       return undefined;
     }

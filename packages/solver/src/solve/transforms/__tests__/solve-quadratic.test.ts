@@ -1,16 +1,19 @@
-import * as Semantic from '@math-blocks/semantic';
+import { types, builders } from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 
 import { solveQuadratic } from '../solve-quadratic';
 
 import type { Step } from '../../../types';
 
-const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+const parseNumRel = (input: string): types.NumericRelation => {
+  return Testing.parse(input) as types.NumericRelation;
 };
 
-const transform = (node: Semantic.types.NumericRelation): Step => {
-  const result = solveQuadratic(node);
+const transform = (
+  node: types.NumericRelation,
+  ident: types.Identifier,
+): Step => {
+  const result = solveQuadratic(node, ident);
   if (!result) {
     throw new Error('no step returned');
   }
@@ -20,7 +23,8 @@ const transform = (node: Semantic.types.NumericRelation): Step => {
 describe('solveQuadtratic', () => {
   it('x^2 + 5x + 6 = 0', () => {
     const before = parseNumRel('x^2 + 5x + 6 = 0');
-    const result = transform(before);
+    const ident = builders.identifier('x');
+    const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
 
@@ -46,9 +50,10 @@ describe('solveQuadtratic', () => {
     `);
   });
 
-  it('x^2 + 5x + 6 > 0', () => {
-    const before = parseNumRel('x^2 + 5x + 6 > 0');
-    const result = transform(before);
+  it('t^2 + 5t + 6 > 0', () => {
+    const before = parseNumRel('t^2 + 5t + 6 > 0');
+    const ident = builders.identifier('t');
+    const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
 
@@ -64,19 +69,20 @@ describe('solveQuadtratic', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "x^2 + 5x + 6 > 0",
-        "x^2 + 5x + 6 => (x + 2)(x + 3)",
-        "(x + 2)(x + 3) = 0 => x + 2 > 0, x + 3 > 0",
-        "x + 2 > 0 => x > -2",
-        "x + 3 > 0 => x > -3",
-        "x > -2, x > -3",
+        "t^2 + 5t + 6 > 0",
+        "t^2 + 5t + 6 => (t + 2)(t + 3)",
+        "(t + 2)(t + 3) = 0 => t + 2 > 0, t + 3 > 0",
+        "t + 2 > 0 => t > -2",
+        "t + 3 > 0 => t > -3",
+        "t > -2, t > -3",
       ]
     `);
   });
 
   it('-3x^2 + 11x + 4 < 0', () => {
     const before = parseNumRel('-3x^2 + 11x + 4 < 0');
-    const result = transform(before);
+    const ident = builders.identifier('x');
+    const result = transform(before, ident);
 
     expect(result.message).toEqual('solve quadratic');
 
@@ -105,8 +111,9 @@ describe('solveQuadtratic', () => {
   describe('bail-out cases', () => {
     it('5x = 0', () => {
       const node = parseNumRel('5x = 0');
+      const ident = builders.identifier('x');
 
-      const result = solveQuadratic(node);
+      const result = solveQuadratic(node, ident);
 
       expect(result).toBeUndefined();
     });
@@ -114,8 +121,9 @@ describe('solveQuadtratic', () => {
     // TODO: handle this case
     it('x^2 - 5x = 6', () => {
       const node = parseNumRel('x^2 - 5x = 6');
+      const ident = builders.identifier('x');
 
-      const result = solveQuadratic(node);
+      const result = solveQuadratic(node, ident);
 
       expect(result).toBeUndefined();
     });
@@ -123,8 +131,9 @@ describe('solveQuadtratic', () => {
     // TODO: handle this case
     it('x^2 - 5x = 0', () => {
       const node = parseNumRel('x^2 - 5x = 0');
+      const ident = builders.identifier('x');
 
-      const result = solveQuadratic(node);
+      const result = solveQuadratic(node, ident);
 
       expect(result).toBeUndefined();
     });
