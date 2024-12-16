@@ -30,10 +30,10 @@ export function solveQuadratic(before: types.NumericRelation): Step | void {
 
   const factoredLeft = factorStep.after as types.Mul;
   const factors = factoredLeft.args;
+  const relType = before.type;
 
-  // TODO: support inequalities
   const relations = factors.map((factor) => {
-    return builders.eq([factor, builders.number('0')]);
+    return builders.numRel([factor, builders.number('0')], relType);
   });
 
   // @ts-expect-error: TypeScript loses the TwoOrMore<Node> type after mapping
