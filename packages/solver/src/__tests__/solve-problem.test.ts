@@ -10,6 +10,26 @@ const parseNumRel = (input: string): Semantic.types.NumericRelation => {
 };
 
 describe('solveProblem', () => {
+  it('should factor expressions', () => {
+    const problem: Problem = {
+      type: 'Factor',
+      expression: Testing.parse('x^2 + 5x + 6') as Semantic.types.Add,
+    };
+    const result = solveProblem(problem)!;
+
+    expect(Testing.print(result.answer)).toEqual('(x + 2)(x + 3)');
+  });
+
+  it('should simplify numeric expressions', () => {
+    const problem: Problem = {
+      type: 'SimplifyExpression',
+      expression: Testing.parse('3x - 2x') as Semantic.types.Node,
+    };
+    const result = solveProblem(problem)!;
+
+    expect(Testing.print(result.answer)).toEqual('x');
+  });
+
   it('should solve linear equations', () => {
     const ast = parseNumRel('2x + 5 = 10');
 
@@ -18,24 +38,21 @@ describe('solveProblem', () => {
       relation: ast,
       variable: Semantic.builders.identifier('x'),
     };
-    const result = solveProblem(problem);
+    const result = solveProblem(problem)!;
 
-    if (!result) {
-      throw new Error("the equation couldn't be solved");
-    }
     expect(Testing.print(result.answer)).toEqual('x = 5 / 2');
   });
 
-  it('should simplify numeric expressions', () => {
-    const problem: Problem = {
-      type: 'SimplifyExpression',
-      expression: Testing.parse('3x - 2x') as Semantic.types.Node,
-    };
-    const result = solveProblem(problem);
+  it('should solve quadratic equations', () => {
+    const ast = parseNumRel('x^2 + 5x + 6 = 0');
 
-    if (!result) {
-      throw new Error("the expression couldn't be simplified");
-    }
-    expect(Testing.print(result.answer)).toEqual('x');
+    const problem: Problem = {
+      type: 'SolveQuadraticRelation',
+      relation: ast,
+      variable: Semantic.builders.identifier('x'),
+    };
+    const result = solveProblem(problem)!;
+
+    expect(Testing.print(result.answer)).toEqual('x = -2, x = -3');
   });
 });
