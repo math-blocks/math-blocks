@@ -179,6 +179,9 @@ export const print = (expr: Semantic.types.Node, oneToOne = false): string => {
     case NodeType.Parens: {
       return `(${print(expr.arg)})`;
     }
+    case 'Sequence': {
+      return `${expr.args.map((arg) => print(arg)).join(', ')}`;
+    }
     default: {
       throw new Error(`print doesn't handle ${expr.type} nodes yet`);
     }

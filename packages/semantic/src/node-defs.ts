@@ -252,8 +252,9 @@ export const definitions: Record<string, Descriptor> = {
   ),
 
   // Sequences and Series
+  Sequence: Constructor('Sequence', 'nary'),
   Sum: Operation(
-    'Summation', 'unary', 'arith', undefined,
+    'Sum', 'unary', 'arith', undefined,
     {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
   ),
   Product: Operation(

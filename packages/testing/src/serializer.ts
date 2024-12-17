@@ -124,6 +124,7 @@ const print = (
     case 'NotProperSuperset':
     case 'VectorProduct':
     case 'ScalarProduct':
+    case 'Sequence':
       return printArgs(ast.type, ast.args, serialize, indent);
     case 'Root': {
       const radicand = print(ast.radicand, serialize, indent);
@@ -162,7 +163,7 @@ const print = (
     case 'PlusMinus':
     case 'MinusPlus':
     case 'Product':
-    case 'Summation':
+    case 'Sum':
     case 'Limit':
     case 'Derivative':
     case 'PartialDerivative':

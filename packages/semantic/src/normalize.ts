@@ -83,7 +83,8 @@ export const print = (ast: Node): string => {
     case 'NotSuperset':
     case 'NotProperSuperset':
     case 'VectorProduct':
-    case 'ScalarProduct': {
+    case 'ScalarProduct':
+    case 'Sequence': {
       const args = ast.args.map(print);
       return `(${ast.type} ${args.join(' ')})`;
     }
@@ -121,7 +122,7 @@ export const print = (ast: Node): string => {
       return `(Func ${func} ${args.join(' ')})`;
     }
     case 'Product':
-    case 'Summation':
+    case 'Sum':
     case 'DefiniteIntegral': {
       const arg = print(ast.arg);
       const bvar = print(ast.bvar);

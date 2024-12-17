@@ -470,8 +470,14 @@ const builders = {
     degrees,
     loc,
   }),
+  sequence: (args: TwoOrMore<Node>, loc?: SourceLocation): NodeTypes['Sequence'] => ({
+    type: 'Sequence',
+    id: getId(),
+    args,
+    loc,
+  }),
   sum: (arg: Node, bvar: NodeTypes['Identifier'], lower: Node, upper: Node, loc?: SourceLocation): NodeTypes['Sum'] => ({
-    type: 'Summation',
+    type: 'Sum',
     id: getId(),
     arg,
     bvar,
