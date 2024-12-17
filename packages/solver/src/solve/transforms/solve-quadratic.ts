@@ -8,8 +8,8 @@ export function solveQuadratic(
   before: types.NumericRelation,
   ident: types.Identifier,
 ): Step | void {
-  // Assume that the equation is in the form of ax^2 + bx + c = 0
-  // In the future we can add support for ax^2 + bx + c = dx^2 + ex + f by
+  // This code assumes that the equation is in the form of ax^2 + bx + c = 0.
+  // TODO: In the future we can add support for ax^2 + bx + c = dx^2 + ex + f by
   // moving all terms to one side.
 
   const [left, right] = before.args as readonly types.Node[];
