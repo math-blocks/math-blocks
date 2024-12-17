@@ -14,8 +14,8 @@ describe('solveProblem', () => {
     const ast = parseNumRel('2x + 5 = 10');
 
     const problem: Problem = {
-      type: 'SolveEquation',
-      equation: ast,
+      type: 'SolveLinearRelation',
+      relation: ast,
       variable: Semantic.builders.identifier('x'),
     };
     const result = solveProblem(problem);

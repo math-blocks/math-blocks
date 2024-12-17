@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 
 import { simplifyMul } from '../util';
-import { getCoeff } from '../../solve/util';
+import { getCoeff } from '../../solve-linear/util';
 
 import type { Step } from '../../types';
 

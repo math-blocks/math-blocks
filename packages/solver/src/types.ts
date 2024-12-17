@@ -77,21 +77,15 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression
   | StepType<'test', TNode>; // this last one is only used in tests
 
+// TODO: update to support multiple parts
 export type Solution<T extends Semantic.types.Node = Semantic.types.Node> = {
   readonly steps: readonly Step<Semantic.types.Node>[];
   readonly answer: T;
 };
 
-// TODO: Rename this to 'SolveNumericRelation' or something like that
-type SolveEquation = {
-  readonly type: 'SolveEquation';
-  readonly equation: Semantic.types.NumericRelation;
-  readonly variable: Semantic.types.Identifier;
-};
-
-type FactorQuadratic = {
-  readonly type: 'FactorQuadratic';
-  readonly quadratic: Semantic.types.Add;
+type Factor = {
+  readonly type: 'Factor';
+  readonly expression: Semantic.types.Add;
 };
 
 type SimplifyExpression = {
@@ -99,7 +93,23 @@ type SimplifyExpression = {
   readonly expression: Semantic.types.Node;
 };
 
-export type Problem = SolveEquation | SimplifyExpression | FactorQuadratic;
+type SolveLinearRelation = {
+  readonly type: 'SolveLinearRelation';
+  readonly relation: Semantic.types.NumericRelation;
+  readonly variable: Semantic.types.Identifier;
+};
+
+type SolveQuadraticRelation = {
+  readonly type: 'SolveQuadraticRelation';
+  readonly relation: Semantic.types.NumericRelation;
+  readonly variable: Semantic.types.Identifier;
+};
+
+export type Problem =
+  | Factor
+  | SimplifyExpression
+  | SolveLinearRelation
+  | SolveQuadraticRelation;
 
 export type Transform = (
   node: Semantic.types.Node,

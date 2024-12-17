@@ -82,7 +82,7 @@ const SolverPage: React.FunctionComponent = () => {
     if (Semantic.util.isNumericRelation(ast)) {
       const problem: Solver.Problem = {
         type: 'SolveEquation',
-        equation: ast,
+        relation: ast,
         variable: Semantic.builders.identifier('x'),
       };
       const result = Solver.solveProblem(problem);

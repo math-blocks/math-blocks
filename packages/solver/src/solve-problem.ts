@@ -1,9 +1,22 @@
-import { solve } from './solve/solve';
+import { factor } from './factor/factor';
 import { simplify } from './simplify/simplify';
+import { solveLinear } from './solve-linear/solve-linear';
+import { solveQuadratic } from './solve-quadratic/solve-quadratic';
 
 import type { Problem, Solution } from './types';
 
 export function solveProblem(problem: Problem): Solution | void {
+  if (problem.type === 'Factor') {
+    const step = factor(problem.expression);
+    if (step) {
+      return {
+        steps: [step],
+        answer: step.after,
+      };
+    }
+    return;
+  }
+
   if (problem.type === 'SimplifyExpression') {
     const step = simplify(problem.expression);
     if (step) {
@@ -12,13 +25,28 @@ export function solveProblem(problem: Problem): Solution | void {
         answer: step.after,
       };
     }
-  } else if (problem.type === 'SolveEquation') {
-    const step = solve(problem.equation, problem.variable);
+    return;
+  }
+
+  if (problem.type === 'SolveLinearRelation') {
+    const step = solveLinear(problem.relation, problem.variable);
     if (step) {
       return {
         steps: [step],
         answer: step.after,
       };
     }
+    return;
+  }
+
+  if (problem.type === 'SolveQuadraticRelation') {
+    const step = solveQuadratic(problem.relation, problem.variable);
+    if (step) {
+      return {
+        steps: [step],
+        answer: step.after,
+      };
+    }
+    return;
   }
 }

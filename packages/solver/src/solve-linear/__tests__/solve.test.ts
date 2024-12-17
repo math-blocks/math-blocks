@@ -2,7 +2,7 @@ import * as Semantic from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 import type { Step } from '../../types';
 
-import { solve as _solve } from '../solve';
+import { solveLinear as _solve } from '../solve-linear';
 import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../test-util';
 
 expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
@@ -349,6 +349,8 @@ describe('solve', () => {
 
     test('2x / 3 = 1', () => {
       const ast = parseNumRel('2x / 3 = 1');
+      // TODO: have a step to rewrite 2x / 3 as 2/3 * x
+      // Then we can solve this by multiplying both sides by 3/2
 
       const result = solve(ast, Semantic.builders.identifier('x'));
 

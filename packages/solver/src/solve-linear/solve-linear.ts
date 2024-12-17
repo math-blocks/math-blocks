@@ -10,18 +10,12 @@ import type { Step } from '../types';
 const { NodeType } = Semantic;
 
 /**
- * Solve an equation for a given variable.
- *
- * Handles the following types of equations:
- * - linear
- *
- * TODO:
- * - quadratic
+ * Solve a linear equation for a given variable.
  *
  * @param node the equation (or system of equations) being solved
  * @param ident the variable being solved for
  */
-export function solve(
+export function solveLinear(
   node: Semantic.types.NumericRelation,
   ident: Semantic.types.Identifier,
 ): Step | void {
