@@ -1,8 +1,8 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import type { Step } from '../../types';
-import { factor } from '../../factor/factor';
-import { solve } from '../../solve/solve';
+import type { Step } from '../types';
+import { factor } from '../factor/factor';
+import { solveLinear } from '../solve-linear/solve-linear';
 
 export function solveQuadratic(
   before: types.NumericRelation,
@@ -52,7 +52,7 @@ export function solveQuadratic(
 
   const solutions: types.Node[] = [];
   for (const equation of relations) {
-    const step = solve(equation as types.Eq, ident);
+    const step = solveLinear(equation as types.Eq, ident);
     if (!step) {
       return undefined;
     }

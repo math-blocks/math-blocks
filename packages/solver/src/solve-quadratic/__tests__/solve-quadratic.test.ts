@@ -3,7 +3,7 @@ import * as Testing from '@math-blocks/testing';
 
 import { solveQuadratic } from '../solve-quadratic';
 
-import type { Step } from '../../../types';
+import type { Step } from '../../types';
 
 const parseNumRel = (input: string): types.NumericRelation => {
   return Testing.parse(input) as types.NumericRelation;
