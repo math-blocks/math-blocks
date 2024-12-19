@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Link } from 'react-router-dom';
 
 import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
@@ -54,7 +54,7 @@ const Homepage = () => {
   );
 };
 
-const router = createBrowserRouter(
+const router = createHashRouter(
   [
     {
       path: '/',
