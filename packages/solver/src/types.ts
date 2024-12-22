@@ -72,6 +72,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'simplify the right hand side', TNode>
   | StepType<'factor quadratic', TNode>
   | StepType<'solve quadratic', TNode>
+  | StepType<'solve system', TNode>
   | StepType<'split factored equation', TNode>
   | StepType<'split linear term', TNode>
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression
