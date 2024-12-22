@@ -141,18 +141,3 @@ const isLinear = (node: types.Node): boolean => {
   }
   return false;
 };
-
-// example problem:
-// - first equation: 3x - y = 6
-// - second equation: x + 2y = -1
-
-// Substution:
-// - solve first equation for y
-// - substitute y into second equation
-// - solve for x
-// - substitute x back into the first solution
-
-// 3x - y = 6 -> y = 3x - 6
-// x + 2(3x - 6) = -1
-// 7x - 12 = -1 -> 7x = 11 -> x = 11/7
-// y = 3(11/7) - 6 = 33/7 - 42/7 = -9/7
