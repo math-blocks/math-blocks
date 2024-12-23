@@ -43,7 +43,7 @@ export function divBothSides(
   }
 }
 
-const divByCoeff = (
+export const divByCoeff = (
   before: Semantic.types.NumericRelation,
   coeff: Semantic.types.Node,
 ): Step<Semantic.types.NumericRelation> | void => {
