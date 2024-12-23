@@ -20,11 +20,11 @@ export function reduceFraction(
     return;
   }
 
-  const numFactors =
+  let numFactors: readonly Semantic.types.Node[] =
     node.args[0].type === NodeType.Neg
       ? Semantic.util.getFactors(node.args[0].arg)
       : Semantic.util.getFactors(node.args[0]);
-  const denFactors =
+  let denFactors: readonly Semantic.types.Node[] =
     node.args[1].type === NodeType.Neg
       ? Semantic.util.getFactors(node.args[1].arg)
       : Semantic.util.getFactors(node.args[1]);
@@ -34,39 +34,55 @@ export function reduceFraction(
 
   const commonFactors = Semantic.util.intersection(numFactors, denFactors);
 
-  const num = Semantic.builders.mul(
-    Semantic.util.difference(numFactors, commonFactors),
-    true,
-  );
-  const den = Semantic.builders.mul(
-    Semantic.util.difference(denFactors, commonFactors),
-    true,
-  );
+  numFactors = Semantic.util.difference(numFactors, commonFactors);
+  denFactors = Semantic.util.difference(denFactors, commonFactors);
+
+  // TODO: extract numeric factors from numerator and denominator and reduce them
+
+  const numNums = numFactors.filter(Semantic.util.isNumber);
+  const denNums = denFactors.filter(Semantic.util.isNumber);
+  const numVars = numFactors.filter((node) => !Semantic.util.isNumber(node));
+  const denVars = denFactors.filter((node) => !Semantic.util.isNumber(node));
+
+  const numCoeff = Semantic.util.evalNode(Semantic.builders.mul(numNums, true));
+  const denCoeff = Semantic.util.evalNode(Semantic.builders.mul(denNums, true));
+
+  const coeff = numCoeff.div(denCoeff);
+
+  const num =
+    coeff.n !== 1
+      ? Semantic.builders.mul(
+          [Semantic.builders.number(coeff.n.toString()), ...numVars],
+          true,
+        )
+      : Semantic.builders.mul(numVars, true);
+  const den =
+    coeff.d !== 1
+      ? Semantic.builders.mul(
+          [Semantic.builders.number(coeff.d.toString()), ...denVars],
+          true,
+        )
+      : Semantic.builders.mul(denVars, true);
 
   let after: Semantic.types.Node;
   if (Semantic.util.deepEquals(den, Semantic.builders.number('1'))) {
     // a / 1 -> a
     after = num;
-  } else {
+  } else if (commonFactors.length === 0 && coeff.equals(1)) {
     // If there were no common factors then we weren't able to reduce anything.
-    if (commonFactors.length === 0) {
-      return;
-    }
+    return;
+  } else {
     // a / b
-    if (resultIsNegative) {
-      // Maintain the position of the negative.
-      if (isNegative(node.args[0])) {
-        after = Semantic.builders.div(Semantic.builders.neg(num), den);
-      } else {
-        after = Semantic.builders.div(num, Semantic.builders.neg(den));
-      }
-    } else {
-      after = Semantic.builders.div(num, den);
-    }
+    after = Semantic.builders.div(num, den);
   }
 
-  if (resultIsNegative && after.type !== NodeType.Div) {
+  if (resultIsNegative) {
     after = Semantic.builders.neg(after);
+  }
+
+  // Avoid infinite loops.
+  if (Semantic.util.deepEquals(node, after)) {
+    return;
   }
 
   return {

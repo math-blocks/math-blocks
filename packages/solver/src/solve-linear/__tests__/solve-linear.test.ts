@@ -287,12 +287,12 @@ describe('solveLinear', () => {
     `);
   });
 
-  it.skip('x/2 + 1/2 = 2x/3 + 1/3', () => {
+  it('x/2 + 1/2 = 2x/3 + 1/3', () => {
     const before = parseNumRel('x/2 + 1/2 = 2x/3 + 1/3');
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x ≤ -(5 / 2)"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"x = 1"`);
 
     const steps = [
       print(result.before),
@@ -303,17 +303,96 @@ describe('solveLinear', () => {
 
     expect(steps).toMatchInlineSnapshot(`
       [
-        "-2x + 5 ≥ 10",
-        "-2x + 5 - 5 ≥ 10 - 5",
-        "-2x ≥ 5",
-        "-2x / -2 ≤ 5 / -2",
-        "x ≤ -(5 / 2)",
+        "x / 2 + 1 / 2 = 2x / 3 + 1 / 3",
+        "(x / 2 + 1 / 2) * 6 = (2x / 3 + 1 / 3) * 6",
+        "3x + 3 = 4x + 2",
+        "3x + 3 - 3 = 4x + 2 - 3",
+        "3x = 4x - 1",
+        "3x - 4x = 4x - 4x - 1",
+        "-x = -1",
+        "-x / -1 = -1 / -1",
+        "x = 1",
       ]
     `);
   });
-  it.todo('x / 2 = 5'); // TODO: handle variables being devided by numbers
-  it.todo('(1/2)(x) = 5'); // TODO: handle factional coefficients
-  it.todo('1 - n = 3/2 n + 17/2');
+
+  it('x / 2 = 5', () => {
+    const before = parseNumRel('x / 2 = 5');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "x / 2 = 5",
+        "x / 2 * 2 = 5 * 2",
+        "x = 10",
+      ]
+    `);
+  });
+
+  it('(1/2)(x) = 5', () => {
+    const before = parseNumRel('(1/2)(x) = 5');
+    const ident = builders.identifier('x');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    // TODO: go from (1/2)(x) = 5 to (2)(1/2)(x) = 5 * 2
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "(1 / 2)(x) = 5",
+        "x / 2 = 5",
+        "x / 2 * 2 = 5 * 2",
+        "x = 10",
+      ]
+    `);
+  });
+
+  it('1 - n = 3/2 n + 17/2', () => {
+    const before = parseNumRel('1 - n = (3/2)(n) + 17/2');
+    const ident = builders.identifier('n');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"n = -3"`);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "1 - n = (3 / 2)(n) + 17 / 2",
+        "1 - n = 3n / 2 + 17 / 2",
+        "(1 - n) * 2 = (3n / 2 + 17 / 2) * 2",
+        "2 - 2n = 3n + 17",
+        "2 - 2 - 2n = 3n + 17 - 2",
+        "-2n = 3n + 15",
+        "-2n - 3n = 3n - 3n + 15",
+        "-5n = 15",
+        "-5n / -5 = 15 / -5",
+        "n = -3",
+      ]
+    `);
+  });
 
   describe('bail-out cases', () => {});
 });
