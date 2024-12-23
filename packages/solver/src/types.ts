@@ -47,7 +47,6 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'reduce fraction', TNode>
   | StepType<'simplify multiplication', TNode>
   | StepType<'solve for variable', TNode>
-  // TODO: combine all of these into a single step type
   | StepType<
       'do the same operation to both sides',
       TNode,
@@ -100,8 +99,8 @@ type SolveLinearRelation = {
   readonly variable: Semantic.types.Identifier;
 };
 
-type SolveQuadraticRelation = {
-  readonly type: 'SolveQuadraticRelation';
+type SolveQuadraticEquation = {
+  readonly type: 'SolveQuadraticEquation';
   readonly relation: Semantic.types.NumericRelation;
   readonly variable: Semantic.types.Identifier;
 };
@@ -110,7 +109,7 @@ export type Problem =
   | Factor
   | SimplifyExpression
   | SolveLinearRelation
-  | SolveQuadraticRelation;
+  | SolveQuadraticEquation;
 
 export type Transform = (
   node: Semantic.types.Node,

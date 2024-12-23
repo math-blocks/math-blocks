@@ -26,6 +26,15 @@ const getChildren = (
   return children;
 };
 
+const separators = {
+  [Semantic.NodeType.Equals]: '=',
+  [Semantic.NodeType.LessThan]: '<',
+  [Semantic.NodeType.GreaterThan]: '>',
+  [Semantic.NodeType.LessThanOrEquals]: '\u2264',
+  [Semantic.NodeType.GreaterThanOrEquals]: '\u2265',
+  ['Sequence']: ', ',
+};
+
 // TODO: write more tests for this
 const _print = (
   expr: Semantic.types.Node,
@@ -168,19 +177,17 @@ const _print = (
       );
     }
     case Semantic.NodeType.LessThan:
+    case Semantic.NodeType.LessThanOrEquals:
     case Semantic.NodeType.GreaterThan:
-    case Semantic.NodeType.Equals: {
+    case Semantic.NodeType.GreaterThanOrEquals:
+    case Semantic.NodeType.Equals:
+    case 'Sequence': {
       const children: types.CharNode[] = [];
+      const separator = separators[expr.type];
 
       for (const arg of expr.args) {
         children.push(...getChildren(arg, oneToOne));
-        if (expr.type === Semantic.NodeType.Equals) {
-          children.push(builders.char('='));
-        } else if (expr.type === Semantic.NodeType.LessThan) {
-          children.push(builders.char('<'));
-        } else if (expr.type === Semantic.NodeType.GreaterThan) {
-          children.push(builders.char('>'));
-        }
+        children.push(builders.char(separator));
       }
 
       children.pop(); // remove extra "="

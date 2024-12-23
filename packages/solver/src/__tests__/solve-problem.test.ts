@@ -47,7 +47,7 @@ describe('solveProblem', () => {
     const ast = parseNumRel('x^2 + 5x + 6 = 0');
 
     const problem: Problem = {
-      type: 'SolveQuadraticRelation',
+      type: 'SolveQuadraticEquation',
       relation: ast,
       variable: Semantic.builders.identifier('x'),
     };

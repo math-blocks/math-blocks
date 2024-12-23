@@ -65,7 +65,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
         showHitboxes={showHitboxes}
         style={{
           ...style,
-          verticalAlign: -Math.ceil(depth),
+          verticalAlign: 1 - Math.ceil(depth),
         }}
       />
     );

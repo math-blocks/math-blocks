@@ -39,7 +39,7 @@ export function solveProblem(problem: Problem): Solution | void {
     return;
   }
 
-  if (problem.type === 'SolveQuadraticRelation') {
+  if (problem.type === 'SolveQuadraticEquation') {
     const step = solveQuadratic(problem.relation, problem.variable);
     if (step) {
       return {
