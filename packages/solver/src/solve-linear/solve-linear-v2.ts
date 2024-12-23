@@ -2,8 +2,10 @@ import { builders, types, util } from '@math-blocks/semantic';
 
 import { divByCoeff } from './transforms/div-both-sides';
 import { simplifyBothSides } from './transforms/simplify-both-sides';
+import { isLinear } from '../solve-system/solve-system';
 
 import type { Step } from '../types';
+import { print } from '@math-blocks/testing';
 
 /**
  * Solve a linear equation for a given variable.
@@ -15,6 +17,10 @@ export function solveLinear(
   node: types.NumericRelation,
   ident: types.Identifier,
 ): Step | void {
+  if (!isLinear(node)) {
+    return;
+  }
+
   // Checks if the equation is already solved for the variable.
   if (isIdentifier(node.args[0]) && util.isNumber(node.args[1])) {
     return {
@@ -47,6 +53,51 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
+
+  // Check if anyone of the variables are inside fractions
+  const denominators: number[] = [];
+  for (const term of util.getTerms(rel.args[0])) {
+    if (term.type === 'Div') {
+      const variables = getVariables(term.args[0]);
+      if (variables.length === 1) {
+        print(term.args[1]); // ?
+        denominators.push(parseInt(print(term.args[1])));
+      }
+    }
+  }
+  for (const term of util.getTerms(rel.args[1])) {
+    if (term.type === 'Div') {
+      const variables = getVariables(term.args[0]);
+      if (variables.length === 1) {
+        print(term.args[1]); // ?
+        denominators.push(parseInt(print(term.args[1])));
+      }
+    }
+  }
+
+  const lcm = lcmArray(denominators);
+  if (lcm !== 1) {
+    // Multiple both sides by the lcm
+    const left = builders.mul([rel.args[0], builders.number(lcm.toString())]);
+    const right = builders.mul([rel.args[1], builders.number(lcm.toString())]);
+    rel = builders.numRel([left, right], rel.type);
+
+    substeps.push({
+      message: 'do the same operation to both sides',
+      operation: 'mul',
+      value: builders.number(lcm.toString()),
+      before: node,
+      after: rel,
+      substeps: [],
+    });
+
+    // TODO: Update reduceFraction to handle things like 6x / 2 -> 3x
+    step = simplifyBothSides(rel);
+    if (step) {
+      substeps.push(step);
+      rel = step.after as types.NumericRelation;
+    }
+  }
 
   const leftHasIdent = util.getTerms(rel.args[0]).some((term) => {
     const variables = getVariables(term);
@@ -131,6 +182,15 @@ export function solveLinear(
   const leftTerms = util.getTerms(left);
   const coeff = getCoeff(leftTerms[0]);
 
+  if (coeff === 0) {
+    return {
+      message: 'solve for variable',
+      before: node,
+      after: rel,
+      substeps: substeps,
+    };
+  }
+
   if (coeff !== 1) {
     step = divByCoeff(rel, builders.number(coeff.toString()));
     if (!step) {
@@ -194,7 +254,7 @@ const moveTerm = (
     }
     const rel = reversedStep.after;
     return {
-      message: 'move terms to one side',
+      message: 'move terms to one side', // TODO: change this to 'move term to one side'
       before: node,
       after: builders.numRel([rel.args[1], rel.args[0]], node.type),
       substeps: reversedStep.substeps,
@@ -282,3 +342,25 @@ function getCoeff(node: types.Node): number {
 const insert = <T>(arr: readonly T[], index: number, item: T): T[] => {
   return [...arr.slice(0, index), item, ...arr.slice(index)];
 };
+
+// Function to calculate the Greatest Common Divisor (GCD)
+function gcd(a: number, b: number) {
+  while (b !== 0) {
+    const temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+}
+
+function lcmArray(numbers: readonly number[]) {
+  if (numbers.length === 0) return 1; // Return 1 if the array is empty
+
+  // Helper function to calculate LCM of two numbers
+  function lcm(a: number, b: number) {
+    return Math.abs(a * b) / gcd(a, b);
+  }
+
+  // Reduce the array to calculate the LCM of all numbers
+  return numbers.reduce(lcm);
+}

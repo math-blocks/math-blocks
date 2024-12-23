@@ -90,11 +90,11 @@ export function solveSystem(node: types.Sequence): Step | void {
   };
 }
 
-const isLinear = (node: types.Node): boolean => {
+export const isLinear = (node: types.Node): boolean => {
   if (node.type === 'Sequence') {
     return node.args.every(isLinear);
   }
-  if (node.type === 'Equals') {
+  if (util.isNumericRelation(node)) {
     return isLinear(node.args[0]) && isLinear(node.args[1]);
   }
   if (node.type === 'Add') {
