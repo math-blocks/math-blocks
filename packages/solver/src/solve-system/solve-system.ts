@@ -3,6 +3,7 @@ import { builders, types, util } from '@math-blocks/semantic';
 import type { Step } from '../types';
 import { solveLinear } from '../solve-linear/solve-linear';
 import { simplify } from '../simplify/simplify';
+import { print } from '@math-blocks/testing';
 
 // TODO: support systems of equations with more than two equations
 export function solveSystem(node: types.Sequence): Step | void {
@@ -56,6 +57,8 @@ export function solveSystem(node: types.Sequence): Step | void {
       }
     },
   });
+  print(eqn2); // ?
+  print(eqn2Subbed); // ?
 
   const step2 = solveLinear(eqn2Subbed as types.Eq, builders.identifier(var2));
   if (!step2) {
@@ -64,6 +67,11 @@ export function solveSystem(node: types.Sequence): Step | void {
   const sol2 = step2.after;
   if (sol2?.type !== 'Equals') {
     return;
+  }
+  print(sol2); // ?
+  const simplified = simplify(sol2);
+  if (simplified) {
+    print(simplified.after); // ?
   }
 
   const [ident, expr2] =
@@ -79,22 +87,24 @@ export function solveSystem(node: types.Sequence): Step | void {
     },
   });
 
+  print(sol1Subbed); // ?
+
   const step3 = simplify(sol1Subbed)!;
-  const sol3 = step3.after;
+  const sol3 = step3 ? step3.after : sol1Subbed;
 
   return {
     message: 'solve system',
     before: builders.sequence([eqn1, eqn2]),
     after: builders.sequence([sol2, sol3]),
-    substeps: [step1, step2, step3],
+    substeps: step3 ? [step1, step2, step3] : [step1, step2],
   };
 }
 
-const isLinear = (node: types.Node): boolean => {
+export const isLinear = (node: types.Node): boolean => {
   if (node.type === 'Sequence') {
     return node.args.every(isLinear);
   }
-  if (node.type === 'Equals') {
+  if (util.isNumericRelation(node)) {
     return isLinear(node.args[0]) && isLinear(node.args[1]);
   }
   if (node.type === 'Add') {

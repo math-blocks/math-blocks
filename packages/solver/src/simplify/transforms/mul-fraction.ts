@@ -4,6 +4,7 @@ import type { Step } from '../../types';
 
 const { NodeType } = Semantic;
 
+// TODO: Don't multiply (3/2)(n) to 3n/2
 export function mulFraction(
   node: Semantic.types.Node,
 ): Step<Semantic.types.Node> | void {
@@ -13,6 +14,15 @@ export function mulFraction(
   ) {
     const numFactors: Semantic.types.Node[] = [];
     const denFactors: Semantic.types.Node[] = [];
+
+    // TODO: Figure out why this breaks so many other tests
+    // if (
+    //   node.args[0].type === NodeType.Div &&
+    //   Semantic.util.isNumber(node.args[0]) &&
+    //   node.args.slice(1).every((node) => !Semantic.util.isNumber(node))
+    // ) {
+    //   return;
+    // }
 
     for (const factor of node.args) {
       if (factor.type === NodeType.Div) {

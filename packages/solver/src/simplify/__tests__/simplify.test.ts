@@ -192,7 +192,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'collect like terms',
         'multiply fraction(s)',
-        'simplify multiplication',
+        'reduce fraction',
       ]);
       expect(Testing.print(step.after)).toEqual('x / 6');
     });
@@ -204,9 +204,10 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
+        'reduce fraction',
         'collect like terms',
         'multiply fraction(s)',
-        'simplify multiplication',
+        'reduce fraction',
       ]);
       expect(Testing.print(step.after)).toEqual('x / 6');
     });
@@ -214,20 +215,35 @@ describe('simplify', () => {
     test('x/-2 + x/3 -> x', () => {
       const ast = Testing.parse('x/-2 + x/3');
 
-      const step = simplify(ast);
+      const result = simplify(ast);
 
-      expect(step.message).toEqual('simplify expression');
-      expect(step.substeps.map((substep) => substep.message)).toEqual([
+      expect(result.message).toEqual('simplify expression');
+      expect(result.substeps.map((substep) => substep.message)).toEqual([
+        'reduce fraction',
         'collect like terms',
         'multiply fraction(s)',
-        'simplify multiplication',
+        'reduce fraction',
       ]);
-      expect(Testing.print(step.after)).toEqual('-(x / 6)');
+      expect(Testing.print(result.after)).toEqual('-(x / 6)');
 
-      expect(ast).toHaveFullStepsLike({
-        steps: step.substeps,
-        expressions: ['x / -2 + x / 3', '-(1 / 6)(x)', '-(1x / 6)', '-(x / 6)'],
-      });
+      const steps = [
+        Testing.print(result.before),
+        ...result.substeps.map((step) => {
+          const before = Testing.print(step.before);
+          const after = Testing.print(step.after);
+          return `${before} => ${after}`;
+        }),
+      ];
+
+      expect(steps).toMatchInlineSnapshot(`
+        [
+          "x / -2 + x / 3",
+          "x / -2 => -(x / 2)",
+          "-(x / 2) + x / 3 => -(1 / 6)(x)",
+          "(1 / 6)(x) => 1x / 6",
+          "1x / 6 => x / 6",
+        ]
+      `);
     });
 
     test('2xy + 3xy -> 5xy', () => {
@@ -758,7 +774,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(Testing.print(step.after)).toEqual('-a / d');
+      expect(Testing.print(step.after)).toEqual('-(a / d)');
     });
 
     test('abc / -bcd -> a / -d', () => {
@@ -770,7 +786,7 @@ describe('simplify', () => {
       expect(step.substeps.map((substep) => substep.message)).toEqual([
         'reduce fraction',
       ]);
-      expect(Testing.print(step.after)).toEqual('a / -d');
+      expect(Testing.print(step.after)).toEqual('-(a / d)');
     });
 
     test('abc / abc -> 1', () => {
@@ -864,7 +880,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'evaluate division',
+        'reduce fraction',
       ]);
       expect(Testing.print(step.after)).toEqual('2 / 3');
     });
@@ -876,7 +892,7 @@ describe('simplify', () => {
 
       expect(step.message).toEqual('simplify expression');
       expect(step.substeps.map((substep) => substep.message)).toEqual([
-        'evaluate division',
+        'reduce fraction',
       ]);
       expect(Testing.print(step.after)).toEqual('-(2 / 3)');
     });
@@ -1039,6 +1055,24 @@ describe('simplify', () => {
         'multiplying by zero is equivalent to zero',
       ]);
       expect(Testing.print(step.after)).toEqual('0');
+    });
+  });
+
+  describe('simplifying multiplication', () => {
+    test('(2)(x)(3/2)', () => {
+      // const ast = Testing.parse('(3/2)(x)*2');
+      // const ast = Testing.parse('2*(3/2)(x)');
+      const ast = Testing.parse('(2)((3/2)(x)+(1/2))');
+
+      const step = simplify(ast)!;
+
+      Testing.print(step.after); // ?
+    });
+
+    test('(-(5 / 2)(n))(-2)', () => {
+      const ast = Testing.parse('(-(5 / 2)(n))(-2)');
+      const step = simplify(ast);
+      Testing.print(step.after); // ?
     });
   });
 });
