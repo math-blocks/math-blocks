@@ -13,6 +13,7 @@ describe('simplify multiplication', () => {
     ${'(a)(b)(-c)'}   | ${'-abc'}
     ${'(-a)(-b)(c)'}  | ${'abc'}
     ${'(-a)(-b)(-c)'} | ${'-abc'}
+    ${'(-a)(bc)'}     | ${'-a(bc)'}
   `('isNegative($input) -> $output', ({ input, output }) => {
     const result = simplifyMul(parse(input), []);
 

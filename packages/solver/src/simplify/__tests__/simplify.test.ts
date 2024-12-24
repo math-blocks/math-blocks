@@ -1057,4 +1057,22 @@ describe('simplify', () => {
       expect(Testing.print(step.after)).toEqual('0');
     });
   });
+
+  describe('simplifying multiplication', () => {
+    test('(2)(x)(3/2)', () => {
+      // const ast = Testing.parse('(3/2)(x)*2');
+      // const ast = Testing.parse('2*(3/2)(x)');
+      const ast = Testing.parse('(2)((3/2)(x)+(1/2))');
+
+      const step = simplify(ast)!;
+
+      Testing.print(step.after); // ?
+    });
+
+    test('(-(5 / 2)(n))(-2)', () => {
+      const ast = Testing.parse('(-(5 / 2)(n))(-2)');
+      const step = simplify(ast);
+      Testing.print(step.after); // ?
+    });
+  });
 });

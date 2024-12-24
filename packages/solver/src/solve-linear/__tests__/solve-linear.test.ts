@@ -292,7 +292,7 @@ describe('solveLinear', () => {
     const ident = builders.identifier('x');
     const result = solveLinear(before, ident)!;
 
-    expect(print(result.after)).toMatchInlineSnapshot(`"x = 1"`);
+    expect(print(result.after)).toMatchInlineSnapshot(`"-x = -1"`);
 
     const steps = [
       print(result.before),
@@ -304,14 +304,12 @@ describe('solveLinear', () => {
     expect(steps).toMatchInlineSnapshot(`
       [
         "x / 2 + 1 / 2 = 2x / 3 + 1 / 3",
-        "(x / 2 + 1 / 2) * 6 = (2x / 3 + 1 / 3) * 6",
-        "3x + 3 = 4x + 2",
-        "3x + 3 - 3 = 4x + 2 - 3",
-        "3x = 4x - 1",
-        "3x - 4x = 4x - 4x - 1",
+        "x / 2 + 1 / 2 - 1 / 2 = 2x / 3 + 1 / 3 - 1 / 2",
+        "x / 2 = 2x / 3 - 1 / 6",
+        "x / 2 - 2x / 3 = 2x / 3 - 2x / 3 - 1 / 6",
+        "-(x / 6) = -(1 / 6)",
+        "-(x / 6) * 6 = -(1 / 6) * 6",
         "-x = -1",
-        "-x * -1 = -1 * -1",
-        "x = 1",
       ]
     `);
   });
@@ -378,15 +376,19 @@ describe('solveLinear', () => {
       }),
     ];
 
+    // TODO: use latex for fractions in tests
+    // instead of "-n - (3 / 2)(n) = (3 / 2)(n) - (3 / 2)(n) + 15 / 2",
+    // we could have "-n \frac{3}{2}n = \frac{3}{2}n - \frac{3}{2}n + \frac{15}{2}"
+
     expect(steps).toMatchInlineSnapshot(`
       [
         "1 - n = (3 / 2)(n) + 17 / 2",
         "1 - n = 3n / 2 + 17 / 2",
-        "(1 - n) * 2 = (3n / 2 + 17 / 2) * 2",
-        "2 - 2n = 3n + 17",
-        "2 - 2 - 2n = 3n + 17 - 2",
-        "-2n = 3n + 15",
-        "-2n - 3n = 3n - 3n + 15",
+        "1 - 1 - n = 3n / 2 + 17 / 2 - 1",
+        "-n = 3n / 2 + 15 / 2",
+        "-n - 3n / 2 = 3n / 2 - 3n / 2 + 15 / 2",
+        "-(5n / 2) = 15 / 2",
+        "-(5n / 2) * 2 = 15 / 2 * 2",
         "-5n = 15",
         "-5n / -5 = 15 / -5",
         "n = -3",
@@ -413,9 +415,9 @@ describe('solveLinear', () => {
       [
         "(2 + y / 3) + 2y = -1",
         "2 + 7y / 3 = -1",
-        "(2 + 7y / 3) * 3 = -1 * 3",
-        "6 + 7y = -3",
-        "6 - 6 + 7y = -3 - 6",
+        "2 - 2 + 7y / 3 = -1 - 2",
+        "7y / 3 = -3",
+        "7y / 3 * 3 = -3 * 3",
         "7y = -9",
         "7y / 7 = -9 / 7",
         "y = -(9 / 7)",

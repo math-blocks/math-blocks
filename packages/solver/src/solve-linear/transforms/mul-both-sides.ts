@@ -43,8 +43,14 @@ export const mulByNumber = (
 ): Step<Semantic.types.NumericRelation> | void => {
   const [left, right] = before.args as readonly Semantic.types.Node[];
 
-  const newLeft = Semantic.builders.mul([left, num]);
-  const newRight = Semantic.builders.mul([right, num]);
+  const newLeft = Semantic.builders.mul(
+    [...Semantic.util.getFactors(left), num],
+    false,
+  );
+  const newRight = Semantic.builders.mul(
+    [...Semantic.util.getFactors(right), num],
+    false,
+  );
 
   newLeft.source = 'mulBothSides';
   newRight.source = 'mulBothSides';

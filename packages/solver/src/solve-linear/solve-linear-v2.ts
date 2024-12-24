@@ -55,7 +55,6 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
-  print(rel); // ?
 
   // Check if anyone of the variables are inside fractions
   const denominators: number[] = [];
@@ -63,7 +62,6 @@ export function solveLinear(
     if (term.type === 'Div') {
       const variables = getVariables(term.args[0]);
       if (variables.length === 1) {
-        print(term.args[1]); // ?
         denominators.push(parseInt(print(term.args[1])));
       }
     }
@@ -72,38 +70,34 @@ export function solveLinear(
     if (term.type === 'Div') {
       const variables = getVariables(term.args[0]);
       if (variables.length === 1) {
-        print(term.args[1]); // ?
         denominators.push(parseInt(print(term.args[1])));
       }
     }
   }
 
-  const lcm = lcmArray(denominators);
-  if (lcm !== 1) {
-    // Multiple both sides by the lcm
-    const left = builders.mul([rel.args[0], builders.number(lcm.toString())]);
-    const right = builders.mul([rel.args[1], builders.number(lcm.toString())]);
-    rel = builders.numRel([left, right], rel.type);
+  // const lcm = lcmArray(denominators);
+  // if (lcm !== 1) {
+  //   // Multiple both sides by the lcm
+  //   const left = builders.mul([rel.args[0], builders.number(lcm.toString())]);
+  //   const right = builders.mul([rel.args[1], builders.number(lcm.toString())]);
+  //   rel = builders.numRel([left, right], rel.type);
 
-    substeps.push({
-      message: 'do the same operation to both sides',
-      operation: 'mul',
-      value: builders.number(lcm.toString()),
-      before: node,
-      after: rel,
-      substeps: [],
-    });
+  //   substeps.push({
+  //     message: 'do the same operation to both sides',
+  //     operation: 'mul',
+  //     value: builders.number(lcm.toString()),
+  //     before: node,
+  //     after: rel,
+  //     substeps: [],
+  //   });
 
-    // TODO: Update reduceFraction to handle things like 6x / 2 -> 3x
-    step = simplifyBothSides(rel);
-    if (step) {
-      substeps.push(step);
-      rel = step.after as types.NumericRelation;
-    }
-  }
-
-  print(rel); // ?
-  print(ident); // ?
+  //   // TODO: Update reduceFraction to handle things like 6x / 2 -> 3x
+  //   step = simplifyBothSides(rel);
+  //   if (step) {
+  //     substeps.push(step);
+  //     rel = step.after as types.NumericRelation;
+  //   }
+  // }
 
   const leftHasIdent = util.getTerms(rel.args[0]).some((term) => {
     const variables = getVariables(term);
@@ -113,6 +107,10 @@ export function solveLinear(
     const variables = getVariables(term);
     return variables.some((variable) => variable.name === ident.name);
   });
+
+  leftHasIdent; // ?
+  rightHasIdent; // ?
+  print(rel); // ?
 
   // If the variable we're solving for isn't on either side of the equation,
   // then we can't solve the equation for that variable.
@@ -187,80 +185,59 @@ export function solveLinear(
   const [left, right] = rel.args;
 
   // TODO: take into account the 'dir' when deciding what to do next
-  if (dir === 'right') {
-    const leftTerms = util.getTerms(left);
-    const coeff = getCoeff(leftTerms[0]);
+  const coeff =
+    dir === 'right'
+      ? getCoeff(util.getTerms(left)[0])
+      : getCoeff(util.getTerms(right)[0]);
 
-    if (coeff.n === 0) {
-      return {
-        message: 'solve for variable',
-        before: node,
-        after: rel,
-        substeps: substeps,
-      };
-    }
+  if (coeff.n === 0) {
+    return {
+      message: 'solve for variable',
+      before: node,
+      after: rel,
+      substeps: substeps,
+    };
+  }
 
-    if (!coeff.equals(1)) {
-      step =
-        // Only divide by the coefficient if it's an integer that isn't 1
-        coeff.d === 1 && coeff.n !== 1
-          ? divByCoeff(rel, builders.number(coeff.toString()))
-          : mulByNumber(rel, nodeFromFraction(coeff));
+  if (!coeff.equals(1)) {
+    if (coeff.d !== 1) {
+      const step = mulByNumber(rel, builders.number(coeff.d.toString()));
       if (!step) {
         return;
       }
       substeps.push(step);
+      rel = step.after as types.NumericRelation;
 
-      step = simplifyBothSides(step.after as types.NumericRelation);
+      const simpStep = simplifyBothSides(rel);
+      if (simpStep) {
+        substeps.push(simpStep);
+        rel = simpStep.after as types.NumericRelation;
+      }
+    }
+    if (coeff.n !== 1) {
+      const step =
+        coeff.s === -1
+          ? divByCoeff(rel, builders.number((-1 * coeff.n).toString()))
+          : divByCoeff(rel, builders.number(coeff.n.toString()));
       if (!step) {
         return;
       }
       substeps.push(step);
+      rel = step.after as types.NumericRelation;
 
-      return {
-        message: 'solve for variable',
-        before: node,
-        after: step.after,
-        substeps: substeps,
-      };
-    }
-  } else {
-    const rightTerms = util.getTerms(right);
-    const coeff = getCoeff(rightTerms[0]);
-
-    if (coeff.n === 0) {
-      return {
-        message: 'solve for variable',
-        before: node,
-        after: rel,
-        substeps: substeps,
-      };
-    }
-
-    if (!coeff.equals(1)) {
-      step =
-        // Only divide by the coefficient if it's an integer that isn't 1
-        coeff.d === 1 && coeff.n !== 1
-          ? divByCoeff(rel, builders.number(coeff.toString()))
-          : mulByNumber(rel, nodeFromFraction(coeff));
-      if (!step) {
-        return;
+      const simpStep = simplifyBothSides(rel);
+      if (simpStep) {
+        substeps.push(simpStep);
+        rel = simpStep.after as types.NumericRelation;
       }
-      substeps.push(step);
-
-      step = simplifyBothSides(step.after as types.NumericRelation);
-      if (!step) {
-        return;
-      }
-      substeps.push(step);
-
-      return {
-        message: 'solve for variable',
-        before: node,
-        after: step.after,
-        substeps: substeps,
-      };
     }
+
+    return {
+      message: 'solve for variable',
+      before: node,
+      after: rel,
+      substeps: substeps,
+    };
   }
 
   return {
@@ -365,9 +342,12 @@ const isIdentifier = (node: types.Node): node is types.Identifier => {
 const getVariables = (node: types.Node): types.Identifier[] => {
   if (node.type === 'Neg') {
     return getVariables(node.arg);
+  } else if (node.type === 'Div') {
+    return getVariables(node.args[0]);
+  } else {
+    const factors = util.getFactors(node);
+    return factors.filter(isIdentifier);
   }
-  const factors = util.getFactors(node);
-  return factors.filter(isIdentifier);
 };
 
 // TODO: dedupe with quadratic.ts
@@ -382,7 +362,13 @@ const getFactors = (node: types.Node): OneOrMore<types.Node> => {
 };
 
 // TODO: dedupe with quadratic.ts
-function getCoeff(node: types.Node) {
+function getCoeff(node: types.Node): Fraction {
+  if (node.type === 'Div') {
+    return getCoeff(node.args[0]).div(getCoeff(node.args[1]));
+  }
+  if (node.type === 'Neg') {
+    return getCoeff(node.arg).neg();
+  }
   const factors = getFactors(node);
   const constFactors = factors.filter((factor) => util.isNumber(factor));
   builders.mul(constFactors, true);
@@ -392,40 +378,3 @@ function getCoeff(node: types.Node) {
 const insert = <T>(arr: readonly T[], index: number, item: T): T[] => {
   return [...arr.slice(0, index), item, ...arr.slice(index)];
 };
-
-// Function to calculate the Greatest Common Divisor (GCD)
-function gcd(a: number, b: number) {
-  while (b !== 0) {
-    const temp = b;
-    b = a % b;
-    a = temp;
-  }
-  return a;
-}
-
-function lcmArray(numbers: readonly number[]) {
-  if (numbers.length === 0) return 1; // Return 1 if the array is empty
-
-  // Helper function to calculate LCM of two numbers
-  function lcm(a: number, b: number) {
-    return Math.abs(a * b) / gcd(a, b);
-  }
-
-  // Reduce the array to calculate the LCM of all numbers
-  return numbers.reduce(lcm);
-}
-
-function nodeFromFraction(frac: Fraction): types.Node {
-  if (frac.s === -1) {
-    return builders.neg(builders.number(frac.n.toString()), true);
-  }
-
-  if (frac.d === 1) {
-    return builders.number(frac.n.toString());
-  } else {
-    return builders.div(
-      builders.number(frac.n.toString()),
-      builders.number(frac.d.toString()),
-    );
-  }
-}
