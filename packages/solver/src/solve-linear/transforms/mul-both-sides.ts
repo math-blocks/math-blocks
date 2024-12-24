@@ -37,7 +37,7 @@ export function mulBothSides(
   return;
 }
 
-const mulByNumber = (
+export const mulByNumber = (
   before: Semantic.types.NumericRelation,
   num: Semantic.types.Node,
 ): Step<Semantic.types.NumericRelation> | void => {

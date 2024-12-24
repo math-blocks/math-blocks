@@ -1,7 +1,7 @@
 import { builders, types, util } from '@math-blocks/semantic';
 
 import type { Step } from '../types';
-import { solveLinear } from '../solve-linear/solve-linear';
+import { solveLinear } from '../solve-linear/solve-linear-v2';
 import { simplify } from '../simplify/simplify';
 
 // TODO: support systems of equations with more than two equations

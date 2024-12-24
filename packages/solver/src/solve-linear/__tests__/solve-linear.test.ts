@@ -310,7 +310,7 @@ describe('solveLinear', () => {
         "3x = 4x - 1",
         "3x - 4x = 4x - 4x - 1",
         "-x = -1",
-        "-x / -1 = -1 / -1",
+        "-x * -1 = -1 * -1",
         "x = 1",
       ]
     `);
@@ -390,6 +390,61 @@ describe('solveLinear', () => {
         "-5n = 15",
         "-5n / -5 = 15 / -5",
         "n = -3",
+      ]
+    `);
+  });
+
+  // '(2 + y / 3) + 2y = -1'
+  it('(2 + y / 3) + 2y = -1', () => {
+    const before = parseNumRel('(2 + y / 3) + 2y = -1');
+    const ident = builders.identifier('y');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"y = -(9 / 7)"`);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "(2 + y / 3) + 2y = -1",
+        "2 + 7y / 3 = -1",
+        "(2 + 7y / 3) * 3 = -1 * 3",
+        "6 + 7y = -3",
+        "6 - 6 + 7y = -3 - 6",
+        "7y = -9",
+        "7y / 7 = -9 / 7",
+        "y = -(9 / 7)",
+      ]
+    `);
+  });
+
+  // -1 = x + 2y
+  it('-1 = x + 2y', () => {
+    const before = parseNumRel('-1 = x + 2y');
+    const ident = builders.identifier('y');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"-(1 / 2) - x / 2 = y"`);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "-1 = x + 2y",
+        "-1 - x = x - x + 2y",
+        "-1 - x = 2y",
+        "(-1 - x) / 2 = 2y / 2",
+        "-(1 / 2) - x / 2 = y",
       ]
     `);
   });
