@@ -1,7 +1,7 @@
 import { builders, types, util } from '@math-blocks/semantic';
 
 import type { Step } from '../types';
-import { solveLinear } from '../solve-linear/solve-linear-v2';
+import { solveLinear } from '../solve-linear/solve-linear';
 import { simplify } from '../simplify/simplify';
 import { print } from '@math-blocks/testing';
 

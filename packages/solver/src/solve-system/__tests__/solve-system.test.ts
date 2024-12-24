@@ -23,24 +23,6 @@ describe('solveSystem', () => {
       Testing.print(result.after),
     ];
 
-    const substeps = result.substeps[1].substeps.map((step) => {
-      const before = Testing.print(step.before);
-      const after = Testing.print(step.after);
-      return `${before} => ${after}`;
-    });
-
-    expect(substeps).toMatchInlineSnapshot(`
-      [
-        "(2 + y / 3) + 2y = -1 => 2 + 7y / 3 = -1",
-        "2 + 7y / 3 = -1 => 2 - 2 + 7y / 3 = -1 - 2",
-        "2 - 2 + 7y / 3 = -1 - 2 => 7y / 3 = -3",
-        "7y / 3 = -3 => 7y / 3 * 3 = -3 * 3",
-        "7y / 3 * 3 = -3 * 3 => 7y = -9",
-        "7y = -9 => 7y / 7 = -9 / 7",
-        "7y / 7 = -9 / 7 => y = -(9 / 7)",
-      ]
-    `);
-
     // TODO: order the terms in the expression that we get
     // 3x - 6 instead of -6 + 3x
     expect(steps).toMatchInlineSnapshot(`

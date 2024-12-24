@@ -1,7 +1,7 @@
 import { types, builders } from '@math-blocks/semantic';
 import { print, parse } from '@math-blocks/testing';
 
-import { solveLinear } from '../solve-linear-v2';
+import { solveLinear } from '../solve-linear';
 
 const parseNumRel = (input: string): types.NumericRelation => {
   return parse(input) as types.NumericRelation;
