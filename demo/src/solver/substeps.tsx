@@ -38,8 +38,7 @@ const Substeps: React.FunctionComponent<Props> = ({ prefix, start, step }) => {
               style={{ marginBottom: marginBottom }}
               fontSize={24}
             />
-            {/* TODO: special case substeps.length === 1 */}
-            {substep.substeps.length > 0 && (
+            {substep.substeps.length > 1 && (
               <div style={{ paddingLeft: 64 }}>
                 <Substeps prefix={num} start={before} step={substep} />
               </div>
@@ -92,6 +91,16 @@ const printStep = (step: Solver.Step): React.ReactNode => {
       return <span>Move matching variable terms to the {side} side</span>;
     }
     default:
-      return <span>{step.message}</span>;
+      if (step.substeps.length === 1) {
+        if (step.message === 'simplify the left hand side') {
+          return <span>{step.substeps[0].message} on the left hand side</span>;
+        }
+        if (step.message === 'simplify the right hand side') {
+          return <span>{step.substeps[0].message} on the right hand side</span>;
+        }
+        return <span>{step.message}</span>;
+      } else {
+        return <span>{step.message}</span>;
+      }
   }
 };
