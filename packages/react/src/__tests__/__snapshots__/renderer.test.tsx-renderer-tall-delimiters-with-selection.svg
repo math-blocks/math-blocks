@@ -40,7 +40,7 @@
                             <path id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(57.449999999999996, 0) scale(0.06, -0.06)"></path>
                         </g>
                         <g transform="translate(0,-2.6645352591003757e-15)">
-                            <line type="line" x1="0" y1="0" x2="144.6" y2="0" stroke-width="4.08" stroke-linecap="butt"></line>
+                            <line type="line" x1="0" y1="0" x2="144.6" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                         </g>
                         <g transform="translate(0,57.24)" id="6">
                             <path id="1" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(4.079999999999998, 0) scale(0.06, -0.06)"></path>
@@ -61,14 +61,14 @@
                     <path style="opacity:1" aria-hidden="true" d="M 1062,2105 L 532,-81 L 528,-81 L 216,807 L 196,807 L 30,698 L 49,669 L 153,709 L 502,-265 L 547,-265 L 1112,2037 L 1212,2037 L 1212,2105 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                 </g>
                 <g transform="translate(70.62,0)">
-                    <line type="line" x1="0" y1="-94.56" x2="148.68" y2="-94.56" stroke-width="4.08" stroke-linecap="butt"></line>
+                    <line type="line" x1="0" y1="-94.56" x2="148.68" y2="-94.56" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                     <g transform="translate(0,1.4210854715202004e-14)" id="20">
                         <g transform="translate(0,-15.48)" id="16">
                             <g transform="translate(0,-24.840000000000003)" id="17">
                                 <path id="12" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(57.449999999999996, 0) scale(0.06, -0.06)"></path>
                             </g>
                             <g transform="translate(0,-2.6645352591003757e-15)">
-                                <line type="line" x1="0" y1="0" x2="144.6" y2="0" stroke-width="4.08" stroke-linecap="butt"></line>
+                                <line type="line" x1="0" y1="0" x2="144.6" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                             </g>
                             <g transform="translate(0,57.24)" id="18">
                                 <path id="13" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(4.079999999999998, 0) scale(0.06, -0.06)"></path>

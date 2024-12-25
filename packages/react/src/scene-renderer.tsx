@@ -13,7 +13,7 @@ const Line: React.FunctionComponent<SceneGraph.Line> = ({
   return (
     <line
       {...props}
-      stroke={style.stroke}
+      stroke={style.stroke || 'currentColor'}
       strokeWidth={thickness}
       strokeLinecap="butt"
     />
