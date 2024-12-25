@@ -2,6 +2,7 @@ import { types, builders } from '@math-blocks/semantic';
 import { print, parse } from '@math-blocks/testing';
 
 import { solveLinear } from '../solve-linear';
+import { NumberOfSolutions } from '../../types';
 
 const parseNumRel = (input: string): types.NumericRelation => {
   return parse(input) as types.NumericRelation;
@@ -15,6 +16,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = y + 15 / 2"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -42,6 +44,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"y + 15 / 2 = x"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -69,6 +72,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = 5"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -96,6 +100,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"0 = 1"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.None);
 
     const steps = [
       print(result.before),
@@ -123,6 +128,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"0 = 0"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
 
     const steps = [
       print(result.before),
@@ -148,6 +154,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = 5 / 2"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -172,6 +179,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = 3 / 5"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -196,6 +204,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = -7"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -218,6 +227,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = -(5 / 2)"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -243,6 +253,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x < -(5 / 2)"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -268,6 +279,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x ≤ -(5 / 2)"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -293,6 +305,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"-x = -1"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -320,6 +333,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -343,6 +357,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"x = 10"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -368,6 +383,7 @@ describe('solveLinear', () => {
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"n = -3"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -396,13 +412,13 @@ describe('solveLinear', () => {
     `);
   });
 
-  // '(2 + y / 3) + 2y = -1'
   it('(2 + y / 3) + 2y = -1', () => {
     const before = parseNumRel('(2 + y / 3) + 2y = -1');
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"y = -(9 / 7)"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -425,13 +441,13 @@ describe('solveLinear', () => {
     `);
   });
 
-  // -1 = x + 2y
   it('-1 = x + 2y', () => {
     const before = parseNumRel('-1 = x + 2y');
     const ident = builders.identifier('y');
     const result = solveLinear(before, ident)!;
 
     expect(print(result.after)).toMatchInlineSnapshot(`"-(1 / 2) - x / 2 = y"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
 
     const steps = [
       print(result.before),
@@ -447,6 +463,29 @@ describe('solveLinear', () => {
         "-1 - x = 2y",
         "(-1 - x) / 2 = 2y / 2",
         "-(1 / 2) - x / 2 = y",
+      ]
+    `);
+  });
+
+  it('2(-(y / 2) + 1 / 2) + y = 1', () => {
+    const before = parseNumRel('2(-(y / 2) + 1 / 2) + y = 1');
+    const ident = builders.identifier('y');
+    const result = solveLinear(before, ident)!;
+
+    expect(print(result.after)).toMatchInlineSnapshot(`"1 = 1"`);
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
+
+    const steps = [
+      print(result.before),
+      ...result.substeps.map((step) => {
+        return print(step.after);
+      }),
+    ];
+
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "2(-(y / 2) + 1 / 2) + y = 1",
+        "1 = 1",
       ]
     `);
   });

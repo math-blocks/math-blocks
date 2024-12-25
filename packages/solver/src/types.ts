@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import * as Semantic from '@math-blocks/semantic';
 
+export enum NumberOfSolutions {
+  None = 0,
+  One = 1,
+  Infinite = -1,
+}
+
 type StepType<
   TMessage extends string,
   TNode extends Semantic.types.Node,
@@ -46,7 +52,11 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'repeated multiplication can be written as a power', TNode>
   | StepType<'reduce fraction', TNode>
   | StepType<'simplify multiplication', TNode>
-  | StepType<'solve for variable', TNode>
+  | StepType<
+      'solve for variable', // TODO: rename to 'solve linear equation'
+      TNode,
+      { readonly numberOfSolutions: NumberOfSolutions }
+    >
   | StepType<
       'do the same operation to both sides',
       TNode,
@@ -71,7 +81,11 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'simplify the right hand side', TNode>
   | StepType<'factor quadratic', TNode>
   | StepType<'solve quadratic', TNode>
-  | StepType<'solve system', TNode>
+  | StepType<
+      'solve system',
+      TNode,
+      { readonly numberOfSolutions: NumberOfSolutions }
+    >
   | StepType<'split factored equation', TNode>
   | StepType<'split linear term', TNode>
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression

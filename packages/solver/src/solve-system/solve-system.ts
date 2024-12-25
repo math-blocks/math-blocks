@@ -1,12 +1,12 @@
 import { builders, types, util } from '@math-blocks/semantic';
 
-import type { Step } from '../types';
+import { type Step } from '../types';
 import { solveLinear } from '../solve-linear/solve-linear';
 import { simplify } from '../simplify/simplify';
 import { print } from '@math-blocks/testing';
 
 // TODO: support systems of equations with more than two equations
-export function solveSystem(node: types.Sequence): Step | void {
+export function solveSystem(node: types.Sequence): Extract<Step, {message: 'solve system'}> | void {
   if (node.args.length !== 2) {
     return;
   }
@@ -57,22 +57,21 @@ export function solveSystem(node: types.Sequence): Step | void {
       }
     },
   });
-  print(eqn2); // ?
-  print(eqn2Subbed); // ?
 
   const step2 = solveLinear(eqn2Subbed as types.Eq, builders.identifier(var2));
   if (!step2) {
     return;
   }
-  const sol2 = step2.after;
+  const sol2 = step2.after as types.NumericRelation;
   if (sol2?.type !== 'Equals') {
     return;
   }
-  print(sol2); // ?
   const simplified = simplify(sol2);
   if (simplified) {
     print(simplified.after); // ?
   }
+
+  const numberOfSolutions = step2.numberOfSolutions
 
   const [ident, expr2] =
     sol2.args[0].type === 'Identifier'
@@ -87,8 +86,6 @@ export function solveSystem(node: types.Sequence): Step | void {
     },
   });
 
-  print(sol1Subbed); // ?
-
   const step3 = simplify(sol1Subbed)!;
   const sol3 = step3 ? step3.after : sol1Subbed;
 
@@ -97,6 +94,7 @@ export function solveSystem(node: types.Sequence): Step | void {
     before: builders.sequence([eqn1, eqn2]),
     after: builders.sequence([sol2, sol3]),
     substeps: step3 ? [step1, step2, step3] : [step1, step2],
+    numberOfSolutions,
   };
 }
 
