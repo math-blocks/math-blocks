@@ -13,7 +13,7 @@ const Line: React.FunctionComponent<SceneGraph.Line> = ({
   return (
     <line
       {...props}
-      stroke={style.stroke}
+      stroke={style.stroke || 'currentColor'}
       strokeWidth={thickness}
       strokeLinecap="butt"
     />
@@ -142,7 +142,7 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
     >
       <g
         fill="currentColor"
-        stroke="currentColor"
+        stroke="none"
         transform={`translate(0,${yAdjust})`}
       >
         <Group {...scene.selection} />
