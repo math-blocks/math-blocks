@@ -3,6 +3,7 @@ import * as Testing from '@math-blocks/testing';
 
 import { simplifyMul } from '../util';
 import { getCoeff } from '../../solve-linear/util';
+import { dropAddIdentity } from './drop-add-identity';
 
 import type { Step } from '../../types';
 
@@ -29,10 +30,19 @@ export function collectLikeTerms(
     return;
   }
 
+  // TODO: check if two terms are the same and if so, cancel them directly
+  // instead of subtracting and then dropping the zero.
+
   let newNode = groupTerms(orderedSum, groups, substeps);
   newNode = evaluteCoeffs(newNode, substeps);
   newNode = simplifyTerms(newNode, substeps);
   newNode = addNegToSub(newNode, substeps);
+
+  const step = dropAddIdentity(newNode);
+  if (step) {
+    substeps.push(step);
+    newNode = step.after;
+  }
 
   return {
     message: 'collect like terms',

@@ -449,4 +449,70 @@ describe('collect like terms', () => {
       expect(Testing.print(step.after)).toEqual('2 - x');
     });
   });
+
+  describe('canceling terms', () => {
+    test('8 + 2x - 2x -> 8', () => {
+      const ast = Testing.parse('8 + 2x - 2x');
+
+      const step = collectLikeTerms(ast);
+
+      expect(step.message).toEqual('collect like terms');
+      expect(Testing.print(step.after)).toMatchInlineSnapshot(`"8"`);
+
+      expect(step.substeps.map((substep) => substep.message)).toEqual([
+        'subtraction is the same as adding the inverse',
+        'factor variable part of like terms', // substeps
+        'compute new coefficients', // substeps
+        'drop adding zero',
+      ]);
+
+      const substeps = [
+        Testing.print(step.before),
+        ...step.substeps.map((substep) => Testing.print(substep.after)),
+      ];
+
+      expect(substeps).toMatchInlineSnapshot(`
+        [
+          "8 + 2x - 2x",
+          "8 + 2x + -2x",
+          "8 + 0",
+          "8 + 0",
+          "8",
+        ]
+      `);
+    });
+
+    test('2x - 2x - 8 -> -8', () => {
+      const ast = Testing.parse('2x - 2x - 8');
+
+      const step = collectLikeTerms(ast);
+
+      expect(step.message).toEqual('collect like terms');
+      expect(Testing.print(step.after)).toMatchInlineSnapshot(`"-8"`);
+
+      expect(step.substeps.map((substep) => substep.message)).toEqual([
+        'subtraction is the same as adding the inverse',
+        'factor variable part of like terms', // substeps
+        'compute new coefficients', // substeps
+        'adding the inverse is the same as subtraction',
+        'drop adding zero',
+      ]);
+
+      const substeps = [
+        Testing.print(step.before),
+        ...step.substeps.map((substep) => Testing.print(substep.after)),
+      ];
+
+      expect(substeps).toMatchInlineSnapshot(`
+        [
+          "2x - 2x - 8",
+          "2x + -2x + -8",
+          "0 + -8",
+          "0 + -8",
+          "0 - 8",
+          "-8",
+        ]
+      `);
+    });
+  });
 });
