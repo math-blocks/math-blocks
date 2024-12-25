@@ -5,7 +5,7 @@ import { mulByNumber } from './transforms/mul-both-sides';
 import { simplifyBothSides } from './transforms/simplify-both-sides';
 import { isLinear } from '../solve-system/solve-system';
 
-import type { Step } from '../types';
+import { Step, NumberOfSolutions } from '../types';
 import { print } from '@math-blocks/testing';
 import Fraction from 'fraction.js';
 
@@ -18,7 +18,7 @@ import Fraction from 'fraction.js';
 export function solveLinear(
   node: types.NumericRelation,
   ident: types.Identifier,
-): Step | void {
+): Extract<Step, { message: 'solve for variable' }> | void {
   if (!isLinear(node)) {
     return;
   }
@@ -26,20 +26,22 @@ export function solveLinear(
   // Checks if the equation is already solved for the variable.
   if (isIdentifier(node.args[0]) && util.isNumber(node.args[1])) {
     return {
-      message: 'solve for variable', // TODO: include variable in message
+      message: 'solve for variable',
       before: node,
       after: node,
       substeps: [],
+      numberOfSolutions: NumberOfSolutions.One,
     };
   }
 
   // Checks if the equation is already solved for the variable.
   if (isIdentifier(node.args[1]) && util.isNumber(node.args[0])) {
     return {
-      message: 'solve for variable', // TODO: include variable in message
+      message: 'solve for variable',
       before: node,
       after: node,
       substeps: [],
+      numberOfSolutions: NumberOfSolutions.One,
     };
   }
 
@@ -55,6 +57,8 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
+
+  print(rel); // ?
 
   // Check if anyone of the variables are inside fractions
   const denominators: number[] = [];
@@ -75,30 +79,6 @@ export function solveLinear(
     }
   }
 
-  // const lcm = lcmArray(denominators);
-  // if (lcm !== 1) {
-  //   // Multiple both sides by the lcm
-  //   const left = builders.mul([rel.args[0], builders.number(lcm.toString())]);
-  //   const right = builders.mul([rel.args[1], builders.number(lcm.toString())]);
-  //   rel = builders.numRel([left, right], rel.type);
-
-  //   substeps.push({
-  //     message: 'do the same operation to both sides',
-  //     operation: 'mul',
-  //     value: builders.number(lcm.toString()),
-  //     before: node,
-  //     after: rel,
-  //     substeps: [],
-  //   });
-
-  //   // TODO: Update reduceFraction to handle things like 6x / 2 -> 3x
-  //   step = simplifyBothSides(rel);
-  //   if (step) {
-  //     substeps.push(step);
-  //     rel = step.after as types.NumericRelation;
-  //   }
-  // }
-
   const leftHasIdent = util.getTerms(rel.args[0]).some((term) => {
     const variables = getVariables(term);
     return variables.some((variable) => variable.name === ident.name);
@@ -108,14 +88,21 @@ export function solveLinear(
     return variables.some((variable) => variable.name === ident.name);
   });
 
-  leftHasIdent; // ?
-  rightHasIdent; // ?
-  print(rel); // ?
-
   // If the variable we're solving for isn't on either side of the equation,
   // then we can't solve the equation for that variable.
   if (!leftHasIdent && !rightHasIdent) {
-    return;
+    // TODO: handle the case where the equation still contains other variables
+    const numberOfSolutions = util.deepEquals(rel.args[0], rel.args[1])
+      ? NumberOfSolutions.Infinite
+      : NumberOfSolutions.None;
+
+    return {
+      message: 'solve for variable',
+      before: node,
+      after: rel,
+      substeps: substeps,
+      numberOfSolutions,
+    };
   }
 
   // If the variable exists on the left side, then we want to move all terms
@@ -184,18 +171,23 @@ export function solveLinear(
 
   const [left, right] = rel.args;
 
-  // TODO: take into account the 'dir' when deciding what to do next
   const coeff =
     dir === 'right'
       ? getCoeff(util.getTerms(left)[0])
       : getCoeff(util.getTerms(right)[0]);
 
   if (coeff.n === 0) {
+    // TODO: handle the case where the equation still contains other variables
+    const numberOfSolutions = util.deepEquals(left, right)
+      ? NumberOfSolutions.Infinite
+      : NumberOfSolutions.None;
+
     return {
       message: 'solve for variable',
       before: node,
       after: rel,
       substeps: substeps,
+      numberOfSolutions,
     };
   }
 
@@ -237,6 +229,7 @@ export function solveLinear(
       before: node,
       after: rel,
       substeps: substeps,
+      numberOfSolutions: NumberOfSolutions.One,
     };
   }
 
@@ -245,6 +238,7 @@ export function solveLinear(
     before: node,
     after: rel,
     substeps: substeps,
+    numberOfSolutions: NumberOfSolutions.One,
   };
 }
 

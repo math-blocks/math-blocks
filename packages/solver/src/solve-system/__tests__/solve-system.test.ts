@@ -2,6 +2,7 @@ import { builders, types } from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 
 import { solveSystem } from '../solve-system';
+import { NumberOfSolutions } from '../../types';
 
 const parseEqn = (input: string): types.Eq => {
   return Testing.parse(input) as types.Eq;
@@ -23,8 +24,7 @@ describe('solveSystem', () => {
       Testing.print(result.after),
     ];
 
-    // TODO: order the terms in the expression that we get
-    // 3x - 6 instead of -6 + 3x
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(steps).toMatchInlineSnapshot(`
       [
         "3x - y = 6, x + 2y = -1",
@@ -51,6 +51,7 @@ describe('solveSystem', () => {
       Testing.print(result.after),
     ];
 
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(steps).toMatchInlineSnapshot(`
       [
         "3u - v = 6, u + 2v = -1",
@@ -77,6 +78,7 @@ describe('solveSystem', () => {
       Testing.print(result.after),
     ];
 
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
     expect(steps).toMatchInlineSnapshot(`
       [
         "6 = 3x - y, -1 = x + 2y",
@@ -88,8 +90,57 @@ describe('solveSystem', () => {
     `);
   });
 
-  it.todo('y = 2x + 4, y = 2x - 2 (parallel lines)');
-  it.todo('y = -2x + 1, 2x + y = 1 (same line)');
+  it('y = 2x + 4, y = 2x - 2 (parallel lines)', () => {
+    const eqn1 = parseEqn('y = 2x + 4');
+    const eqn2 = parseEqn('y = 2x - 2');
+    const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
+
+    const steps = [
+      Testing.print(result.before),
+      ...result.substeps.map((step) => {
+        const before = Testing.print(step.before);
+        const after = Testing.print(step.after);
+        return `${before} => ${after}`;
+      }),
+      Testing.print(result.after),
+    ];
+
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.None);
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "y = 2x + 4, y = 2x - 2",
+        "y = 2x + 4 => y / 2 - 2 = x",
+        "y = 2(y / 2 - 2) - 2 => 0 = -6",
+        "0 = -6, y / 2 - 2 = x",
+      ]
+    `);
+  });
+
+  it('y = -2x + 1, 2x + y = 1 (same line)', () => {
+    const eqn1 = parseEqn('y = -2x + 1');
+    const eqn2 = parseEqn('2x + y = 1');
+    const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
+
+    const steps = [
+      Testing.print(result.before),
+      ...result.substeps.map((step) => {
+        const before = Testing.print(step.before);
+        const after = Testing.print(step.after);
+        return `${before} => ${after}`;
+      }),
+      Testing.print(result.after),
+    ];
+
+    expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
+    expect(steps).toMatchInlineSnapshot(`
+      [
+        "y = -2x + 1, 2x + y = 1",
+        "y = -2x + 1 => -(y / 2) + 1 / 2 = x",
+        "2(-(y / 2) + 1 / 2) + y = 1 => 1 = 1",
+        "1 = 1, -(y / 2) + 1 / 2 = x",
+      ]
+    `);
+  });
 
   describe('bail-out cases', () => {
     it('should not try to solve quadratic equations', () => {
