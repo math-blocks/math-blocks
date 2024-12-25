@@ -142,7 +142,7 @@ const SceneRenderer = React.forwardRef<SVGSVGElement, Props>((props, ref) => {
     >
       <g
         fill="currentColor"
-        stroke="currentColor"
+        stroke="none"
         transform={`translate(0,${yAdjust})`}
       >
         <Group {...scene.selection} />
