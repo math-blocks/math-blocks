@@ -82,8 +82,12 @@ export const gt = (loc: SourceLocation): TokenAtom =>
 export const gte = (loc: SourceLocation): TokenAtom =>
   atom({ type: 'token', name: TokenKind.GreaterThanOrEqual }, loc);
 
+export const comma = (loc: SourceLocation): TokenAtom =>
+  atom({ type: 'token', name: TokenKind.Comma }, loc);
+
+// TODO: allow different decimal and list separators
 const TOKEN_REGEX =
-  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(<|>|≤|≥|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
+  /([1-9]*[0-9]\.?[0-9]*|\.[0-9]+)|(,|<|>|≤|≥|\*|\u00B7|\u00B1|\+|\u2212|=|\(|\)|\.\.\.)|(sin|cos|tan|[a-z])/gi;
 
 // TODO: include ids of source chars in parsed tokens
 
@@ -114,6 +118,9 @@ const tokenizeChars = (
       } else if (sym) {
         const loc = location(path, offset + index, offset + index + sym.length);
         switch (sym) {
+          case ',':
+            tokens.push(comma(loc));
+            break;
           case '=':
             tokens.push(eq(loc));
             break;

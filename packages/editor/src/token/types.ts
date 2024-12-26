@@ -28,6 +28,7 @@ export enum TokenKind {
   LeftParens = 'LeftParens',
   RightParens = 'RightParens',
   Ellipsis = 'Ellipsis',
+  Comma = 'Comma',
   SummationOperator = 'SummationOperator',
   ProductOperator = 'ProductOperator',
   Lim = 'Lim',
@@ -64,6 +65,7 @@ type GreaterThanOrEqual = SimpleToken<TokenKind.GreaterThanOrEqual>;
 type LeftParens = SimpleToken<TokenKind.LeftParens>;
 type RightParens = SimpleToken<TokenKind.RightParens>;
 type Ellipsis = SimpleToken<TokenKind.Ellipsis>;
+type Comma = SimpleToken<TokenKind.Comma>;
 type SummationOperator = SimpleToken<TokenKind.SummationOperator>;
 type ProductOperator = SimpleToken<TokenKind.ProductOperator>;
 type Lim = SimpleToken<TokenKind.Lim>;
@@ -84,6 +86,7 @@ export type Token =
   | LeftParens
   | RightParens
   | Ellipsis
+  | Comma
   | SummationOperator
   | ProductOperator
   | Lim

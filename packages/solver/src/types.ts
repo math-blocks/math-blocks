@@ -87,6 +87,11 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       TNode,
       { readonly numberOfSolutions: NumberOfSolutions }
     >
+  | StepType<
+      'substitute',
+      TNode,
+      { readonly original: TNode; readonly substitution: TNode }
+    >
   | StepType<'split factored equation', TNode>
   | StepType<'split linear term', TNode>
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression

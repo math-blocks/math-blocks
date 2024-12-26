@@ -56,9 +56,13 @@ const Substep = ({
         {num}: {printStep(substep)}{' '}
         {canExpand && `(${substep.substeps.length} substeps)`}
       </div>
-      {substep.section && (
-        <div style={{ marginBottom: 6 }}>
-          <MathRenderer row={Editor.print(substep.before)} fontSize={24} />
+      {(substep.section || expanded) && (
+        <div style={{ marginBottom: 6, paddingLeft: expanded ? 12 : 0 }}>
+          <MathRenderer
+            row={Editor.print(substep.before)}
+            fontSize={24}
+            mathStyle={MathStyle.Text}
+          />
         </div>
       )}
       {expanded && (
@@ -74,6 +78,7 @@ const Substep = ({
         <MathRenderer
           row={Editor.print(substep.section ? substep.after : current)}
           fontSize={24}
+          mathStyle={MathStyle.Text}
         />
       )}
     </div>
@@ -114,7 +119,7 @@ const printStep = (step: Solver.Step): React.ReactNode => {
         <MathRenderer
           row={Editor.print(value)}
           fontSize={20}
-          mathStyle={MathStyle.Display}
+          mathStyle={MathStyle.Text}
         />
       );
       switch (operation) {
@@ -136,6 +141,27 @@ const printStep = (step: Solver.Step): React.ReactNode => {
     case 'move matching variable terms to one side': {
       const { side } = step;
       return <span>Move matching variable terms to the {side} side</span>;
+    }
+    case 'substitute': {
+      const original = (
+        <MathRenderer
+          row={Editor.print(step.original)}
+          fontSize={20}
+          mathStyle={MathStyle.Text}
+        />
+      );
+      const substitution = (
+        <MathRenderer
+          row={Editor.print(step.substitution)}
+          fontSize={20}
+          mathStyle={MathStyle.Text}
+        />
+      );
+      return (
+        <span>
+          Substitute {substitution} for {original}
+        </span>
+      );
     }
     default:
       if (step.substeps.length === 1) {

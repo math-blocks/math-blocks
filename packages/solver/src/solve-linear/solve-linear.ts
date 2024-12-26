@@ -45,10 +45,6 @@ export function solveLinear(
     };
   }
 
-  // TODO:
-  // - simplifyBothSides
-  // - determine which side the variable we want to solve for is on
-  // - move all other terms to the other side, but move them one by one
   const substeps: Step[] = [];
 
   // Simplify the each side of the relation before proceeding
@@ -57,8 +53,6 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
-
-  print(rel); // ?
 
   // Check if anyone of the variables are inside fractions
   const denominators: number[] = [];

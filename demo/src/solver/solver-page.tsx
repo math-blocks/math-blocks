@@ -18,8 +18,8 @@ import Substeps from './substeps';
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
 // const parser = new Tex.Parser('x^2 + 5x + 6 = 0');
-// TODO: Update the TeX parser to convert dashes to the minus sign
-const parser = new Tex.Parser('2x + 3y \u2212 7 = x \u2212 y + 1');
+// const parser = new Tex.Parser('2x + 3y \u2212 7 = x \u2212 y + 1');
+const parser = new Tex.Parser('3x \u2212 y = 6, x + 2y = \u22121');
 const initialInput: Editor.types.CharRow = parser.parse();
 
 const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
@@ -41,10 +41,12 @@ const SolverPage: React.FunctionComponent = () => {
   const [step, setStep] = React.useState<Solver.Step | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [action, setAction] = React.useState<Solver.Problem['type']>(
-    'SolveLinearRelation',
+    'SolveSystemOfEquations',
   );
 
   const ast = React.useMemo(() => safeParse(input), [input]);
+
+  console.log(ast);
 
   const handleGo = React.useCallback(() => {
     if (!ast) {

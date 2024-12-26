@@ -26,6 +26,7 @@ type Operator =
   | 'gt'
   | 'gte'
   | 'supsub'
+  | 'comma'
   | 'nul';
 
 type NAryOperator =
@@ -38,7 +39,8 @@ type NAryOperator =
   | 'lt'
   | 'lte'
   | 'gt'
-  | 'gte';
+  | 'gte'
+  | 'comma';
 
 type EditorParser = Parser.IParser<TokenNode, Semantic.types.Node, Operator>;
 
@@ -176,6 +178,8 @@ const parseNaryInfix =
         return Semantic.builders.gt([left, right, ...rest], loc);
       case 'gte':
         return Semantic.builders.gte([left, right, ...rest], loc);
+      case 'comma':
+        return Semantic.builders.sequence([left, right, ...rest], loc);
     }
   };
 
@@ -234,6 +238,8 @@ const parseNaryArgs = (
       return [expr, ...parseNaryArgs(parser, op)];
     } else if (op === 'gt' && nextToken.name === TokenKind.GreaterThan) {
       // How do we deal wiht a mix of gt and gte, e.g. x > y >= z?
+      return [expr, ...parseNaryArgs(parser, op)];
+    } else if (op === 'comma' && nextToken.name === TokenKind.Comma) {
       return [expr, ...parseNaryArgs(parser, op)];
     } else {
       return [expr];
@@ -316,6 +322,8 @@ const getInfixParselet = (
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
         case TokenKind.Number:
           return { op: 'mul.imp', parse: parseNaryInfix('mul.imp') };
+        case TokenKind.Comma:
+          return { op: 'comma', parse: parseNaryInfix('comma') };
         default:
           return null;
       }
@@ -411,6 +419,8 @@ const getOpPrecedence = (op: Operator): number => {
   switch (op) {
     case 'nul':
       return 0;
+    case 'comma':
+      return 1;
     case 'eq':
     case 'lt':
     case 'lte':
