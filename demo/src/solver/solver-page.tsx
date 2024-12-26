@@ -20,7 +20,7 @@ const operators = Object.keys(macros).filter((key) => key === macros[key]);
 // const parser = new Tex.Parser('x^2 + 5x + 6 = 0');
 // TODO: Update the TeX parser to convert dashes to the minus sign
 const parser = new Tex.Parser('2x + 3y \u2212 7 = x \u2212 y + 1');
-const question: Editor.types.CharRow = parser.parse();
+const initialInput: Editor.types.CharRow = parser.parse();
 
 const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
   try {
@@ -36,13 +36,15 @@ const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
 //   e.g. 2(x + y) -> 2x + 2y the 2s would be the same color, etc.
 
 const SolverPage: React.FunctionComponent = () => {
-  const [ast, setAst] = React.useState(safeParse(question));
+  const [input, setInput] = React.useState(initialInput);
   const [answer, setAnswer] = React.useState<Editor.types.CharRow | null>(null);
   const [step, setStep] = React.useState<Solver.Step | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [action, setAction] = React.useState<Solver.Problem['type']>(
     'SolveLinearRelation',
   );
+
+  const ast = React.useMemo(() => safeParse(input), [input]);
 
   const handleGo = React.useCallback(() => {
     if (!ast) {
@@ -129,6 +131,25 @@ const SolverPage: React.FunctionComponent = () => {
         setError(null);
         break;
       }
+      case 'SolveSystemOfEquations': {
+        if (ast.type !== 'Sequence') {
+          setError("can't solve something that isn't a sequence");
+          return;
+        }
+        const problem: Solver.Problem = {
+          type: 'SolveSystemOfEquations',
+          equations: ast,
+        };
+        const result = Solver.solveProblem(problem);
+        if (!result) {
+          setError('no solution found');
+          return;
+        }
+        setAnswer(Editor.print(result.answer));
+        setStep(result.steps[0]);
+        setError(null);
+        break;
+      }
     }
   }, [action, ast]);
 
@@ -178,8 +199,8 @@ const SolverPage: React.FunctionComponent = () => {
           <div>
             <MathEditor
               readonly={false}
-              row={question}
-              onChange={(state) => setAst(safeParse(state.row))}
+              row={initialInput}
+              onChange={(state) => setInput(state.row)}
               style={{ minWidth: '100%' }}
               fontSize={24}
             />
@@ -197,6 +218,9 @@ const SolverPage: React.FunctionComponent = () => {
               <option value="SolveLinearRelation">Solve Linear Relation</option>
               <option value="SolveQuadraticEquation">
                 Solve Quadratic Equation
+              </option>
+              <option value="SolveSystemOfEquations">
+                Solve System of Equations
               </option>
             </select>
             <button onClick={handleGo}>Go</button>

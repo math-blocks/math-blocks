@@ -120,11 +120,17 @@ type SolveQuadraticEquation = {
   readonly variable: Semantic.types.Identifier;
 };
 
+type SolveSystemOfEquations = {
+  readonly type: 'SolveSystemOfEquations';
+  readonly equations: Semantic.types.Sequence;
+};
+
 export type Problem =
   | Factor
   | SimplifyExpression
   | SolveLinearRelation
-  | SolveQuadraticEquation;
+  | SolveQuadraticEquation
+  | SolveSystemOfEquations;
 
 export type Transform = (
   node: Semantic.types.Node,

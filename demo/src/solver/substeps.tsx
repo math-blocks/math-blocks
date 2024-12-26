@@ -53,7 +53,8 @@ const Substep = ({
           fontFamily: 'sans-serif',
         }}
       >
-        {num}: {printStep(substep)}
+        {num}: {printStep(substep)}{' '}
+        {canExpand && `(${substep.substeps.length} substeps)`}
       </div>
       {substep.section && (
         <div style={{ marginBottom: 6 }}>
