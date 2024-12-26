@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-node_modules-
       - name: yarn install
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: build-ci
         run: yarn build-ci
       - name: Upload Page Artifact
