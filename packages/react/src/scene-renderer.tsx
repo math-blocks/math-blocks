@@ -88,8 +88,7 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
   return (
     <g
       transform={`translate(${x},${y})`}
-      fill={style.fill}
-      stroke={style.stroke}
+      style={{ color: style.stroke }}
       id={_id}
     >
       {children.map((child, i) => {

@@ -13,17 +13,17 @@
             </g>
         </g>
         <g transform="translate(0,64.86)" id="8">
-            <g transform="translate(0,-15.48)" fill="darkcyan" stroke="darkcyan" id="5">
+            <g transform="translate(0,-15.48)" style="color:darkcyan" id="5">
                 <g transform="translate(0,-11.04)" id="6">
                     <path id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(9.833999999999998, 0) scale(0.06, -0.06)"></path>
                 </g>
                 <g transform="translate(0,8.881784197001252e-16)">
                     <line type="line" x1="0" y1="0" x2="49.367999999999995" y2="0" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                 </g>
-                <g transform="translate(0,63.809999999999995)" fill="orange" stroke="orange" id="7">
+                <g transform="translate(0,63.809999999999995)" style="color:orange" id="7">
                     <path id="1" style="opacity:1" aria-hidden="true" d="M 464,160 L 435,160 C 412,100 399,79 346,79L 207,79 L 137,76 L 137,81 L 269,206 C 375,313 432,382 432,471C 432,576 353,644 240,644C 143,644 75,588 44,491L 68,481 C 105,556 149,579 214,579C 291,579 339,531 339,456C 339,351 289,288 190,186L 38,34 L 38,0 L 432,0 Z" transform="translate(4.079999999999998, 0) scale(0.06, -0.06)"></path>
                     <g transform="translate(33.78,0)" id="3">
-                        <g transform="translate(0,-24.839999999999996)" fill="pink" stroke="pink" id="4">
+                        <g transform="translate(0,-24.839999999999996)" style="color:pink" id="4">
                             <path id="2" style="opacity:1" aria-hidden="true" d="M 243,610 C 243,643 224,665 191,665C 158,665 136,644 136,610C 136,575 158,556 188,556C 218,556 243,576 243,610ZM 219,476 L 197,476 L 57,465 L 57,438 C 57,438 74,440 91,440C 118,440 123,424 123,411C 123,394 120,380 120,380L 69,142 C 56,83 52,61 52,44C 52,9 75,-9 115,-9C 181,-9 220,47 255,96L 235,111 C 219,93 191,59 157,59C 145,59 139,65 139,78C 139,92 144,120 144,120Z" transform="translate(0, 0) scale(0.042, -0.042)"></path>
                         </g>
                     </g>
