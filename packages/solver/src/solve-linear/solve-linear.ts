@@ -45,10 +45,6 @@ export function solveLinear(
     };
   }
 
-  // TODO:
-  // - simplifyBothSides
-  // - determine which side the variable we want to solve for is on
-  // - move all other terms to the other side, but move them one by one
   const substeps: Step[] = [];
 
   // Simplify the each side of the relation before proceeding
@@ -57,8 +53,6 @@ export function solveLinear(
     substeps.push(step);
   }
   let rel = (step?.after as types.NumericRelation) ?? node;
-
-  print(rel); // ?
 
   // Check if anyone of the variables are inside fractions
   const denominators: number[] = [];
@@ -276,7 +270,7 @@ const moveTerm = (
     }
     const rel = reversedStep.after;
     return {
-      message: 'move terms to one side', // TODO: change this to 'move term to one side'
+      ...reversedStep,
       before: node,
       after: builders.numRel([rel.args[1], rel.args[0]], node.type),
       substeps: reversedStep.substeps,
@@ -320,8 +314,11 @@ const moveTerm = (
 
   const rel2 = builders.numRel([newLeft, newRight], node.type);
 
+  // TODO: replace this with 'do the same operation to both sides'
   return {
-    message: 'move terms to one side',
+    message: 'do the same operation to both sides',
+    operation: leftTerm.type === 'Neg' ? 'add' : 'sub',
+    value: newTerm.type === 'Neg' ? newTerm.arg : newTerm,
     before: node,
     after: rel2,
     substeps: [],

@@ -856,4 +856,40 @@ describe('EditorParser', () => {
       );
     });
   });
+
+  describe('sequences', () => {
+    test('1, 2, 3', () => {
+      const input = builders.row([
+        char('1'),
+        char(','),
+        char('2'),
+        char(','),
+        char('3'),
+      ]);
+
+      const ast = parser.parse(input);
+
+      expect(ast).toMatchInlineSnapshot(`(Sequence 1 2 3)`);
+    });
+
+    test('x = 1, y = 2', () => {
+      const input = builders.row([
+        char('x'),
+        char('='),
+        char('1'),
+        char(','),
+        char('y'),
+        char('='),
+        char('2'),
+      ]);
+
+      const ast = parser.parse(input);
+
+      expect(ast).toMatchInlineSnapshot(`
+        (Sequence
+          (Equals x 1)
+          (Equals y 2))
+      `);
+    });
+  });
 });

@@ -16,6 +16,7 @@ type StepType<
   readonly before: TNode;
   readonly after: TNode;
   readonly substeps: readonly Step<TNode>[];
+  readonly section?: boolean;
 } & Options;
 
 export type Side = 'left' | 'right';
@@ -86,6 +87,11 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
       TNode,
       { readonly numberOfSolutions: NumberOfSolutions }
     >
+  | StepType<
+      'substitute',
+      TNode,
+      { readonly original: TNode; readonly substitution: TNode }
+    >
   | StepType<'split factored equation', TNode>
   | StepType<'split linear term', TNode>
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression
@@ -119,11 +125,17 @@ type SolveQuadraticEquation = {
   readonly variable: Semantic.types.Identifier;
 };
 
+type SolveSystemOfEquations = {
+  readonly type: 'SolveSystemOfEquations';
+  readonly equations: Semantic.types.Sequence;
+};
+
 export type Problem =
   | Factor
   | SimplifyExpression
   | SolveLinearRelation
-  | SolveQuadraticEquation;
+  | SolveQuadraticEquation
+  | SolveSystemOfEquations;
 
 export type Transform = (
   node: Semantic.types.Node,

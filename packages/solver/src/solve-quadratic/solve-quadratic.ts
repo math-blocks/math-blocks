@@ -29,7 +29,7 @@ export function solveQuadratic(
     return;
   }
 
-  substeps.push(factorStep);
+  substeps.push({ ...factorStep, section: true });
 
   const factoredLeft = factorStep.after as types.Mul;
   const factors = factoredLeft.args;
@@ -48,7 +48,7 @@ export function solveQuadratic(
     substeps: [],
   };
 
-  substeps.push(splitStep);
+  substeps.push({ ...splitStep, section: true });
 
   const solutions: types.Node[] = [];
   for (const equation of relations) {
@@ -56,7 +56,7 @@ export function solveQuadratic(
     if (!step) {
       return undefined;
     }
-    substeps.push(step);
+    substeps.push({ ...step, section: true });
     solutions.push(step.after);
   }
 
