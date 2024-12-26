@@ -1,6 +1,12 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createHashRouter, RouterProvider, Link } from 'react-router-dom';
+import {
+  createHashRouter,
+  RouterProvider,
+  Link,
+  useLocation,
+  useMatches,
+} from 'react-router-dom';
 
 import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
@@ -54,6 +60,20 @@ const Homepage = () => {
   );
 };
 
+const CatchAll = () => {
+  const location = useLocation();
+  const matches = useMatches();
+
+  console.log('location =', location);
+  console.log('matches =', matches);
+
+  return (
+    <div>
+      <h1>CatchAll</h1>
+    </div>
+  );
+};
+
 const router = createHashRouter(
   [
     {
@@ -91,6 +111,10 @@ const router = createHashRouter(
     {
       path: '/svg',
       Component: SvgPage,
+    },
+    {
+      path: '/*',
+      Component: CatchAll,
     },
   ],
   { basename: import.meta.env.BASE_URL },
