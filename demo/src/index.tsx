@@ -98,3 +98,5 @@ const router = createHashRouter(
 
 const root = createRoot(container);
 root.render(<RouterProvider router={router} />);
+
+console.log('hello, world!');
