@@ -276,7 +276,7 @@ const moveTerm = (
     }
     const rel = reversedStep.after;
     return {
-      message: 'move terms to one side', // TODO: change this to 'move term to one side'
+      ...reversedStep,
       before: node,
       after: builders.numRel([rel.args[1], rel.args[0]], node.type),
       substeps: reversedStep.substeps,
@@ -320,8 +320,11 @@ const moveTerm = (
 
   const rel2 = builders.numRel([newLeft, newRight], node.type);
 
+  // TODO: replace this with 'do the same operation to both sides'
   return {
-    message: 'move terms to one side',
+    message: 'do the same operation to both sides',
+    operation: leftTerm.type === 'Neg' ? 'add' : 'sub',
+    value: newTerm.type === 'Neg' ? newTerm.arg : newTerm,
     before: node,
     after: rel2,
     substeps: [],

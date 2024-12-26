@@ -16,41 +16,29 @@ type Props = {
   readonly step: Solver.Step;
 };
 
+// TODO: split this into separate components.
 const Substeps: React.FunctionComponent<Props> = ({ prefix, start, step }) => {
-  const marginBottom = 8;
+  let current = start;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {step.substeps.map((substep, index) => {
         const before = substep.before;
-        const beforeRow = Editor.print(substep.before);
-        const afterRow = Editor.print(substep.after);
-
         const num = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
+        current = Solver.applyStep(current, substep);
 
         return (
-          <React.Fragment key={index + 1}>
+          <div key={index + 1} style={{ marginBottom: 8 }}>
             <div style={{ paddingBottom: 4, fontFamily: 'sans-serif' }}>
               {num}: {printStep(substep)}
             </div>
-            <MathRenderer
-              row={beforeRow}
-              style={{ marginBottom: marginBottom }}
-              fontSize={24}
-            />
             {substep.substeps.length > 1 && (
               <div style={{ paddingLeft: 64 }}>
                 <Substeps prefix={num} start={before} step={substep} />
               </div>
             )}
-            {
-              <MathRenderer
-                row={afterRow}
-                style={{ marginBottom: marginBottom }}
-                fontSize={24}
-              />
-            }
-          </React.Fragment>
+            {<MathRenderer row={Editor.print(current)} fontSize={24} />}
+          </div>
         );
       })}
     </div>
@@ -66,7 +54,7 @@ const printStep = (step: Solver.Step): React.ReactNode => {
       const renderedValue = (
         <MathRenderer
           row={Editor.print(value)}
-          fontSize={18}
+          fontSize={20}
           mathStyle={MathStyle.Display}
         />
       );

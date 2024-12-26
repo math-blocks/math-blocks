@@ -58,6 +58,11 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
 
     const { depth } = scene.content.bounds;
 
+    let verticalAlign = -Math.floor(depth);
+    if (verticalAlign < 0) {
+      verticalAlign = -Math.ceil(depth);
+    }
+
     return (
       <SceneRenderer
         ref={ref}
@@ -65,7 +70,7 @@ export const MathRenderer = React.forwardRef<SVGSVGElement, Props>(
         showHitboxes={showHitboxes}
         style={{
           ...style,
-          verticalAlign: -Math.floor(depth),
+          verticalAlign,
         }}
       />
     );
