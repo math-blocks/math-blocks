@@ -16,29 +16,87 @@ type Props = {
   readonly step: Solver.Step;
 };
 
+const Substep = ({
+  num,
+  substep,
+  start,
+  current,
+}: {
+  readonly num: string;
+  readonly substep: Solver.Step;
+  readonly start: Semantic.types.Node;
+  readonly current: Semantic.types.Node;
+}) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const canExpand = substep.substeps.length > 1;
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (canExpand) {
+        setExpanded((prev) => !prev);
+      }
+    },
+    [canExpand],
+  );
+
+  return (
+    <div
+      style={{
+        marginBottom: expanded ? 0 : 12,
+        cursor: canExpand ? 'pointer' : 'default',
+      }}
+      onClick={handleClick}
+    >
+      <div
+        style={{
+          paddingBottom: 4,
+          fontFamily: 'sans-serif',
+        }}
+      >
+        {num}: {printStep(substep)}
+      </div>
+      {substep.section && (
+        <div style={{ marginBottom: 6 }}>
+          <MathRenderer row={Editor.print(substep.before)} fontSize={24} />
+        </div>
+      )}
+      {expanded && (
+        <div style={{ paddingLeft: 12 }}>
+          <Substeps
+            prefix={num}
+            start={substep.section ? substep.before : start}
+            step={substep}
+          />
+        </div>
+      )}
+      {!expanded && (
+        <MathRenderer
+          row={Editor.print(substep.section ? substep.after : current)}
+          fontSize={24}
+        />
+      )}
+    </div>
+  );
+};
+
 // TODO: split this into separate components.
-const Substeps: React.FunctionComponent<Props> = ({ prefix, start, step }) => {
+const Substeps = ({ prefix, start, step }: Props) => {
   let current = start;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {step.substeps.map((substep, index) => {
-        const before = substep.before;
-        const num = prefix ? `${prefix}.${index + 1}` : `${index + 1}`;
+        const start = current;
         current = Solver.applyStep(current, substep);
 
         return (
-          <div key={index + 1} style={{ marginBottom: 8 }}>
-            <div style={{ paddingBottom: 4, fontFamily: 'sans-serif' }}>
-              {num}: {printStep(substep)}
-            </div>
-            {substep.substeps.length > 1 && (
-              <div style={{ paddingLeft: 64 }}>
-                <Substeps prefix={num} start={before} step={substep} />
-              </div>
-            )}
-            {<MathRenderer row={Editor.print(current)} fontSize={24} />}
-          </div>
+          <Substep
+            key={index + 1}
+            num={prefix ? `${prefix}.${index + 1}` : `${index + 1}`}
+            substep={substep}
+            start={start}
+            current={current}
+          />
         );
       })}
     </div>

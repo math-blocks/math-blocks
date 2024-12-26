@@ -16,6 +16,7 @@ type StepType<
   readonly before: TNode;
   readonly after: TNode;
   readonly substeps: readonly Step<TNode>[];
+  readonly section?: boolean;
 } & Options;
 
 export type Side = 'left' | 'right';

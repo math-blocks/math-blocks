@@ -1,4 +1,5 @@
 import { builders, types, util } from '@math-blocks/semantic';
+import type { Mutable } from 'utility-types';
 
 import { type Step } from '../types';
 import { solveLinear } from '../solve-linear/solve-linear';
@@ -36,10 +37,11 @@ export function solveSystem(node: types.Sequence): Extract<Step, {message: 'solv
 
   const [var1, var2] = [...identifiers].sort();
 
-  const step1 = solveLinear(eqn1, builders.identifier(var1));
+  const step1: Mutable<Step> | void = solveLinear(eqn1, builders.identifier(var1));
   if (!step1) {
     return;
   }
+  step1.section = true;
   const sol1 = step1.after;
   if (sol1?.type !== 'Equals') {
     return;
@@ -58,10 +60,11 @@ export function solveSystem(node: types.Sequence): Extract<Step, {message: 'solv
     },
   });
 
-  const step2 = solveLinear(eqn2Subbed as types.Eq, builders.identifier(var2));
+  const step2: Mutable<Step> | void = solveLinear(eqn2Subbed as types.Eq, builders.identifier(var2));
   if (!step2) {
     return;
   }
+  step2.section = true;
   const sol2 = step2.after as types.NumericRelation;
   if (sol2?.type !== 'Equals') {
     return;
@@ -86,7 +89,10 @@ export function solveSystem(node: types.Sequence): Extract<Step, {message: 'solv
     },
   });
 
-  const step3 = simplify(sol1Subbed)!;
+  const step3: Mutable<Step> | void  = simplify(sol1Subbed)!;
+  if (step3) {
+    step3.section = true;
+  }
   const sol3 = step3 ? step3.after : sol1Subbed;
 
   return {
