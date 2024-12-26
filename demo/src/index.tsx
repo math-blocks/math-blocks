@@ -117,7 +117,7 @@ const router = createHashRouter(
       Component: CatchAll,
     },
   ],
-  { basename: import.meta.env.BASE_URL },
+  // { basename: import.meta.env.BASE_URL },
 );
 
 const root = createRoot(container);
