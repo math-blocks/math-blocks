@@ -491,57 +491,31 @@ export const makeDelimiter = (
       ? (a: number, b: number) => a > b
       : (a: number, b: number) => a >= b;
 
-    switch (thresholdOptions.value) {
-      case 'both': {
-        if (compare(height, box.height) && compare(depth, box.depth)) {
-          if (i > 0 && canInterpolate(context, glyphIDs[i - 1], glyphID)) {
-            const amount = computeAmount(
-              context,
-              thresholdOptions,
-              glyphIDs[i - 1],
-              glyphID,
-              box,
-            );
-            return makeInterpolatedGlyph(
-              char,
-              glyphIDs[i - 1],
-              glyphID,
-              amount,
-              context,
-              true,
-            );
-          }
+    const isBigger =
+      thresholdOptions.value === 'sum'
+        ? compare(height + depth, box.height + box.depth)
+        : compare(height, box.height) && compare(depth, box.depth);
 
-          return makeGlyph(char, glyphID, context, true);
-        }
-        break;
+    if (isBigger) {
+      if (i > 0 && canInterpolate(context, glyphIDs[i - 1], glyphID)) {
+        const amount = computeAmount(
+          context,
+          thresholdOptions,
+          glyphIDs[i - 1],
+          glyphID,
+          box,
+        );
+        return makeInterpolatedGlyph(
+          char,
+          glyphIDs[i - 1],
+          glyphID,
+          amount,
+          context,
+          true,
+        );
       }
-      case 'sum': {
-        if (compare(height + depth, box.height + box.depth)) {
-          if (i > 0 && canInterpolate(context, glyphIDs[i - 1], glyphID)) {
-            const amount = computeAmount(
-              context,
-              thresholdOptions,
-              glyphIDs[i - 1],
-              glyphID,
-              box,
-            );
-            return makeInterpolatedGlyph(
-              char,
-              glyphIDs[i - 1],
-              glyphID,
-              amount,
-              context,
-              true,
-            );
-          }
 
-          // TODO: Adjust the delimiters shift so that the box is centered
-          // vertically within the delimiters.
-          return makeGlyph(char, glyphID, context, true);
-        }
-        break;
-      }
+      return makeGlyph(char, glyphID, context, true);
     }
   }
 
