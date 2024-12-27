@@ -10,6 +10,27 @@ const simpleRow = builders.row([
   builders.char('0'),
 ]);
 
+const quadraticEquation = builders.row([
+  builders.char('x'),
+  builders.char('='),
+  builders.frac(
+    [
+      builders.char('\u2212'),
+      builders.char('b'),
+      builders.char('\u00B1'),
+      builders.root(null, [
+        builders.char('b'),
+        builders.subsup(undefined, [builders.char('2')]),
+        builders.char('\u2212'),
+        builders.char('4'),
+        builders.char('a'),
+        builders.char('c'),
+      ]),
+    ],
+    [builders.char('2'), builders.char('a')],
+  ),
+]);
+
 const delimiters = builders.row([
   builders.char('x'),
   builders.char('+'),
@@ -197,6 +218,7 @@ const accents = builders.row([
 
 export const examples = [
   simpleRow,
+  quadraticEquation,
   addingFractions,
   allNodeTypes,
   delimiters,

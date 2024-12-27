@@ -79,6 +79,18 @@ export type Glyph = {
   readonly isDelimiter: boolean;
 } & Common;
 
+export type InterpolatedGlyph = {
+  readonly type: 'InterpolatedGlyph';
+  readonly char?: string;
+  readonly glyphID1: number; // This is specific to the Font in FontData
+  readonly glyphID2: number; // This is specific to the Font in FontData
+  readonly amount: number;
+  readonly size: number;
+  readonly fontData: FontData;
+  readonly pending?: boolean;
+  readonly isDelimiter: boolean;
+} & Common;
+
 export type Kern = {
   readonly type: 'Kern';
   readonly size: Dist;
@@ -92,7 +104,7 @@ export type HRule = {
   readonly width: number;
 } & Common;
 
-export type Node = HBox | VBox | Glyph | Kern | HRule;
+export type Node = HBox | VBox | Glyph | InterpolatedGlyph | Kern | HRule;
 
 export type Side = 'left' | 'right'; // TODO: make this a real enum
 export type Intersection =

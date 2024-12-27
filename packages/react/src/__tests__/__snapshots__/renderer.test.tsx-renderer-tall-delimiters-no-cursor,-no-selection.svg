@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 485 116" width="485" height="116" style="background:white;vertical-align:-41px">
-    <g fill="currentColor" stroke="none" transform="translate(0,0.0800000000000125)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 477 112" width="477" height="112" style="background:white;vertical-align:-37px">
+    <g fill="currentColor" stroke="none" transform="translate(0,0.7600000000000051)">
         <g transform="translate(0,74.94)" id="21">
             <g transform="translate(0,0)" id="9">
-                <g transform="translate(27,0)" id="10">
+                <g transform="translate(26.110470914127426,0)" id="10">
                     <g transform="translate(0,-15.48)" id="4">
                         <g transform="translate(0,-11.04)" id="5"></g>
                         <g transform="translate(0,8.881784197001252e-16)"></g>
@@ -13,10 +13,10 @@
                     </g>
                 </g>
             </g>
-            <g transform="translate(198.6,0)" id="11"></g>
-            <g transform="translate(271.8,0)" id="19">
-                <g transform="translate(0,20.400000000000006)"></g>
-                <g transform="translate(62.46,0)">
+            <g transform="translate(196.82094182825486,0)" id="11"></g>
+            <g transform="translate(270.0209418282549,0)" id="19">
+                <g transform="translate(0,19.499999999999986)"></g>
+                <g transform="translate(56.27211267605634,0)">
                     <g transform="translate(0,1.4210854715202004e-14)" id="20">
                         <g transform="translate(0,-15.48)" id="16">
                             <g transform="translate(0,-11.04)" id="17"></g>
@@ -31,8 +31,8 @@
         </g>
         <g transform="translate(0,74.94)" id="21">
             <g transform="translate(0,0)" id="9">
-                <path style="opacity:1" aria-hidden="true" d="M 64,270 C 64,-159 206,-511 395,-683L 418,-659 C 242,-450 159,-113 159,270C 159,653 242,990 418,1199L 395,1223 C 206,1051 64,699 64,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
-                <g transform="translate(27,0)" id="10">
+                <path style="opacity:1" aria-hidden="true" d="M 60.57825484764543,270 C 60.57825484764543,-125.77700831024933 196.7347645429363,-447.64058171745154 381.5270083102493,-605L 403.7583102493075,-580.9826869806094 C 232.54986149584488,-389.3628808864266 153.6246537396122,-84.68421052631578 153.6246537396122,270C 153.6246537396122,624.6842105263158 232.54986149584488,929.3628808864266 403.7583102493075,1120.9826869806095L 381.5270083102493,1145 C 196.7347645429363,987.6405817174516 60.57825484764543,665.7770083102494 60.57825484764543,270Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
+                <g transform="translate(26.110470914127426,0)" id="10">
                     <g transform="translate(0,-15.48)" id="4">
                         <g transform="translate(0,-11.04)" id="5">
                             <path id="0" style="opacity:1" aria-hidden="true" d="M 426,0 L 426,28 C 334,28 297,46 297,95L 297,639 L 268,639 L 74,584 L 74,551 C 105,561 156,567 176,567C 201,567 209,553 209,518L 209,95 C 209,45 174,28 80,28L 80,0 Z" transform="translate(57.449999999999996, 0) scale(0.06, -0.06)"></path>
@@ -49,16 +49,16 @@
                         </g>
                     </g>
                 </g>
-                <path style="opacity:1" aria-hidden="true" d="M 386,270 C 386,699 244,1051 55,1223L 32,1199 C 208,990 291,653 291,270C 291,-113 208,-450 32,-659L 55,-683 C 244,-511 386,-159 386,270Z" transform="translate(171.6, 0) scale(0.06, -0.06)"></path>
+                <path style="opacity:1" aria-hidden="true" d="M 374.59626038781164,270 C 374.59626038781164,665.7770083102494 238.43975069252076,987.6405817174516 53.647506925207765,1145L 31.416204986149587,1120.9826869806095 C 202.6246537396122,929.3628808864266 281.5498614958449,624.6842105263158 281.5498614958449,270C 281.5498614958449,-84.68421052631578 202.6246537396122,-389.3628808864266 31.416204986149587,-580.9826869806094L 53.647506925207765,-605 C 238.43975069252076,-447.64058171745154 374.59626038781164,-125.77700831024933 374.59626038781164,270Z" transform="translate(170.71047091412743, 0) scale(0.06, -0.06)"></path>
             </g>
-            <g transform="translate(198.6,0)" id="11">
+            <g transform="translate(196.82094182825486,0)" id="11">
                 <path style="opacity:1" aria-hidden="true" d="M 658,225 L 658,293 L 396,293 L 396,558 L 324,558 L 324,293 L 62,293 L 62,225 L 324,225 L 324,-40 L 396,-40 L 396,225 Z" transform="translate(15, 0) scale(0.06, -0.06)"></path>
             </g>
-            <g transform="translate(271.8,0)" id="19">
-                <g transform="translate(0,20.400000000000006)">
-                    <path style="opacity:1" aria-hidden="true" d="M 926,1589 L 484,-88 L 480,-88 L 216,603 L 196,603 L 30,494 L 49,465 L 153,505 L 451,-265 L 496,-265 L 976,1521 L 1076,1521 L 1076,1589 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
+            <g transform="translate(270.0209418282549,0)" id="19">
+                <g transform="translate(0,19.499999999999986)">
+                    <path style="opacity:1" aria-hidden="true" d="M 815.4600938967136,1573.9999999999998 L 453.3333333333333,-78.0774647887324 L 449.3333333333333,-78.0774647887324 L 204.2699530516432,635.4812206572769 L 184.2699530516432,635.4812206572769 L 22.591549295774648,525.8638497652581 L 39.739436619718305,497.48122065727694 L 143.7394366197183,537.4812206572769 L 425.71596244131456,-265 L 468.86384976525824,-265 L 862.9906103286385,1505.9999999999995 L 972.8685446009389,1505.9999999999995 L 972.8685446009389,1573.9999999999998 Z" transform="translate(0, 0) scale(0.06, -0.06)"></path>
                 </g>
-                <g transform="translate(62.46,0)">
+                <g transform="translate(56.27211267605634,0)">
                     <line type="line" x1="0" y1="-72.89999999999999" x2="148.68" y2="-72.89999999999999" stroke="currentColor" stroke-width="4.08" stroke-linecap="butt"></line>
                     <g transform="translate(0,1.4210854715202004e-14)" id="20">
                         <g transform="translate(0,-15.48)" id="16">

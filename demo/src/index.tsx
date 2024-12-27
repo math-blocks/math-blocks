@@ -1,12 +1,6 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  createHashRouter,
-  RouterProvider,
-  Link,
-  useLocation,
-  useMatches,
-} from 'react-router-dom';
+import { createHashRouter, RouterProvider, Link } from 'react-router-dom';
 
 import BaselinePage from './basline/baseline-page';
 import EditorPage from './editor/editor-page';
@@ -52,73 +46,61 @@ const Homepage = () => {
         <li>
           <Link to="/svg">SVG</Link>
         </li>
-        <li>
-          <Link to="/react-native">React Native</Link>
-        </li>
       </ul>
     </div>
   );
 };
 
-const CatchAll = () => {
-  const location = useLocation();
-  const matches = useMatches();
-
-  console.log('location =', location);
-  console.log('matches =', matches);
-
+const NotFound = () => {
   return (
     <div>
-      <h1>CatchAll</h1>
+      <h1>404: Not Found</h1>
     </div>
   );
 };
 
-const router = createHashRouter(
-  [
-    {
-      path: '/',
-      Component: Homepage,
-    },
-    {
-      path: '/baseline',
-      Component: BaselinePage,
-    },
-    {
-      path: '/editor',
-      Component: EditorPage,
-    },
-    {
-      path: '/parser',
-      Component: ParserPage,
-    },
-    {
-      path: '/mathml',
-      Component: MathmlPage,
-    },
-    {
-      path: '/handwriting',
-      Component: HandwritingPage,
-    },
-    {
-      path: '/auto-solver',
-      Component: SolverPage,
-    },
-    {
-      path: '/opentype-demo',
-      Component: OpenTypeDemo,
-    },
-    {
-      path: '/svg',
-      Component: SvgPage,
-    },
-    {
-      path: '/*',
-      Component: CatchAll,
-    },
-  ],
-  // { basename: import.meta.env.BASE_URL },
-);
+const router = createHashRouter([
+  {
+    path: '/',
+    Component: Homepage,
+  },
+  {
+    path: '/baseline',
+    Component: BaselinePage,
+  },
+  {
+    path: '/editor',
+    Component: EditorPage,
+  },
+  {
+    path: '/parser',
+    Component: ParserPage,
+  },
+  {
+    path: '/mathml',
+    Component: MathmlPage,
+  },
+  {
+    path: '/handwriting',
+    Component: HandwritingPage,
+  },
+  {
+    path: '/auto-solver',
+    Component: SolverPage,
+  },
+  {
+    path: '/opentype-demo',
+    Component: OpenTypeDemo,
+  },
+  {
+    path: '/svg',
+    Component: SvgPage,
+  },
+  {
+    path: '/*',
+    Component: NotFound,
+  },
+]);
 
 const root = createRoot(container);
 root.render(<RouterProvider router={router} />);
