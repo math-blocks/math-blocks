@@ -3,7 +3,7 @@ import { GlyphMetrics, parse } from '@math-blocks/opentype';
 import type { Mutable } from 'utility-types';
 import type { Blob } from 'buffer';
 
-import type { Font, Glyph, Path } from '@math-blocks/opentype';
+import type { Font, Glyph, Path, Command } from '@math-blocks/opentype';
 
 import stix2 from '../../../assets/STIX2Math.otf';
 
@@ -34,8 +34,8 @@ const lerp = (a: number, b: number, amount: number): number => {
   return amount * b + (1 - amount) * a;
 };
 
-const lerpPath = (path1: Path, path2: Path, amount: number): string => {
-  const commands: Mutable<Path> = [];
+const lerpPath = (path1: Path, path2: Path, amount: number): Path => {
+  const commands: Command[] = [];
 
   for (let i = 0; i < path1.length; i++) {
     const cmd1 = path1[i];
@@ -80,9 +80,13 @@ const lerpPath = (path1: Path, path2: Path, amount: number): string => {
     }
   }
 
+  return commands;
+};
+
+const pathToString = (path: Path): string => {
   let result = '';
 
-  for (const cmd of commands) {
+  for (const cmd of path) {
     if (cmd.type === 'M') {
       result += `M ${cmd.x},${cmd.y} `;
     } else if (cmd.type === 'L') {
@@ -152,11 +156,11 @@ const OpenTypeDemo: React.FC = () => {
     const d12 = font.getGlyph(end);
 
     for (let i = 0; i <= count + 5; i++) {
-      const d = lerpPath(d1.path, d12.path, i / count);
+      const path = lerpPath(d1.path, d12.path, i / count);
       lerpChildren.push(
         <path
           key={start + i}
-          d={d}
+          d={pathToString(path)}
           transform={`translate(${i * 50}, 0) scale(${scale}, -${scale})`}
         />,
       );
@@ -169,11 +173,11 @@ const OpenTypeDemo: React.FC = () => {
 
     // overshoot by twice
     for (let i = 0; i <= 12 + 12; i++) {
-      const d = lerpPath(surd.path, surd4.path, i / 12);
+      const path = lerpPath(surd.path, surd4.path, i / 12);
       surdChildren.push(
         <path
           key={start + i}
-          d={d}
+          d={pathToString(path)}
           transform={`translate(${i * 25}, 0) scale(${scale}, -${scale})`}
         />,
       );
@@ -211,11 +215,11 @@ const OpenTypeDemo: React.FC = () => {
     metrics.advance *= scale;
 
     return (
-      <svg viewBox="0 0 1024 1024" width={1024} height={1024}>
+      <svg viewBox="0 0 1024 800" width={1024} height={800}>
         <g fill="currentcolor">
           <path
             transform={`translate(100, 150) scale(${scale}, -${scale})`}
-            d={intPath}
+            d={pathToString(intPath)}
           />
           <path
             transform={`translate(150, 150) scale(${scale}, -${scale})`}
@@ -235,22 +239,22 @@ const OpenTypeDemo: React.FC = () => {
           <g fill="red" transform="translate(30, 512)">
             {lerpChildren}
           </g>
-          <g transform="translate(15, 800)">{surdChildren}</g>
+          <g transform="translate(15, 400)">{surdChildren}</g>
           <path
-            transform={`translate(500, 1000) scale(${scale}, -${scale})`}
+            transform={`translate(25, 800) scale(${scale}, -${scale})`}
             d={getPath(font.getGlyph(1661))}
           />
           <path
-            transform={`translate(500, 800) scale(${scale}, -${scale})`}
+            transform={`translate(25, 600) scale(${scale}, -${scale})`}
             d={getPath(font.getGlyph(1662))}
           />
           <path
-            transform={`translate(500, 850) scale(${scale}, -${scale})`}
+            transform={`translate(25, 650) scale(${scale}, -${scale})`}
             d={getPath(font.getGlyph(1664))}
           />
           {/* uni221A.var is a variant for sqrt without overbar */}
           <path
-            transform={`translate(600, 1000) scale(${scale}, -${scale})`}
+            transform={`translate(100, 800) scale(${scale}, -${scale})`}
             d={getPath(font.getGlyph(1663))}
           />
           <rect

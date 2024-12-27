@@ -19,7 +19,7 @@ import { HStack, VStack } from '../shared/layout';
 import FormattingPalette from '../shared/formatting-palette';
 import { examples } from './examples';
 
-const initialExample = 8;
+const initialExample = 1;
 
 const EditorPage: React.FunctionComponent = () => {
   const [stixFontData, setStixFontData] = React.useState<FontData | null>(null);
@@ -175,14 +175,15 @@ const EditorPage: React.FunctionComponent = () => {
                 defaultValue={initialExample}
               >
                 <option value={0}>Simple Equation</option>
-                <option value={1}>Adding Fractions</option>
-                <option value={2}>All Node Types</option>
-                <option value={3}>Tall Delimiters</option>
-                <option value={4}>Nested Fractions</option>
-                <option value={5}>Matrix</option>
-                <option value={6}>Superscripts & Subscripts</option>
-                <option value={7}>Integral</option>
-                <option value={8}>Accents</option>
+                <option value={1}>Quadratic Equation</option>
+                <option value={2}>Adding Fractions</option>
+                <option value={3}>All Node Types</option>
+                <option value={4}>Tall Delimiters</option>
+                <option value={5}>Nested Fractions</option>
+                <option value={6}>Matrix</option>
+                <option value={7}>Superscripts & Subscripts</option>
+                <option value={8}>Integral</option>
+                <option value={9}>Accents</option>
               </select>
             </HStack>
             <HStack>

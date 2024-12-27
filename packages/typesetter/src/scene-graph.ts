@@ -36,6 +36,15 @@ export type Glyph = {
   readonly glyph: types.Glyph;
 } & Common;
 
+export type InterpolatedGlyph = {
+  readonly type: 'interpolated';
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly interpolatedGlyph: types.InterpolatedGlyph;
+  readonly amount: number;
+} & Common;
+
 export type Line = {
   readonly type: 'line';
   readonly x1: number;
@@ -56,7 +65,7 @@ export type Rect = {
   readonly flag?: 'start' | 'end';
 } & Common;
 
-export type Node = Group | Glyph | Line | Rect;
+export type Node = Group | Glyph | InterpolatedGlyph | Line | Rect;
 
 export type Point = {
   readonly x: number;
@@ -90,6 +99,24 @@ const processGlyph = (glyph: types.Glyph, loc: Point): Node => {
       fill: glyph.style.color,
     },
     id: glyph.id,
+  };
+};
+
+const processInterpolatedGlyph = (
+  interpolatedGlyph: types.InterpolatedGlyph,
+  loc: Point,
+): Node => {
+  return {
+    type: 'interpolated',
+    x: loc.x,
+    y: loc.y,
+    width: Layout.getWidth(interpolatedGlyph),
+    interpolatedGlyph,
+    amount: interpolatedGlyph.amount,
+    style: {
+      fill: interpolatedGlyph.style.color,
+    },
+    id: interpolatedGlyph.id,
   };
 };
 
@@ -318,6 +345,41 @@ const processHBox = (box: types.HBox, loc: Point, context: Context): Group => {
 
           break;
         }
+        case 'InterpolatedGlyph': {
+          const child = processInterpolatedGlyph(node, pen);
+
+          if (layer === 'content') {
+            children.push(child);
+          }
+
+          if (layer === 'debug') {
+            children.push({
+              type: 'rect',
+              id: node.id,
+              x: pen.x,
+              y: pen.y - height,
+              width: advance,
+              height: depth + height,
+              style: debugStyle,
+            });
+          }
+
+          if (layer === 'hitboxes') {
+            // TODO: do a second pass on the hitboxes to expand them
+            // to their full height
+            children.push({
+              type: 'rect',
+              id: node.id,
+              x: pen.x,
+              y: pen.y - height,
+              width: advance,
+              height: depth + height,
+              style: debugStyle,
+            });
+          }
+
+          break;
+        }
         case 'Kern':
           if (node.flag) {
             if (layer === 'hitboxes') {
@@ -475,6 +537,45 @@ const processVBox = (box: types.VBox, loc: Point, context: Context): Group => {
         // in a vbox, we'll likely need it for accents.
         pen.y += height;
         const child = processGlyph(node, pen);
+
+        if (layer === 'content') {
+          children.push(child);
+        }
+
+        if (layer === 'debug') {
+          children.push({
+            type: 'rect',
+            id: node.id,
+            x: pen.x,
+            y: pen.y,
+            width: width,
+            height: depth + height,
+            style: debugStyle,
+          });
+        }
+
+        if (layer === 'hitboxes') {
+          // TODO: do a second pass on the hitboxes to expand them
+          // to their full height
+          children.push({
+            type: 'rect',
+            id: node.id,
+            x: pen.x,
+            y: pen.y,
+            width: width,
+            height: depth + height,
+            style: debugStyle,
+          });
+        }
+
+        pen.y += depth;
+        break;
+      }
+      case 'InterpolatedGlyph': {
+        // Although there currently isn't anything that uses a glyph
+        // in a vbox, we'll likely need it for accents.
+        pen.y += height;
+        const child = processInterpolatedGlyph(node, pen);
 
         if (layer === 'content') {
           children.push(child);

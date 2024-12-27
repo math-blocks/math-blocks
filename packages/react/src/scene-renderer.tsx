@@ -4,6 +4,8 @@ import { UnreachableCaseError } from '@math-blocks/core';
 import { SceneGraph } from '@math-blocks/typesetter';
 import * as OpenType from '@math-blocks/opentype';
 
+import { lerpPath } from './lerp';
+
 const Line: React.FunctionComponent<SceneGraph.Line> = ({
   id,
   style,
@@ -28,11 +30,8 @@ const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
   return <rect {...props} fill={fill} stroke="none" />;
 };
 
-const getPath = (glyph: OpenType.Glyph): string => {
+const svgPathFromFontPath = (path: OpenType.Path): string => {
   let result = '';
-
-  // The glyph's path is in font units.
-  const path = glyph.path;
 
   for (const cmd of path) {
     if (cmd.type === 'M') {
@@ -49,6 +48,13 @@ const getPath = (glyph: OpenType.Glyph): string => {
   }
 
   return result;
+};
+
+const getPath = (glyph: OpenType.Glyph): string => {
+  // The glyph's path is in font units.
+  const path = glyph.path;
+
+  return svgPathFromFontPath(path);
 };
 
 const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
@@ -75,6 +81,35 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
     />
   );
 };
+
+const InterpolatedGlyph: React.FunctionComponent<SceneGraph.InterpolatedGlyph> =
+  ({ x, y, interpolatedGlyph, amount, style }) => {
+    const id =
+      typeof interpolatedGlyph.id !== 'undefined'
+        ? String(interpolatedGlyph.id)
+        : undefined;
+
+    const { font } = interpolatedGlyph.fontData; // glyph1 and glyph2 should have the same font
+    const scale = interpolatedGlyph.size / font.head.unitsPerEm; // glyph1 and glyph2 should have the same size
+
+    const { path: path1 } = font.getGlyph(interpolatedGlyph.glyphID1);
+    const { path: path2 } = font.getGlyph(interpolatedGlyph.glyphID2);
+
+    const path = lerpPath(path1, path2, amount);
+
+    // Always uses paths since browsers do weird things to glyphs when rendering
+    // them in <text> elements.
+    return (
+      <path
+        fill={style.fill}
+        id={id}
+        style={{ opacity: interpolatedGlyph.pending ? 0.5 : 1.0 }}
+        aria-hidden="true"
+        d={svgPathFromFontPath(path)}
+        transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+      />
+    );
+  };
 
 const Group: React.FunctionComponent<SceneGraph.Group> = ({
   x,
@@ -103,6 +138,8 @@ const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
   switch (props.type) {
     case 'char':
       return <Glyph {...props} />;
+    case 'interpolated':
+      return <InterpolatedGlyph {...props} />;
     case 'group':
       return <Group {...props} />;
     case 'line':

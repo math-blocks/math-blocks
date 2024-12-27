@@ -1,4 +1,5 @@
 import { UnreachableCaseError } from '@math-blocks/core';
+import type { Font, GlyphMetrics } from '@math-blocks/opentype';
 
 import { MathStyle } from './enums';
 import type {
@@ -10,6 +11,7 @@ import type {
   Kern,
   Dist,
   Glyph,
+  InterpolatedGlyph,
   Node,
   HRule,
 } from './types';
@@ -79,6 +81,27 @@ export const makeGlyph = (
   };
 };
 
+export const makeInterpolatedGlyph = (
+  char: string,
+  glyphID1: number,
+  glyphID2: number,
+  amount: number,
+  context: Context,
+  isDelimiter = false,
+): InterpolatedGlyph => {
+  return {
+    type: 'InterpolatedGlyph',
+    char,
+    glyphID1,
+    glyphID2,
+    amount,
+    size: fontSizeForContext(context),
+    fontData: context.fontData,
+    style: {},
+    isDelimiter,
+  };
+};
+
 export const getCharAdvance = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
   const metrics = font.getGlyphMetrics(glyph.glyphID);
@@ -87,6 +110,28 @@ export const getCharAdvance = (glyph: Glyph): number => {
     throw new Error(`metrics do not exist for "${glyph.char}"`);
   }
   return (metrics.advance * glyph.size) / unitsPerEm;
+};
+
+const lerp = (a: number, b: number, amount: number): number => {
+  return amount * b + (1 - amount) * a;
+};
+
+export const getInterpolatedCharAdvance = (
+  glyph: InterpolatedGlyph,
+): number => {
+  const { font } = glyph.fontData;
+  const metrics1 = font.getGlyphMetrics(glyph.glyphID1);
+  const metrics2 = font.getGlyphMetrics(glyph.glyphID2);
+  const unitsPerEm = font.head.unitsPerEm;
+  if (!metrics1) {
+    throw new Error(`metrics do not exist for "${glyph.char}"`);
+  }
+  const interpolatedAdvance = lerp(
+    metrics1.advance,
+    metrics2.advance,
+    glyph.amount,
+  );
+  return (interpolatedAdvance * glyph.size) / unitsPerEm;
 };
 
 export const getCharBearingX = (glyph: Glyph): number => {
@@ -119,6 +164,22 @@ export const getCharHeight = (glyph: Glyph): number => {
   return (metrics.bearingY * glyph.size) / unitsPerEm;
 };
 
+export const getInterpolatedCharHeight = (glyph: InterpolatedGlyph): number => {
+  const { font } = glyph.fontData;
+  const metrics1 = font.getGlyphMetrics(glyph.glyphID1);
+  const metrics2 = font.getGlyphMetrics(glyph.glyphID2);
+  const unitsPerEm = font.head.unitsPerEm;
+  if (!metrics1 || !metrics2) {
+    throw new Error(`metrics do not exist for "${glyph.char}"`);
+  }
+  const interpolatedHeight = lerp(
+    metrics1.bearingY,
+    metrics2.bearingY,
+    glyph.amount,
+  );
+  return (interpolatedHeight * glyph.size) / unitsPerEm;
+};
+
 export const getCharDepth = (glyph: Glyph): number => {
   const { font } = glyph.fontData;
   const metrics = font.getGlyphMetrics(glyph.glyphID);
@@ -129,6 +190,22 @@ export const getCharDepth = (glyph: Glyph): number => {
   return ((metrics.height - metrics.bearingY) * glyph.size) / unitsPerEm;
 };
 
+export const getInterpolatedCharDepth = (glyph: InterpolatedGlyph): number => {
+  const { font } = glyph.fontData;
+  const metrics1 = font.getGlyphMetrics(glyph.glyphID1);
+  const metrics2 = font.getGlyphMetrics(glyph.glyphID2);
+  const unitsPerEm = font.head.unitsPerEm;
+  if (!metrics1 || !metrics2) {
+    throw new Error(`metrics do not exist for "${glyph.char}"`);
+  }
+  const interpolatedDepth = lerp(
+    metrics1.height - metrics1.bearingY,
+    metrics2.height - metrics2.bearingY,
+    glyph.amount,
+  );
+  return (interpolatedDepth * glyph.size) / unitsPerEm;
+};
+
 export const getWidth = (node: Node): number => {
   switch (node.type) {
     case 'HBox':
@@ -137,6 +214,8 @@ export const getWidth = (node: Node): number => {
       return node.width;
     case 'Glyph':
       return getCharAdvance(node);
+    case 'InterpolatedGlyph':
+      return getInterpolatedCharAdvance(node);
     case 'Kern':
       return node.size;
     case 'HRule':
@@ -154,6 +233,8 @@ export const getHeight = (node: Node): number => {
       return node.height - node.shift;
     case 'Glyph':
       return getCharHeight(node);
+    case 'InterpolatedGlyph':
+      return getInterpolatedCharHeight(node);
     case 'Kern':
       return 0;
     case 'HRule':
@@ -171,6 +252,8 @@ export const getDepth = (node: Node): number => {
       return node.depth + node.shift;
     case 'Glyph':
       return getCharDepth(node);
+    case 'InterpolatedGlyph':
+      return getInterpolatedCharDepth(node);
     case 'Kern':
       return 0;
     case 'HRule':
@@ -188,6 +271,8 @@ export const vsize = (node: Node): number => {
       return node.height + node.depth;
     case 'Glyph':
       return getCharHeight(node) + getCharDepth(node);
+    case 'InterpolatedGlyph':
+      return getInterpolatedCharHeight(node) + getInterpolatedCharDepth(node);
     case 'Kern':
       return node.size;
     case 'HRule':
@@ -335,72 +420,19 @@ type ThresholdOptions = {
 // TODO: special case how we compute the delimiters for rows including "y" or
 // other deep descenders so that we get the same font size as the rest of the
 // glyphs on that row.
-const getDelimiter = (
-  char: string,
-  box: HBox | VBox,
-  thresholdOptions: ThresholdOptions,
-  context: Context,
-): number => {
+const getDelimiters = (char: string, context: Context): number[] => {
   const { font } = context.fontData;
 
   const glyphID = font.getGlyphID(char);
   const construction = font.math.variants.getVertGlyphConstruction(glyphID);
 
   if (!construction) {
-    return glyphID;
+    return [glyphID];
   }
 
-  const fontSize = fontSizeForContext(context);
-
-  for (let i = 0; i < construction.mathGlyphVariantRecords.length; i++) {
-    const record = construction.mathGlyphVariantRecords[i];
-
-    const glyphMetrics = font.getGlyphMetrics(record.variantGlyph);
-    const height = (glyphMetrics.bearingY * fontSize) / font.head.unitsPerEm;
-    const depth =
-      ((glyphMetrics.height - glyphMetrics.bearingY) * fontSize) /
-      font.head.unitsPerEm;
-
-    const compare = thresholdOptions.strict
-      ? (a: number, b: number) => a > b
-      : (a: number, b: number) => a >= b;
-
-    // TODO: add an option to configure whether these inequalities are
-    // strict or not.
-    switch (thresholdOptions.value) {
-      case 'both': {
-        if (compare(height, box.height) && compare(depth, box.depth)) {
-          // HACK: this is to ensure that we're using the same size
-          // glyph as the row when it contains deep descenders like "y"
-          if (i === 1 && char !== '\u221a') {
-            return glyphID;
-          }
-          return record.variantGlyph;
-        }
-        break;
-      }
-      case 'sum': {
-        if (compare(height + depth, box.height + box.depth)) {
-          // HACK: this is to ensure that we're using the same size
-          // glyph as the row when it contains deep descenders like "y"
-          if (i === 1 && char !== '\u221a') {
-            return glyphID;
-          }
-          return record.variantGlyph;
-        }
-        break;
-      }
-    }
-  }
-
-  if (construction.mathGlyphVariantRecords.length > 0) {
-    // TODO: return a glyph assembly layout instead of the tallest delim
-    return construction.mathGlyphVariantRecords[
-      construction.mathGlyphVariantRecords.length - 1
-    ].variantGlyph;
-  }
-
-  return glyphID;
+  return construction.mathGlyphVariantRecords.map(
+    (record) => record.variantGlyph,
+  );
 };
 
 /**
@@ -418,8 +450,195 @@ export const makeDelimiter = (
   box: HBox | VBox,
   thresholdOptions: ThresholdOptions,
   context: Context,
-): Glyph => {
-  const glyphID = getDelimiter(char, box, thresholdOptions, context);
+): Glyph | InterpolatedGlyph => {
+  const glyphIDs = getDelimiters(char, context);
 
-  return makeGlyph(char, glyphID, context, true);
+  if (glyphIDs.length === 1) {
+    return makeGlyph(char, glyphIDs[0], context, true);
+  }
+
+  const { font } = context.fontData;
+  const fontSize = fontSizeForContext(context);
+
+  if (canInterpolate(context, glyphIDs[0], glyphIDs[glyphIDs.length - 1])) {
+    const amount = computeAmount(
+      context,
+      thresholdOptions,
+      glyphIDs[0],
+      glyphIDs[glyphIDs.length - 1],
+      box,
+    );
+
+    return makeInterpolatedGlyph(
+      char,
+      glyphIDs[0],
+      glyphIDs[glyphIDs.length - 1],
+      amount,
+      context,
+      true,
+    );
+  }
+
+  for (let i = 0; i < glyphIDs.length; i++) {
+    const glyphID = glyphIDs[i];
+    const glyphMetrics = font.getGlyphMetrics(glyphID);
+    const height = (glyphMetrics.bearingY * fontSize) / font.head.unitsPerEm;
+    const depth =
+      ((glyphMetrics.height - glyphMetrics.bearingY) * fontSize) /
+      font.head.unitsPerEm;
+
+    const compare = thresholdOptions.strict
+      ? (a: number, b: number) => a > b
+      : (a: number, b: number) => a >= b;
+
+    switch (thresholdOptions.value) {
+      case 'both': {
+        if (compare(height, box.height) && compare(depth, box.depth)) {
+          if (i > 0 && canInterpolate(context, glyphIDs[i - 1], glyphID)) {
+            const amount = computeAmount(
+              context,
+              thresholdOptions,
+              glyphIDs[i - 1],
+              glyphID,
+              box,
+            );
+            return makeInterpolatedGlyph(
+              char,
+              glyphIDs[i - 1],
+              glyphID,
+              amount,
+              context,
+              true,
+            );
+          }
+
+          return makeGlyph(char, glyphID, context, true);
+        }
+        break;
+      }
+      case 'sum': {
+        if (compare(height + depth, box.height + box.depth)) {
+          if (i > 0 && canInterpolate(context, glyphIDs[i - 1], glyphID)) {
+            const amount = computeAmount(
+              context,
+              thresholdOptions,
+              glyphIDs[i - 1],
+              glyphID,
+              box,
+            );
+            return makeInterpolatedGlyph(
+              char,
+              glyphIDs[i - 1],
+              glyphID,
+              amount,
+              context,
+              true,
+            );
+          }
+
+          // TODO: Adjust the delimiters shift so that the box is centered
+          // vertically within the delimiters.
+          return makeGlyph(char, glyphID, context, true);
+        }
+        break;
+      }
+    }
+  }
+
+  // TODO: return a glyph assembly layout instead of the tallest delim
+  return makeGlyph(char, glyphIDs[glyphIDs.length - 1], context, true);
+};
+
+const getGlyphHeight = (
+  glyphMetrics: GlyphMetrics,
+  font: Font,
+  fontSize: number,
+): number => {
+  return (glyphMetrics.bearingY * fontSize) / font.head.unitsPerEm;
+};
+
+const getGlyphDepth = (
+  glyphMetrics: GlyphMetrics,
+  font: Font,
+  fontSize: number,
+): number => {
+  return (
+    ((glyphMetrics.height - glyphMetrics.bearingY) * fontSize) /
+    font.head.unitsPerEm
+  );
+};
+
+const canInterpolate = (
+  context: Context,
+  glyphID1: number,
+  glyphID2: number,
+): boolean => {
+  const { font } = context.fontData;
+
+  const path1 = font.getGlyph(glyphID1).path;
+  const path2 = font.getGlyph(glyphID2).path;
+
+  if (path1.length !== path2.length) {
+    return false;
+  }
+
+  return path1.every((cmd1, i) => {
+    const cmd2 = path2[i];
+    return cmd1.type === cmd2.type;
+  });
+};
+
+const computeAmount = (
+  context: Context,
+  thresholdOptions: ThresholdOptions,
+  glyphID1: number,
+  glyphID2: number,
+  box: HBox | VBox,
+): number => {
+  const { font } = context.fontData;
+  const fontSize = fontSizeForContext(context);
+
+  const firstGlyphMetrics = font.getGlyphMetrics(glyphID1);
+  const lastGlyphMetrics = font.getGlyphMetrics(glyphID2);
+
+  let amount: number;
+
+  if (thresholdOptions.value === 'sum') {
+    const minSum =
+      getGlyphHeight(firstGlyphMetrics, font, fontSize) +
+      getGlyphDepth(firstGlyphMetrics, font, fontSize);
+    const maxSum =
+      getGlyphHeight(lastGlyphMetrics, font, fontSize) +
+      getGlyphDepth(lastGlyphMetrics, font, fontSize);
+
+    const thickness = fontSize * font.math.constants.radicalRuleThickness;
+    const gap = fontSize * font.math.constants.radicalVerticalGap;
+    const sum = box.height + box.depth + gap + thickness;
+
+    if (sum > maxSum) {
+      amount = 1;
+    } else if (sum < minSum) {
+      amount = 0;
+    } else {
+      amount = (sum - minSum) / (maxSum - minSum);
+    }
+  } else {
+    const minDepth = getGlyphDepth(firstGlyphMetrics, font, fontSize);
+    const minHeight = getGlyphHeight(firstGlyphMetrics, font, fontSize);
+    const maxDepth = getGlyphDepth(lastGlyphMetrics, font, fontSize);
+    const maxHeight = getGlyphHeight(lastGlyphMetrics, font, fontSize);
+
+    if (box.height < minHeight && box.depth < minDepth) {
+      amount = 0;
+    } else if (box.height > maxHeight || box.depth > maxDepth) {
+      amount = 1;
+    } else {
+      amount = Math.max(
+        (box.height - minHeight) / (maxHeight - minHeight),
+        (box.depth - minDepth) / (maxDepth - minDepth),
+      );
+    }
+  }
+
+  return amount;
 };
