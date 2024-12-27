@@ -99,7 +99,7 @@ const keyupToAction = (key: string): Editor.Action | null => {
 
 // TODO: expose other settings such as display style as props
 // TODO: add an onBlur prop
-export const MathEditor: React.FunctionComponent<Props> = (props: Props) => {
+export const MathEditor = (props: Props): React.ReactNode => {
   const memoizedState: Editor.State = useMemo(() => {
     return {
       selecting: false,

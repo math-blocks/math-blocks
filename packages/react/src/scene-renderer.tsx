@@ -6,12 +6,7 @@ import * as OpenType from '@math-blocks/opentype';
 
 import { lerpPath } from './lerp';
 
-const Line: React.FunctionComponent<SceneGraph.Line> = ({
-  id,
-  style,
-  thickness,
-  ...props
-}) => {
+const Line = ({ id, style, thickness, ...props }: SceneGraph.Line) => {
   return (
     <line
       {...props}
@@ -22,11 +17,7 @@ const Line: React.FunctionComponent<SceneGraph.Line> = ({
   );
 };
 
-const Rect: React.FunctionComponent<SceneGraph.Rect> = ({
-  fill,
-  id,
-  ...props
-}) => {
+const Rect = ({ fill, id, ...props }: SceneGraph.Rect) => {
   return <rect {...props} fill={fill} stroke="none" />;
 };
 
@@ -57,12 +48,7 @@ const getPath = (glyph: OpenType.Glyph): string => {
   return svgPathFromFontPath(path);
 };
 
-const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
-  x,
-  y,
-  glyph,
-  style,
-}) => {
+const Glyph = ({ x, y, glyph, style }: SceneGraph.Glyph) => {
   const id = typeof glyph.id !== 'undefined' ? String(glyph.id) : undefined;
 
   const { font } = glyph.fontData;
@@ -82,42 +68,41 @@ const Glyph: React.FunctionComponent<SceneGraph.Glyph> = ({
   );
 };
 
-const InterpolatedGlyph: React.FunctionComponent<SceneGraph.InterpolatedGlyph> =
-  ({ x, y, interpolatedGlyph, amount, style }) => {
-    const id =
-      typeof interpolatedGlyph.id !== 'undefined'
-        ? String(interpolatedGlyph.id)
-        : undefined;
-
-    const { font } = interpolatedGlyph.fontData; // glyph1 and glyph2 should have the same font
-    const scale = interpolatedGlyph.size / font.head.unitsPerEm; // glyph1 and glyph2 should have the same size
-
-    const { path: path1 } = font.getGlyph(interpolatedGlyph.glyphID1);
-    const { path: path2 } = font.getGlyph(interpolatedGlyph.glyphID2);
-
-    const path = lerpPath(path1, path2, amount);
-
-    // Always uses paths since browsers do weird things to glyphs when rendering
-    // them in <text> elements.
-    return (
-      <path
-        fill={style.fill}
-        id={id}
-        style={{ opacity: interpolatedGlyph.pending ? 0.5 : 1.0 }}
-        aria-hidden="true"
-        d={svgPathFromFontPath(path)}
-        transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
-      />
-    );
-  };
-
-const Group: React.FunctionComponent<SceneGraph.Group> = ({
+const InterpolatedGlyph = ({
   x,
   y,
-  children,
+  interpolatedGlyph,
+  amount,
   style,
-  id,
-}) => {
+}: SceneGraph.InterpolatedGlyph) => {
+  const id =
+    typeof interpolatedGlyph.id !== 'undefined'
+      ? String(interpolatedGlyph.id)
+      : undefined;
+
+  const { font } = interpolatedGlyph.fontData; // glyph1 and glyph2 should have the same font
+  const scale = interpolatedGlyph.size / font.head.unitsPerEm; // glyph1 and glyph2 should have the same size
+
+  const { path: path1 } = font.getGlyph(interpolatedGlyph.glyphID1);
+  const { path: path2 } = font.getGlyph(interpolatedGlyph.glyphID2);
+
+  const path = lerpPath(path1, path2, amount);
+
+  // Always uses paths since browsers do weird things to glyphs when rendering
+  // them in <text> elements.
+  return (
+    <path
+      fill={style.fill}
+      id={id}
+      style={{ opacity: interpolatedGlyph.pending ? 0.5 : 1.0 }}
+      aria-hidden="true"
+      d={svgPathFromFontPath(path)}
+      transform={`translate(${x}, ${y}) scale(${scale}, -${scale})`}
+    />
+  );
+};
+
+const Group = ({ x, y, children, style, id }: SceneGraph.Group) => {
   const _id = typeof id !== 'undefined' ? String(id) : undefined;
 
   return (
@@ -134,7 +119,7 @@ const Group: React.FunctionComponent<SceneGraph.Group> = ({
   );
 };
 
-const Node: React.FunctionComponent<SceneGraph.Node> = (props) => {
+const Node = (props: SceneGraph.Node) => {
   switch (props.type) {
     case 'char':
       return <Glyph {...props} />;
