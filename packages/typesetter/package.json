@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/typesetter",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -10,8 +10,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@math-blocks/core": "^0.0.11",
-        "@math-blocks/editor": "^0.0.11",
-        "@math-blocks/opentype": "^0.0.11"
+        "@math-blocks/core": "^0.0.12",
+        "@math-blocks/editor": "^0.0.12",
+        "@math-blocks/opentype": "^0.0.12"
     }
 }
