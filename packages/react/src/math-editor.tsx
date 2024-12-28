@@ -272,11 +272,11 @@ export const MathEditor = (props: Props): React.ReactNode => {
     setState(newState);
   }, [props.row]);
 
-  const { className, style, fontSize, showHitboxes, inline } = props;
+  const { className, style = {}, fontSize = 64, showHitboxes, inline } = props;
 
   const context: Typesetter.Context = {
     fontData: fontData,
-    baseFontSize: fontSize || 64,
+    baseFontSize: fontSize,
     mathStyle: inline
       ? Typesetter.MathStyle.Text
       : Typesetter.MathStyle.Display,
@@ -354,11 +354,6 @@ export const MathEditor = (props: Props): React.ReactNode => {
       <SceneRenderer scene={scene} ref={svgRef} showHitboxes={showHitboxes} />
     </div>
   );
-};
-
-MathEditor.defaultProps = {
-  style: {},
-  fontSize: 64,
 };
 
 export default MathEditor;
