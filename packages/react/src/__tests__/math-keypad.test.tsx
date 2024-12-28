@@ -13,7 +13,7 @@ type Props = {
   readonly editMock: (event: EditingEvent) => unknown;
 };
 
-const TestComp: React.FunctionComponent<Props> = (props: Props) => {
+const TestComp = (props: Props) => {
   const { editMock } = props;
   const handleEditing = React.useCallback(
     (e: CustomEvent): void => {

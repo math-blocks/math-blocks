@@ -47,9 +47,7 @@ const buttons: readonly CharButton[] = [
   { type: 'InsertChar', name: 'partial', char: '\u2202' },
 ];
 
-type EmptyProps = Record<string, never>;
-
-const MathKeypad: React.FunctionComponent<EmptyProps> = () => {
+const MathKeypad = (): React.ReactNode => {
   const handleClick = (button: CharButton): void => {
     if (document.activeElement) {
       const event = new KeyboardEvent('keydown', {
