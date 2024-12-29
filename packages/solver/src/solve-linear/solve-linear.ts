@@ -3,7 +3,6 @@ import { builders, types, util } from '@math-blocks/semantic';
 import { divByCoeff } from './transforms/div-both-sides';
 import { mulByNumber } from './transforms/mul-both-sides';
 import { simplifyBothSides } from './transforms/simplify-both-sides';
-import { isLinear } from '../solve-system/solve-system';
 
 import { Step, NumberOfSolutions } from '../types';
 import { print } from '@math-blocks/testing';
@@ -368,4 +367,56 @@ function getCoeff(node: types.Node): Fraction {
 
 const insert = <T>(arr: readonly T[], index: number, item: T): T[] => {
   return [...arr.slice(0, index), item, ...arr.slice(index)];
+};
+
+export const isLinear = (node: types.Node): boolean => {
+  if (node.type === 'Sequence') {
+    return node.args.every(isLinear);
+  }
+  if (util.isNumericRelation(node)) {
+    return isLinear(node.args[0]) && isLinear(node.args[1]);
+  }
+  if (node.type === 'Add') {
+    return node.args.every(isLinear);
+  }
+  if (node.type === 'Neg') {
+    return isLinear(node.arg);
+  }
+  if (node.type === 'Mul') {
+    let count = 0;
+
+    util.traverse(node, {
+      enter: (node) => {
+        if (node.type === 'Identifier') {
+          count += 1;
+        }
+      },
+    });
+
+    return count <= 1;
+  }
+  if (node.type === 'Div') {
+    let denCount = 0;
+
+    util.traverse(node.args[1], {
+      enter: (node) => {
+        if (node.type === 'Identifier') {
+          denCount += 1;
+        }
+      },
+    });
+
+    if (denCount > 0) {
+      return false;
+    }
+
+    return isLinear(node.args[0]);
+  }
+  if (node.type === 'Identifier') {
+    return true;
+  }
+  if (node.type === 'Number') {
+    return true;
+  }
+  return false;
 };
