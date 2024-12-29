@@ -30,7 +30,7 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-node_modules-
       - name: yarn install
-        run: yarn install
+        run: yarn install --frozen-lockfile
       - name: test
         run: yarn coverage
       - name: codecov
