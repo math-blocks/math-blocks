@@ -96,7 +96,8 @@
     "start-storybook": "start-storybook -p 6006",
     "clean": "rm -rf packages/*/out .buildcache",
     "storybook": "start-storybook -p 6006 --no-dll",
-    "sloc": "sloc packages demo tools -e '(out|dist)'"
+    "sloc": "sloc packages demo tools -e '(out|dist)'",
+    "format": "prettier . --write"
   },
   "dependencies": {
     "classnames": "^2.3.1",

@@ -1,4 +1,4 @@
-body { 
+body {
   margin: 0;
 }
 
@@ -15,8 +15,8 @@ body {
   padding: 8px 16px;
   border-radius: 5px;
   margin: 2px;
-  color: #CCC;
-  border: solid 1px #CCC;
+  color: #ccc;
+  border: solid 1px #ccc;
 }
 
 .tabButton:hover {
