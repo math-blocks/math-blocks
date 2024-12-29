@@ -47,9 +47,9 @@ type ConstructorDesc = {
   readonly name: string;
   readonly arity: Arity;
   readonly options?: Record<string, 'boolean' | 'number' | 'string'>;
-}
+};
 
-type Descriptor = 
+type Descriptor =
   | IdentifierDesc
   | NumberDesc
   | FunctionDesc
@@ -122,7 +122,7 @@ const Constructor = <Name extends string>(
     name,
     arity,
   };
-  
+
   if (options) {
     result.options = options;
   }
@@ -133,13 +133,13 @@ const Constructor = <Name extends string>(
 // TODO: unify the property names with the 'name' field in each node
 // TODO: update the names to match the names from openmath.org
 export const definitions: Record<string, Descriptor> = {
-  Number: {kind: 'number', name: 'Number'},
-  Identifier: {kind: 'identifier', name: 'Identifier'},
-  Function: {kind: 'function', name: 'Function', arity: 'nary'},
+  Number: { kind: 'number', name: 'Number' },
+  Identifier: { kind: 'identifier', name: 'Identifier' },
+  Function: { kind: 'function', name: 'Function', arity: 'nary' },
 
   // Arithmetic
   Add: Operation('Add', 'nary', 'arith'), // Rename to Plus
-  Mul: Operation('Mul', 'nary', 'arith', undefined, {implicit: 'boolean'}), // Rename to Times
+  Mul: Operation('Mul', 'nary', 'arith', undefined, { implicit: 'boolean' }), // Rename to Times
   PlusMinus: Operation('PlusMinus', 'nary', 'arith'),
   MinusPlus: Operation('MinusPlus', 'nary', 'arith'),
   UnaryPlusMinus: Operation('UnaryPlusMinus', 'unary', 'arith'),
@@ -148,10 +148,14 @@ export const definitions: Record<string, Descriptor> = {
   Div: Operation('Div', 'binary', 'arith'), // Rename to Divide
   Mod: Operation('Modulo', 'binary', 'arith'),
   Pow: Operation('Power', 'binary', 'arith', ['base', 'exp']), // Rename to Power
-  Root: Operation('Root', 'binary', 'arith', ['radicand', 'index'], {sqrt: 'boolean'}),
+  Root: Operation('Root', 'binary', 'arith', ['radicand', 'index'], {
+    sqrt: 'boolean',
+  }),
 
   Abs: Operation('AbsoluteValue', 'unary', 'arith'),
-  Neg: Operation('Neg', 'unary', 'arith', undefined, {subtraction: 'boolean'}),
+  Neg: Operation('Neg', 'unary', 'arith', undefined, {
+    subtraction: 'boolean',
+  }),
 
   Sin: Operation('Sin', 'unary', 'arith'),
   Cos: Operation('Cos', 'unary', 'arith'),
@@ -221,8 +225,8 @@ export const definitions: Record<string, Descriptor> = {
   Complexes: Constant('Complexes', 'set', '\\mathbb{C}'),
 
   // Linear Algebra
-  Matrix: Constructor('Matrix', 'nary', {rows: 'number', cols: 'number'}),
-  Vector: Constructor('Vector', 'nary', {dim: 'number'}),
+  Matrix: Constructor('Matrix', 'nary', { rows: 'number', cols: 'number' }),
+  Vector: Constructor('Vector', 'nary', { dim: 'number' }),
 
   Determinant: Operation('Determinant', 'unary', 'lin-alg'),
   Transpose: Operation('Transpose', 'unary', 'lin-alg'),
@@ -230,37 +234,40 @@ export const definitions: Record<string, Descriptor> = {
   ScalarProduct: Operation('ScalarProduct', 'binary', 'lin-alg'), // dot product
 
   // Calculus
-  Limit: Operation(
-    'Limit', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', to: 'NodeTypes[\'Number\'] | NodeTypes[\'Neg\']', approach: '\'left\' | \'right\' | \'both\''},
-  ),
-  Integral: Operation(
-    'Integral', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']'},
-  ),
-  DefInt: Operation(
-    'DefiniteIntegral', 'unary', 'arith', undefined, 
-    {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
-  ),
-  Diff: Operation(
-    'Derivative', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', degree: 'Node'},
-  ),
-  PartialDiff: Operation(
-    'PartialDerivative', 'unary', 'arith', undefined,
-    {bvars: 'readonly NodeTypes[\'Identifier\'][]', degrees: 'readonly Node[]'},
-  ),
+  Limit: Operation('Limit', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+    to: "NodeTypes['Number'] | NodeTypes['Neg']",
+    approach: "'left' | 'right' | 'both'",
+  }),
+  Integral: Operation('Integral', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+  }),
+  DefInt: Operation('DefiniteIntegral', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+    lower: 'Node',
+    upper: 'Node',
+  }),
+  Diff: Operation('Derivative', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+    degree: 'Node',
+  }),
+  PartialDiff: Operation('PartialDerivative', 'unary', 'arith', undefined, {
+    bvars: "readonly NodeTypes['Identifier'][]",
+    degrees: 'readonly Node[]',
+  }),
 
   // Sequences and Series
   Sequence: Constructor('Sequence', 'nary'),
-  Sum: Operation(
-    'Sum', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
-  ),
-  Product: Operation(
-    'Product', 'unary', 'arith', undefined,
-    {bvar: 'NodeTypes[\'Identifier\']', lower: 'Node', upper: 'Node'},
-  ),
+  Sum: Operation('Sum', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+    lower: 'Node',
+    upper: 'Node',
+  }),
+  Product: Operation('Product', 'unary', 'arith', undefined, {
+    bvar: "NodeTypes['Identifier']",
+    lower: 'Node',
+    upper: 'Node',
+  }),
 
   // Relations
   Eq: Relation('Equals', 'nary', ['arith', 'logic', 'set']),

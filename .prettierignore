@@ -2,4 +2,9 @@
 *.md
 *.json
 *.yml
-packages/semantic/src/node-*.ts
+.rollup.cache
+out
+dist
+# these are generated files
+packages/semantic/src/builders.ts
+packages/semantic/src/types.ts
