@@ -1,6 +1,6 @@
 {
     "name": "@math-blocks/react",
-    "version": "0.0.13",
+    "version": "0.0.12",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "@math-blocks/editor": "^0.0.12",
         "@math-blocks/opentype": "^0.0.12",
         "@math-blocks/semantic": "^0.0.12",
-        "@math-blocks/tex": "^0.0.13",
+        "@math-blocks/tex": "^0.0.12",
         "@math-blocks/typesetter": "^0.0.12",
         "classnames": "^2.3.1"
     },
