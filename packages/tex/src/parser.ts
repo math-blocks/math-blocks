@@ -27,7 +27,8 @@ class Parser {
   }
 
   parse(): types.CharRow {
-    return this.parseRow();
+    const [row] = this.parseRow();
+    return row;
   }
 
   parseNode(): types.CharNode {
@@ -36,7 +37,8 @@ class Parser {
     switch (char) {
       case '{': {
         this.consume(); // '{'
-        return this.parseRow('}');
+        const [row] = this.parseRow(['}']);
+        return row;
       }
       case '_': {
         this.consume(); // '_'
@@ -87,6 +89,20 @@ class Parser {
     }
   }
 
+  parseIdentifier(): string {
+    let ident = '';
+    while (this.index < this.input.length) {
+      const nextChar = this.input[this.index];
+      if (/[a-zA-Z]/.test(nextChar)) {
+        ident += nextChar;
+        this.index += 1;
+      } else {
+        break;
+      }
+    }
+    return ident;
+  }
+
   parseCommand(name: string): types.CharNode {
     switch (name) {
       case 'frac': {
@@ -102,7 +118,7 @@ class Parser {
         let index: types.CharNode | null = null;
         if (this.input[this.index] === '[') {
           this.consume(); // '['
-          index = this.parseRow(']');
+          [index] = this.parseRow([']']);
         }
         const radicand = this.parseNode();
         return builders.root(
@@ -114,8 +130,7 @@ class Parser {
         // TODO: check if it's a valid delimiter
         const leftDelim = this.peek();
         this.consume(); // left delimiter
-        const inner = this.parseRow('right');
-        const rightDelim = this.rightDelims.pop();
+        const [inner, rightDelim] = this.parseRow(['right']);
         if (!rightDelim) {
           throw new Error('no right delimiter');
         }
@@ -124,6 +139,90 @@ class Parser {
           builders.char(leftDelim),
           builders.char(rightDelim),
         );
+      }
+      case 'begin': {
+        if (this.peek() !== '{') {
+          throw new Error('expected {');
+        }
+        this.consume(); // '{'
+        const startName = this.parseIdentifier();
+        if (this.peek() !== '}') {
+          throw new Error('expected }');
+        }
+        this.consume(); // '}'
+
+        let cell: types.CharRow;
+        let terminator: string | undefined;
+
+        const cells: types.CharRow[][] = [];
+        let currentRow: types.CharRow[] = [];
+
+        // TODO: report an error if the number of columns is inconsistent
+        let currentCol = 0;
+        let colCount = 0;
+        let rowCount = 0;
+
+        while (terminator !== 'end' && this.index < this.input.length) {
+          [cell, terminator] = this.parseRow(['&', '\\', 'end']);
+          if (terminator === '&') {
+            currentCol += 1;
+            currentRow.push(cell);
+          }
+          if (terminator === '\\' || terminator === 'end') {
+            currentRow.push(cell);
+            cells.push(currentRow);
+            currentRow = [];
+            currentCol += 1;
+            if (terminator === '\\' && rowCount === 0) {
+              colCount = currentCol;
+            }
+            if (currentCol !== colCount) {
+              throw new Error('inconsistent number of columns');
+            }
+            rowCount += 1;
+            if (terminator === '\\') {
+              currentCol = 0;
+            }
+          }
+        }
+
+        if (terminator !== 'end') {
+          throw new Error('expected \\end');
+        }
+
+        if (this.peek() !== '{') {
+          throw new Error('expected {');
+        }
+        this.consume(); // '{'
+        const endName = this.parseIdentifier();
+        if (this.peek() !== '}') {
+          throw new Error('expected }');
+        }
+        this.consume(); // '}'
+
+        if (startName !== endName) {
+          throw new Error('mismatched begin/end');
+        }
+
+        let delimeters = undefined;
+        if (startName === 'bmatrix' && endName === 'bmatrix') {
+          delimeters = {
+            left: builders.char('['),
+            right: builders.char(']'),
+          };
+        } else if (startName === 'pmatrix' && endName === 'pmatrix') {
+          delimeters = {
+            left: builders.char('('),
+            right: builders.char(')'),
+          };
+        }
+
+        if (!matrixTypes.includes(startName)) {
+          throw new Error('unknown matrix type');
+        }
+
+        colCount; //
+        return builders.matrix(cells, rowCount, colCount, delimeters);
       }
       default:
         if (isAccentType(name)) {
@@ -143,42 +242,58 @@ class Parser {
     }
   }
 
-  parseRow(terminator?: '}' | ']' | 'right'): types.CharRow {
+  // TODO: return the terminator that was used to end the row if there was one
+  parseRow(
+    terminators: readonly ('&' | '\\' | '}' | ']' | 'right' | 'end')[] = [],
+  ): [types.CharRow, string | undefined] {
     const nodes: types.CharNode[] = [];
     while (this.index < this.input.length) {
       const char = this.input[this.index];
-      if (terminator === char) {
-        this.consume(); // '}'
-        break;
-      }
+
       if (char === '\\') {
-        const oldIndex = this.index;
         this.consume(); // '\\'
-        let name = '';
-        while (this.index < this.input.length) {
-          const nextChar = this.input[this.index];
-          if (/[a-zA-Z]/.test(nextChar)) {
-            name += nextChar;
-            this.index += 1;
-          } else {
-            break;
-          }
+        let name = this.parseIdentifier();
+
+        if (name === '' && this.peek() === '\\') {
+          name = '\\';
+          this.consume(); // '\\'
         }
-        if (terminator === name) {
-          // TODO: check if it's a valid delimiter
-          this.input[this.index];
-          this.rightDelims.push(this.input[this.index]);
-          this.consume(); // right delimiter
-          break;
+
+        if (isTerminator(name) && terminators.includes(name)) {
+          if (name === 'right') {
+            // TODO: check if it's a valid delimiter
+            const rightDelim = this.input[this.index];
+            this.consume(); // right delimiter
+            return [builders.row(nodes), rightDelim];
+          } else if (name === 'end' || name === '\\') {
+            return [builders.row(nodes), name];
+          } else {
+            const rightDelim = this.input[this.index];
+            return [builders.row(nodes), rightDelim];
+          }
         } else {
-          this.index = oldIndex;
+          nodes.push(this.parseCommand(name));
+          continue;
         }
       }
+
+      if (isTerminator(char) && terminators.includes(char)) {
+        this.consume(); // terminator
+        return [builders.row(nodes), char];
+      }
+
       nodes.push(this.parseNode());
     }
-    return builders.row(nodes);
+    return [builders.row(nodes), undefined];
   }
 }
+
+const matrixTypes = ['bmatrix', 'pmatrix'];
+
+const isTerminator = (
+  name: string,
+): name is '&' | '\\' | '}' | ']' | 'right' | 'end' =>
+  ['&', '\\', '}', ']', 'right', 'end'].includes(name);
 
 export const parse = (input: string): types.CharRow => {
   const parser = new Parser(input);

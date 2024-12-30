@@ -108,17 +108,21 @@ describe('Parser', () => {
   });
 
   test('delimiters with parens', () => {
-    const row = parse('\\left(x-1\\right)');
+    const row = parse('a+\\left(x-1\\right)-b');
 
     expect(
       util.isEqual(
         row,
         builders.row([
+          builders.char('a'),
+          builders.char('+'),
           builders.delimited(
             [builders.char('x'), builders.char('-'), builders.char('1')],
             builders.char('('),
             builders.char(')'),
           ),
+          builders.char('-'),
+          builders.char('b'),
         ]),
       ),
     ).toBe(true);
@@ -253,6 +257,92 @@ describe('Parser', () => {
         ]),
       ),
     ).toBe(true);
+  });
+
+  test('bmatrix', () => {
+    const row = parse('\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}');
+
+    expect(
+      util.isEqual(
+        row,
+        builders.row([
+          builders.matrix(
+            [
+              [
+                builders.row([builders.char('a')]),
+                builders.row([builders.char('b')]),
+              ],
+              [
+                builders.row([builders.char('c')]),
+                builders.row([builders.char('d')]),
+              ],
+            ],
+            2,
+            2,
+            {
+              left: builders.char('['),
+              right: builders.char(']'),
+            },
+          ),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  test('pmatrix', () => {
+    const row = parse('\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}');
+
+    expect(
+      util.isEqual(
+        row,
+        builders.row([
+          builders.matrix(
+            [
+              [
+                builders.row([builders.char('a')]),
+                builders.row([builders.char('b')]),
+              ],
+              [
+                builders.row([builders.char('c')]),
+                builders.row([builders.char('d')]),
+              ],
+            ],
+            2,
+            2,
+            {
+              left: builders.char('('),
+              right: builders.char(')'),
+            },
+          ),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  // TODO: test case for nested matrices
+
+  test('matrix (inconsistent column count)', () => {
+    expect(() => {
+      parse('\\begin{bmatrix}a&b\\\\c\\end{bmatrix}');
+    }).toThrowErrorMatchingInlineSnapshot(`"inconsistent number of columns"`);
+  });
+
+  test('matrix (missing \\end)', () => {
+    expect(() =>
+      parse('\\begin{bmatrix}a&b\\\\c&d'),
+    ).toThrowErrorMatchingInlineSnapshot(`"expected \\end"`);
+  });
+
+  test('matrix (mismatched begin/end)', () => {
+    expect(() =>
+      parse('\\begin{bmatrix}a&b\\\\c&d\\end{pmatrix}'),
+    ).toThrowErrorMatchingInlineSnapshot(`"mismatched begin/end"`);
+  });
+
+  test('matrix (unknown matrix type)', () => {
+    expect(() =>
+      parse('\\begin{kmatrix}a&b\\\\c&d\\end{kmatrix}'),
+    ).toThrowErrorMatchingInlineSnapshot(`"unknown matrix type"`);
   });
 
   test('unexpected rbrace', () => {

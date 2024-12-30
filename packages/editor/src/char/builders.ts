@@ -103,7 +103,7 @@ export function macro(inner: readonly types.CharNode[]): types.CharMacro {
 }
 
 export function table(
-  cells: readonly (readonly types.CharNode[] | null)[],
+  cells: readonly (readonly types.CharRow[] | null)[],
   colCount: number,
   rowCount: number,
   delimiters?: {
@@ -125,7 +125,7 @@ export function table(
 }
 
 export function matrix(
-  cells: readonly (readonly types.CharNode[] | null)[],
+  cells: readonly (readonly types.CharRow[] | null)[],
   colCount: number,
   rowCount: number,
   delimiters?: {
