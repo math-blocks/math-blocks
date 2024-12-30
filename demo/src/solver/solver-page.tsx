@@ -17,10 +17,9 @@ import Substeps from './substeps';
 
 const operators = Object.keys(macros).filter((key) => key === macros[key]);
 
-// const parser = new Tex.Parser('x^2 + 5x + 6 = 0');
-// const parser = new Tex.Parser('2x + 3y \u2212 7 = x \u2212 y + 1');
-const parser = new Tex.Parser('3x \u2212 y = 6, x + 2y = \u22121');
-const initialInput: Editor.types.CharRow = parser.parse();
+// const initialInput = Tex.parse('x^2 + 5x + 6 = 0');
+// const initialInput = Tex.parse('2x + 3y \u2212 7 = x \u2212 y + 1');
+const initialInput = Tex.parse('3x \u2212 y = 6, x + 2y = \u22121');
 
 const safeParse = (input: Editor.types.CharRow): Semantic.types.Node | null => {
   try {

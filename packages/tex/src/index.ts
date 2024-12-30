@@ -1,4 +1,4 @@
-export { Parser } from './parser';
-export { print } from './print';
+export { parse } from './parser';
+export { print } from './printer';
 
 export { macros } from './macros';

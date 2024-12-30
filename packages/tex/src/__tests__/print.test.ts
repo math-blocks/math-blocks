@@ -1,6 +1,6 @@
 import { builders, AccentType } from '@math-blocks/editor';
 
-import { print } from '../print';
+import { print } from '../printer';
 
 describe('print', () => {
   test('subsup', () => {

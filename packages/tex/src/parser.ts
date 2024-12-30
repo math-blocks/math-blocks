@@ -2,7 +2,7 @@ import { types, builders, isAccentType } from '@math-blocks/editor';
 
 import { macros } from './macros';
 
-export class Parser {
+class Parser {
   // eslint-disable-next-line functional/prefer-readonly-type
   index: number;
   readonly input: string;
@@ -179,3 +179,8 @@ export class Parser {
     return builders.row(nodes);
   }
 }
+
+export const parse = (input: string): types.CharRow => {
+  const parser = new Parser(input);
+  return parser.parse();
+};
