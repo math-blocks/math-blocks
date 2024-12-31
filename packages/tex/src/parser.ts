@@ -154,8 +154,7 @@ class Parser {
         let cell: types.CharRow;
         let terminator: string | undefined;
 
-        const cells: types.CharRow[][] = [];
-        let currentRow: types.CharRow[] = [];
+        const cells: types.CharRow[] = [];
 
         // TODO: report an error if the number of columns is inconsistent
         let currentCol = 0;
@@ -166,12 +165,10 @@ class Parser {
           [cell, terminator] = this.parseRow(['&', '\\', 'end']);
           if (terminator === '&') {
             currentCol += 1;
-            currentRow.push(cell);
+            cells.push(cell);
           }
           if (terminator === '\\' || terminator === 'end') {
-            currentRow.push(cell);
-            cells.push(currentRow);
-            currentRow = [];
+            cells.push(cell);
             currentCol += 1;
             if (terminator === '\\' && rowCount === 0) {
               colCount = currentCol;

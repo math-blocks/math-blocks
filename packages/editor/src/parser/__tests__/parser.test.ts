@@ -892,4 +892,63 @@ describe('EditorParser', () => {
       `);
     });
   });
+
+  describe('linear algebra', () => {
+    test('matrix', () => {
+      const row = builders.row([
+        builders.matrix(
+          [
+            builders.row([builders.char('1')]),
+            builders.row([builders.char('2')]),
+            builders.row([builders.char('3')]),
+            builders.row([builders.char('4')]),
+          ],
+          2,
+          2,
+        ),
+      ]);
+
+      const ast = parser.parse(row);
+
+      expect(ast).toMatchInlineSnapshot(`(Matrix 1 2 3 4)`);
+    });
+
+    test('matrix with empty cells', () => {
+      const row = builders.row([
+        builders.matrix(
+          [
+            builders.row([builders.char('1')]),
+            builders.row([builders.char('2')]),
+            builders.row([builders.char('3')]),
+            builders.row([]),
+          ],
+          2,
+          2,
+        ),
+      ]);
+
+      expect(() => parser.parse(row)).toThrowErrorMatchingInlineSnapshot(
+        `"Unexpected 'EOL' atom"`,
+      );
+    });
+
+    test('matrix with null cels', () => {
+      const row = builders.row([
+        builders.matrix(
+          [
+            builders.row([builders.char('1')]),
+            builders.row([builders.char('2')]),
+            builders.row([builders.char('3')]),
+            null,
+          ],
+          2,
+          2,
+        ),
+      ]);
+
+      expect(() => parser.parse(row)).toThrowErrorMatchingInlineSnapshot(
+        `"Matrix cells must be non-null"`,
+      );
+    });
+  });
 });

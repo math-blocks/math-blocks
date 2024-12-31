@@ -29,7 +29,12 @@ describe('matrix', () => {
           b.char('x'),
           b.char('+'),
           b.matrix(
-            [[b.char('1')], [b.char('0')], [b.char('0')], [b.char('1')]],
+            [
+              b.row([b.char('1')]),
+              b.row([b.char('0')]),
+              b.row([b.char('0')]),
+              b.row([b.char('1')]),
+            ],
             2,
             2,
             { left: b.char('['), right: b.char(']') },
@@ -55,7 +60,12 @@ describe('matrix', () => {
           b.char('x'),
           b.char('+'),
           b.matrix(
-            [[b.char('1')], [b.char('0')], [b.char('0')], [b.char('1')]],
+            [
+              b.row([b.char('1')]),
+              b.row([b.char('0')]),
+              b.row([b.char('0')]),
+              b.row([b.char('1')]),
+            ],
             2,
             2,
             { left: b.char('('), right: b.char(')') },
@@ -70,7 +80,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -85,12 +100,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('0')],
-              [b.char('0')],
-              [b.char('a')],
-              [b.char('b')],
-              [b.char('c')],
-              [b.char('d')],
+              b.row([b.char('0')]),
+              b.row([b.char('0')]),
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
             ],
             2,
             3,
@@ -104,7 +119,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -119,12 +139,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('a')],
-              [b.char('b')],
-              [b.char('0')],
-              [b.char('0')],
-              [b.char('c')],
-              [b.char('d')],
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('0')]),
+              b.row([b.char('0')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
             ],
             2,
             3,
@@ -138,7 +158,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -153,12 +178,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('a')],
-              [b.char('b')],
-              [b.char('c')],
-              [b.char('d')],
-              [b.char('0')],
-              [b.char('0')],
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+              b.row([b.char('0')]),
+              b.row([b.char('0')]),
             ],
             2,
             3,
@@ -174,7 +199,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -189,12 +219,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('0')],
-              [b.char('a')],
-              [b.char('b')],
-              [b.char('0')],
-              [b.char('c')],
-              [b.char('d')],
+              b.row([b.char('0')]),
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('0')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
             ],
             3,
             2,
@@ -208,7 +238,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -223,12 +258,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('a')],
-              [b.char('0')],
-              [b.char('b')],
-              [b.char('c')],
-              [b.char('0')],
-              [b.char('d')],
+              b.row([b.char('a')]),
+              b.row([b.char('0')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('0')]),
+              b.row([b.char('d')]),
             ],
             3,
             2,
@@ -242,7 +277,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -257,12 +297,12 @@ describe('matrix', () => {
         b.row([
           b.matrix(
             [
-              [b.char('a')],
-              [b.char('b')],
-              [b.char('0')],
-              [b.char('c')],
-              [b.char('d')],
-              [b.char('0')],
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('0')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+              b.row([b.char('0')]),
             ],
             3,
             2,
@@ -278,7 +318,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -290,7 +335,7 @@ describe('matrix', () => {
       const newState = reducer(state, { type: 'DeleteRow' });
 
       expect(newState.row).toEqualEditorNode(
-        b.row([b.matrix([[b.char('c')], [b.char('d')]], 2, 1)]),
+        b.row([b.matrix([b.row([b.char('c')]), b.row([b.char('d')])], 2, 1)]),
       );
       expect(newState.selection.focus.path).toEqual([0, 0]);
     });
@@ -299,7 +344,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -311,7 +361,7 @@ describe('matrix', () => {
       const newState = reducer(state, { type: 'DeleteRow' });
 
       expect(newState.row).toEqualEditorNode(
-        b.row([b.matrix([[b.char('a')], [b.char('b')]], 2, 1)]),
+        b.row([b.matrix([b.row([b.char('a')]), b.row([b.char('b')])], 2, 1)]),
       );
       expect(newState.selection.focus.path).toEqual([0, 1]);
     });
@@ -322,7 +372,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -334,7 +389,7 @@ describe('matrix', () => {
       const newState = reducer(state, { type: 'DeleteColumn' });
 
       expect(newState.row).toEqualEditorNode(
-        b.row([b.matrix([[b.char('b')], [b.char('d')]], 1, 2)]),
+        b.row([b.matrix([b.row([b.char('b')]), b.row([b.char('d')])], 1, 2)]),
       );
       expect(newState.selection.focus.path).toEqual([0, 0]);
     });
@@ -343,7 +398,12 @@ describe('matrix', () => {
       const state: State = {
         row: b.row([
           b.matrix(
-            [[b.char('a')], [b.char('b')], [b.char('c')], [b.char('d')]],
+            [
+              b.row([b.char('a')]),
+              b.row([b.char('b')]),
+              b.row([b.char('c')]),
+              b.row([b.char('d')]),
+            ],
             2,
             2,
           ),
@@ -355,7 +415,7 @@ describe('matrix', () => {
       const newState = reducer(state, { type: 'DeleteColumn' });
 
       expect(newState.row).toEqualEditorNode(
-        b.row([b.matrix([[b.char('a')], [b.char('c')]], 1, 2)]),
+        b.row([b.matrix([b.row([b.char('a')]), b.row([b.char('c')])], 1, 2)]),
       );
       expect(newState.selection.focus.path).toEqual([0, 1]);
     });

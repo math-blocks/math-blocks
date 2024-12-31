@@ -152,19 +152,23 @@ const matrix = builders.row([
   builders.matrix(
     [
       // first row
-      [builders.char('a')],
-      [builders.char('b')],
-      [builders.char('c')],
+      builders.row([builders.char('a')]),
+      builders.row([builders.char('b')]),
+      builders.row([builders.char('c')]),
 
       // second row
-      [builders.char('d')],
-      [builders.char('e'), builders.char('+'), builders.char('1')],
-      [builders.char('f')],
+      builders.row([builders.char('d')]),
+      builders.row([
+        builders.char('e'),
+        builders.char('+'),
+        builders.char('1'),
+      ]),
+      builders.row([builders.char('f')]),
 
       // third row
-      [builders.char('0')],
-      [builders.char('0')],
-      [builders.char('1')],
+      builders.row([builders.char('0')]),
+      builders.row([builders.char('0')]),
+      builders.row([builders.char('1')]),
     ],
     3,
     3,

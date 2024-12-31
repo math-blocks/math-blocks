@@ -67,19 +67,17 @@ export const typesetTable = (
         };
       }
 
+      const offset = j * node.colCount + i;
+      console.log('offset =', offset);
       // We want to add padding around the first operator if it's the only
       // character in the cell.
-      const child = children[j * node.colCount + i];
+      const child = children[offset];
       const padFirstOperator =
         child?.children?.length === 1 &&
         child.children[0].type === 'char' &&
         ['+', '\u2212'].includes(child.children[0].value);
 
-      let cell = typesetChild(
-        j * node.colCount + i,
-        childContext,
-        padFirstOperator,
-      );
+      let cell = typesetChild(offset, childContext, padFirstOperator);
 
       if (cell) {
         columns[i].width = Math.max(cell.width, columns[i].width);

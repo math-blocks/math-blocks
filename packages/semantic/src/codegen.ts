@@ -59,7 +59,11 @@ const generateNodeTypes = () => {
           properties.push(`readonly args: readonly [Node, Node]`);
           break;
         case 'nary':
-          properties.push(`readonly args: TwoOrMore<Node>`);
+          if (name === 'Matrix' || name === 'Vector') {
+            properties.push(`readonly args: readonly Node[]`);
+          } else {
+            properties.push(`readonly args: TwoOrMore<Node>`);
+          }
           break;
       }
     } else if (node.kind === 'number') {
@@ -204,7 +208,11 @@ const generateNodeBuilders = () => {
           params.push(['args', 'readonly [Node, Node]']);
           break;
         case 'nary':
-          params.push(['args', 'TwoOrMore<Node>']);
+          if (name === 'Matrix' || name === 'Vector') {
+            params.push(['args', 'readonly Node[]']);
+          } else {
+            params.push(['args', 'TwoOrMore<Node>']);
+          }
           break;
       }
     } else if (node.kind === 'number') {

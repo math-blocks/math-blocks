@@ -142,6 +142,7 @@ const getTypesetChildFromNodes = <
     padFirstOperator?: boolean,
   ): HBox | null => {
     const child = children[index];
+    console.log('child =', child);
     return (
       child && typesetRow(child, [...path, index], context, padFirstOperator)
     );

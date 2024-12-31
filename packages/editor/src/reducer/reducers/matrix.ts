@@ -81,7 +81,12 @@ export const matrix = (state: State, action: Action): State => {
       state.selection,
       () =>
         b.matrix(
-          [[b.char('1')], [b.char('0')], [b.char('0')], [b.char('1')]],
+          [
+            b.row([b.char('1')]),
+            b.row([b.char('0')]),
+            b.row([b.char('0')]),
+            b.row([b.char('1')]),
+          ],
           2,
           2,
           action.delimiters === 'brackets'

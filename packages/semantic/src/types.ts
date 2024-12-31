@@ -111,12 +111,12 @@ export interface NodeTypes {
   readonly Reals: Common<'Reals'>,
   readonly Complexes: Common<'Complexes'>,
   readonly Matrix: Common<'Matrix'> & {
-    readonly args: TwoOrMore<Node>,
+    readonly args: readonly Node[],
     readonly rows: number,
     readonly cols: number,
   },
   readonly Vector: Common<'Vector'> & {
-    readonly args: TwoOrMore<Node>,
+    readonly args: readonly Node[],
     readonly dim: number,
   },
   readonly Determinant: Common<'Determinant'> & {readonly arg: Node}
