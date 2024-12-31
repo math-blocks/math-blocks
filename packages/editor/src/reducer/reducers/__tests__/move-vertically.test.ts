@@ -141,14 +141,10 @@ describe('moveVertically', () => {
       const row = builders.row([
         builders.matrix(
           [
-            [
-              builders.row([builders.char('a')]),
-              builders.row([builders.char('b')]),
-            ],
-            [
-              builders.row([builders.char('c')]),
-              builders.row([builders.char('d')]),
-            ],
+            builders.row([builders.char('a')]),
+            builders.row([builders.char('b')]),
+            builders.row([builders.char('c')]),
+            builders.row([builders.char('d')]),
           ],
           2,
           2,
@@ -176,14 +172,11 @@ describe('moveVertically', () => {
       const row = builders.row([
         builders.matrix(
           [
-            [
-              builders.row([builders.char('a')]),
-              builders.row([builders.char('b')]),
-            ],
-            [
-              builders.row([builders.char('c')]),
-              builders.row([builders.char('d')]),
-            ],
+            builders.row([builders.char('a')]),
+            builders.row([builders.char('b')]),
+
+            builders.row([builders.char('c')]),
+            builders.row([builders.char('d')]),
           ],
           2,
           2,
@@ -211,14 +204,10 @@ describe('moveVertically', () => {
       const row = builders.row([
         builders.matrix(
           [
-            [
-              builders.row([builders.char('a')]),
-              builders.row([builders.char('b')]),
-            ],
-            [
-              builders.row([builders.char('c')]),
-              builders.row([builders.char('d')]),
-            ],
+            builders.row([builders.char('a')]),
+            builders.row([builders.char('b')]),
+            builders.row([builders.char('c')]),
+            builders.row([builders.char('d')]),
           ],
           2,
           2,
@@ -246,14 +235,10 @@ describe('moveVertically', () => {
       const row = builders.row([
         builders.matrix(
           [
-            [
-              builders.row([builders.char('a')]),
-              builders.row([builders.char('b')]),
-            ],
-            [
-              builders.row([builders.char('c')]),
-              builders.row([builders.char('d')]),
-            ],
+            builders.row([builders.char('a')]),
+            builders.row([builders.char('b')]),
+            builders.row([builders.char('c')]),
+            builders.row([builders.char('d')]),
           ],
           2,
           2,

@@ -226,6 +226,7 @@ export const definitions: Record<string, Descriptor> = {
 
   // Linear Algebra
   Matrix: Constructor('Matrix', 'nary', { rows: 'number', cols: 'number' }),
+  // TODO: include whether it's a row or column vector
   Vector: Constructor('Vector', 'nary', { dim: 'number' }),
 
   Determinant: Operation('Determinant', 'unary', 'lin-alg'),

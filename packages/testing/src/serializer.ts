@@ -160,6 +160,12 @@ const print = (
       const args = ast.args.map((arg) => print(arg, serialize, indent));
       return `(func ${func} ${args.join(' ')})`;
     }
+    case 'Matrix': {
+      const cells = ast.args
+        .map((cell) => print(cell, serialize, indent))
+        .join(' ');
+      return `(${ast.type} ${cells})`;
+    }
     case 'PlusMinus':
     case 'MinusPlus':
     case 'Product':
@@ -172,8 +178,7 @@ const print = (
     case 'ElementOf':
     case 'NotElementOf':
     case 'EmptySet':
-    case 'Vector':
-    case 'Matrix': {
+    case 'Vector': {
       throw new Error(`we don't handle serializing '${ast.type}' nodes yet`);
     }
     default: {

@@ -3,7 +3,14 @@ import * as types from './types';
 
 import { NodeType } from '../shared-types';
 
-export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
+export const isEqual = (
+  a: types.CharNode | null,
+  b: types.CharNode | null,
+): boolean => {
+  if (a == null || b == null) {
+    return a == b;
+  }
+
   if (a.type !== b.type) {
     return false;
   } else if (a.type === 'char' && b.type === 'char') {
@@ -67,6 +74,30 @@ export const isEqual = (a: types.CharNode, b: types.CharNode): boolean => {
     const [aInner] = a.children;
     const [bInner] = b.children;
     return isEqual(aInner, bInner) && a.accent === b.accent;
+  } else if (a.type === 'table' && b.type === 'table') {
+    if (a.children.length !== b.children.length) {
+      return false;
+    }
+    let delimsAreEqual = true;
+    if (a.delimiters && b.delimiters) {
+      delimsAreEqual =
+        isEqual(a.delimiters.left, b.delimiters.left) &&
+        isEqual(a.delimiters.right, b.delimiters.right);
+    } else if (!a.delimiters && !b.delimiters) {
+      delimsAreEqual = true;
+    } else {
+      delimsAreEqual = false;
+    }
+
+    return (
+      a.children.every((aRow, index) => {
+        const bRow = b.children[index];
+        return isEqual(aRow, bRow);
+      }) &&
+      a.colCount === b.colCount &&
+      a.rowCount === b.rowCount &&
+      delimsAreEqual
+    );
   } else {
     return false;
   }

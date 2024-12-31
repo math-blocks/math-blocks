@@ -123,8 +123,30 @@ const getPrefixParselet = (
           return Semantic.builders.parens(result);
         },
       };
-    case NodeType.Accent:
     case NodeType.Table:
+      return {
+        parse: () => {
+          // TODO: If either rowCount or colCount are one, then we should return
+          // a vector instead of a matrix.
+          const cells = node.children
+            .map((cell) => {
+              return cell ? editorParser.parse(cell.children) : null;
+            })
+            .filter((cell): cell is Semantic.types.Node => cell !== null);
+
+          if (cells.length !== node.children.length) {
+            throw new Error('Matrix cells must be non-null');
+          }
+
+          return Semantic.builders.matrix(
+            cells,
+            node.rowCount,
+            node.colCount,
+            node.loc,
+          );
+        },
+      };
+    case NodeType.Accent:
       throw new Error(`We don't handle '${node.type}' tokens yet`);
     // TODO: Handle subsup at the start of a row, useful in Chemistry
     // TODO: Handle limits at the start of a row
@@ -506,7 +528,6 @@ const removeExcessParens = (node: Semantic.types.Node): Semantic.types.Node => {
 
 export const parse = (input: CharRow): Semantic.types.Node => {
   const tokenRow = Lexer.lexRow(input);
-  tokenRow.children; // ?
   // The Semantic types have more restrictions on where certain node types can appear.
   // We cast for now, but really we should have function that checks that the result of
   // editorParser.parse() follows those restrictions.

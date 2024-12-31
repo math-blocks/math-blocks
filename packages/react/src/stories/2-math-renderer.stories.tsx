@@ -875,23 +875,23 @@ export const Matrix: Story<EmptyProps> = (args, { loaded: fontData }) => {
     Editor.builders.matrix(
       [
         // first row
-        [Editor.builders.char('a')],
-        [Editor.builders.char('b')],
-        [Editor.builders.char('c')],
+        Editor.builders.row([Editor.builders.char('a')]),
+        Editor.builders.row([Editor.builders.char('b')]),
+        Editor.builders.row([Editor.builders.char('c')]),
 
         // second row
-        [Editor.builders.char('d')],
-        [
+        Editor.builders.row([Editor.builders.char('d')]),
+        Editor.builders.row([
           Editor.builders.char('e'),
           Editor.builders.char('+'),
           Editor.builders.char('1'),
-        ],
-        [Editor.builders.char('f')],
+        ]),
+        Editor.builders.row([Editor.builders.char('f')]),
 
         // third row
-        [Editor.builders.char('0')],
-        [Editor.builders.char('0')],
-        [Editor.builders.char('1')],
+        Editor.builders.row([Editor.builders.char('0')]),
+        Editor.builders.row([Editor.builders.char('0')]),
+        Editor.builders.row([Editor.builders.char('1')]),
       ],
       3,
       3,

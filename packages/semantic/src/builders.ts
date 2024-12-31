@@ -390,7 +390,7 @@ const builders = {
     id: getId(),
     loc,
   }),
-  matrix: (args: TwoOrMore<Node>, rows: number, cols: number, loc?: SourceLocation): NodeTypes['Matrix'] => ({
+  matrix: (args: readonly Node[], rows: number, cols: number, loc?: SourceLocation): NodeTypes['Matrix'] => ({
     type: 'Matrix',
     id: getId(),
     args,
@@ -398,7 +398,7 @@ const builders = {
     cols,
     loc,
   }),
-  vector: (args: TwoOrMore<Node>, dim: number, loc?: SourceLocation): NodeTypes['Vector'] => ({
+  vector: (args: readonly Node[], dim: number, loc?: SourceLocation): NodeTypes['Vector'] => ({
     type: 'Vector',
     id: getId(),
     args,
