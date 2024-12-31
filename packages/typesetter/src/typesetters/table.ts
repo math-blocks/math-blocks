@@ -68,7 +68,6 @@ export const typesetTable = (
       }
 
       const offset = j * node.colCount + i;
-      console.log('offset =', offset);
       // We want to add padding around the first operator if it's the only
       // character in the cell.
       const child = children[offset];
