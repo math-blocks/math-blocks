@@ -35,6 +35,7 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'multiply each term', TNode>
   | StepType<'distribute', TNode>
   | StepType<'drop adding zero', TNode> // additive identity
+  | StepType<'drop power of one', TNode>
   | StepType<'drop parentheses', TNode>
   | StepType<'evaluate multiplication', TNode>
   | StepType<'evaluate addition', TNode>
@@ -95,6 +96,11 @@ export type Step<TNode extends Semantic.types.Node = Semantic.types.Node> =
   | StepType<'split factored equation', TNode>
   | StepType<'split linear term', TNode>
   | StepType<'factor', TNode> // TODO: update this to say what factor we're extract from an expression
+  | StepType<'differentiate', TNode>
+  | StepType<'power rule', TNode>
+  | StepType<'product rule', TNode>
+  | StepType<'quotient rule', TNode>
+  | StepType<'chain rule', TNode>
   | StepType<'test', TNode>; // this last one is only used in tests
 
 // TODO: update to support multiple parts

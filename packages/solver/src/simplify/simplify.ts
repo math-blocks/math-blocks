@@ -14,6 +14,7 @@ import { mulFraction } from './transforms/mul-fraction';
 import { simplifyMul } from './transforms/simplify-mul';
 import { mulByZeroIsZero } from './transforms/mul-by-zero-is-zero';
 import { simplifyDivByFrac } from './transforms/simplify-div-by-frac';
+import { removePowOne } from './transforms/remove-pow-one';
 
 import { mulToPow } from './transforms/mul-to-pow';
 import { multiplyPowers } from './transforms/multiply-powers';
@@ -47,6 +48,7 @@ export function simplify(
     mulToPow,
     multiplyPowers,
     dividePowers,
+    removePowOne,
 
     // We put this last so that we don't covert 3 + -(x + 1) to 3 - (x + 1)
     // before distributing.

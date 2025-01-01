@@ -2,9 +2,6 @@ import * as Semantic from '@math-blocks/semantic';
 import * as Testing from '@math-blocks/testing';
 
 import { factor } from '../factor';
-import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../test-util';
-
-expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
 
 const parsePolynomial = (input: string): Semantic.types.Add => {
   return Testing.parse(input) as Semantic.types.Add;
