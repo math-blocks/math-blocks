@@ -1,11 +1,11 @@
-import * as Semantic from '@math-blocks/semantic';
+import { builders, types } from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 
 import { moveMatchingVariableTermsToOneSide } from '../move-matching-variable-terms-to-one-side';
 
-const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+const parseNumRel = (input: string): types.NumericRelation => {
+  return parse(input) as types.NumericRelation;
 };
 
 describe('move constants from left to right', () => {
@@ -21,7 +21,7 @@ describe('move constants from left to right', () => {
   `(
     'moveVariableToOneSide($input) -> $output',
     ({ input, output, substeps }) => {
-      const ident = Semantic.builders.identifier('x');
+      const ident = builders.identifier('x');
       const result = moveMatchingVariableTermsToOneSide(
         parseNumRel(input),
         ident,
@@ -29,7 +29,7 @@ describe('move constants from left to right', () => {
       if (result === undefined) {
         expect(input).toEqual(output);
       } else {
-        expect(Testing.print(result.after)).toEqual(output);
+        expect(print(result.after)).toEqual(output);
         expect(result.substeps.length).toEqual(substeps);
       }
     },

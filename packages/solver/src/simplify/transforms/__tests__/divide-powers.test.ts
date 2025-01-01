@@ -1,11 +1,6 @@
-import * as Semantic from '@math-blocks/semantic';
-
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 
 import { dividePowers } from '../divide-powers';
-
-const parse = (str: string): Semantic.types.Node =>
-  Testing.parse(str) as Semantic.types.Node;
 
 describe('dividePowers', () => {
   // TODO: This test case requires us to use an option to move
@@ -30,6 +25,6 @@ describe('dividePowers', () => {
       throw new Error('no result');
     }
 
-    expect(Testing.print(result.after)).toEqual(output);
+    expect(print(result.after)).toEqual(output);
   });
 });

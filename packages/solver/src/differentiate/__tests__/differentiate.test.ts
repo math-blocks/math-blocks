@@ -1,21 +1,19 @@
 import { Step } from '../../types';
-import * as Testing from '../../test-util';
+import { parse, print } from '../../test-util';
 
 import { differentiate } from '../differentiate';
 
 const printSteps = (result: Step): string[] => {
   return [
-    Testing.print(result.before),
-    ...result.substeps.map(
-      (step) => `${Testing.print(step.after)} - ${step.message}`,
-    ),
+    print(result.before),
+    ...result.substeps.map((step) => `${print(step.after)} - ${step.message}`),
   ];
 };
 
 describe('differentiate', () => {
   describe('power rule', () => {
     test('x^3', () => {
-      const node = Testing.parse('x^3');
+      const node = parse('x^3');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -27,7 +25,7 @@ describe('differentiate', () => {
     });
 
     test('x^n', () => {
-      const node = Testing.parse('x^n');
+      const node = parse('x^n');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -38,7 +36,7 @@ describe('differentiate', () => {
     });
 
     test('x^2 + x', () => {
-      const node = Testing.parse('x^2 + x');
+      const node = parse('x^2 + x');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -56,7 +54,7 @@ describe('differentiate', () => {
     });
 
     test('x^-1', () => {
-      const node = Testing.parse('x^-1');
+      const node = parse('x^-1');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -68,7 +66,7 @@ describe('differentiate', () => {
     });
 
     test('-x', () => {
-      const node = Testing.parse('-x');
+      const node = parse('-x');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -79,7 +77,7 @@ describe('differentiate', () => {
     });
 
     test('3x^2', () => {
-      const node = Testing.parse('3x^2');
+      const node = parse('3x^2');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -90,7 +88,7 @@ describe('differentiate', () => {
     });
 
     test('(x^2)(3)', () => {
-      const node = Testing.parse('(x^2)(3)');
+      const node = parse('(x^2)(3)');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -101,7 +99,7 @@ describe('differentiate', () => {
     });
 
     test('x + 1', () => {
-      const node = Testing.parse('x + 1');
+      const node = parse('x + 1');
       const result = differentiate(node)!;
       expect(printSteps(result)).toMatchInlineSnapshot(`
         [
@@ -114,7 +112,7 @@ describe('differentiate', () => {
 
   describe('exponential functions', () => {
     test('e^x', () => {
-      const node = Testing.parse('e^x');
+      const node = parse('e^x');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -127,7 +125,7 @@ describe('differentiate', () => {
     });
 
     test('e^(-x)', () => {
-      const node = Testing.parse('e^(-x)');
+      const node = parse('e^(-x)');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -140,7 +138,7 @@ describe('differentiate', () => {
     });
 
     test('e^(x^2)', () => {
-      const node = Testing.parse('e^(x^2)');
+      const node = parse('e^(x^2)');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -154,7 +152,7 @@ describe('differentiate', () => {
 
   describe('product rule', () => {
     test('xe^x', () => {
-      const node = Testing.parse('xe^x');
+      const node = parse('xe^x');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -168,7 +166,7 @@ describe('differentiate', () => {
 
   describe('quotient rule', () => {
     test('x/(1+x)', () => {
-      const node = Testing.parse('x/(1+x)');
+      const node = parse('x/(1+x)');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`
@@ -181,7 +179,7 @@ describe('differentiate', () => {
     });
 
     test('(1+x)/1', () => {
-      const node = Testing.parse('(1+x)/1');
+      const node = parse('(1+x)/1');
       const result = differentiate(node)!;
 
       expect(printSteps(result)).toMatchInlineSnapshot(`

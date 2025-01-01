@@ -1,16 +1,16 @@
-import * as Semantic from '@math-blocks/semantic';
+import { builders, types } from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { moveTermsToOneSide } from '../move-terms-to-one-side';
 
-const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+const parseNumRel = (input: string): types.NumericRelation => {
+  return parse(input) as types.NumericRelation;
 };
 
-const transform = (node: Semantic.types.NumericRelation): Step => {
-  const ident = Semantic.builders.identifier('x');
+const transform = (node: types.NumericRelation): Step => {
+  const ident = builders.identifier('x');
   const result = moveTermsToOneSide(node, ident);
   if (!result) {
     throw new Error('no step returned');
@@ -24,14 +24,18 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('2x = 5');
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 5"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['sub']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "5",
+      ]
+    `);
   });
 
   test('2x - 5 = 10', () => {
@@ -39,14 +43,18 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('2x = 15');
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 15"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['add']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "5",
+      ]
+    `);
   });
 
   test('2x + -5 = 10', () => {
@@ -54,14 +62,18 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('2x = 15');
+    expect(print(step.after)).toMatchInlineSnapshot(`"2x = 15"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['sub']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['-5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "-5",
+      ]
+    `);
   });
 
   // TODO: Only move `+ 5` to the left side
@@ -70,14 +82,18 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('5 = 2x');
+    expect(print(step.after)).toMatchInlineSnapshot(`"5 = 2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['sub']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "5",
+      ]
+    `);
   });
 
   test('10 = 2x - 5', () => {
@@ -85,14 +101,18 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('15 = 2x');
+    expect(print(step.after)).toMatchInlineSnapshot(`"15 = 2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['add']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "5",
+      ]
+    `);
   });
 
   test('10 = 2x + -5', () => {
@@ -100,13 +120,17 @@ describe('move constants from left to right', () => {
 
     const step = transform(before);
 
-    expect(Testing.print(step.after)).toEqual('15 = 2x');
+    expect(print(step.after)).toMatchInlineSnapshot(`"15 = 2x"`);
     const doSameOpSteps = step.substeps[0].substeps.filter(
       (step) => step.message === 'do the same operation to both sides',
     );
     const operations = doSameOpSteps.map((step) => step.operation);
     expect(operations).toEqual(['sub']);
-    const terms = doSameOpSteps.map((step) => Testing.print(step.value));
-    expect(terms).toEqual(['-5']);
+    const terms = doSameOpSteps.map((step) => print(step.value));
+    expect(terms).toMatchInlineSnapshot(`
+      [
+        "-5",
+      ]
+    `);
   });
 });

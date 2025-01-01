@@ -1,7 +1,7 @@
 import * as Semantic from '@math-blocks/semantic';
 
 import { getCoeff } from '../../solve-linear/util';
-import * as Testing from '../../test-util';
+import { print } from '../../test-util';
 import type { Step } from '../../types';
 
 import { simplifyMul } from '../util';
@@ -172,7 +172,7 @@ const orderTerms = (
   // It's possible that the terms were already ordered with like terms beside
   // each other.
   const orderedSum = Semantic.builders.add(newTerms);
-  if (Testing.print(node) !== Testing.print(orderedSum)) {
+  if (print(node) !== print(orderedSum)) {
     substeps.push({
       message: 'reorder terms so that like terms are beside each other',
       before: node,

@@ -1,33 +1,33 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import * as Testing from '../test-util';
+import { parse, print } from '../test-util';
 import { solveProblem } from '../solve-problem';
 
 import type { Problem } from '../types';
 
 const parseNumRel = (input: string): Semantic.types.NumericRelation => {
-  return Testing.parse(input) as Semantic.types.NumericRelation;
+  return parse(input) as Semantic.types.NumericRelation;
 };
 
 describe('solveProblem', () => {
   it('should factor expressions', () => {
     const problem: Problem = {
       type: 'Factor',
-      expression: Testing.parse('x^2 + 5x + 6') as Semantic.types.Add,
+      expression: parse('x^2 + 5x + 6') as Semantic.types.Add,
     };
     const result = solveProblem(problem)!;
 
-    expect(Testing.print(result.answer)).toEqual('(x + 2)(x + 3)');
+    expect(print(result.answer)).toMatchInlineSnapshot(`"(x + 2)(x + 3)"`);
   });
 
   it('should simplify numeric expressions', () => {
     const problem: Problem = {
       type: 'SimplifyExpression',
-      expression: Testing.parse('3x - 2x') as Semantic.types.Node,
+      expression: parse('3x - 2x') as Semantic.types.Node,
     };
     const result = solveProblem(problem)!;
 
-    expect(Testing.print(result.answer)).toEqual('x');
+    expect(print(result.answer)).toMatchInlineSnapshot(`"x"`);
   });
 
   it('should solve linear equations', () => {
@@ -40,7 +40,7 @@ describe('solveProblem', () => {
     };
     const result = solveProblem(problem)!;
 
-    expect(Testing.print(result.answer)).toEqual('x = 5 / 2');
+    expect(print(result.answer)).toMatchInlineSnapshot(`"x = 5 / 2"`);
   });
 
   it('should solve quadratic equations', () => {
@@ -53,6 +53,6 @@ describe('solveProblem', () => {
     };
     const result = solveProblem(problem)!;
 
-    expect(Testing.print(result.answer)).toEqual('x = -2, x = -3');
+    expect(print(result.answer)).toMatchInlineSnapshot(`"x = -2, x = -3"`);
   });
 });

@@ -1,6 +1,6 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
+import { parse, print } from '../../../test-util';
 import type { Step } from '../../../types';
 
 import { distributeDiv as _distributeDiv } from '../distribute-div';
@@ -18,42 +18,42 @@ const distributeDiv = (node: Semantic.types.Node): Step => {
 
 describe('distribute division', () => {
   test('(a + b) / c', () => {
-    const ast = Testing.parse('(a + b) / c');
+    const ast = parse('(a + b) / c');
 
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(Testing.print(step.after)).toEqual('a / c + b / c');
-    expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+    expect(print(step.after)).toMatchInlineSnapshot(`"a / c + b / c"`);
+    expect(step.substeps).toHaveLength(0);
   });
 
   test('(a - b) / c', () => {
-    const ast = Testing.parse('(a - b) / c');
+    const ast = parse('(a - b) / c');
 
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(Testing.print(step.after)).toEqual('a / c - b / c');
-    expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+    expect(print(step.after)).toMatchInlineSnapshot(`"a / c - b / c"`);
+    expect(step.substeps).toHaveLength(0);
   });
 
   test('(a + b) / -c', () => {
-    const ast = Testing.parse('(a + b) / -c');
+    const ast = parse('(a + b) / -c');
 
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(Testing.print(step.after)).toEqual('-(a / c) - b / c');
-    expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+    expect(print(step.after)).toMatchInlineSnapshot(`"-(a / c) - b / c"`);
+    expect(step.substeps).toHaveLength(0);
   });
 
   test('(a - b) / -c', () => {
-    const ast = Testing.parse('(a - b) / -c');
+    const ast = parse('(a - b) / -c');
 
     const step = distributeDiv(ast);
 
     expect(step.message).toEqual('distribute division');
-    expect(Testing.print(step.after)).toEqual('-(a / c) + b / c');
-    expect(step.substeps.map((substep) => substep.message)).toEqual([]);
+    expect(print(step.after)).toMatchInlineSnapshot(`"-(a / c) + b / c"`);
+    expect(step.substeps).toHaveLength(0);
   });
 });

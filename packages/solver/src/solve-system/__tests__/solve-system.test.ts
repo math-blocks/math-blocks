@@ -1,12 +1,24 @@
 import { builders, types } from '@math-blocks/semantic';
 
-import * as Testing from '../../test-util';
-import { NumberOfSolutions } from '../../types';
+import { parse, print } from '../../test-util';
+import { NumberOfSolutions, Step } from '../../types';
 
 import { solveSystem } from '../solve-system';
 
 const parseEqn = (input: string): types.Eq => {
-  return Testing.parse(input) as types.Eq;
+  return parse(input) as types.Eq;
+};
+
+const printSteps = (result: Step): string[] => {
+  return [
+    print(result.before),
+    ...result.substeps.map((step) => {
+      const before = print(step.before);
+      const after = print(step.after);
+      return `${before} => ${after}`;
+    }),
+    print(result.after),
+  ];
 };
 
 describe('solveSystem', () => {
@@ -15,18 +27,8 @@ describe('solveSystem', () => {
     const eqn2 = parseEqn('x + 2y = -1');
     const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
 
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "3x - y = 6, x + 2y = -1",
         "3x - y = 6 => x = 2 + y / 3",
@@ -44,18 +46,8 @@ describe('solveSystem', () => {
     const eqn2 = parseEqn('u + 2v = -1');
     const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
 
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "3u - v = 6, u + 2v = -1",
         "3u - v = 6 => u = 2 + v / 3",
@@ -73,18 +65,8 @@ describe('solveSystem', () => {
     const eqn2 = parseEqn('-1 = x + 2y');
     const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
 
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.One);
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "6 = 3x - y, -1 = x + 2y",
         "6 = 3x - y => 2 + y / 3 = x",
@@ -102,18 +84,8 @@ describe('solveSystem', () => {
     const eqn2 = parseEqn('y = 2x - 2');
     const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
 
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.None);
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "y = 2x + 4, y = 2x - 2",
         "y = 2x + 4 => y / 2 - 2 = x",
@@ -130,18 +102,8 @@ describe('solveSystem', () => {
     const eqn2 = parseEqn('2x + y = 1');
     const result = solveSystem(builders.sequence([eqn1, eqn2]))!;
 
-    const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => {
-        const before = Testing.print(step.before);
-        const after = Testing.print(step.after);
-        return `${before} => ${after}`;
-      }),
-      Testing.print(result.after),
-    ];
-
     expect(result.numberOfSolutions).toEqual(NumberOfSolutions.Infinite);
-    expect(steps).toMatchInlineSnapshot(`
+    expect(printSteps(result)).toMatchInlineSnapshot(`
       [
         "y = -2x + 1, 2x + y = 1",
         "y = -2x + 1 => -(y / 2) + 1 / 2 = x",
@@ -188,8 +150,8 @@ describe('solveSystem', () => {
     });
 
     it("should return if the sequence doesn't contain equations", () => {
-      const expr1 = Testing.parse('3x - y');
-      const expr2 = Testing.parse('x + 2y');
+      const expr1 = parse('3x - y');
+      const expr2 = parse('x + 2y');
       const result = solveSystem(builders.sequence([expr1, expr2]));
 
       expect(result).toBeUndefined();

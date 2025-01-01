@@ -1,14 +1,11 @@
 import * as Semantic from '@math-blocks/semantic';
 
-import * as Testing from '../../../test-util';
-import { toHaveSubstepsLike, toHaveFullStepsLike } from '../../../test-util';
+import { parse, print } from '../../../test-util';
 
 import { factorQuadratic } from '../quadratic';
 
-expect.extend({ toHaveSubstepsLike, toHaveFullStepsLike });
-
 const parsePolynomial = (input: string): Semantic.types.Add => {
-  return Testing.parse(input) as Semantic.types.Add;
+  return parse(input) as Semantic.types.Add;
 };
 
 describe('quadratic', () => {
@@ -18,8 +15,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -39,8 +36,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     // TODO: add an explicit reordering step
@@ -61,8 +58,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -82,8 +79,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -103,8 +100,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     expect(steps).toMatchInlineSnapshot(`
@@ -124,8 +121,8 @@ describe('quadratic', () => {
     const result = factorQuadratic(poly)!;
 
     const steps = [
-      Testing.print(result.before),
-      ...result.substeps.map((step) => Testing.print(step.after)),
+      print(result.before),
+      ...result.substeps.map((step) => print(step.after)),
     ];
 
     // TODO: factor out a `-1` from `(-3x - 1)`
